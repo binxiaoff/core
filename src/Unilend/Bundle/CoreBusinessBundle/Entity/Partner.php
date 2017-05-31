@@ -2,22 +2,35 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Partner
  *
  * @ORM\Table(name="partner", uniqueConstraints={@ORM\UniqueConstraint(name="label", columns={"label"})}, indexes={@ORM\Index(name="fk_partner_partner_type_type", columns={"type"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\PartnerRepository")
  */
 class Partner
 {
+    const STATUS_PENDING   = 1;
+    const STATUS_VALIDATED = 2;
+    const STATUS_DISABLED  = 3;
+
+    const PARTNER_AXA_LABEL      = 'axa';
+    const PARTNER_MEDILEND_LABEL = 'medilend';
+    const PARTNER_UNILEND_LABEL  = 'unilend';
+    const PARTNER_U_CAR_LABEL    = 'u_car';
+
     /**
-     * @var string
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies
      *
-     * @ORM\Column(name="name", type="string", length=191, nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Companies")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_company", referencedColumnName="id_company")
+     * })
      */
-    private $name;
+    private $idCompany;
 
     /**
      * @var string
@@ -36,9 +49,26 @@ class Partner
     /**
      * @var boolean
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="prospect", type="boolean", nullable=false)
+     */
+    private $prospect;
+
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_user_creation", referencedColumnName="id_user")
+     * })
+     */
+    private $idUserCreation;
 
     /**
      * @var \DateTime
@@ -73,30 +103,50 @@ class Partner
      */
     private $type;
 
-
+    /**
+     * @var PartnerProjectAttachment[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProjectAttachment", mappedBy="idPartner")
+     */
+    private $attachmentTypes;
 
     /**
-     * Set name
+     * @var PartnerThirdParty[]
      *
-     * @param string $name
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\PartnerThirdParty", mappedBy="idPartner")
+     */
+    private $partnerThirdParties;
+
+    /**
+     * Projects constructor.
+     */
+    public function __construct() {
+        $this->attachmentTypes     = new ArrayCollection();
+        $this->partnerThirdParties = new ArrayCollection();
+    }
+
+    /**
+     * Set idCompany
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Companies $idCompany
      *
      * @return Partner
      */
-    public function setName($name)
+    public function setIdCompany(\Unilend\Bundle\CoreBusinessBundle\Entity\Companies $idCompany)
     {
-        $this->name = $name;
+        $this->idCompany = $idCompany;
 
         return $this;
     }
 
     /**
-     * Get name
+     * Get idUserCreation
      *
-     * @return string
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Companies
      */
-    public function getName()
+    public function getIdCompany()
     {
-        return $this->name;
+        return $this->idCompany;
     }
 
     /**
@@ -148,9 +198,33 @@ class Partner
     }
 
     /**
+     * Set prospect
+     *
+     * @param boolean $prospect
+     *
+     * @return Partner
+     */
+    public function setProspect($prospect)
+    {
+        $this->prospect = $prospect;
+
+        return $this;
+    }
+
+    /**
+     * Get prospect
+     *
+     * @return boolean
+     */
+    public function getProspect()
+    {
+        return $this->prospect;
+    }
+
+    /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return Partner
      */
@@ -164,11 +238,35 @@ class Partner
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {
         return $this->status;
+    }
+
+    /**
+     * Set idUserCreation
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Users $idUserCreation
+     *
+     * @return Partner
+     */
+    public function setIdUserCreation(\Unilend\Bundle\CoreBusinessBundle\Entity\Users $idUserCreation)
+    {
+        $this->idUserCreation = $idUserCreation;
+
+        return $this;
+    }
+
+    /**
+     * Get idUserCreation
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Users
+     */
+    public function getIdUserCreation()
+    {
+        return $this->idUserCreation;
     }
 
     /**
@@ -251,5 +349,33 @@ class Partner
     public function getType()
     {
         return $this->type;
+    }
+
+    /**
+     * Get attachmentTypes
+     *
+     * @param bool $mandatoryOnly
+     *
+     * @return PartnerProjectAttachment[]
+     */
+    public function getAttachmentTypes($mandatoryOnly = false)
+    {
+        if ($mandatoryOnly) {
+            $attachmentTypes = [];
+            foreach ($this->attachmentTypes as $attachmentType) {
+                if ($attachmentType->getMandatory()) {
+                    $attachmentTypes[] = $attachmentType;
+                }
+            }
+
+            return $attachmentTypes;
+        }
+
+        return $this->attachmentTypes;
+    }
+
+    public function getPartnerThirdParties()
+    {
+        return $this->partnerThirdParties;
     }
 }

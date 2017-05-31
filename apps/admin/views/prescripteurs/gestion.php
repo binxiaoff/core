@@ -14,16 +14,6 @@
             $("#company_name").val('');
             $('#status option[value="choisir"]').prop('selected', true);
         });
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {};
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
 </script>
 <style>
@@ -36,14 +26,19 @@
         padding: 5px;
     }
 </style>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <?php if (isset($_POST['form_search_prescripteur'])) : ?>
-        <h1>Résultats de la recherche d'un prescripteur <?= count($this->aPrescripteurs) > 0 ? '(' . count($this->aPrescripteurs) . ')' : '' ?></h1>
-    <?php elseif (isset($this->aPrescripteurs)) : ?>
-        <h1>Liste des <?= count($this->aPrescripteurs) ?> derniers prescripteurs</h1>
-    <?php endif; ?>
-    <div class="btnDroite"><a href="<?= $this->lurl ?>/prescripteurs/add_client" class="btn_link thickbox">Ajouter un prescripteur</a></div>
+    <div class="row">
+        <div class="col-sm-6">
+            <?php if (isset($_POST['form_search_prescripteur'])) : ?>
+                <h1>Résultats de la recherche d'un prescripteur <?= count($this->aPrescripteurs) > 0 ? '(' . count($this->aPrescripteurs) . ')' : '' ?></h1>
+            <?php elseif (isset($this->aPrescripteurs)) : ?>
+                <h1>Liste des <?= count($this->aPrescripteurs) ?> derniers prescripteurs</h1>
+            <?php endif; ?>
+        </div>
+        <div class="col-sm-6">
+            <a href="<?= $this->lurl ?>/prescripteurs/add_client" class="btn-primary pull-right thickbox">Ajouter un prescripteur</a>
+        </div>
+    </div>
     <div class="search-form-container">
         <form method="post" name="search_prescripteurs" id="search_prescripteurs" enctype="multipart/form-data" action="<?= $this->lurl ?>/prescripteurs/gestion" target="_parent">
             <fieldset>
@@ -65,8 +60,8 @@
                     <tr>
                         <th colspan="6" style="text-align:center;">
                             <input type="hidden" name="form_search_prescripteur" id="form_search_prescripteur">
-                            <input type="submit" value="Valider" title="Valider" name="send_prescripteur" id="send_prescripteur" class="btn">
-                            <input style="border-color: #A1A5A7;background-color:#A1A5A7; color:white;" type="button" value="Reset" title="Reset" name="Reset" id="Reset" class="btn">
+                            <button type="submit" class="btn-primary" style="margin-right: 5px;">Rechercher</button>
+                            <button type="submit" id="Reset" class="btn-default">Réinitialiser</button>
                         </th>
                     </tr>
                 </table>

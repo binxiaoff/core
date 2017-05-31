@@ -6,9 +6,7 @@
             <table class="formColor">
                 <tr>
                     <th><label for="firstname">Prénom :</label></th>
-                    <td>
-                        <input type="text" name="firstname" id="firstname" value="<?= $this->users->firstname ?>" class="input_large"/>
-                    </td>
+                    <td><input type="text" name="firstname" id="firstname" value="<?= $this->users->firstname ?>" class="input_large"/></td>
                 </tr>
                 <tr>
                     <th><label for="name">Nom :</label></th>
@@ -16,21 +14,19 @@
                 </tr>
                 <tr>
                     <th><label for="phone">Téléphone :</label></th>
-                    <td>
-                        <input type="text" name="phone" id="phone" value="<?= $this->users->phone ?>" class="input_large"/>
-                    </td>
+                    <td><input type="text" name="phone" id="phone" value="<?= $this->users->phone ?>" class="input_large"/></td>
                 </tr>
                 <tr>
                     <th><label for="mobile">Mobile :</label></th>
-                    <td>
-                        <input type="text" name="mobile" id="mobile" value="<?= $this->users->mobile ?>" class="input_large"/>
-                    </td>
+                    <td><input type="text" name="mobile" id="mobile" value="<?= $this->users->mobile ?>" class="input_large"/></td>
                 </tr>
                 <tr>
                     <th><label for="email">Email :</label></th>
-                    <td>
-                        <input type="text" name="email" id="email" value="<?= $this->users->email ?>" autocomplete="off" class="input_large"/>
-                    </td>
+                    <td><input type="text" name="email" id="email" value="<?= $this->users->email ?>" autocomplete="off" class="input_large"/></td>
+                </tr>
+                <tr>
+                    <th><label for="slack">Slack :</label></th>
+                    <td><input type="text" name="slack" id="slack" value="<?= $this->users->slack ?>" autocomplete="off" class="input_large"/></td>
                 </tr>
                 <tr>
                     <th><label for="id_user_type">Droits</label></th>
@@ -55,12 +51,10 @@
                     </tr>
                 <?php endif; ?>
                 <tr>
-                    <th>
-                        <a href="<?= $this->lurl ?>/users/generate_new_password/<?= $this->users->id_user ?>" style="white-space: nowrap;" class="btn_link">Générer un nouveau mot de passe</a>
-                    </th>
-                    <td>
+                    <td colspan="2">
+                        <a href="<?= $this->lurl ?>/users/generate_new_password/<?= $this->users->id_user ?>" class="btn-default">Générer un nouveau mot de passe</a>
+                        <button type="submit" class="btn-primary">Valider</button>
                         <input type="hidden" name="form_mod_users" id="form_mod_users"/>
-                        <input type="submit" value="Valider" title="Valider" name="send_users" id="send_users" class="btn"/>
                     </td>
                 </tr>
             </table>

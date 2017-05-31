@@ -5,23 +5,17 @@
         <?php if ($this->nb_lignes != '') : ?>
             $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
         <?php endif; ?>
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {},
-                container;
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
 </script>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <h1>Liste des menus</h1>
-    <div class="btnDroite"><a href="<?= $this->lurl ?>/menus/add" class="btn_link thickbox">Ajouter un menu</a></div>
+    <div class="row">
+        <div class="col-sm-6">
+            <h1>Liste des menus</h1>
+        </div>
+        <div class="col-sm-6">
+            <a href="<?= $this->lurl ?>/menus/add" class="btn-primary pull-right thickbox">Ajouter un menu</a>
+        </div>
+    </div>
     <?php if (count($this->lMenus) > 0) : ?>
         <table class="tablesorter">
             <thead>

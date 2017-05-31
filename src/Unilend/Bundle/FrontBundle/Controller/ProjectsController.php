@@ -15,12 +15,14 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 use Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\core\Loader;
@@ -101,7 +103,7 @@ class ProjectsController extends Controller
 
         $template['projects'] = $projectDisplayManager->getProjectsList([], $sort, $start, $limit, $lenderAccount);
 
-        $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower);
+        $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower || $user instanceof UserPartner);
 
         if (false === $isFullyConnectedUser) {
             array_walk($template['projects'], function(&$project) use ($translator) {
@@ -264,11 +266,12 @@ class ProjectsController extends Controller
             $displayCipDisclaimer = in_array(\underlying_contract::CONTRACT_MINIBON, array_column($productContracts, 'label')) && $cipManager->hasValidEvaluation($lenderAccount);
         }
 
-        $isFullyConnectedUser       = ($user instanceof UserLender && in_array($user->getClientStatus(), [\clients_status::VALIDATED, \clients_status::MODIFICATION]) || $user instanceof UserBorrower);
+        $isFullyConnectedUser       = ($user instanceof UserLender && in_array($user->getClientStatus(), [\clients_status::VALIDATED, \clients_status::MODIFICATION]) || $user instanceof UserBorrower || $user instanceof UserPartner);
         $isConnectedButNotValidated = ($user instanceof UserLender && false === in_array($user->getClientStatus(), [\clients_status::VALIDATED, \clients_status::MODIFICATION]));
 
         if ($isFullyConnectedUser) {
-            $template['finance']        = $projectDisplayManager->getProjectFinancialData($project);
+
+            $template['finance']        = $projectDisplayManager->getProjectFinancialData($project, true);
             $template['financeColumns'] = [
                 'income_statement' => [],
                 'assets'           => [],
@@ -310,7 +313,6 @@ class ProjectsController extends Controller
             'bids'                 => isset($template['project']['bids']) && $template['project']['status'] == \projects_status::EN_FUNDING,
             'myBids'               => isset($template['project']['lender']) && $template['project']['lender']['bids']['count'] > 0,
             'finance'              => $isFullyConnectedUser,
-            'history'              => isset($template['project']['lender']['loans']['myLoanOnProject']['nbValid']) && $template['project']['lender']['loans']['myLoanOnProject']['nbValid'] > 0,
             'canBid'               => $isFullyConnectedUser && $user instanceof UserLender && $user->hasAcceptedCurrentTerms(),
             'warningLending'       => true,
             'warningTaxDeduction'  => $template['project']['startDate'] >= '2016-01-01',
@@ -486,9 +488,9 @@ class ProjectsController extends Controller
                         if ($reason === \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
                             $amountRest = $productManager->getAmountLenderCanStillBid($lenderAccount, $project);
                         }
-                        $currencyFormatter = new \NumberFormatter($request->getLocale(), \NumberFormatter::CURRENCY);
-                        $amountRest = $currencyFormatter->formatCurrency($amountRest, 'EUR');
-                        $amountMax  = $currencyFormatter->formatCurrency($amountMax, 'EUR');
+                        $currencyFormatter = $this->get('currency_formatter');
+                        $amountRest        = $currencyFormatter->formatCurrency($amountRest, 'EUR');
+                        $amountMax         = $currencyFormatter->formatCurrency($amountMax, 'EUR');
 
                         $this->addFlash('bid_not_eligible_reason', $translator->transChoice('project-detail_bid-not-eligible-reason-' . $reason, 0,['%amountRest%' => $amountRest, '%amountMax%' => $amountMax]));
                     }
@@ -865,10 +867,11 @@ class ProjectsController extends Controller
      */
     public function preCheckBidAction($projectSlug, $amount, $rate, Request $request)
     {
-        $entityManager  = $this->get('unilend.service.entity_manager');
-        $cipManager     = $this->get('unilend.service.cip_manager');
-        $translator     = $this->get('translator');
-        $productManager = $this->get('unilend.service_product.product_manager');
+        $entityManager     = $this->get('unilend.service.entity_manager');
+        $cipManager        = $this->get('unilend.service.cip_manager');
+        $translator        = $this->get('translator');
+        $productManager    = $this->get('unilend.service_product.product_manager');
+        $currencyFormatter = $this->get('currency_formatter');
 
         /** @var \projects $project */
         $project = $entityManager->getRepository('projects');
@@ -886,7 +889,6 @@ class ProjectsController extends Controller
         $amountMin = (int) trim($settings->value);
 
         if ($amount < $amountMin) {
-            $currencyFormatter = new \NumberFormatter($request->getLocale(), \NumberFormatter::CURRENCY);
             $amountMin = $currencyFormatter->formatCurrency($amountMin, 'EUR');
             return new JsonResponse([
                 'error'   => true,
@@ -943,7 +945,6 @@ class ProjectsController extends Controller
                 if ($reason === \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
                     $amountRest = $productManager->getAmountLenderCanStillBid($lender, $project);
                 }
-                $currencyFormatter = new \NumberFormatter($request->getLocale(), \NumberFormatter::CURRENCY);
                 $amountRest = $currencyFormatter->formatCurrency($amountRest, 'EUR');
                 $amountMax  = $currencyFormatter->formatCurrency($amountMax, 'EUR');
 
@@ -1144,18 +1145,16 @@ class ProjectsController extends Controller
      */
     private function getDIRSProject(\projects $project)
     {
-        $entityManager = $this->get('unilend.service.entity_manager');
+        $entityManager     = $this->get('unilend.service.entity_manager');
+        $em                = $this->get('doctrine.orm.entity_manager');
+        $attachmentManager = $this->get('unilend.service.attachment_manager');
         /** @var \companies $company */
         $company = $entityManager->getRepository('companies');
         $company->get($project->id_company);
 
-        /** @var \attachment $attachment */
-        $attachment = $entityManager->getRepository('attachment');
-        /** @var \attachment_type $attachmentType */
-        $attachmentType = $entityManager->getRepository('attachment_type');
-        /** @var \attachment_helper $attachmentHelper */
-        $attachmentHelper = Loader::loadLib('attachment_helper', [$attachment, $attachmentType, $this->getParameter('kernel.root_dir') . '/../']);
-        $attachment->get($project->id_project, 'type_owner = "projects" AND id_type = ' . \attachment_type::DEBTS_STATEMENT . ' AND id_owner');
+        $projectEntity  = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+        $attachmentType = $em->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::DEBTS_STATEMENT);
+        $attachment     = $em->getRepository('UnilendCoreBusinessBundle:Attachment')->getProjectAttachmentByType($projectEntity, $attachmentType);
 
         /** @var \project_rate_settings $projectRateSettings */
         $projectRateSettings = $entityManager->getRepository('project_rate_settings');
@@ -1184,7 +1183,7 @@ class ProjectsController extends Controller
             'end_date'            => $endDate,
             'signature_date'      => $signatureDate,
             'released_funds'      => $company->getLastYearReleasedFundsBySIREN($company->siren),
-            'debts_statement_img' => base64_encode(file_get_contents($attachmentHelper->getFullPath($attachment->type_owner, $attachment->id_type) . $attachment->path)),
+            'debts_statement_img' => base64_encode(file_get_contents($attachmentManager->getFullPath($attachment))),
             'repayment_schedule'  => $repaymentSchedule
         ];
     }

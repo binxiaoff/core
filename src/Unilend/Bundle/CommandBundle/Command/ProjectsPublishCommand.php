@@ -5,7 +5,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\librairies\CacheKeys;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -27,9 +29,7 @@ EOF
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        ini_set('memory_limit', '1G');
-
-        $oLogger = $this->getContainer()->get('monolog.logger.console');
+        $oLogger        = $this->getContainer()->get('monolog.logger.console');
         $oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \projects $oProject */
         $oProject = $oEntityManager->getRepository('projects');
@@ -38,7 +38,8 @@ EOF
         /** @var bool $bHasProjectPublished */
         $bHasProjectPublished = false;
 
-        $aProjectToFund = $oProject->selectProjectsByStatus([\projects_status::AUTO_BID_PLACED], "AND p.date_publication <= NOW()", [], '', '', false);
+        // One project each execution, to avoid the memory issue.
+        $aProjectToFund = $oProject->selectProjectsByStatus([\projects_status::AUTO_BID_PLACED], "AND p.date_publication <= NOW()", [], '', 1, false);
         $oLogger->info('Number of projects to publish: ' . count($aProjectToFund), array('class' => __CLASS__, 'function' => __FUNCTION__));
 
         foreach ($aProjectToFund as $aProject) {
@@ -70,18 +71,13 @@ EOF
 
     /**
      * @param \projects
-     * @param EntityManager $oEntityManager
+     * @param EntityManager   $oEntityManager
      * @param LoggerInterface $oLogger
      */
     private function zipProjectAttachments(\projects $project, EntityManager $oEntityManager, LoggerInterface $oLogger)
     {
         /** @var \companies $companies */
         $companies = $oEntityManager->getRepository('companies');
-        /** @var \attachment $oAttachment */
-        $oAttachment = $oEntityManager->getRepository('attachment');
-        /** @var \attachment_type $oAttachmentType */
-        $oAttachmentType = $oEntityManager->getRepository('attachment_type');
-
         $companies->get($project->id_company, 'id_company');
 
         $sPathNoZip = $this->getContainer()->getParameter('path.sftp') . 'groupama_nozip/';
@@ -98,25 +94,48 @@ EOF
         if (false === is_dir($sPathNoZip . $companies->siren)) {
             mkdir($sPathNoZip . $companies->siren);
         }
-        /** @var \attachment_helper $oAttachmentHelper */
-        $oAttachmentHelper = Loader::loadLib('attachment_helper', array($oAttachment, $oAttachmentType, $this->getContainer()->getParameter('kernel.root_dir') . '/../'));
-        $aAttachments      = $project->getAttachments();
 
-        $oLogger->info('Project attachments for project ' . $project->id_project . ': ' . var_export($aAttachments, true), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
+        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $projectEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+        $attachments   = $projectEntity->getAttachments();
 
-        $this->copyAttachment($oAttachmentHelper, $aAttachments, \attachment_type::CNI_PASSPORTE_DIRIGEANT, 'CNI-#', $companies->siren, $sPathNoZip);
-        $this->copyAttachment($oAttachmentHelper, $aAttachments, \attachment_type::CNI_PASSPORTE_VERSO, 'CNI-VERSO-#', $companies->siren, $sPathNoZip);
+        foreach ($attachments as $projectAttachment) {
+            $attachment = $projectAttachment->getAttachment();
 
-        $this->copyAttachment($oAttachmentHelper, $aAttachments, \attachment_type::KBIS, 'KBIS-#', $companies->siren, $sPathNoZip);
-
-        $this->copyAttachment($oAttachmentHelper, $aAttachments, \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_1, 'CNI-25-1-#', $companies->siren, $sPathNoZip);
-        $this->copyAttachment($oAttachmentHelper, $aAttachments, \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1, 'CNI-25-1-VERSO-#', $companies->siren, $sPathNoZip);
-
-        $this->copyAttachment($oAttachmentHelper, $aAttachments, \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_2, 'CNI-25-2-#', $companies->siren, $sPathNoZip);
-        $this->copyAttachment($oAttachmentHelper, $aAttachments, \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2, 'CNI-25-2-VERSO-#', $companies->siren, $sPathNoZip);
-
-        $this->copyAttachment($oAttachmentHelper, $aAttachments, \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_3, 'CNI-25-3-#', $companies->siren, $sPathNoZip);
-        $this->copyAttachment($oAttachmentHelper, $aAttachments, \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3, 'CNI-25-3-VERSO-#', $companies->siren, $sPathNoZip);
+            switch ($attachment->getType()->getId()) {
+                case AttachmentType::CNI_PASSPORTE_DIRIGEANT:
+                    $prefix = 'CNI-#';
+                    break;
+                case AttachmentType::CNI_PASSPORTE_VERSO:
+                    $prefix = 'CNI-VERSO-#';
+                    break;
+                case AttachmentType::KBIS:
+                    $prefix = 'KBIS-#';
+                    break;
+                case AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_1:
+                    $prefix = 'CNI-25-1-#';
+                    break;
+                case AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_2:
+                    $prefix = 'CNI-25-2-#';
+                    break;
+                case AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_3:
+                    $prefix = 'CNI-25-3-#';
+                    break;
+                case AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1:
+                    $prefix = 'CNI-25-1-VERSO-#';
+                    break;
+                case AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2:
+                    $prefix = 'CNI-25-2-VERSO-#';
+                    break;
+                case AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3:
+                    $prefix = 'CNI-25-3-VERSO-#';
+                    break;
+                default:
+                    continue 2;
+                    break;
+            }
+            $this->copyAttachment($attachment, $prefix, $companies->siren, $sPathNoZip);
+        }
 
         $zip = new \ZipArchive();
         if (is_dir($sPathNoZip . $companies->siren)) {
@@ -133,17 +152,17 @@ EOF
         $this->deleteOldFiles();
     }
 
-    private function copyAttachment(\attachment_helper $oAttachmentHelper, $aAttachments, $sAttachmentType, $sPrefix, $sSiren, $sPathNoZip)
+    private function copyAttachment(Attachment $attachment, $sPrefix, $siren, $pathNoZip)
     {
-        if (false === isset($aAttachments[$sAttachmentType]['path'])) {
-            return;
-        }
-        $sFromPath  = $oAttachmentHelper->getFullPath(\attachment::PROJECT, $sAttachmentType) . $aAttachments[$sAttachmentType]['path'];
-        $aPathInfo  = pathinfo($sFromPath);
-        $sExtension = isset($aPathInfo['extension']) ? $aPathInfo['extension'] : '';
-        $sNewName   = $sPrefix . $sSiren . '.' . $sExtension;
+        $attachmentManager = $this->getContainer()->get('unilend.service.attachment_manager');
+        $fullPath          = $attachmentManager->getFullPath($attachment);
+        if (file_exists($fullPath)) {
+            $pathInfo  = pathinfo($fullPath);
+            $extension = isset($pathInfo['extension']) ? $pathInfo['extension'] : '';
+            $newName   = $sPrefix . $siren . '.' . $extension;
 
-        copy($sFromPath, $sPathNoZip . $sSiren . '/' . $sNewName);
+            copy($fullPath, $pathNoZip . $siren . '/' . $newName);
+        }
     }
 
     private function deleteOldFiles()
@@ -164,7 +183,7 @@ EOF
     }
 
     /**
-     * @param \projects $project
+     * @param \projects      $project
      * @param  EntityManager $oEntityManager
      */
     private function sendNewProjectEmail(\projects $project, EntityManager $oEntityManager)
@@ -247,7 +266,7 @@ EOF
             foreach ($aLenders as $aLender) {
                 $oLenderAccount->get($aLender['id_lender']);
                 if ($productManager->getLenderEligibility($oLenderAccount, $project)) {
-                    $notifications->type       = \notifications::TYPE_NEW_PROJECT;
+                    $notifications->type       = Notifications::TYPE_NEW_PROJECT;
                     $notifications->id_lender  = $aLender['id_lender'];
                     $notifications->id_project = $project->id_project;
                     $notifications->create();

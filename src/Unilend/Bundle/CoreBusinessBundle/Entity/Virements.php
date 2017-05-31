@@ -7,17 +7,18 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Virements
  *
- * @ORM\Table(name="virements", indexes={@ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_bank_account", columns={"id_bank_account"})})
- * @ORM\Entity
+ * @ORM\Table(name="virements", indexes={@ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_bank_account", columns={"id_bank_account"}),  @ORM\Index(name="idx_virement_id_user_request", columns={"id_user_request"}),  @ORM\Index(name="idx_virement_id_user_validation", columns={"id_user_validation"})})
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\WireTransferOutRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Virements
 {
     const STATUS_PENDING          = 0;
-    const STATUS_CLIENT_VALIDATED = 10;
-    const STATUS_VALIDATED        = 20;
+    const STATUS_CLIENT_DENIED    = 10;
+    const STATUS_DENIED           = 15;
+    const STATUS_CLIENT_VALIDATED = 20;
+    const STATUS_VALIDATED        = 25;
     const STATUS_SENT             = 30;
-    const STATUS_DENIED           = 40;
 
     const TYPE_LENDER   = 1;
     const TYPE_BORROWER = 2;
@@ -36,7 +37,7 @@ class Virements
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="wireTransferOuts")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
      * })
@@ -152,7 +153,12 @@ class Virements
      */
     private $idVirement;
 
-
+    /**
+     * @var WireTransferOutUniversign
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\WireTransferOutUniversign", mappedBy="idWireTransferOut")
+     */
+    private $universign;
 
     /**
      * Set idClient
@@ -529,7 +535,7 @@ class Virements
      */
     public function setAddedValue()
     {
-        if(! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
     }
@@ -540,5 +546,15 @@ class Virements
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * Get universign
+     *
+     * @return WireTransferOutUniversign
+     */
+    public function getUniversign()
+    {
+        return $this->universign;
     }
 }

@@ -26,6 +26,8 @@
 //
 // **************************************************************************************************** //
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients AS clientEntity;
+
 class clients extends clients_crud
 {
     const OCTROI_FINANCMENT           = 1;
@@ -37,21 +39,7 @@ class clients extends clients_crud
     const REMBOURSEMENT_ANTICIPE      = 7;
     const AFFECTATION_RA_PRETEURS     = 8;
 
-    const TYPE_PERSON                 = 1;
-    const TYPE_LEGAL_ENTITY           = 2;
-    const TYPE_PERSON_FOREIGNER       = 3;
-    const TYPE_LEGAL_ENTITY_FOREIGNER = 4;
-
-    const STATUS_OFFLINE = 0;
-    const STATUS_ONLINE  = 1;
-
-    const SUBSCRIPTION_STEP_PERSONAL_INFORMATION = 1;
-    const SUBSCRIPTION_STEP_DOCUMENTS            = 2;
-    const SUBSCRIPTION_STEP_MONEY_DEPOSIT        = 3;
-
-    const TITLE_MISS      = 'Mme';
-    const TITLE_MISTER    = 'M.';
-    const TITLE_UNDEFINED = '';
+    //Type, Status, Subscription Step & Title constants moved to Entity
 
     public function __construct($bdd, $params = '')
     {
@@ -119,7 +107,8 @@ class clients extends clients_crud
 
             $query =  '
             UPDATE clients
-            SET lastlogin = :lastLogin
+            SET lastlogin = :lastLogin,
+            updated = NOW()
             WHERE id_client = :id_client';
             $this->bdd->executeUpdate($query, $bind, $type);
         }
@@ -142,26 +131,10 @@ class clients extends clients_crud
     {
         $this->bdd->query('
             UPDATE ' . $this->userTable . '
-            SET ' . $this->userPass . ' = "' . password_hash($pass, PASSWORD_DEFAULT) . '"
+            SET ' . $this->userPass . ' = "' . password_hash($pass, PASSWORD_DEFAULT) . '",
+            updated = NOW()
             WHERE ' . $this->userMail . ' = "' . $email . '"'
         );
-    }
-
-    public function existEmail($email)
-    {
-        if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return false;
-        }
-
-        $queryBuilder = $this->bdd->createQueryBuilder();
-        $queryBuilder
-            ->select('COUNT(*)')
-            ->from($this->userTable)
-            ->where('email = :email')
-            ->setParameter('email', $email);
-
-        $statement = $queryBuilder->execute();
-        return $statement->fetchColumn() > 0;
     }
 
     public function checkAccess()
@@ -262,7 +235,7 @@ class clients extends clients_crud
             FROM clients c
             INNER JOIN companies co ON c.id_client = co.id_client_owner
             WHERE ' . implode(' ' . $searchType . ' ', $conditions) . '
-                AND c.type NOT IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER, \clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER]) .')
+                AND (c.type IS NULL OR c.type NOT IN (' . implode(',', [ClientEntity::TYPE_PERSON, ClientEntity::TYPE_PERSON_FOREIGNER, ClientEntity::TYPE_LEGAL_ENTITY, ClientEntity::TYPE_LEGAL_ENTITY_FOREIGNER]) .'))
             GROUP BY c.id_client
             ORDER BY c.id_client DESC
            LIMIT 100';
@@ -403,90 +376,6 @@ class clients extends clients_crud
         while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
-        return $result;
-    }
-
-    /**
-     * @param array $clientStatus list of last status to use
-     * @return array
-     */
-    public function selectLendersByLastStatus(array $clientStatus = array())
-    {
-        $naturalPerson = [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER];
-        $legalEntity   = [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER];
-        $bind          = [
-            'naturalPerson' => $naturalPerson,
-            'legalEntity'   => $legalEntity
-        ];
-        $type          = [
-            'naturalPerson' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
-            'legalEntity'   => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
-        ];
-        $sSql          = '
-            SELECT
-              c.id_client,
-              c.nom,
-              c.prenom,
-              c.nom_usage,
-              c.naissance,
-              c.email,
-              -- Address
-              CASE
-                WHEN c.type IN (:naturalPerson) THEN ca.adresse_fiscal
-                WHEN c.type IN (:legalEntity) THEN CONCAT(com.adresse1, \' \', IFNULL(com.adresse2, \'\'))
-              END AS adresse_fiscal,
-              -- City
-              CASE
-                WHEN c.type IN (:naturalPerson) THEN ca.ville_fiscal
-                WHEN c.type IN (:legalEntity) THEN com.city
-              END AS ville_fiscal,
-              -- Zip code
-              CASE
-                WHEN c.type IN (:naturalPerson) THEN ca.cp_fiscal
-                WHEN c.type IN (:legalEntity) THEN com.zip
-              END AS cp_fiscal,
-              -- Country ISO
-              CASE
-                WHEN c.type IN (:naturalPerson) THEN person_country.iso
-                WHEN c.type IN (:legalEntity) THEN legal_entity_country.iso
-              END AS iso,
-              -- Country label
-              CASE
-                WHEN c.type IN (:naturalPerson) THEN person_country.fr
-                WHEN c.type IN (:legalEntity) THEN legal_entity_country.fr
-              END AS fr,
-              la.id_lender_account,
-              la.iban,
-              la.bic,
-              csh.added,
-              cs.status,
-              cs.label
-            FROM clients_status_history csh
-              INNER JOIN clients c ON c.id_client = csh.id_client
-              LEFT JOIN clients_adresses ca ON ca.id_client = c.id_client
-              LEFT JOIN companies com ON com.id_client_owner = c.id_client
-              LEFT JOIN pays_v2 person_country ON person_country.id_pays = ca.id_pays_fiscal
-              LEFT JOIN pays_v2 legal_entity_country ON legal_entity_country.id_pays = com.id_pays
-              INNER JOIN lenders_accounts la ON la.id_client_owner = csh.id_client
-              INNER JOIN clients_status cs ON cs.id_client_status = csh.id_client_status
-            WHERE csh.id_client_status_history = (
-              SELECT MAX(csh1.id_client_status_history)
-              FROM clients_status_history csh1
-              WHERE csh1.id_client = csh.id_client
-            )';
-        if (false === empty($clientStatus)) {
-            $bind['clientStatus'] = $clientStatus;
-            $type['clientStatus'] = \Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
-            $sSql .= ' AND cs.status IN (:clientStatus) ';
-        }
-        /** @var \Doctrine\DBAL\Statement $statement */
-        $statement = $this->bdd->executeQuery($sSql, $bind, $type);
-
-        $result = array();
-        while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
-            $result[$row['id_client']] = $row;
-        }
-        $statement->closeCursor();
         return $result;
     }
 
@@ -713,12 +602,13 @@ class clients extends clients_crud
                 id_project IN (' . implode(',', $aProjects) . ')
                 AND id_client = ' . $iClientId . '
                 AND date_transaction BETWEEN ' . $sStartDate . 'AND ' . $sEndDate . '
-                AND type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . '
-            GROUP BY id_project';
+                AND type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT;
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
-            $aDataForBorrowerOperations[] = $record;
+            if ($record['montant'] != 0) {
+                $aDataForBorrowerOperations[] = $record;
+            }
         }
         return $aDataForBorrowerOperations;
     }
@@ -856,7 +746,7 @@ class clients extends clients_crud
                     WHERE
                         `id_project` IN (' . implode(',', $aProjects) . ')
                         AND `date` BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
-                        AND type_commission = ' . \factures::TYPE_COMMISSION_FINANCEMENT;
+                        AND type_commission = ' . \Unilend\Bundle\CoreBusinessBundle\Entity\Factures::TYPE_COMMISSION_FUNDS;
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
@@ -1195,19 +1085,20 @@ class clients extends clients_crud
                       END AS insee_region_code,
                       COUNT(*) AS count
                     FROM (SELECT id_client,
-                         CASE WHEN clients.type IN (' . implode(',', [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER]) . ') THEN clients_adresses.cp_fiscal ELSE companies.zip END AS cp
+                         CASE WHEN clients.type IN (' . implode(',', [ClientEntity::TYPE_PERSON, ClientEntity::TYPE_PERSON_FOREIGNER]) . ') THEN clients_adresses.cp_fiscal ELSE companies.zip END AS cp
                          FROM clients
                              LEFT JOIN clients_adresses USING (id_client)
                              LEFT JOIN companies ON clients.id_client = companies.id_client_owner
                              INNER JOIN lenders_accounts ON clients.id_client = lenders_accounts.id_client_owner
-                         WHERE clients.status = '. \clients::STATUS_ONLINE .' AND lenders_accounts.status = 1
+                         WHERE clients.status = '. ClientEntity::STATUS_ONLINE .' AND lenders_accounts.status = 1
                          AND (clients_adresses.id_pays_fiscal = ' . \pays_v2::COUNTRY_FRANCE . ' OR companies.id_pays = ' . \pays_v2::COUNTRY_FRANCE . ')) AS client_base
-                    GROUP BY insee_region_code';
+                    GROUP BY insee_region_code
+                    HAVING insee_region_code != "0"';
 
         $statement = $this->bdd->executeQuery($query);
         $regionsCount  = [];
         while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
-            $regionsCount[$row['insee_region_code']] = $row['count'];
+            $regionsCount[] = $row;
         }
 
         return $regionsCount;
@@ -1238,37 +1129,62 @@ class clients extends clients_crud
 
     /**
      * @param array $clientStatus
-     * @param array $attachmentTypes
+     * @param array $vigilanceStatusExcluded
+     *
      * @return array
      */
-    public function getClientsToAutoValidate(array $clientStatus, array $attachmentTypes)
+    public function getClientsToAutoValidate(array $clientStatus, array $vigilanceStatusExcluded)
     {
-        $bind = ['client_status_id' => $clientStatus, 'attachment_type_id' => $attachmentTypes];
-        $type = ['client_status_id' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY, 'attachment_type_id' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY];
+        $bind = [
+            'statusValid'            => \Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment::STATUS_VALIDATION_VALID,
+            'clientStatus'           => $clientStatus,
+            'attachmentTypeIdentity' => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::CNI_PASSPORTE,
+            'attachmentTypeAddress'  => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::JUSTIFICATIF_DOMICILE,
+            'attachmentTypeRib'      => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::RIB,
+            'vigilanceStatus'        => $vigilanceStatusExcluded
+        ];
+        $type = [
+            'statusValid'            => PDO::PARAM_INT,
+            'clientStatus'           => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'attachmentTypeIdentity' => PDO::PARAM_INT,
+            'attachmentTypeAddress'  => PDO::PARAM_INT,
+            'attachmentTypeRib'      => PDO::PARAM_INT,
+            'vigilanceStatus'        => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY
+        ];
 
         $sql = "
         SELECT
           c.id_client,
-          gpa.final_status,
-          gpa.revalidate,
-          gpa.id_attachment,
-          a.id_type,
-          (SELECT group_concat(validation_status SEPARATOR '') FROM greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND a.id_type IN (:attachment_type_id) WHERE ga.id_client = c.id_client) AS global_status
+          ga_identity.id AS identity_attachment_id,
+          ga_identity.validation_status identity_attachment_status,
+          ga_address.id AS address_attachment_id,
+          ga_address.validation_status address_attachment_status,
+          ga_rib.id AS rib_attachment_id,
+          ga_rib.validation_status rib_attachment_status
+        
         FROM clients_status_history csh
-          INNER JOIN greenpoint_attachment gpa ON gpa.id_client = csh.id_client
-          INNER JOIN attachment a ON a.id = gpa.id_attachment AND a.id_type IN (:attachment_type_id)
+          INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeIdentity AND a.archived IS NULL) ga_identity ON ga_identity.id_client = csh.id_client
+          INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeAddress AND a.archived IS NULL) ga_address ON ga_address.id_client = csh.id_client
+          INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeRib AND a.archived IS NULL) ga_rib ON ga_rib.id_client = csh.id_client
           INNER JOIN clients c ON c.id_client = csh.id_client
           INNER JOIN clients_adresses ca ON ca.id_client = c.id_client AND ca.id_pays_fiscal = 1
           INNER JOIN clients_status cs ON cs.id_client_status = csh.id_client_status
-        WHERE csh.id_client_status_history = (SELECT MAX(csh1.id_client_status_history)
-                                              FROM clients_status_history csh1
-                                              WHERE csh1.id_client = csh.id_client
-                                              LIMIT 1)
-              AND cs.status IN (:client_status_id) AND TIMESTAMPDIFF(YEAR, naissance, CURDATE()) < 80
-        HAVING global_status = 999";
+          LEFT JOIN (SELECT * FROM client_vigilance_status_history cvsh
+                     WHERE cvsh.id = (SELECT cvsh_max.id
+                                      FROM client_vigilance_status_history cvsh_max
+                                      WHERE cvsh.id_client = cvsh_max.id_client
+                                      ORDER BY cvsh_max.added DESC, cvsh_max.id DESC LIMIT 1)) last_cvsh ON c.id_client = last_cvsh.id_client AND last_cvsh.vigilance_status IN (:vigilanceStatus)
+        WHERE csh.id_client_status_history = (SELECT csh_max.id_client_status_history
+                                              FROM clients_status_history csh_max
+                                              WHERE csh_max.id_client = csh.id_client
+                                              ORDER BY csh_max.added DESC, csh_max.id_client_status_history DESC LIMIT 1)
+          AND cs.status IN (:clientStatus)
+          AND TIMESTAMPDIFF(YEAR, naissance, CURDATE()) < 80
+          AND last_cvsh.id_client IS NULL";
 
         /** @var \Doctrine\DBAL\Statement $statement */
         $statement = $this->bdd->executeQuery($sql, $bind, $type);
+
         return $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 }

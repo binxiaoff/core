@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 use Xynnn\GoogleTagManagerBundle\Service\GoogleTagManager;
 
 /**
@@ -45,18 +46,20 @@ class DataLayerCollector
         if ($token) {
             $data = [];
             $user = $token->getUser();
-            if ($user instanceof BaseUser) {
-                /** @var BaseUser $user */
 
+            if ($user instanceof BaseUser) {
                 $data = ['uid' => md5($user->getEmail()), 'unique_id' => md5($user->getEmail())];
 
                 if ($user instanceof UserLender) {
-                    $key = 'ID_Preteur';
+                    $data['ID_Preteur'] = $user->getClientId();
+                } elseif ($user instanceof UserPartner) {
+                    $data['ID_Partenaire'] = $user->getPartner()->getId();
+                    $data['ID_Client']     = $user->getClientId();
+                    $data['Organisation']  = $user->getCompany()->getName();
+                    $data['Role']          = in_array(UserPartner::ROLE_ADMIN, $user->getRoles()) ? 'Administrateur' : 'Collaborateur';
                 } else {
-                    $key = 'ID_Emprunteur';
+                    $data['ID_Emprunteur'] = $user->getClientId();
                 }
-
-                $data[$key] = $user->getClientId();
             } else {
                 $session = $this->requestStack->getCurrentRequest()->getSession();
 

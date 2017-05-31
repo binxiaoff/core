@@ -73,7 +73,8 @@ var ModalTOS = require('./app/components/ModalTOS')
 var CookieCheck = require('./app/components/Cookies')
 var BidsDetail = require('./app/components/BidsDetail')
 var ProgressBar = require('ProgressBar')
-
+var Paginate = require('./app/components/Paginate')
+var DataTable = require('./app/components/DataTable')
 // @debug
 // CacheData.clearAll()
 
@@ -119,8 +120,8 @@ require('./app/controllers/BidConfirmation')
 require('./app/controllers/ProjectRequest')
 require('./app/controllers/Autolend')
 require('./app/controllers/ProjectDetails')
+require('./app/controllers/PartnerDashboard')
 
-//
 $doc.ready(function ($) {
   // @debug
   // window.__ = __
@@ -238,7 +239,7 @@ $doc.ready(function ($) {
    * @todo refactor into separate component
    */
   $doc
-    // Step 1
+  // Step 1
     .on('FormValidation:validate:error', '#esim1', function (event) {
       // Hide the continue button
       $('.emprunter-sim').removeClass('ui-emprunter-sim-estimate-show')
@@ -281,8 +282,8 @@ $doc.ready(function ($) {
               text = text.replace(/\.$/g, '')
 
               $('p[data-borrower-motive]')
-                .show()
-                .html(text + response.translationComplement + '.')
+                  .show()
+                  .html(text + response.translationComplement + '.')
             }
           },
           error: function() {
@@ -291,8 +292,8 @@ $doc.ready(function ($) {
         });
 
         $('a[href*="esim1"]')
-          .removeAttr("href data-toggle aria-expanded")
-          .attr("nohref", "nohref")
+            .removeAttr("href data-toggle aria-expanded")
+            .attr("nohref", "nohref")
       }
     })
 
@@ -757,4 +758,90 @@ $doc.ready(function ($) {
   setTimeout(function () {
     Utility.debounceUpdateWindow()
   }, 1000)
+
+  /*
+   * Sticky Scroll More
+   * @note Slightly more complex than normal sticky because of its position at the bottom and added class when End is reached
+   * @todo Combine with Sticky Instance from Projects.js controller into a separate component (StickyAlt.js)
+   */
+  var $scrollMore = $('#scroll-more')
+  if ($scrollMore.length === 1 && /md|lg/.test(currentBreakpoint)) {
+    var watchWindow = new WatchScroll.Watcher(window)
+
+    // Position at the bottom of the window
+    $scrollMore.css('top', $win.height())
+    // Start animating
+    if ($html.is('.has-csstransforms')) {
+      $scrollMore.addClass('scroll-more-animate')
+
+      // Only animate on homepages, not inner landing pages
+      if (!$('body').is('.layout-page-single')) {
+        $scrollMore.addClass('start')
+      }
+    }
+
+    // Scroll down the page
+    $doc.on(Utility.clickEvent, '#scroll-more', function (event) {
+      if (!$(this).hasClass('end')) {
+        var winScrollTop = $win.scrollTop()
+        $('html, body').animate({scrollTop: winScrollTop + $win.height() / 2}, 400)
+      }
+    })
+    // Scroll to top
+    $doc.on(Utility.clickEvent, '#scroll-more.end', function (event) {
+      $('html, body').animate({scrollTop: 0}, 400)
+    })
+
+    // Offset sticky by marginTop
+    var doStickyOffset = function ($elem, amount) {
+      if (amount !== false) {
+        $elem.css('marginTop', amount + 'px')
+      } else {
+        $elem.css('marginTop', '')
+      }
+    }
+
+    // Offset sticky by CSS transform
+    if ($html.is('.has-csstransforms')) {
+      doStickyOffset = function ($elem, amount) {
+        if (amount !== false) {
+          $elem.css('transform', 'translateY(' + amount + 'px)')
+        } else {
+          $elem.css('transform', '')
+        }
+      }
+    }
+
+    // Handle scroll state
+    function offsetScrollMore() {
+      var winScrollTop = $win.scrollTop()
+      var startScrollFixed = 0
+      var endScrollFixed = $('footer').offset().top - $win.height()
+      var translateAmount = winScrollTop - startScrollFixed
+      var offsetInfo = 0
+
+      // Constrain info within certain area
+      if (winScrollTop > startScrollFixed) {
+        if (winScrollTop < endScrollFixed) {
+          offsetInfo = translateAmount
+          // Arrows - Back to original state
+          if ($scrollMore.hasClass('end')) $scrollMore.removeClass('end')
+        } else {
+          offsetInfo = endScrollFixed - startScrollFixed
+          // Invert arrows once at the bottom of the page
+          if (!$scrollMore.hasClass('end')) $scrollMore.addClass('end').removeClass('start')
+        }
+      }
+
+      // Apply offset
+      doStickyOffset($scrollMore, offsetInfo)
+    }
+
+    // Debounce update of sticky within the watchWindow to reduce jank
+    if ($scrollMore.length > 0) {
+      watchWindow.watch(window, offsetScrollMore)
+      offsetScrollMore()
+    }
+  }
+
 })

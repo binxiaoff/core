@@ -22,24 +22,12 @@
             $("#email").val('');
             $("#projet").val('');
         });
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {},
-                container;
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
 </script>
 <style>
     table.formColor {width: 673px;}
     .select {width: 251px;}
 </style>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <?php if (isset($_POST['form_search_remb'])) : ?>
         <h1>Résultats de la recherche des <?= $this->pageTitle ?> <?= (count($this->lProjects) > 0 ? '(' . count($this->lProjects) . ')' : '') ?></h1>
@@ -71,8 +59,8 @@
                     <tr>
                         <th colspan="4" style="text-align:center;">
                             <input type="hidden" name="form_search_remb" id="form_search_remb"/>
-                            <input type="submit" value="Valider" title="Valider" name="send_remb" id="send_remb" class="btn"/>
-                            <input style="border-color: #A1A5A7;background-color:#A1A5A7; color:white;" type="button" value="Reset" title="Reset" name="Reset" id="Reset" class="btn"/>
+                            <button type="submit" class="btn-primary" style="margin-right: 5px;">Rechercher</button>
+                            <button type="submit" id="Reset" class="btn-default">Réinitialiser</button>
                         </th>
                     </tr>
                 </table>
@@ -108,7 +96,7 @@
                         <td><?= $aProject['prenom'] ?></td>
                         <td><?= $aProject['email'] ?></td>
                         <td><?= $aProject['company'] ?></td>
-                        <td><?= $aProject['title_bo'] ?></td>
+                        <td><?= $aProject['title'] ?></td>
                         <td><?= $aProject['status_label'] ?></td>
                         <?php if (false === empty($prochainRemb[0])) : ?>
                             <td class="right" style="white-space:nowrap;"><?= $this->ficelle->formatNumber(($prochainRemb[0]['montant'] + $prochainRemb[0]['commission'] + $prochainRemb[0]['tva']) / 100) ?> €</td>

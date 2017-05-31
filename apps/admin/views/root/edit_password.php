@@ -12,7 +12,7 @@
     <?= $this->callJs() ?>
 </head>
 <body class="loginBody">
-<div id="contener">
+<div id="contener" class="container">
     <style>
         .edit_pass {
             width: 50% !important;
@@ -47,10 +47,8 @@
             <?php if (isset($_SESSION['freeow'])) : ?>
                 var title = "<?= $_SESSION['freeow']['title'] ?>",
                     message = "<?= $_SESSION['freeow']['message'] ?>",
-                    opts = {},
-                    container;
+                    opts = {classes: ['smokey']};
 
-                opts.classes = ['smokey'];
                 $('#freeow-tr').freeow(title, message, opts);
                 <?php unset($_SESSION['freeow']); ?>
             <?php endif; ?>
@@ -105,7 +103,7 @@
                         <td colspan="2">
                             <input type="hidden" name="form_edit_pass_user" id="form_edit_pass_user"/>
                             <input type="hidden" name="id_user" value="<?= $this->users->id_user ?>"/>
-                            <input type="submit" value="Valider la modification du mot de passe" class="btn button_valid"/>
+                            <button type="submit" class="btn-primary">Valider la modification du mot de passe</button>
                         </td>
                     </tr>
                 </table>

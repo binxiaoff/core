@@ -10,12 +10,18 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(name="projects_pouvoir", indexes={@ORM\Index(name="id_project", columns={"id_project"})})
  * @ORM\Entity
  */
-class ProjectsPouvoir
+class ProjectsPouvoir implements UniversignEntityInterface
 {
+    const STATUS_REPAYMENT_PENDING   = 0;
+    const STATUS_REPAYMENT_VALIDATED = 1;
+
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="proxy")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
      */
     private $idProject;
 
@@ -85,15 +91,14 @@ class ProjectsPouvoir
     private $idPouvoir;
 
 
-
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param Projects $idProject
      *
      * @return ProjectsPouvoir
      */
-    public function setIdProject($idProject)
+    public function setIdProject(Projects $idProject)
     {
         $this->idProject = $idProject;
 
@@ -103,7 +108,7 @@ class ProjectsPouvoir
     /**
      * Get idProject
      *
-     * @return integer
+     * @return Projects
      */
     public function getIdProject()
     {
@@ -302,12 +307,7 @@ class ProjectsPouvoir
         return $this->added;
     }
 
-    /**
-     * Get idPouvoir
-     *
-     * @return integer
-     */
-    public function getIdPouvoir()
+    public function getId()
     {
         return $this->idPouvoir;
     }

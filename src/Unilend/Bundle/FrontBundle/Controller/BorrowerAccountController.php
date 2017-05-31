@@ -5,12 +5,16 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\FrontBundle\Form\BorrowerContactType;
 use Unilend\Bundle\FrontBundle\Form\SimpleProjectType;
@@ -32,16 +36,11 @@ class BorrowerAccountController extends Controller
         $projectsFunding     = $this->getProjectsFunding();
         $projectsPostFunding = $this->getProjectsPostFunding();
 
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('URL FAQ emprunteur', 'type');
-
         return [
             'pre_funding_projects'  => $projectsPreFunding,
             'funding_projects'      => $projectsFunding,
             'post_funding_projects' => $projectsPostFunding,
-            'closing_projects'      => $request->getSession()->get('closingProjects'),
-            'faq_url'               => $settings->value
+            'closing_projects'      => $request->getSession()->get('closingProjects')
         ];
     }
 
@@ -127,13 +126,13 @@ class BorrowerAccountController extends Controller
                 $project->fonds_propres_declara_client         = 0;
                 $project->comments                             = $formData['message'];
                 $project->period                               = $formData['duration'];
-                $project->status                               = \projects_status::A_TRAITER;
-                $project->id_partner                           = $partnerManager->getDefaultPartner()->id;
+                $project->status                               = \projects_status::COMPLETE_REQUEST;
+                $project->id_partner                           = $partnerManager->getDefaultPartner()->getId();
                 $project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
                 $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
                 $project->create();
 
-                $projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::A_TRAITER, $project);
+                $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::COMPLETE_REQUEST, $project);
 
                 $this->addFlash('success', $translator->trans('borrower-demand_success'));
 
@@ -141,11 +140,7 @@ class BorrowerAccountController extends Controller
             }
         }
 
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('URL FAQ emprunteur', 'type');
-
-        return ['project_form' => $projectForm->createView(), 'faq_url' => $settings->value];
+        return ['project_form' => $projectForm->createView()];
     }
 
     /**
@@ -229,27 +224,32 @@ class BorrowerAccountController extends Controller
 
         foreach ($clientsInvoices as $iKey => $aInvoice) {
             switch ($aInvoice['type_commission']) {
-                case \factures::TYPE_COMMISSION_FINANCEMENT :
+                case Factures::TYPE_COMMISSION_FUNDS:
                     $clientsInvoices[$iKey]['url'] = '/pdf/facture_EF/' . $client->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
                     break;
-                case \factures::TYPE_COMMISSION_REMBOURSEMENT:
+                case Factures::TYPE_COMMISSION_REPAYMENT:
                     $clientsInvoices[$iKey]['url'] = '/pdf/facture_ER/' . $client->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
                     break;
             }
         }
 
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('URL FAQ emprunteur', 'type');
+        $thirdPartyWireTransfersOuts = $this->get('doctrine.orm.entity_manager')
+                                            ->getRepository('UnilendCoreBusinessBundle:Virements')
+                                            ->findWireTransferToThirdParty($client->id_client, [
+                                                Virements::STATUS_PENDING,
+                                                Virements::STATUS_CLIENT_VALIDATED,
+                                                Virements::STATUS_VALIDATED,
+                                                Virements::STATUS_SENT
+                                            ]);
 
         return $this->render(
             'borrower_account/operations.html.twig',
             [
-                'default_filter_date'   => $defaultFilterDate,
-                'projects_ids'          => $projectsIds,
-                'invoices'              => $clientsInvoices,
-                'post_funding_projects' => $projectsPostFunding,
-                'faq_url'               => $settings->value
+                'default_filter_date'            => $defaultFilterDate,
+                'projects_ids'                   => $projectsIds,
+                'invoices'                       => $clientsInvoices,
+                'post_funding_projects'          => $projectsPostFunding,
+                'third_party_wire_transfer_outs' => $thirdPartyWireTransfersOuts,
             ]
         );
     }
@@ -262,17 +262,14 @@ class BorrowerAccountController extends Controller
      */
     public function profileAction()
     {
-        $client  = $this->getClient();
-        $company = $this->getCompany();
-
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('URL FAQ emprunteur', 'type');
+        $client      = $this->getClient();
+        $company     = $this->getCompany();
+        $bankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client->id_client);
 
         return [
-            'client'         => $client,
-            'company'        => $company,
-            'faq_url'        => $settings->value
+            'client'      => $client,
+            'company'     => $company,
+            'bankAccount' => $bankAccount
         ];
     }
 
@@ -317,12 +314,11 @@ class BorrowerAccountController extends Controller
 
             if (false === $error) {
                 $filePath = '';
-                if (isset($_FILES['attachment']['name'] ) && $_FILES['attachment']['name'] !== '') {
-                    $oUpload = new \upload;
-                    $path = $this->get('kernel')->getRootDir() . '/../';
-                    $oUpload->setUploadDir($path, 'protected/contact/');
-                    $oUpload->doUpload('attachment');
-                    $filePath = $path . 'protected/contact/' . $oUpload->getName();
+                $file = $request->files->get('attachment');
+                if ($file instanceof UploadedFile) {
+                    $uploadDestination = $this->getParameter('path.protected') . 'contact/';
+                    $file = $file->move($uploadDestination, $file->getClientOriginalName() . '.' . $file->getClientOriginalExtension());
+                    $filePath = $file->getPathname();
                 }
 
                 /** @var \settings $oSettings */
@@ -376,11 +372,7 @@ class BorrowerAccountController extends Controller
             }
         }
 
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('URL FAQ emprunteur', 'type');
-
-        return ['contact_form' => $contactForm->createView(), 'company_siren' => $company->siren, 'company_name' => $company->name, 'faq_url' => $settings->value];
+        return ['contact_form' => $contactForm->createView(), 'company_siren' => $company->siren, 'company_name' => $company->name];
     }
 
     /**
@@ -477,7 +469,7 @@ class BorrowerAccountController extends Controller
         include $rootDir . '/apps/default/controllers/pdf.php';
 
         $pdfCommand    = new \Command('pdf', 'setDisplay', 'fr');
-        $pdfController = new \pdfController($pdfCommand, 'default');
+        $pdfController = new \pdfController($pdfCommand, 'default', $request);
         $pdfController->setContainer($this->container);
         $pdfController->initialize();
 
@@ -647,7 +639,11 @@ class BorrowerAccountController extends Controller
                     $error = true;
                     $this->addFlash('error', $translator->trans('common-validator_secret-answer-invalid'));
                 }
+
                 if (false === $error) {
+                    $client->status = 1;
+                    $client->update();
+
                     $formData['question'] = filter_var($formData['question'], FILTER_SANITIZE_STRING);
 
                     $borrower = $this->get('unilend.frontbundle.security.user_provider')->loadUserByUsername($client->email);
@@ -656,10 +652,11 @@ class BorrowerAccountController extends Controller
                     $client->password         = $password;
                     $client->secrete_question = $formData['question'];
                     $client->secrete_reponse  = md5($formData['answer']);
-                    $client->status           = 1;
                     $client->update();
 
                     return $this->redirectToRoute('login');
+                } else {
+                    return $this->redirectToRoute('borrower_account_security', ['token' => $token]);
                 }
             }
         }
@@ -673,31 +670,31 @@ class BorrowerAccountController extends Controller
     private function getProjectsPreFunding()
     {
         $statusPreFunding   = array(
-            \projects_status::A_FUNDER,
-            \projects_status::A_TRAITER,
-            \projects_status::COMITE,
-            \projects_status::EN_ATTENTE_PIECES,
+            \projects_status::COMPLETE_REQUEST,
+            \projects_status::COMMERCIAL_REVIEW,
+            \projects_status::COMMERCIAL_REJECTION,
+            \projects_status::ANALYSIS_REVIEW,
+            \projects_status::COMITY_REVIEW,
+            \projects_status::ANALYSIS_REJECTION,
+            \projects_status::COMITY_REJECTION,
             \projects_status::PREP_FUNDING,
-            \projects_status::REJETE,
-            \projects_status::REJET_ANALYSTE,
-            \projects_status::REJET_COMITE,
-            \projects_status::REVUE_ANALYSTE
+            \projects_status::A_FUNDER
         );
         $projectsPreFunding = $this->getCompany()->getProjectsForCompany(null, $statusPreFunding);
 
         foreach ($projectsPreFunding as $key => $project) {
             switch ($project['status']) {
-                case \projects_status::EN_ATTENTE_PIECES:
-                case \projects_status::A_TRAITER:
+                case \projects_status::COMPLETE_REQUEST:
+                case \projects_status::COMMERCIAL_REVIEW:
                     $projectsPreFunding[$key]['project_status_label'] = 'waiting-for-documents';
                     break;
-                case \projects_status::REVUE_ANALYSTE:
-                case \projects_status::COMITE:
+                case \projects_status::ANALYSIS_REVIEW:
+                case \projects_status::COMITY_REVIEW:
                     $projectsPreFunding[$key]['project_status_label'] = 'analyzing';
                     break;
-                case \projects_status::REJET_ANALYSTE:
-                case \projects_status::REJET_COMITE:
-                case \projects_status::REJETE:
+                case \projects_status::COMMERCIAL_REJECTION:
+                case \projects_status::ANALYSIS_REJECTION:
+                case \projects_status::COMITY_REJECTION:
                     $projectsPreFunding[$key]['project_status_label'] = 'refused';
                     break;
                 case \projects_status::PREP_FUNDING:
@@ -751,21 +748,23 @@ class BorrowerAccountController extends Controller
 
         foreach ($projectsPostFunding as $index => $project) {
             $projects->get($project['id_project']);
+            $nextRepayment = [
+                'montant'                  => 0,
+                'commission'               => 0,
+                'tva'                      => 0,
+                'date_echeance_emprunteur' => date('Y-m-d H:i:s'),
+            ];
 
             if (false === in_array($project['status'], [\projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::REMBOURSE])) {
-               $nextRepayment = $repaymentSchedule->select(
+               $repayment = $repaymentSchedule->select(
                    'id_project = ' . $project['id_project'] . ' AND status_emprunteur = 0',
                    'date_echeance_emprunteur ASC',
                    '',
                    1
-               )[0];
-            } else {
-                $nextRepayment = [
-                    'montant'                  => 0,
-                    'commission'               => 0,
-                    'tva'                      => 0,
-                    'date_echeance_emprunteur' => date('Y-m-d H:i:s'),
-                ];
+               );
+               if (false === empty($repayment[0])) {
+                   $nextRepayment = $repayment[0];
+               }
             }
 
             $projectsPostFunding[$index] = $projectsPostFunding[$index] + [

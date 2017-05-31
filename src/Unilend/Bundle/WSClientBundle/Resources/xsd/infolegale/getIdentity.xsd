@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns:ilg="Infolegale/Webservices/Main" xmlns="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="Infolegale/Webservices/getIdentity">
+    <import namespace="Infolegale/Webservices/Main" schemaLocation="main.xsd"/>
+    <element name="service">
+        <complexType>
+            <sequence>
+                <element ref="ilg:errors"/>
+                <element ref="ilg:request"/>
+                <element name="content">
+                    <complexType>
+                        <choice>
+                            <!-- START CONTENT DESCRIPTION -->
+                            <sequence>
+                                <element name="siren" type="ilg:sirenType" minOccurs="0"/>
+                                <element name="raisonSociale" type="ilg:alphaNumType" minOccurs="0"/>
+                                <element name="enseigne" type="ilg:alphaNumType" minOccurs="0"/>
+                                <element name="sigle" type="ilg:alphaNumType" minOccurs="0"/>
+                                <element name="formeJuridique" type="ilg:formeJuridiqueType"
+                                         minOccurs="0"/>
+                                <element name="adresse" type="ilg:adresseType" minOccurs="0"/>
+                                <element name="telephone" type="ilg:telephoneType" minOccurs="0"/>
+                                <element name="capital" type="ilg:capitalType" minOccurs="0"/>
+                                <element name="dateCreation" type="date" minOccurs="0"/>
+                                <element name="dirigeants" type="ilg:dirigeantsType" minOccurs="0"/>
+                                <element name="naf" type="ilg:SousClasseNAF2008Type" minOccurs="0"/>
+                                <element name="activite" type="ilg:alphaNumType" minOccurs="0"/>
+                                <element name="tva" type="ilg:tvaIntraType" minOccurs="0"/>
+                                <element name="finances" minOccurs="0">
+                                    <complexType>
+                                        <sequence>
+                                            <element name="chiffreAffaires" type="ilg:uniteType" minOccurs="0"/>
+                                            <element name="resultatNet" type="ilg:uniteType" minOccurs="0"/>
+                                            <element name="fondsPropres" type="ilg:uniteType" minOccurs="0"/>
+                                            <element name="resultatExploitation" type="ilg:uniteType"
+                                                     minOccurs="0"/>
+                                            <element name="dateCloture" type="date" minOccurs="0"/>
+                                        </sequence>
+                                    </complexType>
+                                </element>
+                                <element name="liens" type="ilg:liensType" minOccurs="0"/>
+                                <element name="indiceRisque" minOccurs="0">
+                                    <complexType>
+                                        <sequence>
+                                            <element name="indice" minOccurs="0">
+                                                <simpleType>
+                                                    <annotation>
+                                                        <documentation>
+                                                            noir = cessation d'activité;
+                                                            rouge = procédure collective
+                                                            orange = risque moyen ou fort
+                                                            vert = risque faible
+                                                        </documentation>
+                                                    </annotation>
+                                                    <restriction base="ilg:alphaType">
+                                                        <enumeration value="noir"/>
+                                                        <enumeration value="rouge"/>
+                                                        <enumeration value="orange"/>
+                                                        <enumeration value="vert"/>
+                                                    </restriction>
+                                                </simpleType>
+                                            </element>
+                                            <element name="commentaire" type="ilg:alphaNumType" minOccurs="0">
+                                            </element>
+                                        </sequence>
+                                    </complexType>
+                                </element>
+                            </sequence>
+                            <!-- START CONTENT DESCRIPTION -->
+                            <element name="empreinte" type="ilg:footprintType" minOccurs="0"/>
+                        </choice>
+                    </complexType>
+                </element>
+                <element ref="ilg:response"/>
+            </sequence>
+        </complexType>
+    </element>
+</schema>

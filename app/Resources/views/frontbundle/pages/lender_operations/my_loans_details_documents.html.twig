@@ -1,0 +1,20 @@
+<table>
+    <tbody>
+    {% for loanItem in loan.loans %}
+        <tr>
+            <td class="amount" colspan="2">{{ loanItem.amount|localizednumber }}&nbsp;€</td>
+            <td class="interest">{{ loanItem.rate|localizednumber }}&nbsp;<sup>%</sup></td>
+            <td class="documents" colspan="3">
+                {% for doc in loanItem.documents %}
+                    <a href="{{ doc.url }}">
+                        <span class="svg-icon-wrap">
+                             <svg><use xlink:href="/assets/images/svg/icons.svg#notification-project"></use></svg>
+                        </span>
+                        <span class="doc-label">{{ doc.label }}</span>
+                    </a>
+                {% endfor %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

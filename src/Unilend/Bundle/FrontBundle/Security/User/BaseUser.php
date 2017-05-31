@@ -20,16 +20,16 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     private $lastLoginDate;
     private $encoderName;
 
-    public function __construct($username, $password, $email, $salt, array $roles, $isActive, $clientId, $hash, $lastLoginDate = null)
+    public function __construct($username, $password, $email, $salt, array $roles, $isActive, $clientId, $hash, \DateTime $lastLoginDate = null)
     {
-        $this->username = $username;
-        $this->password = $password;
-        $this->email    = $email;
-        $this->salt     = $salt;
-        $this->roles    = $roles;
-        $this->isActive = $isActive;
-        $this->clientId = $clientId;
-        $this->hash     = $hash;
+        $this->username      = $username;
+        $this->password      = $password;
+        $this->email         = $email;
+        $this->salt          = $salt;
+        $this->roles         = $roles;
+        $this->isActive      = $isActive;
+        $this->clientId      = $clientId;
+        $this->hash          = $hash;
         $this->lastLoginDate = $lastLoginDate;
     }
 
@@ -115,7 +115,9 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     }
 
     /**
-     * @inheritDoc
+     * @param UserInterface $user
+     *
+     * @return bool
      */
     public function isEqualTo(UserInterface $user)
     {
@@ -123,12 +125,20 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
             return false;
         }
 
-        if ($this->password !== $user->getPassword()) {
+        if ($this->hash !== $user->getHash()) {
             return false;
         }
 
+        if ($this->password !== $user->getPassword()) {
+            if ($this->username !== $user->getUsername()) {
+                return false;
+            }
+        }
+
         if ($this->username !== $user->getUsername()) {
-            return false;
+            if ($this->password !== $user->getPassword()) {
+                return false;
+            }
         }
 
         return true;
@@ -166,7 +176,7 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     }
 
     /**
-     * @return string|null
+     * @return \DateTime|null
      */
     public function getLastLoginDate()
     {

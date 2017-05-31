@@ -28,14 +28,6 @@
 
 class projects_pouvoir extends projects_pouvoir_crud
 {
-    const STATUS_PENDING   = 0;
-    const STATUS_SIGNED    = 1;
-    const STATUS_CANCELLED = 2;
-    const STATUS_FAILED    = 3;
-
-    const STATUS_PENDING_VALIDATION = 0;
-    const STATUS_VALIDATED          = 1;
-
     public function projects_pouvoir($bdd, $params = '')
     {
         parent::projects_pouvoir($bdd, $params);

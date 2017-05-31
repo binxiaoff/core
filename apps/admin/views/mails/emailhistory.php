@@ -10,17 +10,6 @@
             );
         <?php endif; ?>
 
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {},
-                container;
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
-
         $(".lightbox").colorbox({
             onComplete: function () {
                 $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
@@ -44,15 +33,18 @@
         });
 
         <?php if (false === isset($this->emails)) : ?>
-            $('.btnDroite .btn_link.lightbox').click();
+            $('.btn-primary.thickbox').trigger('click');
         <?php endif; ?>
     });
 </script>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <h1>Historique des emails</h1>
-    <div class="btnDroite">
-        <a href="<?= $this->lurl ?>/mails/recherche" class="btn_link lightbox">Rechercher</a>
+    <div class="row">
+        <div class="col-sm-6">
+            <h1>Historique des emails</h1>
+        </div>
+        <div class="col-sm-6">
+            <a href="<?= $this->lurl ?>/mails/recherche" class="btn-primary pull-right thickbox">Rechercher</a>
+        </div>
     </div>
     <?php if (isset($this->emails) && count($this->emails) > 0) : ?>
         <table class="tablesorter">

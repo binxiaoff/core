@@ -45,23 +45,16 @@
         <?php endif; ?>
 
         $(".inline").colorbox({inline: true, width: "50%"});
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {},
-                container;
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
 </script>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <h1>Opérations emprunteurs</h1>
-    <div class="btnDroite">
-        <a href="<?= $this->lurl ?>/transferts/emprunteurs/csv" class="btn_link">Export CSV</a>
+    <div class="row">
+        <div class="col-sm-6">
+            <h1>Opérations emprunteurs</h1>
+        </div>
+        <div class="col-sm-6">
+            <a href="<?= $this->lurl ?>/transferts/emprunteurs/csv" class="btn-primary pull-right thickbox">Export CSV</a>
+        </div>
     </div>
     <table class="tablesorter">
         <thead>

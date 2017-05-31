@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Unilend\Bundle\FrontBundle\Controller;
-
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -10,10 +8,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\SearchService;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 use Unilend\core\Loader;
 
 class ContactController extends Controller
@@ -31,12 +31,12 @@ class ContactController extends Controller
         /** @var BaseUser $user */
         $user = $this->getUser();
 
-        if ($user instanceof UserLender || $user instanceof UserBorrower) {
+        if ($user instanceof UserLender || $user instanceof UserBorrower || $user instanceof UserPartner) {
             /** @var \clients $client */
             $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
             $client->get($user->getClientId());
 
-            if (in_array($client->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER]) || $user instanceof UserBorrower) {
+            if (in_array($client->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER]) || $user instanceof UserBorrower || $user instanceof UserPartner) {
                 /** @var \companies $company */
                 $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
                 $company->get($client->id_client, 'id_client_owner');
@@ -48,7 +48,7 @@ class ContactController extends Controller
                 'phone'     => $client->mobile,
                 'email'     => $client->email,
                 'company'   => isset($company) ? $company->name : '',
-                'role'      => $user instanceof UserLender ? 2 : ($user instanceof UserBorrower) ? 3 : ''
+                'role'      => $user instanceof UserLender ? 2 : ($user instanceof UserBorrower ? 3 : ($user instanceof UserPartner ? 4 : ''))
             ];
         }
 
@@ -90,7 +90,7 @@ class ContactController extends Controller
         /** @var BaseUser $user */
         $user = $this->getUser();
 
-        $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower);
+        $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower || $user instanceof UserPartner);
 
         $this->get('session')->set('searchResult',[
             'query'   => $query,

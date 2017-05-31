@@ -12,6 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Elements
 {
+    const TYPE_PDF_TERMS_OF_SALE = 143;
+
     /**
      * @var integer
      *

@@ -134,9 +134,9 @@ function addCellDataToBalance(cellData){
     $('.col-info').attr('data-autolendtable-cell', cellData.cellIndex)
 
     if (cellData.enable == 1) {
-        $('#autolend-cell-disable-switch').attr('checked', 'checked')
+        $('#autolend-cell-disable-switch').attr('checked', 'checked').prop('checked', true)
     } else {
-        $('#autolend-cell-disable-switch').removeAttr('checked')
+        $('#autolend-cell-disable-switch').removeAttr('checked').prop('checked', false)
     }
 }
 
@@ -161,10 +161,10 @@ function getInputRate(cellIndex) {
 function rateActivatedSwitch($checkbox, $inputStatus) {
     if ($inputStatus.attr('value') == 1) {
         deactivateSetting($inputStatus)
-        $checkbox.removeAttr('checked')
+        $checkbox.removeAttr('checked').prop('checked', false)
     } else {
         activateSetting($inputStatus)
-        $checkbox.attr('checked', 'checked')
+        $checkbox.attr('checked', 'checked').prop('checked', true)
     }
 }
 
@@ -211,6 +211,17 @@ function getAutolendTable($cell){
 function emptyNotificationsDiv(){
     $('#form-info-notifications .message-success').hide()
     $('#form-info-notifications .message-error').text('').hide()
+}
+
+function directInputChangeCell (event) {
+    event.preventDefault()
+
+    var cellData = getCellInfo($(event.target).parents('[data-autolendtable-cell]').attr('data-autolendtable-cell'))
+    var $inputRate = getInputRate(cellData.cellIndex)
+
+    changeCellColor(cellData, cellData.currentRate)
+    addCellDataToBalance(cellData)
+    changeBalance(cellData)
 }
 
 function eventDecreaseCell (event) {
@@ -297,7 +308,7 @@ $doc
     })
 
     // Change cell rate by keys
-    .on('keydown', '.cell .cell-input input', function (event) {
+    .on('keydown', '.cell .cell-input input[type="number"]', function (event) {
         // Press up arrow
         if (event.which === 38) {
             eventIncreaseCell(event)
@@ -306,6 +317,9 @@ $doc
         } else if (event.which === 40) {
             eventDecreaseCell(event)
         }
+    })
+    .on('change', '.cell .cell-input input[type="number"]', function (event) {
+        directInputChangeCell(event)
     })
 
     // Reduce cell rate
@@ -316,9 +330,11 @@ $doc
 
     // Show cell info (side widget)
     .on(Utility.clickEvent, '.cell .cell-input', function (event) {
-        var $cell = $(this).find('input')
-        activateCell($cell)
-        showBalance($cell.parent().attr('data-autolendtable-cell'))
+        var $cell = $(this).parent()
+        var $input = $(this).find('input[type=number]')
+        var cellIndex = $cell.data('autolendtable-cell')
+        activateCell($input)
+        showBalance(cellIndex)
     })
 
     // Close confirmation- dialog
@@ -340,7 +356,7 @@ $doc
     // Enable cell
     .on(Utility.clickEvent, '.cell .btn-cell-enable', function (event) {
         var $cell = $(this).parents('.cell-data').first()
-        var cellIndex = ~~$cell.attr('data-autolendtable-cell')
+        var cellIndex = $cell.attr('data-autolendtable-cell')
         var $inputStatus = $('#' + cellIndex + '-param-advanced-is-active')
         rateActivatedSwitch($('#autolend-cell-disable-switch'), $inputStatus)
         showBalance(cellIndex)
@@ -371,13 +387,14 @@ $doc
         // Always prevent the form from submitting as we will be processing via AJAX in the confirmed modal event
         event.preventDefault()
 
-        $('.cell-input[data-autolendtable-cell]').each(function() {
-            var cellData = getCellInfo($(this).attr('data-autolendtable-cell'))
-
-            if (parseFloat(cellData.currentRate, 1) < parseFloat(cellData.min, 1) || parseFloat(cellData.currentRate, 1) > parseFloat(cellData.max, 1)) {
-                $dialog = $('#autolend-out-of-range-table-dialog')
-            }
-        })
+        if ($('#hidden-settings-mode-input').attr('value') == 'expert') {
+            $('.cell-input[data-autolendtable-cell]').each(function () {
+                var cellData = getCellInfo($(this).attr('data-autolendtable-cell'))
+                if (parseFloat(cellData.currentRate, 1) < parseFloat(cellData.min, 1) || parseFloat(cellData.currentRate, 1) > parseFloat(cellData.max, 1)) {
+                    $dialog = $('#autolend-out-of-range-table-dialog')
+                }
+            })
+        }
 
         // Show dialog
         $dialog.uiModal('open')

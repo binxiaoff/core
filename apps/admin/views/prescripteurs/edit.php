@@ -1,18 +1,3 @@
-<?php if (isset($_SESSION['freeow'])) : ?>
-    <script type="text/javascript">
-        $(function() {
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {},
-                container;
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-        });
-    </script>
-    <?php unset($_SESSION['freeow']); ?>
-<?php endif; ?>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <h1>Detail prescripteur : <?= $this->clients->nom . ' ' . $this->clients->prenom ?></h1>
     <?php if (false === empty($_SESSION['error_email_exist'])) : ?>
@@ -61,14 +46,14 @@
             </tr>
             <tr>
                 <th><label for="iban">IBAN :</label></th>
-                <td><input type="text" name="iban" id="iban" class="input_large" value="<?= $this->companies->iban ?>"/></td>
+                <td><input type="text" name="iban" id="iban" class="input_large" value="<?= $this->bankAccount instanceof \Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount ? $this->bankAccount->getIban() : '' ?>"/></td>
                 <th><label for="bic">BIC :</label></th>
-                <td><input type="text" name="bic" id="bic" class="input_large" value="<?= $this->companies->bic ?>"/></td>
+                <td><input type="text" name="bic" id="bic" class="input_large" value="<?= $this->bankAccount instanceof \Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount ? $this->bankAccount->getBic() : '' ?>"/></td>
             </tr>
             <tr>
                 <th colspan="4">
                     <input type="hidden" name="form_edit_prescripteur" id="form_edit_prescripteur" />
-                    <input type="submit" value="Valider" title="Valider" name="send_edit_prescripteur" id="send_edit_prescripteur" class="btn" />
+                    <button type="submit" class="btn-primary">Valider</button>
                 </th>
             </tr>
         </table>

@@ -1,5 +1,8 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\UserAccess;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+
 class bootstrap extends Controller
 {
     /**
@@ -53,6 +56,12 @@ class bootstrap extends Controller
     protected $lenders_accounts;
     /** @var \echeanciers */
     protected $echeanciers;
+
+    /**
+     * Doctrine entities
+     */
+    /** @var Users */
+    protected $userEntity;
 
     /**
      * Config
@@ -143,9 +152,6 @@ class bootstrap extends Controller
                     }
                 }
 
-                // DEBUG
-                //$this->duree_waiting = 1;
-
                 $this->error_login = "Le couple d'identifiant n'est pas correct";
 
                 $this->loggin_connection_admin        = $this->loadData('loggin_connection_admin');
@@ -177,6 +183,7 @@ class bootstrap extends Controller
         $this->loadJs('admin/ajax');
         $this->loadJs('admin/main');
 
+        $this->loadCss('admin/bootstrap');
         $this->loadCss('../scripts/admin/freeow/freeow');
         $this->loadCss('../scripts/admin/external/jquery/plugin/colorbox/colorbox');
         $this->loadCss('../scripts/admin/treeview/jquery.treeview');
@@ -193,30 +200,20 @@ class bootstrap extends Controller
         if (isset($_SESSION['user']) && !empty($_SESSION['user']['id_user'])) {
             $this->sessionIdUser = $_SESSION['user']['id_user'];
             $this->lZonesHeader  = $this->users_zones->selectZonesUser($_SESSION['user']['id_user']);
-        }
 
-        // On vérifie ici si le mot de passe du user date de moins de 3 mois sinon on le redirige sur la page d'édition de mot de passe
-        if (
-            $this->current_function != 'edit_password'
-            && $this->current_function != 'login'
-            && $this->current_function != 'logout'
-            && $this->current_controller != 'thickbox'
-            && $this->current_controller != 'ajax'
-            && false === empty($_SESSION['user']['id_user'])
-        ) {
-            $ilya3mois             = mktime(0, 0, 0, date('m') - 3, date('d'), date('Y'));
-            $tab_date_pass         = explode(' ', $_SESSION['user']['password_edited']);
-            $date_pass_edited      = $tab_date_pass[0];
-            $tab_date_pass2        = explode('-', $date_pass_edited);
-            $derniere_edition_pass = mktime(0, 0, 0, $tab_date_pass2[1], $tab_date_pass2[2], $tab_date_pass2[0]);
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
 
-            if ($derniere_edition_pass < $ilya3mois) {
-                $_SESSION['freeow']['title']   = 'Modification de votre mot de passe';
-                $_SESSION['freeow']['message'] = 'Votre mot de passe doit &ecirc;tre mis &agrave; jour afin de conserver un niveau de s&eacute;curit&eacute; optimal!';
+            $this->userEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
-                header('Location:' . $this->lurl . '/edit_password/');
-                die;
-            }
+            $userAccessEntity = new UserAccess();
+            $userAccessEntity->setAction($this->current_function);
+            $userAccessEntity->setController($this->current_controller);
+            $userAccessEntity->setIdUser($this->userEntity);
+            $userAccessEntity->setIp($_SERVER['REMOTE_ADDR']);
+
+            $entityManager->persist($userAccessEntity);
+            $entityManager->flush($userAccessEntity);
         }
     }
 }

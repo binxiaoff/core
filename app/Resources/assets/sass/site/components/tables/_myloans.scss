@@ -2,8 +2,34 @@
 // Unilend Table My Loans
 //
 
+// Panel Header with Chart
+.panel-operations-loans {
+  position: relative;
+}
+
+#form-filters-loans {
+  .input-field {
+    margin-bottom: 10px;
+  }
+  @include devices('sm', 'md', 'lg') {
+    .input-field {
+      float: left;
+      width: 47.5%;
+      margin-right: 5%;
+      margin-bottom: 0;
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+  }
+}
+
+// Sortable Table
 .table-myloans {
   border-collapse: separate;
+
+  // Responsive fixed width
+  min-width: 800px !important;
 
   th, td {
     padding-left: 10px;
@@ -11,7 +37,7 @@
   }
 
   tbody tr {
-    @include table-row-alt;
+    @include table-row-alt-2;
   }
 
   // Columns
@@ -24,10 +50,11 @@
   }
 
   .table-myloans-item-amount {
-    width: 15%;
+    width: 13%;
     text-align: right;
   }
 
+  .table-myloans-item-rate,
   .table-myloans-item-interest {
     width: 10%;
     text-align: right;
@@ -39,200 +66,300 @@
   }
 
   .table-myloans-item-next {
-    width: 12%;
+    width: 10%;
     text-align: right;
 
-    &[colspan="3"] {
+    &[colspan] {
       text-align: center;
     }
   }
 
+  .table-myloans-item-remaining {
+    width: 13%;
+    text-align: right;
+  }
+
   .table-myloans-item-duration {
-    width: 12%;
+    width: 11%;
     text-align: right;
   }
 
-  .table-myloans-item-documents {
-    width: 12%;
+  .table-myloans-item-documents,
+  .table-myloans-item-controls {
+    width: 14%;
     text-align: right;
   }
 
-  // Table containing the details for each loan
-  .table-myloans-details {
-    width: 100%;
-    max-height: 0;
-    border: none;
-    margin: 0;
-    padding: 0;
-    background: transparent;
-
-    transition: max-height 0.2s;
-
-    > td {
-      padding: 0;
-      margin: 0;
-      background: transparent;
+  &.ui-items-closed-grayscale {
+    .table-myloans-item {
+      filter: grayscale(.6);
+      opacity: 0.4;
+      &.ui-details-open {
+        filter: none;
+        opacity: 1;
+        & + .table-myloans-view-details {
+          display: table-row;
+        }
+      }
     }
+  }
 
-    .table-myloans-details-list {
-      box-sizing: border-box;
-      background-color: $c-bg3;
-      border: none;
-    }
-
-    .table-myloans-details-item {
-      background-color: $c-bg3;
-    }
-
-    //.table-myloans-details-item {
-    //  @include clearfix;
-    //  width: 100%;
-    //
-    //  > div {
-    //    padding: 10px;
-    //    box-sizing: border-box;
-    //    float: left;
-    //    clear: none;
-    //    vertical-align: middle;
-    //  }
-    //}
-
-    .table-myloans-item-amount {
-      width: 42%;
-    }
-
-    .table-myloans-item-rate {
-      width: 10%;
-    }
-
-    .table-myloans-item-documents {
-      width: 48%;
-      padding-top: 3px !important;
-      padding-bottom: 3px !important;
-    }
+  .pip {
+    position: absolute;
+    right: -4px;
+    top: -4px;
   }
 }
 
-// Row showing a single loan (or loan with multiple documents listed in details)
+// Row showing a single loan
 .table-myloans-item {
-  .table-myloans-item-project {
-    border-left: solid 6px transparent;
+  cursor: pointer;
+  &:hover {
+    background-color: $c-bg4;
+  }
+}
+.table-myloans-item-project, .table-myloans-item-details-tabs  {
+  border-left: solid 15px transparent;
+
+  @include devices('mobile', 'tablet-p') {
+    border-left-width: 6px;
   }
 
+  > a {
+    display: block;
+    width: 100%;
+    height: 1.2em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+.table-myloans-item, .table-myloans-view-details {
   &.ui-loan-status-inprogress {
-    .table-myloans-item-project {
+    td:first-child {
       border-color: $c-chart-teal-d;
     }
   }
 
   &.ui-loan-status-completed {
-    .table-myloans-item-project {
+    td:first-child {
       border-color: $c-chart-blue;
     }
   }
 
   &.ui-loan-status-late {
-    .table-myloans-item-project {
+    td:first-child {
       border-color: $c-chart-teal;
     }
   }
 
   &.ui-loan-status-completing,
   &.ui-loan-status-recovery {
-    .table-myloans-item-project {
+    td:first-child {
       border-color: $c-chart-yellow;
     }
   }
 
   &.ui-loan-status-problem,
   &.ui-loan-status-defaulting {
-    .table-myloans-item-project {
+    td:first-child {
       border-color: $c-chart-orange;
     }
   }
 
   &.ui-loan-status-defaulted {
-    .table-myloans-item-project {
+    td:first-child {
       border-color: $c-chart-red;
     }
   }
 
-  // Row has details
-  &[data-details] {
-    cursor: pointer;
+  &#{$js-details-open} {
+    background-color: $c-bg3!important;
+  }
+}
 
-    &:hover {
-      background-color: $c-bg3;
+// Details for each loan
+.table-myloans-view-details {
+  display: none;
+  width: 100%;
+  max-height: 0;
+  border: none;
+  margin: 0;
+  padding: 0;
+  > td {
+    padding: 0;
+    margin: 0;
+    background-color: $c-bg3;
+  }
+  .nav-tab-anchors {
+    padding: 0 10px;
+    border-bottom: 2px solid $c-bg2;
+    position: relative;
+    > li {
+      > a {
+        font-size: 14px;
+        padding: 10px 0;
+        margin-bottom: -2px;
+        border-bottom-width: 2px;
+      }
     }
-
-    .table-myloans-item-project {
-      position: relative;
-
-      &:after {
-        content: $fa-angle-d-u; // Angle down
-        display: inline-block;
-        width: $fs-base;
-        height: $fs-base;
-        margin-left: 5px;
-        color: $c-t3;
-        font-family: $ff-icon;
-        font-size: inherit;
-        line-height: $fs-base;
-        text-align: center;
-        vertical-align: middle;
-        transform: rotate(0deg);
-        transform-origin: center center;
-        transition: transform .2s;
-
+  }
+  .tab-content {
+    border-bottom: 2px solid $c-bg2;
+  }
+  .notification {
+    padding: 10px 25px;
+    border-bottom-color: $c-bg1;
+    .notification-image {
+      right: auto;
+      left: 5px;
+      top: -5px;
+    }
+    .notification-title {
+      font-weight: bold;
+      font-size: 14px;
+      float: left;
+      margin-right: 10px;
+    }
+    .notification-content {
+      margin-top: 3px;
+    }
+    &:first-child {
+      margin-top: 5px;
+    }
+    &:last-child {
+      border: 0;
+      margin-bottom: 5px;
+    }
+  }
+  .pagination-index {
+    font-size: 14px;
+    padding: 2px 8px;
+    background: $c-bg2;
+    text-align: left;
+    margin-bottom: -2px;
+    > li {
+      height: 30px;
+      margin: 2px;
+      > a {
+        min-width: 30px;
+        height: 30px;
+        font-size: 14px;
+        line-height: 1;
+        padding: 6px 0;
+      }
+    }
+  }
+}
+.table-myloans-item-details-docs {
+  margin: 5px 0;
+  tbody {
+    tr, tr:nth-of-type(4n+1) {
+      background-color: transparent;
+    }
+    tr {
+      &:last-child {
+        td {
+          border-bottom: 0;
+        }
+      }
+    }
+    th {
+      padding-bottom: 5px;
+    }
+    td {
+      font-size: 14px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+      color: #787679;
+      border-bottom: 1px solid $c-bg2;
+    }
+    .amount {
+      width: 22%;
+      padding-left: 20px;
+      border-color: $c-bg2!important;
+    }
+    .interest {
+      width: 11.5%;
+    }
+    .documents {
+      padding-right: 20px;
+      a {
+        position: relative;
+        padding-left: 23px;
+        margin-right: 20px;
+      }
+      .svg-icon-wrap {
+        width: 70px;
+        height: 70px;
         position: absolute;
-        right: 0;
-        top: 50%;
-        margin-top: $fs-base * -0.5;
-      }
-    }
-
-    &#{$js-details-open} {
-      background-color: $c-bg3;
-
-      .table-myloans-item-project:after {
-        transform: rotate(-180deg);
-      }
-
-      > .table-myloans-item-documents > a {
-        visibility: hidden;
-      }
-
-      .table-myloans-details {
-        max-height: 1000px;
+        left: -25px;
+        top: -25px;
       }
     }
   }
 }
 
+// Button to show/hide loan activity
+.ui-show-table-myloans-item-activity {
+  position: relative;
+  height: 38px;
+  border-radius: 3px;
+
+  &.active {
+    background-color: $c-p1;
+    border-color: $c-p1;
+    color: $c-white;
+
+    .pip {
+      display: none;
+    }
+  }
+}
+
+// No notifications message
+.table-myloans-view-details {
+  .message-info, .message-alert {
+    margin-bottom: 0;
+    background: transparent;
+    padding: 20px;
+    padding-left: 42px;
+    font-size: 14px;
+    min-height: 55px;
+    &:before {
+      width: 20px;
+      font-size: 25px;
+      padding: 5px 10px;
+    }
+  }
+}
+
+// Loan documents
 .loan-doc {
   display: inline-block;
   width: 28px;
   height: 38px;
+  line-height: 22px;
   position: relative;
 
+  background-image: url('/assets/images/dashboard/file-multiple-28x38.png');
   background-color: transparent;
   background-repeat: no-repeat;
   background-position: center center;
-
+  vertical-align: middle;
+  
   .pip {
-    margin-right: -($height-pip * .3);
-    margin-top: -($height-pip * .3);
-    position: absolute;
-    right: 0;
-    top: 0;
+    top: -2px;
   }
 }
-
 .loan-doc-declaration {
   background-image: url('/assets/images/dashboard/file-declaration-28x38.png');
 }
 
-.loan-doc-contract,
-.loan-doc-bond {
-  background-image: url('/assets/images/dashboard/file-voucher-28x38.png');
-}
+
+
+
+
+
+
+

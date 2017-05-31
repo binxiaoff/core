@@ -123,26 +123,11 @@
                                 *
                             </td>
                             <td class="col-3">
-                                <?php
-                                if ($this->leIban != false) {
-                                    for ($i = 1; $i <= 7; $i++) {
-                                        ?><span style="margin-right:10px;"><?= $this->iban[$i] ?></span><?php
-                                    }
-                                } else {
-                                    ?><div class="text-box">&nbsp;</div><?php
-                                }
-                                ?>
-                                    <div class="cl">&nbsp;</div>
-                                    <span class="small-text">Numéro d'identification international du compte bancaire - IBAN (International Bank Account Number)</span>
-                                </div>
+                                <span style="margin-right:10px;"><?= chunk_split($this->iban, 4, ' '); ?></span>
+                                <div class="cl">&nbsp;</div>
+                                <span class="small-text">Numéro d'identification international du compte bancaire - IBAN (International Bank Account Number)</span>
                                 <div class="row">
-                                    <?php
-                                    if ($this->oLendersAccounts->bic != false || $this->companies->bic !=false) {
-                                        ?><div><?= ($this->entreprise == false ? $this->oLendersAccounts->bic : $this->companies->bic) ?></div><?php
-                                    } else {
-                                        ?><div class="text-box">&nbsp;</div><?php
-                                    }
-                                    ?>
+                                    <div><?= $this->bic ?></div>
                                     <span class="small-text">Code international d'identification de votre banque - BIC (Bank Identifier Code)</span>
                                     <span class="star">*</span>
                                     <span class="number">6</span>

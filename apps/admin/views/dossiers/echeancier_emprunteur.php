@@ -10,25 +10,13 @@
         <?php if ($this->nb_lignes != '') { ?>
             $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
         <?php } ?>
-
-        <?php if (isset($_SESSION['freeow'])) { ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {},
-                container;
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php }?>
     });
 </script>
-
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <h1>Liste des <?= count($this->lRemb) ?> derniers remboursements</h1>
     <br />
     <style>
-        table.recap{border:2px solid #B10366;}
+        table.recap{border:2px solid #b20066;}
         table.recap td,table.recap th{padding:10px;border: 2px solid;}
     </style>
     <table class="recap">

@@ -132,17 +132,25 @@ class lenders_account_stats extends lenders_account_stats_crud
 
         UNION ALL
         
-        SELECT
-          date_transaction AS date,
-          montant
-        FROM transactions t
-          INNER JOIN lenders_accounts la ON t.id_client = la.id_client_owner
-          INNER JOIN loans l ON la.id_lender_account = l.id_lender AND l.id_project = t.id_project
-          INNER JOIN loan_transfer lt ON l.id_transfer  = lt.id_transfer
-          INNER JOIN transfer ON lt.id_transfer = transfer.id_transfer
-        WHERE
-          type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
-          AND (la.id_lender_account = ' . $iLendersAccountId . ' OR t.id_client = transfer.id_client_origin)';
+        (
+            SELECT
+              date_transaction AS date,
+              montant
+            FROM transactions t
+              INNER JOIN lenders_accounts la ON t.id_client = la.id_client_owner
+            WHERE
+              type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
+              AND 
+              (t.id_client IN ( SELECT
+                                  DISTINCT(transfer.id_client_origin)
+                                FROM loans l
+                                  LEFT JOIN loan_transfer lt ON l.id_transfer = lt.id_loan_transfer
+                                  LEFT JOIN transfer ON lt.id_transfer = transfer.id_transfer
+                                WHERE l.id_lender = ' . $iLendersAccountId . ')
+              OR la.id_lender_account = ' . $iLendersAccountId . ')
+              GROUP BY id_transaction
+          )
+          ';
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_array($result)) {

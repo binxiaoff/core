@@ -61,12 +61,10 @@ class greenPointStatus
     /**
      * @param array $aResponse
      * @param int|null $iAttachmentTypeId
-     * @param int|null $iAttachmentId
-     * @param int|null $iClientId
      * @param int|null $iCode
      * @return array
      */
-    public static function getGreenPointData(array $aResponse, $iAttachmentTypeId = null, $iAttachmentId = null, $iClientId = null, $iCode = null)
+    public static function getGreenPointData(array $aResponse, $iAttachmentTypeId = null, $iCode = null)
     {
         /**
          * @param array $aData
@@ -83,21 +81,19 @@ class greenPointStatus
         };
 
         /**
-         * @param string $sDate
-         * @return null|string
+         * @param string $dateString
+         * @return null|\DateTime
          */
-        $fFormatDate = function ($sDate) {
-            $oDate = \DateTime::createFromFormat('d/m/Y', $sDate);
-            if (is_object($oDate)) {
-                return $oDate->format('Y-m-d');
+        $dateFormatter = function ($dateString) {
+            $date = \DateTime::createFromFormat('d/m/Y', $dateString);
+            if ($date) {
+                return $date;
             } else {
                 return null;
             }
         };
 
-        $aAttachment['id_attachment']     = false === is_null($iAttachmentId) ? $iAttachmentId : $fGetColumnValue($aResponse, 'document');
         $aAttachment['validation_code']   = false === is_null($iCode) ? $iCode : $fGetColumnValue($aResponse, 'code');
-        $aAttachment['id_client']         = false === is_null($iClientId) ? $iClientId : $fGetColumnValue($aResponse, 'dossier');
         $aAttachment['validation_status'] = (int) $fGetColumnValue($aResponse, 'statut_verification');
 
         switch ($iAttachmentTypeId) {
@@ -120,8 +116,8 @@ class greenPointStatus
         $aAttachmentDetail['identity_civility']          = $fGetColumnValue($aResponse, 'sexe');
         $aAttachmentDetail['identity_name']              = $fGetColumnValue($aResponse, 'prenom');
         $aAttachmentDetail['identity_surname']           = $fGetColumnValue($aResponse, 'nom');
-        $aAttachmentDetail['identity_expiration_date']   = $fFormatDate($fGetColumnValue($aResponse, 'expirationdate'));
-        $aAttachmentDetail['identity_birthdate']         = $fFormatDate($fGetColumnValue($aResponse, 'date_naissance'));
+        $aAttachmentDetail['identity_expiration_date']   = $dateFormatter($fGetColumnValue($aResponse, 'expirationdate'));
+        $aAttachmentDetail['identity_birthdate']         = $dateFormatter($fGetColumnValue($aResponse, 'date_naissance'));
         $aAttachmentDetail['identity_mrz1']              = $fGetColumnValue($aResponse, 'mrz1');
         $aAttachmentDetail['identity_mrz2']              = $fGetColumnValue($aResponse, 'mrz2');
         $aAttachmentDetail['identity_mrz3']              = $fGetColumnValue($aResponse, 'mrz3');

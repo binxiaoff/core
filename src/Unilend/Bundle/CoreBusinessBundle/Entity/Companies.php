@@ -4,15 +4,32 @@ namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
+
 /**
  * Companies
  *
- * @ORM\Table(name="companies", indexes={@ORM\Index(name="id_client_owner", columns={"id_client_owner"})})
- * @ORM\Entity
+ * @ORM\Table(name="companies", indexes={@ORM\Index(name="id_client_owner", columns={"id_client_owner"}), @ORM\Index(name="fk_companies_id_parent_company", columns={"id_parent_company"})})
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\CompaniesRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Companies
 {
+    const INVALID_SIREN_EMPTY  = '000000000';
+    const NAF_CODE_NO_ACTIVITY = '0000Z';
+
+    const SAME_ADDRESS_FOR_POSTAL_AND_FISCAL      = 1;
+    const DIFFERENT_ADDRESS_FOR_POSTAL_AND_FISCAL = 0;
+
+    const CLIENT_STATUS_MANAGER             = 1;
+    const CLIENT_STATUS_DELEGATION_OF_POWER = 2;
+    const CLIENT_STATUS_EXTERNAL_CONSULTANT = 3;
+
+    /** Warning, these constants are also setting , but added as constants for more clarity in the code*/
+    const CLIENT_STATUS_EXTERNAL_COUNSEL_ACCOUNTANT    = 1;
+    const CLIENT_STATUS_EXTERNAL_COUNSEL_CREDIT_BROKER = 2;
+    const CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER         = 3;
+    const CLIENT_STATUS_EXTERNAL_COUNSEL_BANKER        = 4;
+
     /**
      * @var integer
      *
@@ -70,20 +87,6 @@ class Companies
     private $siret;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="iban", type="string", length=28, nullable=true)
-     */
-    private $iban;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="bic", type="string", length=100, nullable=true)
-     */
-    private $bic;
-
-    /**
      * @var integer
      *
      * @ORM\Column(name="execices_comptables", type="integer", nullable=true)
@@ -110,13 +113,6 @@ class Companies
      * @ORM\Column(name="activite", type="string", length=191, nullable=true)
      */
     private $activite;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="lieu_exploi", type="string", length=191, nullable=true)
-     */
-    private $lieuExploi;
 
     /**
      * @var float
@@ -280,13 +276,6 @@ class Companies
     private $codeNaf;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="libelle_naf", type="string", length=130, nullable=true)
-     */
-    private $libelleNaf;
-
-    /**
      * @var \DateTime
      *
      * @ORM\Column(name="added", type="datetime", nullable=false)
@@ -308,6 +297,16 @@ class Companies
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $idCompany;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Companies")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_parent_company", referencedColumnName="id_company")
+     * })
+     */
+    private $idParentCompany;
 
 
 
@@ -504,54 +503,6 @@ class Companies
     }
 
     /**
-     * Set iban
-     *
-     * @param string $iban
-     *
-     * @return Companies
-     */
-    public function setIban($iban)
-    {
-        $this->iban = $iban;
-
-        return $this;
-    }
-
-    /**
-     * Get iban
-     *
-     * @return string
-     */
-    public function getIban()
-    {
-        return $this->iban;
-    }
-
-    /**
-     * Set bic
-     *
-     * @param string $bic
-     *
-     * @return Companies
-     */
-    public function setBic($bic)
-    {
-        $this->bic = $bic;
-
-        return $this;
-    }
-
-    /**
-     * Get bic
-     *
-     * @return string
-     */
-    public function getBic()
-    {
-        return $this->bic;
-    }
-
-    /**
      * Set execicesComptables
      *
      * @param integer $execicesComptables
@@ -645,30 +596,6 @@ class Companies
     public function getActivite()
     {
         return $this->activite;
-    }
-
-    /**
-     * Set lieuExploi
-     *
-     * @param string $lieuExploi
-     *
-     * @return Companies
-     */
-    public function setLieuExploi($lieuExploi)
-    {
-        $this->lieuExploi = $lieuExploi;
-
-        return $this;
-    }
-
-    /**
-     * Get lieuExploi
-     *
-     * @return string
-     */
-    public function getLieuExploi()
-    {
-        return $this->lieuExploi;
     }
 
     /**
@@ -1224,30 +1151,6 @@ class Companies
     }
 
     /**
-     * Set libelleNaf
-     *
-     * @param string $libelleNaf
-     *
-     * @return Companies
-     */
-    public function setLibelleNaf($libelleNaf)
-    {
-        $this->libelleNaf = $libelleNaf;
-
-        return $this;
-    }
-
-    /**
-     * Get libelleNaf
-     *
-     * @return string
-     */
-    public function getLibelleNaf()
-    {
-        return $this->libelleNaf;
-    }
-
-    /**
      * Set added
      *
      * @param \DateTime $added
@@ -1306,11 +1209,35 @@ class Companies
     }
 
     /**
+     * Set idParentCompany
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Companies $idParentCompany
+     *
+     * @return Companies
+     */
+    public function setIdParentCompany(\Unilend\Bundle\CoreBusinessBundle\Entity\Companies $idParentCompany = null)
+    {
+        $this->idParentCompany = $idParentCompany;
+
+        return $this;
+    }
+
+    /**
+     * Get idParentCompany
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Companies
+     */
+    public function getIdParentCompany()
+    {
+        return $this->idParentCompany;
+    }
+
+    /**
      * @ORM\PrePersist
      */
     public function setAddedValue()
     {
-        if(! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
     }
@@ -1367,6 +1294,10 @@ class Companies
      */
     public function setSectorAccordingToNaf()
     {
+        if ($this->codeNaf == self::NAF_CODE_NO_ACTIVITY) {
+            return;
+        }
+
         if (in_array(substr($this->codeNaf, 0, 2), ['01', '02', '03'])) {
             $this->sector = 1;
         }
@@ -1423,5 +1354,4 @@ class Companies
             $this->sector = 15;
         }
     }
-
 }

@@ -28,14 +28,6 @@
 
 class project_cgv extends project_cgv_crud
 {
-    const STATUS_NO_SIGN         = 0;
-    const STATUS_SIGN_FO         = 1;
-    const STATUS_SIGN_UNIVERSIGN = 2;
-    const STATUS_SIGN_FAILED     = 3;
-    const STATUS_SIGN_CANCELLED  = 4;
-
-    const BASE_PATH = 'protected/pdf/cgv_emprunteurs/';
-
     public function __construct($bdd, $params = '')
     {
         parent::project_cgv($bdd, $params);

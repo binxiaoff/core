@@ -26,6 +26,8 @@
 //
 // **************************************************************************************************** //
 
+use \Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+
 class echeanciers extends echeanciers_crud
 {
     const STATUS_PENDING                  = 0;
@@ -710,30 +712,34 @@ class echeanciers extends echeanciers_crud
             SELECT
               c.id_client,
               e.id_lender,
-              c.type,
-              IFNULL(
-                  (
-                    SELECT p.iso
-                    FROM lenders_imposition_history lih
-                      JOIN pays_v2 p ON p.id_pays = lih.id_pays
-                    WHERE lih.added <= e.date_echeance_reel
-                          AND lih.id_lender = e.id_lender
-                    ORDER BY lih.added DESC
-                    LIMIT 1
-                  ), "FR"
-              )   AS iso_pays,
+              CASE c.type
+                WHEN 1 THEN 1
+                WHEN 3 THEN 1
+                WHEN 2 THEN 2
+                WHEN 4 THEN 2
+              END AS type,
+              (
+                SELECT p.iso
+                FROM lenders_imposition_history lih
+                  JOIN pays_v2 p ON p.id_pays = lih.id_pays
+                WHERE lih.added <= e.date_echeance_reel
+                      AND lih.id_lender = e.id_lender
+                ORDER BY lih.added DESC
+                LIMIT 1
+              ) AS iso_pays,
               /*if the lender is FR resident and it is a physical person then it is not taxed at source : taxed_at_source = 0*/
-              CASE
-                  IFNULL((SELECT resident_etranger
-                     FROM lenders_imposition_history lih
-                     WHERE lih.id_lender = la.id_lender_account AND lih.added <= e.date_echeance_reel
-                     ORDER BY added DESC
-                     LIMIT 1
-                  ), 0) = 0 AND 1 = c.type
-                  WHEN TRUE
-                    THEN 0
+                CASE
+                  (IFNULL(
+                      (SELECT resident_etranger
+                          FROM lenders_imposition_history lih
+                          WHERE lih.id_lender = la.id_lender_account AND lih.added <= e.date_echeance_reel
+                          ORDER BY added DESC
+                          LIMIT 1)
+                      , 0) = 0 AND (1 = c.type OR 3 = c.type))
+                WHEN TRUE
+                  THEN 0
                   ELSE 1
-              END AS taxed_at_source,
+                END AS taxed_at_source,
               CASE
                   WHEN lte.year IS NULL THEN
                       0
@@ -775,12 +781,16 @@ class echeanciers extends echeanciers_crud
               LEFT JOIN tax contributions_additionnelles ON contributions_additionnelles.id_transaction = t.id_transaction AND contributions_additionnelles.id_tax_type = ' . \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS . '
               LEFT JOIN tax prelevements_solidarite ON prelevements_solidarite.id_transaction = t.id_transaction AND prelevements_solidarite.id_tax_type = ' . \tax_type::TYPE_SOLIDARITY_DEDUCTIONS . '
               LEFT JOIN tax crds ON crds.id_transaction = t.id_transaction AND crds.id_tax_type = ' . \tax_type::TYPE_CRDS . '
-            WHERE DATE(e.date_echeance_reel) = :date
+            WHERE e.date_echeance_reel BETWEEN :startDate AND :endDate
                 AND e.status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')
                 AND e.status_ra = 0
             ORDER BY e.date_echeance ASC';
 
-        return $this->bdd->executeQuery($sql, ['date' => $date->format('Y-m-d')], ['date' => \PDO::PARAM_STR])->fetchAll(\PDO::FETCH_ASSOC);
+        return $this->bdd->executeQuery(
+            $sql,
+            ['startDate' => $date->format('Y-m-d 00:00:00'), 'endDate' => $date->format('Y-m-d 23:59:59')],
+            ['startDate' => \PDO::PARAM_STR, 'endDate' => \PDO::PARAM_STR]
+        )->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     /**
@@ -806,8 +816,10 @@ class echeanciers extends echeanciers_crud
             SELECT
                 l.id_type_contract,
                 CASE c.type
-                    WHEN ' . \clients::TYPE_LEGAL_ENTITY . ' THEN "legal_entity"
-                    WHEN ' . \clients::TYPE_PERSON . ' OR ' . \clients::TYPE_PERSON_FOREIGNER . ' THEN "person"
+                    WHEN ' . Clients::TYPE_LEGAL_ENTITY . ' THEN "legal_entity"
+                    WHEN ' . Clients::TYPE_LEGAL_ENTITY_FOREIGNER . ' THEN "legal_entity"
+                    WHEN ' . Clients::TYPE_PERSON . ' THEN "person"
+                    WHEN ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN "person"
                 END AS client_type,
                 CASE IFNULL(
                     (SELECT resident_etranger
@@ -875,7 +887,7 @@ class echeanciers extends echeanciers_crud
      */
     public function getForeignersRepaymentsInDateRange(array $taxType, \DateTime $startDate, \DateTime $endDate)
     {
-        return $this->getRepaymentsBetweenDate($taxType, $startDate, $endDate, [\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER], 2, true);
+        return $this->getRepaymentsBetweenDate($taxType, $startDate, $endDate, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER], 2, true);
     }
 
     /**
@@ -967,24 +979,6 @@ class echeanciers extends echeanciers_crud
         }
 
         return ['tax_join' => $taxJoin, 'tax_columns' => $taxColumns];
-    }
-
-    /**
-     * @param int   $clientId
-     * @param int   $year
-     * @param array $projectIds
-     * @return string
-     */
-    public function getLenderOwedCapital($clientId, $year, array $projectIds)
-    {
-        $sql = '
-            SELECT SUM(capital - capital_rembourse)
-            FROM echeanciers
-            INNER JOIN lenders_accounts ON lenders_accounts.id_lender_account = echeanciers.id_lender
-            WHERE (date_echeance_reel >= "' . $year . '-01-01" OR echeanciers.status IN (' . self::STATUS_PENDING . ', ' . self::STATUS_PARTIALLY_REPAID . '))
-                AND id_project IN (' . implode(',', $projectIds) . ')
-                AND lenders_accounts.id_client_owner = ' . $clientId;
-        return bcdiv($this->bdd->executeQuery($sql)->fetchColumn(0), 100, 2);
     }
 
     /**
@@ -1136,7 +1130,7 @@ class echeanciers extends echeanciers_crud
                 t.quarter                      AS quarter,
                 t.year                         AS year,
                 ROUND(SUM(t.capital), 2)       AS capital,
-                ROUND(SUM(t.rawInterests), 2)  AS rawInterests,
+                ROUND(SUM(t.grossInterests), 2)  AS grossInterests,
                 ROUND(SUM(t.netInterests), 2)  AS netInterests,
                 ROUND(SUM(t.repaidTaxes), 2)   AS repaidTaxes,
                 ROUND(SUM(t.upcomingTaxes), 2) AS upcomingTaxes
@@ -1146,7 +1140,7 @@ class echeanciers extends echeanciers_crud
                     QUARTER(t_capital.date_transaction)                                                                                AS quarter,
                     YEAR(t_capital.date_transaction)                                                                                   AS year,
                     ROUND(SUM(t_capital.montant) / 100, 2)                                                                             AS capital,
-                    NULL                                                                                                               AS rawInterests,
+                    NULL                                                                                                               AS grossInterests,
                     ROUND(SUM(t_interest.montant) / 100, 2)                                                                            AS netInterests,
                     SUM((SELECT ROUND(IFNULL(SUM(tax.amount), 0) / 100, 2) FROM tax WHERE id_transaction = t_interest.id_transaction)) AS repaidTaxes,
                     0                                                                                                                  AS upcomingTaxes
@@ -1163,7 +1157,7 @@ class echeanciers extends echeanciers_crud
                     QUARTER(t.date_transaction)            AS quarter,
                     YEAR(t.date_transaction)               AS year,
                     ROUND(SUM(t.montant) / 100 / 0.844, 2) AS capital,
-                    0                                      AS rawInterests,
+                    0                                      AS grossInterests,
                     NULL                                   AS netInterests,
                     0                                      AS repaidTaxes,
                     0                                      AS upcomingTaxes
@@ -1174,17 +1168,17 @@ class echeanciers extends echeanciers_crud
 
                 UNION ALL
 
-                SELECT
+                (SELECT
                     LEFT(e.date_echeance, 7)        AS month,
                     QUARTER(e.date_echeance)        AS quarter,
                     YEAR(e.date_echeance)           AS year,
                     ROUND(SUM(e.capital) / 100, 2)  AS capital,
-                    ROUND(SUM(e.interets) / 100, 2) AS rawInterests,
+                    ROUND(SUM(e.interets) / 100, 2) AS grossInterests,
                     NULL                            AS netInterests,
                     0                               AS repaidTaxes,
                     CASE c.type
                         -- Natural person
-                        WHEN ' . \clients::TYPE_PERSON . ' OR ' . \clients::TYPE_PERSON_FOREIGNER . ' THEN
+                        WHEN ' . Clients::TYPE_PERSON . ' OR ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN
                             CASE lih.resident_etranger
                                 -- FR fiscal resident
                                 WHEN 0 THEN 
@@ -1198,7 +1192,7 @@ class echeanciers extends echeanciers_crud
                                     SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT tt.rate / 100 FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_foreigner_lender)) / 100, 2))
                             END
                         -- Legal entity
-                        WHEN ' . \clients::TYPE_LEGAL_ENTITY . ' OR ' . \clients::TYPE_LEGAL_ENTITY_FOREIGNER . ' THEN
+                        WHEN ' . Clients::TYPE_LEGAL_ENTITY . ' OR ' . Clients::TYPE_LEGAL_ENTITY_FOREIGNER . ' THEN
                             SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT tt.rate / 100 FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_legal_entity_lender)) / 100, 2))
                     END                           AS upcomingTaxes
                 FROM echeanciers e
@@ -1222,7 +1216,7 @@ class echeanciers extends echeanciers_crud
                         ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                         LIMIT 1
                     )) > 180)), TRUE, FALSE) = FALSE
-                GROUP BY year, quarter, month
+                GROUP BY year, quarter, month)
             ) AS t
             GROUP BY t.year, t.quarter, t.month';
 
@@ -1233,13 +1227,21 @@ class echeanciers extends echeanciers_crud
         $data      = [];
 
         while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
-            $taxes = (float) ($row['repaidTaxes'] + $row['upcomingTaxes']);
+            if (null !== $row['grossInterests'] && null !== $row['netInterests']) {
+                $netInterest   = bcadd(bcsub($row['grossInterests'], $row['upcomingTaxes'], 2), $row['netInterests'], 2);
+                $grossInterest = bcadd(bcadd($row['netInterests'], $row['repaidTaxes'], 2), $row['grossInterests'], 2);
+            } else {
+                $netInterest   = null === $row['netInterests'] ? bcsub($row['grossInterests'], $row['upcomingTaxes'], 2) : $row['netInterests'];
+                $grossInterest = null === $row['grossInterests'] ? bcadd($row['netInterests'], $row['repaidTaxes'], 2) : $row['grossInterests'];
+            }
+            $taxes = bcadd($row['repaidTaxes'], $row['upcomingTaxes'], 2);
             unset($row['repaidTaxes'], $row['upcomingTaxes']);
-            $row['capital']      = (float) $row['capital'];
-            $row['rawInterests'] = null === $row['rawInterests'] ? (float) ($row['netInterests'] + $taxes) : (float) $row['rawInterests'];
-            $row['netInterests'] = null === $row['netInterests'] ? (float) ($row['rawInterests'] - $taxes) : (float) $row['netInterests'];
-            $row['taxes']        = $taxes;
-            $data[$row['month']] = $row;
+
+            $row['grossInterests'] = (float) $grossInterest;
+            $row['netInterests']   = (float) $netInterest;
+            $row['taxes']          = (float) $taxes;
+            $row['capital']        = (float) $row['capital'];
+            $data[$row['month']]   = $row;
         }
         $statement->closeCursor();
         return $data;

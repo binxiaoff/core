@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -68,7 +69,7 @@ class AutoBidSettingsManager
 
             if ($oAutoBid->counter('id_lender = ' . $oLenderAccount->id_lender_account) == 0) {
                 $this->oNotificationManager->create(
-                    \notifications::TYPE_AUTOBID_FIRST_ACTIVATION,
+                    Notifications::TYPE_AUTOBID_FIRST_ACTIVATION,
                     \clients_gestion_type_notif::TYPE_AUTOBID_FIRST_ACTIVATION,
                     $oClient->id_client,
                     'sendFirstAutoBidActivation'
@@ -437,7 +438,7 @@ class AutoBidSettingsManager
     {
         /** @var \autobid $oAutoBid */
         $oAutoBid = $this->oEntityManager->getRepository('autobid');
-        $settings = $oAutoBid->getSettings($lender->id_lender_account, null, null, \autobid::STATUS_ACTIVE, [], 1);
+        $settings = $oAutoBid->getSettings($lender->id_lender_account, null, null, [\autobid::STATUS_ACTIVE], [], 1);
 
         $amount = null;
 

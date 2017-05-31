@@ -1,33 +1,9 @@
 <?php
 
-// **************************************************************************************************** //
-// ***************************************    ASPARTAM    ********************************************* //
-// **************************************************************************************************** //
-//
-// Copyright (c) 2008-2011, equinoa
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-// associated documentation files (the "Software"), to deal in the Software without restriction,
-// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
-// subject to the following conditions:
-// The above copyright notice and this permission notice shall be included in all copies
-// or substantial portions of the Software.
-// The Software is provided "as is", without warranty of any kind, express or implied, including but
-// not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.
-// In no event shall the authors or copyright holders equinoa be liable for any claim,
-// damages or other liability, whether in an action of contract, tort or otherwise, arising from,
-// out of or in connection with the software or the use or other dealings in the Software.
-// Except as contained in this notice, the name of equinoa shall not be used in advertising
-// or otherwise to promote the sale, use or other dealings in this Software without
-// prior written authorization from equinoa.
-//
-//  Version : 2.4.0
-//  Date : 21/03/2011
-//  Coupable : CM
-//
-// **************************************************************************************************** //
 use \Doctrine\DBAL\Statement;
+use \Unilend\Bridge\Doctrine\DBAL\Connection;
 use \Unilend\Bundle\CoreBusinessBundle\Service\RecoveryManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 
 class projects extends projects_crud
 {
@@ -108,7 +84,7 @@ class projects extends projects_crud
         return ($this->bdd->fetch_assoc($result) > 0);
     }
 
-    public function searchDossiers($date1 = '', $date2 = '', $montant = '', $duree = '', $status = '', $analyste = '', $siren = '', $id = '', $raison_sociale = '', $iAdvisorId = '', $iSalesPersonId = '', $start = '', $nb = '')
+    public function searchDossiers($date1 = '', $date2 = '', $need = '', $duree = '', $status = '', $analyste = '', $siren = '', $id = '', $raison_sociale = '', $iAdvisorId = '', $iSalesPersonId = '', $start = '', $nb = '')
     {
         $where = [];
 
@@ -118,8 +94,8 @@ class projects extends projects_crud
         if (false === empty($date2)) {
             $where[] = 'p.added <= "' . $date2 . ' 23:59:59"';
         }
-        if (false === empty($montant)) {
-            $where[] = 'p.amount = "' . $montant . '"';
+        if (false === empty($need)) {
+            $where[] = 'p.id_project_need = "' . $need . '"';
         }
         if (false === empty($duree)) {
             $where[] = 'p.period = "' . $duree . '"';
@@ -333,7 +309,7 @@ class projects extends projects_crud
             $where .= ' AND c.prenom = "' . $prenom . '"';
         }
         if (false === empty($projet)) {
-            $where .= ' AND p.title_bo LIKE "%' . $projet . '%"';
+            $where .= ' AND p.title LIKE "%' . $projet . '%"';
         }
         if (false === empty($email)) {
             $where .= ' AND c.email = "' . $email . '"';
@@ -342,7 +318,7 @@ class projects extends projects_crud
         $result   = array();
         $resultat = $this->bdd->query('
             SELECT p.id_project,
-                p.title_bo,
+                p.title,
                 p.remb_auto,
                 c.nom,
                 c.prenom,
@@ -471,80 +447,38 @@ class projects extends projects_crud
         return $aElements;
     }
 
-    public function getAttachments($project = null)
-    {
-        if (null === $project) {
-            $project = $this->id_project;
-        }
-
-        if (! $project) {
-            return false;
-        }
-
-        $sql = 'SELECT a.id, a.id_type, a.id_owner, a.type_owner, a.path, a.added, a.updated, a.archived
-                FROM attachment a
-                WHERE a.id_owner = ' . $project . '
-                    AND a.type_owner = "projects"';
-
-        $result      = $this->bdd->query($sql);
-        $attachments = array();
-        while ($record = $this->bdd->fetch_assoc($result)) {
-            $attachments[$record["id_type"]] = $record;
-        }
-        return $attachments;
-    }
-
     /**
      * Retrieve the list of project IDs that needs email reminder
-     * @param int    $iStatus                Project status
-     * @param int    $iDaysInterval          Interval in days since previous reminder
-     * @param int    $iPreviousReminderIndex Previous reminder for counting days interval
+     *
+     * @param int $status                Project status
+     * @param int $daysInterval          Interval in days since previous reminder
+     * @param int $previousReminderIndex Previous reminder for counting days interval
      * @return array
      */
-    public function getReminders($iStatus, $iDaysInterval, $iPreviousReminderIndex)
+    public function getReminders($status, $daysInterval, $previousReminderIndex)
     {
-        $aProjects = array();
-        $rResult   = $this->bdd->query('
+        $projects = [];
+        $query    = '
             SELECT p.id_project
             FROM projects p
             INNER JOIN (SELECT id_project, MAX(id_project_status_history) AS id_project_status_history FROM projects_status_history GROUP BY id_project) plsh ON plsh.id_project = p.id_project
             INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
-            WHERE p.status = ' . $iStatus . '
-                AND DATE_SUB(CURDATE(), INTERVAL ' . $iDaysInterval . ' DAY) = DATE(psh.added)
-                AND psh.numero_relance = ' . $iPreviousReminderIndex
-        );
+            LEFT JOIN project_attachment pa ON pa.id_project = p.id_project
+            LEFT JOIN attachment a ON a.id = pa.id_attachment AND a.archived IS NULL AND a.id_type = ' . \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DERNIERE_LIASSE_FISCAL . '
+            WHERE p.status = ' . $status . '
+                AND DATE_SUB(CURDATE(), INTERVAL ' . $daysInterval . ' DAY) = DATE(psh.added)
+                AND psh.numero_relance = ' . $previousReminderIndex . '
+                AND a.id IS NULL';
 
-        if ($this->bdd->num_rows($rResult) > 0) {
-            while ($aResult = $this->bdd->fetch_assoc($rResult)) {
-                $aProjects[] = (int) $aResult['id_project'];
+        $statement = $this->bdd->query($query);
+
+        if ($this->bdd->num_rows($statement) > 0) {
+            while ($record = $this->bdd->fetch_assoc($statement)) {
+                $projects[] = (int) $record['id_project'];
             }
         }
 
-        return $aProjects;
-    }
-
-    /**
-     * Retrieve the of projects in fast process that still at step 3 after one hour
-     * @return array
-     */
-    public function getFastProcessStep3()
-    {
-        $aProjects = array();
-        $rResult   = $this->bdd->query('
-            SELECT *
-            FROM projects
-            WHERE status = ' . \projects_status::COMPLETUDE_ETAPE_3 . '
-                AND DATE_SUB(NOW(), INTERVAL 1 HOUR) > added
-                AND process_fast = 1'
-        );
-
-        if ($this->bdd->num_rows($rResult) > 0) {
-            while ($aResult = $this->bdd->fetch_assoc($rResult)) {
-                $aProjects[] = (int) $aResult['id_project'];
-            }
-        }
-
-        return $aProjects;
+        return $projects;
     }
 
     public function getProjectsInDebt()
@@ -1026,7 +960,8 @@ class projects extends projects_crud
                         INNER JOIN companies ON projects.id_company = companies.id_company
                         INNER JOIN clients ON clients.id_client = companies.id_client_owner
                         INNER JOIN projects_status_history ON projects.id_project = projects_status_history.id_project AND projects_status_history.id_project_status = 4) AS client_base
-                    GROUP BY insee_region_code';
+                    GROUP BY insee_region_code
+                    HAVING insee_region_code != "0"';
 
         $statement = $this->bdd->executeQuery($query);
         $regionsCount  = array();
@@ -1174,12 +1109,12 @@ class projects extends projects_crud
                 \projects_status::REMBOURSEMENT_ANTICIPE
             ],
             'client_type_person'       => [
-                \clients::TYPE_PERSON,
-                \clients::TYPE_PERSON_FOREIGNER
+                Clients::TYPE_PERSON,
+                Clients::TYPE_PERSON_FOREIGNER
             ],
             'client_type_legal_entity' => [
-                \clients::TYPE_LEGAL_ENTITY,
-                \clients::TYPE_LEGAL_ENTITY_FOREIGNER
+                Clients::TYPE_LEGAL_ENTITY,
+                Clients::TYPE_LEGAL_ENTITY_FOREIGNER
             ]
         ];
         $type = [
@@ -1217,8 +1152,8 @@ class projects extends projects_crud
             INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status WHERE ps.status IN (:problematic_status) AND psh.id_project = p.id_project)
           ) AS judgement_date,
           (SELECT MIN(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project AND ps.status = " . \projects_status::RECOUVREMENT . ") AS recovery_date,
-          (SELECT ROUND(SUM(IFNULL(t.montant, 0)) / 100, 2) FROM transactions t WHERE DATE(t.date_transaction) < " . RecoveryManager::RECOVERY_TAX_DATE_CHANGE . " AND t.id_project = p.id_project AND t.type_transaction = " . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . ") AS recovery_tax_excluded,
-          (SELECT ROUND(SUM(IFNULL(t.montant, 0)) / 100, 2) FROM transactions t WHERE DATE(t.date_transaction) >= " . RecoveryManager::RECOVERY_TAX_DATE_CHANGE . " AND t.id_project = p.id_project AND t.type_transaction = " . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . ") AS recovery_tax_included,
+          (SELECT ROUND(SUM(IFNULL(t.montant, 0)) / 100, 2) FROM transactions t WHERE DATE(t.date_transaction) < '" . RecoveryManager::RECOVERY_TAX_DATE_CHANGE . "' AND t.id_project = p.id_project AND t.type_transaction = " . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . ") AS recovery_tax_excluded,
+          (SELECT ROUND(SUM(IFNULL(t.montant, 0)) / 100, 2) FROM transactions t WHERE DATE(t.date_transaction) >= '" . RecoveryManager::RECOVERY_TAX_DATE_CHANGE . "' AND t.id_project = p.id_project AND t.type_transaction = " . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . ") AS recovery_tax_included,
           (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l INNER JOIN lenders_accounts la ON la.id_lender_account = l.id_lender
             INNER JOIN clients c ON c.id_client = la.id_client_owner  WHERE l.id_project = p.id_project AND c.type IN (:client_type_person)) AS contributor_person_number,
           (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / p.amount, 2) FROM loans l INNER JOIN lenders_accounts la ON la.id_lender_account = l.id_lender
@@ -1283,5 +1218,198 @@ class projects extends projects_crud
         }
 
         return $result;
+    }
+
+    /**
+     * @param users $user
+     * @return array
+     */
+    public function getRiskUserProjects(\users $user)
+    {
+        $statement = $this->getRiskProjectsQuery()
+            ->andWhere('p.id_analyste = :userId')
+            ->setParameter('userId', $user->id_user)
+            ->execute();
+
+        $projects = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return $projects;
+    }
+
+    /**
+     * @param users $user
+     * @return array
+     */
+    public function getRiskProjectsExcludingUser(\users $user)
+    {
+        $statement = $this->getRiskProjectsQuery()
+            ->andWhere('p.id_analyste != :userId')
+            ->setParameter('userId', $user->id_user)
+            ->execute();
+
+        $projects = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return $projects;
+    }
+
+    /**
+     * @return \Doctrine\DBAL\Query\QueryBuilder
+     */
+    private function getRiskProjectsQuery()
+    {
+        return $this->bdd->createQueryBuilder()
+            ->select('p.id_project,
+                IFNULL(pa.logo, "") AS partner_logo,
+                p.amount AS amount,
+                p.period AS duration,
+                p.status AS status,
+                ps.label AS status_label,
+                co.name AS company_name,
+                CONCAT(cl.prenom, " ", cl.nom) AS client_name,
+                cl.telephone AS client_phone,
+                p.added AS creation,
+                (SELECT MAX(added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status WHERE psh.id_project = p.id_project AND ps.status = :waitingAnalystStatus) AS risk_status_datetime,
+                TIMESTAMPDIFF(HOUR, (SELECT MAX(added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status WHERE psh.id_project = p.id_project AND ps.status = :waitingAnalystStatus), NOW()) AS risk_status_duration,
+                IFNULL((SELECT content FROM projects_comments WHERE id_project = p.id_project ORDER BY added DESC, id_project_comment DESC LIMIT 1), "") AS memo_content,
+                IFNULL((SELECT added FROM projects_comments WHERE id_project = p.id_project ORDER BY added DESC, id_project_comment DESC LIMIT 1), "") AS memo_datetime,
+                IFNULL((SELECT CONCAT(users.firstname, " ", users.name) FROM projects_comments INNER JOIN users ON projects_comments.id_user = users.id_user WHERE id_project = p.id_project ORDER BY projects_comments.added DESC, id_project_comment DESC LIMIT 1), "") AS memo_author
+            ')
+            ->from('projects', 'p')
+            ->innerJoin('p', 'companies', 'co', 'p.id_company = co.id_company')
+            ->innerJoin('co', 'clients', 'cl', 'co.id_client_owner = cl.id_client')
+            ->innerJoin('p', 'projects_status', 'ps', 'p.status = ps.status')
+            ->leftJoin('p', 'partner', 'pa', 'p.id_partner = pa.id')
+            ->where('p.status IN (:riskStatus)')
+            ->setParameter('waitingAnalystStatus', \projects_status::PENDING_ANALYSIS)
+            ->setParameter('riskStatus', \projects_status::$riskTeam, Connection::PARAM_INT_ARRAY)
+            ->addOrderBy('status', 'ASC')
+            ->addOrderBy('risk_status_duration', 'DESC');
+    }
+
+    /**
+     * @param users $user
+     * @return array
+     */
+    public function getSaleUserProjects(\users $user)
+    {
+        $statement = $this->getSaleProjectsQuery(\projects_status::$saleTeam)
+            ->andWhere('p.id_commercial = :userId')
+            ->setParameter('userId', $user->id_user)
+            ->execute();
+
+        $projects = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return $projects;
+    }
+
+    /**
+     * @param users $user
+     * @return array
+     */
+    public function getSaleProjectsExcludingUser(\users $user)
+    {
+        $statement = $this->getSaleProjectsQuery(\projects_status::$saleTeam)
+            ->andWhere('p.id_commercial != :userId')
+            ->setParameter('userId', $user->id_user)
+            ->execute();
+
+        $projects = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return $projects;
+    }
+
+    /**
+     * @return array
+     */
+    public function getUpcomingSaleProjects()
+    {
+        $statement = $this->getSaleProjectsQuery(\projects_status::$upcomingSaleTeam)
+            ->andWhere('DATE_SUB(NOW(), INTERVAL 1 WEEK) < p.added')
+            ->execute();
+
+        $projects = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return $projects;
+    }
+
+    /**
+     * @return array
+     */
+    public function getImpossibleEvaluationProjects()
+    {
+        $statement = $this->bdd->createQueryBuilder()
+            ->select('p.id_project,
+                p.amount AS amount,
+                p.period AS duration,
+                co.siren AS siren,
+                p.added AS creation
+            ')
+            ->from('projects', 'p')
+            ->innerJoin('p', 'companies', 'co', 'p.id_company = co.id_company')
+            ->innerJoin('p', 'projects_status', 'ps', 'p.status = ps.status')
+            ->where('p.status = :status')
+            ->andWhere('p.added > DATE_SUB(NOW(), INTERVAL 1 WEEK)')
+            ->setParameter('status', \projects_status::IMPOSSIBLE_AUTO_EVALUATION, PDO::PARAM_INT)
+            ->addOrderBy('creation', 'ASC')
+            ->addOrderBy('amount', 'DESC')
+            ->addOrderBy('duration', 'DESC')
+            ->execute();
+
+        $projects = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return $projects;
+    }
+
+    /**
+     * @param array $status
+     * @return \Doctrine\DBAL\Query\QueryBuilder
+     */
+    private function getSaleProjectsQuery(array $status)
+    {
+        return $this->bdd->createQueryBuilder()
+            ->select('p.id_project,
+                IFNULL(pa.logo, "") AS partner_logo,
+                p.amount AS amount,
+                p.period AS duration,
+                p.status AS status,
+                ps.label AS status_label,
+                co.name AS company_name,
+                CONCAT(cl.prenom, " ", cl.nom) AS client_name,
+                cl.telephone AS client_phone,
+                p.added AS creation,
+                IF(u.id_user IS NULL, "", CONCAT(u.firstname, " ", u.name)) AS assignee,
+                IFNULL((SELECT content FROM projects_comments WHERE id_project = p.id_project ORDER BY added DESC, id_project_comment DESC LIMIT 1), "") AS memo_content,
+                IFNULL((SELECT added FROM projects_comments WHERE id_project = p.id_project ORDER BY added DESC, id_project_comment DESC LIMIT 1), "") AS memo_datetime,
+                IFNULL((SELECT CONCAT(users.firstname, " ", users.name) FROM projects_comments INNER JOIN users ON projects_comments.id_user = users.id_user WHERE id_project = p.id_project ORDER BY projects_comments.added DESC, id_project_comment DESC LIMIT 1), "") AS memo_author,
+                IFNULL(scoring.note, 10) AS priority,
+                IFNULL(infolegale.value, 0) AS infolegale
+            ')
+            ->from('projects', 'p')
+            ->innerJoin('p', 'companies', 'co', 'p.id_company = co.id_company')
+            ->innerJoin('co', 'clients', 'cl', 'co.id_client_owner = cl.id_client')
+            ->innerJoin('p', 'projects_status', 'ps', 'p.status = ps.status')
+            ->leftJoin('p', 'company_rating', 'euler', 'p.id_company_rating_history = euler.id_company_rating_history AND euler.type = :eulerScoringType')
+            ->leftJoin('p', 'company_rating', 'altares', 'p.id_company_rating_history = altares.id_company_rating_history AND altares.type = :altaresScoringType')
+            ->leftJoin('p', 'pre_scoring', 'scoring', 'euler.value = scoring.euler_hermes AND altares.value = scoring.altares')
+            ->leftJoin('p', 'company_rating', 'infolegale', 'p.id_company_rating_history = infolegale.id_company_rating_history AND infolegale.type = :infolegaleScoringType')
+            ->leftJoin('p', 'users', 'u', 'p.id_commercial = u.id_user')
+            ->leftJoin('p', 'partner', 'pa', 'p.id_partner = pa.id')
+            ->where('p.status IN (:commercialStatus)')
+            ->setParameter('commercialStatus', $status, Connection::PARAM_INT_ARRAY)
+            ->setParameter('eulerScoringType', \company_rating::TYPE_EULER_HERMES_GRADE)
+            ->setParameter('altaresScoringType', \company_rating::TYPE_ALTARES_SCORE_20)
+            ->setParameter('infolegaleScoringType', \company_rating::TYPE_INFOLEGALE_SCORE)
+            ->addOrderBy('status', 'DESC')
+            ->addOrderBy('priority', 'ASC')
+            ->addOrderBy('infolegale', 'DESC')
+            ->addOrderBy('amount', 'DESC')
+            ->addOrderBy('duration', 'DESC')
+            ->addOrderBy('creation', 'ASC');
     }
 }

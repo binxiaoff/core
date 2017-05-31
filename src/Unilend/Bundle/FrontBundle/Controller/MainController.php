@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
@@ -17,6 +18,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\Translator;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
@@ -118,7 +120,7 @@ class MainController extends Controller
             );
         }
 
-        $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower);
+        $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower || $user instanceof UserPartner);
 
         if (false === $isFullyConnectedUser) {
             /** @var Translator $translator */
@@ -148,7 +150,7 @@ class MainController extends Controller
         $template['loanPeriods']       = $projectManager->getPossibleProjectPeriods();
         $template['projectAmountMax']  = $projectManager->getMaxProjectAmount();
         $template['projectAmountMin']  = $projectManager->getMinProjectAmount();
-        $template['borrowingMotives']  = $borrowingMotive->select();
+        $template['borrowingMotives']  = $borrowingMotive->select('rank');
         $template['projects'] = $projectDisplayManager->getProjectsList(
             [\projects_status::EN_FUNDING],
             [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC]
@@ -170,7 +172,6 @@ class MainController extends Controller
     {
         if ($request->isXmlHttpRequest()) {
             $period   = $request->request->getInt('period');
-            $amount   = $request->request->getInt('amount');
             $motiveId = $request->request->getInt('motiveId');
 
             /** @var ProjectRequestManager $projectRequestManager */
@@ -182,15 +183,10 @@ class MainController extends Controller
             /** @var \ficelle $ficelle */
             $ficelle = Loader::loadLib('ficelle');
 
-            $projectPeriods   = $projectManager->getPossibleProjectPeriods();
-            $projectAmountMax = $projectManager->getMaxProjectAmount();
-            $projectAmountMin = $projectManager->getMinProjectAmount();
+            $projectPeriods = $projectManager->getPossibleProjectPeriods();
+            $amount         = filter_var(str_replace([' ', '€'], '', $request->request->get('amount')), FILTER_VALIDATE_INT, ['options' => ['min_range' => $projectManager->getMinProjectAmount(), 'max_range' => $projectManager->getMaxProjectAmount()]]);
 
-            if (
-                in_array($period, $projectPeriods)
-                && $amount >= $projectAmountMin
-                && $amount <= $projectAmountMax
-            ){
+            if (in_array($period, $projectPeriods) && $amount) {
                 $estimatedRate                           = $projectRequestManager->getMonthlyRateEstimate();
                 $estimatedMonthlyRepayment               = $projectRequestManager->getMonthlyPaymentEstimate($amount, $period, $estimatedRate);
                 $estimatedFundingDuration                = $projectManager->getAverageFundingDuration($amount);
@@ -221,19 +217,19 @@ class MainController extends Controller
      */
     public function projectSimulatorStepTwoAction(Request $request)
     {
-        $aFormData = $request->request->get('esim');
+        $formData = $request->request->get('esim');
 
         try {
             /** @var ProjectRequestManager $projectRequestManager */
             $projectRequestManager = $this->get('unilend.service.project_request_manager');
-            $project               = $projectRequestManager->saveSimulatorRequest($aFormData);
+            $project               = $projectRequestManager->saveSimulatorRequest($formData);
 
             $session = $request->getSession();
             $session->set('esim/project_id', $project->id_project);
 
             return $this->redirectToRoute('project_request_simulator_start', ['hash' => $project->hash]);
         } catch (\Exception $exception) {
-            $this->get('logger')->error('Could not save project : ' . $exception->getMessage() . 'form data = ' . json_encode($aFormData), ['class' => __CLASS__, 'function' => __FUNCTION__]);
+            $this->get('logger')->warning('Could not save project : ' . $exception->getMessage() . 'form data = ' . json_encode($formData), ['class' => __CLASS__, 'function' => __FUNCTION__]);
             return $this->redirectToRoute('home_borrower');
         }
     }
@@ -260,7 +256,7 @@ class MainController extends Controller
             $client = $entityManager->getRepository('clients');
             $client->get($user->getClientId());
 
-            if (in_array($client->type, [\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+            if (in_array($client->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                 $settings->get('Lien conditions generales inscription preteur societe', 'type');
                 $idTree = $settings->value;
             }
@@ -436,16 +432,17 @@ class MainController extends Controller
         }
 
         $template = [
-            'cms'      => [
-                'partner_logo'                => $content['logo-partenaire'],
-                'partner_logo_alt'            => $complement['logo-partenaire'],
-                'partner_funnel'              => $isPartnerFunnel
+            'cms'  => [
+                'partner_logo'     => $content['logo-partenaire'],
+                'partner_logo_alt' => $complement['logo-partenaire'],
+                'partner_funnel'   => $isPartnerFunnel
             ],
-            'form'     => [
-                'values'  => [
-                    'amount' => empty($sessionHandler->get('projectRequest')['values']['amount']) ? (empty($request->query->getInt('montant')) ? '' : $request->query->get('montant')) : $sessionHandler->get('projectRequest')['values']['amount'],
-                    'siren'  => empty($sessionHandler->get('projectRequest')['values']['siren']) ? (empty($request->query->getInt('siren')) ? '' : $request->query->get('siren')) : $sessionHandler->get('projectRequest')['values']['siren'],
-                    'email'  => empty($sessionHandler->get('projectRequest')['values']['email']) ? (empty($request->query->get('email')) ? '' : filter_var($request->query->get('email'), FILTER_SANITIZE_EMAIL)) : $sessionHandler->get('projectRequest')['values']['email']
+            'form' => [
+                'values' => [
+                    'amount'  => empty($sessionHandler->get('projectRequest')['values']['amount']) ? (empty($request->query->getInt('montant')) ? '' : $request->query->get('montant')) : $sessionHandler->get('projectRequest')['values']['amount'],
+                    'siren'   => empty($sessionHandler->get('projectRequest')['values']['siren']) ? (empty($request->query->getInt('siren')) ? '' : $request->query->get('siren')) : $sessionHandler->get('projectRequest')['values']['siren'],
+                    'email'   => empty($sessionHandler->get('projectRequest')['values']['email']) ? (empty($request->query->get('email')) ? '' : filter_var($request->query->get('email'), FILTER_SANITIZE_EMAIL)) : $sessionHandler->get('projectRequest')['values']['email'],
+                    'partner' => $content['partenaire']
                 ],
             ],
         ];
@@ -522,7 +519,7 @@ class MainController extends Controller
             $loans      = $entityManager->getRepository('loans');
             $loansCount = $loans->counter('id_lender = ' . $oLenderAccount->id_lender_account . ' AND added < "' . $sNewTermsOfServiceDate . '"');
 
-            if (in_array($client->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
+            if (in_array($client->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
                 $this->getTOSReplacementsForPerson($client, $dateAccept, $loansCount, $content, $template);
             } else {
                 $this->getTOSReplacementsForLegalEntity($client, $dateAccept, $loansCount, $content, $template);

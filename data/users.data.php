@@ -30,11 +30,6 @@ use Unilend\core\Loader;
 
 class users extends users_crud
 {
-    const USER_ID_CRON   = -1;
-    const USER_ID_FRONT  = -2;
-    const STATUS_ONLINE  = 1;
-    const STATUS_OFFLINE = 0;
-
     public function __construct($bdd, $params = '')
     {
         parent::users($bdd, $params);
@@ -104,6 +99,7 @@ class users extends users_crud
 
                 $this->lastlogin = date('Y-m-d H:i:s');
                 $this->update();
+                $this->checkExpiredPassword();
 
                 if (isset($_SESSION['request_url']) && $_SESSION['request_url'] != '' && $_SESSION['request_url'] != 'login' && $_SESSION['request_url'] != 'captcha') {
                     header('Location: ' . $_SESSION['request_url']);
@@ -117,6 +113,19 @@ class users extends users_crud
                 header('Location: ' . $this->params['lurl'] . '/login');
                 die;
             }
+        }
+    }
+
+    private function checkExpiredPassword()
+    {
+        $maxEditDate = new \DateTime('3 months ago');
+
+        if ($maxEditDate->format('Y-m-d H:i:s') >= $this->password_edited) {
+            $_SESSION['freeow']['title']   = 'Modification de votre mot de passe';
+            $_SESSION['freeow']['message'] = 'Votre mot de passe doit être mis à jour afin de conserver un niveau de sécurité optimal!';
+
+            header('Location: ' . $this->params['lurl'] . '/edit_password/');
+            die;
         }
     }
 

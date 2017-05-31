@@ -96,6 +96,10 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             return $this->router->generate('borrower_account_projects');
         }
 
+        if (in_array('ROLE_PARTNER', $user->getRoles())) {
+            return $this->router->generate('partner_project_request');
+        }
+
         return $this->router->generate('home');
     }
 
@@ -262,7 +266,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $loginLog->create();
 
         if ('wrong-security-token' === $exception->getMessage()) {
-            $this->logger->error('Invalid CSRF token', [
+            $this->logger->warning('Invalid CSRF token', [
                 'login_log ID' => $loginLog->id_log_login,
                 'server'       => exec('hostname'),
                 'token'        => $this->getCredentials($request)['csrfToken'],

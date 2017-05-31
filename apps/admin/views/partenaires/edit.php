@@ -21,17 +21,6 @@
                     </td>
                 </tr>
                 <tr>
-                    <th><label for="id_code">Code Promo :</label></th>
-                    <td>
-                        <select name="id_code" id="id_code" class="select">
-                            <option value="0">Sélectionner</option>
-                            <?php foreach ($this->lPromotions as $p) : ?>
-                                <option value="<?= $p['id_code'] ?>"<?= ($p['id_code'] == $this->partenaires->id_code ? ' selected="selected"' : '') ?>><?= $p['code'] ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
                     <th><label>Statut de la campagne :</label></th>
                     <td>
                         <input type="radio" value="1" id="status1" name="status"<?= ($this->partenaires->status == 1 ? ' checked="checked"' : '') ?> class="radio"/>
@@ -44,7 +33,7 @@
                     <td>&nbsp;</td>
                     <th>
                         <input type="hidden" name="form_edit_part" id="form_edit_part"/>
-                        <input type="submit" value="Valider" title="Valider" name="send_part" id="send_part" class="btn"/>
+                        <button type="submit" class="btn-primary">Valider</button>
                     </th>
                 </tr>
             </table>

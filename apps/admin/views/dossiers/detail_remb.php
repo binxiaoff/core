@@ -3,31 +3,21 @@
         $(".tablesorter").tablesorter({headers: {6: {sorter: false}}});
 
         <?php if ($this->nb_lignes != '') : ?>
-            $(".tablesorter").tablesorterPager({
-                container: $("#pager"),
-                positionFixed: false,
-                size: <?= $this->nb_lignes ?>
-            });
+        $(".tablesorter").tablesorterPager({
+            container: $("#pager"),
+            positionFixed: false,
+            size: <?= $this->nb_lignes ?>
+        });
         <?php endif; ?>
 
         $('.manual_repayment_action').click(function(event) {
             event.preventDefault()
 
             var $popup = $('#popup-content').clone()
-                $popup.find('.btn_link.validate').attr('href', event.target.href)
+            $popup.find('.btn_link.validate').attr('href', event.target.href)
 
             $.colorbox({html: $popup.html()})
         })
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {};
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
 </script>
 <style>
@@ -36,7 +26,6 @@
     .manual_repayment_action {display: block; margin: auto; width: 225px;}
     #popup-content {display: none;}
 </style>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="popup-content">
     <div id="popup">
         <a onclick="parent.$.fn.colorbox.close();" class="closeBtn" title="Fermer"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"></a><br>
@@ -48,7 +37,7 @@
     </div>
 </div>
 <div id="contenu">
-    <h1>Remboursement <?= $this->companies->name ?> - <?= $this->projects->title_bo ?></h1>
+    <h1>Remboursement <?= $this->companies->name ?> - <?= $this->projects->title ?></h1>
     <div class="btnDroite">
         <a style="margin-right:10px;" target="_blank" href="<?= $this->lurl ?>/dossiers/echeancier_emprunteur/<?= $this->projects->id_project ?>" class="btn_link">Echeancier Emprunteur</a>
         <a target="_blank" href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>" class="btn_link">Voir le dossier</a>
@@ -58,7 +47,7 @@
             <td colspan="7"><h2>Informations projet</h2></td>
         </tr>
         <tr>
-            <td colspan="2"><b><?= $this->companies->name ?> - <?= $this->projects->title_bo ?></b></td>
+            <td colspan="2"><b><?= $this->companies->name ?> - <?= $this->projects->title ?></b></td>
             <td><?= $this->ficelle->formatNumber($this->projects->amount, 0) ?>&nbsp;€ - <?= $this->projects->period ?> mois</td>
             <th>Risques :</th>
             <td><?= $this->companies->risk ?></td>
@@ -135,7 +124,7 @@
                     - <?= $this->ficelle->formatNumber($this->tvaaVenir / 100) ?> € de TVA</i>
             </td>
         </tr>
-        <?php if (false === $this->remb_anticipe_effectue) : ?>
+        <?php if ($this->projects->status != \projects_status::REMBOURSEMENT_ANTICIPE) : ?>
             <tr>
                 <th>Prochain remboursement :</th>
                 <td><?= $this->dates->formatDate($this->nextRemb, 'd/m/Y') ?></td>
@@ -145,7 +134,7 @@
         <?php endif; ?>
     </table>
     <br/><br/>
-    <div style="border: 1px solid #b10366; height: 60px; padding: 5px; width: 280px;">
+    <div style="border: 1px solid #b20066; height: 60px; padding: 5px; width: 280px;">
         <form action="" method="post">
             <b>Remboursement automatique : </b>
             <input type="radio" name="remb_auto" value="0"<?= ($this->projects->remb_auto == 0 ? ' checked' : '') ?>>Oui
@@ -166,88 +155,5 @@
            href="<?= $this->lurl ?>/dossiers/detail_remb_preteur/<?= $this->projects->id_project ?>" class="btn_link">Voir le détail prêteur</a>
     </div>
     <br/><br/>
-    <h2>Remboursement anticipé / Information</h2>
-    <table class="form" style="width: 538px; border: 1px solid #B10366;">
-        <tr>
-            <th>Statut :</th>
-            <td>
-                <label for="statut"><?= $this->phrase_resultat ?></label>
-            </td>
-        </tr>
-        <?php if ($this->virement_recu) : ?>
-            <tr>
-                <th>Virement reçu le :</th>
-                <td><label for="statut"><?= $this->dates->formatDateMysqltoFr_HourOut($this->receptions->added) ?></label></td>
-            </tr>
-            <tr>
-                <th>Identification virement :</th>
-                <td><label for="statut"><?= $this->receptions->id_reception ?></label></td>
-            </tr>
-            <tr>
-                <th>Montant virement :</th>
-                <td><label for="statut"><?= ($this->receptions->montant / 100) ?> €</label></td>
-            </tr>
-            <tr>
-                <th>Motif du virement :</th>
-                <td><label for="statut"><?= $this->receptions->motif ?></label></td>
-            </tr>
-        <?php elseif (isset($this->nextRepaymentDate)) : ?>
-                <tr>
-                    <th>Virement à émettre avant le :</th>
-                    <td><label for="statut"><?= $this->nextRepaymentDate ?></label></td>
-                </tr>
-        <?php endif; ?>
-        <tr>
-            <th>Montant CRD (*) :</th>
-            <td><label for="statut"><?= $this->montant_restant_du_preteur ?>€</label></td>
-        </tr>
-        <?php
-        // on ne se base plus sur l'echeancier emprunteur mais preteur comme pour le calcul du CRD
-        $L_echeance = $this->echeanciers->select(" id_project = " . $this->projects->id_project . " AND status = 0 AND ordre < " . $this->ordre_echeance_ra, 'ordre ASC');
-
-        if (count($L_echeance) > 0 && false) : ?>
-            <tr>
-                <th>Actions :</th>
-                <td>
-                    <label for="statut">Le remboursement anticipé n'est pour le moment pas possible car les échéances
-                        précédentes ne sont pas encore réglée</label>
-                </td>
-            </tr>
-            <?php
-        else :
-            if (false === $this->remb_anticipe_effectue) :
-                if ($this->virement_recu) :
-                    if ($this->virement_recu_ok) :
-                        if ($this->ra_possible_all_payed) : ?>
-                            <tr>
-                                <th>Actions :</th>
-                                <td>
-                                    <form action="" method="post" name="action_remb_anticipe">
-                                        <input type="hidden" name="id_reception" value="<?= $this->receptions->id_reception ?>">
-                                        <input type="hidden" name="montant_crd_preteur" value="<?= $this->montant_restant_du_preteur ?>">
-                                        <input type="hidden" name="spy_remb_anticipe" value="ok">
-                                        <input type="submit" value="Déclencher le remboursement anticipé" class="btn">
-                                    </form>
-                                </td>
-                            </tr>
-                            <?php
-                        endif;
-                    endif;
-                else : ?>
-                    <tr>
-                        <th>Motif à indiquer sur le virement :</th>
-                        <td><label for="statut">RA-<?= $this->projects->id_project ?></label></td>
-                    </tr>
-                    <?php
-                endif;
-            endif;
-        endif; ?>
-    </table>
-    <?php
-    if (false === $this->virement_recu && false === $this->remb_anticipe_effectue && false != $this->montant_restant_du_preteur) : ?>
-        * : Le montant correspond aux CRD des échéances restantes après celle du <?= isset($this->date_next_echeance) ? $this->date_next_echeance : '--' ?> qui sera prélevé normalement
-        <?php
-    endif;
-    ?>
-    <br/><br/><br/><br/>
+    <?php $this->fireView('early_repayment'); ?>
 </div>

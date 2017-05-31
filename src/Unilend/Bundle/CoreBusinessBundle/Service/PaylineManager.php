@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
@@ -179,22 +180,26 @@ class PaylineManager
             $backPayline->setSerialize(serialize($response));
             $backPayline->setCode($response['result']['code']);
 
+            if (isset($response['card']) && isset($response['card']['number'])) {
+                $backPayline->setCardNumber($response['card']['number']);
+            }
             $this->em->flush($backPayline);
 
-            if ($backPayline->getAmount() != $response['payment']['amount']) {
+            if ($response['result']['code'] === Backpayline::CODE_TRANSACTION_APPROVED && $backPayline->getAmount() != $response['payment']['amount']) {
                 $errorMsg = 'Payline amount for wallet id : '
                     . $backPayline->getWallet()->getId()
-                    . 'is not the same between the response (' . $response['payment']['amount'] . ') and database (' . $backPayline->getAmount() . ') ';
-                $this->logger->error($errorMsg);
+                    . ' is not the same between the response (' . $response['payment']['amount'] . ') and database (' . $backPayline->getAmount() . ') ';
+                $this->logger->error($errorMsg, ['class' => __CLASS__, 'function' => __FUNCTION__]);
 
                 return false;
             }
 
-            if ($response['result']['code'] == Backpayline::CODE_TRANSACTION_APPROVED) {
+            if ($response['result']['code'] === Backpayline::CODE_TRANSACTION_APPROVED) {
                 $this->operationManager->provisionLenderWallet($backPayline->getWallet(), $backPayline);
                 $this->notifyClientAboutMoneyTransfer($backPayline);
-            } elseif ($response['result']['code'] !== Backpayline::CODE_TRANSACTION_CANCELLED) { // Payment error
-                $this->logger->error('erreur sur page payment alimentation preteur (wallet id : ' . $backPayline->getWallet()->getId() . ') : ' . serialize($response));
+            // See codes https://support.payline.com/hc/fr/article_attachments/206064778/PAYLINE-GUIDE-Descriptif_des_appels_webservices-FR-v3.A.pdf
+            } elseif (in_array($response['result']['code'], ['01109', '01110', '01114', '01115', '01122', '01123', '01181', '01182', '01197', '01198', '01199', '01207', '01904', '01907', '01909', '01912', '01913', '01914', '01940', '01941', '01942', '01943', '02101', '02102', '02103', '02109', '02201', '02202', '02301', '02303', '02304', '02305', '02307', '02308', '02309', '02310', '02311', '02312', '02313', '02314', '02315', '02316', '02317', '02318', '02320', '02321', '02322'])) {
+                $this->logger->error('Lender provision error (wallet id : ' . $backPayline->getWallet()->getId() . ') : ' . serialize($response));
 
                 return false;
             }
@@ -229,7 +234,7 @@ class PaylineManager
         $lenderAccount->get($client->id_client, 'id_client_owner');
         $transaction->get($backPayline->getIdBackpayline(), 'type_transaction = ' . \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT . ' AND id_backpayline');
 
-        $notification->type      = \notifications::TYPE_CREDIT_CARD_CREDIT;
+        $notification->type      = Notifications::TYPE_CREDIT_CARD_CREDIT;
         $notification->id_lender = $lenderAccount->id_lender_account;
         $notification->amount    = $backPayline->getAmount();
         $notification->create();

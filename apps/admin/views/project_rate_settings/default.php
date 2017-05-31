@@ -1,21 +1,12 @@
-<?php if (isset($_SESSION['freeow'])) : ?>
-    <script type="text/javascript">
-        $(function() {
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {},
-                container;
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-        });
-    </script>
-    <?php unset($_SESSION['freeow']); ?>
-<?php endif ?>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <h1>Gestion de la grille de taux</h1>
-    <div class="btnDroite"><a class="btn_link thickbox cboxElement" href="/project_rate_settings/warn_confirmation_box">Notifier les prêteurs</a></div>
+    <div class="row">
+        <div class="col-sm-6">
+            <h1>Gestion de la grille de taux</h1>
+        </div>
+        <div class="col-sm-6">
+            <a href="/project_rate_settings/warn_confirmation_box" class="btn-primary pull-right thickbox">Notifier les prêteurs</a>
+        </div>
+    </div>
     <?php if(count($this->groupedRate) > 0) : ?>
         <table class="tablesorter">
             <thead>

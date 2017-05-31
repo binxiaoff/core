@@ -2,6 +2,7 @@ imports:
     - { resource: parameters.yml }
     - { resource: security.yml }
     - { resource: parameters_extended.yml, ignore_errors: true }
+    - { resource: dql_mysql_functions.yml, ignore_errors: true }
 
 framework:
     secret: "%secret%"
@@ -17,6 +18,7 @@ framework:
         packages:
             gulp:
                 base_path: /assets
+        version_strategy: unilend.frontbundle.gulp_rev_version_strategy
     translator:
         enabled: true
         fallbacks: ["fr_FR"]
@@ -31,7 +33,9 @@ framework:
         csrf_protection:
             field_name: _csrf
     serializer:
-      enabled: true
+        enabled: true
+    validation:
+        enabled: true
 
 cmf_routing:
     chain:
@@ -96,13 +100,17 @@ doctrine_mongodb:
             server: "%mongodb_server%"
             options:
                 authMechanism: SCRAM-SHA-1
+                connect:       true
                 ssl:           true
                 password:      "%mongodb_password%"
                 username:      "%mongodb_username%"
-    default_database: testing
+                readPreference:   secondaryPreferred
+    default_database: 'ws_call_%kernel.environment%'
     document_managers:
         default:
             auto_mapping: true
+            retry_connect: 2
+            retry_query:   2
 
 cache_adapter:
     providers:
@@ -114,12 +122,13 @@ cache_adapter:
             aliases: ['memcache.default']
 
 monolog:
-    channels: [console, migration]
+    channels: [console, migration, mongodb]
     handlers:
         error:
             type: fingers_crossed
             action_level: error
             handler: error_handler
+            channels: ['!translation']
         error_handler:
             type: group
             members: [error_file]
@@ -160,7 +169,7 @@ monolog:
             type: filter
             handler: site_handler
             max_level: warning
-            channels: ['!console', '!translation']
+            channels: ['!console', '!translation', '!mongodb']
         site_handler:
             type: rotating_file
             level: warning
@@ -169,11 +178,6 @@ monolog:
             file_permission: 0664
             date_format: 'Y-m-d'
 
-        translation_filter:
-            type: filter
-            handler: translation_handler
-            max_level: warning
-            channels: translation
         translation_handler:
             type: rotating_file
             level: warning
@@ -182,6 +186,19 @@ monolog:
             file_permission: 0664
             date_format: 'Y-m-d'
             channels: translation
+
+        mongodb:
+            type: fingers_crossed
+            action_level: warning
+            handler: mongodb_handler
+            channels: mongodb
+        mongodb_handler:
+            type: rotating_file
+            level: debug
+            path: "%kernel.logs_dir%/mongodb.%kernel.environment%.log"
+            max_files: 90
+            file_permission: 0664
+            date_format: 'Y-m-d'
 
         migration_handler:
             type : stream
@@ -252,3 +269,28 @@ knp_mailjet:
     api_key:    "%mailjet.api_key%"
     secret_key: "%mailjet.api_secret%"
     event_endpoint_token: yclrcchxk0p3lujy82
+
+guzzle:
+    clients:
+        euler:
+            base_url: "%euler.url%"
+            options:
+                timeout: 16
+                http_errors: false
+
+        codinf:
+            base_url: "%codinf.url%"
+            options:
+                http_errors: false
+
+        infolegale:
+            base_url: "%infolegale.url%"
+            options:
+                http_errors: false
+
+jms_serializer:
+    enable_short_alias: false
+
+cl_slack:
+    api_token: "%slack.token%"
+    test:      false

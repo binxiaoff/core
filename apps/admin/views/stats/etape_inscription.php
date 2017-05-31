@@ -2,11 +2,12 @@
     $(function() {
         $(".tablesorter").tablesorter({headers: {6: {sorter: false}}});
 
-        <?php if($this->nb_lignes != '') : ?>
+        <?php if ($this->nb_lignes != '') : ?>
             $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
         <?php endif;?>
 
         $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
+
         $("#datepik_1").datepicker({
             showOn: 'both',
             buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
@@ -15,6 +16,7 @@
             changeYear: true,
             yearRange: '<?=(date('Y') - 10)?>:<?=(date('Y') + 10)?>'
         });
+
         $("#datepik_2").datepicker({
             showOn: 'both',
             buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
@@ -23,29 +25,23 @@
             changeYear: true,
             yearRange: '<?=(date('Y') - 10)?>:<?=(date('Y') + 10)?>'
         });
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {},
-                container;
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
 </script>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <h1>Etape d'inscription des utilisateurs</h1>
-    <form method="post" name="recupCSV">
-        <input type="hidden" name="recup"/>
-        <input type="hidden" name="spy_date1" value="<?= $_POST['date1'] ?>"/>
-        <input type="hidden" name="spy_date2" value="<?= $_POST['date2'] ?>"/>
-    </form>
-    <div style="margin-bottom:20px; float:right;">
-        <a onclick="document.forms['recupCSV'].submit();" class="btn colorAdd">Recuperation du CSV</a>
+    <div class="row">
+        <div class="col-sm-6">
+            <h1>Etape d'inscription des utilisateurs</h1>
+        </div>
+        <div class="col-sm-6">
+            <form method="post" name="recupCSV">
+                <input type="hidden" name="recup"/>
+                <input type="hidden" name="spy_date1" value="<?= $_POST['date1'] ?>"/>
+                <input type="hidden" name="spy_date2" value="<?= $_POST['date2'] ?>"/>
+            </form>
+            <?php if (\users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) : ?>
+                <a role="button" onclick="document.forms['recupCSV'].submit();" class="btn-primary pull-right">Recuperation du CSV</a>
+            <?php endif; ?>
+        </div>
     </div>
     <div style="width:500px;margin: auto;margin-bottom:20px;background-color: white;border: 1px solid #A1A5A7;border-radius: 10px 10px 10px 10px;margin: 0 auto 20px;padding:5px;">
         <form method="post" name="date_select">
@@ -54,13 +50,10 @@
                     <tr>
                         <td style="padding-top:23px;"><label>Date debut</label><br/><input type="text" name="date1" id="datepik_1" class="input_dp" value="<?= $_POST['date1'] ?>"/></td>
                         <td style="padding-top:23px;"><label>Date fin</label><br/><input type="text" name="date2" id="datepik_2" class="input_dp" value="<?= $_POST['date2'] ?>"/></td>
-                        <td style="padding-top:23px;">
+                        <td style="padding-top:33px;">
                             <input type="hidden" name="spy_search" id="spy_search"/>
-                            <input type="submit" value="Valider" title="Valider" name="send_dossier" id="send_dossier" class="btn"/>
+                            <button type="submit" name="send_dossier" id="send_dossier" class="btn-primary">Rechercher</button>
                         </td>
-                    </tr>
-                    <tr>
-                        <th colspan="8" style=""></th>
                     </tr>
                 </table>
             </fieldset>

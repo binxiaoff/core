@@ -1,7 +1,6 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use CL\Slack\Payload\ChatPostMessagePayload;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -12,10 +11,16 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProduct;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
@@ -46,18 +51,6 @@ class ProjectRequestController extends Controller
     /** @var \projects */
     private $project;
 
-    /** @var \upload */
-    private $upload;
-
-    /** @var \attachment */
-    private $attachment;
-
-    /** @var \attachment_type */
-    private $attachmentType;
-
-    /** @var \attachment_helper */
-    private $attachmentHelper;
-
     /**
      * @Route("/depot_de_dossier/{hash}", name="project_request_index", requirements={"hash": "[0-9a-f-]{32,36}"})
      * @Route("/depot_de_dossier/reprise/{hash}", name="project_request_recovery", requirements={"hash": "[0-9a-f-]{32,36}"})
@@ -65,6 +58,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function indexAction($hash, Request $request)
@@ -82,6 +76,7 @@ class ProjectRequestController extends Controller
      * @Route("/depot_de_dossier/etape1", name="project_request_landing_page_start")
      *
      * @param Request $request
+     *
      * @return Response
      */
     public function landingPageStartAction(Request $request)
@@ -104,7 +99,7 @@ class ProjectRequestController extends Controller
         if (empty($request->request->get('amount'))) {
             $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
         } else {
-            $amount = str_replace(' ', '', $request->request->get('amount'));
+            $amount = str_replace([' ', '€'], '', $request->request->get('amount'));
 
             $settings->get('Somme à emprunter min', 'type');
             $minimumAmount = $settings->value;
@@ -119,12 +114,11 @@ class ProjectRequestController extends Controller
             }
         }
 
-        $siren       = str_replace(' ', '', $request->request->get('siren'));
+        $siren       = str_replace(' ', '', $request->request->get('siren', ''));
         $sirenLength = strlen($siren);
 
         if (
-            empty($siren)
-            || false === filter_var($siren, FILTER_VALIDATE_INT)
+            1 !== preg_match('/^[0-9]*$/', $siren)
             || false === in_array($sirenLength, [9, 14]) // SIRET numbers also allowed
         ) {
             $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
@@ -168,10 +162,10 @@ class ProjectRequestController extends Controller
             );
         }
 
-        /** @var \clients $clientRepository */
-        $clientRepository = $entityManager->getRepository('clients');
+        /** @var EntityManager $em */
+        $em = $this->get('doctrine.orm.entity_manager');
 
-        if ($clientRepository->existEmail($email)) {
+        if ($em->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($email)) {
             $email .= '-' . time();
         }
 
@@ -181,12 +175,11 @@ class ProjectRequestController extends Controller
         $this->client
             ->setEmail($email)
             ->setIdLangue('fr')
-            ->setStatus(\clients::STATUS_ONLINE)
+            ->setStatus(Clients::STATUS_ONLINE)
             ->setSource($sourceManager->getSource(SourceManager::SOURCE1))
             ->setSource2($sourceManager->getSource(SourceManager::SOURCE2))
             ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))
             ->setSlugOrigine($sourceManager->getSource(SourceManager::ENTRY_SLUG));
-
 
         $siret = $sirenLength === 14 ? str_replace(' ', '', $request->request->get('siren')) : '';
         $this->company = new Companies();
@@ -196,23 +189,21 @@ class ProjectRequestController extends Controller
             ->setEmailDirigeant($email)
             ->setEmailFacture($email);
 
-        /** @var EntityManager $em */
-        $em = $this->get('doctrine.orm.entity_manager');
         $em->beginTransaction();
         try {
             $em->persist($this->client);
-            $em->flush();
             $clientAddress = new ClientsAdresses();
-            $clientAddress->setIdClient($this->client->getIdClient());
+            $clientAddress->setIdClient($this->client);
             $em->persist($clientAddress);
+            $em->flush($clientAddress);
             $this->company->setIdClientOwner($this->client->getIdClient());
             $em->persist($this->company);
-            $em->flush();
+            $em->flush($this->company);
             $this->get('unilend.service.wallet_creation_manager')->createWallet($this->client, WalletType::BORROWER);
             $em->commit();
         } catch (\Exception $exception) {
             $em->getConnection()->rollBack();
-            $this->get('logger')->error('An error occurred while creating client ' [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+            $this->get('logger')->error('An error occurred while creating client: ' . $exception->getMessage(), [['class' => __CLASS__, 'function' => __FUNCTION__]]);
         }
 
         if (empty($this->client->getIdClient())) {
@@ -222,7 +213,12 @@ class ProjectRequestController extends Controller
             $request->getSession()->set(DataLayerCollector::SESSION_KEY_BORROWER_CLIENT_ID, $this->client->getIdClient());
         }
 
-        $partnerManager = $this->get('unilend.service.partner_manager');
+        $partnerId = $request->request->getInt('partner');
+
+        if (empty($partnerId) || null === $em->getRepository('UnilendCoreBusinessBundle:Partner')->find($partnerId)) {
+            $partnerManager = $this->get('unilend.service.partner_manager');
+            $partnerId      = $partnerManager->getDefaultPartner()->getId();
+        }
 
         $this->project                                       = $entityManager->getRepository('projects');
         $this->project->id_company                           = $this->company->getIdCompany();
@@ -230,11 +226,12 @@ class ProjectRequestController extends Controller
         $this->project->ca_declara_client                    = 0;
         $this->project->resultat_exploitation_declara_client = 0;
         $this->project->fonds_propres_declara_client         = 0;
-        $this->project->status                               = \projects_status::DEMANDE_SIMULATEUR;
-        $this->project->id_partner                           = $partnerManager->getDefaultPartner()->id;
-        $this->project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
-        $this->project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
+        $this->project->status                               = \projects_status::INCOMPLETE_REQUEST;
+        $this->project->id_partner                           = $partnerId;
         $this->project->create();
+
+        $projectManager = $this->get('unilend.service.project_manager');
+        $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::INCOMPLETE_REQUEST, $this->project);
 
         return $this->start();
     }
@@ -244,6 +241,7 @@ class ProjectRequestController extends Controller
      * @Method("GET")
      *
      * @param Request $request
+     *
      * @return Response
      */
     public function simulatorStartAction(Request $request)
@@ -266,78 +264,14 @@ class ProjectRequestController extends Controller
      */
     private function start()
     {
-        /** @var EntityManagerSimulator $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        $projectRequestManager = $this->get('unilend.service.project_request_manager');
+        $projectRequestManager->checkProjectRisk($this->project, Users::USER_ID_FRONT);
 
-        $settingsAltaresStatus = $entityManager->getRepository('settings');
-        $settingsAltaresStatus->get('Altares status', 'type');
-        $altaresStatus = $settingsAltaresStatus->value;
-
-        /** @var LoggerInterface $logger */
-        $logger = $this->get('logger');
-
-        try {
-            $altares = $this->get('unilend.service.altares');
-            $result  = $altares->isEligible($this->project);
-            $altares->setCompanyData($this->company);
-            $altares->setProjectData($this->project);
-
-            if (false === $result['eligible']) {
-                $projectManager = $this->get('unilend.service.project_manager');
-                $motif          = implode(',', $result['reason']);
-                $projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::NOTE_EXTERNE_FAIBLE, $this->project, 0, $motif);
-
-                return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $this->project->hash]);
-            }
-
-            $altares->setCompanyBalance($this->company);
-
-            /** @var \companies_bilans $companyAccount */
-            $companyAccount = $entityManager->getRepository('companies_bilans');
-            $balanceSheets  = $companyAccount->select('id_company = ' . $this->company->getIdCompany(), 'cloture_exercice_fiscal DESC', 0, 1);
-
-            if (isset($balanceSheets[0]['id_bilan'])) {
-                $this->project->id_dernier_bilan = $balanceSheets[0]['id_bilan'];
-                $this->project->update();
-            }
-        } catch (\Exception $exception) {
-            if ($altaresStatus) {
-                $settingsAltaresStatus->value = '0';
-                $settingsAltaresStatus->update();
-
-                $logger->error(
-                    $exception->getMessage(),
-                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $this->company->getSiren()]
-                );
-                if ($this->getParameter('kernel.environment') === 'prod') {
-                    $payload = new ChatPostMessagePayload();
-                    $payload->setChannel('#it-monitoring');
-                    $payload->setText("Altares is down  :skull_and_crossbones:\n> " . $exception->getMessage());
-                    $payload->setUsername('Altares');
-                    $payload->setIconUrl($this->get('assets.packages')->getUrl('') . '/assets/images/slack/altares.png');
-                    $payload->setAsUser(false);
-
-                    $this->get('cl_slack.api_client')->send($payload);
-                }
-            }
+        if (\projects_status::NOT_ELIGIBLE == $this->project->status) {
+            return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $this->project->hash]);
         }
 
-        if (! $altaresStatus) {
-            $settingsAltaresStatus->value = '1';
-            $settingsAltaresStatus->update();
-            if ($this->getParameter('kernel.environment') === 'prod') {
-                $payload = new ChatPostMessagePayload();
-                $payload->setChannel('#it-monitoring');
-                $payload->setText('Altares is up  :white_check_mark:');
-                $payload->setUsername('Altares');
-                $payload->setIconUrl($this->get('assets.packages')->getUrl('') . '/assets/images/slack/altares.png');
-                $payload->setAsUser(false);
-
-                $this->get('cl_slack.api_client')->send($payload);
-            }
-        }
-
-        return $this->redirectStatus(self::PAGE_ROUTE_CONTACT, \projects_status::COMPLETUDE_ETAPE_2);
+        return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $this->project->hash]);
     }
 
     /**
@@ -346,6 +280,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function contactAction($hash, Request $request)
@@ -381,7 +316,7 @@ class ProjectRequestController extends Controller
 
         /** @var \borrowing_motive $borrowingMotive */
         $borrowingMotive               = $entityManager->getRepository('borrowing_motive');
-        $template['borrowing_motives'] = $borrowingMotive->select();
+        $template['borrowing_motives'] = $borrowingMotive->select('rank');
 
         $settings->get('Durée des prêts autorisées', 'type');
         $template['loan_periods'] = explode(',', $settings->value);
@@ -436,6 +371,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function contactFormAction($hash, Request $request)
@@ -446,17 +382,17 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        /** @var EntityManagerSimulator $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
+        $settings = $entityManagerSimulator->getRepository('settings');
 
         $settings->get('Durée des prêts autorisées', 'type');
         $loanPeriods = explode(',', $settings->value);
 
         $errors = [];
 
-        if (empty($request->request->get('contact')['civility']) || false === in_array($request->request->get('contact')['civility'], [\clients::TITLE_MISS, \clients::TITLE_MISTER])) {
+        if (empty($request->request->get('contact')['civility']) || false === in_array($request->request->get('contact')['civility'], [Clients::TITLE_MISS, Clients::TITLE_MISTER])) {
             $errors['contact']['civility'] = true;
         }
         if (empty($request->request->get('contact')['lastname'])) {
@@ -487,7 +423,7 @@ class ProjectRequestController extends Controller
             $errors['project']['description'] = true;
         }
         if ('no' === $request->request->get('manager')) {
-            if (empty($request->request->get('advisor')['civility']) || false === in_array($request->request->get('advisor')['civility'], [\clients::TITLE_MISS, \clients::TITLE_MISTER])) {
+            if (empty($request->request->get('advisor')['civility']) || false === in_array($request->request->get('advisor')['civility'], [Clients::TITLE_MISS, Clients::TITLE_MISTER])) {
                 $errors['advisor']['civility'] = true;
             }
             if (empty($request->request->get('advisor')['lastname'])) {
@@ -518,7 +454,8 @@ class ProjectRequestController extends Controller
             return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $this->project->hash]);
         }
 
-        $this->saveContactDetails($request->request->get('contact')['email'],
+        $this->saveContactDetails(
+            $request->request->get('contact')['email'],
             $request->request->get('contact')['civility'],
             $request->request->get('contact')['firstname'],
             $request->request->get('contact')['lastname'],
@@ -531,9 +468,9 @@ class ProjectRequestController extends Controller
 
         if ('no' === $request->request->get('manager')) {
             /** @var \prescripteurs $advisor */
-            $advisor = $entityManager->getRepository('prescripteurs');
+            $advisor = $entityManagerSimulator->getRepository('prescripteurs');
             /** @var \clients $advisorClient */
-            $advisorClient = $entityManager->getRepository('clients');
+            $advisorClient = $entityManagerSimulator->getRepository('clients');
             $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
 
             if (false === empty($this->project->id_prescripteur)) {
@@ -541,9 +478,13 @@ class ProjectRequestController extends Controller
                 $advisorClient->get($advisor->id_client);
             }
 
-            $email = $request->request->get('advisor')['email'];
-
-            if ($advisorClient->existEmail($email) && $this->removeEmailSuffix($advisorClient->email) !== $email) {
+            /** @var ClientsRepository $clientRepo */
+            $clientRepo = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+            $email      = $request->request->get('advisor')['email'];
+            if (
+                $clientRepo->existEmail($email)
+                && $this->removeEmailSuffix($advisorClient->email) !== $email
+            ) {
                 $email = $email . '-' . time();
             }
 
@@ -564,7 +505,7 @@ class ProjectRequestController extends Controller
                 $advisorClient->create();
 
                 /** @var \clients_adresses $advisorAddress */
-                $advisorAddress            = $entityManager->getRepository('clients_adresses');
+                $advisorAddress            = $entityManagerSimulator->getRepository('clients_adresses');
                 $advisorAddress->id_client = $advisorClient->id_client;
                 $advisorAddress->civilite  = $request->request->get('advisor')['civility'];
                 $advisorAddress->prenom    = $request->request->get('advisor')['firstname'];
@@ -573,7 +514,7 @@ class ProjectRequestController extends Controller
                 $advisorAddress->create();
 
                 /** @var \companies $advisorCompany */
-                $advisorCompany = $entityManager->getRepository('companies');
+                $advisorCompany = $entityManagerSimulator->getRepository('companies');
                 $advisorCompany->create();
 
                 $advisor->id_client = $advisorClient->id_client;
@@ -588,7 +529,7 @@ class ProjectRequestController extends Controller
             $this->project->id_prescripteur = 0;
 
             /** @var \acceptations_legal_docs $tosAcceptation */
-            $tosAcceptation = $entityManager->getRepository('acceptations_legal_docs');
+            $tosAcceptation = $entityManagerSimulator->getRepository('acceptations_legal_docs');
             $settings->get('Lien conditions generales depot dossier', 'type');
 
             if ($tosAcceptation->get($settings->value, 'id_client = ' . $this->client->getIdClient() . ' AND id_legal_doc')) {
@@ -608,19 +549,37 @@ class ProjectRequestController extends Controller
         $productManager = $this->get('unilend.service_product.product_manager');
         try {
             $products = $productManager->findEligibleProducts($this->project);
+
             if (count($products) === 1 && isset($products[0]) && $products[0] instanceof \product) {
+                $entityManager = $this->get('doctrine.orm.entity_manager');
+                /** @var PartnerProduct $partnerProduct */
+                $partnerProduct            = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findOneBy(['idPartner' => $this->project->id_partner, 'idProduct' => $products[0]->id_product]);
                 $this->project->id_product = $products[0]->id_product;
+
+                if (null != $partnerProduct) {
+                    $this->project->commission_rate_funds     = $partnerProduct->getCommissionRateFunds();
+                    $this->project->commission_rate_repayment = $partnerProduct->getCommissionRateRepayment();
+                } else {
+                    $this->get('logger')->warning(
+                        'Relation between partner and product not found',
+                        ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->project->id_project, 'id_partner' => $this->project->id_partner, 'id_product' => $products[0]->id_product]
+                    );
+                }
                 $this->project->update();
             }
 
             if (empty($products)) {
-                return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
+                return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
             }
         } catch (\Exception $exception) {
             $this->get('logger')->warning($exception->getMessage(), ['method' => __METHOD__, 'line' => __LINE__]);
         }
 
-        return $this->redirectStatus(self::PAGE_ROUTE_FINANCE, \projects_status::COMPLETUDE_ETAPE_3);
+        if (\projects_status::IMPOSSIBLE_AUTO_EVALUATION == $this->project->status) {
+            return $this->redirectToRoute(self::PAGE_ROUTE_FINANCE, ['hash' => $this->project->hash]);
+        }
+
+        return $this->redirectStatus(self::PAGE_ROUTE_FINANCE, \projects_status::COMPLETE_REQUEST);
     }
 
     /**
@@ -629,6 +588,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function financeAction($hash, Request $request)
@@ -640,18 +600,22 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \companies_actif_passif $companyAssetsDebts */
         $companyAssetsDebts = $entityManager->getRepository('companies_actif_passif');
         /** @var \companies_bilans $annualAccountsEntity */
         $annualAccountsEntity = $entityManager->getRepository('companies_bilans');
-        $partnerManager       = $this->get('unilend.service.partner_manager');
+        $em = $this->get('doctrine.orm.entity_manager');
+        /** @var Partner $partner */
+        $partner = $em->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->project->id_partner);
 
-        $this->attachmentType         = $entityManager->getRepository('attachment_type');
-        $attachmentTypes              = $this->attachmentType->getAllTypesForProjects('fr', true, $partnerManager->getAttachmentTypesByPartner($this->project->id_partner));
-        $template['attachment_types'] = $this->attachmentType->changeLabelWithDynamicContent($attachmentTypes);
-
+        $template['attachmentTypes'] = [];
+        if ($partner) {
+            $partnerAttachmentTypes = $partner->getAttachmentTypes(true);
+            foreach($partnerAttachmentTypes as $partnerAttachmentType) {
+                $template['attachmentTypes'][] = $partnerAttachmentType->getAttachmentType();
+            }
+        }
         $altaresCapitalStock     = 0;
         $altaresOperationIncomes = 0;
         $altaresRevenue          = 0;
@@ -672,23 +636,59 @@ class ProjectRequestController extends Controller
         $template['form']['errors'] = isset($session['errors']) ? $session['errors'] : [];
 
         if (empty($this->company->getRcs())) {
-            $template['form']['values'] = [
-                'ag_2035' => isset($values['ag_2035']) ? $values['ag_2035'] : (empty($this->project->ca_declara_client) ? (empty($altaresRevenue) ? '' : $altaresRevenue) : $this->project->ca_declara_client),
-            ];
             $template['rcs']            = false;
+            $template['form']['values'] = [];
+
+            if (isset($values['ag_2035'])) {
+                $template['form']['values']['ag_2035'] = $values['ag_2035'];
+            } elseif (false === empty($this->project->ca_declara_client) || $this->project->ca_declara_client != $altaresRevenue) {
+                $template['form']['values']['ag_2035'] = $this->project->ca_declara_client;
+            } elseif (null === $altaresRevenue) {
+                $template['form']['values']['ag_2035'] = $altaresRevenue;
+            } else {
+                $template['form']['values']['ag_2035'] = '';
+            }
         } else {
-            $template['form']['values'] = [
-                'dl' => isset($values['dl']) ? $values['dl'] : (empty($this->project->fonds_propres_declara_client) ? (empty($altaresCapitalStock) ? '' : $altaresCapitalStock) : $this->project->fonds_propres_declara_client),
-                'fl' => isset($values['fl']) ? $values['fl'] : (empty($this->project->ca_declara_client) ? (empty($altaresRevenue) ? '' : $altaresRevenue) : $this->project->ca_declara_client),
-                'gg' => isset($values['gg']) ? $values['gg'] : (empty($this->project->resultat_exploitation_declara_client) ? (empty($altaresOperationIncomes) ? '' : $altaresOperationIncomes) : $this->project->resultat_exploitation_declara_client)
-            ];
             $template['rcs']            = true;
+            $template['form']['values'] = [];
+
+            if (isset($values['dl'])) {
+                $template['form']['values']['dl'] = $values['dl'];
+            } elseif (false === empty($this->project->fonds_propres_declara_client) || $this->project->fonds_propres_declara_client != $altaresCapitalStock) {
+                $template['form']['values']['dl'] = $this->project->fonds_propres_declara_client;
+            } elseif (null === $altaresCapitalStock) {
+                $template['form']['values']['dl'] = $altaresCapitalStock;
+            } else {
+                $template['form']['values']['dl'] = '';
+            }
+
+            if (isset($values['fl'])) {
+                $template['form']['values']['fl'] = $values['fl'];
+            } elseif (false === empty($this->project->ca_declara_client) || $this->project->ca_declara_client != $altaresRevenue) {
+                $template['form']['values']['fl'] = $this->project->ca_declara_client;
+            } elseif (null === $altaresRevenue) {
+                $template['form']['values']['fl'] = $altaresRevenue;
+            } else {
+                $template['form']['values']['fl'] = '';
+            }
+
+            if (isset($values['gg'])) {
+                $template['form']['values']['gg'] = $values['gg'];
+            } elseif (false === empty($this->project->resultat_exploitation_declara_client) || $this->project->resultat_exploitation_declara_client != $altaresOperationIncomes) {
+                $template['form']['values']['gg'] = $this->project->resultat_exploitation_declara_client;
+            } elseif (null === $altaresOperationIncomes) {
+                $template['form']['values']['gg'] = $altaresOperationIncomes;
+            } else {
+                $template['form']['values']['gg'] = '';
+            }
         }
+
+        $projectManager = $this->get('unilend.service.project_manager');
 
         $template['project'] = [
             'amount'                   => $this->project->amount,
-            'averageFundingDuration'   => $this->get('unilend.service.project_manager')->getAverageFundingDuration($this->project->amount),
-            'monthlyPaymentBoundaries' => $this->getMonthlyPaymentBoundaries(),
+            'averageFundingDuration'   => $projectManager->getAverageFundingDuration($this->project->amount),
+            'monthlyPaymentBoundaries' => $projectManager->getMonthlyPaymentBoundaries($this->project->amount, $this->project->period, $this->project->commission_rate_repayment),
             'hash'                     => $this->project->hash
         ];
 
@@ -703,6 +703,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function financeFormAction($hash, Request $request)
@@ -713,13 +714,15 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        /** @var EntityManagerSimulator $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        $entityManager     = $this->get('unilend.service.entity_manager');
+        $attachmentManager = $this->get('unilend.service.attachment_manager');
+        $em                = $this->get('doctrine.orm.entity_manager');
+        $logger            = $this->get('logger');
 
-        $errors = [];
-        $values = $request->request->get('finance');
-        $values = is_array($values) ? $values : [];
-        $files  = $request->files->all();
+        $project = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->project->id_project);
+        $errors  = [];
+        $values  = $request->request->get('finance');
+        $values  = is_array($values) ? $values : [];
 
         if (empty($this->company->getRcs())) {
             if (false === isset($values['ag_2035']) || $values['ag_2035'] === '') {
@@ -736,13 +739,18 @@ class ProjectRequestController extends Controller
                 $errors['gg'] = true;
             }
         }
-
-        if (empty($files['accounts']) || false === ($files['accounts'] instanceof UploadedFile)) {
+        $taxReturnFile = $request->files->get('accounts');
+        if ($taxReturnFile instanceof UploadedFile && $this->client instanceof Clients) {
+            try {
+                $attachmentType = $em->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::DERNIERE_LIASSE_FISCAL);
+                $attachment     = $attachmentManager->upload($this->client, $attachmentType, $taxReturnFile);
+                $attachmentManager->attachToProject($attachment, $project);
+            } catch (\Exception $exception) {
+                $logger->error('Cannot upload the file. Error : ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
+                $errors['accounts'] = true;
+            }
+        } else {
             $errors['accounts'] = true;
-        } elseif (false === $this->uploadAttachment('accounts', \attachment_type::DERNIERE_LIASSE_FISCAL)) {
-            $errors['accounts'] = [
-                'message' => $this->upload->getErrorType()
-            ];
         }
 
         if (false === empty($errors)) {
@@ -755,9 +763,19 @@ class ProjectRequestController extends Controller
         }
 
         if ('true' === $request->request->get('extra_files')) {
-            foreach ($files as $fileName => $file) {
-                if ('accounts' !== $fileName && $file instanceof UploadedFile && false === empty($request->request->get('files')[$fileName])) {
-                    $this->uploadAttachment($fileName, $request->request->get('files')[$fileName]);
+            $files = $request->files->all();
+            $fileTypes = $request->request->get('files', []);
+            foreach ($files as $inputName =>  $file) {
+                if ('accounts' !== $inputName && $file instanceof UploadedFile && false === empty($fileTypes[$inputName])) {
+                    $attachmentTypeId = $fileTypes[$inputName];
+                    try {
+                        $attachmentType = $em->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
+                        $attachment     = $attachmentManager->upload($this->client, $attachmentType, $file);
+                        $attachmentManager->attachToProject($attachment, $project);
+                    } catch (\Exception $exception) {
+                        $logger->error('Cannot upload the file. Error : ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
+                        continue;
+                    }
                 }
             }
         }
@@ -822,31 +840,28 @@ class ProjectRequestController extends Controller
         }
 
         if (isset($values['dl']) && $values['dl'] < 0) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL);
+            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL);
         }
 
         if (isset($values['fl']) && $values['fl'] < \projects::MINIMUM_REVENUE) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, \projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER);
+            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER);
         }
 
         if (isset($values['gg']) && $values['gg'] < 0) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES);
+            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES);
         }
 
         if (isset($values['ag_2035']) && $values['ag_2035'] < \projects::MINIMUM_REVENUE) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOTE_EXTERNE_FAIBLE, \projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER);
+            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER);
         }
 
         if ('true' === $request->request->get('extra_files')) {
-            $this->project->process_fast = 1;
-            $this->project->update();
-
             return $this->redirectToRoute(self::PAGE_ROUTE_FILES, ['hash' => $this->project->hash]);
         }
 
         $this->sendSubscriptionConfirmationEmail();
 
-        return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::A_TRAITER);
+        return $this->redirectToRoute(self::PAGE_ROUTE_END, ['hash' => $this->project->hash]);
     }
 
     /**
@@ -855,6 +870,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function partnerAction($hash, Request $request)
@@ -870,11 +886,19 @@ class ProjectRequestController extends Controller
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \settings $settings */
         $settings       = $entityManager->getRepository('settings');
-        $partnerManager = $this->get('unilend.service.partner_manager');
+        $em             = $this->get('doctrine.orm.entity_manager');
+        /** @var Projects $project */
+        $project = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->project->id_project);
 
-        $this->attachmentType         = $entityManager->getRepository('attachment_type');
-        $attachmentTypes              = $this->attachmentType->getAllTypesForProjects('fr', true, $partnerManager->getAttachmentTypesByPartner($this->project->id_partner));
-        $template['attachment_types'] = $this->attachmentType->changeLabelWithDynamicContent($attachmentTypes);
+        $partnerAttachments = $project->getIdPartner()->getAttachmentTypes();
+        $template['attachmentTypes']    = [];
+        $labels    = [];
+        foreach ($partnerAttachments as $partnerAttachment) {
+            $template['attachmentTypes'][] = $partnerAttachment->getAttachmentType();
+            $labels[] = $partnerAttachment->getAttachmentType()->getLabel();
+        }
+
+        array_multisort($labels, SORT_ASC, $template['attachmentTypes']);
 
         $settings->get('Lien conditions generales depot dossier', 'type');
 
@@ -904,7 +928,8 @@ class ProjectRequestController extends Controller
                     'function'  => isset($values['contact']['function']) ? $values['contact']['function'] : $this->client->getFonction()
                 ],
                 'project' => [
-                    'duration' => isset($values['project']['duration']) ? $values['project']['duration'] : $this->project->period
+                    'duration'    => isset($values['project']['duration']) ? $values['project']['duration'] : $this->project->period,
+                    'description' => isset($values['project']['description']) ? $values['project']['description'] : $this->project->comments
                 ]
             ]
         ];
@@ -927,6 +952,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function partnerFormAction($hash, Request $request)
@@ -937,8 +963,10 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        /** @var EntityManagerSimulator $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        $entityManager     = $this->get('unilend.service.entity_manager');
+        $em                = $this->get('doctrine.orm.entity_manager');
+        $attachmentManager = $this->get('unilend.service.attachment_manager');
+        $logger            = $this->get('logger');
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
 
@@ -967,6 +995,9 @@ class ProjectRequestController extends Controller
         }
         if (empty($request->request->get('project')['duration']) || false === in_array($request->request->get('project')['duration'], $loanPeriods)) {
             $errors['project']['duration'] = true;
+        }
+        if (empty($request->request->get('project')['description'])) {
+            $errors['project']['description'] = true;
         }
         if (empty($request->request->get('terms'))) {
             $errors['terms'] = true;
@@ -1001,20 +1032,30 @@ class ProjectRequestController extends Controller
             $tosAcceptation->create();
         }
 
-        $this->project->period = $request->request->get('project')['duration'];
+        $this->project->period   = $request->request->get('project')['duration'];
+        $this->project->comments = $request->request->get('project')['description'];
         $this->project->update();
 
-        $files = $request->request->get('files', []);
-
-        foreach ($request->files->all() as $fileName => $file) {
-            if ($file instanceof UploadedFile && false === empty($files[$fileName])) {
-                $this->uploadAttachment($fileName, $files[$fileName]);
+        $files     = $request->files->all();
+        $fileTypes = $request->request->get('files', []);
+        $project   = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->project->id_project);
+        foreach ($files as $inputName => $file) {
+            if ($file instanceof UploadedFile && false === empty($fileTypes[$inputName])) {
+                $attachmentTypeId = $fileTypes[$inputName];
+                try {
+                    $attachmentType = $em->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
+                    $attachment     = $attachmentManager->upload($this->client, $attachmentType, $file);
+                    $attachmentManager->attachToProject($attachment, $project);
+                } catch (\Exception $exception) {
+                    $logger->error('Cannot upload the file. Error : ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
+                    continue;
+                }
             }
         }
 
         $this->sendSubscriptionConfirmationEmail();
 
-        return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::A_TRAITER);
+        return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::COMPLETE_REQUEST);
     }
 
     /**
@@ -1023,6 +1064,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function prospectAction($hash, Request $request)
@@ -1064,6 +1106,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function prospectFormAction($hash, Request $request)
@@ -1121,6 +1164,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function filesAction($hash, Request $request)
@@ -1131,32 +1175,33 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
+        $projectManager = $this->get('unilend.service.project_manager');
+
         $template = [
             'project' => [
                 'amount'                   => $this->project->amount,
-                'averageFundingDuration'   => $this->get('unilend.service.project_manager')->getAverageFundingDuration($this->project->amount),
-                'monthlyPaymentBoundaries' => $this->getMonthlyPaymentBoundaries(),
+                'averageFundingDuration'   => $projectManager->getAverageFundingDuration($this->project->amount),
+                'monthlyPaymentBoundaries' => $projectManager->getMonthlyPaymentBoundaries($this->project->amount, $this->project->period, $this->project->commission_rate_repayment),
                 'hash'                     => $this->project->hash
             ]
         ];
 
-        /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \attachment $attachment */
-        $attachment     = $entityManager->getRepository('attachment');
-        $partnerManager = $this->get('unilend.service.partner_manager');
+        $em            = $this->get('doctrine.orm.entity_manager');        /** @var Projects $project */
+        $project       = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find( $this->project->id_project);
 
-        $attachments          = array_column($attachment->select('type_owner = "' . \attachment::PROJECT . '" AND id_owner = ' . $this->project->id_project), 'id_type');
-        $this->attachmentType = $entityManager->getRepository('attachment_type');
-        $attachmentTypes      = $this->attachmentType->getAllTypesForProjects('fr', true, $partnerManager->getAttachmentTypesByPartner($this->project->id_partner));
-
-        foreach ($attachmentTypes as $attachmentIndex => $attachmentType) {
-            if (in_array($attachmentType['id'], $attachments)) {
-                unset($attachmentTypes[$attachmentIndex]);
-            }
+        $projectAttachments = $project->getAttachments();
+        $partnerAttachments = $project->getIdPartner()->getAttachmentTypes();
+        $attachmentTypes    = [];
+        foreach ($partnerAttachments as $partnerAttachment) {
+            $attachmentTypes[] = $partnerAttachment->getAttachmentType();
+        }
+        foreach ($projectAttachments as $projectAttachment) {
+            $index = array_search($projectAttachment->getAttachment()->getType(), $attachmentTypes);
+            unset($attachmentTypes[$index]);
         }
 
-        $template['attachment_types'] = $this->attachmentType->changeLabelWithDynamicContent($attachmentTypes);
+        $template['attachment_types'] = $attachmentTypes;
 
         /** @var \projects_status_history $projectStatusHistory */
         $projectStatusHistory = $entityManager->getRepository('projects_status_history');
@@ -1180,6 +1225,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function filesFormAction($hash, Request $request)
@@ -1190,11 +1236,24 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        $files = $request->request->get('files', []);
+        $attachmentManager = $this->get('unilend.service.attachment_manager');
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $logger            = $this->get('logger');
+        $project           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->project->id_project);
 
-        foreach ($request->files->all() as $fileName => $file) {
-            if ($file instanceof UploadedFile && false === empty($files[$fileName])) {
-                $this->uploadAttachment($fileName, $files[$fileName]);
+        $files = $request->files->all();
+        $fileTypes = $request->request->get('files', []);
+        foreach ($files as $inputName => $file) {
+            if ($file instanceof UploadedFile && false === empty($fileTypes[$inputName])) {
+                $attachmentTypeId = $fileTypes[$inputName];
+                try {
+                    $attachmentType = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
+                    $attachment     = $attachmentManager->upload($this->client, $attachmentType, $file);
+                    $attachmentManager->attachToProject($attachment, $project);
+                } catch (\Exception $exception) {
+                    $logger->error('Cannot upload the file. Error : ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
+                    continue;
+                }
             }
         }
 
@@ -1209,6 +1268,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function endAction($hash, Request $request)
@@ -1220,43 +1280,39 @@ class ProjectRequestController extends Controller
         }
 
         /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
-
+        $translator   = $this->get('translator');
         $addMoreFiles = false;
-        $message      = $translator->trans('project-request_end-page-not-entitled-message');
-        $title        = $translator->trans('project-request_end-page-success-title');
-        $subtitle     = $translator->trans('project-request_end-page-success-subtitle');
 
         switch ($this->project->status) {
-            case \projects_status::ABANDON:
+            case \projects_status::ABANDONED:
+                $title    = $translator->trans('project-request_end-page-aborted-title');
+                $subtitle = $translator->trans('project-request_end-page-aborted-subtitle');
                 $message  = $translator->trans('project-request_end-page-aborted-message');
-                $title    = $translator->trans('project-request_end-page-aborted-title');
-                $subtitle = $translator->trans('project-request_end-page-aborted-subtitle');
                 break;
-            CASE \projects_status::PAS_3_BILANS:
-                $message  = $translator->trans('project-request_end-page-not-3-annual-accounts-message');
-                $title    = $translator->trans('project-request_end-page-aborted-title');
-                $subtitle = $translator->trans('project-request_end-page-aborted-subtitle');
-                break;
-            case \projects_status::REVUE_ANALYSTE:
-            case \projects_status::COMITE:
+            case \projects_status::ANALYSIS_REVIEW:
+            case \projects_status::COMITY_REVIEW:
             case \projects_status::PREP_FUNDING:
-                $message  = $translator->trans('project-request_end-page-analysis-in-progress-message');
                 $title    = $translator->trans('project-request_end-page-processing-title');
                 $subtitle = $translator->trans('project-request_end-page-processing-subtitle');
+                $message  = $translator->trans('project-request_end-page-analysis-in-progress-message');
                 break;
-            case \projects_status::COMPLETUDE_ETAPE_3:
-            case \projects_status::A_TRAITER:
-            case \projects_status::EN_ATTENTE_PIECES:
+            case \projects_status::IMPOSSIBLE_AUTO_EVALUATION:
                 $addMoreFiles = true;
-
-                if (1 == $this->project->process_fast) {
-                    $message = $translator->trans('project-request_end-page-fast-process-message');
-                } else {
-                    $message = $translator->trans('project-request_end-page-main-content');
-                }
+                $title        = $translator->trans('project-request_end-page-impossible-auto-evaluation-title');
+                $subtitle     = $translator->trans('project-request_end-page-impossible-auto-evaluation-subtitle');
+                $message      = $translator->trans('project-request_end-page-impossible-auto-evaluation-message');
                 break;
-            case \projects_status::NOTE_EXTERNE_FAIBLE:
+            case \projects_status::COMPLETE_REQUEST:
+            case \projects_status::POSTPONED:
+            case \projects_status::COMMERCIAL_REVIEW:
+            case \projects_status::PENDING_ANALYSIS:
+                $addMoreFiles = true;
+                $title        = $translator->trans('project-request_end-page-success-title');
+                $subtitle     = $translator->trans('project-request_end-page-success-subtitle');
+                $message      = $translator->trans('project-request_end-page-main-content');
+                break;
+            case \projects_status::NOT_ELIGIBLE:
+            default:
                 $title    = $translator->trans('project-request_end-page-rejection-title');
                 $subtitle = $translator->trans('project-request_end-page-rejection-subtitle');
 
@@ -1308,6 +1364,7 @@ class ProjectRequestController extends Controller
      *
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response
      */
     public function emailsAction($hash, Request $request)
@@ -1318,10 +1375,8 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        $this->project->stop_relances = 1;
-        $this->project->update();
-
-        $this->sendCommercialEmail('notification-stop-relance-dossier');
+        $projectManager = $this->get('unilend.service.project_manager');
+        $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::ABANDONED, $this->project, 0, 'Désinscription relance email');
 
         return $this->render('pages/project_request/emails.html.twig');
     }
@@ -1446,43 +1501,13 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @param string $fieldName
-     * @param int    $attachmentType
-     * @return bool
-     */
-    private function uploadAttachment($fieldName, $attachmentType)
-    {
-        if (false === ($this->attachment instanceof \attachment)) {
-            $this->attachment = $this->get('unilend.service.entity_manager')->getRepository('attachment');
-        }
-
-        if (false === ($this->attachmentType instanceof \attachment_type)) {
-            $this->attachmentType = $this->get('unilend.service.entity_manager')->getRepository('attachment_type');
-        }
-
-        if (false === ($this->upload instanceof \upload)) {
-            $this->upload = Loader::loadLib('upload');
-        }
-
-        if (false === ($this->attachmentHelper instanceof \attachment_helper)) {
-            $this->attachmentHelper = Loader::loadLib('attachment_helper', [$this->attachment, $this->attachmentType, $this->getParameter('kernel.root_dir') . '/../']);
-        }
-
-        $resultUpload = false;
-        if (isset($_FILES[$fieldName]['name']) && $fileInfo = pathinfo($_FILES[$fieldName]['name'])) {
-            $fileName     = $fileInfo['filename'] . '_' . $this->project->id_project;
-            $resultUpload = $this->attachmentHelper->upload($this->project->id_project, \attachment::PROJECT, $attachmentType, $fieldName, $this->upload, $fileName);
-        }
-
-        return $resultUpload;
-    }
-
-    /**
      * Check that hash is present in URL and valid
      * If hash is valid, check status and redirect to appropriate page
+     *
      * @param string  $route
      * @param string  $hash
      * @param Request $request
+     *
      * @return Response|null
      */
     private function checkProjectHash($route, $hash, Request $request)
@@ -1501,45 +1526,45 @@ class ProjectRequestController extends Controller
         }
 
         $this->company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->project->id_company);
-        $this->client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->company->getIdClientOwner());
+        $this->client  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->company->getIdClientOwner());
 
         if (self::PAGE_ROUTE_EMAILS === $route) {
             return null;
         }
 
         switch ($this->project->status) {
-            case \projects_status::DEMANDE_SIMULATEUR:
-                if ($route !== self::PAGE_ROUTE_SIMULATOR_START) {
-                    return $this->redirectToRoute(self::PAGE_ROUTE_SIMULATOR_START, ['hash' => $hash]);
-                }
-                break;
-            case \projects_status::NOTE_EXTERNE_FAIBLE:
+            case \projects_status::NOT_ELIGIBLE:
                 if (false === in_array($route, [self::PAGE_ROUTE_END, self::PAGE_ROUTE_PROSPECT])) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_END, ['hash' => $hash]);
                 }
                 break;
-            case \projects_status::COMPLETUDE_ETAPE_2:
-                if ($route !== self::PAGE_ROUTE_CONTACT && empty($request->getSession()->get('partnerProjectRequest'))) {
+            case \projects_status::INCOMPLETE_REQUEST:
+                if (empty($this->project->id_company_rating_history) && $route !== self::PAGE_ROUTE_SIMULATOR_START) {
+                    return $this->redirectToRoute(self::PAGE_ROUTE_SIMULATOR_START, ['hash' => $hash]);
+                } elseif (false === empty($this->project->id_company_rating_history) && $route !== self::PAGE_ROUTE_CONTACT && empty($request->getSession()->get('partnerProjectRequest'))) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $hash]);
-                } elseif ($route !== self::PAGE_ROUTE_PARTNER && false === empty($request->getSession()->get('partnerProjectRequest'))) {
+                } elseif (false === empty($this->project->id_company_rating_history) && $route !== self::PAGE_ROUTE_PARTNER && false === empty($request->getSession()->get('partnerProjectRequest'))) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_PARTNER, ['hash' => $hash]);
                 }
                 break;
-            case \projects_status::COMPLETUDE_ETAPE_3:
-                if ($this->project->process_fast == 1 && false === in_array($route, [self::PAGE_ROUTE_END, self::PAGE_ROUTE_FILES])) {
-                    return $this->redirectToRoute(self::PAGE_ROUTE_FILES, ['hash' => $hash]);
-                } elseif ($this->project->process_fast == 0 && $route !== self::PAGE_ROUTE_FINANCE) {
+            case \projects_status::COMPLETE_REQUEST:
+                if (false === in_array($route, [self::PAGE_ROUTE_FINANCE, self::PAGE_ROUTE_END, self::PAGE_ROUTE_FILES])) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_FINANCE, ['hash' => $hash]);
                 }
                 break;
-            case \projects_status::A_TRAITER:
-            case \projects_status::EN_ATTENTE_PIECES:
-            case \projects_status::ATTENTE_ANALYSTE:
+            case \projects_status::IMPOSSIBLE_AUTO_EVALUATION:
+                if (false === in_array($route, [self::PAGE_ROUTE_CONTACT, self::PAGE_ROUTE_FINANCE, self::PAGE_ROUTE_END, self::PAGE_ROUTE_FILES])) {
+                    return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $hash]);
+                }
+                break;
+            case \projects_status::POSTPONED:
+            case \projects_status::COMMERCIAL_REVIEW:
+            case \projects_status::PENDING_ANALYSIS:
                 if (false === in_array($route, [self::PAGE_ROUTE_END, self::PAGE_ROUTE_FILES])) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_FILES, ['hash' => $hash]);
                 }
                 break;
-            case \projects_status::ABANDON:
+            case \projects_status::ABANDONED:
             default: // Should correspond to "Revue analyste" and above
                 if ($route !== self::PAGE_ROUTE_END) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_END, ['hash' => $hash]);
@@ -1552,9 +1577,11 @@ class ProjectRequestController extends Controller
 
     /**
      * Redirect to corresponding route and update status
+     *
      * @param string $route
      * @param int    $projectStatus
      * @param string $message
+     *
      * @return Response
      */
     private function redirectStatus($route, $projectStatus, $message = '')
@@ -1563,7 +1590,7 @@ class ProjectRequestController extends Controller
         $oProjectManager = $this->get('unilend.service.project_manager');
 
         if ($this->project->status != $projectStatus) {
-            $oProjectManager->addProjectStatus(\users::USER_ID_FRONT, $projectStatus, $this->project, 0, $message);
+            $oProjectManager->addProjectStatus(Users::USER_ID_FRONT, $projectStatus, $this->project, 0, $message);
         }
 
         return $this->redirectToRoute($route, ['hash' => $this->project->hash]);
@@ -1571,6 +1598,7 @@ class ProjectRequestController extends Controller
 
     /**
      * @param string $email
+     *
      * @return string
      */
     private function removeEmailSuffix($email)
@@ -1591,8 +1619,9 @@ class ProjectRequestController extends Controller
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
-        /** @var \clients $clientRepository */
-        $clientRepository = $this->get('unilend.service.entity_manager')->getRepository('clients');
+        $em =  $this->get('doctrine.orm.entity_manager');
+        /** @var ClientsRepository $clientRepository */
+        $clientRepository = $em->getRepository('UnilendCoreBusinessBundle:Clients');
         if ($clientRepository->existEmail($email) && $this->removeEmailSuffix($this->client->getEmail()) !== $email) {
             $email = $email . '-' . time();
         }
@@ -1609,6 +1638,6 @@ class ProjectRequestController extends Controller
         $this->company->setEmailDirigeant($email)
             ->setEmailFacture($email);
 
-        $this->get('doctrine.orm.entity_manager')->flush();
+        $em->flush();
     }
 }

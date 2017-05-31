@@ -544,6 +544,7 @@ var UserNotifications = window.UserNotifications = {
     if (notification) {
       notification.isOpen = true
       $('[data-notification-id="' + notification.id + '"]').addClass('ui-notification-open')
+      $doc.trigger('UserNotifications:open', [notification.id, notification.projectId])
     }
   },
 
@@ -554,6 +555,7 @@ var UserNotifications = window.UserNotifications = {
     if (notification) {
       notification.isOpen = false
       $('[data-notification-id="' + notification.id + '"]').removeClass('ui-notification-open')
+      $doc.trigger('UserNotifications:close', [notification.id, notification.projectId])
     }
   },
 
@@ -811,6 +813,35 @@ $doc.on('ready', function () {
       UserNotifications.markAllRead()
     })
 
+    .on('UserNotifications:open', function(event, notificationId, projectId) {
+      // Open project in myloans table
+      if (projectId) {
+        var $loansTab = $('#loans')
+        var $project = $loansTab.find('#loan-' + projectId)
+        if ($loansTab.is('.active') && $project.length) {
+          if (!$project.is('.ui-details-open')) {
+            $('body').animate({
+              scrollTop: $project.offset().top - 80,
+              duration: 300
+            }, function () {
+              $project.find('.ui-show-table-myloans-item-activity').trigger('click')
+            });
+          }
+        }
+      }
+    })
+
+    .on('UserNotifications:close', function(event, notificationId, projectId) {
+      // Close project in myloans table
+      if (projectId) {
+        var $loansTab = $('#loans')
+        var $project = $loansTab.find('#loan-' + projectId)
+        if ($loansTab.is('.active') && $project.is('.ui-details-open')) {
+          $project.find('.ui-show-table-myloans-item-activity').trigger('click')
+        }
+      }
+    })
+
     // Click on element designated to trigger 'UserNotifications:markAllRead' event
     .on(Utility.clickEvent, '[data-usernotifications-markallread]', function (event) {
       event.preventDefault()
@@ -821,23 +852,6 @@ $doc.on('ready', function () {
 
       return false
     })
-
-    // Focus a notification to show its details
-    // .on('focus', '[data-notification-id]', function (event) {
-    //   var $target = $(event.target)
-    //
-    //   // Toggle the notification's open class
-    //   var $notification = $(this)
-    //   var notificationId = $notification.attr('data-notification-id')
-    //
-    //   // Toggle notification
-    //   UserNotifications.openNotification(notificationId)
-    //
-    //   // If notification unread, mark as read
-    //   if ($notification.is('.ui-notification-status-unread')) {
-    //     UserNotifications.markRead(notificationId)
-    //   }
-    // })
 
     // Click on an element to show/hide its details
     .on(Utility.inputStartEvent + ' keydown', '[data-notification-id]', function (event) {
@@ -852,11 +866,12 @@ $doc.on('ready', function () {
         var notificationId = $notification.attr('data-notification-id')
 
         // Toggle notification
-        UserNotifications.toggleNotification(notificationId)
-
-        // If notification unread, mark as read
-        if ($notification.is('.ui-notification-status-unread')) {
-          UserNotifications.markRead(notificationId)
+        if ($target.closest('[data-ignore-toggle]').length === 0) {
+          UserNotifications.toggleNotification(notificationId)
+          // If notification unread, mark as read
+          if ($notification.is('.ui-notification-status-unread')) {
+            UserNotifications.markRead(notificationId)
+          }
         }
       }
     })

@@ -25,12 +25,16 @@
                     <td><input type="text" name="email" id="email" class="input_large" /></td>
                 </tr>
                 <tr>
+                    <th><label for="slack">Slack :</label></th>
+                    <td><input type="text" name="slack" id="slack" class="input_large" /></td>
+                </tr>
+                <tr>
                     <th><label for="id_user_type">Droits</label></th>
                     <td>
                         <select name="id_user_type" id="id_user_type" class="select">
                             <option value="0">Choisir</option>
-                            <?php foreach($this->lUsersTypes as $type) : ?>
-                                <option value="<?=$type['id_user_type']?>"><?=$type['label']?></option>
+                            <?php foreach ($this->lUsersTypes as $type) : ?>
+                                <option value="<?= $type['id_user_type'] ?>"><?= $type['label'] ?></option>
                             <?php endforeach; ?>
                         </select>
                     </td>
@@ -48,7 +52,7 @@
                     <td>&nbsp;</td>
                     <th>
                         <input type="hidden" name="form_add_users" id="form_add_users" />
-                        <input type="submit" value="Valider" title="Valider" name="send_users" id="send_users" class="btn" />
+                        <button type="submit" class="btn-primary">Valider</button>
                     </th>
                 </tr>
             </table>

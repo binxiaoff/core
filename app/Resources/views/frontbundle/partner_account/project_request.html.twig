@@ -1,0 +1,79 @@
+{% extends 'partner_account/_layout.html.twig' %}
+
+{% set page = {
+    id: 'partner-account-project-request',
+    classNames: 'partner-account'
+} %}
+
+{% block dashboardContent %}
+    <section class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-content tab-content">
+            <article class="dashboard-tab-pane">
+                <div class="panel">
+                    <header class="panel-header">
+                        <h3>{% trans %} partner-project-request_title {% endtrans %}</h3>
+                    </header>
+                    <form action="{{ path('partner_project_request_form') }}" method="post" id="simulator-partner" class="simulator">
+                        <fieldset class="simulator-pane-inner" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
+                            <div class="form-validation-notifications"></div>
+                            <div class="row columns-with-space">
+                                <div class="form-field col-lg-6 col-md-6">
+                                    <label for="simulator-input-amount">{% trans %} partner-project-request_simulator-amount-field-title {% endtrans %}
+                                        <span class="c-t3">{% trans %} partner-project-request_simulator-amount-field-addition {% endtrans %}</span>
+                                    </label>
+                                    <input id="simulator-input-amount" type="text" step="any" name="simulator[amount]" value="{% if form.values.amount is defined %}{{ form.values.amount|e('html_attr') }}{% endif %}"
+                                           placeholder="{% trans %} partner-project-request_simulator-amount-field-placeholder {% endtrans %}"
+                                           class="input-field"
+                                           data-formvalidation-minvalue="{{ projectAmountMin }}" data-formvalidation-maxvalue="{{ projectAmountMax }}" data-formvalidation-input
+                                           data-formvalidation-required="true">
+                                </div>
+                                <div class="form-field col-lg-6 col-md-6">
+                                    <label for="simulator-input-reason">{% trans %} partner-project-request_simulator-borrowing-motif-title {% endtrans %}</label>
+                                    <select id="simulator-input-reason" name="simulator[motive]" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="motive">
+                                        <option value="">{% trans %} partner-project-request_simulator-borrowing-motif-select {% endtrans %}</option>
+                                        {% for motive in borrowingMotives %}
+                                            <option value="{{ motive.idMotive }}"{% if form.values.motive is defined and form.values.motive == motive.idMotive %} selected{% endif %}>{{ ('borrowing-motive_motive-' ~ motive.idMotive)|trans }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row columns-with-space">
+                                <div class="form-field col-lg-12 col-md-12">
+                                    <label>
+                                        {% trans %} partner-project-request_simulator-borrowing-period-title {% endtrans %}
+                                        <span class="c-t3">{% trans %} partner-project-request_simulator-borrowing-period-addition {% endtrans %}</span>
+                                    </label>
+                                    <div class="custom-input-duration simulator-input-duration-wrap" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="duration">
+                                        {% for period in loanPeriods %}
+                                            <label>
+                                                <input type="radio" id="simulator-input-duration-{{ period }}" name="simulator[duration]" value="{{ period }}"{% if form.values.duration is defined and form.values.duration == period %} checked{% endif %}>
+                                                <span class="label">{{ period }}</span>
+                                            </label>
+                                        {% endfor %}
+                                    </div><!-- /.custom-input-duration -->
+                                </div><!-- /.form-field -->
+                            </div>
+                            <div class="row columns-with-space">
+                                <div class="form-field bottom col-lg-6 col-md-6">
+                                    <label for="simulator-input-siren">{% trans %} partner-project-request_simulator-siren-field-label {% endtrans %}</label>
+                                    <input type="text" id="simulator-input-siren" name="simulator[siren]" value="{% if form.values.siren is defined %}{{ form.values.siren|e('html_attr') }}{% endif %}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="siren">
+                                </div><!-- /.form-field -->
+                                <div class="form-field bottom col-lg-6 col-md-6">
+                                    <label for="simulator-input-email">{% trans %} partner-project-request_simulator-email-field-label {% endtrans %}</label>
+                                    <div class="input-group">
+                                        <input type="email" id="simulator-input-email" name="simulator[email]" value="{% if form.values.email is defined %}{{ form.values.email|e('html_attr') }}{% endif %}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
+                                    </div><!-- /.input-group -->
+                                </div><!-- /.form-field -->
+                            </div>
+                        </fieldset><!-- /.simulator-pane-inner -->
+                        <footer class="simulator-pane-inner actions bg-p1 c-bg5 text-align-right">
+                            <button type="submit" class="btn-continue btn-alternate" data-spinnerbutton>
+                                {% trans %} partner-project-request_simulator-footer-continue-button {% endtrans %}
+                            </button>
+                        </footer><!-- /.simulator-pane-inner -->
+                    </form><!-- /.simulator -->
+                </div>
+            </article><!-- /.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </section><!-- /.dashboard-tabs -->
+{% endblock %}

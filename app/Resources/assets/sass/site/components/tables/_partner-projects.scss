@@ -1,0 +1,89 @@
+.table-prospects, .table-projects, .table-users {
+    table-layout: fixed;
+
+    tr {
+        &.odd {
+            background-color: #fbf9fb;
+        }
+    }
+
+    td, th {
+        padding-left: 10px;
+        padding-right: 10px;
+        vertical-align: top;
+    }
+    th {
+        font-size: 10px;
+    }
+    td {
+        font-size: 12px;
+    }
+    .last-name {
+        text-transform: uppercase;
+    }
+}
+
+.table-projects-item-borrower, .table-prospects-item-borrower,
+.table-projects-item-submitter, .table-prospects-item-submitter,
+.details-memo-author {
+    width: 23%;
+}
+
+.ui-user-type-partner-admin {
+    .table-projects-item-borrower, .table-prospects-item-borrower,
+    .table-projects-item-submitter, .table-prospects-item-submitter,
+    .details-memo-author {
+        width: 18%;
+    }
+}
+
+.table-prospects-item-action, .table-projects-item-action, .table-users-item-action {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: right;
+    .btn-default {
+        padding: 4px;
+        margin-right: 2px;
+        min-height: 0;
+        min-width: 0;
+        height: 28px;
+        width: 28px;
+        line-height: 1;
+        font-size: 14px;
+        color: $c-t3;
+        &:last-child {
+            margin-right: 0;
+        }
+        &:hover {
+            color: $c-p1;
+        }
+    }
+    .icon {
+        line-height: 16px;
+    }
+}
+
+.table-prospects-item-action, .table-projects-item-action {
+    .icon {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+    }
+}
+.table-projects-details {
+    > td {
+        padding: 0;
+    }
+}
+
+// UI States
+.ui-details-open [data-action="memos"] {
+    background-color: darken($c-bg1, 10%);
+    border-color: darken($c-bg1, 10%);
+    color: $c-t1;
+}
+.ui-table-projects-item-changed {
+    > td {
+        font-weight: bold;
+    }
+}

@@ -1,5 +1,3 @@
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
-
 <div id="contenu">
     <div id="errors" style="background-color: #fadfe4; font-size: 14px; line-height: 1.3em; text-align: center; margin-top: 20px; margin-bottom: 20px; ">
         <?php if (false === empty($_SESSION['succession']['error'])) : ?>
@@ -27,7 +25,7 @@
 
         <input type="hidden" name="succession_check">
     <div style="text-align: center;">
-        <input type="submit" class="btn" value="Vérifier">
+        <button type="submit" class="btn-primary">Vérifier</button>
     </div>
 </form>
 <?php if (false === empty($_SESSION['succession']['check'])) : ?>
@@ -64,7 +62,7 @@
         </table>
             <div style="text-align: center;">
                 <input type="hidden" name="succession_validate">
-                <input type="submit" class="btn" value="Valider le transfer">
+                <button type="submit" class="btn-primary">Valider le transfert</button>
             </div>
         </form>
     </div>

@@ -8,7 +8,7 @@ class prescripteursController extends bootstrap
 
         $this->catchAll = true;
 
-        // Controle d'acces Ã  la rubrique
+        // Controle d'acces à la rubrique
         $this->users->checkAccess('emprunteurs');
 
         // Activation du menu
@@ -57,9 +57,12 @@ class prescripteursController extends bootstrap
             header('Location:' . $this->lurl . '/prescripteurs/gestion/');
             return;
         }
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
         $this->aProjects      = $this->projects->searchDossiers('', '', '', '', '', '', '', '', '', $this->params[0]);
         $this->iProjectsCount = array_shift($this->aProjects);
+        $this->bankAccount    = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->prescripteurs->id_client);
 
         if (isset($_POST['form_edit_prescripteur'])) {
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
@@ -79,9 +82,25 @@ class prescripteursController extends bootstrap
 
             $this->companies->siren = $_POST['siren'];
             $this->companies->name  = $_POST['company_name'];
-            $this->companies->iban  = $_POST['iban'];
-            $this->companies->bic   = $_POST['bic'];
             $this->companies->update();
+
+            try {
+                if ($_POST['bic'] && $_POST['iban']) {
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager $bankAccountManager */
+                    $bankAccountManager = $this->get('unilend.service.bank_account_manager');
+                    $clientEntity       = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->prescripteurs->id_client);
+                    $bankAccount        = $bankAccountManager->saveBankInformation($clientEntity, $_POST['bic'], $_POST['iban']);
+                    if ($bankAccount) {
+                        $bankAccountManager->validateBankAccount($bankAccount);
+                    }
+                }
+            } catch (Exception $exception) {
+                $_SESSION['freeow']['title']   = 'Error RIB';
+                $_SESSION['freeow']['message'] = $exception->getMessage();
+
+                header('Location: ' . $this->lurl . '/prescripteurs/edit/' . $this->prescripteurs->id_prescripteur);
+                exit;
+            }
 
             $serialize = serialize(array('id_prescripteur' => $this->prescripteurs->id_prescripteur, 'post' => $_POST));
             $this->users_history->histo(5, 'edit prescripteur', $_SESSION['user']['id_user'], $serialize);
@@ -97,57 +116,80 @@ class prescripteursController extends bootstrap
     {
         $this->hideDecoration();
 
-        if (isset($_POST['send_add_prescripteur'])) {
+        if (false === empty($_POST)) {
+            $this->autoFireView = false;
+
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
-            $this->autoFireView = false;
-            /** @var clients $oClients */
-            $oClients = $this->loadData('clients');
-            /** @var clients_adresse $oClientsAdresses */
-            $oClientsAdresses = $this->loadData('clients_adresses');
-            /** @var prescripteurs $oPrescripteurs */
-            $oPrescripteurs = $this->loadData('prescripteurs');
-            /** @var companies $oCompanies */
-            $oCompanies = $this->loadData('companies');
+            /** @var \clients $client */
+            $client = $this->loadData('clients');
+            $client->civilite  = $_POST['civilite'];
+            $client->nom       = $this->ficelle->majNom($_POST['nom']);
+            $client->prenom    = $this->ficelle->majNom($_POST['prenom']);
+            $client->email     = trim($_POST['email']);
+            $client->telephone = str_replace(' ', '', $_POST['telephone']);
+            $client->id_langue = 'fr';
+            $client->create();
 
-            $oClients->civilite  = $_POST['civilite'];
-            $oClients->nom       = $this->ficelle->majNom($_POST['nom']);
-            $oClients->prenom    = $this->ficelle->majNom($_POST['prenom']);
-            $oClients->email     = trim($_POST['email']);
-            $oClients->telephone = str_replace(' ', '', $_POST['telephone']);
-            $oClients->id_langue = 'fr';
+            /** @var \clients_adresses $clientAddress */
+            $clientAddress            = $this->loadData('clients_adresses');
+            $clientAddress->adresse1  = $_POST['adresse'];
+            $clientAddress->ville     = $_POST['ville'];
+            $clientAddress->cp        = $_POST['cp'];
+            $clientAddress->id_client = $client->id_client;
+            $clientAddress->create();
 
-            $oClientsAdresses->adresse1 = $_POST['adresse'];
-            $oClientsAdresses->ville    = $_POST['ville'];
-            $oClientsAdresses->cp       = $_POST['cp'];
-
-            $aCompany = $oCompanies->select('siren = ' . $_POST['siren'], 'added ASC', 0, 1);
-            if ($aCompany) {
-                $iCompanyId = $aCompany[0]['id_company'];
-            } else {
-                $oCompanies->siren = $_POST['siren'];
-                $oCompanies->name  = $_POST['company_name'];
-                $oCompanies->iban  = $_POST['iban'];
-                $oCompanies->bic   = $_POST['bic'];
-                $iCompanyId        = $oCompanies->create();
+            /** @var \companies $company */
+            $company      = $this->loadData('companies');
+            if ($_POST['siren']) {
+                $sirenCompany = $company->select('siren = ' . $_POST['siren'], 'added ASC', 0, 1);
             }
 
-            $oClients->id_client = $oClients->create();
+            if (false === empty($sirenCompany)) {
+                $companyId = $sirenCompany[0]['id_company'];
+            } else {
+                try {
+                    if ($_POST['bic'] && $_POST['iban']) {
+                        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager $bankAccountManager */
+                        $bankAccountManager = $this->get('unilend.service.bank_account_manager');
+                        /** @var \Doctrine\ORM\EntityManager $entityManager */
+                        $entityManager = $this->get('doctrine.orm.entity_manager');
 
-            $oClientsAdresses->id_client = $oClients->id_client;
-            $oClientsAdresses->create();
+                        $clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+                        $bankAccount  = $bankAccountManager->saveBankInformation($clientEntity, $_POST['bic'], $_POST['iban']);
+                        if ($bankAccount) {
+                            $bankAccountManager->validateBankAccount($bankAccount);
+                        }
+                    }
+                } catch (Exception $exception) {
+                    echo json_encode([
+                        'result' => 'KO'
+                    ]);
+                    exit;
+                }
 
-            $oPrescripteurs->id_client = $oClients->id_client;
-            $oPrescripteurs->id_entite = $iCompanyId;
+                $company->siren = $_POST['siren'];
+                $company->name  = $_POST['company_name'];
 
-            $oPrescripteurs->id_prescripteur = $oPrescripteurs->create();
+                $companyId = $company->create();
+            }
 
-            $this->addAdvisorToProject($_POST['id_project'], $oPrescripteurs->id_prescripteur);
+            /** @var \prescripteurs $advisor */
+            $advisor            = $this->loadData('prescripteurs');
+            $advisor->id_client = $client->id_client;
+            $advisor->id_entite = $companyId;
+            $advisor->create();
 
-            $serialize = serialize(array('id_prescripteur' => $oPrescripteurs->id_prescripteur, 'post' => $_POST, 'files' => $_FILES));
-            $this->users_history->histo(5, 'add prescripteur', $_SESSION['user']['id_user'], $serialize);
+            if (false === empty($_POST['id_project'])) {
+                $this->addAdvisorToProject($_POST['id_project'], $advisor->id_prescripteur);
+            }
 
-            echo json_encode(array('result' => 'OK', 'id_prescripteur' => $oPrescripteurs->id_prescripteur));
+            $this->users_history->histo(5, 'add prescripteur', $_SESSION['user']['id_user'], serialize(['id_prescripteur' => $advisor->id_prescripteur, 'post' => $_POST]));
+
+            echo json_encode([
+                'result'          => 'OK',
+                'id_prescripteur' => $advisor->id_prescripteur
+            ]);
         }
     }
 

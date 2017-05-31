@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="greenpoint_attachment_detail", indexes={@ORM\Index(name="id_greenpoint_attachment", columns={"id_greenpoint_attachment"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class GreenpointAttachmentDetail
 {
@@ -169,7 +170,7 @@ class GreenpointAttachmentDetail
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -185,13 +186,12 @@ class GreenpointAttachmentDetail
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment")
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment", inversedBy="greenpointAttachmentDetail")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_greenpoint_attachment", referencedColumnName="id_greenpoint_attachment")
      * })
      */
     private $idGreenpointAttachment;
-
 
 
     /**
@@ -778,5 +778,23 @@ class GreenpointAttachmentDetail
     public function getIdGreenpointAttachment()
     {
         return $this->idGreenpointAttachment;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

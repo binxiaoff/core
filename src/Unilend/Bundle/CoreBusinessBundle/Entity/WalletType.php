@@ -12,18 +12,19 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class WalletType
 {
-    const LENDER                           = 'lender';
-    const BORROWER                         = 'borrower';
-    const UNILEND                          = 'unilend';
-    const UNILEND_PROMOTIONAL_OPERATION    = 'unilend_promotional_operation';
-    const TAX_PRELEVEMENTS_OBLIGATOIRES    = 'tax_prelevements_obligatoires';
-    const TAX_RETENUES_A_LA_SOURCE         = 'tax_retenues_a_la_source';
-    const TAX_CSG                          = 'tax_csg';
-    const TAX_PRELEVEMENTS_SOCIAUX         = 'tax_prelevements_sociaux';
-    const TAX_CONTRIBUTIONS_ADDITIONNELLES = 'tax_contributions_additionnelles';
-    const TAX_PRELEVEMENTS_DE_SOLIDARITE   = 'tax_prelevements_de_solidarite';
-    const TAX_CRDS                         = 'tax_crds';
-    const DEBT_COLLECTOR                   = 'debt_collector';
+    const BORROWER                             = 'borrower';
+    const DEBT_COLLECTOR                       = 'debt_collector';
+    const LENDER                               = 'lender';
+    const PARTNER                              = 'partner';
+    const TAX_FR_ADDITIONAL_CONTRIBUTIONS      = 'tax_fr_contributions_additionnelles';
+    const TAX_FR_CRDS                          = 'tax_fr_crds';
+    const TAX_FR_CSG                           = 'tax_fr_csg';
+    const TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE = 'tax_fr_retenues_a_la_source';
+    const TAX_FR_SOCIAL_DEDUCTIONS             = 'tax_fr_prelevements_sociaux';
+    const TAX_FR_SOLIDARITY_DEDUCTIONS         = 'tax_fr_prelevements_de_solidarite';
+    const TAX_FR_STATUTORY_CONTRIBUTIONS       = 'tax_fr_prelevements_obligatoires';
+    const UNILEND                              = 'unilend';
+    const UNILEND_PROMOTIONAL_OPERATION        = 'unilend_promotional_operation';
 
     /**
      * @var string

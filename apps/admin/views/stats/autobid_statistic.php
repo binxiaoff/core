@@ -25,28 +25,22 @@
             changeYear: true,
             yearRange: '<?=(date('Y') - 10)?>:<?=(date('Y') + 10)?>'
         });
-
-        <?php if (isset($_SESSION['freeow'])) : ?>
-            var title = "<?= $_SESSION['freeow']['title'] ?>",
-                message = "<?= $_SESSION['freeow']['message'] ?>",
-                opts = {},
-                container;
-
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-            <?php unset($_SESSION['freeow']); ?>
-        <?php endif; ?>
     });
 </script>
-<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
-    <h1>Statistiques des AutoLends</h1>
-    <form method="post" name="recupCSV">
-        <input type="hidden" name="extraction_csv"/>
-        <input type="hidden" name="date_from" value="<?= isset($_POST['date_from'])? $_POST['date_from'] : '' ?>"/>
-        <input type="hidden" name="date_to" value="<?= isset($_POST['date_to'])? $_POST['date_to'] : '' ?>"/>
-    </form>
-    <div style="margin-bottom:20px; float:right;"><a onClick="document.forms['recupCSV'].submit();" class="btn colorAdd">Recuperation du CSV</a></div>
+    <div class="row">
+        <div class="col-sm-6">
+            <h1>Statistiques Autolend</h1>
+        </div>
+        <div class="col-sm-6">
+            <form method="post" name="recupCSV">
+                <input type="hidden" name="extraction_csv"/>
+                <input type="hidden" name="date_from" value="<?= isset($_POST['date_from'])? $_POST['date_from'] : '' ?>"/>
+                <input type="hidden" name="date_to" value="<?= isset($_POST['date_to'])? $_POST['date_to'] : '' ?>"/>
+            </form>
+            <a role="button" onclick="document.forms['recupCSV'].submit();" class="btn-primary pull-right">Recuperation du CSV</a>
+        </div>
+    </div>
     <div style="width:500px; background-color: white; border: 1px solid #A1A5A7; border-radius: 10px; margin: 0 auto 20px; padding: 5px;">
         <form method="post" name="date_select">
             <fieldset>
@@ -57,7 +51,7 @@
 
                         <td style="padding-top:23px;">
                             <input type="hidden" name="search" id="search"/>
-                            <input type="submit" value="Valider" title="Valider" name="send_dossier" id="send_dossier" class="btn"/>
+                            <button type="submit" class="btn-primary">Rechercher</button>
                         </td>
                     </tr>
                     <tr>

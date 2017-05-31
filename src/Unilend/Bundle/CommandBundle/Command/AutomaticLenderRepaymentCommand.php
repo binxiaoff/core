@@ -1,19 +1,22 @@
 <?php
+
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use CL\Slack\Payload\ChatPostMessagePayload;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
 use Unilend\core\Loader;
 
 class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
 {
-
     protected function configure()
     {
         $this
@@ -174,7 +177,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 $repaymentLog->fin = date('Y-m-d H:i:s');
                 $repaymentLog->update();
 
-                $logger->error(
+                $logger->warning(
                     'Cannot find pending lenders\'s repayment schedule to repay for project ' . $r['id_project'] . ' (order: ' . $r['ordre'] . '). The repayment may have been repaid manually.',
                     array('class' => __CLASS__, 'function' => __FUNCTION__)
                 );
@@ -242,8 +245,9 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                     'annee'           => date('Y'),
                     'lien_fb'         => $sFB,
                     'lien_tw'         => $sTwitter,
-                    'montantRemb'     => $ficelle->formatNumber(bcdiv($rembNetTotal, 100, 2))
+                    'montantRemb'     => $ficelle->formatNumber(bcdiv(bcadd(bcadd($paymentSchedule->getMontant(), $paymentSchedule->getCommission()), $paymentSchedule->getTva()), 100, 2))
                 );
+
                 $logger->debug('Automatic repayment, send email : facture-emprunteur-remboursement. Data to use: ' . json_encode($varMail), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $r['id_project'] ]);
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
@@ -270,7 +274,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                     $oInvoice->id_company      = $companies->id_company;
                     $oInvoice->id_project      = $projects->id_project;
                     $oInvoice->ordre           = $r['ordre'];
-                    $oInvoice->type_commission = \factures::TYPE_COMMISSION_REMBOURSEMENT;
+                    $oInvoice->type_commission = Factures::TYPE_COMMISSION_REPAYMENT;
                     $oInvoice->commission      = $projects->commission_rate_repayment;
                     $oInvoice->montant_ht      = $oBorrowerRepaymentSchedule->commission;
                     $oInvoice->tva             = $oBorrowerRepaymentSchedule->tva;
@@ -298,25 +302,25 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 $repaymentLog->update();
 
                 if (0 == $echeanciers->counter('id_project = ' . $r['id_project'] . ' AND status = 0')) {
+                    /** @var ProjectManager $projectManager */
+                    $projectManager = $this->getContainer()->get('unilend.service.project_manager');
+                    $projectManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::REMBOURSE, $projects);
+
                     /** @var MailerManager $mailerManager */
                     $mailerManager = $this->getContainer()->get('unilend.service.email_manager');
                     $mailerManager->setLogger($logger);
                     $mailerManager->sendInternalNotificationEndOfRepayment($projects);
                     $mailerManager->sendClientNotificationEndOfRepayment($projects);
                 }
-                $stopWatchEvent = $stopWatch->stop('autoRepayment');
-                if ($this->getContainer()->getParameter('kernel.environment') === 'prod') {
-                    $payload = new ChatPostMessagePayload();
-                    $payload->setChannel('#plateforme');
-                    $payload->setText(
-                        '*<' . $url . '/projects/detail/' . $projects->slug . '|' . $projects->title . '>* - Remboursement automatique effectué en '
-                        . round($stopWatchEvent->getDuration() / 1000, 2) . ' secondes (' . $nb_pret_remb . ' prêts, échéance #' . $r['ordre'] . ').'
-                    );
-                    $payload->setUsername('Unilend');
-                    $payload->setIconUrl($this->getContainer()->get('assets.packages')->getUrl('/assets/images/slack/unilend.png'));
-                    $payload->setAsUser(false);
 
-                    $this->getContainer()->get('cl_slack.api_client')->send($payload);
+                $stopWatchEvent = $stopWatch->stop('autoRepayment');
+
+                if ($this->getContainer()->getParameter('kernel.environment') === 'prod') {
+                    $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
+                    $message      = $slackManager->getProjectName($projects) .
+                        ' - Remboursement automatique effectué en '
+                        . round($stopWatchEvent->getDuration() / 1000, 1) . ' secondes (' . $nb_pret_remb . ' prêts, échéance #' . $r['ordre'] . ').';
+                    $slackManager->sendMessage($message);
                 }
             } else {
                 $projectRepayment->get($r['id_project_remb'], 'id_project_remb');

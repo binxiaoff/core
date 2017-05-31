@@ -16,7 +16,7 @@
                                 <li role="presentation" class="dashboard-nav-operations{% if app.request.get('_route') == 'borrower_account_operations' %} active{% endif %}"><a href="{{ path('borrower_account_operations') }}"><span class="icon fa-operations-u"></span><span class="label">{{ 'borrower-account-nav_your-operations'|trans }}</span></a></li>
                                 <li role="presentation" class="dashboard-nav-profile{% if app.request.get('_route') == 'borrower_account_profile' %} active{% endif %}"><a href="{{ path('borrower_account_profile') }}"><span class="icon fa-profile-u"></span><span class="label">{{ 'borrower-account-nav_profile'|trans }}</span></a></li>
                                 <li role="presentation" class="dashboard-nav-contact{% if app.request.get('_route') == 'borrower_account_contact' %} active{% endif %}"><a href="{{ path('borrower_account_contact') }}"><span class="icon fa-pen-u"></span><span class="label">{{ 'borrower-account-nav_contact'|trans }}</span></a></li>
-                                <li role="presentation" class="dashboard-nav-faq"><a href="{{ faq_url }}" target="_blank"><span class="icon fa-question-circle-o"></span><span class="label">{{ 'borrower-account-nav_faq'|trans }}</span></a></li>
+                                <li role="presentation" class="dashboard-nav-faq"><a href="{{ setting('URL FAQ emprunteur') }}" target="_blank"><span class="icon fa-question-circle-o"></span><span class="label">{{ 'borrower-account-nav_faq'|trans }}</span></a></li>
                             </ul>
                         {% endblock %}
                     </nav>

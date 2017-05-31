@@ -36,7 +36,7 @@ class LenderManager
         /** @var \clients $oClient */
         $oClient = $this->oEntityManager->getRepository('clients');
 
-        if ($oClient->get($oLenderAccount->id_client_owner) && $oClient->status == \clients::STATUS_ONLINE
+        if ($oClient->get($oLenderAccount->id_client_owner) && $oClient->status == Clients::STATUS_ONLINE
             && $this->isValidated($oClient)
         ) {
             return true;

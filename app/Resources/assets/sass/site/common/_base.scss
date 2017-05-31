@@ -22,8 +22,16 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 
+a {
+  cursor: pointer;
+}
+
 img {
   @include constrain-size-by-width;
+}
+
+a {
+  cursor: pointer;
 }
 
 // This helps lame browsers like IE scale SVGs properly
@@ -70,5 +78,12 @@ hr {
   [role="tab"][data-toggle],
   [role="button"][data-toggle] {
     visibility: hidden;
+  }
+}
+
+small {
+  font-size: 14px;
+  @include devices('xs') {
+    font-size: 12px;
   }
 }

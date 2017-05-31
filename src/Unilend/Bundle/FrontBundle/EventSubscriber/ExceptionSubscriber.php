@@ -29,7 +29,7 @@ class ExceptionSubscriber implements EventSubscriberInterface
         $exception = $event->getException();
 
         if ($exception instanceof NotFoundHttpException) {
-            new Dispatcher($this->kernel, 'default');
+            new Dispatcher($this->kernel, 'default', $event->getRequest());
             exit;
         }
     }

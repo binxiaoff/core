@@ -8,9 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
  * Wallet
  *
  * @ORM\Table(name="wallet", indexes={@ORM\Index(name="fk_id_type_idx", columns={"id_type"}), @ORM\Index(name="idx_id_client", columns={"id_client"})})
- * @ORM\Entity
- * @ORM\HasLifecycleCallbacks
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class Wallet
 {
@@ -64,7 +63,7 @@ class Wallet
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients", inversedBy="wallets")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
      * })
@@ -271,7 +270,7 @@ class Wallet
     {
         if ($this->getIdClient() instanceof Clients && $this->getIdClient()->getNom() && $this->getIdClient()->getPrenom()) {
             $this->wireTransferPattern = mb_strtoupper(
-                str_pad($this->idClient, 6, 0, STR_PAD_LEFT) .
+                str_pad($this->getIdClient()->getIdClient(), 6, 0, STR_PAD_LEFT) .
                 substr(\URLify::downcode($this->getIdClient()->getPrenom()), 0, 1) .
                 \URLify::downcode($this->getIdClient()->getNom())
             );

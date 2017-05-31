@@ -1,4 +1,4 @@
-<div class="tab_title" id="title_etape5">Etape 5</div>
+<a class="tab_title" id="section-documents" href="#section-documents">5. Documents</a>
 <div class="tab_content" id="etape5">
     <script type="text/javascript">
         function formUploadCallback(result) {
@@ -7,17 +7,9 @@
                 $.each(aStatus, function(fileType, value){
                     if ('ok' == value) {
                         $(".statut_" + fileType).html('Enregistré');
-
-                        <?php if (in_array($this->projects->period, array(0, 1000000)) && $this->projects->status == \projects_status::PREP_FUNDING) { ?>
-                        if (fileType == 'fichier_3' && $('#displayPeriodHS').css('display') == 'block') { // RIB
-                            $("#status").css('display', 'block');
-                            $("#msgProject").css('display', 'block');
-                            $('#displayPeriodHS').css('display', 'none');
-                            $("#msgProjectPeriodHS").css('display', 'none');
-                        }
-                        <?php } ?>
                     }
                 });
+
                 $("#valid_etape5").slideDown();
 
                 setTimeout(function () {
@@ -38,32 +30,49 @@
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($this->aAttachmentTypes as $attachmentType) : ?>
-                    <tr<?php if (in_array($attachmentType['id'], $this->aMandatoryAttachmentTypes)) : ?> class="highlighted"<?php endif; ?>>
+                <?php
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $attachmentType */
+                foreach ($this->aAttachmentTypes as $attachmentType) :
+                ?>
+                    <tr<?php if (in_array($attachmentType, $this->aMandatoryAttachmentTypes)) : ?> class="highlighted"<?php endif; ?>>
+                    <?php
+                    $currentAttachment = null;
+                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment $projectAttachment */
+                    foreach ($this->aAttachments as $projectAttachment) :
+                        $attachment = $projectAttachment->getAttachment();
+                        if ($attachment->getType() === $attachmentType) {
+                            $currentAttachment = $attachment;
+                            break;
+                        }
+                        ?>
+                    <?php endforeach; ?>
+                    <?php if ($currentAttachment) : ?>
                         <td class="remove_col">
-                            <?php if (isset($this->aAttachments[$attachmentType['id']]['path'])) : ?>
-                                <a href="#" data-id="<?= $this->aAttachments[$attachmentType['id']]['id'] ?>" data-label="<?= $attachmentType['label'] ?>" class="icon_remove_attachment"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer" title="Supprimer"></a>
-                            <?php endif; ?>
+                            <a href="#" data-id="<?= $projectAttachment->getId() ?>" data-label="<?= $attachmentType->getLabel() ?>" class="icon_remove_attachment"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer" title="Supprimer"></a>
                         </td>
-                        <td class="type_col"><?= $attachmentType['label'] ?></td>
+                        <td class="type_col"><?= $attachmentType->getLabel() ?></td>
                         <td class="label_col">
-                            <?php if (isset($this->aAttachments[$attachmentType['id']]['path'])) : ?>
-                                <a href="<?= $this->url ?>/attachment/download/id/<?= $this->aAttachments[$attachmentType['id']]['id'] ?>/file/<?= urlencode($this->aAttachments[$attachmentType['id']]['path']) ?>"><?= $this->aAttachments[$attachmentType['id']]['path'] ?></a>
-                            <?php endif; ?>
+                            <a href="<?= $this->url ?>/attachment/download/id/<?= $currentAttachment->getId() ?>/file/<?= urlencode($currentAttachment->getPath()) ?>"><?= $currentAttachment->getPath() ?></a>
                         </td>
-                        <td class="statut_fichier_<?= $attachmentType['id'] ?>" id="statut_fichier_id_<?= $attachmentType['id'] ?>"><?= isset($this->aAttachments[$attachmentType['id']]) === true ? 'Enregistré' : '' ?></td>
-                        <td><input type="file" name="<?= $attachmentType['id'] ?>" id="fichier_project_<?= $attachmentType['id'] ?>"/></td>
+                        <td class="statut_fichier_<?= $attachmentType->getId() ?>" id="statut_fichier_id_<?= $projectAttachment->getId() ?>"><?= $currentAttachment ? 'Enregistré' : '' ?></td>
+                    <?php else : ?>
+                        <td class="remove_col"></td>
+                        <td class="type_col"><?= $attachmentType->getLabel() ?></td>
+                        <td class="label_col"></td>
+                        <td class="statut_fichier_<?= $attachmentType->getId() ?>"></td>
+                    <?php endif; ?>
+                        <td><input type="file" name="<?= $attachmentType->getId() ?>" id="fichier_project_<?= $attachmentType->getId() ?>"/></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
         <div id="valid_etape5" class="valid_etape"><br/>Données sauvegardées</div>
         <div class="btnDroite">
-            <input type="hidden" name="send_etape5"/>
-            <input type="submit" class="btn_link" value="Sauvegarder">
+            <input type="hidden" name="send_etape5">
+            <button type="submit" class="btn-primary">Sauvegarder</button>
         </div>
     </form>
     <div style="display:none;">
-        <iframe id="upload_target" name="upload_target" src="#"></iframe>
+        <iframe id="upload_target" name="upload_target" src="about:blank"></iframe>
     </div>
 </div>

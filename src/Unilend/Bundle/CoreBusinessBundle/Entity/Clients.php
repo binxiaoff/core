@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
@@ -26,6 +27,11 @@ class Clients
     const SUBSCRIPTION_STEP_PERSONAL_INFORMATION = 1;
     const SUBSCRIPTION_STEP_DOCUMENTS            = 2;
     const SUBSCRIPTION_STEP_MONEY_DEPOSIT        = 3;
+
+    const TITLE_MISS      = 'Mme';
+    const TITLE_MISTER    = 'M.';
+    const TITLE_UNDEFINED = '';
+
     /**
      * @var string
      *
@@ -39,48 +45,6 @@ class Clients
      * @ORM\Column(name="id_langue", type="string", length=5, nullable=false)
      */
     private $idLangue = 'fr';
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_partenaire", type="integer", nullable=false)
-     */
-    private $idPartenaire = 0;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_partenaire_subcode", type="integer", nullable=false)
-     */
-    private $idPartenaireSubcode = 0;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="id_facebook", type="string", length=45, nullable=false)
-     */
-    private $idFacebook = '';
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="id_linkedin", type="string", length=45, nullable=false)
-     */
-    private $idLinkedin = '';
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="id_viadeo", type="string", length=45, nullable=false)
-     */
-    private $idViadeo = '';
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="id_twitter", type="string", length=45, nullable=false)
-     */
-    private $idTwitter = '';
 
     /**
      * @var string
@@ -246,20 +210,6 @@ class Clients
     /**
      * @var string
      *
-     * @ORM\Column(name="cni_passeport", type="string", length=191, nullable=true)
-     */
-    private $cniPasseport;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="signature", type="string", length=191, nullable=true)
-     */
-    private $signature;
-
-    /**
-     * @var string
-     *
      * @ORM\Column(name="source", type="string", length=191, nullable=true)
      */
     private $source;
@@ -343,7 +293,28 @@ class Clients
      */
     private $idClient;
 
+    /**
+     * @var Attachment[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment", mappedBy="idClient")
+     */
+    private $attachments;
 
+    /**
+     * @var Wallet[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet", mappedBy="idClient")
+     */
+    private $wallets;
+
+    /**
+     * Clients constructor.
+     */
+    public function __construct()
+    {
+        $this->attachments = new ArrayCollection();
+        $this->wallets     = new ArrayCollection();
+    }
 
     /**
      * Set hash
@@ -391,150 +362,6 @@ class Clients
     public function getIdLangue()
     {
         return $this->idLangue;
-    }
-
-    /**
-     * Set idPartenaire
-     *
-     * @param integer $idPartenaire
-     *
-     * @return Clients
-     */
-    public function setIdPartenaire($idPartenaire)
-    {
-        $this->idPartenaire = $idPartenaire;
-
-        return $this;
-    }
-
-    /**
-     * Get idPartenaire
-     *
-     * @return integer
-     */
-    public function getIdPartenaire()
-    {
-        return $this->idPartenaire;
-    }
-
-    /**
-     * Set idPartenaireSubcode
-     *
-     * @param integer $idPartenaireSubcode
-     *
-     * @return Clients
-     */
-    public function setIdPartenaireSubcode($idPartenaireSubcode)
-    {
-        $this->idPartenaireSubcode = $idPartenaireSubcode;
-
-        return $this;
-    }
-
-    /**
-     * Get idPartenaireSubcode
-     *
-     * @return integer
-     */
-    public function getIdPartenaireSubcode()
-    {
-        return $this->idPartenaireSubcode;
-    }
-
-    /**
-     * Set idFacebook
-     *
-     * @param string $idFacebook
-     *
-     * @return Clients
-     */
-    public function setIdFacebook($idFacebook)
-    {
-        $this->idFacebook = $idFacebook;
-
-        return $this;
-    }
-
-    /**
-     * Get idFacebook
-     *
-     * @return string
-     */
-    public function getIdFacebook()
-    {
-        return $this->idFacebook;
-    }
-
-    /**
-     * Set idLinkedin
-     *
-     * @param string $idLinkedin
-     *
-     * @return Clients
-     */
-    public function setIdLinkedin($idLinkedin)
-    {
-        $this->idLinkedin = $idLinkedin;
-
-        return $this;
-    }
-
-    /**
-     * Get idLinkedin
-     *
-     * @return string
-     */
-    public function getIdLinkedin()
-    {
-        return $this->idLinkedin;
-    }
-
-    /**
-     * Set idViadeo
-     *
-     * @param string $idViadeo
-     *
-     * @return Clients
-     */
-    public function setIdViadeo($idViadeo)
-    {
-        $this->idViadeo = $idViadeo;
-
-        return $this;
-    }
-
-    /**
-     * Get idViadeo
-     *
-     * @return string
-     */
-    public function getIdViadeo()
-    {
-        return $this->idViadeo;
-    }
-
-    /**
-     * Set idTwitter
-     *
-     * @param string $idTwitter
-     *
-     * @return Clients
-     */
-    public function setIdTwitter($idTwitter)
-    {
-        $this->idTwitter = $idTwitter;
-
-        return $this;
-    }
-
-    /**
-     * Get idTwitter
-     *
-     * @return string
-     */
-    public function getIdTwitter()
-    {
-        return $this->idTwitter;
     }
 
     /**
@@ -934,7 +761,7 @@ class Clients
      */
     public function setSecreteReponse($secreteReponse)
     {
-        $this->secreteReponse = $secreteReponse;
+        $this->secreteReponse = md5($secreteReponse);
 
         return $this;
     }
@@ -1043,54 +870,6 @@ class Clients
     public function getStatusPreEmp()
     {
         return $this->statusPreEmp;
-    }
-
-    /**
-     * Set cniPasseport
-     *
-     * @param string $cniPasseport
-     *
-     * @return Clients
-     */
-    public function setCniPasseport($cniPasseport)
-    {
-        $this->cniPasseport = $cniPasseport;
-
-        return $this;
-    }
-
-    /**
-     * Get cniPasseport
-     *
-     * @return string
-     */
-    public function getCniPasseport()
-    {
-        return $this->cniPasseport;
-    }
-
-    /**
-     * Set signature
-     *
-     * @param string $signature
-     *
-     * @return Clients
-     */
-    public function setSignature($signature)
-    {
-        $this->signature = $signature;
-
-        return $this;
-    }
-
-    /**
-     * Get signature
-     *
-     * @return string
-     */
-    public function getSignature()
-    {
-        return $this->signature;
     }
 
     /**
@@ -1372,7 +1151,7 @@ class Clients
      */
     public function setAddedValue()
     {
-        if(! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
     }
@@ -1393,7 +1172,7 @@ class Clients
         if (is_null($this->hash)) {
             try {
                 $this->hash = $this->generateHash();
-            } catch (UnsatisfiedDependencyException $exception){
+            } catch (UnsatisfiedDependencyException $exception) {
                 $this->hash = md5(uniqid());
             }
         }
@@ -1414,7 +1193,7 @@ class Clients
         } else {
             $tabName = explode('-', $name);
             $newName = '';
-            $i      = 0;
+            $i       = 0;
             foreach ($tabName as $name) {
                 $newName .= ($i == 0 ? '' : '-') . ucwords($name);
                 $i++;
@@ -1488,5 +1267,68 @@ class Clients
     {
         $uuid4 = Uuid::uuid4();
         return $uuid4->toString();
+    }
+
+    /**
+     * Get client attachments
+     *
+     * @param boolean $includeArchived
+     *
+     * @return Attachment[]
+     */
+    public function getAttachments($includeArchived = false)
+    {
+        if (false === $includeArchived) {
+            $attachments = [];
+            foreach ($this->attachments as $attachment) {
+                if (null === $attachment->getArchived()) {
+                    $attachments[] = $attachment;
+                }
+            }
+
+            return $attachments;
+        }
+
+        return $this->attachments;
+    }
+
+    /**
+     * Get wallets
+     *
+     * @return Wallet[]
+     */
+    public function getWallets()
+    {
+        return $this->wallets;
+    }
+
+    /**
+     * Check whether client has a borrower wallet or not. Since a client can have only one wallet today, it works so far.
+     *
+     * @return bool
+     */
+    public function isBorrower()
+    {
+        return false === empty($this->wallets[0]) && $this->wallets[0]->getIdType()->getLabel() === WalletType::BORROWER;
+    }
+
+    /**
+     * Check whether client has a lender wallet or not. Since a client can have only one wallet today, it works so far.
+     *
+     * @return bool
+     */
+    public function isLender()
+    {
+        return false === empty($this->wallets[0]) && $this->wallets[0]->getIdType()->getLabel() === WalletType::LENDER;
+    }
+
+    /**
+     * Check whether client has a partner wallet or not. Since a client can have only one wallet today, it works so far.
+     *
+     * @return bool
+     */
+    public function isPartner()
+    {
+        return false === empty($this->wallets[0]) && $this->wallets[0]->getIdType()->getLabel() === WalletType::PARTNER;
     }
 }

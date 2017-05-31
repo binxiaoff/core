@@ -10,7 +10,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityM
 use Unilend\Bundle\CoreBusinessBundle\Entity\AccountMatching;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\LendersAccounts;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
@@ -49,16 +48,19 @@ class WalletCreationManager
         /** @var WalletType $walletTypeEntity */
         $walletTypeEntity = $walletTypeRepository->findOneByLabel($walletType);
 
-        switch($walletTypeEntity->getLabel()){
-            case WalletType::LENDER :
+        switch ($walletTypeEntity->getLabel()) {
+            case WalletType::LENDER:
                 $wallet = $this->createBaseWallet($client, $walletTypeEntity);
+                $wallet->setWireTransferPattern();
+                $this->em->flush($wallet);
                 $this->createLegacyLenderAccount($client, $wallet);
                 break;
             case WalletType::BORROWER:
+            case WalletType::PARTNER:
                 $this->createBaseWallet($client, $walletTypeEntity);
                 break;
             default:
-                $this->logger->info('Unknown wallet type ' [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+                $this->logger->info('Unknown wallet type ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
                 break;
         }
     }

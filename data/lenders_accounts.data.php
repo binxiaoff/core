@@ -27,6 +27,7 @@
 // **************************************************************************************************** //
 
 use Unilend\librairies\CacheKeys;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 
 class lenders_accounts extends lenders_accounts_crud
 {
@@ -77,30 +78,6 @@ class lenders_accounts extends lenders_accounts_crud
         $sql    = 'SELECT * FROM `lenders_accounts` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result) > 0);
-    }
-
-    /**
-     * @param int $iLendersAccountId unique identifier of the lender account
-     * @return array of attachments
-     */
-    public function getAttachments($iLendersAccountId, $attachmentTypes = array())
-    {
-
-        $sql = 'SELECT a.id, a.id_type, a.id_owner, a.type_owner, a.path, a.added, a.updated, a.archived
-                FROM attachment a
-                WHERE a.id_owner = ' . $iLendersAccountId . '
-                AND a.type_owner = "lenders_accounts"';
-
-        if (false === empty($attachmentTypes)) {
-            $sql .=  ' AND a.id_type IN ('. implode(',' , $attachmentTypes) . ')';
-        }
-
-        $result       = $this->bdd->query($sql);
-        $aAttachments = array();
-        while ($record = $this->bdd->fetch_array($result)) {
-            $aAttachments[$record["id_type"]] = $record;
-        }
-        return $aAttachments;
     }
 
     public function getInfosben($iYear, $iLimit = null, $iOffset = null)
@@ -372,7 +349,7 @@ class lenders_accounts extends lenders_accounts_crud
                     FROM clients c
                     INNER JOIN lenders_accounts la ON c.id_client = la.id_client_owner
                     '. $clientStatus .'
-                    WHERE c.status = ' . \clients::STATUS_ONLINE;
+                    WHERE c.status = ' . Clients::STATUS_ONLINE;
         $statement = $this->bdd->executeQuery($query);
 
         return $statement->fetchColumn(0);
@@ -382,7 +359,7 @@ class lenders_accounts extends lenders_accounts_crud
     {
         $clientStatus = $bOnlyActive ? ' INNER JOIN clients_status_history csh ON (csh.id_client = c.id_client AND csh.id_client_status = 6)' : '';
         $type         = ['clientTypes' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY, 'clientStatus' => \PDO::PARAM_INT];
-        $bind         = ['clientTypes' => $aClientType, 'clientStatus' => \clients::STATUS_ONLINE];
+        $bind         = ['clientTypes' => $aClientType, 'clientStatus' => Clients::STATUS_ONLINE];
 
         $query    = 'SELECT COUNT(DISTINCT(c.id_client))
                         FROM clients c
@@ -478,9 +455,9 @@ class lenders_accounts extends lenders_accounts_crud
                   ELSE "ww"
               END AS fiscal_address,
               CASE c.type
-                WHEN ' . \clients::TYPE_LEGAL_ENTITY .
+                WHEN ' . Clients::TYPE_LEGAL_ENTITY .
                   ' THEN "legal_entity"
-                WHEN ' . \clients::TYPE_PERSON . ' OR ' . \clients::TYPE_PERSON_FOREIGNER .
+                WHEN ' . Clients::TYPE_PERSON . ' OR ' . Clients::TYPE_PERSON_FOREIGNER .
                   ' THEN "person"
               END AS client_type
           FROM lenders_imposition_history lih

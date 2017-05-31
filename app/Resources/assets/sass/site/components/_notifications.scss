@@ -6,6 +6,7 @@
   padding: 20px;
   overflow: hidden;
   outline: none;
+  position: relative;
 
   transition: background-color 0.2s;
 
@@ -90,6 +91,37 @@
       color: $c-account;
     }
   }
+
+  // Alerts and notices have special icons taken from icon font
+  &.notification-type-alert,
+  &.notification-type-notice {
+    background-color: $c-purple-l3;
+
+    .notification-image {
+      color: $c-p1;
+
+      &:before {
+        color: inherit;
+        font-family: $ff-icon;
+        font-size: 50px;
+        line-height: 50px;
+        text-align: center;
+        vertical-align: middle;
+      }
+    }
+  }
+
+  &.notification-type-alert {
+    .notification-image:before {
+      content: $fa-alert-u64;
+    }
+  }
+
+  &.notification-type-notice {
+    .notification-image:before {
+      content: $fa-info-u64;
+    }
+  }
 }
 
 // Single notification
@@ -117,6 +149,19 @@
 
     &#{$js-notification-status-unread} {
       background-color: $c-white;
+
+      &.notification-type-alert,
+      &.notification-type-notice {
+        background-color: $c-purple-l2;
+
+        .notification-title {
+          color: $c-p1;
+        }
+
+        .notification-content {
+          color: $c-t1;
+        }
+      }
     }
   }
 }

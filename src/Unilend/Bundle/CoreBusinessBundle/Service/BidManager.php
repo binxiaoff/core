@@ -3,6 +3,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Autobid;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
@@ -274,7 +276,7 @@ class BidManager
 
         if ($bSendNotification) {
             $this->oNotificationManager->create(
-                \notifications::TYPE_BID_PLACED,
+                Notifications::TYPE_BID_PLACED,
                 $bid->getAutobid() !== null ? \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : \clients_gestion_type_notif::TYPE_BID_PLACED,
                 $iClientId,
                 'sendBidConfirmation',
@@ -371,7 +373,7 @@ class BidManager
                 && bccomp($currentRate, $autobid->getRateMin(), 1) >= 0
                 && $oLenderAccount->get($bid->getIdLenderAccount())
                 && $oClient->get($oLenderAccount->id_client_owner)
-                && $oClient->status == \clients::STATUS_ONLINE
+                && $oClient->status == Clients::STATUS_ONLINE
             ) { //check online/offline instead of LenderManager::canBid() because of the performance issue.
                 if (self::MODE_REBID_AUTO_BID_CREATE === $iMode) {
                     $iBidOrder = $this->em->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $bid->getProject()->getIdProject()]);
@@ -449,7 +451,7 @@ class BidManager
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         if ($oLenderAccount->get($bid->getIdLenderAccount())) {
             $this->oNotificationManager->create(
-                \notifications::TYPE_BID_REJECTED,
+                Notifications::TYPE_BID_REJECTED,
                 $bid->getAutobid() !== null ? \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : \clients_gestion_type_notif::TYPE_BID_REJECTED,
                 $oLenderAccount->id_client_owner,
                 'sendBidRejected',

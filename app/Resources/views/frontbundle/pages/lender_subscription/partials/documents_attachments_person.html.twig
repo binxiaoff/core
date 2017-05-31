@@ -64,7 +64,10 @@
     <div class="row">
         <div class="form-field form-field-single-checkbox">
             <label>
-                <input id="housed-by-third-person" type="checkbox" value="true"/>
+                {{ form_widget(form.housedByThirdPerson, {
+                    'id' : 'housed-by-third-person'
+                }) }}
+                {{ form_errors(form.housedByThirdPerson) }}
                 <span class="label">{% trans %} lender-subscription_documents-housed-by-third-person {% endtrans %}</span>
             </label>
         </div>

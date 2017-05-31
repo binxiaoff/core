@@ -760,13 +760,24 @@
                     <table class="table table-stats-unilend-interest">
                         <tbody>
                         <tr>
-                            <td class="table-stats-unilend-item-label">{% trans %} about-us-statistics_regulatory-table-incidence-rate-amount {% endtrans %}</td>
+                            <td class="table-stats-unilend-item-label">{% trans %} about-us-statistics_regulatory-table-ifp-incidence-rate-amount {% endtrans %}</td>
                             <td class="table-stats-unilend-item-value">{{ incidenceRate['amountIFP']|localizednumberwithprecision(2) }}%</td>
                         </tr>
                         <tr class="alt">
-                            <td class="table-stats-unilend-item-label">{% trans %} about-us-statistics_regulatory-table-incidence-rate-project {% endtrans %}</td>
+                            <td class="table-stats-unilend-item-label">{% trans %} about-us-statistics_regulatory-table-ifp-incidence-rate-project {% endtrans %}</td>
                             <td class="table-stats-unilend-item-value">{{ incidenceRate['projectsIFP']|localizednumberwithprecision(2) }}%</td>
                         </tr>
+                        {# for display of historic statistics page #}
+                        {% if incidenceRate['amountCIP'] is defined %}
+                            <tr>
+                                <td class="table-stats-unilend-item-label">{% trans %} about-us-statistics_regulatory-table-cip-incidence-rate-amount {% endtrans %}</td>
+                                <td class="table-stats-unilend-item-value">{{ incidenceRate['amountCIP']|localizednumberwithprecision(2) }}%</td>
+                            </tr>
+                            <tr class="alt">
+                                <td class="table-stats-unilend-item-label">{% trans %} about-us-statistics_regulatory-table-cip-incidence-rate-project {% endtrans %}</td>
+                                <td class="table-stats-unilend-item-value">{{ incidenceRate['projectsCIP']|localizednumberwithprecision(2) }}%</td>
+                            </tr>
+                        {% endif %}
                         </tbody>
                     </table>
                 </div><!-- /.table-scroll -->

@@ -1,0 +1,29 @@
+{% extends 'layouts/_layout_lender.html.twig' %}
+
+{% set page = {
+id: 'user-preter-balance',
+classNames: 'user-preter-balance'
+} %}
+
+{% block dashboardContent %}
+    <div class="dashboard-tabs tabs">
+        {% if showNavigation %}
+            {{ include('pages/lender_wallet/partials/tabnavigation.html.twig') }}
+        {% endif %}
+
+        <div class="dashboard-tabs-content tab-content">
+            <article id="balance-deposit" class="tab-pane dashboard-tab-pane active ui-toggle-group" aria-multiselectable="true">
+                <section id="balance-deposit-result" role="tabpanel" class="panel collapse in" aria-expanded="true">
+                    {% if depositCode == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Backpayline::CODE_TRANSACTION_APPROVED') %}
+                        {% trans with {'%depositAmount%': depositAmount|localizednumber} %} lender-wallet_deposit-success-message {% endtrans %}
+                    {% else %}
+                        {% trans %} lender-wallet_deposit-error-message {% endtrans %}
+                    {% endif %}
+                    <p>
+                        <a href="{{ path('lender_dashboard') }}" class='btn-primary'>{% trans %} lender-wallet_lender-dashboard {% endtrans %}</a>
+                    </p>
+                </section><!-- /.panel -->
+            </article><!-- /.tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </div><!-- /.dashboard-tabs -->
+{% endblock %}

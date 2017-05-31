@@ -7,18 +7,12 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ProjectsComments
  *
- * @ORM\Table(name="projects_comments")
+ * @ORM\Table(name="projects_comments", indexes={@ORM\Index(name="projects_comments_id_project", columns={"id_project"}), @ORM\Index(name="projects_comments_id_user", columns={"id_user"}), @ORM\Index(name="idx_projects_comments_public", columns={"public"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class ProjectsComments
 {
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
-     */
-    private $idProject;
-
     /**
      * @var string
      *
@@ -27,11 +21,31 @@ class ProjectsComments
     private $content;
 
     /**
-     * @var integer
+     * @var bool
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="public", type="boolean", nullable=false)
      */
-    private $status;
+    private $public = false;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
+     */
+    private $idProject;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user")
+     * })
+     */
+    private $idUser;
 
     /**
      * @var \DateTime
@@ -43,7 +57,7 @@ class ProjectsComments
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -61,7 +75,7 @@ class ProjectsComments
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param Projects $idProject
      *
      * @return ProjectsComments
      */
@@ -75,7 +89,7 @@ class ProjectsComments
     /**
      * Get idProject
      *
-     * @return integer
+     * @return Projects
      */
     public function getIdProject()
     {
@@ -107,27 +121,51 @@ class ProjectsComments
     }
 
     /**
-     * Set status
+     * Set public
      *
-     * @param integer $status
+     * @param bool $public
      *
      * @return ProjectsComments
      */
-    public function setStatus($status)
+    public function setPublic($public)
     {
-        $this->status = $status;
+        $this->public = $public;
 
         return $this;
     }
 
     /**
-     * Get status
+     * Get public
      *
-     * @return integer
+     * @return bool
      */
-    public function getStatus()
+    public function getPublic()
     {
-        return $this->status;
+        return $this->public;
+    }
+
+    /**
+     * Set idUser
+     *
+     * @param Users $idUser
+     *
+     * @return ProjectsComments
+     */
+    public function setIdUser(Users $idUser)
+    {
+        $this->idUser = $idUser;
+
+        return $this;
+    }
+
+    /**
+     * Get idUser
+     *
+     * @return Users
+     */
+    public function getIdUser()
+    {
+        return $this->idUser;
     }
 
     /**
@@ -186,5 +224,23 @@ class ProjectsComments
     public function getIdProjectComment()
     {
         return $this->idProjectComment;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

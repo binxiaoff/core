@@ -1,6 +1,8 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class NotificationManager
@@ -122,26 +124,17 @@ class NotificationManager
     }
 
     /**
-     * @param \clients $client
-     *
-     * @return int
+     * @param \clients|Clients $client
      */
-    public function countUnreadNotificationsForClient(\clients $client)
+    public function generateDefaultNotificationSettings($client)
     {
-        /** @var \notifications $notifications */
-        $notifications  = $this->entityManager->getRepository('notifications');
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
-        $lenderAccount->get($client->id_client, 'id_client_owner');
+        if ($client instanceof Clients) {
+            $clientEntity = $client;
+            $client = $this->entityManager->getRepository('clients');
+            $client->get($clientEntity->getIdClient());
+            unset($clientEntity);
+        }
 
-        return $notifications->counter('id_lender = ' . $lenderAccount->id_lender_account . ' AND status = ' . \notifications::STATUS_UNREAD);
-    }
-
-    /**
-     * @param \clients $client
-     */
-    public function generateDefaultNotificationSettings(\clients $client)
-    {
         $notificationTypes = $this->getNotificationTypes();
         /** @var \clients_gestion_notifications $clientNotificationSettings */
         $clientNotificationSettings = $this->entityManager->getRepository('clients_gestion_notifications');
