@@ -1,5 +1,5 @@
 <div id="contenu">
-    <fieldset style="color: black; padding: 10px; border: 1px solid #B10366; width: 280px;">
+    <fieldset style="color: black; padding: 10px; border: 1px solid #B10366; width: 320px;">
         <legend style="color: #B20066"><b>Statut de vigilance:</b></legend>
         <span class="vigilance-status-0">
             <?= $this->translator->trans('client-vigilance_status-0') ?>

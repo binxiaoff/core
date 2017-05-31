@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ProjectsComments
  *
- * @ORM\Table(name="projects_comments", indexes={@ORM\Index(name="projects_comments_id_project", columns={"id_project"}), @ORM\Index(name="projects_comments_id_user", columns={"id_user"})})
+ * @ORM\Table(name="projects_comments", indexes={@ORM\Index(name="projects_comments_id_project", columns={"id_project"}), @ORM\Index(name="projects_comments_id_user", columns={"id_user"}), @ORM\Index(name="idx_projects_comments_public", columns={"public"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
@@ -19,6 +19,13 @@ class ProjectsComments
      * @ORM\Column(name="content", type="text", length=16777215, nullable=false)
      */
     private $content;
+
+    /**
+     * @var bool
+     *
+     * @ORM\Column(name="public", type="boolean", nullable=false)
+     */
+    private $public = false;
 
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
@@ -111,6 +118,30 @@ class ProjectsComments
     public function getContent()
     {
         return $this->content;
+    }
+
+    /**
+     * Set public
+     *
+     * @param bool $public
+     *
+     * @return ProjectsComments
+     */
+    public function setPublic($public)
+    {
+        $this->public = $public;
+
+        return $this;
+    }
+
+    /**
+     * Get public
+     *
+     * @return bool
+     */
+    public function getPublic()
+    {
+        return $this->public;
     }
 
     /**

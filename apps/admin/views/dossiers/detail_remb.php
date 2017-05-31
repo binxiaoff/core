@@ -3,11 +3,11 @@
         $(".tablesorter").tablesorter({headers: {6: {sorter: false}}});
 
         <?php if ($this->nb_lignes != '') : ?>
-            $(".tablesorter").tablesorterPager({
-                container: $("#pager"),
-                positionFixed: false,
-                size: <?= $this->nb_lignes ?>
-            });
+        $(".tablesorter").tablesorterPager({
+            container: $("#pager"),
+            positionFixed: false,
+            size: <?= $this->nb_lignes ?>
+        });
         <?php endif; ?>
 
         $('.manual_repayment_action').click(function(event) {

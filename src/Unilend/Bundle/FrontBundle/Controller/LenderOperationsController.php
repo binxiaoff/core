@@ -1028,7 +1028,7 @@ class LenderOperationsController extends Controller
         }
 
         foreach ($data as $index => $row) {
-            $data[$index]['status'] = ($row['datetime']->format('Y-m-d H:i:s') > $this->getUser()->getLastLoginDate()) ? 'unread' : 'read';
+            $data[$index]['status'] = ($row['datetime'] > $this->getUser()->getLastLoginDate()) ? 'unread' : 'read';
         }
         return $data;
     }

@@ -52,7 +52,7 @@
         <div id="error_etape3" class="error_etape"></div>
         <div id="valid_etape3" class="valid_etape">Données sauvegardées</div>
         <div class="btnDroite">
-            <input type="submit" class="btn_link" value="Sauvegarder">
+            <button type="submit" class="btn-primary">Sauvegarder</button>
         </div>
     </form>
 </div>

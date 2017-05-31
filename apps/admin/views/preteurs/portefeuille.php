@@ -77,7 +77,7 @@
                     </tr>
                     <?php foreach ($this->aAutoBidSettings as $aPeriodSettings) : ?>
                         <tr>
-                            <th scope="row"><?= $this->translator->trans('autolend_autobid-period-' . array_values($aPeriodSettings)[0]['id_period'], ['%min%' => array_values($aPeriodSettings)[0]['period_min'], '%max%' => array_values($aPeriodSettings)[0]['period_max']]); ?></th>
+                            <th scope="row"><?= $this->translator->trans('autobid_autobid-period-' . array_values($aPeriodSettings)[0]['id_period'], ['[#SEPARATOR#]' => '<br>']); ?></th>
                             <?php foreach ($aPeriodSettings as $aSetting) : ?>
                                 <td class="<?= (\autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
                                 <?= ($aSetting['rate_min'] <= round($aSetting['AverageRateUnilend'], 1) || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">

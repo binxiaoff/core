@@ -1,0 +1,33 @@
+{% extends 'partner_account/_layout.html.twig' %}
+
+{% set page = {
+    id: 'partner-account-statistics',
+    classNames: 'partner-account'
+} %}
+
+{% block dashboardContent %}
+    <section class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-content tab-content">
+            {% include ':frontbundle/partner_account:statistics_graph.html.twig' with {
+                'graphTitle': 'Votre performance',
+                'graphType': 'user',
+                'submittedProjects': graph.user[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMPLETE_REQUEST')].count,
+                'acceptedProjects': graph.user[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::PREP_FUNDING')].count,
+                'repaymentProjects': graph.user[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::REMBOURSEMENT')].count,
+                'submittedAmount': graph.user[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMPLETE_REQUEST')].sum,
+                'repaymentAmount': graph.user[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::REMBOURSEMENT')].sum,
+            } %}
+            {% if graph.admin is defined %}
+                {% include ':frontbundle/partner_account:statistics_graph.html.twig' with {
+                    'graphTitle': 'Vos entités',
+                    'graphType': 'admin',
+                    'submittedProjects': graph.admin[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMPLETE_REQUEST')].count,
+                    'acceptedProjects': graph.admin[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::PREP_FUNDING')].count,
+                    'repaymentProjects': graph.admin[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::REMBOURSEMENT')].count,
+                    'submittedAmount': graph.admin[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMPLETE_REQUEST')].sum,
+                    'repaymentAmount': graph.admin[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::REMBOURSEMENT')].sum,
+                } %}
+            {% endif %}
+        </div><!-- /.dashboard-tabs-content -->
+    </section><!-- /.dashboard-tabs -->
+{% endblock %}

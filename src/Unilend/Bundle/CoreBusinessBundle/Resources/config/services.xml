@@ -372,5 +372,12 @@
             <argument>%router.request_context.scheme%://%url.host_default%</argument>
             <argument>%router.request_context.scheme%://%url.host_admin%</argument>
         </service>
+
+        <service id="unilend.service.terms_of_sale_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.email_manager"/>
+            <argument>%kernel.root_dir%</argument>
+            <argument>%kernel.default_locale%</argument>
+        </service>
     </services>
 </container>

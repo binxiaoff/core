@@ -8,12 +8,16 @@
     });
 </script>
 <div id="contenu">
-    <h1>Liste des requêtes</h1>
-    <?php if (\users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) : ?>
-        <div class="btnDroite">
-            <a href="<?= $this->lurl ?>/queries/add" class="btn_link thickbox">Ajouter une requête</a>
+    <div class="row">
+        <div class="col-sm-6">
+            <h1>Liste des requêtes</h1>
         </div>
-    <?php endif; ?>
+        <div class="col-sm-6">
+            <?php if (\users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) : ?>
+                <a href="<?= $this->lurl ?>/queries/add" class="btn-primary pull-right thickbox">Ajouter une requête</a>
+            <?php endif; ?>
+        </div>
+    </div>
     <?php if (count($this->lRequetes) > 0) : ?>
         <table class="tablesorter">
             <thead>
