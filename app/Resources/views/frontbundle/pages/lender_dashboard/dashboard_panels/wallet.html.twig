@@ -161,10 +161,10 @@
     {% block panelAttributes %} id="wallet" {% endblock %}
     {% block panelClassNames %} dashboard-panel dashboard-mywallet ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-12 col-md-12 col-sm-8 col-xs-4 {% endblock %}
     {% block panelTitle %}
-        {% if lenderDetails.numberOfLoans == lenderDetails.numberOfBorrowers %}
+        {% if lenderDetails.numberOfLoans == lenderDetails.companiesLenderInvestedIn %}
             {% transchoice lenderDetails.numberOfLoans with {'%offersCount%' : lenderDetails.numberOfLoans} %} lender-dashboard-wallet_title-loans {% endtranschoice %}
         {% else %}
-            {% transchoice lenderDetails.numberOfBorrowers with {'%offersCount%' : lenderDetails.numberOfLoans, '%borrowerCount%' : lenderDetails.numberOfBorrowers} %} lender-dashboard-wallet_title-loans-projects {% endtranschoice %}
+            {% transchoice lenderDetails.companiesLenderInvestedIn with {'%offersCount%' : lenderDetails.numberOfLoans, '%borrowerCount%' : lenderDetails.companiesLenderInvestedIn } %} lender-dashboard-wallet_title-loans-projects {% endtranschoice %}
         {% endif %}
     {% endblock %}
     {% block panelControls %}
