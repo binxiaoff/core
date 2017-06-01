@@ -387,12 +387,14 @@ $doc
         // Always prevent the form from submitting as we will be processing via AJAX in the confirmed modal event
         event.preventDefault()
 
-        $('.cell-input[data-autolendtable-cell]').each(function() {
-            var cellData = getCellInfo($(this).attr('data-autolendtable-cell'))
-            if (parseFloat(cellData.currentRate, 1) < parseFloat(cellData.min, 1) || parseFloat(cellData.currentRate, 1) > parseFloat(cellData.max, 1)) {
-                $dialog = $('#autolend-out-of-range-table-dialog')
-            }
-        })
+        if ($('#hidden-settings-mode-input').attr('value') == 'expert') {
+            $('.cell-input[data-autolendtable-cell]').each(function () {
+                var cellData = getCellInfo($(this).attr('data-autolendtable-cell'))
+                if (parseFloat(cellData.currentRate, 1) < parseFloat(cellData.min, 1) || parseFloat(cellData.currentRate, 1) > parseFloat(cellData.max, 1)) {
+                    $dialog = $('#autolend-out-of-range-table-dialog')
+                }
+            })
+        }
 
         // Show dialog
         $dialog.uiModal('open')

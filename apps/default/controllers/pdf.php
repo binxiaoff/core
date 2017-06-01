@@ -534,7 +534,7 @@ class pdfController extends bootstrap
             exit;
         }
 
-        if (false === $clients->get($this->params[0], 'hash') || $user->getClientId() !== $clients->id_client && empty($_SESSION['user']['id_user'])) {
+        if (false === $clients->get($this->params[0], 'hash') || $user->getClientId() != $clients->id_client && empty($_SESSION['user']['id_user'])) {
             header('Location: ' . $this->lurl);
             exit;
         }
@@ -1130,7 +1130,7 @@ class pdfController extends bootstrap
             exit;
         }
 
-        if (false === $oClients->get($this->params[0], 'hash') || $user->getClientId() !== $oClients->id_client) {
+        if (false === $oClients->get($this->params[0], 'hash') || $user->getClientId() != $oClients->id_client) {
             header('Location: ' . $this->lurl);
             exit;
         }
