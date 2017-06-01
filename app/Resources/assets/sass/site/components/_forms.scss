@@ -114,25 +114,6 @@
     }
   }
 
-  // No responsive inputs yet
-  // @include devices('sm') {
-  //   > .btn-group {
-  //     line-height: $height-input-sm - 4px;
-  //   }
-  // }
-
-  // @include devices('md') {
-  //   > .btn-group {
-  //     line-height: $height-input-md - 4px;
-  //   }
-  // }
-
-  // @include devices('lg') {
-  //   > .btn-group {
-  //     line-height: $height-input-lg - 4px;
-  //   }
-  // }
-
   &.input-field-inline {
     display: inline-block;
   }
@@ -150,6 +131,9 @@
 // Generic input field style
 .input-field {
   @include input;
+  &:focus {
+    outline: 0;
+  }
 }
 
 // Single line text inputs need height set
@@ -202,25 +186,6 @@ select.input-field {
     @include input-size-default($single-line: true);
     display: table-cell;
   }
-
-  // No responsive inputs yet
-  // @include devices('sm') {
-  //   > .btn-group {
-  //     line-height: $height-input-sm;
-  //   }
-  // }
-
-  // @include devices('md') {
-  //   > .btn-group {
-  //     line-height: $height-input-md;
-  //   }
-  // }
-
-  // @include devices('lg') {
-  //   > .btn-group {
-  //     line-height: $height-input-lg;
-  //   }
-  // }
 
   // Normalise buttons
   .btn-default,
@@ -325,7 +290,6 @@ input[type="radio"] {
   .label {
     display: block;
     color: $c-t3;
-    opacity: 0;
 
     transition: opacity .2s;
 
@@ -339,7 +303,6 @@ input[type="radio"] {
       padding: 0;
       margin: 7px auto 5px;
       clear: both;
-      visibility: hidden;
 
       background-color: $c-white;
       background-clip: padding-box;
@@ -394,18 +357,6 @@ input[type="radio"] {
     }
   }
 
-  // Large devices
-  @include devices('md', 'lg') {
-    > label {
-      .label {
-        opacity: 1;
-
-        &:before {
-          visibility: visible;
-        }
-      }
-    }
-  }
 }
 
 // Custom file upload
@@ -422,20 +373,6 @@ input[type="radio"] {
 // IBAN input
 .custom-input-iban {
   position: relative;
-
-  // .input-field.iban-input {
-  //   width: 100%;
-  //   position: absolute;
-  //   left: 0;
-  //   top: 0;
-  //   right: 0;
-  //   bottom: 0;
-  //   z-index: 2;
-
-  //   color: transparent !important;
-  //   background-color: transparent !important;
-  //   border-color: transparent !important;
-  // }
 }
 
 // Custom checkbox switch

@@ -28,8 +28,6 @@
 
 class elements extends elements_crud
 {
-    const TYPE_PDF_CGU = 143;
-
     public function elements($bdd, $params = '')
     {
         parent::elements($bdd, $params);

@@ -3,6 +3,8 @@
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Elements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 
 class pdfController extends bootstrap
@@ -378,7 +380,7 @@ class pdfController extends bootstrap
         $sFileName      = $this->params[1];
         $sNamePdfClient = 'CGV-UNILEND-' . $iProjectId;
         $oProjectCgv    = $this->loadData('project_cgv');
-        $path           = $this->path . project_cgv::BASE_PATH;
+        $path           = $this->path . ProjectCgv::BASE_PATH;
 
         if ($oProjectCgv->get($iProjectId, 'id_project') && false === empty($oProjectCgv->name) && false === empty($oProjectCgv->id_tree)) {
             if ($sFileName !== $oProjectCgv->name) {
@@ -403,7 +405,7 @@ class pdfController extends bootstrap
 
         if (false === file_exists($path . $oProjectCgv->name)) {
             // Recuperation du pdf du tree
-            $elements = $this->tree_elements->select('id_tree = "' . $oProjectCgv->id_tree . '" AND id_element = ' . elements::TYPE_PDF_CGU . ' AND id_langue = "' . $this->language . '"');
+            $elements = $this->tree_elements->select('id_tree = "' . $oProjectCgv->id_tree . '" AND id_element = ' . Elements::TYPE_PDF_TERMS_OF_SALE . ' AND id_langue = "' . $this->language . '"');
 
             if (false === isset($elements[0]['value']) || '' == $elements[0]['value']) {
                 header('Location: ' . $this->lurl);
@@ -416,11 +418,11 @@ class pdfController extends bootstrap
                 header('Location: ' . $this->lurl);
                 return;
             }
-            if (false === is_dir($this->path . project_cgv::BASE_PATH)) {
-                mkdir($this->path . project_cgv::BASE_PATH, 0777, true);
+            if (false === is_dir($this->path . ProjectCgv::BASE_PATH)) {
+                mkdir($this->path . ProjectCgv::BASE_PATH, 0777, true);
             }
-            if (false === file_exists($this->path . project_cgv::BASE_PATH . $oProjectCgv->name)) {
-                copy($sPdfPath, $this->path . project_cgv::BASE_PATH . $oProjectCgv->name);
+            if (false === file_exists($this->path . ProjectCgv::BASE_PATH . $oProjectCgv->name)) {
+                copy($sPdfPath, $this->path . ProjectCgv::BASE_PATH . $oProjectCgv->name);
             }
         }
 
@@ -532,7 +534,7 @@ class pdfController extends bootstrap
             exit;
         }
 
-        if (false === $clients->get($this->params[0], 'hash') || $user->getClientId() !== $clients->id_client && empty($_SESSION['user']['id_user'])) {
+        if (false === $clients->get($this->params[0], 'hash') || $user->getClientId() != $clients->id_client && empty($_SESSION['user']['id_user'])) {
             header('Location: ' . $this->lurl);
             exit;
         }
@@ -1128,7 +1130,7 @@ class pdfController extends bootstrap
             exit;
         }
 
-        if (false === $oClients->get($this->params[0], 'hash') || $user->getClientId() !== $oClients->id_client) {
+        if (false === $oClients->get($this->params[0], 'hash') || $user->getClientId() != $oClients->id_client) {
             header('Location: ' . $this->lurl);
             exit;
         }

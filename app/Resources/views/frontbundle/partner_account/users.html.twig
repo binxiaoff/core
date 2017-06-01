@@ -1,0 +1,132 @@
+{% extends 'partner_account/_layout.html.twig' %}
+
+{% set page = {
+    id: 'partner-account-statistics',
+    classNames: 'partner-account'
+} %}
+
+{% block dashboardContent %}
+    <section class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-content tab-content">
+            <article class="dashboard-tab-pane">
+                <div id="partner-projects-users" class="panel">
+                    <header class="panel-header">
+                        <h3>{% trans %} partner-users-list_title {% endtrans %}</h3>
+                    </header>
+
+                    <div class="partner-projects-add-user text-align-right">
+                        <a href="{{ path('partner_user_creation') }}" class="btn-default btn-shape-md"><span class="icon fa-plus"></span> {% trans %} partner-users-list_add-user-button {% endtrans %}</a>
+                    </div>
+
+                    <table class="table table-users" data-table data-table-paging="false" data-table-info="false" data-table-lengthchange="false" data-table-languagesearch="" data-table-languagesearchplaceholder="{{ 'partner-users-list_table-filter-search-placeholder'|trans|e('html_attr') }}" data-table-languagezerorecords="{{ 'partner-users-list_table-filter-zerorecords-placeholder'|trans|e('html_attr') }}" data-table-order="1" data-table-custom>
+                        <thead class="table-sortable-columns">
+                        <tr>
+                            <th class="table-users-item-name table-sortable-column">{% trans %} partner-users-list_table-column-name {% endtrans %}</th>
+                            <th class="table-users-item-entity table-sortable-column">{% trans %} partner-users-list_table-column-entity {% endtrans %}</th>
+                            <th class="table-users-item-role table-sortable-column">{% trans %} partner-users-list_table-column-role {% endtrans %}</th>
+                            <th class="table-users-item-status table-sortable-column">{% trans %} partner-users-list_table-column-status {% endtrans %}</th>
+                            <th class="table-users-item-action">{% trans %} partner-users-list_table-column-action {% endtrans %}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                                <tr class="table-users-item{% if user.client.status == constant('\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::STATUS_OFFLINE') %} ui-table-users-item-inactive{% endif %} {% if loop.index is divisibleby(2) %}even{% else %}odd{% endif %}" data-user-id="{{ user.client.hash }}">
+                                    <td class="table-users-item-name">
+                                        <span class="first-name">{{ user.client.prenom }}</span> <span class="last-name">{{ user.client.nom }}</span>
+                                    </td>
+                                    <td class="table-users-item-entity">{{ user.entity.name }}</td>
+                                    <td class="table-users-item-role">
+                                        {% if user.role == 'admin' %}
+                                            {% trans %} partner-users-list_table-item-admin-label {% endtrans %}
+                                        {% else %}
+                                            {% trans %} partner-users-list_table-item-user-label {% endtrans %}
+                                        {% endif %}
+                                    </td>
+                                    <td class="table-users-item-status">
+                                        {% if user.client.status == constant('\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::STATUS_ONLINE') %}
+                                            {% trans %} partner-users-list_table-item-status-active-label {% endtrans %}
+                                        {% else %}
+                                            {% trans %} partner-users-list_table-item-status-inactive-label {% endtrans %}
+                                        {% endif %}
+                                    </td>
+                                    <td class="table-users-item-action">
+                                        {% if user.client.hash != app.user.hash %}
+                                            {% if user.client.status == constant('\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::STATUS_ONLINE') %}
+                                                <a role="button" class="btn-default" data-action="password" title="{{ 'partner-users-list_table-item-action-password'|trans|e('html_attr') }}" data-toggle="tooltip"><span class="icon fa-lock-u16"></span></a>
+                                                <a role="button" class="btn-default" data-action="deactivate" title="{{ 'partner-users-list_table-item-action-deactivate'|trans|e('html_attr') }}" data-toggle="tooltip"><span class="icon fa-close"></span></a>
+                                            {% else %}
+                                                <a role="button" class="btn-default" data-action="activate" title="{{ 'partner-users-list_table-item-action-activate'|trans|e('html_attr') }}" data-toggle="tooltip"><span class="icon fa-repeat"></span></a>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div><!-- /.panel -->
+            </article><!-- /.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </section><!-- /.dashboard-tabs -->
+{% endblock %}
+
+{% block modals %}
+    <div id="modal-partner-users-password" data-modal>
+        <form action="{{ path('partner_user_form') }}" method="post">
+            <input type="hidden" name="action" value="password">
+            <input type="hidden" name="user" value>
+            <div class="modal-body text-align-center">
+                <p>{% trans with {'%firstName%' : '<span class="ui-modal-output-firstname"></span>', '%lastName%' : '<span class="ui-modal-output-lastname"></span>'} %} partner-users-list_popup-user-password-message {% endtrans %}</p>
+            </div>
+            <footer class="modal-footer">
+                <div class="btn-controls">
+                    <button type="button" class="btn-default" data-modal-doactioncancel>
+                        {% trans %} partner-users_popup-password-button-cancel {% endtrans %}
+                    </button>
+                    <button type="submit" class="btn-primary" data-spinnerbutton>
+                        {% trans %} partner-users_popup-password-button-submit {% endtrans %}
+                    </button>
+                </div>
+            </footer>
+        </form>
+    </div><!-- /#modal-partner-users-password -->
+
+    <div id="modal-partner-users-deactivate" data-modal>
+        <form action="{{ path('partner_user_form') }}" method="post">
+            <input type="hidden" name="action" value="deactivate">
+            <input type="hidden" name="user" value>
+            <div class="modal-body text-align-center">
+                <p>{% trans with {'%firstName%' : '<span class="ui-modal-output-firstname"></span>', '%lastName%' : '<span class="ui-modal-output-lastname"></span>'} %} partner-users-list_popup-user-deactivate-message {% endtrans %}</p>
+            </div>
+            <footer class="modal-footer">
+                <div class="btn-controls">
+                    <button type="button" class="btn-default" data-modal-doactioncancel>
+                        {% trans %} partner-users_popup-deactivate-button-cancel {% endtrans %}
+                    </button>
+                    <button type="submit" class="btn-primary" data-spinnerbutton>
+                        {% trans %} partner-users_popup-deactivate-button-submit {% endtrans %}
+                    </button>
+                </div>
+            </footer>
+        </form>
+    </div><!-- /#modal-partner-users-deactivate -->
+
+    <div id="modal-partner-users-activate" data-modal>
+        <form action="{{ path('partner_user_form') }}" method="post">
+            <input type="hidden" name="action" value="activate">
+            <input type="hidden" name="user" value>
+            <div class="modal-body text-align-center">
+                <p>{% trans with {'%firstName%' : '<span class="ui-modal-output-firstname"></span>', '%lastName%' : '<span class="ui-modal-output-lastname"></span>'} %} partner-users-list_popup-user-activate-message {% endtrans %}</p>
+            </div>
+            <footer class="modal-footer">
+                <div class="btn-controls">
+                    <button type="button" class="btn-default" data-modal-doactioncancel>
+                        {% trans %} partner-users_popup-activate-button-cancel {% endtrans %}
+                    </button>
+                    <button type="submit" class="btn-primary" data-spinnerbutton>
+                        {% trans %} partner-users_popup-activate-button-submit {% endtrans %}
+                    </button>
+                </div>
+            </footer>
+        </form>
+    </div><!-- /#modal-partner-users-activate -->
+{% endblock %}

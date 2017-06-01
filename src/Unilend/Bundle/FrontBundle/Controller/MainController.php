@@ -120,7 +120,7 @@ class MainController extends Controller
             );
         }
 
-        $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower);
+        $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower || $user instanceof UserPartner);
 
         if (false === $isFullyConnectedUser) {
             /** @var Translator $translator */
@@ -186,7 +186,7 @@ class MainController extends Controller
             $projectPeriods = $projectManager->getPossibleProjectPeriods();
             $amount         = filter_var(str_replace([' ', '€'], '', $request->request->get('amount')), FILTER_VALIDATE_INT, ['options' => ['min_range' => $projectManager->getMinProjectAmount(), 'max_range' => $projectManager->getMaxProjectAmount()]]);
 
-            if (in_array($period, $projectPeriods) && $amount){
+            if (in_array($period, $projectPeriods) && $amount) {
                 $estimatedRate                           = $projectRequestManager->getMonthlyRateEstimate();
                 $estimatedMonthlyRepayment               = $projectRequestManager->getMonthlyPaymentEstimate($amount, $period, $estimatedRate);
                 $estimatedFundingDuration                = $projectManager->getAverageFundingDuration($amount);

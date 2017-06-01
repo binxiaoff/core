@@ -75,3 +75,10 @@ hr {
     visibility: hidden;
   }
 }
+
+small {
+  font-size: 14px;
+  @include devices('xs') {
+    font-size: 12px;
+  }
+}

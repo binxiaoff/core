@@ -9,13 +9,16 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="project_cgv", uniqueConstraints={@ORM\UniqueConstraint(name="id_project", columns={"id_project"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class ProjectCgv implements UniversignEntityInterface
 {
+    const BASE_PATH = 'protected/pdf/cgv_emprunteurs/';
+
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="termOfUse")
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="termsOfSale")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
      * })
@@ -282,11 +285,35 @@ class ProjectCgv implements UniversignEntityInterface
         return $this->id;
     }
 
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
+    }
+
+    /**
+     * @return string
+     */
     public function generateFileName()
     {
         return 'cgv-unilend-' . sha1($this->idProject->getIdProject() . '_' . $this->idTree) . '.pdf';
     }
 
+    /**
+     * @return string
+     */
     public function getUrlPath()
     {
         return '/pdf/cgv_emprunteurs/' . $this->idProject->getIdProject() . '/' . $this->generateFileName();

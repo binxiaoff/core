@@ -51,7 +51,9 @@
         </table>
         <div id="error_etape3" class="error_etape"></div>
         <div id="valid_etape3" class="valid_etape">Données sauvegardées</div>
-        <button type="submit" class="btn-primary pull-right">Sauvegarder</button>
+        <div class="btnDroite">
+            <button type="submit" class="btn-primary">Sauvegarder</button>
+        </div>
     </form>
 </div>
 <script>

@@ -109,7 +109,51 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
         // Build element and add to DOM
         $details = $('<tr class="table-myoperations-borrower-details" data-parent="' + $item.attr('id') + '" style="display: none;"><td>' + details.label + '</td><td colspan="3"><dl>' + detailsItemsHtml + '</dl></td><td>&nbsp;</td></tr>')
       }
-      $item.after($details)
+      // Partner project details
+      else if ($item.is('.table-projects-item')) {
+
+        // Check columns to show depending on user level
+        var colspanAuthor = 1
+        var colspanText   = 5
+        if (!$('body').is('.ui-user-type-partner-admin')) {
+          colspanAuthor = 2
+          colspanText   = 4
+        }
+
+        // Inherit parent row color
+        var oddEvenClass = 'odd'
+        if ($item.is('.even')) {
+          oddEvenClass = 'even'
+        }
+
+        // Generate HTML for memos
+        $.each(details, function (i, item) {
+          detailsItemsHtml += Templating.replace('<tr class="details-memo ' + oddEvenClass + '">\
+            <td class="details-memo-author" colspan="' + colspanAuthor + '">{{ author }}</td>\
+            <td class="details-memo-date">{{ date }}</td>\
+            <td class="details-memo-text" colspan="' + colspanText + '">{{ text }}</td>\
+          </tr>', {
+            author: item.author,
+            date: __.localizedDate(item.date.date),
+            text: item.content
+          })
+        })
+
+        // Check columns to show depending on user level
+        var colspanDetails = 8
+        if (!$('body').is('.ui-user-type-partner-admin')) {
+          colspanDetails = 7
+        }
+
+        $details = $('<tr class="table-projects-details" data-parent="' + $item.attr('id') + '" style="display: none;"><td colspan="' + colspanDetails + '"><table>' + detailsItemsHtml + '</table></td></tr>')
+      }
+
+      // Attach details for all cases above
+      if (details.length === 0 || details === '') {
+        // Item has no details
+      } else {
+        $item.after($details)
+      }
     }
 
     // Toggle details visibility
@@ -124,9 +168,9 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
 })
 
 // Remove details before sorting
-$doc.on('Sortable:sort:before', 'table.table-myoperations', function (event, elemSortable, columnName, direction) {
+$doc.on('Sortable:sort:before', 'table.table-myoperations, .table.table-projects', function (event, elemSortable, columnName, direction) {
   var $table = $(this)
-  var $details = $table.find('.table-myoperations-details')
+  var $details = $table.find('.table-myoperations-details, .table-projects-details')
 
   // Find any details rows and remove them before the sorting occurs
   if ($details.length > 0) $details.remove()
