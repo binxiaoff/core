@@ -461,7 +461,7 @@ class MailerManager
             $project->get($bid->getProject()->getIdProject());
 
             $now          = new \DateTime();
-            $interval     = $this->formatDateDiff($now, $bid->getIdProject()->getDateFin());
+            $interval     = $this->formatDateDiff($now, $bid->getProject()->getDateFin());
             $bidManager   = $this->container->get('unilend.service.bid_manager');
             $projectRates = $bidManager->getProjectRateRange($project);
 
@@ -489,13 +489,13 @@ class MailerManager
                 'prenom_p'         => $bid->getIdLenderAccount()->getIdClient()->getPrenom(),
                 'valeur_bid'       => $this->oFicelle->formatNumber($bid->getAmount() / 100, 0),
                 'taux_bid'         => $this->oFicelle->formatNumber($bid->getRate(), 1),
-                'autobid_rate_min' => $bid->getAutobid()->getRateMin(),
+                'autobid_rate_min' => (null !== $bid->getAutobid()) ? $bid->getAutobid()->getRateMin() : '',
                 'nom_entreprise'   => $bid->getProject()->getIdCompany()->getName(),
                 'projet-p'         => $this->sFUrl . '/projects/detail/' . $bid->getProject()->getSlug(),
                 'date_bid'         => strftime('%d-%B-%G', $bid->getAdded()->getTimestamp()),
                 'heure_bid'        => $bid->getAdded()->format('H\hi'),
                 'fin_chrono'       => $interval,
-                'projet-bid'       => $this->sFUrl . '/projects/detail/' . $bid->getIdProject()->getSlug(),
+                'projet-bid'       => $this->sFUrl . '/projects/detail/' . $bid->getProject()->getSlug(),
                 'autobid_link'     => $this->sFUrl . '/profile/autolend#parametrage',
                 'motif_virement'   => $bid->getIdLenderAccount()->getWireTransferPattern(),
                 'lien_fb'          => $this->getFacebookLink(),
