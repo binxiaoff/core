@@ -1,0 +1,134 @@
+{% extends 'layouts/_page-simple.html.twig' %}
+
+{% block pageTitle %}
+    <h1 class="page-title">{% trans %}lender-auto-evaluation_page-title{% endtrans %}</h1>
+{% endblock %}
+
+
+{% block pageAsideBody %}
+    <div class="page-aside-body h-card vcard ui-has-sticky">
+        {% trans %}lender-auto-evaluation_sticky-box-text{% endtrans %}
+    </div><!-- /.page-aside-body -->
+{% endblock %}
+{% block pageContentBody %}
+    <section class="page-section">
+        {% if currentStep is defined %}
+            <div class="panel cip-header">
+                <header class="panel-header">
+                    <h3>{% trans %} lender-auto-evaluation_questionnaire-page-title {% endtrans %}</h3>
+                </header>
+                <div class="cip-progress" data-progressbar data-progressbar-current="{{ currentStep }}" data-progressbar-total="4">
+                    <div data-progressbar-bar></div>
+                </div>
+            </div>
+            {% if currentStep >= 1 %}
+                <form method="post" action="{{ path('lender_auto_evaluation_survey') }}" class="panel" data-formvalidation>
+                    <input type="hidden" name="question" value="{{ question.type }}"/>
+                    <div class="row">
+                        <div class="form-field cip-answer">
+                            <label for="estate-answer" class="field-label">
+                                {% trans %} lender-evaluation_question-value-total-estate {% endtrans %}
+                            </label>
+                            <div class="input-group set-right">
+                                <input type="text" id="estate-answer" name="estate-answer"
+                                       data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="number" data-formvalidation-minvalue="0"
+                                       value="{{ answers['value-total-estate']|default() }}" class="input-field" {% if currentStep > 1 %} readonly {% endif %}/>
+                                <div class="btn-group">
+                                    <span class="icon fa-euro"></span>
+                                </div>
+                            </div>
+                        </div><!-- /.form-field -->
+                    </div>
+                    {% if question.type == constant('\\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS') or answers['value-monthly-savings'] is defined %}
+                        <div class="row">
+                            <div class="form-field cip-answer">
+                                <label for="savings-answer" class="field-label">
+                                    {% trans %} lender-evaluation_question-value-monthly-savings {% endtrans %}
+                                </label>
+                                <div class="input-group set-right">
+                                    <input type="text" id="savings-answer" name="savings-answer" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="number" data-formvalidation-minvalue="0" class="input-field" value="{{ answers['value-monthly-savings']|default() }}" {% if currentStep > 2 %} readonly {% endif %}/>
+                                    <div class="btn-group">
+                                        <span class="icon fa-euro"></span>
+                                    </div>
+                                </div>
+                            </div><!-- /.form-field -->
+                        </div>
+                    {% endif %}
+                    {% if currentStep >= 3 %}
+                        <div class="row">
+                            <div class="form-field cip-answer">
+                                <label for="answer" class="field-label">
+                                    {% trans %} lender-evaluation_question-value-blocking-period {% endtrans %}
+                                </label>
+                                {% if answers['value-blocking-period'] is defined and answers['value-blocking-period'] is not empty %}
+                                    <input type="text" id="blocking-answer" value="{% spaceless %}
+                                       {% if answers['value-blocking-period'] == '-12' %}
+                                            {% trans %} lender-evaluation_question-value-blocking-period-answer-choice-12 {% endtrans %}
+                                       {% elseif answers['value-blocking-period']== '-36' %}
+                                            {% trans %} lender-evaluation_question-value-blocking-period-answer-choice-36 {% endtrans %}
+                                       {% elseif answers['value-blocking-period'] == '-60' %}
+                                            {% trans %} lender-evaluation_question-value-blocking-period-answer-choice-60 {% endtrans %}
+                                       {% elseif answers['value-blocking-period']== '60+' %}
+                                            {% trans %} lender-evaluation_question-value-blocking-period-answer-choice-plus-60 {% endtrans %}
+                                        {% endif %}
+                                       {% endspaceless %}"
+                                           class="input-field" readonly/>
+                                {% else %}
+                                    <select id="answer" name="blocking-period-answer" data-formvalidation-input data-formvalidation-required="true" class="input-field">
+                                        <option></option>
+                                        <option value="-12">{% trans %} lender-evaluation_question-value-blocking-period-answer-choice-12 {% endtrans %}</option>
+                                        <option value="-36">{% trans %} lender-evaluation_question-value-blocking-period-answer-choice-36 {% endtrans %}</option>
+                                        <option value="-60">{% trans %} lender-evaluation_question-value-blocking-period-answer-choice-60 {% endtrans %}</option>
+                                        <option value="60+">{% trans %} lender-evaluation_question-value-blocking-period-answer-choice-plus-60 {% endtrans %}</option>
+                                    </select>
+                                {% endif %}
+                            </div><!-- /.form-field -->
+                        </div>
+                    {% endif %}
+                    {% if currentStep >= 4 %}
+                        <div class="row">
+                            <div class="form-field cip-answer">
+                                    <span class="field-label">
+                                        {% trans %} lender-evaluation_question-value-other-financial-products {% endtrans %}
+                                    </span>
+                                <div class="form-field form-field-multi">
+                                    <label>
+                                        <input type="checkbox" name="answer[]" value="actions"/>
+                                        <span class="label">{% trans %} lender-evaluation_question-value-other-financial-products-answer-stock {% endtrans %}</span>
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" name="answer[]" value="prets"/>
+                                        <span class="label">{% trans %} lender-evaluation_question-value-other-financial-products-answer-loans {% endtrans %}</span>
+                                    </label>
+                                    <label>
+                                        <input type="checkbox" name="answer[]" value="autres"/>
+                                        <span class="label">{% trans %} lender-evaluation_question-value-other-financial-products-answer-other {% endtrans %}</span>
+                                    </label>
+                                </div>
+                            </div><!-- /.form-field -->
+                        </div>
+                    {% endif %}
+                    <div class="row text-align-right">
+                        <button type="submit" class="btn-primary">
+                            {% trans %} lender-evaluation_questionnaire-values-continue-button {% endtrans %}
+                        </button>
+                    </div>
+                </form>
+            {% endif %}
+        {% elseif advices is defined %}
+            <div class="panel cip-header">
+                <header class="panel-header">
+                    <h3>{% trans %} lender-auto-evaluation_results-page-title {% endtrans %}</h3>
+                </header>
+                <div class="cip-progress" data-progressbar data-progressbar-current="4" data-progressbar-total="4">
+                    <div data-progressbar-bar></div>
+                </div>
+            </div>
+            {% for advice in advices %}
+                <p>{{ advice|raw }}</p>
+            {% endfor %}
+        {% else %}
+            <a href="{{ path('lender_auto_evaluation_survey') }}" class="btn-primary">{% trans %}lender-auto-evaluation_survey-start-button{% endtrans %}</a>
+        {% endif %}
+    </section>
+{% endblock %}
