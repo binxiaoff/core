@@ -127,7 +127,7 @@ class NotificationManager
         $mailNotification->id_notif                  = $mailType;
         $mailNotification->date_notif                = date('Y-m-d H:i:s');
         $mailNotification->id_notification           = $notificationId;
-        $mailNotification->id_wallet_balance_history = $walletBalanceHistory->getId();
+        $mailNotification->id_wallet_balance_history = (null !== $walletBalanceHistory->getId()) ? $walletBalanceHistory->getId() : null ;
         $mailNotification->id_loan                   = $loanId;
         $mailNotification->create();
     }

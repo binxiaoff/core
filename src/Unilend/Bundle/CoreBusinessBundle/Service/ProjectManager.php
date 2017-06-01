@@ -115,7 +115,7 @@ class ProjectManager
 
         while ($bids = $bidData->getLastProjectBidsByLender($project->id_project, $limit, $offset)) {
             foreach ($bids as $bid) {
-                $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idLenderAccount' => $bid['id_lender_account']]);
+                $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($bid['id_lender_account']);
                 if (
                     null !== $wallet
                     && WalletType::LENDER === $wallet->getIdType()->getLabel()
