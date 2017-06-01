@@ -444,69 +444,70 @@ EOF
             if ($client instanceof Clients) {
                 /** @var Wallet $wallet */
                 $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+                if (null !== $wallet) {
+                    $pattern       = str_replace(' ', '', $pattern);
+                    $lenderPattern = str_replace(' ', '', $wallet->getWireTransferPattern());
 
-                $pattern       = str_replace(' ', '', $pattern);
-                $lenderPattern = str_replace(' ', '', $wallet->getWireTransferPattern());
+                    if (false !== strpos($pattern, $lenderPattern)) {
+                        $reception->setIdClient($wallet->getIdClient())
+                            ->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED)
+                            ->setRemb(1); // todo: delete the field
+                        $entityManager->flush();
 
-                if (false !== strpos($pattern, $lenderPattern)) {
-                    $reception->setIdClient($wallet->getIdClient())
-                        ->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED)
-                        ->setRemb(1); // todo: delete the field
-                    $entityManager->flush();
+                        $this->getContainer()->get('unilend.service.operation_manager')->provisionLenderWallet($wallet, $reception);
 
-                    $this->getContainer()->get('unilend.service.operation_manager')->provisionLenderWallet($wallet, $reception);
+                        if ($client->getEtapeInscriptionPreteur() < Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT) {
+                            $client->setEtapeInscriptionPreteur(Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT);
+                            $entityManager->flush($client);
+                        }
 
-                    if ($client->getEtapeInscriptionPreteur() < Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT) {
-                        $client->setEtapeInscriptionPreteur(Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT);
-                        $entityManager->flush($client);
-                    }
+                        if ($client->getStatus() == Clients::STATUS_ONLINE) {
+                            $notifications->type      = Notifications::TYPE_BANK_TRANSFER_CREDIT;
+                            $notifications->id_lender = $wallet->getId();
+                            $notifications->amount    = $reception->getMontant();
+                            $notifications->create();
 
-                    if ($client->getStatus() == Clients::STATUS_ONLINE) {
-                        $notifications->type      = Notifications::TYPE_BANK_TRANSFER_CREDIT;
-                        $notifications->id_lender = $wallet->getId();
-                        $notifications->amount    = $reception->getMontant();
-                        $notifications->create();
+                            $provisionOperation   = $operationRepository->findOneBy(['idWireTransferIn' => $reception]);
+                            $walletBalanceHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->findOneBy([
+                                'idOperation' => $provisionOperation,
+                                'idWallet'    => $wallet
+                            ]);
 
-                        $provisionOperation   = $operationRepository->findOneBy(['idWireTransferIn' => $reception]);
-                        $walletBalanceHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->findOneBy([
-                            'idOperation' => $provisionOperation,
-                            'idWallet'    => $wallet
-                        ]);
+                            $clients_gestion_mails_notif->id_client                 = $client->getIdClient();
+                            $clients_gestion_mails_notif->id_notif                  = \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT;
+                            $clients_gestion_mails_notif->date_notif                = date('Y-m-d H:i:s');
+                            $clients_gestion_mails_notif->id_notification           = $notifications->id_notification;
+                            $clients_gestion_mails_notif->id_wallet_balance_history = $walletBalanceHistory->getId();
+                            $clients_gestion_mails_notif->create();
 
-                        $clients_gestion_mails_notif->id_client                 = $client->getIdClient();
-                        $clients_gestion_mails_notif->id_notif                  = \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT;
-                        $clients_gestion_mails_notif->date_notif                = date('Y-m-d H:i:s');
-                        $clients_gestion_mails_notif->id_notification           = $notifications->id_notification;
-                        $clients_gestion_mails_notif->id_wallet_balance_history = $walletBalanceHistory->getId();
-                        $clients_gestion_mails_notif->create();
+                            if ($clients_gestion_notifications->getNotif($client->getIdClient(), \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT, 'immediatement')) {
+                                $clients_gestion_mails_notif->get($clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
+                                $clients_gestion_mails_notif->immediatement = 1;
+                                $clients_gestion_mails_notif->update();
 
-                        if ($clients_gestion_notifications->getNotif($client->getIdClient(), \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT, 'immediatement')) {
-                            $clients_gestion_mails_notif->get($clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
-                            $clients_gestion_mails_notif->immediatement = 1;
-                            $clients_gestion_mails_notif->update();
+                                $sUrl         = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
+                                $sStaticUrl   = $this->getContainer()->get('assets.packages')->getUrl('');
+                                $facebookLink = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue();
+                                $twitterLink  = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue();
 
-                            $sUrl         = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-                            $sStaticUrl   = $this->getContainer()->get('assets.packages')->getUrl('');
-                            $facebookLink = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue();
-                            $twitterLink  = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue();
+                                $varMail = array(
+                                    'surl'            => $sStaticUrl,
+                                    'url'             => $sUrl,
+                                    'prenom_p'        => $client->getPrenom(),
+                                    'fonds_depot'     => $numberFormatter->format(round(bcdiv($reception->getMontant(), 100, 4), 2)),
+                                    'solde_p'         => $numberFormatter->format((float) $wallet->getAvailableBalance()),
+                                    'motif_virement'  => $wallet->getWireTransferPattern(),
+                                    'projets'         => $sUrl . '/projets-a-financer',
+                                    'gestion_alertes' => $sUrl . '/profile',
+                                    'lien_fb'         => $facebookLink,
+                                    'lien_tw'         => $twitterLink
+                                );
 
-                            $varMail = array(
-                                'surl'            => $sStaticUrl,
-                                'url'             => $sUrl,
-                                'prenom_p'        => $client->getPrenom(),
-                                'fonds_depot'     => $numberFormatter->format(round(bcdiv($reception->getMontant(), 100, 4), 2)),
-                                'solde_p'         => $numberFormatter->format((float) $wallet->getAvailableBalance()),
-                                'motif_virement'  => $wallet->getWireTransferPattern(),
-                                'projets'         => $sUrl . '/projets-a-financer',
-                                'gestion_alertes' => $sUrl . '/profile',
-                                'lien_fb'         => $facebookLink,
-                                'lien_tw'         => $twitterLink
-                            );
-
-                            $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation', $varMail);
-                            $message->setTo($client->getEmail());
-                            $mailer = $this->getContainer()->get('mailer');
-                            $mailer->send($message);
+                                $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation', $varMail);
+                                $message->setTo($client->getEmail());
+                                $mailer = $this->getContainer()->get('mailer');
+                                $mailer->send($message);
+                            }
                         }
                     }
                 }
