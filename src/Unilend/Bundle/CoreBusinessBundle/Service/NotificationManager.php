@@ -121,22 +121,13 @@ class NotificationManager
     public function createEmailNotification($notificationId, $mailType, $clientId, WalletBalanceHistory $walletBalanceHistory = null, $projectId = null, $loanId = null)
     {
         $emailNotification = new ClientsGestionMailsNotif();
-        $emailNotification->setIdClient($this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId))
-            ->setIdNotif($this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionTypeNotif')->find($mailType))
+        $emailNotification->setIdClient($clientId)
+            ->setIdNotif($mailType)
             ->setDateNotif(new \DateTime('NOW'))
-            ->setIdNotification($this->entityManager->getRepository('UnilendCoreBusinessBundle:Notifications')->find($notificationId));
-
-        if (null !== $projectId) {
-            $emailNotification->setIdProject($this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId));
-        }
-
-        if (null !== $loanId) {
-            $emailNotification->setIdLoan($this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($loanId));
-        }
-
-        if (null !== $walletBalanceHistory) {
-            $emailNotification->setIdWalletBalanceHistory($walletBalanceHistory);
-        }
+            ->setIdNotification($notificationId)
+            ->setIdProject($projectId)
+            ->setIdLoan($loanId)
+            ->setIdWalletBalanceHistory($walletBalanceHistory);
 
         $this->entityManager->persist($emailNotification);
         $this->entityManager->flush($emailNotification);
