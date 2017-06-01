@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyRating as AltaresCompanyRating;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyRatingDetail as AltaresCompanyRating;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
 use Unilend\Bundle\WSClientBundle\Service\AltaresManager;
 use Unilend\Bundle\WSClientBundle\Service\EulerHermesManager;

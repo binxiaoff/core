@@ -7,72 +7,46 @@ use JMS\Serializer\Annotation as JMS;
 class CompanyRating
 {
     /**
-     * @JMS\SerializedName("dateValeur")
-     * @JMS\Type("DateTime<'Y-m-d'>")
+     * @JMS\SerializedName("myInfo")
+     * @JMS\Type("Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyRatingDetail")
      */
-    private $scoreDate;
+    private $myInfo;
 
     /**
-     * @JMS\SerializedName("scoreSectorielVingt")
-     * @JMS\Type("integer")
+     * @JMS\SerializedName("exception")
+     * @JMS\Type("Unilend\Bundle\WSClientBundle\Entity\Altares\ExceptionResponse")
      */
-    private $sectoralScore20;
+    private $exception;
 
     /**
-     * @JMS\SerializedName("scoreSectorielCent")
-     * @JMS\Type("integer")
+     * @return CompanyRatingDetail
      */
-    private $sectoralScore100;
-
-    /**
-     * @JMS\SerializedName("scoreVingt")
-     * @JMS\Type("integer")
-     */
-    private $score20;
-
-    /**
-     * @JMS\SerializedName("scoreCent")
-     * @JMS\Type("integer")
-     */
-    private $score100;
-
-    /**
-     * @return \DateTime
-     */
-    public function getScoreDate()
+    public function getMyInfo()
     {
-        return $this->scoreDate->setTime(0, 0, 0);
+        return $this->myInfo;
     }
 
     /**
-     * @return mixed
+     * @param CompanyRatingDetail $myInfo
      */
-    public function getSectoralScore20()
+    public function setMyInfo($myInfo)
     {
-        return $this->sectoralScore20;
+        $this->myInfo = $myInfo;
     }
 
     /**
-     * @return mixed
+     * @return ExceptionResponse
      */
-    public function getScore20()
+    public function getException()
     {
-        return $this->score20;
+        return $this->exception;
     }
 
     /**
-     * @return mixed
+     * @param ExceptionResponse $exception
      */
-    public function getSectoralScore100()
+    public function setException($exception)
     {
-        return $this->sectoralScore100;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getScore100()
-    {
-        return $this->score100;
+        $this->exception = $exception;
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+use \Psr\Log\LoggerInterface;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
 use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
@@ -190,7 +192,7 @@ class dossiersController extends bootstrap
                 /** @var \Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentity $establishmentIdentity */
                 $establishmentIdentity  = $this->get('unilend.service.ws_client.altares_manager')->getEstablishmentIdentity($this->companies->siren);
 
-                if ($establishmentIdentity instanceof \Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentity && false === empty($establishmentIdentity->getPhoneNumber())) {
+                if ($establishmentIdentity instanceof EstablishmentIdentityDetail && false === empty($establishmentIdentity->getPhoneNumber())) {
                     $this->companies->phone = $establishmentIdentity->getPhoneNumber();
                     $this->companies->update();
                 }

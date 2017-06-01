@@ -2,8 +2,8 @@
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyIdentity;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentity;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyIdentityDetail;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 
 class companyController extends bootstrap
@@ -69,7 +69,7 @@ class companyController extends bootstrap
             $altaresEstablishmentIdentity = $altares->getEstablishmentIdentity($siren);
             $infoLegaleIdentity           = $infoLegale->getIdentity($siren);
             $companyIdentity              = [];
-            if ($altaresCompanyIdentity instanceof CompanyIdentity) {
+            if ($altaresCompanyIdentity instanceof CompanyIdentityDetail) {
                 $companyIdentity = [
                     'corporateName' => $altaresCompanyIdentity->getCorporateName(),
                     'address'       => $altaresCompanyIdentity->getAddress(),
@@ -77,7 +77,7 @@ class companyController extends bootstrap
                     'city'          => $altaresCompanyIdentity->getCity(),
                 ];
             }
-            if ($altaresEstablishmentIdentity instanceof EstablishmentIdentity) {
+            if ($altaresEstablishmentIdentity instanceof EstablishmentIdentityDetail) {
                 $companyIdentity['phoneNumber'] = $altaresEstablishmentIdentity->getPhoneNumber();
             }
             if (false === empty($infoLegaleIdentity->dirigeants->dirigeant)) {

@@ -12,6 +12,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetList;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetListDetail;
 
 class ProjectRequestManager
 {
@@ -268,7 +269,7 @@ class ProjectRequestManager
 
     /**
      * @param \companies                   $company
-     * @param null|BalanceSheetList        $balanceSheetList
+     * @param null|BalanceSheetListDetail  $balanceSheetList
      * @param null|\company_rating_history $companyRatingHistory
      * @param null|\company_rating         $companyRating
      * @return null|string
@@ -299,7 +300,6 @@ class ProjectRequestManager
                 return $rejectionReason;
             }
 
-            /** @var BalanceSheetList $balanceSheetList */
             $balanceSheetList = $this->companyFinanceCheck->getBalanceSheets($company->siren);
 
             if (null !== $balanceSheetList && (new \DateTime())->diff($balanceSheetList->getLastBalanceSheet()->getCloseDate())->days <= \company_balance::MAX_COMPANY_BALANCE_DATE) {

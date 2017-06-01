@@ -6,6 +6,7 @@ use JMS\Serializer\Serializer;
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Client;
 use Psr\Http\Message\ResponseInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyIdentity;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating;
 
@@ -165,46 +166,121 @@ class EulerHermesManager
         $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
 
         try {
-            $result = $this->useCache ? $this->callHistoryManager->getStoredResponse($wsResource, $siren) : false;
-
-            if ($this->isValidResponse($result)) {
-                return $result;
+            if ($storedResponse = $this->getStoredResponse($wsResource, $siren)) {
+                if ($this->isValidContent($storedResponse, $wsResource)) {
+                    return $storedResponse;
+                }
             }
+            $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
+            $response = $this->client->get(
+                $wsResource->getResourceName() . $uri,
+                ['headers' => ['apikey' => $apiKey]]
+            );
 
-            $response = $this->client->get($wsResource->resource_name . $uri, [
-                'headers'  => ['apikey' => $apiKey],
-                'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache)
-            ]);
-
+            $validity = $this->isValidResponse($response, $wsResource, $logContext);
+            $stream   = $response->getBody();
+            $stream->rewind();
+            $content = $stream->getContents();
+            call_user_func($callable, $content, $validity['status']);
             $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
 
-            $content = $response->getBody()->getContents();
-
-            if (200 === $response->getStatusCode() && $this->isValidResponse($content)) {
+            if ($validity['is_valid']) {
                 return $content;
+            } else {
+                return null;
             }
-
-            $this->logger->error('Call to ' . $wsResource->resource_name . '. Result: ' . $content, $logContext);
-            return null;
         } catch (\Exception $exception) {
+            if (isset($callable)) {
+                call_user_func($callable, isset($content) ? $content : '', 'error');
+            }
+            $this->logger->error(
+                'Exception at line: ' . __LINE__ . '. Message: ' . $exception->getMessage(),
+                ['class' => __CLASS__, 'resource' => $wsResource->getLabel(), 'uri' => $uri]
+            );
         }
-
         $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down', $exception->getMessage());
+
         return null;
     }
 
     /**
-     * @param mixed $response
+     * @param ResponseInterface  $response
+     * @param WsExternalResource $resource
+     * @param array              $logContext
+     *
+     * @return array
+     *
+     * @throws \Exception
+     */
+    private function isValidResponse(ResponseInterface $response, WsExternalResource $resource, $logContext = [])
+    {
+        $stream = $response->getBody();
+        $stream->rewind();
+        $content = $stream->getContents();
+
+        if (200 === $response->getStatusCode()) {
+            $contentValidity = $this->isValidContent($content, $resource);
+
+            if (false === $contentValidity && false === empty($logContext)) {
+                $this->logger->warning('Call to ' . $resource->getResourceName() . ' Response code: ' . $response->getStatusCode() . '. Response content: ' . $content, $logContext);
+            }
+
+            return ['status' => $contentValidity ? 'valid' : 'warning', 'is_valid' => $contentValidity];
+        } else {
+            $level = 'error';
+
+            if (401 === $response->getStatusCode()) {
+                throw new \Exception($content, 401);
+            } elseif (404 === $response->getStatusCode()) {
+                $level = 'warning';
+            }
+            if (false === empty($logContext)) {
+                $this->logger->{$level}('Call to ' . $resource->getResourceName() . ' Response code: ' . $response->getStatusCode() . '. Response content: ' . $content, $logContext);
+            }
+
+            return ['status' => $level, 'is_valid' => false];
+        }
+    }
+
+    /**
+     * @param                    $content
+     * @param WsExternalResource $resource
      *
      * @return bool
      */
-    private function isValidResponse($response)
+    private function isValidContent($content, WsExternalResource $resource)
     {
-        return (
-            false !== $response
-            && ($response = json_decode($response))
-            && (false === isset($response->code) || 200 === $response->code)
-        );
+        if ($response = json_decode($content)) {
+            switch ($resource->getLabel()) {
+                case self::RESOURCE_TRAFFIC_LIGHT:
+                    return isset($response->Color);
+                case self::RESOURCE_SEARCH_COMPANY:
+                    return isset($response->Id);
+                case self::RESOURCE_EULER_GRADE:
+                    return isset($response->message, $response->code);
+                default:
+                    return false;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param WsExternalResource $resource
+     * @param                    $siren
+     *
+     * @return bool|mixed
+     */
+    private function getStoredResponse(WsExternalResource $resource, $siren)
+    {
+        if ($this->useCache
+            && false !== ($storedResponse = $this->callHistoryManager->getStoredResponse($resource, $siren))
+            && json_decode($storedResponse)
+        ) {
+            return $storedResponse;
+        }
+
+        return false;
     }
 
     /**

@@ -7,24 +7,46 @@ use JMS\Serializer\Annotation as JMS;
 class EstablishmentIdentity
 {
     /**
-     * @JMS\SerializedName("telephone")
-     * @JMS\Type("string")
+     * @JMS\SerializedName("myInfo")
+     * @JMS\Type("Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail")
      */
-    private $phoneNumber;
+    private $myInfo;
 
     /**
-     * @param string $phoneNumber
+     * @JMS\SerializedName("exception")
+     * @JMS\Type("Unilend\Bundle\WSClientBundle\Entity\Altares\ExceptionResponse")
      */
-    public function __construct($phoneNumber)
+    private $exception;
+
+    /**
+     * @return EstablishmentIdentityDetail
+     */
+    public function getMyInfo()
     {
-        $this->phoneNumber = $phoneNumber;
+        return $this->myInfo;
     }
 
     /**
-     * @return mixed
+     * @param EstablishmentIdentityDetail $myInfo
      */
-    public function getPhoneNumber()
+    public function setMyInfo($myInfo)
     {
-        return $this->phoneNumber;
+        $this->myInfo = $myInfo;
+    }
+
+    /**
+     * @return ExceptionResponse
+     */
+    public function getException()
+    {
+        return $this->exception;
+    }
+
+    /**
+     * @param ExceptionResponse $exception
+     */
+    public function setException($exception)
+    {
+        $this->exception = $exception;
     }
 }

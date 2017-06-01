@@ -47,7 +47,7 @@ class simulationController extends bootstrap
         $this->result    = false;
 
         try {
-            if (isset($_POST['send'], $_POST['siren'])) {
+            if (isset($_POST['siren'])) {
                 if ($wsResource->get($_POST['resource_label'], 'label')) {
                     $provider = $this->get('unilend.service.ws_client.' . $wsResource->provider_name . '_manager');
                     $endpoint = $this->methods[$wsResource->label];
@@ -92,7 +92,7 @@ class simulationController extends bootstrap
         $this->result    = [];
 
         try {
-            if (isset($_POST['send'], $_POST['siren'])) {
+            if (isset($_POST['siren'])) {
                 if (false === empty($_POST['siren']) && false !== $wsResource->get($_POST['resource_label'], 'label')) {
                     $days = empty($_POST['nbDaysAgo']) ? 3 : $_POST['nbDaysAgo'];
                     $date = (new \DateTime())->sub(new \DateInterval('P' . $days . 'D'));

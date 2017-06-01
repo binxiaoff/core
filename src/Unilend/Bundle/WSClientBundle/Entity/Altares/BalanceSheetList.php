@@ -7,49 +7,46 @@ use JMS\Serializer\Annotation as JMS;
 class BalanceSheetList
 {
     /**
-     * @var CompanyBalanceSheet[]
-     *
-     * @JMS\SerializedName("bilans")
-     * @JMS\Type("array<Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyBalanceSheet>")
+     * @JMS\SerializedName("myInfo")
+     * @JMS\Type("Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetListDetail")
      */
-    private $balanceSheets;
+    private $myInfo;
 
     /**
-     * @return CompanyBalanceSheet[]
+     * @JMS\SerializedName("exception")
+     * @JMS\Type("Unilend\Bundle\WSClientBundle\Entity\Altares\ExceptionResponse")
      */
-    public function getBalanceSheets()
+    private $exception;
+
+    /**
+     * @return BalanceSheetListDetail
+     */
+    public function getMyInfo()
     {
-        return $this->balanceSheets;
+        return $this->myInfo;
     }
 
     /**
-     * @return int
+     * @param BalanceSheetListDetail $myInfo
      */
-    public function getBalanceSheetsCount()
+    public function setMyInfo($myInfo)
     {
-        return count($this->balanceSheets);
+        $this->myInfo = $myInfo;
     }
 
     /**
-     * CompanyBalanceSheet
+     * @return ExceptionResponse
      */
-    public function getLastBalanceSheet()
+    public function getException()
     {
-        $lastBalanceDate  = null;
-        $lastBalanceSheet = null;
+        return $this->exception;
+    }
 
-        foreach ($this->balanceSheets as $balanceSheet) {
-            if (null === $lastBalanceDate) {
-                $lastBalanceDate  = $balanceSheet->getCloseDate();
-                $lastBalanceSheet = $balanceSheet;
-            }
-
-            if ($lastBalanceDate < $balanceSheet->getCloseDate()) {
-                $lastBalanceDate  = $balanceSheet->getCloseDate();
-                $lastBalanceSheet = $balanceSheet;
-            }
-        }
-
-        return $lastBalanceSheet;
+    /**
+     * @param ExceptionResponse $exception
+     */
+    public function setException($exception)
+    {
+        $this->exception = $exception;
     }
 }

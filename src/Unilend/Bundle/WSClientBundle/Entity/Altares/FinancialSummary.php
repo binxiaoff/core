@@ -4,147 +4,49 @@ namespace Unilend\Bundle\WSClientBundle\Entity\Altares;
 
 use JMS\Serializer\Annotation as JMS;
 
-/**
- * Class FinancialSummary
- * @package Unilend\Bundle\WSClientBundle\Entity\Altares
- *
- * @JMS\ExclusionPolicy("all")
- */
 class FinancialSummary
 {
     /**
-     * @JMS\Groups({"summary", "management_line"})
-     * @JMS\SerializedName("montantN")
-     * @JMS\Type("integer")
-     *
-     * @JMS\Expose
+     * @JMS\SerializedName("myInfo")
+     * @JMS\Type("Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummaryListDetail")
      */
-    private $amountY;
+    private $myInfo;
 
     /**
-     * @JMS\Groups({"summary", "management_line"})
-     * @JMS\SerializedName("montantN_1")
-     * @JMS\Type("integer")
-     *
-     * @JMS\Expose
+     * @JMS\SerializedName("exception")
+     * @JMS\Type("Unilend\Bundle\WSClientBundle\Entity\Altares\ExceptionResponse")
      */
-    private $amountY_1;
+    private $exception;
 
     /**
-     * @JMS\Groups({"summary", "management_line"})
-     * @JMS\SerializedName("montantN_2")
-     * @JMS\Type("integer")
-     *
-     * @JMS\Expose
+     * @return FinancialSummaryListDetail
      */
-    private $amountY_2;
-
-    /**
-     * @JMS\Groups({"summary", "management_line"})
-     * @JMS\SerializedName("montantN_3")
-     * @JMS\Type("integer")
-     *
-     * @JMS\Expose
-     */
-    private $amountY_3;
-
-    /**
-     * @JMS\Groups({"summary"})
-     * @JMS\SerializedName("poste")
-     * @JMS\Type("string")
-     *
-     * @JMS\Expose
-     */
-    private $post;
-
-    /**
-     * @JMS\Groups({"summary"})
-     * @JMS\SerializedName("libellePoste")
-     * @JMS\Type("string")
-     *
-     * @JMS\Expose
-     */
-    private $postLabel;
-
-    /**
-     * @JMS\Groups({"management_line"})
-     * @JMS\SerializedName("libellePosteCle")
-     * @JMS\Type("string")
-     *
-     * @JMS\Expose
-     */
-    private $keyPostLabel;
-
-    /**
-     * @JMS\Groups({"management_line"})
-     * @JMS\SerializedName("posteCle")
-     * @JMS\Type("string")
-     *
-     * @JMS\Expose
-     */
-    private $keyPost;
-
-    /**
-     * @return mixed
-     */
-    public function getPost()
+    public function getMyInfo()
     {
-        return $this->post;
+        return $this->myInfo;
     }
 
     /**
-     * @return mixed
+     * @param FinancialSummaryDetail $myInfo
      */
-    public function getPostLabel()
+    public function setMyInfo($myInfo)
     {
-        return $this->postLabel;
+        $this->myInfo = $myInfo;
     }
 
     /**
-     * @return mixed
+     * @return ExceptionResponse
      */
-    public function getAmountY()
+    public function getException()
     {
-        return $this->amountY;
+        return $this->exception;
     }
 
     /**
-     * @return mixed
+     * @param ExceptionResponse $exception
      */
-    public function getAmountY1()
+    public function setException($exception)
     {
-        return $this->amountY_1;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getAmountY2()
-    {
-        return $this->amountY_2;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getAmountY3()
-    {
-        return $this->amountY_3;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getKeyPostLabel()
-    {
-        return $this->keyPostLabel;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getKeyPost()
-    {
-        return $this->keyPost;
+        $this->exception = $exception;
     }
 }

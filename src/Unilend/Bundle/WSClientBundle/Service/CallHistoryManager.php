@@ -4,10 +4,11 @@ namespace Unilend\Bundle\WSClientBundle\Service;
 
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ORM\EntityManager;
-use GuzzleHttp\TransferStats;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Stopwatch\Stopwatch;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WsCallHistory;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\CoreBusinessBundle\Service\SlackManager;
 use Unilend\Bundle\StoreBundle\Document\WsCall;
@@ -69,45 +70,34 @@ class CallHistoryManager
     }
 
     /**
-     * @param \ws_external_resource $wsResource
-     * @param string                $siren
-     * @param bool                  $useCache
+     * @param WsExternalResource $wsResource
+     * @param string             $siren
+     * @param bool               $useCache
      *
      * @return \Closure
      */
     public function addResourceCallHistoryLog($wsResource, $siren, $useCache)
     {
-        if (false !== $wsResource) {
-            $this->stopwatch->start($wsResource->id_resource);
+        if (null !== $wsResource) {
+            $this->stopwatch->start($wsResource->getIdResource());
 
-            return function ($stats = null) use ($wsResource, $siren, $useCache) {
+            return function ($result = null, $callStatus) use ($wsResource, $siren, $useCache) {
                 try {
-                    $event        = $this->stopwatch->stop($wsResource->id_resource);
-                    $transferTime = $event->getDuration() / 1000;
-
-                    if ($stats instanceof TransferStats && $stats->hasResponse()) {
-                        $statusCode = $stats->getResponse()->getStatusCode();
-                        $stream     = $stats->getResponse()->getBody();
-                        $stream->rewind();
-                        // getContents returns the remaining contents, so that a second call returns nothing unless we seek the position of the stream with rewind
-                        $result = $stream->getContents();
-                    } elseif ($stats instanceof TransferStats) {
-                        $statusCode = null;
-                        $result     = '';
-                    } else {
-                        $statusCode = null;
-                        $result     = $stats;
-                    }
-
-                    $this->createLog($wsResource->id_resource, $siren, $transferTime, $statusCode);
+                    $event         = $this->stopwatch->stop($wsResource->getIdResource());
+                    $transferTime  = $event->getDuration() / 1000;
+                    $wsCallHistory = $this->createLog($wsResource, $siren, $transferTime, $callStatus);
 
                     if ($useCache) {
-                        $this->storeResponse($wsResource, $siren, $result);
+                        $this->storeResponse($wsResource, $siren, $result, $wsCallHistory);
                     }
+
+                    return $wsCallHistory;
                 } catch (\Exception $exception) {
                     $this->logger->error('Unable to log response time into database. Error message: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]);
                     unset($exception);
                 }
+
+                return null;
             };
         }
 
@@ -116,78 +106,87 @@ class CallHistoryManager
         };
     }
 
-    private function createLog($resourceId, $siren, $transferTime, $statusCode)
+    /**
+     * @param WsExternalResource $resource
+     * @param string             $siren
+     * @param float              $transferTime
+     * @param null|string        $callStatus
+     *
+     * @return WsCallHistory
+     */
+    private function createLog($resource, $siren, $transferTime, $callStatus = null)
     {
-        /** @var \ws_call_history $wsCallHistory */
-        $wsCallHistory                = $this->entityManagerSimulator->getRepository('ws_call_history');
-        $wsCallHistory->id_resource   = $resourceId;
-        $wsCallHistory->siren         = $siren;
-        $wsCallHistory->transfer_time = $transferTime;
-        $wsCallHistory->status_code   = $statusCode;
-        $wsCallHistory->create();
+        $wsCallHistory = new WsCallHistory();
+        $wsCallHistory->setIdResource($resource)
+            ->setSiren($siren)
+            ->setTransferTime($transferTime)
+            ->setCallStatus($callStatus);
+        $this->entityManager->persist($wsCallHistory);
+        $this->entityManager->flush($wsCallHistory);
+
+        return $wsCallHistory;
     }
 
     /**
-     * @param \ws_external_resource $wsResource
-     * @param string                $alertType
-     * @param string                $extraInfo
+     * @param WsExternalResource $wsResource
+     * @param string             $alertType
+     * @param string             $extraInfo
      */
-    public function sendMonitoringAlert(\ws_external_resource $wsResource, $alertType, $extraInfo = null)
+    public function sendMonitoringAlert(WsExternalResource $wsResource, $alertType, $extraInfo = null)
     {
         switch ($alertType) {
             case 'down':
-                if (false == $wsResource->is_available) {
+                if (false == $wsResource->isIsAvailable()) {
                     return;
                 }
 
-                $wsResource->is_available = 0;
-                $slackMessage = $wsResource->provider_name . '(' . $wsResource->resource_name . ') is down  :skull_and_crossbones:';
+                $wsResource->setIsAvailable(0);
+                $slackMessage = $wsResource->getProviderName() . '(' . $wsResource->getResourceName() . ') is down  :skull_and_crossbones:';
 
                 if (null !== $extraInfo) {
                     $slackMessage .= "\n> " . $extraInfo;
                 }
                 break;
             case 'up':
-                if ($wsResource->is_available) {
+                if ($wsResource->isIsAvailable()) {
                     return;
                 }
 
-                $wsResource->is_available = 1;
-                $slackMessage = $wsResource->provider_name . '(' . $wsResource->resource_name . ') is up  :white_check_mark:';
+                $wsResource->setIsAvailable(1);
+                $slackMessage = $wsResource->getProviderName() . '(' . $wsResource->getResourceName() . ') is up  :white_check_mark:';
                 break;
             default:
                 return;
         }
-
-        $wsResource->update();
-
-        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'provider' => $wsResource->provider_name];
+        $this->entityManager->flush($wsResource);
+        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'provider' => $wsResource->getProviderName()];
 
         try {
             $response = $this->slackManager->sendMessage($slackMessage, $this->alertChannel);
 
             if (false == $response->isOk()) {
-                $this->logger->warning('Could not send slack notification for ' . $wsResource->provider_name . '. Error: ' . $response->getError(), $logContext);
+                $this->logger->warning('Could not send slack notification for ' . $wsResource->getProviderName() . '. Error: ' . $response->getError(), $logContext);
             }
         } catch (\Exception $exception) {
-            $this->logger->error('Unable to send slack notification for ' . $wsResource->provider_name . '. Error message: ' . $exception->getMessage(), $logContext);
+            $this->logger->error('Unable to send slack notification for ' . $wsResource->getProviderName() . '. Error message: ' . $exception->getMessage(), $logContext);
             unset($exception);
         }
     }
 
     /**
-     * @param \ws_external_resource $wsResource
-     * @param string $siren
-     * @param string $response
+     * @param WsExternalResource $wsResource
+     * @param string             $siren
+     * @param string             $response
      */
-    private function storeResponse($wsResource, $siren, $response)
+    private function storeResponse(WsExternalResource $wsResource, $siren, $response, WsCallHistory $callHistory)
     {
         try {
             $wsCall = new WsCall();
             $wsCall->setSiren($siren);
-            $wsCall->setProvider($wsResource->provider_name);
-            $wsCall->setResource($wsResource->resource_name);
+            $wsCall->setProvider($wsResource->getProviderName());
+            $wsCall->setResource($wsResource->getResourceName());
             $wsCall->setResponse($response);
+            $wsCall->setIdWsCallHistory($callHistory->getIdCallHistory());
             $wsCall->setAdded(new \DateTime());
 
             $dm = $this->managerRegistry->getManager();
@@ -233,18 +232,18 @@ class CallHistoryManager
     }
 
     /**
-     * @param \ws_external_resource $wsResource
-     * @param string                $siren
+     * @param WsExternalResource $wsResource
+     * @param string             $siren
      * @return mixed
      */
-    public function getStoredResponse(\ws_external_resource $wsResource, $siren)
+    public function getStoredResponse(WsExternalResource $wsResource, $siren)
     {
-        if ($wsResource->validity_days > 0) {
+        if ($wsResource->isIsAvailable() > 0) {
             $data = $this->fetchLatestDataFromMongo(
                 $siren,
-                $wsResource->provider_name,
-                $wsResource->resource_name,
-                $this->getDateTimeFromPassedDays($wsResource->validity_days)
+                $wsResource->getProviderName(),
+                $wsResource->getResourceName(),
+                $this->getDateTimeFromPassedDays($wsResource->getValidityDays())
             );
 
             if ($data instanceof WsCall) {
@@ -285,13 +284,13 @@ class CallHistoryManager
     {
         switch ($level) {
             case \MongoLog::WARNING:
-                $this->mongoDBLogger->warning($this->module2string($module). ' ' . $message , ['class' => __CLASS__, 'function' => __FUNCTION__]);
+                $this->mongoDBLogger->warning($this->module2string($module) . ' ' . $message, ['class' => __CLASS__, 'function' => __FUNCTION__]);
                 break;
             case \MongoLog::INFO:
-                $this->mongoDBLogger->info($this->module2string($module). ' ' . $message, ['class' => __CLASS__, 'function' => __FUNCTION__]);
+                $this->mongoDBLogger->info($this->module2string($module) . ' ' . $message, ['class' => __CLASS__, 'function' => __FUNCTION__]);
                 break;
             default:
-                $this->mongoDBLogger->debug($this->module2string($module). ' ' . $message, ['class' => __CLASS__, 'function' => __FUNCTION__]);
+                $this->mongoDBLogger->debug($this->module2string($module) . ' ' . $message, ['class' => __CLASS__, 'function' => __FUNCTION__]);
         }
     }
 
