@@ -80,6 +80,36 @@
 
                                 <div class="form-field row row-multi-col-computer">
                                     <div class="col-lg-2 col-md-3">
+                                        <label for="borrower-lp-input-duration" class="field-label">{% trans %} borrower-landing-page_duration-placeholder {% endtrans %}<span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                    </div>
+                                    <div class="col-lg-8 col-md-8">
+                                        <select id="borrower-lp-input-duration" name="duration" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                                            <option value="">{% trans %} borrower-landing-page_duration-title {% endtrans %}</option>
+                                            {% for duration in form.values.durations %}
+                                                <option value="{{ duration }}">{% transchoice duration with {'%count%': duration} %} common_month {% endtranschoice %}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <ul class="ui-formvalidation-messages"></ul>
+                                    </div>
+                                </div><!-- /.form-field -->
+
+                                <div class="form-field row row-multi-col-computer">
+                                    <div class="col-lg-2 col-md-3">
+                                        <label for="borrower-lp-input-reason" class="field-label">{% trans %} borrower-landing-page_reason-placeholder {% endtrans %}<span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                    </div>
+                                    <div class="col-lg-8 col-md-8">
+                                        <select id="borrower-lp-input-reason" name="reason" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                                            <option value="">{% trans %} borrower-landing-page_reason-title {% endtrans %}</option>
+                                            {% for reason in form.values.reasons %}
+                                                <option value="{{ reason.idMotive }}">{{ ('borrowing-motive_motive-' ~ reason.idMotive)|trans }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <ul class="ui-formvalidation-messages"></ul>
+                                    </div>
+                                </div><!-- /.form-field -->
+
+                                <div class="form-field row row-multi-col-computer">
+                                    <div class="col-lg-2 col-md-3">
                                         <label for="borrower-lp-input-siren" class="field-label">{% trans %} borrower-landing-page_siren-placeholder {% endtrans %}<span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                     </div>
                                     <div class="col-lg-8 col-md-8">
