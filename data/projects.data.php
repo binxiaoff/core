@@ -162,11 +162,13 @@ class projects extends projects_crud
      * @param string $start
      * @param string $nb
      * @param bool   $useCache
+     * @param int[]  $products
+     *
      * @return array
      */
-    public function selectProjectsByStatus(array $status, $where = '', array $sort = [], $start = '', $nb = '', $useCache = true)
+    public function selectProjectsByStatus(array $status, $where = '', array $sort = [], $start = '', $nb = '', $useCache = true, array $products = [])
     {
-        $binds = array('fundingStatus' => \projects_status::EN_FUNDING, 'status' => $status);
+        $binds = ['fundingStatus' => \projects_status::EN_FUNDING, 'status' => $status];
 
         if ($useCache) {
             $QCProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile(60, md5(__METHOD__));
@@ -233,6 +235,11 @@ class projects extends projects_crud
                 break;
         }
 
+        if (false === empty($products)) {
+            $binds['products'] = $products;
+            $where .= ' AND p.id_product IN (:products)';
+        }
+
         $sql = $select . $tables . '
             WHERE p.status IN (:status) ' . $where . '
             ORDER BY ' . $order;
@@ -248,19 +255,20 @@ class projects extends projects_crud
         }
 
         try {
-            $aTypes = array(
+            $aTypes    = [
                 'status'        => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+                'products'      => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
                 'fundingStatus' => \PDO::PARAM_INT,
                 'minRateRange'  => \PDO::PARAM_INT,
                 'maxRateRange'  => \PDO::PARAM_INT,
                 'number'        => \PDO::PARAM_INT,
                 'start'         => \PDO::PARAM_INT
-            );
+            ];
             $statement = $this->bdd->executeQuery($sql, $binds, $aTypes, $QCProfile);
-            $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+            $result    = $statement->fetchAll(\PDO::FETCH_ASSOC);
             $statement->closeCursor();
         } catch (\Doctrine\DBAL\DBALException $ex) {
-            $result = array();
+            $result = [];
         }
         return $result;
     }
@@ -268,17 +276,24 @@ class projects extends projects_crud
     /**
      * @param array  $status
      * @param string $where
+     * @param int[]  $products
      *
      * @return int
      */
-    public function countSelectProjectsByStatus(array $status, $where = '')
+    public function countSelectProjectsByStatus(array $status, $where = '', array $products = [])
     {
         $bind  = ['status' => $status];
         $type  = ['status' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY];
         $query = '
-            SELECT COUNT(*) AS nb_project
+            SELECT COUNT(*)
             FROM projects
             WHERE status IN (:status)' . $where;
+
+        if (false === empty($products)) {
+            $query .= ' AND id_product IN (:products)';
+            $bind['products'] = $products;
+            $type['products'] = \Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
+        }
 
         try {
             /** @var \Doctrine\DBAL\Driver\Statement $statement */
@@ -344,11 +359,11 @@ class projects extends projects_crud
         return $result;
     }
 
-    public function positionProject($projectId, array $status, $order)
+    public function positionProject($projectId, array $status, $order, array $products = [])
     {
-        $aProjects = $this->selectProjectsByStatus($status, ' AND p.display = 0', $order);
-        $previous = '';
-        $next = '';
+        $aProjects = $this->selectProjectsByStatus($status, ' AND p.display = ' . self::DISPLAY_PROJECT_ON, $order, '', '', true, $products);
+        $previous  = '';
+        $next      = '';
 
         foreach ($aProjects as $k => $p) {
             if ($p['id_project'] == $projectId) {
@@ -357,7 +372,7 @@ class projects extends projects_crud
                 break;
             }
         }
-        return array('previousProject' => $previous, 'nextProject' => $next);
+        return ['previousProject' => $previous, 'nextProject' => $next];
     }
 
     // liste les projets favoris dont la date de retrait est dans j-2

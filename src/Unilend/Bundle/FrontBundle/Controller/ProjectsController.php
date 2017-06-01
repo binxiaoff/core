@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
@@ -66,11 +67,13 @@ class ProjectsController extends Controller
      */
     private function getProjectsList($page, $sortType, $sortDirection)
     {
+        $entityManager         = $this->get('doctrine.orm.entity_manager');
         $translator            = $this->get('translator');
-        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         $authorizationChecker  = $this->get('security.authorization_checker');
-        $projectRepository     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects');
-
+        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+        $clientRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $productRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Product');
+        $projectRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
         $template      = [];
         $user          = $this->getUser();
@@ -107,9 +110,14 @@ class ProjectsController extends Controller
         });
 
         /** @var \projects $projects */
-        $projects = $this->get('unilend.service.entity_manager')->getRepository('projects');
+        $projects        = $this->get('unilend.service.entity_manager')->getRepository('projects');
+        $client          = $user ? $clientRepository->find($user->getClientId()) : null;
+        $products        = $productRepository->findAvailableProductsByClient($client);
+        $productIds      = array_map(function (Product $product) {
+            return $product->getIdProduct();
+        }, $products);
 
-        $template['projectsInFunding'] = $projects->countSelectProjectsByStatus([\projects_status::EN_FUNDING], ' AND display = ' . \projects::DISPLAY_PROJECT_ON);
+        $template['projectsInFunding'] = $projects->countSelectProjectsByStatus([\projects_status::EN_FUNDING], ' AND display = ' . \projects::DISPLAY_PROJECT_ON, $productIds);
         $template['pagination']        = $this->pagination($page, $limit);
         $template['showPagination']    = true;
         $template['showSortable']      = true;
@@ -131,7 +139,7 @@ class ProjectsController extends Controller
         /** @var ProjectDisplayManager $projectDisplayManager */
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
 
-        $totalNumberProjects = $projectDisplayManager->getTotalNumberOfDisplayedProjects();
+        $totalNumberProjects = $projectDisplayManager->getTotalNumberOfDisplayedProjects($this->getUser());
         $totalPages          = ceil($totalNumberProjects / $limit);
 
         $paginationSettings = [
@@ -198,7 +206,7 @@ class ProjectsController extends Controller
         $user                  = $this->getUser();
 
         $template = [
-            'project'  => $projectDisplayManager->getProjectData($project),
+            'project'  => $projectDisplayManager->getProjectData($project, $user),
             'bidToken' => sha1('tokenBid-' . time() . '-' . uniqid())
         ];
 

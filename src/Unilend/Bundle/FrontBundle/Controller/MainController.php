@@ -80,6 +80,7 @@ class MainController extends Controller
         $welcomeOfferManager   = $this->get('unilend.service.welcome_offer_manager');
         $testimonialService    = $this->get('unilend.frontbundle.service.testimonial_manager');
         $user                  = $this->getUser();
+        $lenderAccount         = null;
 
         $template                     = [];
         $template['showWelcomeOffer'] = $welcomeOfferManager->displayOfferOnHome();
@@ -96,22 +97,9 @@ class MainController extends Controller
             /** @var \lenders_accounts $lenderAccount */
             $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
             $lenderAccount->get($user->getClientId(), 'id_client_owner');
-
-            $template['projects'] = $projectDisplayManager->getProjectsList(
-                [],
-                [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC],
-                null,
-                3,
-                $lenderAccount
-            );
-        } else {
-            $template['projects'] = $projectDisplayManager->getProjectsList(
-                [],
-                [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC],
-                null,
-                3
-            );
         }
+
+        $template['projects'] = $projectDisplayManager->getProjectsList([], [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC], null, 3, $lenderAccount);
 
         $translator        = $this->get('translator');
         $projectRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects');
