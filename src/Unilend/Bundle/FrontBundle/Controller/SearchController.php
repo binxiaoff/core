@@ -7,6 +7,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 
 class SearchController extends Controller
 {
@@ -44,7 +45,7 @@ class SearchController extends Controller
                 foreach ($results['projects'] as $index => $result) {
                     $project = $projectRepository->find($result['projectId']);
 
-                    if (false === $projectDisplayManager->isVisibleToUser($project, $this->getUser())) {
+                    if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $this->getUser())) {
                         unset($results['projects'][$index]);
                     }
                 }
