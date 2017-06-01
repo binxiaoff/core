@@ -3,6 +3,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsGestionMailsNotif;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -119,17 +120,26 @@ class NotificationManager
      */
     public function createEmailNotification($notificationId, $mailType, $clientId, WalletBalanceHistory $walletBalanceHistory = null, $projectId = null, $loanId = null)
     {
-        /** @var \clients_gestion_mails_notif $mailNotification */
-        $mailNotification = $this->entityManagerSimulator->getRepository('clients_gestion_mails_notif');
+        $emailNotification = new ClientsGestionMailsNotif();
+        $emailNotification->setIdClient($this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId))
+            ->setIdNotif($this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionTypeNotif')->find($mailType))
+            ->setDateNotif(new \DateTime('NOW'))
+            ->setIdNotification($this->entityManager->getRepository('UnilendCoreBusinessBundle:Notifications')->find($notificationId));
 
-        $mailNotification->id_client                 = $clientId;
-        $mailNotification->id_project                = $projectId;
-        $mailNotification->id_notif                  = $mailType;
-        $mailNotification->date_notif                = date('Y-m-d H:i:s');
-        $mailNotification->id_notification           = $notificationId;
-        $mailNotification->id_wallet_balance_history = (null !== $walletBalanceHistory->getId()) ? $walletBalanceHistory->getId() : null ;
-        $mailNotification->id_loan                   = $loanId;
-        $mailNotification->create();
+        if (null !== $projectId) {
+            $emailNotification->setIdProject($this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId));
+        }
+
+        if (null !== $loanId) {
+            $emailNotification->setIdLoan($this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($loanId));
+        }
+
+        if (null !== $walletBalanceHistory) {
+            $emailNotification->setIdWalletBalanceHistory($walletBalanceHistory);
+        }
+
+        $this->entityManager->persist($emailNotification);
+        $this->entityManager->flush($emailNotification);
     }
 
     /**
