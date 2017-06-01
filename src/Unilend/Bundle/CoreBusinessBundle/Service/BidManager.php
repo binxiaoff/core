@@ -212,7 +212,7 @@ class BidManager
             throw new \Exception('bids-lender-cannot-bid');
         }
 
-        if (false === $this->productManager->isBidEligible($legacyBid)) {
+        if (false === $this->productManager->isBidEligible($bid)) {
             if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning('The Bid is not eligible for the project', ['project_id' => $iProjectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate]);
             }

@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
@@ -868,11 +869,13 @@ class ProjectsController extends Controller
     public function preCheckBidAction($projectSlug, $amount, $rate, Request $request)
     {
         /** @var EntityManagerSimulator $entityManagerSimulator */
-        $entityManagerSimulator  = $this->get('unilend.service.entity_manager');/** @var EntityManager $entityManager */
-        $entityManager  = $this->get('doctrine.orm.entity_manager');
-        $cipManager     = $this->get('unilend.service.cip_manager');
-        $translator     = $this->get('translator');
-        $productManager = $this->get('unilend.service_product.product_manager');$currencyFormatter = $this->get('currency_formatter');
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        /** @var EntityManager $entityManager */
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $cipManager        = $this->get('unilend.service.cip_manager');
+        $translator        = $this->get('translator');
+        $productManager    = $this->get('unilend.service_product.product_manager');
+        $currencyFormatter = $this->get('currency_formatter');
 
         /** @var \projects $project */
         $project = $entityManagerSimulator->getRepository('projects');
@@ -925,10 +928,17 @@ class ProjectsController extends Controller
         $bid->amount            = $amount * 100;
         $bid->rate              = $rate;
 
-        $reasons = $productManager->getBidEligibilityWithReasons($bid);
+        //necessary as some methods need an entity and some a data. And as the bid is not persisted yet it can't be selected from the database
+        $bidEntity = new Bids();
+        $bidEntity->setProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project));
+        $bidEntity->setIdLenderAccount($wallet);
+        $bidEntity->setAmount($amount * 100);
+        $bidEntity->setRate($rate);
+
+        $reasons = $productManager->getBidEligibilityWithReasons($bidEntity);
 
         if (false === empty($reasons)) {
-            $pendingBidAmount = $bid->getBidsEncours($project->id_project,$bid->id_lender_account);
+            $pendingBidAmount = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->getSumByWalletAndProjectAndStatus($wallet, $bidEntity->getProject(), Bids::STATUS_BID_PENDING);
 
             $product = $entityManagerSimulator->getRepository('product');
             $product->get($project->id_product);

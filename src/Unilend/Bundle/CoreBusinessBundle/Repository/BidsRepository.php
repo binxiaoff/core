@@ -2,9 +2,9 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
-use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use \Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 
 class BidsRepository extends EntityRepository
@@ -65,5 +65,26 @@ class BidsRepository extends EntityRepository
             ->setParameter('date', $date);
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * @param Wallet|int   $wallet
+     * @param Projects|int $project
+     * @param int          $status
+     *
+     * @return mixed
+     */
+    public function getSumByWalletAndProjectAndStatus($wallet, $project, $status)
+    {
+        $qb = $this->createQueryBuilder('b');
+        $qb->select('SUM(b.amount) / 100')
+            ->where('b.idProject = :project')
+            ->andWhere('b.idLenderAccount = :wallet')
+            ->andWhere('b.status = :status')
+            ->setParameter('wallet', $wallet)
+            ->setParameter('project', $project)
+            ->setParameter('status', $status);
+
+        return $qb->getQuery()->getSingleScalarResult();
     }
 }

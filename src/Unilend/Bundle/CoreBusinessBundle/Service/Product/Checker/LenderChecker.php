@@ -2,6 +2,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
 use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
@@ -68,7 +69,7 @@ trait LenderChecker
         $product = $entityManagerSimulator->getRepository('product');
         $product->get($project->id_product);
 
-        $totalAmount       = $bid->getBidsEncours($project->id_project, $wallet->getId())['solde'];
+        $totalAmount       = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->getSumByWalletAndProjectAndStatus($wallet, $bid->id_project, Bids::STATUS_BID_PENDING);
         $maxAmountEligible = $this->getMaxEligibleAmount($product, $productAttributeManager);
 
         if (null === $maxAmountEligible) {

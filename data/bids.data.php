@@ -128,24 +128,6 @@ class bids extends bids_crud
         return $avg;
     }
 
-    // solde des bids d'un preteur
-    public function getBidsEncours($id_project, $id_lender)
-    {
-        $nbEncours = $this->counter('id_project = ' . $id_project . ' AND id_lender_account = ' . $id_lender . ' AND status = 0');
-
-        $sql = 'SELECT SUM(amount) as solde FROM bids WHERE id_project = ' . $id_project . ' AND id_lender_account = ' . $id_lender . ' AND status = 0';
-
-        $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result);
-        if ($solde == '') {
-            $solde = 0;
-        } else {
-            $solde = ($solde / 100);
-        }
-
-        return array('solde' => $solde, 'nbEncours' => $nbEncours);
-    }
-
     public function sumBidsEncours($id_lender)
     {
         $sql = 'SELECT SUM(amount) FROM `bids` WHERE id_lender_account = ' . $id_lender . ' AND status = 0';

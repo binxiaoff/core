@@ -2,6 +2,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
 use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -66,11 +67,12 @@ abstract class ProductManager
     }
 
     /**\
-     * @param \bids     $bid
+     * @param Bids     $bid
+     *
      * @return bool
      * @throws \Exception
      */
-    public function isBidEligible(\bids $bid)
+    public function isBidEligible(Bids $bid)
     {
         return $this->bidValidator->isEligible($bid)['eligible'];
     }
@@ -165,11 +167,11 @@ abstract class ProductManager
     }
 
     /**
-     * @param \bids    $bid
+     * @param Bids    $bid
      *
      * @return mixed
      */
-    public function getBidEligibilityWithReasons(\bids $bid)
+    public function getBidEligibilityWithReasons($bid)
     {
         return $this->bidValidator->isEligible($bid)['reason'];
     }
