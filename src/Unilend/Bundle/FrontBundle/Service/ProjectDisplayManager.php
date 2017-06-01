@@ -92,10 +92,10 @@ class ProjectDisplayManager
 
         foreach ($projectList as $item) {
             $project->get($item['id_project']);
-            $projectsData[$project->id_project] = $this->getBaseData($project);
+            $projectsData[$project->id_project]              = $this->getBaseData($project);
             $projectsData[$project->id_project]['bidsCount'] = $bids->counter('id_project = ' . $project->id_project);
 
-            if ($client->isLender()) {
+            if (null !== $client && $client->isLender()) {
                 $projectsData[$project->id_project]['lender']['bids']      = $this->lenderAccountDisplayManager->getBidsForProject($project->id_project, $client);
                 $projectsData[$project->id_project]['lender']['isAdvised'] = $this->lenderAccountDisplayManager->isProjectAdvisedForLender($project, $client);
             }
