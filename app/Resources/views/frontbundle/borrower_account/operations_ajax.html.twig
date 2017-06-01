@@ -1,8 +1,6 @@
-{% set isCommission = false %}
 {% for i, op in operations %}
     {% set classAmount = op.amount > 0 ? 'ui-amount-positive' : 'ui-amount-negative' %}
     {% if op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationSubType::BORROWER_COMMISSION_REPAYMENT') %}
-        {% set isCommission = true %}
         {% set data_details = {
             "label":"",
             "items": [
@@ -17,7 +15,7 @@
         } %}
     {% endif %}
 
-    <tr id="operation-{{ i }}" {% if isCommission %} data-details="{{ data_details|json_encode|escape('html_attr') }}" {% endif %} class="table-myoperations-borrower-item {{ classAmount }}">
+    <tr id="operation-{{ i }}" {% if op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationSubType::BORROWER_COMMISSION_REPAYMENT') %} data-details="{{ data_details|json_encode|escape('html_attr') }}" {% endif %} class="table-myoperations-borrower-item {{ classAmount }}">
         <td class="table-myoperations-borrower-item-type">
             {{ ('borrower-operation_' ~ op.label)|trans }}
             {% if op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationType::BORROWER_WITHDRAW') and op.third_party_company is defined and op.third_party_company is not empty %}

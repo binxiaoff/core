@@ -448,7 +448,7 @@ class clients extends clients_crud
     public function isLender()
     {
         $query = 'SELECT COUNT(*) FROM wallet w
-                    INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = ' . WalletType::LENDER . '
+                    INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . WalletType::LENDER . '"
                   WHERE w.id_client = :idClient';
 
         $statement =  $this->bdd->executeQuery($query, ['idClient' => $this->id_client]);
