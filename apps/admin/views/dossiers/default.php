@@ -15,7 +15,6 @@
 
         $("#datepik_1").datepicker({
             showOn: 'both',
-            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
@@ -24,14 +23,13 @@
 
         $("#datepik_2").datepicker({
             showOn: 'both',
-            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
             yearRange: '<?=(date('Y')-10)?>:<?=(date('Y')+10)?>'
         });
 
-        $("#Reset").click(function () {
+        $("#reset").click(function () {
             $("#id").val('');
             $("#siren").val('');
             $("#datepik_1").val('');
@@ -52,11 +50,11 @@
 
         $(".tablesorter").tablesorter({headers: {5: {sorter: 'digit'}, 9: {sorter: false}, 10: {sorter: false}, 11: {sorter: false}}});
 
-        $('#displayPager').html($('#pageActive').val() + '/' + nbPages);
+        $('#display-pager').html($('#page-active').val() + '/' + nbPages);
 
-        $('#send_dossier').click(function () {
-            $('#nbLignePagination').val(0);
-            $('#pageActive').val(1);
+        $('#send-dossier').click(function () {
+            $('#nb-ligne-pagination').val(0);
+            $('#page-active').val(1);
         });
 
         <?php if (
@@ -72,39 +70,51 @@
     });
 
     function paginationDossiers(directionPagination) {
-        var nbLignePagination = Math.round($('#nbLignePagination').val());
-        var pageActive = Math.round($('#pageActive').val());
+        var nbLignePagination = Math.round($('#nb-ligne-pagination').val());
+        var pageActive = Math.round($('#page-active').val());
         var totalLignePagination = <?= $this->iCountProjects - $this->nb_lignes ?>;
 
         switch (directionPagination) {
             case 'first':
-                $('#nbLignePagination').val(0);
-                $('#pageActive').val(1);
+                $('#nb-ligne-pagination').val(0);
+                $('#page-active').val(1);
                 break;
             case 'prev':
                 if (nbLignePagination > <?= $this->nb_lignes ?>) {
                     nbLignePagination = nbLignePagination -<?= $this->nb_lignes ?>;
-                    $('#pageActive').val(pageActive - 1);
+                    $('#page-active').val(pageActive - 1);
                 }
-                $('#nbLignePagination').val(nbLignePagination);
+                $('#nb-ligne-pagination').val(nbLignePagination);
                 break;
             case 'next':
                 nbLignePagination = nbLignePagination +<?= $this->nb_lignes ?>;
                 if (nbLignePagination <= totalLignePagination) {
-                    $('#nbLignePagination').val(nbLignePagination);
-                    $('#pageActive').val(pageActive + 1);
+                    $('#nb-ligne-pagination').val(nbLignePagination);
+                    $('#page-active').val(pageActive + 1);
                 }
                 break;
             case 'last':
                 nbLignePagination = totalLignePagination;
-                $('#nbLignePagination').val(nbLignePagination);
-                $('#pageActive').val(nbPages);
+                $('#nb-ligne-pagination').val(nbLignePagination);
+                $('#page-active').val(nbPages);
                 break;
         }
 
-        $('#search_dossier').submit();
+        $('#search-dossier').submit();
     }
 </script>
+<style>
+    #search-dossier {
+        margin-bottom: 30px;
+    }
+    #search-dossier fieldset.primary {
+        margin-top: 10px;
+    }
+    #search-dossier fieldset.secondary {
+        margin-bottom: 10px;
+        color: #b1adb2;
+    }
+</style>
 <div id="deprecated-page-disclaimer" style="display:none;">
     <div style="padding:10px;">
         <h1>Cette fonctionnalité va bientôt être supprimée</h1>
@@ -117,8 +127,9 @@
     </div>
 </div>
 <div id="contenu">
+
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <?php if (isset($this->iCountProjects) && $this->iCountProjects == 0) : ?>
                 <h1>Aucun dossier trouvé</h1>
             <?php elseif (isset($this->iCountProjects) && $this->iCountProjects == 1) : ?>
@@ -127,110 +138,130 @@
                 <h1><?= $this->ficelle->formatNumber($this->iCountProjects, 0) ?> dossiers trouvés</h1>
             <?php endif; ?>
         </div>
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <a href="<?= $this->lurl ?>/dossiers/add/create" class="btn-primary pull-right">Créer un dossier</a>
         </div>
     </div>
-    <style>
-        table.formColor {width: 1115px;}
-        .select {width: 100px;}
-    </style>
-    <div style="width:1115px;background-color: white;border: 1px solid #A1A5A7;border-radius: 10px 10px 10px 10px;margin: 0 auto 20px;padding:5px;">
-        <form method="post" name="search_dossier" id="search_dossier" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers" target="_parent">
-            <fieldset>
-                <table class="formColor">
-                    <tr>
-                        <td>
-                            <label for="id">ID</label><br>
-                            <input type="text" name="id" id="id" class="input_court" title="id" value="<?= isset($_POST['id']) ? $_POST['id'] : '' ?>">
-                            <input type="hidden" name="nbLignePagination" id="nbLignePagination" value="<?= isset($_POST['nbLignePagination']) ? $_POST['nbLignePagination'] : 0 ?>">
-                            <input type="hidden" name="pageActive" id="pageActive" value="<?= isset($_POST['pageActive']) ? $_POST['pageActive'] : 1 ?>">
-                        </td>
-                        <td>
-                            <label for="siren">SIREN</label><br>
-                            <input type="text" name="siren" id="siren" class="input_moy" style="width:100px;" title="siren" value="<?= isset($_POST['siren']) ? $_POST['siren'] : '' ?>">
-                        </td>
-                        <td>
-                            <label for="raison-sociale">Raison sociale</label><br>
-                            <input type="text" name="raison-sociale" id="raison-sociale" class="input_moy" title="Raison sociale" value="<?= isset($_POST['raison-sociale']) ? $_POST['raison-sociale'] : '' ?>">
-                        </td>
-                        <td style="padding-top:23px;">
-                            <input type="text" name="date1" id="datepik_1" class="input_dp" value="<?= isset($_POST['date1']) ? $_POST['date1'] : '' ?>">
-                        </td>
-                        <td style="padding-top:23px;">
-                            <input type="text" name="date2" id="datepik_2" class="input_dp" value="<?= isset($_POST['date2']) ? $_POST['date2'] : '' ?>">
-                        </td>
-                        <td style="padding-top:23px;">
-                            <select name="projectNeed" id="projectNeed" class="select" style="width:80px;">
-                                <option value="0">Besoin</option>
-                                <?php foreach ($this->needs as $need) : ?>
-                                    <optgroup label="<?= $need['label'] ?>">
-                                        <?php foreach ($need['children'] as $needChild) : ?>
-                                            <option value="<?= $needChild['id_project_need'] ?>"><?= $needChild['label'] ?></option>
-                                        <?php endforeach; ?>
-                                    </optgroup>
+
+    <form method="post" name="search-dossier" id="search-dossier" class="form" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers">
+        <input type="hidden" name="search-dossier-input" id="search-dossier-input">
+        <input type="hidden" name="nb-ligne-pagination" id="nb-ligne-pagination" value="<?= isset($_POST['nb-ligne-pagination']) ? $_POST['nb-ligne-pagination'] : 0 ?>">
+        <input type="hidden" name="page-active" id="page-active" value="<?= isset($_POST['page-active']) ? $_POST['page-active'] : 1 ?>">
+        <fieldset class="row primary">
+            <div class="col-md-2 col-md-offset-1">
+                <div class="form-group">
+                    <label for="id">ID</label>
+                    <input type="text" name="id" id="id" class="form-control" value="<?= isset($_POST['id']) ? $_POST['id'] : '' ?>">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="siren">SIREN</label><br>
+                    <input type="text" name="siren" id="siren" class="form-control" value="<?= isset($_POST['siren']) ? $_POST['siren'] : '' ?>">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="raison-sociale">Raison sociale</label><br>
+                    <input type="text" name="raison-sociale" id="raison-sociale" class="form-control" value="<?= isset($_POST['raison-sociale']) ? $_POST['raison-sociale'] : '' ?>">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="project-need">Besoin</label>
+                    <select name="project-need" id="project-need" class="form-control">
+                        <option value="0"></option>
+                        <?php foreach ($this->needs as $need) : ?>
+                            <optgroup label="<?= $need['label'] ?>">
+                                <?php foreach ($need['children'] as $needChild) : ?>
+                                    <option value="<?= $needChild['id_project_need'] ?>"><?= $needChild['label'] ?></option>
                                 <?php endforeach; ?>
-                            </select>
-                        </td>
-                        <td style="padding-top:23px;">
-                            <select name="duree" id="duree" class="select" style="width:80px;">
-                                <option value="">Durée</option>
-                                <?php foreach ($this->fundingTimeValues as $sFundingtime) : ?>
-                                    <option <?= isset($_POST['duree']) && $_POST['duree'] == $sFundingtime ? 'selected' : '' ?> value="<?= $sFundingtime ?>"><?= $sFundingtime ?> mois</option>
-                                <?php endforeach; ?>
-                                <option <?= isset($_POST['duree']) && $_POST['duree'] == '1000000' ? 'selected' : '' ?> value="1000000">je ne sais pas</option>
-                            </select>
-                        </td>
-                        <td style="padding-top:23px;">
-                            <select name="status" id="status" class="select" style="width:80px;">
-                                <option value="">Statut</option>
-                                <?php foreach ($this->lProjects_status as $s) : ?>
-                                    <option <?= isset($_POST['status']) && $_POST['status'] == $s['status'] || isset($this->params[0]) && $this->params[0] == $s['status'] ? 'selected' : '' ?> value="<?= $s['status'] ?>">
-                                        <?= $s['label'] ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                        <td style="padding-top:23px;">
-                            <select name="commercial" id="commercial" class="select">
-                                <option value="0">Commercial</option>
-                                <?php foreach ($this->aSalesPersons as $aSalesPerson) : ?>
-                                    <option <?= isset($_POST['commercial']) && $_POST['commercial'] == $aSalesPerson['id_user'] ? 'selected' : '' ?> value="<?= $aSalesPerson['id_user'] ?>"><?= $aSalesPerson['firstname'] ?> <?= $aSalesPerson['name'] ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                        <td style="padding-top:23px;">
-                            <select name="analyste" id="analyste" class="select">
-                                <option value="0">Analyste</option>
-                                <?php foreach ($this->aAnalysts as $aAnalyst) : ?>
-                                    <option <?= isset($_POST['analyste']) && $_POST['analyste'] == $aAnalyst['id_user'] ? 'selected' : '' ?> value="<?= $aAnalyst['id_user'] ?>"><?= $aAnalyst['firstname'] ?> <?= $aAnalyst['name'] ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th colspan="10" style="text-align:center;">
-                            <input type="hidden" name="form_search_dossier" id="form_search_dossier">
-                            <button type="submit" id="send_dossier" class="btn-primary" style="margin-right: 5px;">Rechercher</button>
-                            <button type="submit" id="Reset" class="btn-default">Réinitialiser</button>
-                        </th>
-                    </tr>
-                </table>
-            </fieldset>
-        </form>
-    </div>
+                            </optgroup>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <select name="status" id="status" class="form-control">
+                        <option value=""></option>
+                        <?php foreach ($this->lProjects_status as $s) : ?>
+                            <option <?= isset($_POST['status']) && $_POST['status'] == $s['status'] || isset($this->params[0]) && $this->params[0] == $s['status'] ? 'selected' : '' ?> value="<?= $s['status'] ?>">
+                                <?= $s['label'] ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+        <fieldset class="row secondary">
+            <div class="col-md-2 col-md-offset-1">
+                <div class="form-group">
+                    <label for="datepik_1">Date début</label>
+                    <input type="text" name="date1" id="datepik_1" class="form-control input-sm" value="<?= isset($_POST['date1']) ? $_POST['date1'] : '' ?>">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="datepik_2">Date fin</label>
+                    <input type="text" name="date2" id="datepik_2" class="form-control input-sm" value="<?= isset($_POST['date2']) ? $_POST['date2'] : '' ?>">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="duree">Durée</label>
+                    <select name="duree" id="duree" class="form-control input-sm">
+                        <option value=""></option>
+                        <?php foreach ($this->fundingTimeValues as $sFundingtime) : ?>
+                            <option <?= isset($_POST['duree']) && $_POST['duree'] == $sFundingtime ? 'selected' : '' ?> value="<?= $sFundingtime ?>"><?= $sFundingtime ?> mois</option>
+                        <?php endforeach; ?>
+                        <option <?= isset($_POST['duree']) && $_POST['duree'] == '1000000' ? 'selected' : '' ?> value="1000000">je ne sais pas</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="commercial">Commercial</label>
+                    <select name="commercial" id="commercial" class="form-control input-sm">
+                        <option value="0"></option>
+                        <?php foreach ($this->aSalesPersons as $aSalesPerson) : ?>
+                            <option <?= isset($_POST['commercial']) && $_POST['commercial'] == $aSalesPerson['id_user'] ? 'selected' : '' ?> value="<?= $aSalesPerson['id_user'] ?>"><?= $aSalesPerson['firstname'] ?> <?= $aSalesPerson['name'] ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="analyste">Analyste</label>
+                    <select name="analyste" id="analyste" class="form-control input-sm">
+                        <option value="0"></option>
+                        <?php foreach ($this->aAnalysts as $aAnalyst) : ?>
+                            <option <?= isset($_POST['analyste']) && $_POST['analyste'] == $aAnalyst['id_user'] ? 'selected' : '' ?> value="<?= $aAnalyst['id_user'] ?>"><?= $aAnalyst['firstname'] ?> <?= $aAnalyst['name'] ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="btn-controls text-center">
+            <button type="submit" id="send-dossier" class="btn-primary" style="margin-right: 5px;">Rechercher</button>
+            <button type="submit" id="reset" class="btn-default">Réinitialiser</button>
+        </div>
+    </form>
+
     <?php if (isset($this->lProjects) && count($this->lProjects) > 0) : ?>
-        <table class="tablesorter">
+        <table class="tablesorter table table-hover table-striped">
             <thead>
                 <tr>
                     <th style="width:4%">ID</th>
                     <th style="width:6%">SIREN</th>
                     <th style="width:22%">Raison sociale</th>
-                    <th style="width:9%">Date demande</th>
-                    <th style="width:6%">Montant</th>
+                    <th style="width:9%">Demande</th>
+                    <th style="width:8%">Montant</th>
                     <th style="width:8%">Durée</th>
                     <th style="width:12%">Statut</th>
-                    <th style="width:14%">Commercial</th>
+                    <th style="width:12%">Commercial</th>
                     <th style="width:9%">Analyste</th>
                     <th style="width:4%">Presc.</th>
                     <th style="width:4%">Comment.</th>
