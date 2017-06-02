@@ -750,7 +750,7 @@ class transfertsController extends bootstrap
                 $logger->error('Release funds failed for project : ' . $project->getIdProject() . '. The process has been rollbacked. Error : ' . $exception->getMessage());
 
                 $_SESSION['freeow']['title']   = 'Déblocage des fonds impossible';
-                $_SESSION['freeow']['message'] = 'Une erreur s\'élève. Les fonds ne sont pas débloqués';
+                $_SESSION['freeow']['message'] = 'Une erreur s\'est produit. Les fonds ne sont pas débloqués';
             }
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $project->getIdProject());
