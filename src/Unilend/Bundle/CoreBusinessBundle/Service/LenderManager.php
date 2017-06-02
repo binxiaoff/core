@@ -123,10 +123,11 @@ class LenderManager
      */
     public function getLenderPattern(Clients $client)
     {
-        if (false === $client->isLender()) {
+        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+
+        if (null === $wallet) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
         return $wallet->getWireTransferPattern();
     }
