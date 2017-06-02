@@ -182,8 +182,10 @@ class EulerHermesManager
             $stream->rewind();
             $content = $stream->getContents();
             call_user_func($callable, $content, $validity['status']);
-            $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
 
+            if ('error' !== $validity['status']) {
+                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
+            }
             if ($validity['is_valid']) {
                 return $content;
             } else {
@@ -225,7 +227,10 @@ class EulerHermesManager
                 $this->logger->warning('Call to ' . $resource->getResourceName() . ' Response code: ' . $response->getStatusCode() . '. Response content: ' . $content, $logContext);
             }
 
-            return ['status' => $contentValidity ? 'valid' : 'warning', 'is_valid' => $contentValidity];
+            return [
+                'status' => $contentValidity ? 'valid' : 'warning',
+                'is_valid' => $contentValidity
+            ];
         } else {
             $level = 'error';
 
@@ -243,7 +248,7 @@ class EulerHermesManager
     }
 
     /**
-     * @param                    $content
+     * @param string             $content
      * @param WsExternalResource $resource
      *
      * @return bool

@@ -163,7 +163,7 @@ class AltaresManager
             /** @var EstablishmentIdentity $establishmentIdentity */
             $establishmentIdentity = $this->serializer->deserialize(json_encode($response->return), EstablishmentIdentity::class, 'json');
 
-            $establishmentIdentity->getMyInfo();
+            return $establishmentIdentity->getMyInfo();
         }
 
         return null;
@@ -240,9 +240,13 @@ class AltaresManager
             $validity = $this->isValidResponse($response, ['class' => __CLASS__, 'resource' => $wsResource->getLabel()] + $params);
             call_user_func($callable, json_encode($response), $validity['status']);
 
-            if ($validity['is_valid']) {
+            if ('error' !== $validity['status']) {
                 $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
+            }
+            if ($validity['is_valid']) {
                 return $response;
+            } else {
+                return null;
             }
         } catch (\Exception $exception) {
             if (isset($callable)) {
@@ -251,10 +255,10 @@ class AltaresManager
             $this->logger->error($exception->getMessage() . ' - Code ' . $exception->getCode(),
                 ['class' => __CLASS__, 'resource' => $wsResource->getLabel()] + $params
             );
-        }
-        $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
+            $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
 
-        return null;
+            return null;
+        }
     }
 
     /**
@@ -317,7 +321,7 @@ class AltaresManager
             return ['status' => 'valid', 'is_valid' => true];
         }
         if (false === empty($logContext)) {
-            $this->logger->warning('Altares response not expected: "' . json_encode($response) . '"', $logContext);
+            throw new \Exception('Unexpected Altares response');
         }
         return ['status' => 'warning', 'is_valid' => false];
     }

@@ -4,20 +4,23 @@ namespace Unilend\Bundle\WSClientBundle\Service;
 
 use JMS\Serializer\Serializer;
 use Psr\Log\LoggerInterface;
-
 use SoapClient;
 use Unilend\Bundle\WSClientBundle\Entity\Infogreffe\CompanyIndebtedness;
 
 class InfogreffeManager
 {
+    const RESOURCE_INDEBTEDNESS = 'get_indebtedness_infogreffe';
+
     const PRIVILEGES_SECU_REGIMES_COMPLEMENT   = '03';
     const PRIVILEGES_TRESOR_PUBLIC             = '04';
-
-    const RESOURCE_INDEBTEDNESS                = 'get_indebtedness_infogreffe';
-
     const RETURN_CODE_UNKNOWN_SIREN            = '006';
+    const RETURN_CODE_INVALID_SIREN            = '024';
+    const RETURN_CODE_SIREN_NOT_FOUND          = '025';
     const RETURN_CODE_UNAVAILABLE_INDEBTEDNESS = '009';
     const RETURN_CODE_NO_DEBTOR                = '013';
+    const RETURN_CODE_TECHNICAL_ERROR          = ['001', '002', '003', '004', '005', '007', '010', '012', '014', '015', '065', '999'];
+
+    const CALL_TIMEOUT = 8;
 
     /** @var string */
     private $login;
@@ -45,7 +48,7 @@ class InfogreffeManager
      * @param CallHistoryManager $callHistoryManager
      * @param SoapClient         $client
      * @param Serializer         $serializer
-     * @param ResourceManager $resourceManager
+     * @param ResourceManager    $resourceManager
      */
     public function __construct(
         $login,
@@ -104,68 +107,70 @@ class InfogreffeManager
         }
 
         $wsResource = $this->resourceManager->getResource(self::RESOURCE_INDEBTEDNESS);
-        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
+        $logContext = ['class' => __CLASS__, 'resource' => $wsResource->getResourceName(), 'siren' => $siren];
 
         $response = $this->useCache ? $this->callHistoryManager->getStoredResponse($wsResource, $siren) : false;
         $result   = $response ? $this->extractResponse($response) : false;
 
-        if (false === $this->isValidResult($result)) {
-            /** @var callable $callBack */
-            $callBack = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
+        if ($this->isValidResponse($result)['is_valid']) {
+            return $result;
+        }
+        $callBack = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
 
-            try {
-                $xml          = new \SimpleXMLElement('<xml/>');
-                $documentType = $this->monitoring ? 'LE' : 'PN';
-                $request      = $this->addRequestHeader($xml, $documentType, 'XL');
-                $order        = $request->addChild('commande');
-                $order->addChild('num_siren', $siren);
-                $order->addChild('type_inscription', self::PRIVILEGES_SECU_REGIMES_COMPLEMENT . self::PRIVILEGES_TRESOR_PUBLIC);
+        try {
+            $request = $this->getXmlRequest($siren);
+            ini_set('default_socket_timeout', self::CALL_TIMEOUT);
 
-                ini_set('default_socket_timeout', 8);
+            $this->client->__soapCall(
+                $wsResource->getResourceName(),
+                [$request->asXML()]
+            );
+        } catch (\SoapFault $exception) {
+            // Infogreffe WS response does not seem to be valid. Workaround by Mesbah: ignore error and call SoapClient::__getLastResponse()
+            if ('SOAP-ERROR: Encoding: Violation of encoding rules' === $exception->getMessage()) {
+                // https://github.com/laravel/framework/issues/6618
+                set_error_handler('var_dump', 0); // Never called because of empty mask.
+                @trigger_error('');
+                restore_error_handler();
+            } else {
+                call_user_func($callBack, $this->client->__getLastResponse(), 'error');
+                $this->logger->error('Calling Infogreffe: ' . $exception->getMessage() . ' Code: ' . $exception->getCode(), $logContext);
+                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down', $exception->getMessage());
 
-                $this->client->__soapCall($wsResource->resource_name, [$request->asXML()]);
-            } catch (\SoapFault $exception) {
-                // Infogreffe WS response does not seem to be valid. Workaround by Mesbah: ignore error and call SoapClient::__getLastResponse()
-                if ('SOAP-ERROR: Encoding: Violation of encoding rules' === $exception->getMessage()) {
-                    // https://github.com/laravel/framework/issues/6618
-                    set_error_handler('var_dump', 0); // Never called because of empty mask.
-                    @trigger_error('');
-                    restore_error_handler();
-                } else {
-                    $this->logger->error('Calling Infogreffe Indebtedness SIREN: ' . $siren . '. Message: ' . $exception->getMessage() . ' Code: ' . $exception->getCode(), $logContext);
-                }
+                return null;
             }
+        }
+        $response = $this->client->__getLastResponse();
+        $result   = $this->extractResponse($response, $logContext);
+        $validity = $this->isValidResponse($result, $logContext);
+        call_user_func($callBack, $response, $validity['status']);
 
-            call_user_func($callBack, $this->client->__getLastResponse());
-            $response = $this->client->__getLastResponse();
-            $result   = $this->extractResponse($response, $logContext);
+        if ($validity['status'] === 'error') {
+            $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
+        } else {
+            $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
+        }
+        if ($validity['is_valid']) {
+            return $result;
         }
 
-        if (false === $this->isValidResult($result)) {
-            $extraInfo  = is_array($result) && isset($result['message']) ? $result['message'] : '';
-            $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down', $extraInfo);
-
-            throw new \Exception('Invalid response from Infogreffe');
-        }
-
-        $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
-        return $result;
+        return null;
     }
 
     /**
-     * @param string     $response
-     * @param null|array $logContext
+     * @param string $response
+     * @param array  $logContext
      *
      * @return null|array|CompanyIndebtedness
      */
-    private function extractResponse($response, $logContext = null)
+    private function extractResponse($response, $logContext = [])
     {
         try {
             $xmlResponse = new \SimpleXMLElement($response);
             /** @var \SimpleXMLElement[] $indebtedness */
             $indebtedness = $xmlResponse->xpath('//return');
         } catch (\Exception $exception) {
-            if ($logContext) {
+            if (false === empty($logContext)) {
                 $this->logger->error('Unrecognized response from Infogreffe getProduitsWebServicesXML, could not create XML object. Message: ' . $exception->getMessage(), $logContext);
             }
         }
@@ -182,7 +187,7 @@ class InfogreffeManager
                 $responseArray = $this->xml2array($indebtedness[0]);
                 return $this->serializer->deserialize($this->getSubscription_3_4($responseArray), CompanyIndebtedness::class, 'json');
             } catch (\Exception $exception) {
-                if ($logContext) {
+                if (false === empty($logContext)) {
                     $this->logger->error('Could not deserialize response from Infogreffe getProduitsWebServicesXML to get Indebtedness. Message: ' . $exception->getMessage(), $logContext);
                 }
             }
@@ -192,16 +197,50 @@ class InfogreffeManager
     }
 
     /**
-     * @param null|array|CompanyIndebtedness $response
+     * @param string $siren
      *
-     * @return bool
+     * @return \SimpleXMLElement
      */
-    private function isValidResult($response)
+    private function getXmlRequest($siren)
     {
-        return (
-            $response instanceof CompanyIndebtedness
-            || is_array($response) && in_array($response['code'], [self::RETURN_CODE_UNKNOWN_SIREN, self::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS, self::RETURN_CODE_NO_DEBTOR])
-        );
+        $xml          = new \SimpleXMLElement('<xml/>');
+        $documentType = $this->monitoring ? 'LE' : 'PN';
+        $request      = $this->addRequestHeader($xml, $documentType, 'XL');
+        $order        = $request->addChild('commande');
+        $order->addChild('num_siren', $siren);
+        $order->addChild('type_inscription', self::PRIVILEGES_SECU_REGIMES_COMPLEMENT . self::PRIVILEGES_TRESOR_PUBLIC);
+
+        return $request;
+    }
+
+    /**
+     * @param null|array|CompanyIndebtedness $response
+     * @param array                          $logContext
+     *
+     * @return array
+     */
+    private function isValidResponse($response, $logContext = [])
+    {
+        if ($response instanceof CompanyIndebtedness) {
+            return ['status' => 'valid', 'is_valid' => true];
+        }
+        if (is_array($response) && isset($response['code'])) {
+            if (in_array($response['code'], [self::RETURN_CODE_UNKNOWN_SIREN, self::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS, self::RETURN_CODE_NO_DEBTOR, self::RETURN_CODE_SIREN_NOT_FOUND, self::RETURN_CODE_INVALID_SIREN])) {
+                return ['status' => 'valid', 'is_valid' => true];
+            } elseif (in_array($response['code'], self::RETURN_CODE_TECHNICAL_ERROR)) {
+                if (false === empty($logContext)) {
+                    $this->logger->error('Infogreffe technical error. Response: ' . json_encode($response), $logContext);
+                }
+                return ['status' => 'error', 'is_valid' => false];
+            } else {
+                if (false === empty($logContext)) {
+                    $this->logger->warning('Unexpected Infogreffe error code. Response: ' . json_encode($response), $logContext);
+                }
+                return ['status' => 'warning', 'is_valid' => false];
+            }
+        }
+
+        return ['status' => 'warning', 'is_valid' => false];
     }
 
     /**
