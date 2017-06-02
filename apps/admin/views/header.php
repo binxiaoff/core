@@ -126,7 +126,7 @@
                     <li><a href="<?= $this->lurl ?>/transferts/deblocage" title="Déblocage">Déblocage des fonds</a></li>
                     <li><a href="<?= $this->lurl ?>/transferts/succession" title="Succession">Succession (Transfert de solde et prêts)</a></li>
                     <li><a href="<?= $this->lurl ?>/client_atypical_operation" title="Lutte Anti-Balanchiment">Opérations atypiques</a></li>
-                    <li><a href="<?= $this->lurl ?>/transferts/virement_emprunteur" title="Transfert des fons">Transfert des fonds</a></li>
+                    <li><a href="<?= $this->lurl ?>/transferts/virement_emprunteur" title="Transfert des fonds">Transfert des fonds</a></li>
                 </ul>
             </li>
         <?php endif; ?>
