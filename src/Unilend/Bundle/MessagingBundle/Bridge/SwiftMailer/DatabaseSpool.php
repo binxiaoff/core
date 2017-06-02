@@ -9,7 +9,6 @@ use Unilend\Bundle\MessagingBundle\Service\MailQueueManager;
 
 class DatabaseSpool extends \Swift_ConfigurableSpool
 {
-
     /**
      * @var MailQueueManager
      */
@@ -91,43 +90,47 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
 
         $failedRecipients = (array) $failedRecipients;
         $count            = 0;
+        $batches          = array_chunk($emailsToSend, 100);
 
-        foreach ($emailsToSend as $email) {
-            $email->setStatus(MailQueue::STATUS_PROCESSING);
+        /** @var MailQueue[] $batch */
+        foreach ($batches as $index => $batch) {
+            foreach ($batch as $email) {
+                $email->setStatus(MailQueue::STATUS_PROCESSING);
 
-            $message  = $this->mailQueueManager->getMessage($email);
-            $response = $transport->send($message, $failedRecipients);
+                $message  = $this->mailQueueManager->getMessage($email);
+                $response = $transport->send($message, $failedRecipients);
 
-            if (! ($transport instanceof MailjetTransport)) {
-                if ($response) {
-                    $count++;
-                    $email->setStatus(MailQueue::STATUS_SENT);
-                    $email->setSentAt(new \DateTime());
-                } else {
-                    $email->setStatus(MailQueue::STATUS_ERROR);
-                }
-            }
-        }
-
-        if ($transport instanceof MailjetTransport) {
-            /** @var Response $response */
-            $response = $transport->stop();
-
-            if ($response instanceof Response) {
-                if ($response->success()) {
-                    $count = count($emailsToSend);
-                    foreach ($emailsToSend as $email) {
+                if (! ($transport instanceof MailjetTransport)) {
+                    if ($response) {
+                        $count++;
                         $email->setStatus(MailQueue::STATUS_SENT);
                         $email->setSentAt(new \DateTime());
-                        $messageId = $this->mailQueueManager->findMessageId($email, $response);
-                        $email->setIdMessageMailjet($messageId);
-                    }
-                } else {
-                    $reasonPhrase = json_encode($response->getReasonPhrase());
-
-                    foreach ($emailsToSend as $email) {
+                    } else {
                         $email->setStatus(MailQueue::STATUS_ERROR);
-                        $email->setErrorMailjet($reasonPhrase);
+                    }
+                }
+            }
+
+            if ($transport instanceof MailjetTransport) {
+                /** @var Response $response */
+                $response = $transport->stop();
+
+                if ($response instanceof Response) {
+                    if ($response->success()) {
+                        $count += count($batch);
+                        foreach ($batch as $email) {
+                            $email->setStatus(MailQueue::STATUS_SENT);
+                            $email->setSentAt(new \DateTime());
+                            $messageId = $this->mailQueueManager->findMessageId($email, $response);
+                            $email->setIdMessageMailjet($messageId);
+                        }
+                    } else {
+                        $reasonPhrase = json_encode($response->getReasonPhrase());
+
+                        foreach ($batch as $email) {
+                            $email->setStatus(MailQueue::STATUS_ERROR);
+                            $email->setErrorMailjet($reasonPhrase);
+                        }
                     }
                 }
             }
