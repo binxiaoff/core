@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Psr\Log\LoggerInterface;
@@ -15,10 +16,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProduct;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProduct;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -89,11 +90,10 @@ class ProjectRequestController extends Controller
         /** @var \settings $settings */
         $settings = $entityManagerSimulator->getRepository('settings');
 
-        $amount   = null;
-        $siren    = null;
-        $email    = null;
-        $duration = null;
-        $reason   = null;
+        $amount = null;
+        $siren  = null;
+        $email  = null;
+        $reason = null;
 
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
@@ -113,16 +113,6 @@ class ProjectRequestController extends Controller
                 $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
             } elseif ($amount < $minimumAmount || $amount > $maximumAmount) {
                 $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_amount-value-error'));
-            }
-        }
-
-        if (empty($request->request->get('duration'))) {
-            $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
-        } else {
-            $duration = filter_var($request->request->get('duration'), FILTER_VALIDATE_INT);
-
-            if (false === $duration) {
-                $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
             }
         }
 
@@ -246,7 +236,6 @@ class ProjectRequestController extends Controller
         $this->project->id_company                           = $this->company->getIdCompany();
         $this->project->amount                               = $amount;
         $this->project->id_borrowing_motive                  = $reason;
-        $this->project->period                               = $duration;
         $this->project->ca_declara_client                    = 0;
         $this->project->resultat_exploitation_declara_client = 0;
         $this->project->fonds_propres_declara_client         = 0;
@@ -370,8 +359,7 @@ class ProjectRequestController extends Controller
                 ],
                 'project' => [
                     'duration'    => isset($values['project']['duration']) ? $values['project']['duration'] : $this->project->period,
-                    'description' => isset($values['project']['description']) ? $values['project']['description'] : $this->project->comments,
-                    'motive'      => isset($values['project']['motive']) ? $values['project']['motive'] : $this->project->id_borrowing_motive
+                    'description' => isset($values['project']['description']) ? $values['project']['description'] : $this->project->comments
                 ]
             ]
         ];
@@ -380,6 +368,7 @@ class ProjectRequestController extends Controller
             'company_name'           => $this->company->getName(),
             'siren'                  => $this->company->getSiren(),
             'amount'                 => $this->project->amount,
+            'motive'                 => $this->project->id_borrowing_motive,
             'averageFundingDuration' => $this->get('unilend.service.project_manager')->getAverageFundingDuration($this->project->amount),
             'hash'                   => $this->project->hash
         ];
@@ -439,9 +428,6 @@ class ProjectRequestController extends Controller
         }
         if (empty($request->request->get('project')['duration']) || false === in_array($request->request->get('project')['duration'], $loanPeriods)) {
             $errors['project']['duration'] = true;
-        }
-        if (empty($request->request->get('project')['motive'])) {
-            $errors['project']['motive'] = true;
         }
         if (empty($request->request->get('project')['description'])) {
             $errors['project']['description'] = true;
@@ -565,9 +551,8 @@ class ProjectRequestController extends Controller
             }
         }
 
-        $this->project->period              = $request->request->get('project')['duration'];
-        $this->project->comments            = $request->request->get('project')['description'];
-        $this->project->id_borrowing_motive = $request->request->get('project')['motive'];
+        $this->project->period   = $request->request->get('project')['duration'];
+        $this->project->comments = $request->request->get('project')['description'];
         $this->project->update();
 
         $productManager = $this->get('unilend.service_product.product_manager');
