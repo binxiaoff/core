@@ -2,12 +2,12 @@
 
 table.tablesorter:not(.table) { width: 100%; text-align: left; }
 table.tablesorter:not(.table) thead tr th, table.tablesorter tfoot tr th { background-color: #b20066; border: 1px solid #FFF; font-size: 8pt; padding: 5px; color:white; }
-table.tablesorter:not(.table) thead tr .header { background-image: url(images/bg.gif); background-repeat: no-repeat; background-position: center right; cursor: pointer; }
+table.tablesorter thead tr .header { background-image: url(images/bg.gif); background-repeat: no-repeat; background-position: center right; cursor: pointer; }
 table.tablesorter:not(.table) tbody td { padding: 5px; background-color: #ECECEC; vertical-align: top; border: 1px solid #FFF; color: #b20066; }
 table.tablesorter:not(.table) tbody td img { margin: 0 3px 0 0; }
 table.tablesorter:not(.table) tbody tr.odd td { padding: 5px; background-color: #D3D3D3; vertical-align: top; }
 
-table.tablesorter:not(.table) thead tr .headerSortUp { background-image: url(images/asc.gif); }
-table.tablesorter:not(.table) thead tr .headerSortDown { background-image: url(images/desc.gif); }
-table.tablesorter:not(.table) thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp { background-color: #b20066; border: 1px solid #FFF; font-size: 8pt; padding: 5px; color:#FFF; }
+table.tablesorter thead tr .headerSortUp { background-image: url(images/asc.gif); }
+table.tablesorter thead tr .headerSortDown { background-image: url(images/desc.gif); }
+table.tablesorter:not(.table) thead tr .headerSortDown, table.tablesorter:not(.table) thead tr .headerSortUp { background-color: #b20066; border: 1px solid #FFF; font-size: 8pt; padding: 5px; color:#FFF; }
 table.tablesorter:not(.table) tbody tr.highlighted td { background-color: #ffe0f0; }
