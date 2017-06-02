@@ -323,8 +323,8 @@ class MailerManager
 
     public function sendBidAccepted(\projects $project)
     {
-        /** @var \loans $loan */
-        $loan = $this->entityManagerSimulator->getRepository('loans');
+        /** @var \loans $loanData */
+        $loanData = $this->entityManagerSimulator->getRepository('loans');
         /** @var \companies $oCompany */
         $company = $this->entityManagerSimulator->getRepository('companies');
         /** @var \echeanciers $repaymentSchedule */
@@ -340,7 +340,7 @@ class MailerManager
             $contractLabel[$contractType['id_contract']] = $this->translator->trans('contract-type-label_' . $contractType['label']);
         }
 
-        $lenders          = $loan->getProjectLoansByLender($project->id_project);
+        $lenders          = $loanData->getProjectLoansByLender($project->id_project);
         $nbLenders        = count($lenders);
         $nbTreatedLenders = 0;
 
@@ -351,14 +351,12 @@ class MailerManager
             );
         }
 
-        foreach ($lenders as $idLender) {
-            $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($idLender);
+        foreach ($lenders as $lender) {
+            $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($lender['id_lender']);
 
             if (Clients::STATUS_ONLINE === $wallet->getIdClient()->getStatus()) {
                 $company->get($project->id_company, 'id_company');
-
-                $lenderIsNaturalPerson  = in_array($wallet->getIdClient()->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]);
-                $loansOfLender          = $loan->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $wallet->getId(), '`id_type_contract` DESC');
+                $loansOfLender          = $loanData->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $wallet->getId(), '`id_type_contract` DESC');
                 $numberOfLoansForLender = count($loansOfLender);
                 $numberOfAcceptedBids   = $acceptedBid->getDistinctBidsForLenderAndProject($wallet->getId(), $project->id_project);
                 $loansDetails           = '';
@@ -366,9 +364,9 @@ class MailerManager
                 $contractText           = '';
                 $styleTD                = 'border: 1px solid; padding: 5px; text-align: center; text-decoration:none;';
 
-                if ($lenderIsNaturalPerson) {
+                if ($wallet->getIdClient()->isNaturalPerson()) {
                     $contract->get(\underlying_contract::CONTRACT_IFP, 'label');
-                    $loanIFP               = $loan->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $wallet->getId() . ' AND id_type_contract = ' .$contract->id_contract);
+                    $loanIFP               = $loanData->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $wallet->getId() . ' AND id_type_contract = ' .$contract->id_contract);
                     $numberOfBidsInLoanIFP = $acceptedBid->counter('id_loan = ' . $loanIFP[0]['id_loan']);
 
                     if ($numberOfBidsInLoanIFP > 1) {
