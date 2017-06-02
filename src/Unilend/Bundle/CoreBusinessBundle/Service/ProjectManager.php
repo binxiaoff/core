@@ -490,13 +490,14 @@ class ProjectManager
 
         foreach ($aLenderList as $aLender) {
             $wallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($aLender['id_lender_account']);
-            $lenderBids = $bidRepository->findBy(['idLenderAccount' => $wallet->getIdClient(), 'idProject' => $project->id_project, 'status' => Bids::STATUS_BID_ACCEPTED], ['rate' => 'DESC']);
+            $lenderBids = $bidRepository->findBy(['idLenderAccount' => $wallet->getId(), 'idProject' => $project->id_project, 'status' => Bids::STATUS_BID_ACCEPTED], ['rate' => 'DESC']);
 
             if ($wallet->getIdClient()->isNaturalPerson()) {
                 $fLoansLenderSum = 0;
                 $fInterests      = 0;
                 $aBidIFP         = [];
 
+                /** @var Bids $bid */
                 foreach ($lenderBids as $bid) {
                     $fBidAmount = round(bcdiv($bid->getAmount(), 100, 4), 2);
 
