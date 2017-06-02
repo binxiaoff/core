@@ -38,9 +38,7 @@
                 <input type="hidden" name="spy_date1" value="<?= $_POST['date1'] ?>"/>
                 <input type="hidden" name="spy_date2" value="<?= $_POST['date2'] ?>"/>
             </form>
-            <?php if (\users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) : ?>
-                <a role="button" onclick="document.forms['recupCSV'].submit();" class="btn-primary pull-right">Recuperation du CSV</a>
-            <?php endif; ?>
+            <a role="button" onclick="document.forms['recupCSV'].submit();" class="btn-primary pull-right">Récupération du CSV</a>
         </div>
     </div>
     <div style="width:500px;margin: auto;margin-bottom:20px;background-color: white;border: 1px solid #A1A5A7;border-radius: 10px 10px 10px 10px;margin: 0 auto 20px;padding:5px;">
