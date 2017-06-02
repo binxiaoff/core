@@ -126,8 +126,11 @@ class NotificationManager
             ->setDateNotif(new \DateTime('NOW'))
             ->setIdNotification($notificationId)
             ->setIdProject($projectId)
-            ->setIdLoan($loanId)
-            ->setIdWalletBalanceHistory($walletBalanceHistory);
+            ->setIdLoan($loanId);
+
+        if (null !== $walletBalanceHistory) {
+            $emailNotification->setIdWalletBalanceHistory($walletBalanceHistory);
+        }
 
         $this->entityManager->persist($emailNotification);
         $this->entityManager->flush($emailNotification);
