@@ -44,11 +44,12 @@ class UserBorrower extends BaseUser
         $balance,
         $lastLoginDate = null
     ) {
-        parent::__construct($username, $password, $email, $salt, $roles, $isActive, $clientId, $hash, $lastLoginDate, $balance);
+        parent::__construct($username, $password, $email, $salt, $roles, $isActive, $clientId, $hash, $lastLoginDate);
 
         $this->firstName = $firstName;
         $this->lastName  = $lastName;
         $this->siren     = $siren;
+        $this->balance   = $balance;
     }
 
     /**
