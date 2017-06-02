@@ -83,6 +83,8 @@ class MonitoringController extends Controller
     }
 
     /**
+     * Infogreffe was deactivated, so this method will always respond ok
+     *
      * @Route("/monitoring/infogreffe", name="monitoring_infogreffe")
      *
      * @return Response
@@ -92,6 +94,7 @@ class MonitoringController extends Controller
         if (false === in_array($_SERVER['REMOTE_ADDR'], $this->getPingdomIps())) {
             throw new NotFoundHttpException('Unknown page');
         }
+        return (new Response())->setContent('ok');
 
         try {
             $siren             = '790766034';
