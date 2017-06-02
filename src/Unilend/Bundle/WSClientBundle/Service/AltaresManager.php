@@ -123,7 +123,7 @@ class AltaresManager
                 $response->return->myInfo->bilans = [$response->return->myInfo->bilans];
             }
             /** @var BalanceSheetList $balanceSheetList */
-            $balanceSheetList =  $this->serializer->deserialize(json_encode($response->return), BalanceSheetList::class, 'json');
+            $balanceSheetList = $this->serializer->deserialize(json_encode($response->return), BalanceSheetList::class, 'json');
 
             return $balanceSheetList->getMyInfo();
         }
@@ -307,7 +307,9 @@ class AltaresManager
         }
 
         if (isset($response->return->exception)) {
-            if (in_array($response->return->exception->code, self::EXCEPTION_CODE_INVALID_OR_UNKNOWN_SIREN + self::EXCEPTION_CODE_NO_FINANCIAL_DATA)) {
+            if (in_array($response->return->exception->code, self::EXCEPTION_CODE_INVALID_OR_UNKNOWN_SIREN)
+                || in_array($response->return->exception->code, self::EXCEPTION_CODE_NO_FINANCIAL_DATA)
+            ) {
                 return ['status' => 'valid', 'is_valid' => true];
             } elseif (in_array($response->return->exception->code, self::EXCEPTION_CODE_TECHNICAL_ERROR)) {
                 throw new \Exception('Altares response technical error: "' . $response->return->exception->description . '"', $response->return->exception->code);

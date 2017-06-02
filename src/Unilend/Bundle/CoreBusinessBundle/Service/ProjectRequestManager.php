@@ -11,7 +11,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetList;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetListDetail;
 
 class ProjectRequestManager
@@ -190,12 +189,12 @@ class ProjectRequestManager
     }
 
     /**
-     * @param \companies            $company
-     * @param int                   $userId
-     * @param null|BalanceSheetList $balanceSheetList
+     * @param \companies                  $company
+     * @param int                         $userId
+     * @param null|BalanceSheetListDetail $balanceSheetList
      * @return null|string
      */
-    public function checkCompanyRisk(\companies &$company, $userId, BalanceSheetList &$balanceSheetList = null)
+    public function checkCompanyRisk(\companies &$company, $userId, BalanceSheetListDetail &$balanceSheetList = null)
     {
         /** @var \company_rating $companyRating */
         $companyRating                  = $this->entityManagerSimulator->getRepository('company_rating');
