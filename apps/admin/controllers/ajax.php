@@ -187,8 +187,12 @@ class ajaxController extends bootstrap
         /** @var TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
         if (isset($this->params[0]) && $this->params[0] != '') {
-            $this->lTranslations = $translationManager->noCacheTrans($this->params[1], $this->params[0]);
+            $this->section     = $this->params[1];
+            $this->nom         = $this->params[0];
+            $this->translation = $translationManager->noCacheTrans($this->params[1], $this->params[0]);
         }
+
+        $this->setView('../traductions/edit');
     }
 
     /* Activer un utilisateur sur une zone */
