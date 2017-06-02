@@ -246,7 +246,7 @@
 
         <div class="btn-controls text-center">
             <button type="submit" id="send-dossier" class="btn-primary" style="margin-right: 5px;">Rechercher</button>
-            <button type="submit" id="reset" class="btn-default">Réinitialiser</button>
+            <button type="button" id="reset" class="btn-default">Réinitialiser</button>
         </div>
     </form>
 
