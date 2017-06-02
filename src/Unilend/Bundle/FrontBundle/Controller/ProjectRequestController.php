@@ -84,14 +84,16 @@ class ProjectRequestController extends Controller
         if ($request->isMethod('GET')) {
             return $this->redirect($this->generateUrl('home_borrower') . '#homeemp-section-esim');
         }
-        /** @var EntityManagerSimulator $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
 
-        $amount = null;
-        $siren  = null;
-        $email  = null;
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        /** @var \settings $settings */
+        $settings = $entityManagerSimulator->getRepository('settings');
+
+        $amount   = null;
+        $siren    = null;
+        $email    = null;
+        $duration = null;
+        $reason   = null;
 
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
@@ -111,6 +113,26 @@ class ProjectRequestController extends Controller
                 $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
             } elseif ($amount < $minimumAmount || $amount > $maximumAmount) {
                 $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_amount-value-error'));
+            }
+        }
+
+        if (empty($request->request->get('duration'))) {
+            $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
+        } else {
+            $duration = filter_var($request->request->get('duration'), FILTER_VALIDATE_INT);
+
+            if (false === $duration) {
+                $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
+            }
+        }
+
+        if (empty($request->request->get('reason'))) {
+            $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
+        } else {
+            $reason = filter_var($request->request->get('reason'), FILTER_VALIDATE_INT);
+
+            if (false === $reason) {
+                $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
             }
         }
 
@@ -140,9 +162,9 @@ class ProjectRequestController extends Controller
         if ($this->get('session')->getFlashBag()->has('borrowerLandingPageErrors')) {
             $request->getSession()->set('projectRequest', [
                 'values' => [
-                    'amount' => $amount,
-                    'siren'  => $siren,
-                    'email'  => $email
+                    'amount'   => $amount,
+                    'siren'    => $siren,
+                    'email'    => $email
                 ]
             ]);
 
@@ -220,9 +242,11 @@ class ProjectRequestController extends Controller
             $partnerId      = $partnerManager->getDefaultPartner()->getId();
         }
 
-        $this->project                                       = $entityManager->getRepository('projects');
+        $this->project                                       = $entityManagerSimulator->getRepository('projects');
         $this->project->id_company                           = $this->company->getIdCompany();
         $this->project->amount                               = $amount;
+        $this->project->id_borrowing_motive                  = $reason;
+        $this->project->period                               = $duration;
         $this->project->ca_declara_client                    = 0;
         $this->project->resultat_exploitation_declara_client = 0;
         $this->project->fonds_propres_declara_client         = 0;

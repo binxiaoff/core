@@ -420,9 +420,11 @@ class MainController extends Controller
     {
         /** @var ContentManager $contentManager */
         $contentManager = $this->get('unilend.frontbundle.service.content_manager');
+        $projectManager = $this->get('unilend.service.project_manager');
 
-        $sessionHandler = $request->getSession();
-        $isPartnerFunnel = $content['tunnel-partenaire'] == 1;
+        $borrowingReasons = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->findBy([], ['rank' => 'ASC']);
+        $sessionHandler   = $request->getSession();
+        $isPartnerFunnel  = $content['tunnel-partenaire'] == 1;
 
         if ($isPartnerFunnel) {
             $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
@@ -439,10 +441,12 @@ class MainController extends Controller
             ],
             'form' => [
                 'values' => [
-                    'amount'  => empty($sessionHandler->get('projectRequest')['values']['amount']) ? (empty($request->query->getInt('montant')) ? '' : $request->query->get('montant')) : $sessionHandler->get('projectRequest')['values']['amount'],
-                    'siren'   => empty($sessionHandler->get('projectRequest')['values']['siren']) ? (empty($request->query->getInt('siren')) ? '' : $request->query->get('siren')) : $sessionHandler->get('projectRequest')['values']['siren'],
-                    'email'   => empty($sessionHandler->get('projectRequest')['values']['email']) ? (empty($request->query->get('email')) ? '' : filter_var($request->query->get('email'), FILTER_SANITIZE_EMAIL)) : $sessionHandler->get('projectRequest')['values']['email'],
-                    'partner' => $content['partenaire']
+                    'amount'    => empty($sessionHandler->get('projectRequest')['values']['amount']) ? (empty($request->query->getInt('montant')) ? '' : $request->query->get('montant')) : $sessionHandler->get('projectRequest')['values']['amount'],
+                    'siren'     => empty($sessionHandler->get('projectRequest')['values']['siren']) ? (empty($request->query->getInt('siren')) ? '' : $request->query->get('siren')) : $sessionHandler->get('projectRequest')['values']['siren'],
+                    'email'     => empty($sessionHandler->get('projectRequest')['values']['email']) ? (empty($request->query->get('email')) ? '' : filter_var($request->query->get('email'), FILTER_SANITIZE_EMAIL)) : $sessionHandler->get('projectRequest')['values']['email'],
+                    'partner'   => $content['partenaire'],
+                    'durations' => $projectManager->getPossibleProjectPeriods(),
+                    'reasons'   => $borrowingReasons,
                 ],
             ],
         ];
