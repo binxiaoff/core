@@ -15,7 +15,7 @@
                     {% for menu in menus %}
                     <div class="col-lg-3 col-md-3 col-sm-4">
                         <h4>{{ menu.title }}</h4>
-                        <ul class="list-block">
+                        <ul class="list-block" data-equal-height="sm" data-equal-height-group="fmenus">
                             {% for child in menu.children %}
                                 <li>
                                     <a href="{{ child.url }}" target="{{ child.target }}">{{ child.title }}</a>
@@ -39,11 +39,9 @@
                 <div class="col-sub-center col-lg-4 col-md-4">
                     {% block siteFooterSubCenter %}
                         <ul class="list-awards">
-                            {% for partner in partners %}
-                                <li>
-                                    <img src="{{ uploadedImage(partner.src) }}" alt="{{ partner.alt }}" class="ui-has-tooltip" data-original-title="{{ partner.alt|e('html_attr') }}">
-                                </li>
-                            {% endfor %}
+                            <li><a href="http://www.bpifrance.fr/" class="ui-has-tooltip" data-original-title="BPI France" target="_blank"></a></li>
+                            <li><a href="https://www.orias.fr/" class="ui-has-tooltip" data-original-title="ORIAS" target="_blank"></a></li>
+                            <li><a href="http://financeparticipative.org/" class="ui-has-tooltip" data-original-title="Financement Participatif France" target="_blank"></a></li>
                         </ul>
                         <div class="site-tagline">{% trans %} footer_site-tagline {% endtrans %}</div>
                     {% endblock %}

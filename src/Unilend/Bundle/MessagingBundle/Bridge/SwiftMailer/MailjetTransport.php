@@ -51,7 +51,10 @@ class MailjetTransport implements \Swift_Transport
      */
     public function stop()
     {
-        return $this->mailJetClient->post(Resources::$Email, ['body' => ['Messages' => $this->spool]]);
+        $response    = $this->mailJetClient->post(Resources::$Email, ['body' => ['Messages' => $this->spool]]);
+        $this->spool = [];
+
+        return $response;
     }
 
     /**

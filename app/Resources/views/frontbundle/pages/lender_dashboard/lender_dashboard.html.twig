@@ -12,10 +12,10 @@
                 <li role="presentation">
                     <a href="#{{ panelId }}" class="dashboard-panel-toggle{% if panelInfo.hidden == true %} ui-dashboard-panel-hidden{% endif %}" data-toggle="ui">
                       {% if panelId == 'wallet' %}
-                            {% if lenderDetails.numberOfLoans == lenderDetails.numberOfBorrowers %}
+                            {% if lenderDetails.numberOfLoans == lenderDetails.companiesLenderInvestedIn %}
                                 {% transchoice lenderDetails.numberOfLoans with {'%offersCount%' : lenderDetails.numberOfLoans|localizednumber} %} lender-dashboard-wallet_title-loans {% endtranschoice %}
                             {% else %}
-                                {% transchoice lenderDetails.numberOfBorrowers with {'%offersCount%' : lenderDetails.numberOfLoans|localizednumber, '%borrowerCount%' : lenderDetails.numberOfBorrowers|localizednumber} %} lender-dashboard-wallet_title-loans-projects {% endtranschoice %}
+                                {% transchoice lenderDetails.companiesLenderInvestedIn with {'%offersCount%' : lenderDetails.numberOfLoans|localizednumber, '%borrowerCount%' : lenderDetails.companiesLenderInvestedIn|localizednumber} %} lender-dashboard-wallet_title-loans-projects {% endtranschoice %}
                             {% endif %}
                       {% else %}
                         {{ "lender-dashboard-#{ panelId }_title"|trans }}

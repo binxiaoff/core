@@ -1,6 +1,8 @@
 <?php
+
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class LenderValidator
@@ -26,15 +28,26 @@ class LenderValidator
      */
     public function isEligible(\lenders_accounts $lender, \projects $project)
     {
+        $reason   = [];
         $eligible = true;
-        $reason = [];
+
         /** @var \product $product */
         $product = $this->entityManager->getRepository('product');
         if (false === $product->get($project->id_product)) {
             throw new \InvalidArgumentException('The product id ' . $project->id_product . ' does not exist');
         }
 
-        if (false === $this->isLenderEligibleForType($lender, $product, $this->productAttributeManager, $this->entityManager)) {
+        if (false === $this->isEligibleForLenderId($lender->id_client_owner, $product, $this->productAttributeManager)) {
+            $reason[] = ProductAttributeType::ELIGIBLE_LENDER_ID;
+            $eligible = false;
+        }
+
+        if (false === $this->isEligibleForLenderType($lender->id_client_owner, $product, $this->productAttributeManager, $this->entityManager)) {
+            $reason[] = ProductAttributeType::ELIGIBLE_LENDER_TYPE;
+            $eligible = false;
+        }
+
+        if (false === $this->isContractEligibleForLenderType($lender, $product, $this->productAttributeManager, $this->entityManager)) {
             $reason[] = \underlying_contract_attribute_type::ELIGIBLE_LENDER_TYPE;
             $eligible = false;
         }
@@ -45,7 +58,7 @@ class LenderValidator
         }
 
         return [
-            'reason' => $reason,
+            'reason'   => $reason,
             'eligible' => $eligible
         ];
     }

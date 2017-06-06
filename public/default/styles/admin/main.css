@@ -124,6 +124,13 @@ table.cont_periode { width: 800px; margin: 0 auto; }
 
 table.form_periode td { text-align: center; vertical-align: middle; }
 
+.table > thead > tr > th { background: #b20066; border-bottom: 1px solid #b20066; color: #fff; vertical-align: top; }
+.table > thead > tr > th:first-child { border-left: 1px solid #b20066; }
+.table > thead > tr > th:last-child { border-right: 1px solid #b20066; }
+.table > tbody > tr > td:first-child { border-left: 1px solid #dddddd; }
+.table > tbody > tr > td:last-child { border-right: 1px solid #dddddd; }
+.table > tbody > tr:last-child > td { border-bottom: 1px solid #dddddd; }
+
 #onglets { margin: 15px auto; padding: 0 0 5px 0; width: 1160px; border-bottom: 5px solid #E3E4E5; }
 
 #onglets a { background-color: #b20066; color: white; text-decoration: none; margin: 0; padding: 5px 8px 5px 8px; text-align: center; font-size:12px; font-weight:bold; cursor: pointer; -moz-border-radius: 5px 5px 0 0; -webkit-border-radius: 5px 5px 0 0; border-radius: 5px 5px 0 0; }

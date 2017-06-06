@@ -1,14 +1,15 @@
 <?php
+
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
-
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
 
 trait CompanyChecker
 {
     public function isEligibleForCreationDays(\companies $company, \product $product, ProductAttributeManager $productAttributeManager)
     {
-        $minDays = $productAttributeManager->getProductAttributesByType($product, \product_attribute_type::MIN_CREATION_DAYS);
+        $minDays = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MIN_CREATION_DAYS);
 
         if (empty($minDays)) {
             return $this->isEligibleForContractCreationDays($company, $product, $productAttributeManager);
@@ -24,7 +25,7 @@ trait CompanyChecker
 
     public function isEligibleForRCS(\companies $company, \product $product, ProductAttributeManager $productAttributeManager)
     {
-        $beRCS = $productAttributeManager->getProductAttributesByType($product, \product_attribute_type::ELIGIBLE_BORROWER_COMPANY_RCS);
+        $beRCS = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_RCS);
 
         if (empty($beRCS)) {
             return $this->isEligibleForContractRCS($company, $product, $productAttributeManager);
@@ -39,7 +40,7 @@ trait CompanyChecker
 
     public function isEligibleForNafCode(\companies $company, \product $product, ProductAttributeManager $productAttributeManager)
     {
-        $nafCode = $productAttributeManager->getProductAttributesByType($product, \product_attribute_type::ELIGIBLE_BORROWER_COMPANY_NAF_CODE);
+        $nafCode = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_NAF_CODE);
 
         if (empty($nafCode)) {
             return true;

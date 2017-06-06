@@ -123,7 +123,7 @@ class bank_accountController extends bootstrap
                 if (in_array($project->getStatus(), [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE])) {
                     continue;
                 }
-                $mandates = $project->getMandats();
+                $mandates = $project->getMandates();
                 if (false === empty($mandates)) {
                     foreach ($mandates as $mandate) {
                         if ($mandate->getStatus() === UniversignEntityInterface::STATUS_ARCHIVED) {

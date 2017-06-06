@@ -5,7 +5,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 
 class FeedsBPICommand extends ContainerAwareCommand
 {
@@ -25,7 +25,6 @@ class FeedsBPICommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
         $translator    = $this->getContainer()->get('translator');
         $router        = $this->getContainer()->get('router');
@@ -43,7 +42,7 @@ class FeedsBPICommand extends ContainerAwareCommand
         $hostUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
         $userPath = $this->getContainer()->getParameter('path.user');
 
-        $projectStatuses = array(
+        $projectStatuses = [
             \projects_status::EN_FUNDING,
             \projects_status::FUNDE,
             \projects_status::FUNDING_KO,
@@ -57,12 +56,16 @@ class FeedsBPICommand extends ContainerAwareCommand
             \projects_status::REDRESSEMENT_JUDICIAIRE,
             \projects_status::LIQUIDATION_JUDICIAIRE,
             \projects_status::DEFAUT
-        );
+        ];
 
-        $partner = strtolower($input->getArgument('partner'));
+        $partner      = strtolower($input->getArgument('partner'));
+        $products     = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient();
+        $productIds   = array_map(function (Product $product) {
+            return $product->getIdProduct();
+        }, $products);
 
         $projectsToSerialise = [];
-        $projectList         = $project->selectProjectsByStatus($projectStatuses, 'AND p.display = ' . \projects::DISPLAY_PROJECT_ON, [], '', '', false);
+        $projectList         = $project->selectProjectsByStatus($projectStatuses, 'AND p.display = ' . \projects::DISPLAY_PROJECT_ON, [], '', '', false, $productIds);
         foreach ($projectList as $item) {
             $project->get($item['id_project']);
             $company->get($project->id_company);

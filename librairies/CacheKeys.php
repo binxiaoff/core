@@ -35,8 +35,7 @@ class CacheKeys
     /**
      * constant for CMS elements
      */
-    const FOOTER_PARTNERS = 'footer_partners';
-    const FOOTER_MENU     = 'footer_menu';
+    const FOOTER_MENU = 'footer_menu';
 
     /**
      * constant for statistics

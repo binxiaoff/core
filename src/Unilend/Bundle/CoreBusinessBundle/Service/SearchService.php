@@ -41,28 +41,27 @@ class SearchService
 
     /**
      * @param string $query
-     * @param bool   $includeProjects
      *
      * @return array
      */
-    public function search($query, $includeProjects = false)
+    public function search($query)
     {
         $query        = filter_var($query, FILTER_SANITIZE_STRING);
         $result       = [];
         $cmsResult    = $this->searchInCMSContent($query);
         $nonCMSResult = $this->searchInNonCMSPages($query);
+        $projects     = $this->searchInProjects($query);
+        $deskResult   = $this->searchInDesk($query);
 
         if (false === empty($nonCMSResult) || false === empty($cmsResult)) {
             $result['unilend'] = array_merge($nonCMSResult, $cmsResult);
         }
 
-        if ($includeProjects) {
-            $result['projects'] = $this->searchInProjects($query);
+        if (false === empty($projects)) {
+            $result['projects'] = $projects;
         }
 
-        $deskResult = $this->searchInDesk($query);
-
-        if (false !== $deskResult) {
+        if (false === empty($deskResult)) {
             $result['desk'] = $deskResult;
         }
 
