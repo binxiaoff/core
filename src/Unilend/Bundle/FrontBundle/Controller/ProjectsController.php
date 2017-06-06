@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
@@ -13,16 +14,13 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
-use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
-use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 use Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\core\Loader;
@@ -36,6 +34,7 @@ class ProjectsController extends Controller
      * @param int    $page
      * @param string $sortType
      * @param string $sortDirection
+     *
      * @return array
      */
     public function projectsListAction($page, $sortType, $sortDirection)
@@ -51,6 +50,7 @@ class ProjectsController extends Controller
      * @param int    $page
      * @param string $sortType
      * @param string $sortDirection
+     *
      * @return array
      */
     public function lenderProjectsAction($page, $sortType, $sortDirection)
@@ -62,21 +62,21 @@ class ProjectsController extends Controller
      * @param int    $page
      * @param string $sortType
      * @param string $sortDirection
+     *
      * @return array
      */
     private function getProjectsList($page, $sortType, $sortDirection)
     {
-        /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
-        /** @var ProjectDisplayManager $projectDisplayManager */
+        $entityManager         = $this->get('doctrine.orm.entity_manager');
+        $translator            = $this->get('translator');
+        $authorizationChecker  = $this->get('security.authorization_checker');
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        /** @var AuthorizationChecker $authorizationChecker */
-        $authorizationChecker = $this->get('security.authorization_checker');
-
-        /** @var BaseUser $user */
-        $user = $this->getUser();
+        $clientRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $productRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Product');
+        $projectRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
         $template      = [];
+        $user          = $this->getUser();
         $pagination    = $this->getPaginationStartAndLimit($page);
         $limit         = $pagination['limit'];
         $start         = $pagination['start'];
@@ -103,18 +103,21 @@ class ProjectsController extends Controller
 
         $template['projects'] = $projectDisplayManager->getProjectsList([], $sort, $start, $limit, $lenderAccount);
 
-        $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower || $user instanceof UserPartner);
-
-        if (false === $isFullyConnectedUser) {
-            array_walk($template['projects'], function(&$project) use ($translator) {
+        array_walk($template['projects'], function(&$project) use ($translator, $projectDisplayManager, $user, $projectRepository) {
+            if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($projectRepository->find($project['projectId']), $user)) {
                 $project['title'] = $translator->trans('company-sector_sector-' . $project['company']['sectorId']);
-            });
-        }
+            }
+        });
 
         /** @var \projects $projects */
-        $projects = $this->get('unilend.service.entity_manager')->getRepository('projects');
+        $projects        = $this->get('unilend.service.entity_manager')->getRepository('projects');
+        $client          = $user ? $clientRepository->find($user->getClientId()) : null;
+        $products        = $productRepository->findAvailableProductsByClient($client);
+        $productIds      = array_map(function (Product $product) {
+            return $product->getIdProduct();
+        }, $products);
 
-        $template['projectsInFunding'] = $projects->countSelectProjectsByStatus(\projects_status::EN_FUNDING, ' AND display = ' . \projects::DISPLAY_PROJECT_ON);
+        $template['projectsInFunding'] = $projects->countSelectProjectsByStatus([\projects_status::EN_FUNDING], ' AND display = ' . \projects::DISPLAY_PROJECT_ON, $productIds);
         $template['pagination']        = $this->pagination($page, $limit);
         $template['showPagination']    = true;
         $template['showSortable']      = true;
@@ -125,12 +128,19 @@ class ProjectsController extends Controller
         return $template;
     }
 
+    /**
+     * @param int $page
+     * @param int $limit
+     *
+     * @return array
+     */
     private function pagination($page, $limit)
     {
         /** @var ProjectDisplayManager $projectDisplayManager */
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+        $clientId              = $this->getUser() instanceof BaseUser ? $this->getUser()->getClientId() : null;
 
-        $totalNumberProjects = $projectDisplayManager->getTotalNumberOfDisplayedProjects();
+        $totalNumberProjects = $projectDisplayManager->getTotalNumberOfDisplayedProjects($clientId);
         $totalPages          = ceil($totalNumberProjects / $limit);
 
         $paginationSettings = [
@@ -160,6 +170,11 @@ class ProjectsController extends Controller
         return $paginationSettings;
     }
 
+    /**
+     * @param int $page
+     *
+     * @return array
+     */
     private function getPaginationStartAndLimit($page)
     {
         /** @var \settings $settings */
@@ -176,6 +191,7 @@ class ProjectsController extends Controller
      *
      * @param string  $projectSlug
      * @param Request $request
+     *
      * @return Response
      */
     public function projectDetailAction($projectSlug, Request $request)
@@ -186,16 +202,12 @@ class ProjectsController extends Controller
             return $project;
         }
 
-        /** @var ProjectDisplayManager $projectDisplayManager */
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        /** @var AuthorizationChecker $authorizationChecker */
-        $authorizationChecker = $this->get('security.authorization_checker');
-
-        /** @var BaseUser $user */
-        $user = $this->getUser();
+        $authorizationChecker  = $this->get('security.authorization_checker');
+        $user                  = $this->getUser();
 
         $template = [
-            'project'  => $projectDisplayManager->getProjectData($project),
+            'project'  => $projectDisplayManager->getProjectData($project, $user),
             'bidToken' => sha1('tokenBid-' . time() . '-' . uniqid())
         ];
 
@@ -266,11 +278,10 @@ class ProjectsController extends Controller
             $displayCipDisclaimer = in_array(\underlying_contract::CONTRACT_MINIBON, array_column($productContracts, 'label')) && $cipManager->hasValidEvaluation($lenderAccount);
         }
 
-        $isFullyConnectedUser       = ($user instanceof UserLender && in_array($user->getClientStatus(), [\clients_status::VALIDATED, \clients_status::MODIFICATION]) || $user instanceof UserBorrower || $user instanceof UserPartner);
-        $isConnectedButNotValidated = ($user instanceof UserLender && false === in_array($user->getClientStatus(), [\clients_status::VALIDATED, \clients_status::MODIFICATION]));
+        $projectEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+        $visibility    = $projectDisplayManager->getVisibility($projectEntity, $user);
 
-        if ($isFullyConnectedUser) {
-
+        if (ProjectDisplayManager::VISIBILITY_FULL === $visibility) {
             $template['finance']        = $projectDisplayManager->getProjectFinancialData($project, true);
             $template['financeColumns'] = [
                 'income_statement' => [],
@@ -287,9 +298,7 @@ class ProjectsController extends Controller
                 ];
             }
         } else {
-            /** @var TranslatorInterface $translator */
-            $translator = $this->get('translator');
-            /** @var EntityManager $entityManager */
+            $translator    = $this->get('translator');
             $entityManager = $this->get('unilend.service.entity_manager');
             /** @var \companies $company */
             $company = $entityManager->getRepository('companies');
@@ -308,12 +317,11 @@ class ProjectsController extends Controller
         }
 
         $template['conditions'] = [
-            'validatedUser'        => $isFullyConnectedUser,
-            'notValidatedUser'     => $isConnectedButNotValidated,
+            'visibility'           => $visibility,
             'bids'                 => isset($template['project']['bids']) && $template['project']['status'] == \projects_status::EN_FUNDING,
             'myBids'               => isset($template['project']['lender']) && $template['project']['lender']['bids']['count'] > 0,
-            'finance'              => $isFullyConnectedUser,
-            'canBid'               => $isFullyConnectedUser && $user instanceof UserLender && $user->hasAcceptedCurrentTerms(),
+            'finance'              => ProjectDisplayManager::VISIBILITY_FULL === $visibility,
+            'canBid'               => ProjectDisplayManager::VISIBILITY_FULL === $visibility && $user instanceof UserLender && $user->hasAcceptedCurrentTerms(),
             'warningLending'       => true,
             'warningTaxDeduction'  => $template['project']['startDate'] >= '2016-01-01',
             'displayCipDisclaimer' => $displayCipDisclaimer
@@ -326,18 +334,18 @@ class ProjectsController extends Controller
 
     /**
      * @param string $projectSlug
+     *
      * @return \projects|RedirectResponse
      */
     private function checkProjectAndRedirect($projectSlug)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \projects $project */
-        $project = $entityManager->getRepository('projects');
+        $project = $entityManagerSimulator->getRepository('projects');
 
         if (false === $project->get($projectSlug, 'slug') || $project->slug !== $projectSlug) { // MySQL does not check collation (hôtellerie = hotellerie) so we strictly check in PHP
             /** @var \redirections $redirection */
-            $redirection = $entityManager->getRepository('redirections');
+            $redirection = $entityManagerSimulator->getRepository('redirections');
 
             if ($redirection->get(['from_slug' => $projectSlug, 'status' => 1])) {
                 return new RedirectResponse($redirection->to_slug, $redirection->type);
@@ -346,12 +354,14 @@ class ProjectsController extends Controller
             throw $this->createNotFoundException();
         }
 
+        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+        $entityManager         = $this->get('doctrine.orm.entity_manager');
+        $projectEntity         = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+
         if (
-            $project->status >= \projects_status::A_FUNDER
-            && (
-                $project->display == \projects::DISPLAY_PROJECT_ON
-                || $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && 28002 == $project->id_project
-            )
+            $project->status >= \projects_status::A_FUNDER && $project->status < \projects_status::EN_FUNDING
+            || ProjectDisplayManager::VISIBILITY_FULL === $projectDisplayManager->getVisibility($projectEntity, $this->getUser())
+            || $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && 28002 == $project->id_project
         ) {
             return $project;
         }
@@ -362,6 +372,10 @@ class ProjectsController extends Controller
     /**
      * @Route("/projects/monthly_repayment", name="estimate_monthly_repayment")
      * @Method({"POST"})
+     *
+     * @param Request $request
+     *
+     * @return Response
      */
     public function estimateMonthlyRepaymentAction(Request $request)
     {
@@ -417,6 +431,7 @@ class ProjectsController extends Controller
      *
      * @param int     $projectId
      * @param Request $request
+     *
      * @return RedirectResponse
      */
     public function placeBidAction($projectId, Request $request)
@@ -425,7 +440,6 @@ class ProjectsController extends Controller
             ($post = $request->request->get('invest'))
             && isset($post['amount'], $post['interest'], $post['bidToken'])
         ) {
-            /** @var EntityManager $entityManager */
             $entityManager = $this->get('unilend.service.entity_manager');
             $translator    = $this->get('translator');
             /** @var \projects $project */
@@ -512,6 +526,7 @@ class ProjectsController extends Controller
      * @param int     $projectId
      * @param float   $rate
      * @param Request $request
+     *
      * @return Response
      */
     public function bidsListAction($projectId, $rate, Request $request)
@@ -520,13 +535,10 @@ class ProjectsController extends Controller
             return new Response('not an ajax request');
         }
 
-        /** @var EntityManager $entityManager */
+        $template      = [];
         $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var MemcacheCachePool $oCachePool */
-        $oCachePool  = $this->get('memcache.default');
-        $oCachedItem = $oCachePool->getItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $projectId . '_' . $rate);
-
-        $template = [];
+        $oCachePool    = $this->get('memcache.default');
+        $oCachedItem   = $oCachePool->getItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $projectId . '_' . $rate);
 
         if (true === $oCachedItem->isHit()) {
             $template['bids'] = $oCachedItem->get();
@@ -581,6 +593,7 @@ class ProjectsController extends Controller
      * @Route("/projects/export/income/{projectId}", requirements={"projectId": "\d+"}, name="export_income_statement")
      *
      * @param int $projectId
+     *
      * @return Response
      */
     public function exportIncomeStatementAction($projectId)
@@ -645,6 +658,7 @@ class ProjectsController extends Controller
      * @Route("/projects/export/balance/{projectId}", requirements={"projectId": "\d+"}, name="export_balance_sheet")
      *
      * @param int $projectId
+     *
      * @return Response
      */
     public function exportBalanceSheetAction($projectId)
@@ -779,11 +793,11 @@ class ProjectsController extends Controller
      * @Route("/projects/export/bids/{projectId}", requirements={"projectId": "\d+"}, name="export_bids")
      *
      * @param int $projectId
+     *
      * @return Response
      */
     public function exportBidsAction($projectId)
     {
-        /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \projects $project */
         $project = $entityManager->getRepository('projects');
@@ -863,6 +877,7 @@ class ProjectsController extends Controller
      * @param int     $amount
      * @param float   $rate
      * @param Request $request
+     *
      * @return Response
      */
     public function preCheckBidAction($projectSlug, $amount, $rate, Request $request)
@@ -1054,6 +1069,7 @@ class ProjectsController extends Controller
      * @Route("/var/dirs/{projectSlug}.pdf", name="project_dirs", requirements={"projectSlug": "[a-z0-9-]+"})
      *
      * @param string $projectSlug
+     *
      * @return Response
      */
     public function dirsAction($projectSlug)
@@ -1111,6 +1127,7 @@ class ProjectsController extends Controller
 
     /**
      * @param \projects $project
+     *
      * @return array
      */
     private function getDIRSCompany(\projects $project)
@@ -1141,6 +1158,7 @@ class ProjectsController extends Controller
 
     /**
      * @param \projects $project
+     *
      * @return array
      */
     private function getDIRSProject(\projects $project)

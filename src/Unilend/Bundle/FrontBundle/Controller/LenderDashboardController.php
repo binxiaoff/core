@@ -8,7 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager;
 
 class LenderDashboardController extends Controller
@@ -21,32 +21,37 @@ class LenderDashboardController extends Controller
      */
     public function indexAction()
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \lenders_account_stats $oLenderAccountStats */
-        $oLenderAccountStats = $entityManager->getRepository('lenders_account_stats');
+        $oLenderAccountStats = $entityManagerSimulator->getRepository('lenders_account_stats');
         /** @var \loans $loan */
-        $loan = $entityManager->getRepository('loans');
+        $loan = $entityManagerSimulator->getRepository('loans');
         /** @var \echeanciers $lenderRepayment */
-        $lenderRepayment = $entityManager->getRepository('echeanciers');
+        $lenderRepayment = $entityManagerSimulator->getRepository('echeanciers');
         /** @var \projects $project */
-        $project = $entityManager->getRepository('projects');
+        $project = $entityManagerSimulator->getRepository('projects');
         /** @var \companies $company */
-        $company = $entityManager->getRepository('companies');
+        $company = $entityManagerSimulator->getRepository('companies');
         /** @var \bids $bid */
-        $bid = $entityManager->getRepository('bids');
+        $bid = $entityManagerSimulator->getRepository('bids');
         /** @var \wallets_lines $wallet_line */
-        $wallet_line = $entityManager->getRepository('wallets_lines');
+        $wallet_line = $entityManagerSimulator->getRepository('wallets_lines');
         /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
+        $client = $entityManagerSimulator->getRepository('clients');
         /** @var \lenders_accounts $lender */
-        $lender = $entityManager->getRepository('lenders_accounts');
+        $lender = $entityManagerSimulator->getRepository('lenders_accounts');
 
         $client->get($this->getUser()->getClientId());
         $lender->get($client->id_client, 'id_client_owner');
 
         $balance         = $this->getUser()->getBalance();
-        $ongoingProjects = $project->selectProjectsByStatus([\projects_status::EN_FUNDING], '', [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_ASC], 0, 30);
+        $client          = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
+        $products        = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient($client);
+        $productIds      = array_map(function (Product $product) {
+            return $product->getIdProduct();
+        }, $products);
+        $ongoingProjects = $project->selectProjectsByStatus([\projects_status::EN_FUNDING], '', [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_ASC], 0, 30, true, $productIds);
 
         foreach ($ongoingProjects as $iKey => $aProject) {
             $project->get($aProject['id_project']);
@@ -201,7 +206,6 @@ class LenderDashboardController extends Controller
      */
     public function saveUserDisplayPreferencesAction(Request $request)
     {
-        /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \lender_panel_preference $panelPreferences */
         $panelPreferences = $entityManager->getRepository('lender_panel_preference');
@@ -268,7 +272,6 @@ class LenderDashboardController extends Controller
      */
     private function getDashboardPreferences()
     {
-        /** @var EntityManager $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \lender_panel_preference $panelPreferences */
         $panelPreferences = $entityManager->getRepository('lender_panel_preference');
