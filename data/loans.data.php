@@ -349,6 +349,36 @@ class loans extends loans_crud
     }
 
     /**
+     * @param int $deferredDuration
+     *
+     * @return array
+     */
+    public function getDeferredRepaymentSchedule($deferredDuration)
+    {
+        $schedule     = [];
+        $loanDuration = $this->getMonthNb();
+
+        foreach ($this->getBids() as $bid) {
+            $amount      = $bid['accepted_amount'] / 100;
+            $rate        = $bid['rate'] / 100;
+            $bidSchedule = \repayment::getDeferredRepaymentSchedule($amount, $rate, $loanDuration, $deferredDuration);
+
+            //Group the schedule of all bid of a loan
+            foreach ($bidSchedule as $month => $repayment) {
+                if (isset($schedule[$month])) {
+                    foreach ($repayment as $sKey => $fValue) {
+                        $schedule[$month][$sKey] += $fValue;
+                    }
+                } else {
+                    $schedule[$month] = $repayment;
+                }
+            }
+        }
+
+        return $schedule;
+    }
+
+    /**
      * @param int $projectId
      * @return bool|int
      */
