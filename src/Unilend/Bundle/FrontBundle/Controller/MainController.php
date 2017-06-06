@@ -398,9 +398,6 @@ class MainController extends Controller
      */
     private function renderBorrowerLandingPage(Request $request, array $content, array $complement)
     {
-        /** @var ContentManager $contentManager */
-        $contentManager = $this->get('unilend.frontbundle.service.content_manager');
-
         $sessionHandler = $request->getSession();
         $isPartnerFunnel = $content['tunnel-partenaire'] == 1;
 
@@ -438,8 +435,6 @@ class MainController extends Controller
                 $session['values'][$fieldName] = filter_var($request->query->get($fieldName), FILTER_SANITIZE_STRING);
             }
         }
-
-        $template['partners'] = $contentManager->getFooterPartners();
 
         $sessionHandler->set('projectRequest', $session);
         $sessionHandler->set('partnerProjectRequest', $isPartnerFunnel);
@@ -625,14 +620,8 @@ class MainController extends Controller
         /** @var ContentManager $contentManager */
         $contentManager = $this->get('unilend.frontbundle.service.content_manager');
 
-        $finalElements = [
-            'footerMenu' => $contentManager->getFooterMenu(),
-            'partners'   => $contentManager->getFooterPartners()
-        ];
-
         return $this->render('partials/site/footer.html.twig', [
-            'menus'             => $finalElements['footerMenu'],
-            'partners'          => $finalElements['partners'],
+            'menus'             => $contentManager->getFooterMenu(),
             'displayDisclaimer' => $route !== 'project_detail'
         ]);
     }
