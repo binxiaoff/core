@@ -142,8 +142,7 @@ class LenderDashboardController extends Controller
                     'irrTranslation'            => $irrTranslationType,
                     'initials'                  => $this->getUser()->getInitials(),
                     'companiesLenderInvestedIn' => $lender->countCompaniesLenderInvestedIn($lender->id_lender_account),
-                    'numberOfLoans'             => $loan->getLoansCount($lender->id_lender_account),
-                    'numberOfBorrowers'         => $loan->getProjectsCount($lender->id_lender_account),
+                    'numberOfLoans'             => $loan->getLoansCount($lender->id_lender_account)
                 ],
                 'walletData'         => [
                     'by_sector' => $lenderDisplayManager->getLenderLoansAllocationByCompanySector($lender->id_lender_account),
