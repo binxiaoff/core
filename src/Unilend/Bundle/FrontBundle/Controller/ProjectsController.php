@@ -138,8 +138,9 @@ class ProjectsController extends Controller
     {
         /** @var ProjectDisplayManager $projectDisplayManager */
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+        $clientId              = $this->getUser() instanceof BaseUser ? $this->getUser()->getClientId() : null;
 
-        $totalNumberProjects = $projectDisplayManager->getTotalNumberOfDisplayedProjects($this->getUser());
+        $totalNumberProjects = $projectDisplayManager->getTotalNumberOfDisplayedProjects($clientId);
         $totalPages          = ceil($totalNumberProjects / $limit);
 
         $paginationSettings = [
@@ -230,7 +231,6 @@ class ProjectsController extends Controller
         if (
             $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')
             && $authorizationChecker->isGranted('ROLE_LENDER')
-            && $user instanceof UserLender
         ) {
             $request->getSession()->set('bidToken', $template['bidToken']);
 

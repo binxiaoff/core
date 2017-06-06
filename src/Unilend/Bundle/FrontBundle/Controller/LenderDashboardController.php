@@ -51,7 +51,7 @@ class LenderDashboardController extends Controller
         $productIds      = array_map(function (Product $product) {
             return $product->getIdProduct();
         }, $products);
-        $ongoingProjects = $project->selectProjectsByStatus([\projects_status::FUNDE], '', [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_ASC], 0, 30, true, $productIds);
+        $ongoingProjects = $project->selectProjectsByStatus([\projects_status::EN_FUNDING], '', [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_ASC], 0, 30, true, $productIds);
 
         foreach ($ongoingProjects as $iKey => $aProject) {
             $project->get($aProject['id_project']);

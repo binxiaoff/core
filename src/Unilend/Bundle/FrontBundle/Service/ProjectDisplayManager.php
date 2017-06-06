@@ -11,7 +11,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker\LenderChecker;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\LenderValidator;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -23,8 +23,6 @@ use Unilend\librairies\CacheKeys;
 
 class ProjectDisplayManager
 {
-    use LenderChecker;
-
     const VISIBILITY_FULL                 = 'full';
     const VISIBILITY_NOT_VALIDATED_LENDER = 'not_validated_lender';
     const VISIBILITY_ANONYMOUS            = 'anonymous';
@@ -44,6 +42,8 @@ class ProjectDisplayManager
     private $companyBalanceSheetManager;
     /** @var ProductAttributeManager */
     private $productAttributeManager;
+    /** @var LenderValidator */
+    private $lenderValidator;
     /** @var CacheItemPoolInterface */
     private $cachePool;
     /** @var array */
@@ -71,6 +71,7 @@ class ProjectDisplayManager
      * @param LenderAccountDisplayManager $lenderAccountDisplayManager
      * @param CompanyBalanceSheetManager  $companyBalanceSheetManager
      * @param ProductAttributeManager     $productAttributeManager
+     * @param LenderValidator             $lenderValidator
      * @param CacheItemPoolInterface      $cachePool
      */
     public function __construct(
@@ -81,6 +82,7 @@ class ProjectDisplayManager
         LenderAccountDisplayManager $lenderAccountDisplayManager,
         CompanyBalanceSheetManager $companyBalanceSheetManager,
         ProductAttributeManager $productAttributeManager,
+        LenderValidator $lenderValidator,
         CacheItemPoolInterface $cachePool
     )
     {
@@ -91,6 +93,7 @@ class ProjectDisplayManager
         $this->lenderAccountDisplayManager = $lenderAccountDisplayManager;
         $this->companyBalanceSheetManager  = $companyBalanceSheetManager;
         $this->productAttributeManager     = $productAttributeManager;
+        $this->lenderValidator             = $lenderValidator;
         $this->cachePool                   = $cachePool;
     }
 
@@ -430,18 +433,18 @@ class ProjectDisplayManager
     }
 
     /**
-     * @param BaseUser|null $user
+     * @param int|null $clientId
      *
      * @return int
      */
-    public function getTotalNumberOfDisplayedProjects(BaseUser $user = null)
+    public function getTotalNumberOfDisplayedProjects($clientId = null)
     {
         /** @var \projects $projects */
         $projects          = $this->entityManagerSimulator->getRepository('projects');
         $clientRepository  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         $productRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product');
 
-        $client     = $user ? $clientRepository->find($user->getClientId()) : null;
+        $client     = $clientId ? $clientRepository->find($clientId) : null;
         $products   = $productRepository->findAvailableProductsByClient($client);
         $productIds = array_map(function (Product $product) {
             return $product->getIdProduct();
@@ -451,6 +454,8 @@ class ProjectDisplayManager
     }
 
     /**
+     * @todo replace $clientId with Clients instance when client status has been saved in Clients  (TECH-274)
+     *
      * @param Projects      $project
      * @param BaseUser|null $user
      *
@@ -467,13 +472,15 @@ class ProjectDisplayManager
             $lender = $this->entityManagerSimulator->getRepository('lenders_accounts');
             $lender->get($user->getClientId(), 'id_client_owner');
 
-            /** @var \product $product */
-            $product = $this->entityManagerSimulator->getRepository('product');
-            $product->get($project->getIdProduct());
+            /** @var \projects $projectData */
+            $projectData = $this->entityManagerSimulator->getRepository('projects');
+            $projectData->get($project->getIdProject());
+
+            $lenderEligibility = $this->lenderValidator->isEligible($lender, $projectData);
 
             if (
-                false === $this->isEligibleForLenderId($lender, $product, $this->productAttributeManager, $this->entityManagerSimulator)
-                || false === $this->isEligibleForLenderType($lender, $product, $this->productAttributeManager, $this->entityManagerSimulator)
+                in_array(ProductAttributeType::ELIGIBLE_LENDER_ID, $lenderEligibility['reason'])
+                || in_array(ProductAttributeType::ELIGIBLE_LENDER_TYPE, $lenderEligibility['reason'])
             ) {
                 return self::VISIBILITY_NONE;
             }
@@ -483,18 +490,20 @@ class ProjectDisplayManager
             }
 
             return self::VISIBILITY_NOT_VALIDATED_LENDER;
-        } elseif ($user instanceof UserBorrower || $user instanceof UserPartner) {
-            /** @var \product $product */
-            $product = $this->entityManagerSimulator->getRepository('product');
-            $product->get($project->getIdProduct());
+        }
 
-            if (
-                false === empty($this->productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_LENDER_ID))
-                || false === empty($this->productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_LENDER_TYPE))
-            ) {
-                return self::VISIBILITY_NONE;
-            }
+        /** @var \product $product */
+        $product = $this->entityManagerSimulator->getRepository('product');
+        $product->get($project->getIdProduct());
 
+        if (
+            false === empty($this->productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_LENDER_ID))
+            || false === empty($this->productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_LENDER_TYPE))
+        ) {
+            return self::VISIBILITY_NONE;
+        }
+
+        if ($user instanceof UserBorrower || $user instanceof UserPartner) {
             return self::VISIBILITY_FULL;
         }
 

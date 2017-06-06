@@ -10,12 +10,16 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
 class ProductRepository extends EntityRepository
 {
     /**
-     * @param Clients|null $client
+     * @param Clients|int|null $client
      *
      * @return array
      */
-    public function findAvailableProductsByClient(Clients $client = null)
+    public function findAvailableProductsByClient($client = null)
     {
+        if (null !== $client && false === ($client instanceof Clients)) {
+            $client = $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:Clients')->find($client);
+        }
+
         $subQueryBuilder = $this->_em->createQueryBuilder();
         $subQueryBuilder
             ->select('IDENTITY (pa.idProduct)')
@@ -30,6 +34,7 @@ class ProductRepository extends EntityRepository
             $queryBuilder
                 ->where($queryBuilder->expr()->notIn('p.idProduct', $subQueryBuilder->getDQL()));
         } else {
+            // There may be an issue if a product was configured with lender type AND lender ID restrictions but only one matching given client
             $lenderIdSubQueryBuilder = $this->_em->createQueryBuilder();
             $lenderIdSubQueryBuilder
                 ->select('IDENTITY (pa_id.idProduct)')

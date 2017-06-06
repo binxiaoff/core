@@ -37,12 +37,12 @@ class LenderValidator
             throw new \InvalidArgumentException('The product id ' . $project->id_product . ' does not exist');
         }
 
-        if (false === $this->isEligibleForLenderId($lender, $product, $this->productAttributeManager, $this->entityManager)) {
+        if (false === $this->isEligibleForLenderId($lender->id_client_owner, $product, $this->productAttributeManager)) {
             $reason[] = ProductAttributeType::ELIGIBLE_LENDER_ID;
             $eligible = false;
         }
 
-        if (false === $this->isEligibleForLenderType($lender, $product, $this->productAttributeManager, $this->entityManager)) {
+        if (false === $this->isEligibleForLenderType($lender->id_client_owner, $product, $this->productAttributeManager, $this->entityManager)) {
             $reason[] = ProductAttributeType::ELIGIBLE_LENDER_TYPE;
             $eligible = false;
         }
