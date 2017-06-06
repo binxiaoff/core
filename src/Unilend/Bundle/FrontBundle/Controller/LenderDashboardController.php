@@ -160,8 +160,7 @@ class LenderDashboardController extends Controller
                     'irrTranslation'            => $irrTranslationType,
                     'initials'                  => $this->getUser()->getInitials(),
                     'companiesLenderInvestedIn' => $projectsRepository->countCompaniesLenderInvestedIn($wallet->getId()),
-                    'numberOfLoans'             => $loan->getLoansCount($wallet->getId()),
-                    'numberOfBorrowers'         => $loan->getProjectsCount($wallet->getId()),
+                    'numberOfLoans'             => $loan->getLoansCount($wallet->getId())
                 ],
                 'walletData'         => [
                     'by_sector' => $lenderDisplayManager->getLenderLoansAllocationByCompanySector($wallet->getIdClient()),
