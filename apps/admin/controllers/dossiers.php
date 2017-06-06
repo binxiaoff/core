@@ -2269,7 +2269,13 @@ class dossiersController extends bootstrap
                 $this->companies->get($this->projects->id_company, 'id_company');
 
                 //in difference of the due capital displayed for the sales people to tell the client, the check on the amount is on all not yet paid by the borrower.
-                $nextRepayment       = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND status = ' . \echeanciers::STATUS_PENDING . ' AND date_echeance >= "' . $this->getLimitDate(new \DateTime('today midnight'))->format('Y-m-d H:i:s') . '"', ' ordre ASC', 0, 1);
+                $nextRepayment = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND status = ' . \echeanciers::STATUS_PENDING . ' AND date_echeance >= "' . $this->getLimitDate(new \DateTime('today midnight'))->format('Y-m-d H:i:s') . '"', ' ordre ASC', 0, 1);
+
+                if (empty($nextRepayment)) {
+                    header('Location: ' . $this->lurl . '/dossiers/detail_remb/' . $this->projects->id_project);
+                    die;
+                }
+
                 $borrowerOwedCapital = $this->echeanciers->reste_a_payer_ra($this->projects->id_project, $nextRepayment[0]['ordre']);
 
                 if (bcmul($borrowerOwedCapital, 100) == $this->receptions->montant) {
