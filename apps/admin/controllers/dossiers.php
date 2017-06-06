@@ -2250,6 +2250,7 @@ class dossiersController extends bootstrap
                 $id_reception = $_POST['id_reception'];
 
                 $this->projects               = $this->loadData('projects');
+                /** @var \echeanciers echeanciers */
                 $this->echeanciers            = $this->loadData('echeanciers');
                 $this->receptions             = $this->loadData('receptions');
                 $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
@@ -2267,7 +2268,11 @@ class dossiersController extends bootstrap
                 $this->projects->get($this->receptions->id_project);
                 $this->companies->get($this->projects->id_company, 'id_company');
 
-                if (bcmul($_POST['montant_crd_preteur'], 100) == $this->receptions->montant) {
+                //in difference of the due capital displayed for the sales people to tell the client, the check on the amount is on all not yet paid by the borrower.
+                $nextRepayment       = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND status = ' . \echeanciers::STATUS_PENDING . ' AND date_echeance >= "' . $this->getLimitDate(new \DateTime('today midnight'))->format('Y-m-d H:i:s') . '"', ' ordre ASC', 0, 1);
+                $borrowerOwedCapital = $this->echeanciers->reste_a_payer_ra($this->projects->id_project, $nextRepayment[0]['ordre']);
+
+                if (bcmul($borrowerOwedCapital, 100) == $this->receptions->montant) {
                     $this->bdd->query('
                         UPDATE echeanciers_emprunteur SET
                             status_emprunteur = 1,

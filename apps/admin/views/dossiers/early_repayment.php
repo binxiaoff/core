@@ -29,11 +29,11 @@
                 <th>Virement à émettre avant le :</th>
                 <td><label for="statut"><?= $this->earlyRepaymentLimitDate->format('d/m/Y') ?></label></td>
             </tr>
+            <tr>
+                <th>Montant CRD (*) :</th>
+                <td><label for="statut"><?= $this->ficelle->formatNumber($this->lenderOwedCapital) ?>&nbsp;€</label></td>
+            </tr>
         <?php endif; ?>
-        <tr>
-            <th>Montant CRD (*) :</th>
-            <td><label for="statut"><?= $this->ficelle->formatNumber($this->lenderOwedCapital) ?>&nbsp;€</label></td>
-        </tr>
 
         <?php if ($this->reception instanceof \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions) : ?>
             <?php if ($this->wireTransferAmountOk && $this->displayActionButton) : ?>
