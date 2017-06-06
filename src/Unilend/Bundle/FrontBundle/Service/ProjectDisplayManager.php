@@ -12,7 +12,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\LenderValidator;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\ClientValidator;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -43,8 +43,8 @@ class ProjectDisplayManager
     private $companyBalanceSheetManager;
     /** @var ProductAttributeManager */
     private $productAttributeManager;
-    /** @var LenderValidator */
-    private $lenderValidator;
+    /** @var ClientValidator */
+    private $clientValidator;
     /** @var CacheItemPoolInterface */
     private $cachePool;
     /** @var array */
@@ -72,7 +72,7 @@ class ProjectDisplayManager
      * @param LenderAccountDisplayManager $lenderAccountDisplayManager
      * @param CompanyBalanceSheetManager  $companyBalanceSheetManager
      * @param ProductAttributeManager     $productAttributeManager
-     * @param LenderValidator             $lenderValidator
+     * @param ClientValidator             $clientValidator
      * @param CacheItemPoolInterface      $cachePool
      */
     public function __construct(
@@ -83,7 +83,7 @@ class ProjectDisplayManager
         LenderAccountDisplayManager $lenderAccountDisplayManager,
         CompanyBalanceSheetManager $companyBalanceSheetManager,
         ProductAttributeManager $productAttributeManager,
-        LenderValidator $lenderValidator,
+        ClientValidator $clientValidator,
         CacheItemPoolInterface $cachePool
     )
     {
@@ -94,7 +94,7 @@ class ProjectDisplayManager
         $this->lenderAccountDisplayManager = $lenderAccountDisplayManager;
         $this->companyBalanceSheetManager  = $companyBalanceSheetManager;
         $this->productAttributeManager     = $productAttributeManager;
-        $this->lenderValidator             = $lenderValidator;
+        $this->clientValidator             = $clientValidator;
         $this->cachePool                   = $cachePool;
     }
 
@@ -478,7 +478,7 @@ class ProjectDisplayManager
             $projectData = $this->entityManagerSimulator->getRepository('projects');
             $projectData->get($project->getIdProject());
 
-            $lenderEligibility = $this->lenderValidator->isEligible($lender, $projectData);
+            $lenderEligibility = $this->clientValidator->isEligible($lender, $projectData);
 
             if (
                 in_array(ProductAttributeType::ELIGIBLE_LENDER_ID, $lenderEligibility['reason'])

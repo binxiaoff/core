@@ -7,7 +7,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
-class LenderValidator
+class ClientValidator
 {
     use Checker\LenderChecker;
 
@@ -19,7 +19,7 @@ class LenderValidator
     private $entityManager;
 
     /**
-     * LenderValidator constructor.
+     * ClientValidator constructor.
      * @param ProductAttributeManager $productAttributeManager
      * @param EntityManagerSimulator  $entityManagerSimulator
      * @param EntityManager           $entityManager

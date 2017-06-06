@@ -7,20 +7,20 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
 
 class ContractManager
 {
-    /** @var  LenderValidator */
-    private $lenderValidator;
+    /** @var  ClientValidator */
+    private $clientValidator;
     /** @var AutoBidSettingsValidator */
     private $autoBidSettingsValidator;
     /** @var  ContractAttributeManager */
     private $contractAttributeManager;
 
     public function __construct(
-        LenderValidator $lenderValidator,
+        ClientValidator $clientValidator,
         AutoBidSettingsValidator $autoBidSettingsValidator,
         ContractAttributeManager $contractAttributeManager
     )
     {
-        $this->lenderValidator          = $lenderValidator;
+        $this->clientValidator          = $clientValidator;
         $this->autoBidSettingsValidator = $autoBidSettingsValidator;
         $this->contractAttributeManager = $contractAttributeManager;
     }
@@ -33,7 +33,7 @@ class ContractManager
      */
     public function isLenderEligible(Clients $client, \underlying_contract $contract)
     {
-        return $this->lenderValidator->isEligible($client, $contract);
+        return $this->clientValidator->isEligible($client, $contract);
     }
 
     public function isAutobidSettingsEligible(\underlying_contract $contract)

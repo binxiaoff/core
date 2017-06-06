@@ -174,7 +174,7 @@
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service_product.project_validator"/>
             <argument type="service" id="unilend.service_product.bid_validator"/>
-            <argument type="service" id="unilend.service_product.lender_validator"/>
+            <argument type="service" id="unilend.service_product.client_validator"/>
             <argument type="service" id="unilend.service_product.product_attribute_manager"/>
             <argument type="service" id="unilend.service_product_contract.contract_manager"/>
             <argument type="service" id="doctrine.orm.entity_manager" />
@@ -205,7 +205,7 @@
             <argument type="service" id="doctrine.orm.entity_manager" />
         </service>
 
-        <service id="unilend.service_product.lender_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\LenderValidator" public="false">
+        <service id="unilend.service_product.client_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\ClientValidator" public="false">
             <argument type="service" id="unilend.service_product.product_attribute_manager"/>
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="doctrine.orm.entity_manager" />
@@ -218,11 +218,6 @@
             <argument type="service" id="doctrine.orm.entity_manager"/>
         </service>
 
-        <service id="unilend.service.recovery_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\RecoveryManager">
-            <argument type="service" id="unilend.service.entity_manager"/>
-            <argument type="service" id="logger"/>
-        </service>
-
         <service id="unilend.service.cip_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\CIPManager">
             <argument type="service" id="unilend.service_product.product_manager"/>
             <argument type="service" id="unilend.service_product_contract.contract_manager"/>
@@ -232,12 +227,12 @@
         </service>
 
         <service id="unilend.service_product_contract.contract_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager">
-            <argument type="service" id="unilend.service_product_contract.lender_validator"/>
+            <argument type="service" id="unilend.service_product_contract.client_validator"/>
             <argument type="service" id="unilend.service_product_contract.autobid_settings_validator"/>
             <argument type="service" id="unilend.service_product.contract_attribute_manager"/>
         </service>
 
-        <service id="unilend.service_product_contract.lender_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\LenderValidator" public="false">
+        <service id="unilend.service_product_contract.client_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ClientValidator" public="false">
             <argument type="service" id="unilend.service_product.contract_attribute_manager"/>
             <argument type="service" id="unilend.service.entity_manager"/>
         </service>

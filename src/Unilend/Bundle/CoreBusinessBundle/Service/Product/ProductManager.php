@@ -17,8 +17,8 @@ abstract class ProductManager
     protected $projectValidator;
     /** @var BidValidator */
     protected $bidValidator;
-    /** @var LenderValidator */
-    protected $lenderValidator;
+    /** @var ClientValidator */
+    protected $clientValidator;
     /** @var ProductAttributeManager */
     protected $productAttributeManager;
     /** @var ContractManager */
@@ -28,10 +28,11 @@ abstract class ProductManager
 
     /**
      * ProductManager constructor.
+     *
      * @param EntityManagerSimulator  $entityManagerSimulator
      * @param ProjectValidator        $projectValidator
      * @param BidValidator            $bidValidator
-     * @param LenderValidator         $lenderValidator
+     * @param ClientValidator         $clientValidator
      * @param ProductAttributeManager $productAttributeManager
      * @param ContractManager         $contractManager
      * @param EntityManager           $entityManager
@@ -40,7 +41,7 @@ abstract class ProductManager
         EntityManagerSimulator $entityManagerSimulator,
         ProjectValidator $projectValidator,
         BidValidator $bidValidator,
-        LenderValidator $lenderValidator,
+        ClientValidator $clientValidator,
         ProductAttributeManager $productAttributeManager,
         ContractManager $contractManager,
         EntityManager $entityManager
@@ -49,7 +50,7 @@ abstract class ProductManager
         $this->entityManagerSimulator  = $entityManagerSimulator;
         $this->projectValidator        = $projectValidator;
         $this->bidValidator            = $bidValidator;
-        $this->lenderValidator         = $lenderValidator;
+        $this->clientValidator         = $clientValidator;
         $this->productAttributeManager = $productAttributeManager;
         $this->contractManager         = $contractManager;
         $this->entityManager           = $entityManager;
@@ -124,7 +125,6 @@ abstract class ProductManager
     }
 
     /**
-     * @param Clients  $client
      * @param \product $product
      *
      * @return int|null
@@ -132,7 +132,7 @@ abstract class ProductManager
      */
     public function getMaxEligibleAmount(\product $product)
     {
-        return $this->lenderValidator->getMaxEligibleAmount($product, $this->productAttributeManager);
+        return $this->clientValidator->getMaxEligibleAmount($product, $this->productAttributeManager);
     }
 
     /**
@@ -143,7 +143,7 @@ abstract class ProductManager
      */
     public function getAutobidMaxEligibleAmount(Clients $client, \product $product)
     {
-        return $this->lenderValidator->getAutobidMaxEligibleAmount($client, $product, $this->entityManagerSimulator, $this->contractManager);
+        return $this->clientValidator->getAutobidMaxEligibleAmount($client, $product, $this->entityManagerSimulator, $this->contractManager);
     }
 
     /**
@@ -154,7 +154,7 @@ abstract class ProductManager
      */
     public function getLenderEligibilityWithReasons(Clients $client, \projects $project)
     {
-        return $this->lenderValidator->isEligible($client, $project)['reason'];
+        return $this->clientValidator->isEligible($client, $project)['reason'];
     }
 
     /**
@@ -165,7 +165,7 @@ abstract class ProductManager
      */
     public function getLenderEligibility(Clients $client, \projects $project)
     {
-        return $this->lenderValidator->isEligible($client, $project)['eligible'];
+        return $this->clientValidator->isEligible($client, $project)['eligible'];
     }
 
     /**
@@ -186,7 +186,7 @@ abstract class ProductManager
      */
     public function getAmountLenderCanStillBid(Clients $client, \projects $project)
     {
-        return $this->lenderValidator->getAmountLenderCanStillBid($client, $project, $this->productAttributeManager, $this->entityManagerSimulator, $this->entityManager);
+        return $this->clientValidator->getAmountLenderCanStillBid($client, $project, $this->productAttributeManager, $this->entityManagerSimulator, $this->entityManager);
     }
 
     /**
