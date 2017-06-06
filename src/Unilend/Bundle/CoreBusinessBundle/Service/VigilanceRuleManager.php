@@ -266,19 +266,14 @@ class VigilanceRuleManager
      */
     private function getInactiveLenderWalletOnPeriod(\DateTime $date, $amount)
     {
-        $result            = [];
-        $walletRepository  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $withoutOperations = $walletRepository->getLenderWalletWithoutOperationInPeriod($date, $amount);
-        $withoutManualBids = $walletRepository->getLenderWalletWithoutManualBidsInPeriod($date, $amount);
+        $walletRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $inactiveWallets  = $walletRepository->getInactiveLenderWalletOnPeriod($date, $amount);
+        $lastActionDates  = $walletRepository->getLastLenderWalletActionDate(array_column($inactiveWallets, 'walletId'));
 
-        foreach (array_merge($withoutOperations, $withoutManualBids) as $wallet) {
-            if (false === isset($result[$wallet['walletId']])) {
-                $result[$wallet['walletId']] = $wallet;
-            } elseif ($result[$wallet['walletId']]['lastOperationDate'] < $wallet['lastOperationDate']) {
-                $result[$wallet['walletId']] = $wallet;
-            }
+        foreach ($inactiveWallets as $walletId => $walletRow) {
+            $inactiveWallets[$walletId] = $walletRow + $lastActionDates[$walletId];
         }
 
-        return $result;
+        return $inactiveWallets;
     }
 }
