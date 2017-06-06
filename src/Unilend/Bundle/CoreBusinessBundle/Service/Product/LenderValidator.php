@@ -1,8 +1,10 @@
 <?php
+
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class LenderValidator
@@ -49,7 +51,18 @@ class LenderValidator
             throw new \InvalidArgumentException('The product id ' . $project->id_product . ' does not exist');
         }
 
-        if (false === $this->isLenderEligibleForType($client, $product, $this->productAttributeManager)) {
+        if (false === $this->isEligibleForLenderId($client->getIdClient(), $product, $this->productAttributeManager)) {
+            $reason[] = ProductAttributeType::ELIGIBLE_LENDER_ID;
+            $eligible = false;
+        }
+
+        if (false === $this->isEligibleForLenderType($client->getIdClient(), $product, $this->productAttributeManager, $this->entityManager)) {
+            $reason[] = ProductAttributeType::ELIGIBLE_LENDER_TYPE;
+            $eligible = false;
+        }
+
+        //TODO fix method to use entity
+        if (false === $this->isContractEligibleForLenderType($lender, $product, $this->productAttributeManager, $this->entityManager)) {
             $reason[] = \underlying_contract_attribute_type::ELIGIBLE_LENDER_TYPE;
             $eligible = false;
         }

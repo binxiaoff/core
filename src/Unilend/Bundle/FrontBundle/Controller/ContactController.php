@@ -9,11 +9,11 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Service\SearchService;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
+use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\core\Loader;
 
 class ContactController extends Controller
@@ -26,6 +26,7 @@ class ContactController extends Controller
     public function contactAction(Request $request)
     {
         $template = $this->get('session')->get('searchResult', ['query' => '', 'results' => '']);
+
         $this->get('session')->remove('searchResult');
 
         /** @var BaseUser $user */
@@ -83,18 +84,34 @@ class ContactController extends Controller
      */
     public function resultAction($query)
     {
-        /** @var SearchService $search */
-        $search = $this->get('unilend.service.search_service');
-        $query  = filter_var(urldecode($query), FILTER_SANITIZE_STRING);
+        $query   = filter_var(urldecode($query), FILTER_SANITIZE_STRING);
+        $search  = $this->get('unilend.service.search_service');
+        $results = $search->search($query);
 
-        /** @var BaseUser $user */
-        $user = $this->getUser();
+        if (false === empty($results['projects'])) {
+            if (null === $this->getUser()) {
+                unset($results['projects']);
+            } else {
+                $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+                $projectRepository     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects');
 
-        $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower || $user instanceof UserPartner);
+                foreach ($results['projects'] as $index => $result) {
+                    $project = $projectRepository->find($result['projectId']);
+
+                    if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $this->getUser())) {
+                        unset($results['projects'][$index]);
+                    }
+                }
+
+                if (empty($results['projects'])) {
+                    unset($results['projects']);
+                }
+            }
+        }
 
         $this->get('session')->set('searchResult',[
             'query'   => $query,
-            'results' => $search->search($query, $isFullyConnectedUser)
+            'results' => $results
         ]);
 
         return $this->redirectToRoute('contact');

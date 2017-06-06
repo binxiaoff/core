@@ -12,7 +12,7 @@
                 <tbody>
                     <?php $i = 1; ?>
                     <?php foreach ($this->lStatus as $s) : ?>
-                        <?php $nbProjects = $this->projects->countSelectProjectsByStatus($s['status']); ?>
+                        <?php $nbProjects = $this->projects->countSelectProjectsByStatus([$s['status']]); ?>
                         <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                             <td><a href="<?= $this->lurl ?>/dossiers/<?= $s['status'] ?>"><?= $s['label'] ?></a></td>
                             <td><?= $nbProjects ?></td>

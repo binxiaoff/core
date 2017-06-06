@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
@@ -64,6 +65,10 @@ class LenderDashboardController extends Controller
         $wallet          = $walletRepository->getWalletByType($client->id_client, WalletType::LENDER);
         $balance         = $wallet->getAvailableBalance();
         $ongoingProjects = $project->selectProjectsByStatus([\projects_status::EN_FUNDING], '', [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_ASC], 0, 30);
+        $products        = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient($client);
+        $productIds      = array_map(function (Product $product) {
+            return $product->getIdProduct();
+        }, $products);
 
         foreach ($ongoingProjects as $iKey => $aProject) {
             $project->get($aProject['id_project']);

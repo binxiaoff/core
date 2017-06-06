@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Product
  *
  * @ORM\Table(name="product", uniqueConstraints={@ORM\UniqueConstraint(name="unq_product_label", columns={"label"})}, indexes={@ORM\Index(name="idx_product_id_repayment_type", columns={"id_repayment_type"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProductRepository")
  */
 class Product
 {

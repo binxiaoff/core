@@ -1,10 +1,9 @@
 <?php
-namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Checker;
 
+namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Checker;
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
-
 
 trait LenderChecker
 {

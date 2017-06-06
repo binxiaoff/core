@@ -241,9 +241,9 @@
                         <div id="presentation" data-watchscroll-nav>
                             <section id="project-section-who" class="page-section">
                                 <h3 class="h3">{% trans %} project-detail_project-presentation-about-us-title {% endtrans %}</h3>
-                                {% if conditions.validatedUser %}
+                                {% if conditions.visibility == constant('\\Unilend\\Bundle\\FrontBundle\\Service\\ProjectDisplayManager::VISIBILITY_FULL') %}
                                     <p>{{ project.companyDescription|raw }}</p>
-                                {% elseif conditions.notValidatedUser %}
+                                {% elseif conditions.visibility == constant('\\Unilend\\Bundle\\FrontBundle\\Service\\ProjectDisplayManager::VISIBILITY_NOT_VALIDATED_LENDER') %}
                                     <p>{% trans %} project-detail_not-validated-description {% endtrans %}</p>
                                 {% else %}
                                     <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
@@ -252,9 +252,9 @@
 
                             <section id="project-section-what" class="page-section separate">
                                 <h3 class="h3">{% trans %} project-detail_project-presentation-our-project {% endtrans %}</h3>
-                                {% if conditions.validatedUser %}
+                                {% if conditions.visibility == constant('\\Unilend\\Bundle\\FrontBundle\\Service\\ProjectDisplayManager::VISIBILITY_FULL') %}
                                     <p>{{ project.projectDescription|raw }}</p>
-                                {% elseif conditions.notValidatedUser %}
+                                {% elseif conditions.visibility == constant('\\Unilend\\Bundle\\FrontBundle\\Service\\ProjectDisplayManager::VISIBILITY_NOT_VALIDATED_LENDER') %}
                                     <p>{% trans %} project-detail_not-validated-description {% endtrans %}</p>
                                 {% else %}
                                     <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
@@ -266,9 +266,9 @@
 
                         <section id="project-section-help" class="page-section">
                             <h3 class="h3">{% trans %} project-detail_project-presentation-repayment-reason-title {% endtrans %}</h3>
-                            {% if conditions.validatedUser %}
+                            {% if conditions.visibility == constant('\\Unilend\\Bundle\\FrontBundle\\Service\\ProjectDisplayManager::VISIBILITY_FULL') %}
                                 <p>{{ project.repaymentDescription|raw }}</p>
-                            {% elseif conditions.notValidatedUser %}
+                            {% elseif conditions.visibility == constant('\\Unilend\\Bundle\\FrontBundle\\Service\\ProjectDisplayManager::VISIBILITY_NOT_VALIDATED_LENDER') %}
                                 <p>{% trans %} project-detail_not-validated-description {% endtrans %}</p>
                             {% else %}
                                 <p>{% trans %} project-detail_logged-out-description {% endtrans %}</p>
