@@ -64,46 +64,15 @@ trait LenderChecker
     }
 
     /**
-     * @param \lenders_accounts       $lender
+     * @param Clients                 $client
      * @param \product                $product
      * @param ProductAttributeManager $productAttributeManager
      * @param EntityManager           $entityManager
      *
      * @return bool
      */
-    public function isContractEligibleForLenderType(\lenders_accounts $lender, \product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    public function isContractEligibleForLenderType(Clients $client, \product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
     {
-        /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
-        if (false === $client->get($lender->id_client_owner)) {
-            throw new \InvalidArgumentException('The client id ' . $lender->id_client_owner . ' does not exist');
-        }
-
-        $attrVars = $productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::ELIGIBLE_LENDER_TYPE);
-
-        if (empty($attrVars)) {
-            return true; // No limitation found!
-        }
-
-        $eligibleType = [];
-        foreach ($attrVars as $contractAttr) {
-            if (empty($contractAttr)) {
-                return true; // No limitation found for one of the underlying contract!
-            } else {
-                $eligibleType = array_merge($eligibleType, $contractAttr);
-            }
-        }
-
-        return in_array($client->type, $eligibleType);
-    }
-
-    //TODO check post merge if method is still used and how
-    public function isLenderEligibleForType(Clients $client, \product $product, ProductAttributeManager $productAttributeManager)
-    {
-        if (false === $client->isLender()) {
-            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
-        }
-
         $attrVars = $productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::ELIGIBLE_LENDER_TYPE);
 
         if (empty($attrVars)) {

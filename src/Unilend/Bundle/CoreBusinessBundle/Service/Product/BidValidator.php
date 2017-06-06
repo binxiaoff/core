@@ -58,13 +58,12 @@ class BidValidator
             $eligible = false;
         }
 
-        if (false === $this->isLenderEligibleForType($bid->getIdLenderAccount()->getIdClient(), $product, $this->productAttributeManager)) {
-            $reason[] = \underlying_contract_attribute_type::ELIGIBLE_LENDER_TYPE;
+        if (false === $this->isEligibleForLenderType($bid->getIdLenderAccount()->getIdClient(), $product, $this->productAttributeManager, $this->entityManager)) {
+            $reason[] = ProductAttributeType::ELIGIBLE_LENDER_TYPE;
             $eligible = false;
         }
 
-        //TODO correct method to work with entity
-        if (false === $this->isContractEligibleForLenderType($bid->getIdLenderAccount(), $product, $this->productAttributeManager, $this->entityManager)) {
+        if (false === $this->isContractEligibleForLenderType($bid->getIdLenderAccount()->getIdClient(), $product, $this->productAttributeManager, $this->entityManager)) {
             $reason[] = \underlying_contract_attribute_type::ELIGIBLE_LENDER_TYPE;
             $eligible = false;
         }

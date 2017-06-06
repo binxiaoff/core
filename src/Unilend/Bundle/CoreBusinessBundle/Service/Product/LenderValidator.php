@@ -61,8 +61,7 @@ class LenderValidator
             $eligible = false;
         }
 
-        //TODO fix method to use entity
-        if (false === $this->isContractEligibleForLenderType($lender, $product, $this->productAttributeManager, $this->entityManager)) {
+        if (false === $this->isContractEligibleForLenderType($client, $product, $this->productAttributeManager, $this->entityManager)) {
             $reason[] = \underlying_contract_attribute_type::ELIGIBLE_LENDER_TYPE;
             $eligible = false;
         }
