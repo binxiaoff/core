@@ -2276,7 +2276,7 @@ class dossiersController extends bootstrap
                     die;
                 }
 
-                $borrowerOwedCapital = $this->echeanciers->reste_a_payer_ra($this->projects->id_project, $nextRepayment[0]['ordre']);
+                $borrowerOwedCapital = $this->echeanciers_emprunteur->reste_a_payer_ra($this->projects->id_project, $nextRepayment[0]['ordre']);
 
                 if (bcmul($borrowerOwedCapital, 100) == $this->receptions->montant) {
                     $this->bdd->query('
