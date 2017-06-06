@@ -80,8 +80,8 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
             $transport->start();
         }
 
-        $limit = $this->getMessageLimit();
-        $limit = $limit > 0 ? $limit : null;
+        $limit        = $this->getMessageLimit();
+        $limit        = $limit > 0 ? $limit : null;
         $emailsToSend = $this->mailQueueManager->getMailsToSend($limit);
 
         if (! count($emailsToSend)) {
@@ -90,7 +90,7 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
 
         $failedRecipients = (array) $failedRecipients;
         $count            = 0;
-        $batches          = array_chunk($emailsToSend, 100);
+        $batches          = array_chunk($emailsToSend, 50);
 
         /** @var MailQueue[] $batch */
         foreach ($batches as $index => $batch) {
