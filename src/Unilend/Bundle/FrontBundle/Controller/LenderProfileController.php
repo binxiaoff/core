@@ -1033,7 +1033,7 @@ class LenderProfileController extends Controller
         $history = $walletBalanceHistoryRepository->getBalanceOfTheDay($wallet, $lastYear);
 
         return [
-            'balance'     => bcadd($history->getAvailableBalance(), $history->getCommittedBalance(), 2),
+            'balance'     => null !== $history ? bcadd($history->getAvailableBalance(), $history->getCommittedBalance(), 2) : 0,
             'owedCapital' => $operationRepository->getRemainingDueCapitalAtDate($client->id_client, $lastYear)
         ];
     }

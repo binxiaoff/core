@@ -28,6 +28,7 @@
 class repayment_type extends repayment_type_crud
 {
     const REPAYMENT_TYPE_AMORTIZATION = 'amortization_schedule';
+    const REPAYMENT_TYPE_DEFERRED     = 'deferred_schedule';
 
     public function __construct($bdd, $params = '')
     {

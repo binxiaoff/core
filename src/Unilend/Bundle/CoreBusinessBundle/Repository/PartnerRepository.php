@@ -11,7 +11,7 @@ class PartnerRepository extends EntityRepository
      *
      * @return array
      */
-    public function getPartnersSortedByName($status)
+    public function getPartnersSortedByName($status = null)
     {
         $queryBuilder = $this->createQueryBuilder('p');
         $queryBuilder

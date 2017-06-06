@@ -27,7 +27,7 @@ class CheckRestFundsCommand extends ContainerAwareCommand
         }
         $projectsTexts .= '</ul>';
 
-        if ($projectsTexts) {
+        if (0 < count($projects)) {
             $settings  = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse controle interne']);
             $variables = ['projects' => $projectsTexts];
             $message   = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-project-rest-funds', $variables);

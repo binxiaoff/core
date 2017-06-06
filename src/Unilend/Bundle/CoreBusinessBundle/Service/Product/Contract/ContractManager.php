@@ -17,7 +17,8 @@ class ContractManager
         LenderValidator $lenderValidator,
         AutoBidSettingsValidator $autoBidSettingsValidator,
         ContractAttributeManager $contractAttributeManager
-    ) {
+    )
+    {
         $this->lenderValidator          = $lenderValidator;
         $this->autoBidSettingsValidator = $autoBidSettingsValidator;
         $this->contractAttributeManager = $contractAttributeManager;

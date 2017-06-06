@@ -97,11 +97,9 @@
                 <div class="col-sub-center col-lg-4 col-md-4">
                     {% block siteFooterSubCenter %}
                         <ul class="list-awards">
-                            {% for partner in partners %}
-                                <li>
-                                    <img src="{{ uploadedImage(partner.src) }}" alt="{{ partner.alt }}"/>
-                                </li>
-                            {% endfor %}
+                            <li><a href="http://www.bpifrance.fr/" class="ui-has-tooltip" data-original-title="BPI France" target="_blank"></a></li>
+                            <li><a href="https://www.orias.fr/" class="ui-has-tooltip" data-original-title="ORIAS" target="_blank"></a></li>
+                            <li><a href="http://financeparticipative.org/" class="ui-has-tooltip" data-original-title="Financement Participatif France" target="_blank"></a></li>
                         </ul>
                         <div class="site-tagline">{% trans %} footer_site-tagline {% endtrans %}</div>
                         <p class="site-copyright">{% trans %} footer_copyright-all-rights {% endtrans %} -

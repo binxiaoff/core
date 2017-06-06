@@ -40,7 +40,8 @@ class CIPManager
         ContractManager $contractManager,
         EntityManager $entityManager,
         TranslatorInterface $translator
-    ) {
+    )
+    {
         $this->productManager  = $productManager;
         $this->contractManager = $contractManager;
         $this->entityManager   = $entityManager;

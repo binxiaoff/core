@@ -777,9 +777,7 @@ class LenderSubscriptionController extends Controller
      */
     public function landingPageAction()
     {
-        /** @var ContentManager $contentManager */
-        $contentManager = $this->get('unilend.frontbundle.service.content_manager');
-        return $this->render('pages/lender_subscription/landing_page.html.twig', ['partners' => $contentManager->getFooterPartners()]);
+        return $this->render('pages/lender_subscription/landing_page.html.twig');
     }
 
     /**
@@ -789,9 +787,7 @@ class LenderSubscriptionController extends Controller
      */
     public function figaroLandingPageAction()
     {
-        /** @var ContentManager $contentManager */
-        $contentManager = $this->get('unilend.frontbundle.service.content_manager');
-        return $this->render('pages/lender_subscription/partners/figaro.html.twig', ['partners' => $contentManager->getFooterPartners()]);
+        return $this->render('pages/lender_subscription/partners/figaro.html.twig');
     }
 
     /**
