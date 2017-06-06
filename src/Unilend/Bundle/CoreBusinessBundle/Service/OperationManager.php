@@ -1257,4 +1257,20 @@ class OperationManager
         }
         return true;
     }
+
+    /**
+     * @param Wallet $wallet
+     * @param float  $amount
+     * @param array  $origins
+     *
+     * @return bool
+     */
+    public function borrowerCommercialGesture(Wallet $wallet, $amount, $origins = [])
+    {
+        $unilendPromotionWalletType = $this->em->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
+        $unilendWallet              = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendPromotionWalletType]);
+        $operationType              = $this->em->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_BORROWER_COMMERCIAL_GESTURE]);
+
+        return $this->newOperation($amount, $operationType, $unilendWallet, $wallet, $origins);
+    }
 }
