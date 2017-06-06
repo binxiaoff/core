@@ -85,10 +85,10 @@ class dossiersController extends bootstrap
         $projectNeed = $this->loadData('project_need');
         $this->needs = $projectNeed->getTree();
 
-        if (isset($_POST['search-dossier-input'])) {
+        if (isset($_POST['form_search_dossier'])) {
             $startDate          = empty($_POST['date1']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['date1'])->format('Y-m-d');
             $endDate            = empty($_POST['date2']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['date2'])->format('Y-m-d');
-            $projectNeed        = empty($_POST['project-need']) ? '' : $_POST['project-need'];
+            $projectNeed        = empty($_POST['projectNeed']) ? '' : $_POST['projectNeed'];
             $duration           = empty($_POST['duree']) ? '' : $_POST['duree'];
             $status             = empty($_POST['status']) ? '' : $_POST['status'];
             $analyst            = empty($_POST['analyste']) ? '' : $_POST['analyste'];
@@ -96,7 +96,7 @@ class dossiersController extends bootstrap
             $projectId          = empty($_POST['id']) ? '' : $_POST['id'];
             $companyName        = empty($_POST['raison-sociale']) ? '' : $_POST['raison-sociale'];
             $commercial         = empty($_POST['commercial']) ? '' : $_POST['commercial'];
-            $iNbStartPagination = isset($_POST['nb-ligne-pagination']) ? (int) $_POST['nb-ligne-pagination'] : 0;
+            $iNbStartPagination = isset($_POST['nbLignePagination']) ? (int) $_POST['nbLignePagination'] : 0;
             $this->nb_lignes    = isset($this->nb_lignes) ? (int) $this->nb_lignes : 100;
             $this->lProjects    = $this->projects->searchDossiers($startDate, $endDate, $projectNeed, $duration, $status, $analyst, $siren, $projectId, $companyName, null, $commercial, $iNbStartPagination, $this->nb_lignes);
         } elseif (isset($this->params[0])) {

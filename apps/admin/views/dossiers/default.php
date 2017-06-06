@@ -144,8 +144,8 @@
     </div>
 
     <form method="post" name="search-dossier" id="search-dossier" class="form" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers">
-        <input type="hidden" name="search-dossier-input" id="search-dossier-input">
-        <input type="hidden" name="nb-ligne-pagination" id="nb-ligne-pagination" value="<?= isset($_POST['nb-ligne-pagination']) ? $_POST['nb-ligne-pagination'] : 0 ?>">
+        <input type="hidden" name="form_search_dossier" id="search-dossier-input">
+        <input type="hidden" name="nbLignePagination" id="nb-ligne-pagination" value="<?= isset($_POST['nbLignePagination']) ? $_POST['nbLignePagination'] : 0 ?>">
         <input type="hidden" name="page-active" id="page-active" value="<?= isset($_POST['page-active']) ? $_POST['page-active'] : 1 ?>">
         <fieldset class="row primary">
             <div class="col-md-2 col-md-offset-1">
@@ -169,7 +169,7 @@
             <div class="col-md-2">
                 <div class="form-group">
                     <label for="project-need">Besoin</label>
-                    <select name="project-need" id="project-need" class="form-control">
+                    <select name="projectNeed" id="project-need" class="form-control">
                         <option value="0"></option>
                         <?php foreach ($this->needs as $need) : ?>
                             <optgroup label="<?= $need['label'] ?>">
