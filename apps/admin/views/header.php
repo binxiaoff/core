@@ -94,6 +94,7 @@
                     <li><a href="<?= $this->lurl ?>/preteurs/offres_de_bienvenue" title="Offre de bienvenue">Offre de bienvenue</a></li>
                     <li><a href="<?= $this->lurl ?>/preteurs/control_fiscal_city" title="Matching ville fiscale">Matching ville fiscale</a></li>
                     <li><a href="<?= $this->lurl ?>/preteurs/control_birth_city" title="Matching ville de naissance">Matching ville de naissance</a></li>
+                    <li><a href="<?= $this->lurl ?>/preteurs/notifications" title="Envoyer des notifications sur les projets">Notifications</a></li>
                 </ul>
             </li>
         <?php endif; ?>
@@ -109,6 +110,8 @@
                     <li><a href="<?= $this->lurl ?>/dossiers/no_remb" title="Erreurs remboursements">Erreurs remboursements</a></li>
                     <li><a href="<?= $this->lurl ?>/dossiers/status" title="Suivi statuts projets">Suivi statuts projets</a></li>
                     <li><a href="<?= $this->lurl ?>/product" title="Produits">Produits</a></li>
+                    <li><a href="<?= $this->lurl ?>/company" title="Produits">Sociétés</a></li>
+                    <li><a href="<?= $this->lurl ?>/partner" title="Produits">Partenaires</a></li>
                 </ul>
             </li>
         <?php endif; ?>
@@ -123,6 +126,7 @@
                     <li><a href="<?= $this->lurl ?>/transferts/deblocage" title="Déblocage">Déblocage des fonds</a></li>
                     <li><a href="<?= $this->lurl ?>/transferts/succession" title="Succession">Succession (Transfert de solde et prêts)</a></li>
                     <li><a href="<?= $this->lurl ?>/client_atypical_operation" title="Lutte Anti-Balanchiment">Opérations atypiques</a></li>
+                    <li><a href="<?= $this->lurl ?>/transferts/virement_emprunteur" title="Transfert des fonds">Transfert des fonds</a></li>
                 </ul>
             </li>
         <?php endif; ?>
