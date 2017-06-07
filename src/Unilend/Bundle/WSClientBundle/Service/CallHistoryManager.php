@@ -140,7 +140,7 @@ class CallHistoryManager
                     return;
                 }
 
-                $wsResource->setIsAvailable(0);
+                $wsResource->setIsAvailable(WsExternalResource::STATUS_UNAVAILABLE);
                 $slackMessage = $wsResource->getProviderName() . '(' . $wsResource->getResourceName() . ') is down  :skull_and_crossbones:';
 
                 if (null !== $extraInfo) {
@@ -152,7 +152,7 @@ class CallHistoryManager
                     return;
                 }
 
-                $wsResource->setIsAvailable(1);
+                $wsResource->setIsAvailable(WsExternalResource::STATUS_AVAILABLE);
                 $slackMessage = $wsResource->getProviderName() . '(' . $wsResource->getResourceName() . ') is up  :white_check_mark:';
                 break;
             default:

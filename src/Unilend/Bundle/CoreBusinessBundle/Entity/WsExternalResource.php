@@ -12,6 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class WsExternalResource
 {
+    const STATUS_AVAILABLE   = 1;
+    const STATUS_UNAVAILABLE = 0;
+
     /**
      * @var string
      *

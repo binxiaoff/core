@@ -142,7 +142,8 @@ class InfolegaleManager
                 }
             }
             $callback = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
-            $response = $this->client->$method(
+            /** @var ResponseInterface $response */
+            $response = $this->client->{$method}(
                 $wsResource->getResourceName(),
                 ['query' => $query]
             );
@@ -155,6 +156,8 @@ class InfolegaleManager
 
             if ('error' !== $validity['status']) {
                 $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
+            } else {
+                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
             }
 
             if ($validity['is_valid']) {
@@ -202,10 +205,8 @@ class InfolegaleManager
      * @param array             $logContext
      *
      * @return array
-     *
-     * @throws \Exception
      */
-    private function isValidResponse(ResponseInterface $response, $logContext = [])
+    private function isValidResponse(ResponseInterface $response, $logContext)
     {
         $stream = $response->getBody();
         $stream->rewind();
@@ -215,9 +216,7 @@ class InfolegaleManager
             $data = $this->getContentAndErrors($content);
 
             if (false === empty($data['errors'])) {
-                if (false === empty($logContext)) {
-                    $this->logger->warning('Infolegale response error: ' . json_encode($data['errors']), $logContext);
-                }
+                $this->logger->warning('Infolegale response error: ' . json_encode($data['errors']), $logContext);
             }
             return [
                 'status'   => empty($data['errors']) ? 'valid' : 'warning',
@@ -225,9 +224,7 @@ class InfolegaleManager
                 'content'  => $data['content']
             ];
         }
-        if (false === empty($logContext)) {
-            throw new \Exception('Infolegale response status code ' . json_encode($content), $response->getStatusCode());
-        }
+        $this->logger->error('Infolegale response status code ' . $response->getStatusCode() . '. Response: ' . json_encode($content), $logContext);
 
         return ['status' => 'error', 'is_valid' => false, 'content' => null];
     }

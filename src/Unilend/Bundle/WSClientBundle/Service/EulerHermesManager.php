@@ -185,6 +185,8 @@ class EulerHermesManager
 
             if ('error' !== $validity['status']) {
                 $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
+            } else {
+                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down', 'Status code: ' . $response->getStatusCode());
             }
             if ($validity['is_valid']) {
                 return $content;
@@ -199,10 +201,10 @@ class EulerHermesManager
                 'Exception at line: ' . __LINE__ . '. Message: ' . $exception->getMessage(),
                 ['class' => __CLASS__, 'resource' => $wsResource->getLabel(), 'uri' => $uri]
             );
-        }
-        $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down', $exception->getMessage());
+            $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down', $exception->getMessage());
 
-        return null;
+            return null;
+        }
     }
 
     /**
@@ -211,10 +213,8 @@ class EulerHermesManager
      * @param array              $logContext
      *
      * @return array
-     *
-     * @throws \Exception
      */
-    private function isValidResponse(ResponseInterface $response, WsExternalResource $resource, $logContext = [])
+    private function isValidResponse(ResponseInterface $response, WsExternalResource $resource, array $logContext)
     {
         $stream = $response->getBody();
         $stream->rewind();
@@ -223,25 +223,21 @@ class EulerHermesManager
         if (200 === $response->getStatusCode()) {
             $contentValidity = $this->isValidContent($content, $resource);
 
-            if (false === $contentValidity && false === empty($logContext)) {
+            if (false === $contentValidity) {
                 $this->logger->warning('Call to ' . $resource->getResourceName() . ' Response code: ' . $response->getStatusCode() . '. Response content: ' . $content, $logContext);
             }
 
             return [
-                'status' => $contentValidity ? 'valid' : 'warning',
+                'status'   => $contentValidity ? 'valid' : 'warning',
                 'is_valid' => $contentValidity
             ];
         } else {
             $level = 'error';
 
-            if (401 === $response->getStatusCode()) {
-                throw new \Exception($content, 401);
-            } elseif (404 === $response->getStatusCode()) {
+            if (404 === $response->getStatusCode()) {
                 $level = 'warning';
             }
-            if (false === empty($logContext)) {
-                $this->logger->{$level}('Call to ' . $resource->getResourceName() . ' Response code: ' . $response->getStatusCode() . '. Response content: ' . $content, $logContext);
-            }
+            $this->logger->{$level}('Call to ' . $resource->getResourceName() . ' Response code: ' . $response->getStatusCode() . '. Response content: ' . $content, $logContext);
 
             return ['status' => $level, 'is_valid' => false];
         }

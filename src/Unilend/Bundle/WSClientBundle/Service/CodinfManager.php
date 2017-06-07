@@ -170,42 +170,30 @@ class CodinfManager
     }
 
     /**
-     * @param mixed $response
-     * @param array $logContext
+     * @param ResponseInterface $response
+     * @param array             $logContext
      *
      * @return array
      */
-    private function isValidResponse($response, $logContext = [])
+    private function isValidResponse(ResponseInterface $response, $logContext)
     {
-        if ($response instanceof ResponseInterface) {
-            $stream = $response->getBody();
-            $stream->rewind();
-            $content = $stream->getContents();
+        $stream = $response->getBody();
+        $stream->rewind();
+        $content = $stream->getContents();
 
-            if (200 === $response->getStatusCode()
-                && 1 === preg_match(self::RESPONSE_MATCHING_PATTERN, $content)
-            ) {
-                return ['status' => 'valid', 'is_valid' => true];
-            } elseif (200 !== $response->getStatusCode()) {
-                if (false === empty($logContext)) {
-                    $this->logger->error('Codinf error: (HTTP code: ' . $response->getStatusCode() . '). Response headers: ' . json_encode($response->getHeaders()) . '. Response: ' . $content, $logContext);
-                }
+        if (200 === $response->getStatusCode()
+            && 1 === preg_match(self::RESPONSE_MATCHING_PATTERN, $content)
+        ) {
+            return ['status' => 'valid', 'is_valid' => true];
+        } elseif (200 !== $response->getStatusCode()) {
+            $this->logger->error('Codinf error: (HTTP code: ' . $response->getStatusCode() . '). Response headers: ' . json_encode($response->getHeaders()) . '. Response: ' . $content, $logContext);
 
-                return ['status' => 'error', 'is_valid' => false];
-            } else {
-                if (false === empty($logContext)) {
-                    $this->logger->warning('Unexpected response format from Codinf. Response headers: ' . json_encode($response->getHeaders()) . '. Response: ' . $content, $logContext);
-                }
+            return ['status' => 'error', 'is_valid' => false];
+        } else {
+            $this->logger->warning('Unexpected response format from Codinf. Response headers: ' . json_encode($response->getHeaders()) . '. Response: ' . $content, $logContext);
 
-                return ['status' => 'warning', 'is_valid' => false];
-            }
+            return ['status' => 'warning', 'is_valid' => false];
         }
-
-        if (false === empty($logContext)) {
-            $this->logger->warning('Codinf error. Response: ' . json_encode($response), $logContext);
-        }
-
-        return ['status' => 'warning', 'is_valid' => false];
     }
 
     /**

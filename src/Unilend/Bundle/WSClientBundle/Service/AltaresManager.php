@@ -242,6 +242,8 @@ class AltaresManager
 
             if ('error' !== $validity['status']) {
                 $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
+            } else {
+                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
             }
             if ($validity['is_valid']) {
                 return $response;
@@ -291,8 +293,6 @@ class AltaresManager
      * @param array $logContext
      *
      * @return array
-     *
-     * @throws \Exception
      */
     private function isValidResponse($response, array $logContext = [])
     {
@@ -312,20 +312,26 @@ class AltaresManager
             ) {
                 return ['status' => 'valid', 'is_valid' => true];
             } elseif (in_array($response->return->exception->code, self::EXCEPTION_CODE_TECHNICAL_ERROR)) {
-                throw new \Exception('Altares response technical error: "' . $response->return->exception->description . '"', $response->return->exception->code);
+                if (false === empty($logContext)) {
+                    $this->logger->error('Altares response technical error: "' . $response->return->exception->code . ' : ' . $response->return->exception->description . '"', $logContext);
+                }
+
+                return ['status' => 'error', 'is_valid' => false];
             } else {
                 if (false === empty($logContext)) {
                     $this->logger->warning('Altares response code not expected: "' . $response->return->exception->code . ' : ' . $response->return->exception->description . '"', $logContext);
                 }
+
                 return ['status' => 'warning', 'is_valid' => false];
             }
         } elseif (isset($response->return->myInfo)) {
             return ['status' => 'valid', 'is_valid' => true];
         }
         if (false === empty($logContext)) {
-            throw new \Exception('Unexpected Altares response');
+            $this->logger->error('Unexpected Altares response: ' . json_encode($response), $logContext);
         }
-        return ['status' => 'warning', 'is_valid' => false];
+
+        return ['status' => 'error', 'is_valid' => false];
     }
 
     /**

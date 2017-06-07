@@ -37,7 +37,7 @@ class WsCallHistory
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added", type="datetime", nullable=true)
+     * @ORM\Column(name="added", type="datetime")
      */
     private $added;
 
