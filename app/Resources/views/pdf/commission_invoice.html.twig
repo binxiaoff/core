@@ -48,7 +48,6 @@
 {% endblock %}
 
 {% block content %}
-
     <div class="spacer"></div>
 
     <div class="row">
@@ -64,6 +63,9 @@
                 {% trans %} invoice-pdf_addressee-line {% endtrans %}
                 {{ project.idCompany.name }}<br>
                 {{ project.idCompany.adresse1 }}<br>
+                {% if project.idCompany.adresse2 %}
+                    {{ project.idCompany.adresse2 }}<br>
+                {% endif %}
                 {{ project.idCompany.zip }} {{ project.idCompany.city }}
             </p>
         </div>
@@ -90,7 +92,7 @@
                     {% trans with {'%commissionPercentage%' : invoice.commission} %} invoice-pdf_commission-rate-net {% endtrans %}
                 </td>
                 <td class="item-value">
-                    {{ (invoice.montantHT/100)|localizedcurrency('EUR') }}
+                    {{ (invoice.montantHT / 100)|localizedcurrency('EUR') }}
                 </td>
             </tr>
             <tr>
@@ -98,7 +100,7 @@
                     {% trans with {'%vatRate%' : vat.rate|localizednumberwithprecision(2)} %} invoice-pdf_table-vat-line {% endtrans %}
                 </td>
                 <td class="item-value">
-                    {{ (invoice.tva/100)|localizedcurrency('EUR') }}
+                    {{ (invoice.tva / 100)|localizedcurrency('EUR') }}
                 </td>
             </tr>
             <tr>
@@ -106,7 +108,7 @@
                     {% trans %} invoice-pdf_table-total-gross-line {% endtrans %}
                 </td>
                 <td class="tf item-value">
-                    {{ (invoice.montantTtc/100)|localizedcurrency('EUR') }}
+                    {{ (invoice.montantTtc / 100)|localizedcurrency('EUR') }}
                 </td>
             </tr>
         </tbody>
@@ -129,9 +131,9 @@
 
     <div class="row">
         <div class="col-xs-4">
-            <h5>{% trans %}invoice-pdf_contact-title{% endtrans %}</h5>
+            <h5>{% trans %} invoice-pdf_contact-title {% endtrans %}</h5>
             <p>
-                {% trans %}invoice-pdf_contact-text{% endtrans %}
+                {% trans %} invoice-pdf_contact-text {% endtrans %}
             </p>
         </div>
     </div>
@@ -146,5 +148,4 @@
             </p>
         </div>
     </div>
-
 {% endblock %}
