@@ -40,7 +40,8 @@ class CIPManager
         ContractManager $contractManager,
         EntityManager $entityManager,
         TranslatorInterface $translator
-    ) {
+    )
+    {
         $this->productManager  = $productManager;
         $this->contractManager = $contractManager;
         $this->entityManager   = $entityManager;
@@ -536,12 +537,25 @@ class CIPManager
             return null;
         }
 
+        $estate         = $answers[\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE]['first_answer'];
+        $monthlySavings = isset($answers[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS]) ? $answers[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS]['first_answer'] : 0;
+        $blockingPeriod = $answers[\lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD]['first_answer'];
+
+        return $this->getIndicatorsBasedOnAnswers($estate, $monthlySavings, $blockingPeriod);
+    }
+
+    /**
+     * @param int    $estate
+     * @param int    $monthlySavings
+     * @param string $blockingPeriod
+     *
+     * @return array
+     */
+    public function getIndicatorsBasedOnAnswers($estate, $monthlySavings, $blockingPeriod)
+    {
         $totalAmountIndicator     = null;
         $amountByMonthIndicator   = null;
         $projectDurationIndicator = null;
-        $estate                   = $answers[\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE]['first_answer'];
-        $monthlySavings           = isset($answers[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS]) ? $answers[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS]['first_answer'] : 0;
-        $blockingPeriod           = $answers[\lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD]['first_answer'];
 
         if ($estate >= \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD) {
             $totalAmountIndicator = floor($estate / 10);

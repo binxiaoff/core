@@ -292,3 +292,12 @@ $breakpoints: ('xs', 'sm', 'md', 'lg', 'mobile', 'mobile-p', 'mobile-l', 'tablet
 .readable-wrap {
   @include max-width-readable;
 }
+
+.overflow-wrap {
+  width: 100%;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  .chart {
+    min-width: 640px;
+  }
+}

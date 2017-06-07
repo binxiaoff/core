@@ -26,6 +26,7 @@
         </service>
 
         <service id="unilend.frontbundle.security.user_provider" class="Unilend\Bundle\FrontBundle\Security\User\UserProvider">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.client_manager"/>
             <argument type="service" id="unilend.frontbundle.notification_display_manager"/>
@@ -43,11 +44,14 @@
         </service>
 
         <service id="unilend.frontbundle.service.project_display_manager" class="Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager">
+            <argument type="service" id="doctrine.orm.entity_manager" />
             <argument type="service" id="unilend.service.entity_manager" />
             <argument type="service" id="unilend.service.project_manager" />
             <argument type="service" id="unilend.service.bid_manager" />
             <argument type="service" id="unilend.frontbundle.service.lender_account_display_manager" />
             <argument type="service" id="unilend.service.company_balance_sheet_manager" />
+            <argument type="service" id="unilend.service_product.product_attribute_manager" />
+            <argument type="service" id="unilend.service_product.lender_validator" />
             <argument type="service" id="cache" />
         </service>
 
@@ -111,6 +115,12 @@
         <service id="unilend.frontbundle.service.form_manager" class="Unilend\Bundle\FrontBundle\Service\FormManager">
             <argument type="service" id="form.factory" />
             <argument type="service" id="translator" />
+        </service>
+
+        <service id="unilend.frontbundle.gulp_rev_version_strategy" class="Unilend\Bundle\FrontBundle\Service\GulpRevVersionStrategy" public="false">
+            <argument>%kernel.root_dir%</argument>
+            <argument>%path.gulp_rev_manifest%</argument>
+            <argument type="service" id="logger"/>
         </service>
     </services>
 </container>

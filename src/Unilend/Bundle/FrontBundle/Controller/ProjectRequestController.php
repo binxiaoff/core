@@ -454,7 +454,8 @@ class ProjectRequestController extends Controller
             return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $this->project->hash]);
         }
 
-        $this->saveContactDetails($request->request->get('contact')['email'],
+        $this->saveContactDetails(
+            $request->request->get('contact')['email'],
             $request->request->get('contact')['civility'],
             $request->request->get('contact')['firstname'],
             $request->request->get('contact')['lastname'],
@@ -682,10 +683,12 @@ class ProjectRequestController extends Controller
             }
         }
 
+        $projectManager = $this->get('unilend.service.project_manager');
+
         $template['project'] = [
             'amount'                   => $this->project->amount,
-            'averageFundingDuration'   => $this->get('unilend.service.project_manager')->getAverageFundingDuration($this->project->amount),
-            'monthlyPaymentBoundaries' => $this->getMonthlyPaymentBoundaries(),
+            'averageFundingDuration'   => $projectManager->getAverageFundingDuration($this->project->amount),
+            'monthlyPaymentBoundaries' => $projectManager->getMonthlyPaymentBoundaries($this->project->amount, $this->project->period, $this->project->commission_rate_repayment),
             'hash'                     => $this->project->hash
         ];
 
@@ -887,7 +890,7 @@ class ProjectRequestController extends Controller
         /** @var Projects $project */
         $project = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->project->id_project);
 
-        $partnerAttachments = $project->getPartner()->getAttachmentTypes();
+        $partnerAttachments = $project->getIdPartner()->getAttachmentTypes();
         $template['attachmentTypes']    = [];
         $labels    = [];
         foreach ($partnerAttachments as $partnerAttachment) {
@@ -1172,11 +1175,13 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
+        $projectManager = $this->get('unilend.service.project_manager');
+
         $template = [
             'project' => [
                 'amount'                   => $this->project->amount,
-                'averageFundingDuration'   => $this->get('unilend.service.project_manager')->getAverageFundingDuration($this->project->amount),
-                'monthlyPaymentBoundaries' => $this->getMonthlyPaymentBoundaries(),
+                'averageFundingDuration'   => $projectManager->getAverageFundingDuration($this->project->amount),
+                'monthlyPaymentBoundaries' => $projectManager->getMonthlyPaymentBoundaries($this->project->amount, $this->project->period, $this->project->commission_rate_repayment),
                 'hash'                     => $this->project->hash
             ]
         ];
@@ -1186,7 +1191,7 @@ class ProjectRequestController extends Controller
         $project       = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find( $this->project->id_project);
 
         $projectAttachments = $project->getAttachments();
-        $partnerAttachments = $project->getPartner()->getAttachmentTypes();
+        $partnerAttachments = $project->getIdPartner()->getAttachmentTypes();
         $attachmentTypes    = [];
         foreach ($partnerAttachments as $partnerAttachment) {
             $attachmentTypes[] = $partnerAttachment->getAttachmentType();

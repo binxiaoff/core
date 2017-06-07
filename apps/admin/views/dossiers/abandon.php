@@ -19,12 +19,12 @@
                 </tr>
                 <tr>
                     <th><label for="comment">Mémo</label></th>
-                    <td><textarea id="comment" name="comment" cols="75" rows="5" class="textarea" style="width: 480px"></textarea></td>
+                    <td><textarea id="comment" name="comment" class="textarea memo" style="height:240px;"></textarea></td>
                 </tr>
                 <tr>
                     <td colspan="2" style="text-align: right">
                         <a href="javascript:parent.$.fn.colorbox.close()" class="btn-default">Annuler</a>
-                        <button type="submit" class="btn-primary">Valider</button>
+                        <button type="submit" class="btn-primary">Abandonner le dossier</button>
                     </td>
                 </tr>
             </table>
@@ -38,6 +38,21 @@
                 event.preventDefault()
                 alert('Vous devez obligatoirement saisir un motif')
             }
+        })
+        $(document).on('cbox_complete', function () {
+            if (CKEDITOR.instances['comment']) {
+                CKEDITOR.instances['comment'].destroy(true)
+            }
+            CKEDITOR.replace('comment', {
+                height: 180,
+                width: 520,
+                toolbar: 'Basic',
+                removePlugins: 'elementspath',
+                resize_enabled: false
+            })
+            setTimeout(function() {
+                $(document).off('cbox_complete')
+            }, 300)
         })
     })
 </script>

@@ -66,7 +66,8 @@ class ProjectManager
         ContractAttributeManager $contractAttributeManager,
         SlackManager $slackManager,
         $universignUrl
-    ) {
+    )
+    {
         $this->entityManagerSimulator     = $entityManagerSimulator;
         $this->entityManager              = $entityManager;
         $this->bidManager                 = $bidManager;
@@ -191,7 +192,10 @@ class ProjectManager
         }
 
         if ($this->logger instanceof LoggerInterface) {
-            $this->logger->info('Check bid info: ' . var_export($aLogContext) . ' (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+            $this->logger->info(
+                'Check bid info: ' . var_export($aLogContext, true) . ' (project ' . $oProject->id_project . ')',
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project]
+            );
         }
     }
 
@@ -218,7 +222,6 @@ class ProjectManager
 
         if ($oProjectPeriods->getPeriod($oProject->period)) {
             $rateRange = $this->bidManager->getProjectRateRange($oProject);
-
             $iOffset = 0;
             $iLimit  = 100;
             while ($aAutoBidList = $oAutoBid->getSettings(null, $oProject->risk, $oProjectPeriods->id_period, array(\autobid::STATUS_ACTIVE), ['id_autobid' => 'ASC'], $iLimit, $iOffset)) {
@@ -573,8 +576,11 @@ class ProjectManager
         $repaymentType->get($product->id_repayment_type);
 
         switch ($repaymentType->label) {
-            case \repayment_type::REPAYMENT_TYPE_AMORTIZATION :
+            case \repayment_type::REPAYMENT_TYPE_AMORTIZATION:
                 $this->createAmortizationRepaymentSchedule($project);
+                return;
+            case \repayment_type::REPAYMENT_TYPE_DEFERRED:
+                $this->createDeferredRepaymentSchedule($project);
                 return;
             default :
                 throw new \Exception('Unknown repayment schedule type ' . $repaymentType->label);
@@ -650,6 +656,72 @@ class ProjectManager
         }
     }
 
+    /**
+     * @param \projects $project
+     */
+    private function createDeferredRepaymentSchedule(\projects $project)
+    {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
+
+        /** @var \loans $loanEntity */
+        $loanEntity = $this->entityManagerSimulator->getRepository('loans');
+        /** @var \echeanciers $repaymentScheduleEntity */
+        $repaymentScheduleEntity = $this->entityManagerSimulator->getRepository('echeanciers');
+
+        if ($project->status == \projects_status::FUNDE) {
+            $loans               = $loanEntity->select('id_project = ' . $project->id_project);
+            $loansCount          = count($loans);
+            $processedLoansCount = 0;
+
+            if ($this->logger instanceof LoggerInterface) {
+                $this->logger->info(
+                    $loansCount . ' in total (project ' . $project->id_project . ')',
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]
+                );
+            }
+
+            foreach ($loans as $loan) {
+                $loanEntity->get($loan['id_loan']);
+
+                $repayments = [];
+                // @todo raw deferred duration = 12
+                foreach ($loanEntity->getDeferredRepaymentSchedule(12) as $order => $repayment) {
+                    $lenderRepaymentDate = $this->datesManager->dateAddMoisJoursV3($project->date_fin, $order);
+                    $lenderRepaymentDate = date('Y-m-d H:i:00', $lenderRepaymentDate);
+
+                    $borrowerPaymentDate = $this->datesManager->dateAddMoisJoursV3($project->date_fin, $order);
+                    $borrowerPaymentDate = $this->workingDay->display_jours_ouvres($borrowerPaymentDate, 6);
+                    $borrowerPaymentDate = date('Y-m-d H:i:00', $borrowerPaymentDate);
+
+                    $repayments[] = [
+                        'id_lender'                => $loan['id_lender'],
+                        'id_project'               => $project->id_project,
+                        'id_loan'                  => $loan['id_loan'],
+                        'ordre'                    => $order,
+                        'montant'                  => bcmul($repayment['repayment'], 100),
+                        'capital'                  => bcmul($repayment['capital'], 100),
+                        'interets'                 => bcmul($repayment['interest'], 100),
+                        'date_echeance'            => $lenderRepaymentDate,
+                        'date_echeance_emprunteur' => $borrowerPaymentDate,
+                        'added'                    => date('Y-m-d H:i:s'),
+                        'updated'                  => date('Y-m-d H:i:s')
+                    ];
+                }
+                $repaymentScheduleEntity->multiInsert($repayments);
+
+                $processedLoansCount++;
+
+                if ($this->logger instanceof LoggerInterface) {
+                    $this->logger->info(
+                        $processedLoansCount . '/' . $loansCount . ' loans treated. ' . $order . ' repayment schedules created (project ' . $project->id_project . ' : ',
+                        ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]
+                    );
+                }
+            }
+        }
+    }
+
     public function createPaymentSchedule(\projects $project)
     {
         /** @var \product $product */
@@ -666,6 +738,9 @@ class ProjectManager
         switch ($repaymentType->label) {
             case \repayment_type::REPAYMENT_TYPE_AMORTIZATION:
                 $this->createAmortizationPaymentSchedule($project);
+                break;
+            case \repayment_type::REPAYMENT_TYPE_DEFERRED:
+                $this->createDeferredPaymentSchedule($project);
                 break;
             default:
                 throw new \Exception('Unknown repayment schedule type ' . $repaymentType->label);
@@ -721,6 +796,61 @@ class ProjectManager
                 $this->logger->info(
                     'Borrower repayment ' . $oPaymentSchedule->id_echeancier_emprunteur . ' created. ' . $iTreatedPaymentNb . '/' . $iPaymentsNbTotal . 'treated (project ' . $oProject->id_project . ')',
                     array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
+                );
+            }
+        }
+    }
+
+    /**
+     * @param \projects $project
+     */
+    public function createDeferredPaymentSchedule(\projects $project)
+    {
+        ini_set('memory_limit', '512M');
+
+        /** @var \echeanciers_emprunteur $borrowerPaymentSchedule */
+        $borrowerPaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
+        /** @var \echeanciers $lenderRepaymentSchedule */
+        $lenderRepaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
+        /** @var \tax_type $taxType */
+        $taxType = $this->entityManagerSimulator->getRepository('tax_type');
+
+        $taxRate = $taxType->getTaxRateByCountry('fr');
+        $vatRate = $taxRate[\tax_type::TYPE_VAT] / 100;
+
+        // @todo raw deferred duration
+        $deferredDuration        = 12;
+        $amount                  = $project->amount;
+        $loanDuration            = $project->period;
+        $commission              = \repayment::getDeferredRepaymentCommission($amount, $loanDuration, $deferredDuration, round(bcdiv($project->commission_rate_repayment, 100, 4), 2), $vatRate);
+        $lenderRepaymentsSummary = $lenderRepaymentSchedule->getMonthlyScheduleByProject($project->id_project);
+        $paymentsCount           = count($lenderRepaymentsSummary);
+        $processedPayments       = 0;
+
+        if ($this->logger instanceof LoggerInterface) {
+            $this->logger->info(
+                $paymentsCount . ' borrower repayments in total (project ' . $project->id_project . ')',
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]
+            );
+        }
+
+        foreach ($lenderRepaymentsSummary as $order => $lenderRepaymentSummary) {
+            $borrowerPaymentSchedule->id_project               = $project->id_project;
+            $borrowerPaymentSchedule->ordre                    = $order;
+            $borrowerPaymentSchedule->montant                  = bcmul($lenderRepaymentSummary['montant'], 100);
+            $borrowerPaymentSchedule->capital                  = bcmul($lenderRepaymentSummary['capital'], 100);
+            $borrowerPaymentSchedule->interets                 = bcmul($lenderRepaymentSummary['interets'], 100);
+            $borrowerPaymentSchedule->commission               = bcmul($commission['commission_monthly'], 100);
+            $borrowerPaymentSchedule->tva                      = bcmul($commission['vat_amount_monthly'], 100);
+            $borrowerPaymentSchedule->date_echeance_emprunteur = $lenderRepaymentSummary['date_echeance_emprunteur'];
+            $borrowerPaymentSchedule->create();
+
+            $processedPayments++;
+
+            if ($this->logger instanceof LoggerInterface) {
+                $this->logger->info(
+                    'Borrower repayment ' . $borrowerPaymentSchedule->id_echeancier_emprunteur . ' created. ' . $processedPayments . '/' . $paymentsCount . 'treated (project ' . $project->id_project . ')',
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]
                 );
             }
         }
@@ -942,6 +1072,40 @@ class ProjectManager
         return $projectAverageFundingDuration;
     }
 
+    /**
+     * @param int $amount
+     * @param int $duration
+     * @param int $repaymentCommissionRate
+     *
+     * @return int[]
+     */
+    public function getMonthlyPaymentBoundaries($amount, $duration, $repaymentCommissionRate = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT)
+    {
+        $financialCalculation = new \PHPExcel_Calculation_Financial();
+
+        /** @var \project_period $projectPeriod */
+        $projectPeriod = $this->entityManagerSimulator->getRepository('project_period');
+        $projectPeriod->getPeriod($duration);
+
+        /** @var \project_rate_settings $projectRateSettings */
+        $projectRateSettings = $this->entityManagerSimulator->getRepository('project_rate_settings');
+        $rateSettings        = $projectRateSettings->getSettings(null, $projectPeriod->id_period);
+
+        $minimumRate = min(array_column($rateSettings, 'rate_min'));
+        $maximumRate = max(array_column($rateSettings, 'rate_max'));
+
+        $taxType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+        $vatRate = $taxType->getRate() / 100;
+
+        $commissionRateRepayment = round(bcdiv($repaymentCommissionRate, 100, 4), 2);
+        $commission              = ($financialCalculation->PMT($commissionRateRepayment / 12, $duration, -$amount) - $financialCalculation->PMT(0, $duration, -$amount)) * (1 + $vatRate);
+
+        return [
+            'minimum' => round($financialCalculation->PMT($minimumRate / 100 / 12, $duration, - $amount) + $commission),
+            'maximum' => round($financialCalculation->PMT($maximumRate / 100 / 12, $duration, - $amount) + $commission)
+        ];
+    }
+
     public function getProjectRateRangeId(\projects $project)
     {
         if (empty($project->period)) {
@@ -1075,5 +1239,32 @@ class ProjectManager
         }
 
         return $fundsToRelease;
+    }
+
+    /**
+     * @param int $projectId
+     * @param int $clientId
+     *
+     * @return array
+     */
+    public function getProjectEventsDetail($projectId, $clientId)
+    {
+        $projectStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+            ->getHistoryAfterGivenStatus($projectId, ProjectsStatus::REMBOURSEMENT_ANTICIPE);
+
+        $anticipatedAndEarlyRepayments = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Transactions')
+            ->getLenderAnticipatedAndEarlyTransactions($projectId, $clientId);
+
+        $scheduledRepayments = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Transactions')
+            ->getLenderScheduledRepayments($projectId, $clientId);
+
+        $projectNotifications = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectNotification')->findBy(['idProject' => $projectId], ['notificationDate' => 'DESC']);
+
+        return [
+            'projectStatus'              => $projectStatusHistory,
+            'projectNotifications'       => $projectNotifications,
+            'recoveryAndEarlyRepayments' => $anticipatedAndEarlyRepayments,
+            'scheduledRepayments'        => $scheduledRepayments
+        ];
     }
 }

@@ -3,13 +3,14 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Projects
  *
- * @ORM\Table(name="projects", indexes={@ORM\Index(name="id_company", columns={"id_company"}), @ORM\Index(name="slug", columns={"slug"}), @ORM\Index(name="status", columns={"status"}), @ORM\Index(name="display", columns={"display"}), @ORM\Index(name="date_retrait", columns={"date_retrait"}), @ORM\Index(name="hash", columns={"hash"}), @ORM\Index(name="id_prescripteur", columns={"id_prescripteur"}), @ORM\Index(name="id_commercial", columns={"id_commercial"}), @ORM\Index(name="id_dernier_bilan", columns={"id_dernier_bilan"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectRepository")
+ * @ORM\Table(name="projects", indexes={@ORM\Index(name="id_company", columns={"id_company"}), @ORM\Index(name="slug", columns={"slug"}), @ORM\Index(name="status", columns={"status"}), @ORM\Index(name="display", columns={"display"}), @ORM\Index(name="date_retrait", columns={"date_retrait"}), @ORM\Index(name="hash", columns={"hash"}), @ORM\Index(name="id_prescripteur", columns={"id_prescripteur"}), @ORM\Index(name="id_commercial", columns={"id_commercial"}), @ORM\Index(name="id_dernier_bilan", columns={"id_dernier_bilan"}), @ORM\Index(name="fk_projects_id_company_submitter", columns={"id_company_submitter"}), @ORM\Index(name="fk_projects_id_client_submitter", columns={"id_client_submitter"})})
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository")
  */
 class Projects
 {
@@ -291,6 +292,26 @@ class Projects
     private $idPartner;
 
     /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Companies")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_company_submitter", referencedColumnName="id_company")
+     * })
+     */
+    private $idCompanySubmitter;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_client_submitter", referencedColumnName="id_client")
+     * })
+     */
+    private $idClientSubmitter;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="commission_rate_funds", type="decimal", precision=4, scale=2, nullable=true)
@@ -353,7 +374,15 @@ class Projects
      *
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats", mappedBy="idProject")
      */
-    private $mandats;
+    private $mandates;
+
+    /**
+     * @var ProjectsComments[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments", mappedBy="idProject")
+     * @ORM\OrderBy({"added" = "DESC"})
+     */
+    private $notes;
 
     /**
      * @var ProjectsPouvoir
@@ -367,7 +396,7 @@ class Projects
      *
      * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv", mappedBy="idProject")
      */
-    private $termOfUser;
+    private $termsOfSale;
 
     /**
      * @var Virements[]
@@ -382,7 +411,8 @@ class Projects
     public function __construct()
     {
         $this->attachments      = new ArrayCollection();
-        $this->mandats          = new ArrayCollection();
+        $this->mandates         = new ArrayCollection();
+        $this->notes            = new ArrayCollection();
         $this->wireTransferOuts = new ArrayCollection();
     }
 
@@ -1281,7 +1311,7 @@ class Projects
      *
      * @return Projects
      */
-    public function setPartner($idPartner)
+    public function setIdPartner($idPartner)
     {
         $this->idPartner = $idPartner;
 
@@ -1293,9 +1323,57 @@ class Projects
      *
      * @return Partner
      */
-    public function getPartner()
+    public function getIdPartner()
     {
         return $this->idPartner;
+    }
+
+    /**
+     * Set idCompanySubmitter
+     *
+     * @param Companies $idCompanySubmitter
+     *
+     * @return Projects
+     */
+    public function setIdCompanySubmitter(Companies $idCompanySubmitter)
+    {
+        $this->idCompanySubmitter = $idCompanySubmitter;
+
+        return $this;
+    }
+
+    /**
+     * Get idCompanySubmitter
+     *
+     * @return Companies
+     */
+    public function getIdCompanySubmitter()
+    {
+        return $this->idCompanySubmitter;
+    }
+
+    /**
+     * Set idClientSubmitter
+     *
+     * @param Clients $idClientSubmitter
+     *
+     * @return Projects
+     */
+    public function setIdClientSubmitter(Clients $idClientSubmitter)
+    {
+        $this->idClientSubmitter = $idClientSubmitter;
+
+        return $this;
+    }
+
+    /**
+     * Get idClientSubmitter
+     *
+     * @return Clients
+     */
+    public function getIdClientSubmitter()
+    {
+        return $this->idClientSubmitter;
     }
 
     /**
@@ -1463,13 +1541,37 @@ class Projects
     }
 
     /**
-     * Get project mandats
+     * Get project mandates
      *
      * @return ClientsMandats[]
      */
-    public function getMandats()
+    public function getMandates()
     {
-        return $this->mandats;
+        return $this->mandates;
+    }
+
+    /**
+     * Get project notes
+     *
+     * @return ProjectsComments[]
+     */
+    public function getNotes()
+    {
+        return $this->notes;
+    }
+
+    /**
+     * Get project public notes
+     *
+     * @return ProjectsComments[]
+     */
+    public function getPublicNotes()
+    {
+        $criteria = Criteria::create()
+            ->where(Criteria::expr()->eq('public', true))
+            ->orderBy(['added' => Criteria::DESC]);
+
+        return $this->notes->matching($criteria);
     }
 
     /**
@@ -1483,13 +1585,13 @@ class Projects
     }
 
     /**
-     * Get project term of user
+     * Get project terms of sale
      *
      * @return ProjectCgv
      */
-    public function getTermOfUser()
+    public function getTermsOfSale()
     {
-        return $this->termOfUser;
+        return $this->termsOfSale;
     }
 
     /**

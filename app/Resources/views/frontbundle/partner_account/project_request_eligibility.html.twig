@@ -1,0 +1,124 @@
+{% extends 'partner_account/_layout.html.twig' %}
+
+{% set page = {
+    id: 'partner-account-project-request',
+    classNames: 'partner-account'
+} %}
+
+{% block dashboardContent %}
+    <section class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-content tab-content">
+            <article class="dashboard-tab-pane">
+                <div class="panel">
+                    <header class="panel-header">
+                        <h3>{% trans %} partner-project-request_title-eligibility {% endtrans %}</h3>
+                    </header>
+                    <form action="{{ path('partner_project_request_submit') }}" method="post" id="partner-simulator" class="simulator">
+                        <input type="hidden" name="hash" value="{{ hash }}">
+                        <fieldset class="simulator-pane-inner recap" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
+                            <div class="form-validation-notifications"></div>
+                            <div class="row columns-with-space">
+                                <dl class="col-sm-4 col-md-6 col-lg-6">
+                                    <dt>{% trans %} partner-project-request_simulator-eligibility-company-field-label {% endtrans %}</dt>
+                                    <dd><strong class="ui-simulator-output-company">{{ company }}</strong></dd>
+                                </dl>
+                                <dl class="col-sm-4 col-md-6 col-lg-6">
+                                    <dt>{% trans %} partner-project-request_simulator-eligibility-siren-field-label {% endtrans %}</dt>
+                                    <dd><strong class="ui-simulator-output-siren">{{ siren }}</strong></dd>
+                                </dl>
+                                <dl class="col-sm-4 col-md-6 col-lg-6">
+                                    <dt>{% trans %} partner-project-request_simulator-eligibility-amount-field-label {% endtrans %}</dt>
+                                    <dd><strong class="ui-simulator-output-cost">{{ amount|localizednumber }}&nbsp;€</strong></dd>
+                                </dl>
+                                <dl class="col-sm-4 col-md-6 col-lg-6">
+                                    <dt>{% trans %} partner-project-request_simulator-eligibility-duration-field-label {% endtrans %}</dt>
+                                    <dd><strong class="ui-simulator-output-duration">{% trans with {'%numberMonth%' : duration} %} partner-project-request_simulator-eligibility-duration-value {% endtrans %}</strong></dd>
+                                </dl>
+                             </div>
+                        </fieldset><!-- /.simulator-pane-inner -->
+                        <div class="simulator-pane-inner results bg-p1 c-bg5">
+                            {% if rejectionReason is defined %}
+                                <div class="message-error">
+                                    <h3>{% trans %} partner-project-request_simulator-rejection-title {% endtrans %}</h3>
+                                    {{ rejectionReason|raw }}
+                                </div>
+                            {% else %}
+                                <div class="message-success">
+                                    <h3>{% trans %} partner-project-request_simulator-eligibility-title {% endtrans %}</h3>
+                                    {% trans %} partner-project-request_simulator-eligibility-message {% endtrans %}
+                                    <dl class="list-2col">
+                                        <dt id="simulator-label-amount">{% trans %} partner-project-request_simulator-eligibility-amount-label {% endtrans %}</dt>
+                                        <dd id="simulator-output-amount">{{ amount|localizednumber }}&nbsp;€</dd>
+                                        <dt id="simulator-label-duration">{% trans %} partner-project-request_simulator-eligibility-estimated-funding-time-label {% endtrans %}</dt>
+                                        <dd id="simulator-output-duration">{% transchoice averageFundingDuration with {'%numberDays%': averageFundingDuration} %} partner-project-request_simulator-eligibility-estimated-funding-time-value {% endtranschoice %}</dd>
+                                        <dt id="simulator-label-monthly-payment">{% trans %} partner-project-request_simulator-eligibility-monthly-payment-label {% endtrans %}</dt>
+                                        <dd id="simulator-output-monthly-payment">{% trans with {
+                                            '%minimumMonthlyPayment%': payment.monthly.min|localizednumberwithprecision(0),
+                                            '%maximumMonthlyPayment%': payment.monthly.max|localizednumberwithprecision(0)
+                                            } %} partner-project-request_simulator-eligibility-monthly-payment-value {% endtrans %}</dd>
+                                        <dt id="simulator-label-interests">{% trans %} partner-project-request_simulator-eligibility-interests-label {% endtrans %}</dt>
+                                        <dd id="simulator-output-interests">{% trans with {
+                                            '%minimumInterests%': payment.interests.min|localizednumberwithprecision(0),
+                                            '%maximumInterests%': payment.interests.max|localizednumberwithprecision(0)
+                                            } %} partner-project-request_simulator-eligibility-interests-value {% endtrans %}</dd>
+                                    </dl>
+                                </div>
+                            {% endif %}
+                        </div><!-- /.simulator-pane-inner -->
+                        <footer class="simulator-pane-inner actions bg-p1 c-bg5 text-align-center">
+                            {% if rejectionReason is defined %}
+                                <a href="{{ path('partner_projects_list') }}" class="btn-alternate" data-equal-width>{% trans %} partner-project-request_simulator-footer-projects-list-button {% endtrans %}</a>
+                                <a href="{{ path('partner_project_request') }}" class="btn-alternate" data-equal-width>{% trans %} partner-project-request_simulator-footer-request-another-button {% endtrans %}</a>
+                            {% else %}
+                                <button type="button" class="btn-abandon btn-alternate" data-equal-width data-modal-toggle="#modal-partner-prospect-abandon">
+                                    {% trans %} partner-project-request_simulator-footer-abandon-button {% endtrans %}
+                                </button>
+                                <a href="{{ path('partner_projects_list') }}" class="btn-prospect btn-alternate" data-equal-width>
+                                    {% if prospect %}
+                                        {% trans %} partner-project-request_simulator-footer-prospect-button {% endtrans %}
+                                    {% else %}
+                                        {% trans %} partner-project-request_simulator-footer-pause-button {% endtrans %}
+                                    {% endif %}
+                                </a>
+                                <button type="submit" class="btn-submit btn-alternate" data-equal-width data-spinnerbutton>
+                                    {% trans %} partner-project-request_simulator-footer-submit-button {% endtrans %}
+                                </button>
+                            {% endif %}
+                        </footer><!-- /.simulator-pane-inner -->
+                    </form><!-- /.simulator -->
+                </div>
+            </article><!-- /.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </section><!-- /.dashboard-tabs -->
+{% endblock %}
+
+{% block modals %}
+    {% if abandonReasons is defined %}
+        <div id="modal-partner-prospect-abandon" data-modal>
+            <form action="{{ path('partner_project_request_abandon') }}" method="post" data-formvalidation>
+                <input type="hidden" name="hash" value="{{ hash }}">
+                <div class="modal-body text-align-center">
+                    <p><label for="prospect-abandon-motif">{% trans %} partner-project-request_popup-abandon-message {% endtrans %}</label></p>
+                    <div class="form-field">
+                        <select name="reason" id="prospect-abandon-motif" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                            <option value="">{% trans %} partner-project-request_simulator-abandon-motif-select {% endtrans %}</option>
+                            {% for reason in abandonReasons %}
+                                <option value="{{ reason.idAbandon }}">{{ reason.label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <footer class="modal-footer">
+                    <div class="btn-controls">
+                        <a href="javascript:;" class="btn-default" data-modal-doactioncancel>
+                            {% trans %} partner-project-request_popup-abandon-button-cancel {% endtrans %}
+                        </a>
+                        <button type="submit" class="btn-primary" data-spinnerbutton>
+                            {% trans %} partner-project-request_popup-abandon-button-submit {% endtrans %}
+                        </button>
+                    </div>
+                </footer>
+            </form>
+        </div><!-- /#modal-partner-prospect-cancel -->
+    {% endif %}
+{% endblock %}

@@ -234,9 +234,10 @@ class ProjectRequestManager
     /**
      * @param \projects $project
      * @param int       $userId
+     *
      * @return null|array
      */
-    public function checkProjectRisk(\projects &$project, $userId)
+    public function checkProjectRisk(\projects $project, $userId)
     {
         /** @var \companies $company */
         $company = $this->entityManagerSimulator->getRepository('companies');
@@ -317,7 +318,6 @@ class ProjectRequestManager
                 || false === $this->companyScoringCheck->combineEulerTrafficLightXerfiAltaresScore($altaresScore, $company, $rejectionReason, $companyRatingHistory, $companyRating)
                 || true === $this->companyScoringCheck->isInfolegaleScoreLow($company->siren, $rejectionReason, $companyRatingHistory, $companyRating)
                 || false === $this->companyScoringCheck->combineEulerGradeUnilendXerfiAltaresScore($altaresScore, $company, $rejectionReason, $companyRatingHistory, $companyRating)
-                || true === $this->companyFinanceCheck->hasInfogreffePrivileges($company->siren, $rejectionReason, $companyRatingHistory, $companyRating)
             ) {
                 return $rejectionReason;
             }

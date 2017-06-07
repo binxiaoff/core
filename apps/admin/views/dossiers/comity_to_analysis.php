@@ -6,7 +6,7 @@
             <table class="form">
                 <tr>
                     <th><label for="comment">Mémo&nbsp;*</label></th>
-                    <td><textarea name="comment" id="comment" cols="75" rows="5" class="textarea" style="width: 480px" autofocus></textarea></td>
+                    <td><textarea name="comment" id="comment" cols="75" rows="5" class="textarea memo" style="width: 480px"></textarea></td>
                 </tr>
                 <tr>
                     <td colspan="2" style="text-align: right">

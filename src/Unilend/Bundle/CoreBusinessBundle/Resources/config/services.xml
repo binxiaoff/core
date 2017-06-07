@@ -182,6 +182,7 @@
         </service>
 
         <service id="unilend.service_product.product_attribute_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager" public="false">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="memcache.default"/>
         </service>
@@ -378,6 +379,13 @@
             <argument type="service" id="knp_snappy.pdf"/>
             <argument type="service" id="twig" />
             <argument>%path.protected%</argument>
+        </service>
+
+        <service id="unilend.service.terms_of_sale_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.email_manager"/>
+            <argument>%kernel.root_dir%</argument>
+            <argument>%kernel.default_locale%</argument>
         </service>
     </services>
 </container>

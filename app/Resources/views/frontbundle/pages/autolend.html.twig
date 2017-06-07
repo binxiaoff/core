@@ -93,13 +93,11 @@
                     </div>
 
                     <div class="btn-controls">
-                        <button type="submit" class="btn-primary" name="validate-simple-settings" id="validate-simple-settings" {% if is_novice == false %} style="display:none;" {% endif %}>{% trans %} autolend_simple-setting-submit-button {% endtrans %}</button>
+                        <button type="submit" class="btn-primary" name="validate-simple-settings" id="validate-simple-settings"{% if is_novice == false %} style="display:none;" {% endif %}>{% trans %} autolend_simple-setting-submit-button {% endtrans %}</button>
                     </div><!-- /.btn-controls -->
-
-                    {#<div class="ui-formvalidation-notifications"></div>#}
                 </section><!-- /.panel -->
                 <section id="autolend-table">
-                    <section id="autolend-table-config" class="panel panel-autolend-table collapse {% if is_novice == false %} in {% endif %}">
+                    <section id="autolend-table-config" class="panel panel-autolend-table collapse{% if is_novice == false %} in{% endif %}">
                         <div id="autolend-table-view" class="autolend-table ui-autolendtable">
                             <div class="row">
                                 <div class="col-table">
@@ -289,7 +287,7 @@
     <div id="autolend-out-of-range-table-dialog" class="autolend-table-dialog" data-modal data-modal-maxwidth="600" data-modal-closeonclickoverlay="true">
         <div class="modal-body">
             <h3 class="dialog-title">
-                <span class="icon fa-autolend-u"><span class="sr-only">{% trans %} autolend_out-of-range-confirmation-popup-title {% endtrans %}</span></span>
+                <span class="icon fa-ban-u"><span class="sr-only">{% trans %} autolend_out-of-range-confirmation-popup-title {% endtrans %}</span></span>
             </h3>
             <div class="dialog-message">
                 <p>{% trans %} autolend_out-of-range-confirmation-popup-text {% endtrans %}</p>

@@ -1,31 +1,36 @@
 <?php
+
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
+use Doctrine\ORM\EntityManager;
 use Psr\Cache\CacheItemPoolInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\librairies\CacheKeys;
 
 class ProductAttributeManager
 {
     /** @var EntityManager */
     protected $entityManager;
+    /** @var EntityManagerSimulator */
+    protected $entityManagerSimulator;
+    /** @var CacheItemPoolInterface */
     protected $cachePool;
 
     /**
-     * ProductAttributeManager constructor.
-     *
      * @param EntityManager          $entityManager
+     * @param EntityManagerSimulator $entityManagerSimulator
      * @param CacheItemPoolInterface $cachePool
      */
-    public function __construct(EntityManager $entityManager, CacheItemPoolInterface $cachePool)
+    public function __construct(EntityManager $entityManager, EntityManagerSimulator $entityManagerSimulator, CacheItemPoolInterface $cachePool)
     {
-        $this->entityManager = $entityManager;
-        $this->cachePool     = $cachePool;
+        $this->entityManager          = $entityManager;
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->cachePool              = $cachePool;
     }
 
     /**
      * @param \product $product
-     * @param  string  $attributeType
+     * @param string   $attributeType
      *
      * @return array
      */
@@ -34,11 +39,11 @@ class ProductAttributeManager
         $cachedItem = $this->cachePool->getItem(CacheKeys::PRODUCT_ATTRIBUTE_BY_TYPE . '_' . $product->id_product . '_' . $attributeType);
         if (false === $cachedItem->isHit()) {
             /** @var \product_attribute $productAttr */
-            $productAttr = $this->entityManager->getRepository('product_attribute');
-            /** @var \product_attribute_type $productAttrType */
-            $productAttrType = $this->entityManager->getRepository('product_attribute_type');
-            if ($productAttrType->get($attributeType, 'label')) {
-                $attrVars          = $productAttr->select('id_product = ' . $product->id_product . ' AND id_type = ' . $productAttrType->id_type);
+            $productAttr          = $this->entityManagerSimulator->getRepository('product_attribute');
+            $productAttributeType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProductAttributeType')->findOneBy(['label' => $attributeType]);
+
+            if ($productAttributeType) {
+                $attrVars          = $productAttr->select('id_product = ' . $product->id_product . ' AND id_type = ' . $productAttributeType->getIdType());
                 $productAttributes = [];
                 if (count($attrVars) === 1) {
                     $productAttributes = [array_values($attrVars)[0]['attribute_value']];
@@ -68,13 +73,13 @@ class ProductAttributeManager
         $cachedItem = $this->cachePool->getItem(CacheKeys::PRODUCT_CONTRACT_ATTRIBUTE_BY_TYPE . '_' . $product->id_product . '_' . $attributeType);
         if (false === $cachedItem->isHit()) {
             /** @var \product_underlying_contract $productContract */
-            $productContract = $this->entityManager->getRepository('product_underlying_contract');
+            $productContract = $this->entityManagerSimulator->getRepository('product_underlying_contract');
             /** @var \underlying_contract_attribute $contractAttr */
-            $contractAttr = $this->entityManager->getRepository('underlying_contract_attribute');
+            $contractAttr = $this->entityManagerSimulator->getRepository('underlying_contract_attribute');
             /** @var \underlying_contract_attribute_type $contractAttrType */
-            $contractAttrType = $this->entityManager->getRepository('underlying_contract_attribute_type');
+            $contractAttrType = $this->entityManagerSimulator->getRepository('underlying_contract_attribute_type');
             /** @var \underlying_contract $underlyingContract */
-            $underlyingContract = $this->entityManager->getRepository('underlying_contract');
+            $underlyingContract = $this->entityManagerSimulator->getRepository('underlying_contract');
 
             $contracts          = $productContract->select('id_product = ' . $product->id_product);
             $contractTypeValues = [];

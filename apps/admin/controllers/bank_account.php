@@ -123,7 +123,7 @@ class bank_accountController extends bootstrap
                 if (in_array($project->getStatus(), [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE])) {
                     continue;
                 }
-                $mandates = $project->getMandats();
+                $mandates = $project->getMandates();
                 if (false === empty($mandates)) {
                     foreach ($mandates as $mandate) {
                         if ($mandate->getStatus() === UniversignEntityInterface::STATUS_ARCHIVED) {
@@ -156,7 +156,7 @@ class bank_accountController extends bootstrap
 
                     $nextDirectDebit = $entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements')->findOneBy(
                         ['idProject' => $project, 'status' => Prelevements::STATUS_PENDING],
-                        ['dateEcheanceEmprunteur' => 'DESC']
+                        ['dateEcheanceEmprunteur' => 'ASC']
                     );
 
                     if (null === $nextDirectDebit) {

@@ -162,11 +162,13 @@ class projects extends projects_crud
      * @param string $start
      * @param string $nb
      * @param bool   $useCache
+     * @param int[]  $products
+     *
      * @return array
      */
-    public function selectProjectsByStatus(array $status, $where = '', array $sort = [], $start = '', $nb = '', $useCache = true)
+    public function selectProjectsByStatus(array $status, $where = '', array $sort = [], $start = '', $nb = '', $useCache = true, array $products = [])
     {
-        $binds = array('fundingStatus' => \projects_status::EN_FUNDING, 'status' => $status);
+        $binds = ['fundingStatus' => \projects_status::EN_FUNDING, 'status' => $status];
 
         if ($useCache) {
             $QCProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile(60, md5(__METHOD__));
@@ -233,6 +235,11 @@ class projects extends projects_crud
                 break;
         }
 
+        if (false === empty($products)) {
+            $binds['products'] = $products;
+            $where .= ' AND p.id_product IN (:products)';
+        }
+
         $sql = $select . $tables . '
             WHERE p.status IN (:status) ' . $where . '
             ORDER BY ' . $order;
@@ -248,47 +255,58 @@ class projects extends projects_crud
         }
 
         try {
-            $aTypes = array(
+            $aTypes    = [
                 'status'        => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+                'products'      => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
                 'fundingStatus' => \PDO::PARAM_INT,
                 'minRateRange'  => \PDO::PARAM_INT,
                 'maxRateRange'  => \PDO::PARAM_INT,
                 'number'        => \PDO::PARAM_INT,
                 'start'         => \PDO::PARAM_INT
-            );
+            ];
             $statement = $this->bdd->executeQuery($sql, $binds, $aTypes, $QCProfile);
-            $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+            $result    = $statement->fetchAll(\PDO::FETCH_ASSOC);
             $statement->closeCursor();
         } catch (\Doctrine\DBAL\DBALException $ex) {
-            $result = array();
+            $result = [];
         }
         return $result;
     }
 
-    public function countSelectProjectsByStatus($status, $where = '', $bUseCache = false)
+    /**
+     * @param array  $status
+     * @param string $where
+     * @param int[]  $products
+     *
+     * @return int
+     */
+    public function countSelectProjectsByStatus(array $status, $where = '', array $products = [])
     {
-        if (true === $bUseCache) {
-            $oQCProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile(60, md5(__METHOD__));
-        } else {
-            $oQCProfile = null;
-        }
-        $aBind = array('status' => explode(',', $status));
-        $aType = array('status' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
-
-        $sQuery = '
-            SELECT COUNT(*) AS nb_project
+        $bind  = ['status' => $status];
+        $type  = ['status' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY];
+        $query = '
+            SELECT COUNT(*)
             FROM projects
             WHERE status IN (:status)' . $where;
 
+        if (false === empty($products)) {
+            $query .= ' AND id_product IN (:products)';
+            $bind['products'] = $products;
+            $type['products'] = \Doctrine\DBAL\Connection::PARAM_INT_ARRAY;
+        }
+
         try {
-            $statement = $this->bdd->executeQuery($sQuery, $aBind, $aType, $oQCProfile);
-            $result = $statement->fetchAll(PDO::FETCH_COLUMN);
+            /** @var \Doctrine\DBAL\Driver\Statement $statement */
+            $statement = $this->bdd->executeQuery($query, $bind, $type);
+            $result    = $statement->fetchColumn();
             $statement->closeCursor();
+
             if (empty($result)) {
                 return 0;
             }
-            return array_shift($result);
-        } catch (\Doctrine\DBAL\DBALException $ex) {
+
+            return (int) $result;
+        } catch (\Doctrine\DBAL\DBALException $exception) {
             return 0;
         }
     }
@@ -341,11 +359,11 @@ class projects extends projects_crud
         return $result;
     }
 
-    public function positionProject($projectId, array $status, $order)
+    public function positionProject($projectId, array $status, $order, array $products = [])
     {
-        $aProjects = $this->selectProjectsByStatus($status, ' AND p.display = 0', $order);
-        $previous = '';
-        $next = '';
+        $aProjects = $this->selectProjectsByStatus($status, ' AND p.display = ' . self::DISPLAY_PROJECT_ON, $order, '', '', true, $products);
+        $previous  = '';
+        $next      = '';
 
         foreach ($aProjects as $k => $p) {
             if ($p['id_project'] == $projectId) {
@@ -354,7 +372,7 @@ class projects extends projects_crud
                 break;
             }
         }
-        return array('previousProject' => $previous, 'nextProject' => $next);
+        return ['previousProject' => $previous, 'nextProject' => $next];
     }
 
     // liste les projets favoris dont la date de retrait est dans j-2
@@ -434,17 +452,6 @@ class projects extends projects_crud
         $record = $this->bdd->result($result);
 
         return $record;
-    }
-
-    public function getProjectsStatusAndCount(array $sListStatus, array $tabOrderProject, $iStart, $iLimit)
-    {
-        $aProjects   = $this->selectProjectsByStatus($sListStatus, ' AND p.display = 0', $tabOrderProject, $iStart, $iLimit);
-        $anbProjects = $this->countSelectProjectsByStatus(implode(',', $sListStatus) . ',' . \projects_status::PRET_REFUSE, ' AND display = 0', true);
-        $aElements   = array(
-            'lProjectsFunding' => $aProjects,
-            'nbProjects'       => $anbProjects
-        );
-        return $aElements;
     }
 
     /**
@@ -1190,12 +1197,13 @@ class projects extends projects_crud
         }
 
         $query = '
-            SELECT p.slug AS slug,
+            SELECT
+              p.id_project,
+              p.slug AS slug,
               p.title AS title,
               (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC, psh.id_project_status_history DESC LIMIT 1) AS status
             FROM projects p
-            WHERE p.display = 0
-              AND p.title LIKE :search
+            WHERE p.display = ' . self::DISPLAY_PROJECT_ON . ' AND p.title LIKE :search
             HAVING status >= ' . \projects_status::EN_FUNDING . '
             ORDER BY p.title ASC';
 
@@ -1207,8 +1215,9 @@ class projects extends projects_crud
         if (false === empty($searchProjectsResults)) {
             foreach ($searchProjectsResults as $recordProjects) {
                 $result[] = [
-                    'title' => $recordProjects['title'],
-                    'slug'  => 'projects/detail/' . $recordProjects['slug']
+                    'projectId' => $recordProjects['id_project'],
+                    'title'     => $recordProjects['title'],
+                    'slug'      => 'projects/detail/' . $recordProjects['slug']
                 ];
             }
 
@@ -1261,7 +1270,6 @@ class projects extends projects_crud
     {
         return $this->bdd->createQueryBuilder()
             ->select('p.id_project,
-                IFNULL(pa.name, "") AS partner_name,
                 IFNULL(pa.logo, "") AS partner_logo,
                 p.amount AS amount,
                 p.period AS duration,
@@ -1375,7 +1383,6 @@ class projects extends projects_crud
     {
         return $this->bdd->createQueryBuilder()
             ->select('p.id_project,
-                IFNULL(pa.name, "") AS partner_name,
                 IFNULL(pa.logo, "") AS partner_logo,
                 p.amount AS amount,
                 p.period AS duration,

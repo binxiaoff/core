@@ -54,12 +54,13 @@ class ProjectStatusManager
     }
 
     /**
-     * @param string $motive
+     * @param string $reason
+     *
      * @return string
      */
-    public function getRejectionMotiveTranslation($motive)
+    public function getRejectionReasonTranslation($reason)
     {
-        switch ($motive) {
+        switch ($this->getMainRejectionReason($reason)) {
             case '':
                 return '';
             case \projects_status::NON_ELIGIBLE_REASON_TOO_MUCH_PAYMENT_INCIDENT:
@@ -84,8 +85,6 @@ class ProjectStatusManager
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-xerfi-vs-euler-grade');
             case \projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE:
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-grade-vs-altares-score');
-            case \projects_status::NON_ELIGIBLE_REASON_INFOGREFFE_UNKNOWN_PRIVILEGES:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infogreffe-unknown-privileges');
             case \projects_status::NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES:
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infogreffe-privileges');
             case \projects_status::UNEXPECTED_RESPONSE . 'altares_identity':
@@ -106,25 +105,58 @@ class ProjectStatusManager
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-traffic-light-error');
             case \projects_status::UNEXPECTED_RESPONSE . 'euler_grade':
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-grade-error');
+            case \projects_status::NON_ELIGIBLE_REASON_PROCEEDING:
+                return $this->translator->trans('project-rejection-reason-bo_collective-proceeding');
+            case \projects_status::NON_ELIGIBLE_REASON_INACTIVE:
+                return $this->translator->trans('project-rejection-reason-bo_inactive-siren');
+            case \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN:
+                return $this->translator->trans('project-rejection-reason-bo_no-siren');
+            case \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK:
+            case \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES:
+            case \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL:
+            case \projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER:
+                return $this->translator->trans('project-rejection-reason-bo_negative-operating-result');
+            case \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND:
+                return $this->translator->trans('project-rejection-reason-bo_product-not-found');
             default:
-                $rejectReasons = explode(',', $motive);
-                if (in_array(\projects_status::NON_ELIGIBLE_REASON_PROCEEDING, $rejectReasons)) {
-                    return $this->translator->trans('project-rejection-reason-bo_collective-proceeding');
-                } elseif (in_array(\projects_status::NON_ELIGIBLE_REASON_INACTIVE, $rejectReasons)) {
-                    return $this->translator->trans('project-rejection-reason-bo_inactive-siren');
-                } elseif (in_array(\projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN, $rejectReasons)) {
-                    return $this->translator->trans('project-rejection-reason-bo_no-siren');
-                } elseif (
-                    in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK, $rejectReasons)
-                    || in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES, $rejectReasons)
-                    || in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL, $rejectReasons)
-                    || in_array(\projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER, $rejectReasons)
-                ) {
-                    return $this->translator->trans('project-rejection-reason-bo_negative-operating-result');
-                } elseif (in_array(\projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND, $rejectReasons)) {
-                    return $this->translator->trans('project-rejection-reason-bo_product-not-found');
-                }
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-default');
         }
+    }
+
+    /**
+     * @param string $reason
+     *
+     * @return string
+     */
+    public function getMainRejectionReason($reason)
+    {
+        $reasons      = explode(',', $reason);
+        $reasonsCount = count($reasons);
+
+        if (1 === $reasonsCount) {
+            return $reasons[0];
+        }
+        if (in_array(\projects_status::NON_ELIGIBLE_REASON_PROCEEDING, $reasons)) {
+            return \projects_status::NON_ELIGIBLE_REASON_PROCEEDING;
+        }
+        if (in_array(\projects_status::NON_ELIGIBLE_REASON_INACTIVE, $reasons)) {
+            return \projects_status::NON_ELIGIBLE_REASON_INACTIVE;
+        }
+        if (in_array(\projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN, $reasons)) {
+            return \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN;
+        }
+        if (in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK, $reasons)) {
+            return \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK;
+        }
+        if (in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES, $reasons)) {
+            return \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES;
+        }
+        if (in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL, $reasons)) {
+            return \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL;
+        }
+        if (in_array(\projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER, $reasons)) {
+            return \projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER;
+        }
+        return \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND;
     }
 }

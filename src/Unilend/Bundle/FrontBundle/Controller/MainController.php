@@ -16,7 +16,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
-use Symfony\Component\Translation\Translator;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
@@ -24,8 +23,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
-use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
-use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\ContentManager;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
@@ -78,14 +75,12 @@ class MainController extends Controller
      */
     public function homeLenderAction()
     {
-        /** @var ProjectDisplayManager $projectDisplayManager */
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        /** @var AuthorizationChecker $authorizationChecker */
-        $authorizationChecker = $this->get('security.authorization_checker');
-        /** @var WelcomeOfferManager $welcomeOfferManager */
-        $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
-        /** @var TestimonialManager $testimonialService */
-        $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
+        $authorizationChecker  = $this->get('security.authorization_checker');
+        $welcomeOfferManager   = $this->get('unilend.service.welcome_offer_manager');
+        $testimonialService    = $this->get('unilend.frontbundle.service.testimonial_manager');
+        $user                  = $this->getUser();
+        $lenderAccount         = null;
 
         $template                     = [];
         $template['showWelcomeOffer'] = $welcomeOfferManager->displayOfferOnHome();
@@ -95,9 +90,6 @@ class MainController extends Controller
         $template['sortType']         = strtolower(\projects::SORT_FIELD_END);
         $template['sortDirection']    = strtolower(\projects::SORT_DIRECTION_DESC);
 
-        /** @var BaseUser $user */
-        $user = $this->getUser();
-
         if (
             $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')
             && $authorizationChecker->isGranted('ROLE_LENDER')
@@ -105,30 +97,18 @@ class MainController extends Controller
             /** @var \lenders_accounts $lenderAccount */
             $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
             $lenderAccount->get($user->getClientId(), 'id_client_owner');
-
-            $template['projects'] = $projectDisplayManager->getProjectsList(
-                [],
-                [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC],
-                null,
-                3,
-                $lenderAccount
-            );
-        } else {
-            $template['projects'] = $projectDisplayManager->getProjectsList(
-                [],
-                [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC], null, 3
-            );
         }
 
-        $isFullyConnectedUser = ($user instanceof UserLender && $user->getClientStatus() == \clients_status::VALIDATED || $user instanceof UserBorrower);
+        $template['projects'] = $projectDisplayManager->getProjectsList([], [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC], null, 3, $lenderAccount);
 
-        if (false === $isFullyConnectedUser) {
-            /** @var Translator $translator */
-            $translator = $this->get('translator');
-            array_walk($template['projects'], function(&$project) use ($translator) {
+        $translator        = $this->get('translator');
+        $projectRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects');
+
+        array_walk($template['projects'], function(&$project) use ($translator, $projectDisplayManager, $user, $projectRepository) {
+            if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($projectRepository->find($project['projectId']), $user)) {
                 $project['title'] = $translator->trans('company-sector_sector-' . $project['company']['sectorId']);
-            });
-        }
+            }
+        });
 
         return $this->render('pages/homepage_lender.html.twig', $template);
     }
@@ -186,7 +166,7 @@ class MainController extends Controller
             $projectPeriods = $projectManager->getPossibleProjectPeriods();
             $amount         = filter_var(str_replace([' ', '€'], '', $request->request->get('amount')), FILTER_VALIDATE_INT, ['options' => ['min_range' => $projectManager->getMinProjectAmount(), 'max_range' => $projectManager->getMaxProjectAmount()]]);
 
-            if (in_array($period, $projectPeriods) && $amount){
+            if (in_array($period, $projectPeriods) && $amount) {
                 $estimatedRate                           = $projectRequestManager->getMonthlyRateEstimate();
                 $estimatedMonthlyRepayment               = $projectRequestManager->getMonthlyPaymentEstimate($amount, $period, $estimatedRate);
                 $estimatedFundingDuration                = $projectManager->getAverageFundingDuration($amount);
@@ -418,9 +398,6 @@ class MainController extends Controller
      */
     private function renderBorrowerLandingPage(Request $request, array $content, array $complement)
     {
-        /** @var ContentManager $contentManager */
-        $contentManager = $this->get('unilend.frontbundle.service.content_manager');
-
         $sessionHandler = $request->getSession();
         $isPartnerFunnel = $content['tunnel-partenaire'] == 1;
 
@@ -458,8 +435,6 @@ class MainController extends Controller
                 $session['values'][$fieldName] = filter_var($request->query->get($fieldName), FILTER_SANITIZE_STRING);
             }
         }
-
-        $template['partners'] = $contentManager->getFooterPartners();
 
         $sessionHandler->set('projectRequest', $session);
         $sessionHandler->set('partnerProjectRequest', $isPartnerFunnel);
@@ -645,14 +620,8 @@ class MainController extends Controller
         /** @var ContentManager $contentManager */
         $contentManager = $this->get('unilend.frontbundle.service.content_manager');
 
-        $finalElements = [
-            'footerMenu' => $contentManager->getFooterMenu(),
-            'partners'   => $contentManager->getFooterPartners()
-        ];
-
         return $this->render('partials/site/footer.html.twig', [
-            'menus'             => $finalElements['footerMenu'],
-            'partners'          => $finalElements['partners'],
+            'menus'             => $contentManager->getFooterMenu(),
             'displayDisclaimer' => $route !== 'project_detail'
         ]);
     }

@@ -1,0 +1,221 @@
+{% extends 'partner_account/_layout.html.twig' %}
+
+{% set page = {
+    id: 'partner-account-project-request',
+    classNames: 'partner-account'
+} %}
+
+{% block dashboardContent %}
+    <section class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-content tab-content">
+            <article class="dashboard-tab-pane">
+                <div class="panel">
+                    <header class="panel-header">
+                        <h3>{% trans %} partner-project-details_title {% endtrans %}</h3>
+                    </header>
+                    <form id="form-project-details" action="{{ path('partner_project_request_details_form', {'hash' : project.hash}) }}" method="post" enctype="multipart/form-data" class="form-project-details" data-formvalidation data-formvalidation-notificationselem="#form-project-details-notifications">
+                        <div class="row" ui-sticky-parent>
+                            <div class="col-main col-md-8 col-lg-8">
+
+                                <div id="form-project-details-notifications" class="ui-formvalidation-notifications">
+                                    {% if form.errors is not empty %}
+                                        <div class="message-error"><p>{% trans %} form-validation_error-group-has-errors {% endtrans %}</p></div>
+                                    {% endif %}
+                                </div>
+
+                                <fieldset class="form-project-details-fieldset first">
+                                    <div class="row columns-with-space">
+                                        <dl class="col-sm-4 col-md-6 col-lg-6">
+                                            <dt>{% trans %} partner-project-details_summary-company-field-label {% endtrans %}</dt>
+                                            <dd><strong class="ui-simulator-output-company">{{ project.company }}</strong></dd>
+                                        </dl>
+                                        <dl class="col-sm-4 col-md-6 col-lg-6">
+                                            <dt>{% trans %} partner-project-details_summary-siren-field-label {% endtrans %}</dt>
+                                            <dd><strong class="ui-simulator-output-siren">{{ project.siren }}</strong></dd>
+                                        </dl>
+                                        <dl class="col-sm-4 col-md-6 col-lg-6">
+                                            <dt>{% trans %} partner-project-details_summary-amount-field-label {% endtrans %}</dt>
+                                            <dd><strong class="ui-simulator-output-cost">{{ project.amount|localizednumber }}&nbsp;€</strong></dd>
+                                        </dl>
+                                        <dl class="col-sm-4 col-md-6 col-lg-6">
+                                            <dt>{% trans %} partner-project-details_summary-duration-field-label {% endtrans %}</dt>
+                                            <dd><strong class="ui-simulator-output-duration">{% trans with {'%numberMonth%': project.duration} %} partner-project-details_simulator-eligibility-duration-value {% endtrans %}</strong></dd>
+                                        </dl>
+                                    </div>
+                                </fieldset><!-- /.form-project-details-fieldset -->
+
+                                <fieldset class="form-project-details-fieldset">
+                                    <h4>{% trans %} partner-project-details_identity-section-title {% endtrans %}</h4>
+
+                                    <div class="form-field form-field-multi{% if form.errors.contact.title is defined %} ui-formvalidation-error{% endif %}">
+                                        <div class="field-label">
+                                            <label>{% trans %} common_title {% endtrans %}</label>
+                                        </div>
+                                        <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
+                                            <li>
+                                                <label>
+                                                    <input type="radio" name="contact[title]" value="Mme"{% if 'Mme' == form.values.contact.title %} checked{% endif %}>
+                                                    {% trans %} common_title-female {% endtrans %}
+                                                </label>
+                                            </li>
+                                            <li>
+                                                <label>
+                                                    <input type="radio" name="contact[title]" value="M."{% if 'M.' == form.values.contact.title %} checked{% endif %}>
+                                                    {% trans %} common_title-male {% endtrans %}
+                                                </label>
+                                            </li>
+                                        </ul>
+                                        {% if form.errors.contact.title is defined %}
+                                            <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required-radio {% endtrans %}</li></ul>
+                                        {% endif %}
+                                    </div><!-- /.form-field -->
+
+                                    <div class="row columns-with-space">
+                                        <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.lastname is defined %} ui-formvalidation-error{% endif %}">
+                                            <label for="form-project-details-identity-nom">{% trans %} common_name {% endtrans %}</label>
+                                            <input id="form-project-details-identity-nom" type="text" name="contact[lastname]" value="{{ form.values.contact.lastname|e('html_attr') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name">
+                                            {% if form.errors.contact.lastname is defined %}
+                                                <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                            {% endif %}
+                                        </div><!-- /.form-field -->
+
+                                        <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.firstname is defined %} ui-formvalidation-error{% endif %}">
+                                            <label for="form-project-details-identity-prenom">{% trans %} common_firstname {% endtrans %}</label>
+                                            <input id="form-project-details-identity-prenom" type="text" name="contact[firstname]" value="{{ form.values.contact.firstname|e('html_attr') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name">
+                                            {% if form.errors.contact.firstname is defined %}
+                                                <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                            {% endif %}
+                                        </div><!-- /.form-field -->
+                                    </div>
+
+                                    <div class="row columns-with-space">
+                                        <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.mobile is defined %} ui-formvalidation-error{% endif %}">
+                                            <label for="form-project-details-identity-mobile">{% trans %} common_phone {% endtrans %}</label>
+                                            <div class="input-group">
+                                                <input id="form-project-details-identity-mobile" type="text" name="contact[mobile]" value="{{ form.values.contact.mobile|e('html_attr') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="mobile">
+                                                {% if form.errors.contact.mobile is defined %}
+                                                    <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                                {% endif %}
+                                            </div>
+                                        </div><!-- /.form-field -->
+
+                                        <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.function is defined %} ui-formvalidation-error{% endif %}">
+                                            <label for="form-project-details-identity-function">{% trans %} common_position {% endtrans %}</label>
+                                            <div class="input-group">
+                                                <input id="form-project-details-identity-function" type="text" name="contact[function]" value="{{ form.values.contact.function|e('html_attr') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                                                {% if form.errors.contact.function is defined %}
+                                                    <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                                {% endif %}
+                                            </div>
+                                        </div><!-- /.form-field -->
+                                    </div>
+                                </fieldset><!-- /.form-project-details-fieldset -->
+
+                                <fieldset class="form-project-details-fieldset">
+                                    <h4>{% trans %} partner-project-details_description-section-title {% endtrans %}</h4>
+                                    <div class="row">
+                                        <div class="form-field col-lg-12 col-md-12{% if form.errors.project.description is defined %} ui-formvalidation-error{% endif %}">
+                                            <div class="row">
+                                                <p>{{ ('partner-project-details_description-instructions-' ~ app.user.partner.label)|trans|raw }}</p>
+                                            </div>
+                                            <textarea id="form-project-details-description" name="project[description]" class="input-field" rows="5" placeholder="{{ 'partner-project-details_description-placeholder'|trans|escape('html_attr') }}" data-formvalidation-input data-formvalidation-required="true">{{ form.values.project.description }}</textarea>
+                                            {% if form.errors.project.description is defined %}
+                                                <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </fieldset><!-- /.form-project-details-fieldset -->
+
+                                <fieldset class="form-project-details-fieldset last">
+                                    <h4>{% trans %} partner-project-details_documents-section-title {% endtrans %}</h4>
+                                    <div class="row">
+                                        <p>{{ ('partner-project-details_documents-instructions-' ~ app.user.partner.label)|trans|raw }}</p>
+                                    </div>
+                                    {% for attachment in attachments %}
+                                        <div class="row">
+                                            <div class="form-field">
+                                                <label>
+                                                    {{ ('partner-project-request_attachment-name-' ~ app.user.partner.id ~ '-' ~ attachment.attachmentType.id)|trans }}
+                                                    {% if attachment.mandatory %}
+                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                                    {% endif %}
+                                                </label>
+                                                <div class="form-field{% if form.errors.documents[attachment.attachmentType.id] is defined %} ui-formvalidation-error{% endif %}">
+                                                    <div class="custom-input-file" id="form-project-details-document-type-{{ attachment.attachmentType.id }}" data-fileattach data-fileattach-inputname="documents[{{ attachment.attachmentType.id }}]" data-fileattach-maxfiles="1" data-fileattach-filetypes="doc docx jpg jpeg odt odf odg pdf png ppt pptx rtf tiff xls xlsx"{% if attachment.mandatory %} data-formvalidation-input data-formvalidation-required='input[type="file"][name="documents[{{ attachment.attachmentType.id }}]"]'{% endif %}></div><!-- /.ui-fileattach -->
+                                                    {% if form.errors.documents[attachment.attachmentType.id] is defined %}
+                                                        <ul class="ui-formvalidation-messages">
+                                                            <li>{% trans %} form-validation_error-field-required {% endtrans %}</li>
+                                                        </ul>
+                                                    {% endif %}
+                                                </div><!-- /.form-field -->
+                                            </div><!-- /.form-field -->
+                                        </div>
+                                    {% endfor %}
+                                </fieldset><!-- /.form-project-details-fieldset -->
+
+                                <div class="row">
+                                    <div class="btn-controls text-align-center">
+                                        <button type="button" class="btn-default btn-abandon btn-shape-md" data-equal-width data-equal-width-group="form-actions" data-modal-toggle="#modal-partner-prospect-abandon">
+                                            {% trans %} partner-project-details_abandon-button {% endtrans %}
+                                        </button>
+                                        <button type="submit" class="btn-primary btn-submit btn-shape-md" data-equal-width data-equal-width-group="form-actions" data-spinnerbutton>
+                                            {% trans %} partner-project-details_validate-button {% endtrans %}
+                                        </button>
+                                    </div>
+                                </div><!-- /.btn-controls.tab-footer -->
+                            </div><!-- /.col-main -->
+                            <div class="col-sim col-md-4 col-lg-4">
+                                <div class="hide-xs hide-sm">
+                                    <div class="simulator-mini ui-has-sticky" data-sticky-bufferbottom="164" data-sticky-buffertop="-100">
+                                        <header class="simulator-mini-header">
+                                            <h4 class="simulator-mini-title">{% trans %} partner-project-details_simulator-panel-title {% endtrans %}</h4>
+                                        </header>
+                                        <div class="simulator-mini-content">
+                                            <dl>
+                                                <dt id="simulator-label-amount">{% trans %} partner-project-details_simulator-panel-amount-label {% endtrans %}</dt>
+                                                <dd id="simulator-output-amount"><strong>{{ project.amount|localizednumber }}&nbsp;€</strong></dd>
+                                                <dt id="simulator-label-duration">{% trans %} partner-project-details_simulator-panel-estimated-funding-time-label {% endtrans %}</dt>
+                                                <dd id="simulator-output-duration"><strong>{% transchoice project.averageFundingDuration with {'%averageFundingDuration%' : project.averageFundingDuration} %} partner-project-details_simulator-panel-estimated-funding-time-value {% endtranschoice %}</strong></dd>
+                                                <dt id="simulator-label-monthly">{% trans %} partner-project-details_simulator-panel-estimated-monthly-repayment-label {% endtrans %}</dt>
+                                                <dd id="simulator-output-monthly"><strong>{{ project.monthlyPaymentBoundaries.minimum|localizednumber }} / {{ project.monthlyPaymentBoundaries.maximum|localizednumber }}&nbsp;€</strong></dd>
+                                            </dl>
+                                        </div>
+                                    </div><!-- /.simulator -->
+                                </div><!-- /.hide-responsive -->
+                            </div><!-- /.col-sim -->
+                        </div>
+                    </form><!-- /.form-project-details -->
+                </div><!-- /.panel -->
+            </article><!-- /.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </section><!-- /.dashboard-tabs -->
+{% endblock %}
+
+{% block modals %}
+    <div id="modal-partner-prospect-abandon" data-modal>
+        <form action="{{ path('partner_project_request_end', {'hash': project.hash}) }}" method="post" data-formvalidation>
+            <input type="hidden" name="action" value="abandon">
+            <div class="modal-body text-align-center">
+                <p><label for="prospect-abandon-motif">{% trans %} partner-project-request_popup-abandon-message {% endtrans %}</label></p>
+                <div class="form-field">
+                    <select name="prospect-abandon-motif" id="prospect-abandon-motif" class="input-field">
+                        <option value="">{% trans %} partner-project-request_simulator-abandon-motif-select {% endtrans %}</option>
+                        {% for reason in abandonReasons %}
+                            <option value="{{ reason.label }}">{{ reason.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <div class="btn-controls">
+                    <a href="javascript:;" class="btn-default" data-modal-doactioncancel>
+                        {% trans %} partner-project-request_popup-abandon-button-cancel {% endtrans %}
+                    </a>
+                    <button type="submit" href="javascript:;" class="btn-primary">
+                        {% trans %} partner-project-request_popup-abandon-button-submit {% endtrans %}
+                    </button>
+                </div>
+            </footer>
+        </form>
+    </div><!-- /#modal-partner-prospect-cancel -->
+{% endblock %}

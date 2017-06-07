@@ -86,6 +86,7 @@ parameters:
     path.sftp:                       %path.shared%sftp/
     path.protected:                  %path.shared%protected/
     path.payline:                    /data/sites/unilend/librairies/payline/
+    path.gulp_rev_manifest:          %kernel.root_dir%/../public/default/assets/rev-manifest.json
 
     mapbox.token:                    pk.eyJ1IjoidW5pbGVuZCIsImEiOiJjaXJiczA4ejQwMDVvaWZsdzdmMmpnOGRtIn0._IBtG2TUy17m7S6jwVBrcg
 

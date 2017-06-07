@@ -1,8 +1,8 @@
 <style>
-    form {
+    #project_form {
         margin-bottom: 30px;
     }
-    form label {
+    #project_form label {
         display: block;
         margin-bottom: 5px;
     }
@@ -93,7 +93,7 @@
                         <br>
                         <table style="width: 100%">
                             <tr>
-                                <td style="width: 33%" class="add_notification">
+                                <td style="width: 33%; vertical-align: top;" class="add_notification">
                                     <p>
                                         <label for="notificationDate">Date de la notification</label>
                                         <input type="text" id="notificationDate" class="input_large" name="notificationDate" value="">
@@ -103,7 +103,7 @@
                                         <input type="text" id="notificationSubject" class="input_large" name="notificationSubject" value="">
                                     </p>
                                 </td>
-                                <td style="width: 63%; padding-left: 3%; padding-right: 10px">
+                                <td style="width: 63%; vertical-align: top; padding-left: 3%; padding-right: 10px">
                                     <p>
                                         <label for="notificationContent">Contenu de la notification</label>
                                         <textarea id="notificationContent" name="notificationContent" class="input_large" style="height: 87px; width: 100%;"></textarea>

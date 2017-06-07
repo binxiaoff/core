@@ -25,7 +25,8 @@
         "./app/Resources/assets/js/vendor/videojs/video.js",
         "./node_modules/videojs-youtube/dist/Youtube.js",
         "./app/Resources/assets/js/vendor/swiper/js/swiper.jquery.js",
-        "./app/Resources/assets/js/vendor/jquery.caret.js"
+        "./app/Resources/assets/js/vendor/jquery.caret.js",
+        "./app/Resources/assets/js/vendor/datatables/datatables.js"
       ],
       "extractSharedJs": false
     },
@@ -93,7 +94,7 @@
       ]
     },
     "production" : {
-      "rev": false
+      "rev": true
     }
   }
 }

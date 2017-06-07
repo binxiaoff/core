@@ -18,6 +18,13 @@
             <argument>%kernel.default_locale%</argument>
         </service>
 
+        <service id="unilend.form.partner_contact" class="Unilend\Bundle\FrontBundle\Form\PartnerContactType">
+            <tag name="form.type" />
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="security.token_storage" />
+            <argument>%kernel.default_locale%</argument>
+        </service>
+
         <service id="unilend.form.lender_withdrawal" class="Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType">
             <tag name="form.type" />
         </service>

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "5366092bc69682aa05684361fdac7271",
+    "content-hash": "9f73e2121df375eadedc081b803943bd",
     "packages": [
         {
             "name": "beberlei/DoctrineExtensions",
@@ -118,7 +118,7 @@
                 {
                     "name": "Tobias Nyholm",
                     "email": "tobias.nyholm@gmail.com",
-                    "homepage": "https://github.com/Nyholm"
+                    "homepage": "https://github.com/nyholm"
                 }
             ],
             "description": "A bundle that registers cache implementations as Symfony services supporting PSR-6 and tagging",
@@ -2607,7 +2607,7 @@
             ],
             "authors": [
                 {
-                    "name": "KnpLabs Team",
+                    "name": "KNPLabs Team",
                     "homepage": "http://knplabs.com"
                 }
             ],
@@ -2665,7 +2665,7 @@
             ],
             "authors": [
                 {
-                    "name": "KnpLabs Team",
+                    "name": "KNPLabs Team",
                     "homepage": "http://knplabs.com"
                 },
                 {
@@ -2723,7 +2723,7 @@
             ],
             "authors": [
                 {
-                    "name": "KnpLabs Team",
+                    "name": "KNPLabs Team",
                     "homepage": "http://knplabs.com"
                 },
                 {
@@ -2780,7 +2780,7 @@
             ],
             "authors": [
                 {
-                    "name": "KnpLabs Team",
+                    "name": "KNPLabs Team",
                     "homepage": "http://knplabs.com"
                 }
             ],
@@ -4079,7 +4079,7 @@
             ],
             "authors": [
                 {
-                    "name": "Symfony CMF community",
+                    "name": "Symfony CMF Community",
                     "homepage": "https://github.com/symfony-cmf/Routing/contributors"
                 }
             ],
