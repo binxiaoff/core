@@ -254,11 +254,11 @@ class EulerHermesManager
         if ($response = json_decode($content)) {
             switch ($resource->getLabel()) {
                 case self::RESOURCE_TRAFFIC_LIGHT:
-                    return isset($response->Color);
+                    return isset($response->Color) && is_string($response->Color) && false === empty($response->Color);
                 case self::RESOURCE_SEARCH_COMPANY:
-                    return isset($response->Id);
+                    return isset($response->Id) && false === empty($response->Id);
                 case self::RESOURCE_EULER_GRADE:
-                    return isset($response->message, $response->code);
+                    return isset($response->message, $response->code) && is_numeric($response->message) && is_numeric($response->code);
                 default:
                     return false;
             }
@@ -274,7 +274,8 @@ class EulerHermesManager
      */
     private function getStoredResponse(WsExternalResource $resource, $siren)
     {
-        if ($this->useCache
+        if (
+            $this->useCache
             && false !== ($storedResponse = $this->callHistoryManager->getStoredResponse($resource, $siren))
             && json_decode($storedResponse)
         ) {

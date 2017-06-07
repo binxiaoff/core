@@ -296,7 +296,8 @@ class AltaresManager
      */
     private function isValidResponse($response, array $logContext = [])
     {
-        if (false === isset($response->return)
+        if (
+            false === isset($response->return)
             || (false === isset($response->return->exception) && false === isset($response->return->myInfo))
             || (isset($response->return->exception, $response->return->myInfo))
         ) {
@@ -307,7 +308,8 @@ class AltaresManager
         }
 
         if (isset($response->return->exception)) {
-            if (in_array($response->return->exception->code, self::EXCEPTION_CODE_INVALID_OR_UNKNOWN_SIREN)
+            if (
+                in_array($response->return->exception->code, self::EXCEPTION_CODE_INVALID_OR_UNKNOWN_SIREN)
                 || in_array($response->return->exception->code, self::EXCEPTION_CODE_NO_FINANCIAL_DATA)
             ) {
                 return ['status' => 'valid', 'is_valid' => true];
@@ -342,7 +344,8 @@ class AltaresManager
      */
     private function getStoredResponse($resource, $siren)
     {
-        if ($this->useCache
+        if (
+            $this->useCache
             && false !== ($storedResponse = $this->callHistoryManager->getStoredResponse($resource, $siren))
             && null !== ($storedResponse = json_decode($storedResponse))
             && isset($storedResponse->return)

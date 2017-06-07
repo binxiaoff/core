@@ -239,7 +239,6 @@ class InfogreffeManager
                 return ['status' => 'warning', 'is_valid' => false];
             }
         }
-
         return ['status' => 'warning', 'is_valid' => false];
     }
 

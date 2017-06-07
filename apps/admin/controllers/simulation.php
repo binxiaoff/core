@@ -1,5 +1,7 @@
 <?php
 
+use \Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
+
 class simulationController extends bootstrap
 {
     /**
@@ -41,30 +43,33 @@ class simulationController extends bootstrap
     public function _wsProvider()
     {
         $this->hideDecoration();
-        /** @var \ws_external_resource $wsResource */
-        $wsResource      = $this->loadData('ws_external_resource');
-        $this->resources = $wsResource->select('', 'provider_name ASC, resource_name ASC');
-        $this->result    = false;
+        /** @var WsExternalResource $wsResourceRepository */
+        $wsResourceRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:WsExternalResource');
+        $this->resources      = $wsResourceRepository->findBy([], ['providerName' => 'ASC', 'resourceName' => 'ASC']);
+        $this->result         = false;
 
         try {
             if (isset($_POST['siren'])) {
-                if ($wsResource->get($_POST['resource_label'], 'label')) {
-                    $provider = $this->get('unilend.service.ws_client.' . $wsResource->provider_name . '_manager');
-                    $endpoint = $this->methods[$wsResource->label];
+                /** @var WsExternalResource $wsResource */
+                $wsResource = $wsResourceRepository->findOneBy(['label' => $_POST['resource_label']]);
 
-                    switch ($wsResource->provider_name) {
+                if (null !== $wsResource) {
+                    $provider = $this->get('unilend.service.ws_client.' . $wsResource->getProviderName() . '_manager');
+                    $endpoint = $this->methods[$wsResource->getLabel()];
+
+                    switch ($wsResource->getProviderName()) {
                         case 'euler':
                             $countryCode  = (empty($_POST['countryCode'])) ? 'fr' : $_POST['countryCode'];
-                            $this->result = $provider->$endpoint($_POST['siren'], $countryCode);
+                            $this->result = $provider->{$endpoint}($_POST['siren'], $countryCode);
                             break;
                         case 'altares':
                             switch ($endpoint) {
                                 case 'getFinancialSummary':
                                 case 'getBalanceManagementLine':
-                                    $this->result = $provider->$endpoint($_POST['siren'], $_POST['balanceId']);
+                                    $this->result = $provider->{$endpoint}($_POST['siren'], $_POST['balanceId']);
                                     break;
                                 default:
-                                    $this->result = $provider->$endpoint($_POST['siren']);
+                                    $this->result = $provider->{$endpoint}($_POST['siren']);
                                     break;
                             }
                             break;
@@ -86,17 +91,21 @@ class simulationController extends bootstrap
         $this->hideDecoration();
         /** @var \Unilend\Bundle\WSClientBundle\Service\CallHistoryManager $wsCallHistory */
         $wsCallHistory = $this->get('unilend.service.ws_client.call_history_handler');
-        /** @var \ws_external_resource $wsResource */
-        $wsResource      = $this->loadData('ws_external_resource');
-        $this->resources = $wsResource->select();
-        $this->result    = [];
+        /** @var WsExternalResource $wsResourceRepository */
+        $wsResourceRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:WsExternalResource');
+        $this->resources      = $wsResourceRepository->findBy([], ['providerName' => 'ASC', 'resourceName' => 'ASC']);
+        $this->result         = false;
+        $this->result         = [];
 
         try {
             if (isset($_POST['siren'])) {
-                if (false === empty($_POST['siren']) && false !== $wsResource->get($_POST['resource_label'], 'label')) {
-                    $days = empty($_POST['nbDaysAgo']) ? 3 : $_POST['nbDaysAgo'];
-                    $date = (new \DateTime())->sub(new \DateInterval('P' . $days . 'D'));
-                    $this->result = $wsCallHistory->fetchLatestDataFromMongo($_POST['siren'], $wsResource->provider_name, $wsResource->resource_name, $date);
+                /** @var WsExternalResource $wsResource */
+                $wsResource = $wsResourceRepository->findOneBy(['label' => $_POST['resource_label']]);
+
+                if (false === empty($_POST['siren']) && null !== $wsResource) {
+                    $days         = empty($_POST['nbDaysAgo']) ? 3 : $_POST['nbDaysAgo'];
+                    $date         = (new \DateTime())->sub(new \DateInterval('P' . $days . 'D'));
+                    $this->result = $wsCallHistory->fetchLatestDataFromMongo($_POST['siren'], $wsResource->getProviderName(), $wsResource->getResourceName(), $date);
                 } else {
                     $this->result = 'Please give a siren and a valid resource from the drop down list';
                 }

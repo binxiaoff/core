@@ -181,7 +181,8 @@ class CodinfManager
         $stream->rewind();
         $content = $stream->getContents();
 
-        if (200 === $response->getStatusCode()
+        if (
+            200 === $response->getStatusCode()
             && 1 === preg_match(self::RESPONSE_MATCHING_PATTERN, $content)
         ) {
             return ['status' => 'valid', 'is_valid' => true];
@@ -204,7 +205,8 @@ class CodinfManager
      */
     private function getStoredResponse(WsExternalResource $resource, $siren)
     {
-        if ($this->useCache
+        if (
+            $this->useCache
             && false !== ($storedResponse = $this->callHistoryManager->getStoredResponse($resource, $siren))
             && 1 === preg_match(self::RESPONSE_MATCHING_PATTERN, $storedResponse)
         ) {
