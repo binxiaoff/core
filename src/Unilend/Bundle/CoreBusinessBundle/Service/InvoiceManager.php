@@ -7,6 +7,7 @@ use Knp\Snappy\GeneratorInterface;
 use Twig_Environment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 
 class InvoiceManager
@@ -35,41 +36,25 @@ class InvoiceManager
     }
 
     /**
-     * @param Projects $project
+     * @param Projects     $project
+     * @param int|null     $order
      *
+     * @return null||Factures
      * @throws \Exception
      */
-    public function generateProjectFundsCommissionInvoice(Projects $project)
+    public function getBorrowerInvoice(Projects $project, $order = null)
     {
-        $invoice = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Factures')->findOneBy([
-            'typeCommission' => Factures::TYPE_COMMISSION_FUNDS,
-            'idCompany'      => $project->getIdCompany()->getIdCompany(),
-            'idProject'      => $project->getIdProject()
-        ]);
+        $invoiceType = Factures::TYPE_COMMISSION_REPAYMENT;
 
-        if (null === $invoice) {
-            throw new \Exception('The requested invoice does not exist in database');
+        if (null === $order) {
+            $invoiceType = Factures::TYPE_COMMISSION_FUNDS;
+            $order       = '';
         }
 
-        $projectStatusHistoryRepository      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
-        $repaymentStatus                     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => \projects_status::REMBOURSEMENT]);
-        $projectsStatusHistoryFirstRepayment = $projectStatusHistoryRepository->findStatusFirstOccurrence($project, $repaymentStatus);
-
-        $this->generateInvoice($invoice, $projectsStatusHistoryFirstRepayment->getAdded());
-    }
-
-    /**
-     * @param Projects $project
-     * @param int      $order
-     *
-     * @throws \Exception
-     */
-    public function generateProjectRepaymentCommissionInvoice(Projects $project, $order)
-    {
         $invoice = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Factures')->findOneBy([
-            'typeCommission' => Factures::TYPE_COMMISSION_REPAYMENT,
+            'typeCommission' => $invoiceType,
             'idCompany'      => $project->getIdCompany()->getIdCompany(),
-            'idProject'      => $project,
+            'idProject'      => $project->getIdProject(),
             'ordre'          => $order
         ]);
 
@@ -77,9 +62,33 @@ class InvoiceManager
             throw new \Exception('The requested invoice does not exist in database');
         }
 
+        return $invoice;
+    }
+
+    /**
+     * @param Factures $invoice
+     *
+     * @throws \Exception
+     */
+    public function generateProjectFundsCommissionInvoice(Factures $invoice)
+    {
+        $projectStatusHistoryRepository      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
+        $repaymentStatus                     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => ProjectsStatus::REMBOURSEMENT]);
+        $projectsStatusHistoryFirstRepayment = $projectStatusHistoryRepository->findStatusFirstOccurrence($invoice->getIdProject(), $repaymentStatus);
+
+        $this->generateInvoice($invoice, $projectsStatusHistoryFirstRepayment->getAdded());
+    }
+
+    /**
+     * @param Factures $invoice
+     *
+     * @throws \Exception
+     */
+    public function generateProjectRepaymentCommissionInvoice(Factures $invoice)
+    {
         $paymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy([
-            'idProject' => $project->getIdProject(),
-            'ordre'     => $order,
+            'idProject' => $invoice->getIdProject()->getIdProject(),
+            'ordre'     => $invoice->getOrdre(),
             'statusRa'  => \echeanciers_emprunteur::STATUS_NO_EARLY_REFUND
         ]);
 
@@ -101,45 +110,47 @@ class InvoiceManager
             'margin-left'   => 15
         ];
 
-        $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($invoice->getIdProject());
-        $client  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+        $client   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($invoice->getIdProject()->getIdCompany()->getIdClientOwner());
+        $filePath = $this->getBorrowerInvoiceFilePath($invoice);
 
-        if ($invoice->getOrdre() >= 1) {
-            $filePath = $this->protectedPath . '/pdf/facture/facture_ER-' . $client->getHash() . '-' . $project->getIdProject() . '-' . $invoice->getOrdre() . '.pdf';
-        } else {
-            $filePath = $this->protectedPath . '/pdf/facture/facture_EF-' . $client->getHash() . '-' . $project->getIdProject() . '.pdf';
-        }
-
-        $pdfContent = $this->twig->render('/pdf/commission_invoice.html.twig', [
+        $pdfContent = $this->twig->render('/pdf/borrower_invoice.html.twig', [
             'client'      => $client,
-            'project'     => $project,
+            'project'     => $invoice->getIdProject(),
             'invoice'     => $invoice,
             'paymentDate' => $paymentDate,
             'vat'         => $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT),
-            'footer'      => $this->getInvoiceFooterData()
         ]);
 
         $this->snappy->generateFromHtml($pdfContent, $filePath, $options, true);
     }
 
     /**
-     * @return array
+     * @param Factures $invoice
+     *
+     * @return string
      */
-    private function getInvoiceFooterData()
+    public function getBorrowerInvoiceFilePath(Factures $invoice)
     {
-        $settingsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+        $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($invoice->getIdProject()->getIdCompany()->getIdClientOwner());
 
-        $footerInvoiceData = [
-            'unilendTitle'      => mb_strtoupper($settingsRepository->findOneBy(['type' => 'titulaire du compte'])->getValue(), 'UTF-8'),
-            'corporateName'     => mb_strtoupper($settingsRepository->findOneBy(['type' => 'Declaration contrat pret - raison sociale'])->getValue(), 'UTF-8'),
-            'unilend'           => mb_strtoupper($settingsRepository->findOneBy(['type' => 'Facture - Unilend'])->getValue(), 'UTF-8'),
-            'capital'           => mb_strtoupper($settingsRepository->findOneBy(['type' => 'Facture - capital'])->getValue(), 'UTF-8'),
-            'address'           => mb_strtoupper($settingsRepository->findOneBy(['type' => 'Declaration contrat pret - adresse'])->getValue(), 'UTF-8'),
-            'phone'             => mb_strtoupper($settingsRepository->findOneBy(['type' => 'Facture - telephone'])->getValue(), 'UTF-8'),
-            'rcs'               => mb_strtoupper($settingsRepository->findOneBy(['type' => 'Facture - RCS'])->getValue(), 'UTF-8'),
-            'intraCommunityVAT' => mb_strtoupper($settingsRepository->findOneBy(['type' => 'Facture - TVA INTRACOMMUNAUTAIRE'])->getValue(), 'UTF-8')
-        ];
+        if ($invoice->getOrdre() >= 1) {
+            return $this->protectedPath . '/pdf/facture/facture_ER-' . $client->getHash() . '-' . $invoice->getIdProject()->getIdProject() . '-' . $invoice->getOrdre() . '.pdf';
+        } else {
+            return $this->protectedPath . '/pdf/facture/facture_EF-' . $client->getHash() . '-' . $invoice->getIdProject()->getIdProject() . '.pdf';
+        }
+    }
 
-        return $footerInvoiceData;
+    /**
+     * @param Factures $invoice
+     *
+     * @return string
+     */
+    public function getBorrowerInvoiceFileName(Factures $invoice)
+    {
+        if ($invoice->getOrdre() >= 1) {
+            return 'FACTURE-UNILEND-' . $invoice->getIdProject()->getSlug() . '-' . $invoice->getOrdre();
+        } else {
+            return 'FACTURE-UNILEND-' . $invoice->getIdProject()->getSlug();
+        }
     }
 }

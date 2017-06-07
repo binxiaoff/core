@@ -6,13 +6,11 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 
 class InvoiceController extends Controller
 {
     /**
-     * @Route("/pdf/facture_EF/{clientHash}/{idProject}", name="invoice_funds_commission", requirements={"idProject":"\d+", "clientHash": "[0-9a-f-]{32,36}"})
+     * @Route("/pdf/facture_EF/{clientHash}/{idProject}", name="borrower_invoice_funds_commission", requirements={"idProject": "\d+", "clientHash": "[0-9a-f-]{32,36}"})
      *
      * @param string  $clientHash
      * @param int     $idProject
@@ -22,25 +20,25 @@ class InvoiceController extends Controller
      */
     public function downloadProjectFundsCommissionAction($clientHash, $idProject)
     {
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var Projects $project */
-        $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($idProject);
-        /** @var Clients $client */
-        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneByHash($clientHash);
+        $entityManager  = $this->get('doctrine.orm.entity_manager');
+        $invoiceManager = $this->get('unilend.service.invoice_manager');
+        $project        = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($idProject);
+        $client         = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
 
         if (null === $project) {
-            throw new \Exception('The project ' . $idProject . 'does not exist');
+            throw new \Exception('The project ' . $idProject . ' does not exist');
         }
 
-        if ($project->getIdCompany()->getIdClientOwner() !== $client->getIdClient()) {
+        if ($project->getIdCompany()->getIdClientOwner() != $client->getIdClient()) {
             throw new \Exception('Project owner and client do not match.');
         }
 
-        $namePdfClient = 'FACTURE-UNILEND-' . $project->getSlug();
-        $filePath      = $this->getParameter('path.protected') . '/pdf/facture/facture_EF-' . $clientHash . '-' . $idProject . '.pdf';
+        $invoice       = $invoiceManager->getBorrowerInvoice($project);
+        $namePdfClient = $invoiceManager->getBorrowerInvoiceFileName($invoice);
+        $filePath      = $invoiceManager->getBorrowerInvoiceFilePath($invoice);
 
         if (false === file_exists($filePath)) {
-            $this->get('unilend.service.invoice_manager')->generateProjectFundsCommissionInvoice($project);
+            $invoiceManager->generateProjectFundsCommissionInvoice($invoice);
         }
 
         return new BinaryFileResponse($filePath, 200, [
@@ -49,9 +47,8 @@ class InvoiceController extends Controller
         ]);
     }
 
-
     /**
-     * @Route("/pdf/facture_ER/{clientHash}/{idProject}/{order}", name="invoice_payment_commission", requirements={"idProject":"\d+", "clientHash": "[0-9a-f-]{32,36}", "order":"\d+"})
+     * @Route("/pdf/facture_ER/{clientHash}/{idProject}/{order}", name="borrower_invoice_payment_commission", requirements={"idProject": "\d+", "clientHash": "[0-9a-f-]{32,36}", "order":"\d+"})
      *
      * @param string  $clientHash
      * @param int     $idProject
@@ -62,25 +59,25 @@ class InvoiceController extends Controller
      */
     public function downloadRepaymentCommissionInvoiceAction($clientHash, $idProject, $order)
     {
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var Projects $project */
-        $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($idProject);
-        /** @var Clients $client */
-        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneByHash($clientHash);
+        $entityManager  = $this->get('doctrine.orm.entity_manager');
+        $invoiceManager = $this->get('unilend.service.invoice_manager');
+        $project        = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($idProject);
+        $client         = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
 
         if (null === $project) {
-            throw new  \Exception('The project ' . $idProject . 'does not exist');
+            throw new  \Exception('The project ' . $idProject . ' does not exist');
         }
 
-        if ($project->getIdCompany()->getIdClientOwner() !== $client->getIdClient()) {
+        if ($project->getIdCompany()->getIdClientOwner() != $client->getIdClient()) {
             throw new \Exception('Project owner and client do not match.');
         }
 
-        $namePdfClient = 'FACTURE-UNILEND-' . $project->getSlug() . '-' . $order;
-        $filePath      = $this->getParameter('path.protected') . '/pdf/facture/facture_ER-' . $clientHash . '-' . $idProject . '-' . $order . '.pdf';
+        $invoice       = $invoiceManager->getBorrowerInvoice($project, $order);
+        $namePdfClient = $invoiceManager->getBorrowerInvoiceFileName($invoice);
+        $filePath      = $invoiceManager->getBorrowerInvoiceFilePath($invoice);
 
         if (false === file_exists($filePath)) {
-           $this->get('unilend.service.invoice_manager')->generateProjectRepaymentCommissionInvoice($project, $order);
+           $invoiceManager->generateProjectRepaymentCommissionInvoice($invoice);
         }
 
         return new BinaryFileResponse($filePath, 200, [

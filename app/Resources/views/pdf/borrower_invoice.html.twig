@@ -75,7 +75,7 @@
 
     <div class="row">
         <div class="col-xs-4">
-            <h5>{{ "invoice-pdf_commission-type-#{ invoice.typeCommission }"|trans }} &laquo; {{ project.natureProject }} &raquo;</h5>
+            <h5>{{ "invoice-pdf_commission-type-#{ invoice.typeCommission }"|trans({'%projectTitle%' : project.natureProject})|raw }}</h5>
         </div>
     </div>
 
@@ -141,10 +141,10 @@
     <div class="row footer c-t2">
         <div class="col-xs-4">
             <p class="text-align-center small">
-                {{ footer.unilendTitle }}<span>•</span>
-                {{ footer.corporateName }} - {{ footer.unilend }}<span>•</span>
-                {{ footer.capital }} <span>•</span> {{ footer.address }} <span>•</span>
-                {{ footer.phone }} <span>•</span> {{ footer.rcs }} <span>•</span> {{ footer.intraCommunityVAT }}
+                {{ setting('titulaire du compte') }}<span>•</span>
+                {{ setting('Declaration contrat pret - raison sociale') }} - {{ setting('Facture - Unilend') }}<span>•</span>
+                {{ setting('Facture - capital') }} <span>•</span> {{ setting('Declaration contrat pret - adresse') }} <span>•</span>
+                {{ setting('Facture - telephone') }} <span>•</span> {{ setting('Facture - RCS') }} <span>•</span> {{ setting('Facture - TVA INTRACOMMUNAUTAIRE') }}
             </p>
         </div>
     </div>

@@ -225,10 +225,10 @@ class BorrowerAccountController extends Controller
         foreach ($clientsInvoices as $iKey => $aInvoice) {
             switch ($aInvoice['type_commission']) {
                 case Factures::TYPE_COMMISSION_FUNDS:
-                    $clientsInvoices[$iKey]['url'] = $this->generateUrl('invoice_funds_commission', ['clientHash' => $client->hash, 'idProject' => $aInvoice['id_project']]);
+                    $clientsInvoices[$iKey]['url'] = $this->generateUrl('borrower_invoice_funds_commission', ['clientHash' => $client->hash, 'idProject' => $aInvoice['id_project']]);
                     break;
                 case Factures::TYPE_COMMISSION_REPAYMENT:
-                    $clientsInvoices[$iKey]['url'] = $this->generateUrl('invoice_payment_commission', ['clientHash' => $client->hash, 'idProject' => $aInvoice['id_project'], 'order' => $aInvoice['ordre']]);
+                    $clientsInvoices[$iKey]['url'] = $this->generateUrl('borrower_invoice_payment_commission', ['clientHash' => $client->hash, 'idProject' => $aInvoice['id_project'], 'order' => $aInvoice['ordre']]);
                     break;
             }
         }
