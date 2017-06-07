@@ -13,6 +13,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use \Psr\Log\LoggerInterface;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
 
 class dossiersController extends bootstrap
 {
@@ -190,7 +192,7 @@ class dossiersController extends bootstrap
                 /** @var \Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentity $establishmentIdentity */
                 $establishmentIdentity  = $this->get('unilend.service.ws_client.altares_manager')->getEstablishmentIdentity($this->companies->siren);
 
-                if ($establishmentIdentity instanceof \Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentity && false === empty($establishmentIdentity->getPhoneNumber())) {
+                if ($establishmentIdentity instanceof EstablishmentIdentityDetail && false === empty($establishmentIdentity->getPhoneNumber())) {
                     $this->companies->phone = $establishmentIdentity->getPhoneNumber();
                     $this->companies->update();
                 }

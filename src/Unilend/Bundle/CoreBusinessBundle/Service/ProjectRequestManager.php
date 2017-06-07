@@ -11,7 +11,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetList;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetListDetail;
 
 class ProjectRequestManager
 {
@@ -189,12 +189,12 @@ class ProjectRequestManager
     }
 
     /**
-     * @param \companies            $company
-     * @param int                   $userId
-     * @param null|BalanceSheetList $balanceSheetList
+     * @param \companies                  $company
+     * @param int                         $userId
+     * @param null|BalanceSheetListDetail $balanceSheetList
      * @return null|string
      */
-    public function checkCompanyRisk(\companies &$company, $userId, BalanceSheetList &$balanceSheetList = null)
+    public function checkCompanyRisk(\companies &$company, $userId, BalanceSheetListDetail &$balanceSheetList = null)
     {
         /** @var \company_rating $companyRating */
         $companyRating                  = $this->entityManagerSimulator->getRepository('company_rating');
@@ -269,7 +269,7 @@ class ProjectRequestManager
 
     /**
      * @param \companies                   $company
-     * @param null|BalanceSheetList        $balanceSheetList
+     * @param null|BalanceSheetListDetail  $balanceSheetList
      * @param null|\company_rating_history $companyRatingHistory
      * @param null|\company_rating         $companyRating
      * @return null|string
@@ -300,7 +300,6 @@ class ProjectRequestManager
                 return $rejectionReason;
             }
 
-            /** @var BalanceSheetList $balanceSheetList */
             $balanceSheetList = $this->companyFinanceCheck->getBalanceSheets($company->siren);
 
             if (null !== $balanceSheetList && (new \DateTime())->diff($balanceSheetList->getLastBalanceSheet()->getCloseDate())->days <= \company_balance::MAX_COMPANY_BALANCE_DATE) {

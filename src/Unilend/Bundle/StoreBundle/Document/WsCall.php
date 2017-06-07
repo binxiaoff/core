@@ -30,6 +30,11 @@ class WsCall
     protected $siren;
 
     /**
+     * @MongoDB\Field(name="id_ws_call_history", type="integer")
+     */
+    protected $idWsCallHistory;
+
+    /**
      * @MongoDB\Field(type="string")
      */
     protected $response;
@@ -42,7 +47,7 @@ class WsCall
     /**
      * Get id
      *
-     * @return id $id
+     * @return string $id
      */
     public function getId()
     {
@@ -145,5 +150,21 @@ class WsCall
     public function setAdded($added)
     {
         $this->added = $added;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getIdWsCallHistory()
+    {
+        return $this->idWsCallHistory;
+    }
+
+    /**
+     * @param mixed $idWsCallHistory
+     */
+    public function setIdWsCallHistory($idWsCallHistory)
+    {
+        $this->idWsCallHistory = $idWsCallHistory;
     }
 }
