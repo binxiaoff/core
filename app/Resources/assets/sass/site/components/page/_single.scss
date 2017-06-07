@@ -238,7 +238,7 @@
   .page-footer {
     .page-navigate-next-page {
       background-color: $c-t2;
-      background-image: image-url('generic/page-footer.png');
+      background-image: image-url('generic/page-footer.png', false, false);
       background-position: center center;
       background-repeat: no-repeat;
       background-size: cover;

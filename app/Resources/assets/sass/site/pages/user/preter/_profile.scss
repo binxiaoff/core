@@ -441,19 +441,19 @@
 }
 
 .file-identity-side-a:before {
-  background-image: image-url('dashboard/identity-side-a.png');
+  background-image: image-url('dashboard/identity-side-a.png', false, false);
 }
 
 .file-identity-side-b:before {
-  background-image: image-url('dashboard/identity-side-b.png');
+  background-image: image-url('dashboard/identity-side-b.png', false, false);
 }
 
 .file-domicile:before {
-  background-image: image-url('dashboard/domicile.png');
+  background-image: image-url('dashboard/domicile.png', false, false);
 }
 
 .file-rib:before {
-  background-image: image-url('dashboard/rib.png');
+  background-image: image-url('dashboard/rib.png', false, false);
 }
 
 @include devices('sm', 'md', 'lg') {
