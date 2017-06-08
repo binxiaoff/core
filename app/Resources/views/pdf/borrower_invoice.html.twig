@@ -89,7 +89,7 @@
             </tr>
             <tr>
                 <td class="item-description">
-                    {% trans with {'%commissionPercentage%': invoice.commission} %} invoice-pdf_commission-rate-net {% endtrans %}
+                    {% trans with {'%commissionPercentage%': invoice.commission|localizednumberwithprecision(2)} %} invoice-pdf_commission-rate-net {% endtrans %}
                 </td>
                 <td class="item-value">
                     {{ (invoice.montantHT / 100)|localizedcurrency('EUR') }}
