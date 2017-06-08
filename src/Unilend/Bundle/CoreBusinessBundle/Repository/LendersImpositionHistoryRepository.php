@@ -30,7 +30,7 @@ class LendersImpositionHistoryRepository extends EntityRepository
               END AS client_type
           FROM lenders_imposition_history lih
           INNER JOIN wallet w ON w.id = lih.id_lender
-          INNER JOIN clients c ON c.id_client = la.id_client_owner
+          INNER JOIN clients c ON c.id_client = w.id_client
           WHERE lih.id_lender = :id_lender';
 
         return $this->getEntityManager()->getConnection()
