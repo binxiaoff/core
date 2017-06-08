@@ -470,15 +470,12 @@ class ProjectDisplayManager
         }
 
         if ($user instanceof UserLender) {
-            /** @var \lenders_accounts $lender */
-            $lender = $this->entityManagerSimulator->getRepository('lenders_accounts');
-            $lender->get($user->getClientId(), 'id_client_owner');
-
             /** @var \projects $projectData */
             $projectData = $this->entityManagerSimulator->getRepository('projects');
             $projectData->get($project->getIdProject());
 
-            $lenderEligibility = $this->lenderValidator->isEligible($lender, $projectData);
+            $client            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
+            $lenderEligibility = $this->lenderValidator->isEligible($client, $projectData);
 
             if (
                 in_array(ProductAttributeType::ELIGIBLE_LENDER_ID, $lenderEligibility['reason'])
