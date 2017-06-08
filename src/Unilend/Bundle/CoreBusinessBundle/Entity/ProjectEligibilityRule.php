@@ -42,20 +42,6 @@ class ProjectEligibilityRule
      */
     private $id;
 
-    /**
-     * @var \Doctrine\Common\Collections\Collection
-     *
-     * @ORM\ManyToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSet", mappedBy="idRule")
-     */
-    private $idRuleSet;
-
-    /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        $this->idRuleSet = new \Doctrine\Common\Collections\ArrayCollection();
-    }
 
 
     /**
@@ -138,39 +124,5 @@ class ProjectEligibilityRule
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * Add idRuleSet
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSet $idRuleSet
-     *
-     * @return ProjectEligibilityRule
-     */
-    public function addIdRuleSet(\Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSet $idRuleSet)
-    {
-        $this->idRuleSet[] = $idRuleSet;
-
-        return $this;
-    }
-
-    /**
-     * Remove idRuleSet
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSet $idRuleSet
-     */
-    public function removeIdRuleSet(\Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSet $idRuleSet)
-    {
-        $this->idRuleSet->removeElement($idRuleSet);
-    }
-
-    /**
-     * Get idRuleSet
-     *
-     * @return \Doctrine\Common\Collections\Collection
-     */
-    public function getIdRuleSet()
-    {
-        return $this->idRuleSet;
     }
 }
