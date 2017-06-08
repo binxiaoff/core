@@ -112,7 +112,6 @@ class ProjectDisplayManager
         }
 
         $projectsData = [];
-        $client       = $lenderAccount ? $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($lenderAccount->id_client_owner) : null;
         $products     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient($client);
         $productIds   = array_map(function (Product $product) {
             return $product->getIdProduct();
