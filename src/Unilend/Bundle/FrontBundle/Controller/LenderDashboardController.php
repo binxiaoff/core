@@ -64,11 +64,11 @@ class LenderDashboardController extends Controller
         $client->get($this->getUser()->getClientId());
         $wallet          = $walletRepository->getWalletByType($client->id_client, WalletType::LENDER);
         $balance         = $wallet->getAvailableBalance();
-        $ongoingProjects = $project->selectProjectsByStatus([\projects_status::EN_FUNDING], '', [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_ASC], 0, 30);
-        $products        = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient($client);
+        $products        = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient($wallet->getIdClient());
         $productIds      = array_map(function (Product $product) {
             return $product->getIdProduct();
         }, $products);
+        $ongoingProjects = $project->selectProjectsByStatus([\projects_status::EN_FUNDING], '', [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_ASC], 0, 30, true, $productIds);
 
         foreach ($ongoingProjects as $iKey => $aProject) {
             $project->get($aProject['id_project']);
