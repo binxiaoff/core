@@ -12,14 +12,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\ClientValidator;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
-use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
-use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 use Unilend\librairies\CacheKeys;
 
 class ProjectDisplayManager
@@ -41,10 +37,8 @@ class ProjectDisplayManager
     private $lenderAccountDisplayManager;
     /** @var CompanyBalanceSheetManager */
     private $companyBalanceSheetManager;
-    /** @var ProductAttributeManager */
-    private $productAttributeManager;
-    /** @var ClientValidator */
-    private $clientValidator;
+    /** @var ProductManager */
+    private $productManager;
     /** @var CacheItemPoolInterface */
     private $cachePool;
     /** @var array */
@@ -71,8 +65,7 @@ class ProjectDisplayManager
      * @param BidManager                  $bidManager
      * @param LenderAccountDisplayManager $lenderAccountDisplayManager
      * @param CompanyBalanceSheetManager  $companyBalanceSheetManager
-     * @param ProductAttributeManager     $productAttributeManager
-     * @param ClientValidator             $clientValidator
+     * @param ProductManager             $productManager
      * @param CacheItemPoolInterface      $cachePool
      */
     public function __construct(
@@ -82,8 +75,7 @@ class ProjectDisplayManager
         BidManager $bidManager,
         LenderAccountDisplayManager $lenderAccountDisplayManager,
         CompanyBalanceSheetManager $companyBalanceSheetManager,
-        ProductAttributeManager $productAttributeManager,
-        ClientValidator $clientValidator,
+        ProductManager $productManager,
         CacheItemPoolInterface $cachePool
     )
     {
@@ -93,8 +85,7 @@ class ProjectDisplayManager
         $this->bidManager                  = $bidManager;
         $this->lenderAccountDisplayManager = $lenderAccountDisplayManager;
         $this->companyBalanceSheetManager  = $companyBalanceSheetManager;
-        $this->productAttributeManager     = $productAttributeManager;
-        $this->clientValidator             = $clientValidator;
+        $this->productManager              = $productManager;
         $this->cachePool                   = $cachePool;
     }
 
@@ -469,14 +460,21 @@ class ProjectDisplayManager
             return self::VISIBILITY_NONE;
         }
 
-        if ($user instanceof UserLender) {
-            /** @var \projects $projectData */
-            $projectData = $this->entityManagerSimulator->getRepository('projects');
-            $projectData->get($project->getIdProject());
+        if (null === $user) {
+            return self::VISIBILITY_ANONYMOUS;
+        }
 
-            $client            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
-            $lenderEligibility = $this->clientValidator->isEligible($client, $projectData);
+        $client     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
+        $violations = $this->productManager->checkClientEligibility($client, $project);
 
+        if (
+            in_array(ProductAttributeType::ELIGIBLE_LENDER_ID, $violations)
+            || in_array(ProductAttributeType::ELIGIBLE_LENDER_TYPE, $violations)
+        ) {
+            return self::VISIBILITY_NONE;
+        }
+
+        if ($client->isLender()) {
             if (
                 in_array(ProductAttributeType::ELIGIBLE_LENDER_ID, $lenderEligibility['reason'])
                 || in_array(ProductAttributeType::ELIGIBLE_LENDER_TYPE, $lenderEligibility['reason'])
@@ -491,21 +489,8 @@ class ProjectDisplayManager
             return self::VISIBILITY_NOT_VALIDATED_LENDER;
         }
 
-        /** @var \product $product */
-        $product = $this->entityManagerSimulator->getRepository('product');
-        $product->get($project->getIdProduct());
-
-        if (
-            false === empty($this->productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_LENDER_ID))
-            || false === empty($this->productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_LENDER_TYPE))
-        ) {
-            return self::VISIBILITY_NONE;
-        }
-
-        if ($user instanceof UserBorrower || $user instanceof UserPartner) {
+        if ($client->isBorrower() || $client->isPartner()) {
             return self::VISIBILITY_FULL;
         }
-
-        return self::VISIBILITY_ANONYMOUS;
     }
 }

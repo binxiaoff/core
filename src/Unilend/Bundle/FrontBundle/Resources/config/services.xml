@@ -51,8 +51,7 @@
             <argument type="service" id="unilend.service.bid_manager" />
             <argument type="service" id="unilend.frontbundle.service.lender_account_display_manager" />
             <argument type="service" id="unilend.service.company_balance_sheet_manager" />
-            <argument type="service" id="unilend.service_product.product_attribute_manager" />
-            <argument type="service" id="unilend.service_product.client_validator" />
+            <argument type="service" id="unilend.service_product.product_manager" />
             <argument type="service" id="cache" />
         </service>
 
