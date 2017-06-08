@@ -770,6 +770,7 @@ class transfertsController extends bootstrap
                     $slackManager->sendMessage($message);
                 } catch (\Exception $exception) {
                     // Nothing to do, but it must not disturb the DB transaction.
+                    $logger->error('Ekomi send project email or slack message for release funds failed. Erorr messages : ' . $exception->getMessage());
                 }
 
             } catch (\Exception $exception) {
