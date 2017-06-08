@@ -361,7 +361,7 @@ class ProjectsController extends Controller
 
         if (
             $project->status >= \projects_status::A_FUNDER && $project->status < \projects_status::EN_FUNDING
-            || ProjectDisplayManager::VISIBILITY_FULL === $projectDisplayManager->getVisibility($projectEntity, $this->getUser())
+            || ProjectDisplayManager::VISIBILITY_NONE !== $projectDisplayManager->getVisibility($projectEntity, $this->getUser())
             || $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && 28002 == $project->id_project
         ) {
             return $project;
