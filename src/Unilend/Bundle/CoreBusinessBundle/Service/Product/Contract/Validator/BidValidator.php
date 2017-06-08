@@ -31,7 +31,7 @@ class BidValidator
      *
      * @return array
      */
-    public function valid(Bids $bid, UnderlyingContract $contract)
+    public function validate(Bids $bid, UnderlyingContract $contract)
     {
         $violations = [];
 

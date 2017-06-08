@@ -75,7 +75,15 @@ abstract class ProductManager
         $product = $this->convertProduct($product);
         $project = $this->convertProject($project);
 
-        return $this->isProductUsable($product) && $this->projectValidator->validate($project, $product);
+        return $this->isProductUsable($product) && 0 === count($this->projectValidator->validate($project, $product));
+    }
+
+    public function checkProjectEligibility($project, $product)
+    {
+        $product = $this->convertProduct($product);
+        $project = $this->convertProject($project);
+
+        return $this->projectValidator->validate($project, $product);
     }
 
     /**\
@@ -134,7 +142,7 @@ abstract class ProductManager
         $durationContractMax = null;
 
         foreach ($product->getIdContract() as $contract) {
-            $durationContract = $this->contractManager->getEligibleMaxDuration($contract);
+            $durationContract = $this->contractManager->getMaxEligibleDuration($contract);
             if (null === $durationContractMax) {
                 $durationContractMax = $durationContract;
             } else {
@@ -251,7 +259,7 @@ abstract class ProductManager
      */
     private function isProductUsable(Product $product)
     {
-        return false === empty($product->id_product) && in_array($product->getStatus(), [Product::STATUS_ONLINE, Product::STATUS_OFFLINE]);
+        return false === empty($product->getIdProduct()) && in_array($product->getStatus(), [Product::STATUS_ONLINE, Product::STATUS_OFFLINE]);
     }
 
     /**

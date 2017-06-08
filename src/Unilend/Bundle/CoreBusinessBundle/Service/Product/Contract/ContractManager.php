@@ -67,11 +67,21 @@ class ContractManager
         return $this->clientValidator->validate($client, $contract);
     }
 
+    /**
+     * @param UnderlyingContract $contract
+     *
+     * @return bool
+     */
     public function isAutobidSettingsEligible(UnderlyingContract $contract)
     {
         return 0 === count($this->autoBidSettingsValidator->validate($contract));
     }
 
+    /**
+     * @param UnderlyingContract $contract
+     *
+     * @return null
+     */
     public function getMaxAmount(UnderlyingContract $contract)
     {
         $maxAmount = $this->contractAttributeManager->getContractAttributesByType($contract, UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
@@ -82,6 +92,12 @@ class ContractManager
         return $maxAmount[0];
     }
 
+    /**
+     * @param \underlying_contract $contract
+     * @param                      $attributeType
+     *
+     * @return array
+     */
     public function getAttributesByType(\underlying_contract $contract, $attributeType)
     {
         return $this->contractAttributeManager->getContractAttributesByType($contract, $attributeType);
@@ -95,9 +111,15 @@ class ContractManager
      */
     public function checkBidEligibility(Bids $bid, UnderlyingContract $contract)
     {
-        return $this->bidValidator->valid($bid, $contract);
+        return $this->bidValidator->validate($bid, $contract);
     }
 
+    /**
+     * @param Projects           $project
+     * @param UnderlyingContract $contract
+     *
+     * @return array
+     */
     public function checkProjectEligibility(Projects $project, UnderlyingContract $contract)
     {
         return $this->projectValidator->validate($project, $contract);
