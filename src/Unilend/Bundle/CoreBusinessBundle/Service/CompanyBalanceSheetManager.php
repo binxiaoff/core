@@ -3,7 +3,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetList;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetListDetail;
 
 class CompanyBalanceSheetManager
 {
@@ -293,11 +293,11 @@ class CompanyBalanceSheetManager
 
     /**
      * Set company balance sheets
-     * @param \companies       $company
-     * @param BalanceSheetList $balanceSheetList
-     * @param \projects        $project
+     * @param \companies             $company
+     * @param BalanceSheetListDetail $balanceSheetList
+     * @param \projects              $project
      */
-    public function setCompanyBalance(\companies $company, BalanceSheetList $balanceSheetList, \projects &$project = null)
+    public function setCompanyBalance(\companies $company, BalanceSheetListDetail $balanceSheetList, \projects &$project = null)
     {
         $taxFormType = $this->detectTaxFormType($company);
 

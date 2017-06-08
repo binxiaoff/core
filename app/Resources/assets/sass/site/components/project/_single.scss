@@ -43,7 +43,7 @@
 
   position: relative;
   background-color: $c-bg2;
-  background-image: image-url('maps/map-generic-1600x1000.jpg');
+  background-image: image-url('maps/map-generic-1600x1000.jpg', false, false);
   background-repeat: no-repeat;
   background-position: center center;
   background-size: cover;

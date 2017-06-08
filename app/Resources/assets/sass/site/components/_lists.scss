@@ -90,7 +90,7 @@
   .file-type-pdf {
     min-height: 80px;
     padding-left: 80px;
-    background-image: image-url('dashboard/file-pdf-60x80.png');
+    background-image: image-url('dashboard/file-pdf-60x80.png', false, false);
     background-position: left top;
     background-repeat: no-repeat;
   }
