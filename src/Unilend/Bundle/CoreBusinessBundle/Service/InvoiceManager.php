@@ -86,20 +86,14 @@ class InvoiceManager
      */
     public function generateProjectRepaymentCommissionInvoice(Factures $invoice)
     {
-        $paymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy([
-            'idProject' => $invoice->getIdProject()->getIdProject(),
-            'ordre'     => $invoice->getOrdre(),
-            'statusRa'  => \echeanciers_emprunteur::STATUS_NO_EARLY_REFUND
-        ]);
-
-        $this->generateInvoice($invoice, $paymentSchedule->getDateEcheanceEmprunteurReel());
+        $this->generateInvoice($invoice);
     }
 
     /**
-     * @param Factures  $invoice
-     * @param \DateTime $paymentDate
+     * @param Factures       $invoice
+     * @param \DateTime|null $paymentDate
      */
-    private function generateInvoice(Factures $invoice, \DateTime $paymentDate)
+    private function generateInvoice(Factures $invoice, \DateTime $paymentDate = null)
     {
         $options = [
             'footer-html'   => '',
@@ -117,7 +111,7 @@ class InvoiceManager
             'client'      => $client,
             'project'     => $invoice->getIdProject(),
             'invoice'     => $invoice,
-            'paymentDate' => $paymentDate,
+            'paymentDate' => null === $paymentDate ? $invoice->getDate() : $paymentDate,
             'vat'         => $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT),
         ]);
 
