@@ -92,7 +92,7 @@
         <div class="col-md-8 col-lg-8">
             <p>
                 <b style="font-size: 1rem; line-height: 1.5rem;">{% trans with { '%idClient%' : client.idClient } %}lender-operations_pdf-subject-line{% endtrans %}</b><br/>
-                {% trans with {'%name' => client.nom, '%firstName%' => client.prenom }%}lender-operations_pdf-owner-line{% endtrans %}
+                {% trans with {'%name' : client.nom, '%firstName%' : client.prenom }%}lender-operations_pdf-owner-line{% endtrans %}
             </p>
         </div>
     </div>
