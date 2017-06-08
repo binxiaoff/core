@@ -54,8 +54,8 @@
         <div class="col-xs-2 col-sm-4 col-md-6 col-lg-6">
             <p>
                 {% trans with {'%invoiceNumber%': invoice.numFacture } %} invoice-pdf_header-number-line {% endtrans %}<br>
-                {% trans with {'%date%': paymentDate|date('d/m/Y') }%} invoice-pdf_header-date-line {% endtrans %}<br>
-                {% trans with {'%idClient%': client.idClient }%} invoice-pdf_header-id-client-line {% endtrans %}
+                {% trans with {'%date%': paymentDate|date('d/m/Y') } %} invoice-pdf_header-date-line {% endtrans %}<br>
+                {% trans with {'%idClient%': client.idClient } %} invoice-pdf_header-id-client-line {% endtrans %}
             </p>
         </div>
         <div class="col-xs-2 col-sm-4 col-md-6 col-lg-6">
