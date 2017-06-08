@@ -158,7 +158,8 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL,
             OperationType::UNILEND_LENDER_REGULARIZATION,
             OperationType::UNILEND_BORROWER_REGULARIZATION,
-            OperationType::UNILEND_PROVISION
+            OperationType::UNILEND_PROVISION,
+            OperationType::UNILEND_BORROWER_COMMERCIAL_GESTURE
         ], OperationType::TAX_TYPES_FR);
 
         $dailyMovements   = $operationRepository->sumMovementsForDailyState($firstDay, $requestedDate, $movements);
@@ -495,6 +496,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $crds                        = empty($line[OperationType::TAX_FR_CRDS]) ? 0 : $line[OperationType::TAX_FR_CRDS];
             $lenderWithdraw              = empty($line[OperationType::LENDER_WITHDRAW]) ? 0 : $line[OperationType::LENDER_WITHDRAW];
             $promotionalOffers           = empty($line[OperationType::UNILEND_PROMOTIONAL_OPERATION]) ? 0 : $line[OperationType::UNILEND_PROMOTIONAL_OPERATION];
+            $commercialGestures          = empty($line[OperationType::UNILEND_BORROWER_COMMERCIAL_GESTURE]) ? 0 : $line[OperationType::UNILEND_BORROWER_COMMERCIAL_GESTURE];
             $lenderRegularization        = empty($line[OperationType::UNILEND_LENDER_REGULARIZATION]) ? 0 : $line[OperationType::UNILEND_LENDER_REGULARIZATION];
             $borrowerRegularization      = empty($line[OperationType::UNILEND_BORROWER_REGULARIZATION]) ? 0 : $line[OperationType::UNILEND_BORROWER_REGULARIZATION];
             $promotionalOffersCancel     = empty($line[OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL]) ? 0 : $line[OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL];
@@ -504,12 +506,13 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
 
             $realBorrowerProvision       = bcsub($borrowerProvision, $borrowerProvisionCancel, 2);
             $totalPromotionProvision     = bcadd($unilendProvision, $promotionProvision, 2);
-            $totalCommission             = bcadd($borrowerCommissionPayment, $borrowerCommissionProject, 2);
+            $projectCommission           = bcsub($borrowerCommissionProject, $borrowerRegularization, 2);
+            $totalCommission             = bcadd($borrowerCommissionPayment, $projectCommission, 2);
             $totalIncoming               = bcadd($realBorrowerProvision, bcadd($totalPromotionProvision, bcadd($lenderProvisionCreditCard, $lenderProvisionWireTransfer, 2), 2), 2);
             $totalTax                    = bcadd($crds, bcadd($solidarityDeductions, bcadd($additionalContributions, bcadd($socialDeductions, bcadd($csg, bcadd($statutoryContributions, $incomeTax, 2), 2), 2), 2), 2), 2);
             $totalOutgoing               = bcadd($totalTax, bcadd($totalCommission, bcadd($borrowerWithdraw, $lenderWithdraw, 2), 2), 2);
             $totalFinancialMovementsLine = bcsub($totalIncoming, $totalOutgoing, 2);
-            $totalPromotionOffer         = bcadd($lenderRegularization, bcadd($borrowerRegularization, bcsub($promotionalOffers, $promotionalOffersCancel, 2), 2), 2);
+            $totalPromotionOffer         = bcadd($lenderRegularization, bcadd($commercialGestures, bcsub($promotionalOffers, $promotionalOffersCancel, 2), 2), 2);
             $netInterest                 = bcsub($grossInterest, $totalTax, 2);
             $repaymentAssignment         = bcadd($borrowerCommissionPayment, bcadd($capitalRepayment, $grossInterest, 2), 2);
             $fiscalDifference            = bcsub($repaymentAssignment, bcadd($borrowerCommissionPayment, bcadd($capitalRepayment, bcadd($netInterest, $totalTax, 2), 2), 2), 2);
@@ -529,7 +532,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $activeSheet->setCellValueExplicit(self::PROMOTION_OFFER_PROVISION_COLUMN . $row, $promotionProvision, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::BORROWER_PROVISION_COLUMN . $row, $realBorrowerProvision , \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::BORROWER_WITHDRAW_COLUMN . $row, $borrowerWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            $activeSheet->setCellValueExplicit(self::PROJECT_COMMISSION_COLUMN . $row, $borrowerCommissionProject, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicit(self::PROJECT_COMMISSION_COLUMN . $row, $projectCommission, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::REPAYMENT_COMMISSION_COLUMN . $row, $borrowerCommissionPayment, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::STATUTORY_CONTRIBUTIONS_COLUMN . $row, $statutoryContributions, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::INCOME_TAX_COLUMN . $row, $incomeTax, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
@@ -562,13 +565,15 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
      */
     private function addTotalMovementsLine(\PHPExcel_Worksheet $activeSheet, array $movements, $row, array $calculatedTotals)
     {
+        $projectCommission = bcsub(array_sum(array_column($movements, 'borrower_commission_project')), array_sum(array_column($movements, 'borrower_regularization')), 2);
+
         $activeSheet->setCellValueExplicit(self::LENDER_PROVISION_CARD_COLUMN . $row, array_sum(array_column($movements, 'lender_provision_credit_card')), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         $activeSheet->setCellValueExplicit(self::LENDER_PROVISION_WIRE_TRANSFER_COLUMN . $row, array_sum(array_column($movements,'lender_provision_wire_transfer_in')), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         $activeSheet->setCellValueExplicit(self::LENDER_PROVISION_DIRECT_DEBIT_COLUMN . $row, 0, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         $activeSheet->setCellValueExplicit(self::PROMOTION_OFFER_PROVISION_COLUMN. $row, $calculatedTotals['promotionProvision'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         $activeSheet->setCellValueExplicit(self::BORROWER_PROVISION_COLUMN . $row, $calculatedTotals['realBorrowerProvision'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         $activeSheet->setCellValueExplicit(self::BORROWER_WITHDRAW_COLUMN . $row, array_sum(array_column($movements, OperationType::BORROWER_WITHDRAW)), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::PROJECT_COMMISSION_COLUMN . $row, array_sum(array_column($movements, 'borrower_commission_project')), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicit(self::PROJECT_COMMISSION_COLUMN . $row, $projectCommission, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         $activeSheet->setCellValueExplicit(self::REPAYMENT_COMMISSION_COLUMN . $row, array_sum(array_column($movements, 'borrower_commission_payment')), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         $activeSheet->setCellValueExplicit(self::STATUTORY_CONTRIBUTIONS_COLUMN . $row, array_sum(array_column($movements, OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS)), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         $activeSheet->setCellValueExplicit(self::INCOME_TAX_COLUMN . $row, array_sum(array_column($movements, OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE)), \PHPExcel_Cell_DataType::TYPE_NUMERIC);

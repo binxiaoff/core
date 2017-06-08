@@ -3,14 +3,17 @@
 namespace Unilend\Bundle\WSClientBundle\Service;
 
 use JMS\Serializer\Serializer;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
 use Unilend\Bundle\WSClientBundle\Entity\Codinf\IncidentList;
 
 class CodinfManager
 {
-    const RESOURCE_INCIDENT_LIST = 'get_incident_list_codinf';
+    const RESOURCE_INCIDENT_LIST    = 'get_incident_list_codinf';
+    const RESPONSE_MATCHING_PATTERN = '/^<\?xml .*\?>(.*)$/s';
 
     /** @var Client */
     private $client;
@@ -111,7 +114,6 @@ class CodinfManager
 
             if (null !== $incidents && 1 === preg_match('/^<\?xml .*\?>(.*)$/s', $incidents, $matches)) {
                 try {
-                    $this->callHistoryManager->sendMonitoringAlert($this->resourceManager->getResource(self::RESOURCE_INCIDENT_LIST), 'up');
                     return $this->serializer->deserialize('<incidentList>' . $matches[1] . '</incidentList>', IncidentList::class, 'xml');
                 } catch (\Exception $exception) {
                     $this->logger->error('Could not deserialize response: ' . $exception->getMessage() . ' SIREN: ' . $siren, $logContext);
@@ -121,7 +123,6 @@ class CodinfManager
             $this->logger->error('Call to get_list_v2 using params: ' . json_encode($query) . ' Error message: ' . $exception->getMessage(), $logContext);
         }
 
-        $this->callHistoryManager->sendMonitoringAlert($this->resourceManager->getResource(self::RESOURCE_INCIDENT_LIST), 'down');
         return null;
     }
 
@@ -135,29 +136,83 @@ class CodinfManager
     private function sendRequest($resourceLabel, array $query, $siren)
     {
         $wsResource = $this->resourceManager->getResource($resourceLabel);
-        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
+        $logContext = ['class' => __CLASS__, 'resource' => $wsResource->getLabel(), 'siren' => $siren];
 
         try {
-            $content = $this->useCache ? $this->callHistoryManager->getStoredResponse($wsResource, $siren) : false;
+            if ($storedResponse = $this->getStoredResponse($wsResource, $siren)) {
+                return $storedResponse;
+            }
+            $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
+            $response = $this->client->get(
+                $wsResource->getResourceName(),
+                ['query' => $query]
+            );
+            $validity = $this->isValidResponse($response, $logContext);
+            $stream   = $response->getBody();
+            $stream->rewind();
+            $content = $stream->getContents();
+            call_user_func($callable, $content, $validity['status']);
 
-            if (false === $content) {
-                $response = $this->client->get($wsResource->resource_name, [
-                    'query'    => $query,
-                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache)
-                ]);
+            if ($validity['is_valid']) {
+                $this->callHistoryManager->sendMonitoringAlert($this->resourceManager->getResource(self::RESOURCE_INCIDENT_LIST), 'up');
 
-                if (200 === $response->getStatusCode()) {
-                    return $response->getBody()->getContents();
-                } else {
-                    $this->logger->error('Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Response: ' . $response->getBody()->getContents(), $logContext);
-                }
-            } else {
                 return $content;
             }
         } catch (\Exception $exception) {
-            $this->logger->error('Call to ' . $wsResource->resource_name . 'using params: ' . json_encode($query) . '. Error message: ' . $exception->getMessage(), $logContext);
+            if (isset($callable)) {
+                call_user_func($callable, isset($response) ? $response : null, 'error');
+            }
+            $this->logger->error('Call to ' . $wsResource->getResourceName() . 'using params: ' . json_encode($query) . '. Error message: ' . $exception->getMessage(), $logContext);
         }
+        $this->callHistoryManager->sendMonitoringAlert($this->resourceManager->getResource(self::RESOURCE_INCIDENT_LIST), 'down');
 
         return null;
+    }
+
+    /**
+     * @param ResponseInterface $response
+     * @param array             $logContext
+     *
+     * @return array
+     */
+    private function isValidResponse(ResponseInterface $response, $logContext)
+    {
+        $stream = $response->getBody();
+        $stream->rewind();
+        $content = $stream->getContents();
+
+        if (
+            200 === $response->getStatusCode()
+            && 1 === preg_match(self::RESPONSE_MATCHING_PATTERN, $content)
+        ) {
+            return ['status' => 'valid', 'is_valid' => true];
+        } elseif (200 !== $response->getStatusCode()) {
+            $this->logger->error('Codinf error: (HTTP code: ' . $response->getStatusCode() . '). Response headers: ' . json_encode($response->getHeaders()) . '. Response: ' . $content, $logContext);
+
+            return ['status' => 'error', 'is_valid' => false];
+        } else {
+            $this->logger->warning('Unexpected response format from Codinf. Response headers: ' . json_encode($response->getHeaders()) . '. Response: ' . $content, $logContext);
+
+            return ['status' => 'warning', 'is_valid' => false];
+        }
+    }
+
+    /**
+     * @param WsExternalResource $resource
+     * @param string             $siren
+     *
+     * @return bool|mixed
+     */
+    private function getStoredResponse(WsExternalResource $resource, $siren)
+    {
+        if (
+            $this->useCache
+            && false !== ($storedResponse = $this->callHistoryManager->getStoredResponse($resource, $siren))
+            && 1 === preg_match(self::RESPONSE_MATCHING_PATTERN, $storedResponse)
+        ) {
+            return $storedResponse;
+        }
+
+        return false;
     }
 }

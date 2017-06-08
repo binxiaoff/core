@@ -300,11 +300,11 @@
   }
 
   &.block-quote-lamp {
-    background-image: image-url('backgrounds/bg-lamp-crop.png');
+    background-image: image-url('backgrounds/bg-lamp-crop.png', false, false);
   }
 
   &.block-quote-diamond {
-    background-image: image-url('backgrounds/bg-diamond-crop.png');
+    background-image: image-url('backgrounds/bg-diamond-crop.png', false, false);
   }
 }
 

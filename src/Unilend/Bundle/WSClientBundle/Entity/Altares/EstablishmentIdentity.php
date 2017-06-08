@@ -4,27 +4,13 @@ namespace Unilend\Bundle\WSClientBundle\Entity\Altares;
 
 use JMS\Serializer\Annotation as JMS;
 
-class EstablishmentIdentity
+class EstablishmentIdentity extends Response
 {
     /**
-     * @JMS\SerializedName("telephone")
-     * @JMS\Type("string")
+     * @var EstablishmentIdentityDetail
+     *
+     * @JMS\SerializedName("myInfo")
+     * @JMS\Type("Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail")
      */
-    private $phoneNumber;
-
-    /**
-     * @param string $phoneNumber
-     */
-    public function __construct($phoneNumber)
-    {
-        $this->phoneNumber = $phoneNumber;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getPhoneNumber()
-    {
-        return $this->phoneNumber;
-    }
+    protected $myInfo;
 }

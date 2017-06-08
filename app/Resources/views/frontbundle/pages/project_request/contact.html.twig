@@ -329,23 +329,12 @@
                                             <h3 class="h3">{% trans %} project-request_step-1-project-details-title {% endtrans %}</h3>
 
                                             <div class="row">
-                                                <div class="form-field col-lg-12 col-md-12{% if form.errors.project.motive is defined %} ui-formvalidation-error{% endif %}">
-                                                    <label for="form-project-create-motive">
+                                                <div class="form-field col-lg-12 col-md-12">
+                                                    <div class="field-label">
                                                         {% trans %} project-request_project-motive-label {% endtrans %}
-                                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                                    </label>
+                                                    </div>
                                                     <div class="input-group">
-                                                        <select id="form-project-create-motive" name="project[motive]" class="input-field" data-formvalidation-input data-formvalidation-required="true">
-                                                            <option value="">{% trans %} project-request_project-motive-placeholder {% endtrans %}</option>
-                                                            {% for borrowing_motive in borrowing_motives %}
-                                                                <option value="{{ borrowing_motive.id_motive }}"{% if borrowing_motive.id_motive == form.values.project.motive %} selected{% endif %}>
-                                                                    {{ ('borrowing-motive_motive-' ~ borrowing_motive.id_motive)|trans }}
-                                                                </option>
-                                                            {% endfor %}
-                                                        </select>
-                                                        {% if form.errors.project.motive is defined %}
-                                                            <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required-select {% endtrans %}</li></ul>
-                                                        {% endif %}
+                                                        <strong>{{ ('borrowing-motive_motive-' ~ project.motive)|trans }}</strong>
                                                     </div>
                                                 </div><!-- /.form-field -->
                                             </div>
