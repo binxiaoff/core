@@ -520,7 +520,7 @@ class AutoBidSettingsManager
         $maxAmount = 0;
 
         foreach ($this->productManager->getAvailableProducts(true) as $product) {
-            $currentMaxAmount = $this->productManager->getAutobidMaxEligibleAmount($client, $product);
+            $currentMaxAmount = $this->productManager->getMaxEligibleAmount($client, $product, true);
             if (null === $currentMaxAmount) {
                 return null;
             }

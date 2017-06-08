@@ -1,0 +1,74 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <service id="unilend.service_product.base_product_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager" public="false" abstract="true">
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.service_product.project_validator"/>
+            <argument type="service" id="unilend.service_product.bid_validator"/>
+            <argument type="service" id="unilend.service_product.client_validator"/>
+            <argument type="service" id="unilend.service_product.product_attribute_manager"/>
+            <argument type="service" id="unilend.service_product_contract.contract_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager" />
+        </service>
+
+        <service id="unilend.service_product.product_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\PartnerProductManager" parent="unilend.service_product.base_product_manager"/>
+
+        <service id="unilend.service_product.contract_attribute_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager" public="false">
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="memcache.default"/>
+        </service>
+
+        <service id="unilend.service_product.product_attribute_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager" public="false">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="memcache.default"/>
+        </service>
+
+        <service id="unilend.service_product.project_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\ProjectValidator" public="false">
+            <argument type="service" id="unilend.service_product.product_attribute_manager"/>
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.service_product_contract.contract_manager"/>
+        </service>
+
+        <service id="unilend.service_product.bid_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\BidValidator" public="false">
+            <argument type="service" id="unilend.service_product.product_attribute_manager"/>
+            <argument type="service" id="unilend.service_product_contract.contract_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager" />
+        </service>
+
+        <service id="unilend.service_product.client_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\ClientValidator" public="false">
+            <argument type="service" id="unilend.service_product.product_attribute_manager"/>
+            <argument type="service" id="unilend.service_product_contract.contract_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager" />
+        </service>
+
+        <service id="unilend.service_product_contract.contract_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager">
+            <argument type="service" id="unilend.service_product_contract.client_validator"/>
+            <argument type="service" id="unilend.service_product_contract.bid_validator"/>
+            <argument type="service" id="unilend.service_product_contract.autobid_settings_validator"/>
+            <argument type="service" id="unilend.service_product_contract.project_validator"/>
+            <argument type="service" id="unilend.service_product.contract_attribute_manager"/>
+        </service>
+
+        <service id="unilend.service_product_contract.bid_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Validator\BidValidator" public="false">
+            <argument type="service" id="unilend.service_product.contract_attribute_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+        </service>
+
+        <service id="unilend.service_product_contract.client_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Validator\ClientValidator" public="false">
+            <argument type="service" id="unilend.service_product.contract_attribute_manager"/>
+        </service>
+
+        <service id="unilend.service_product_contract.project_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Validator\ProjectValidator" public="false">
+            <argument type="service" id="unilend.service_product.contract_attribute_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+        </service>
+
+        <service id="unilend.service_product_contract.autobid_settings_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Validator\AutoBidSettingsValidator" public="false">
+            <argument type="service" id="unilend.service_product.contract_attribute_manager"/>
+        </service>
+    </services>
+</container>

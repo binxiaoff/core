@@ -13,6 +13,10 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Product
 {
+    const STATUS_OFFLINE = 0; // Unavailable in FO
+    const STATUS_ONLINE = 1; // available both in FO and BO
+    const STATUS_ARCHIVED = 2; // unavailable either in FO or BO
+
     /**
      * @var string
      *
@@ -75,7 +79,7 @@ class Product
     private $idRepaymentType;
 
     /**
-     * @var \Doctrine\Common\Collections\Collection
+     * @var UnderlyingContract[]
      *
      * @ORM\ManyToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract", inversedBy="idProduct")
      * @ORM\JoinTable(name="product_underlying_contract",
@@ -303,7 +307,7 @@ class Product
     /**
      * Get idContract
      *
-     * @return \Doctrine\Common\Collections\Collection
+     * @return UnderlyingContract[]
      */
     public function getIdContract()
     {

@@ -2,48 +2,32 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
-use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 trait BidChecker
 {
+    use ClientChecker;
     use LenderChecker;
 
     /**
-     * @param Bids                    $bid
-     * @param \product                $product
-     * @param ProductAttributeManager $productAttributeManager
+     * @param Bids            $bid
+     * @param Product         $product
+     * @param ContractManager $contractManager
      *
      * @return bool
      */
-    public function isBidEligibleForMaxTotalAmount(Bids $bid, \product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    public function isEligibleForMaxTotalAmount(Bids $bid, Product $product, ContractManager $contractManager)
     {
-        $totalAmount = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->getSumByWalletAndProjectAndStatus($bid->getIdLenderAccount(), $bid->getProject(), Bids::STATUS_BID_PENDING);
-        $bidAmount   = bcdiv($bid->getAmount(), 100, 2);
-        $totalAmount = bcadd($totalAmount, $bidAmount, 2);
+        $isAutobid = false;
 
-        $maxAmountEligible = $this->getMaxEligibleAmount($product, $productAttributeManager);
-        if (null === $maxAmountEligible) {
-            return null;
+        if ($bid->getAutobid()) {
+            $isAutobid = true;
         }
 
-        return bccomp($maxAmountEligible, $totalAmount, 2) >= 0;
-    }
+        $bidMaxAmount = $this->getMaxEligibleAmount($bid->getIdLenderAccount()->getIdClient(), $product, $contractManager, $isAutobid);
 
-    /**
-     * @param Bids              $bid
-     * @param \product          $product
-     * @param EntityManager     $entityManager
-     * @param ContractManager   $contractManager
-     *
-     * @return bool
-     */
-    public function isAutobidEligibleForMaxTotalAmount(Bids $bid, \product $product, EntityManagerSimulator $entityManager, ContractManager $contractManager)
-    {
-        $bidMaxAmount = $this->getAutobidMaxEligibleAmount($bid->getIdLenderAccount()->getIdClient(), $product, $entityManager, $contractManager);
         if (null === $bidMaxAmount) {
             return true;
         }

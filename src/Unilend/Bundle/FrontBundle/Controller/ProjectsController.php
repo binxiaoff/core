@@ -3,7 +3,6 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
-use Doctrine\ORM\EntityManager;
 use Knp\Snappy\GeneratorInterface;
 use Sonata\SeoBundle\Seo\SeoPage;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -18,12 +17,13 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager;
@@ -237,6 +237,7 @@ class ProjectsController extends Controller
             && $authorizationChecker->isGranted('ROLE_LENDER')
         ) {
             $request->getSession()->set('bidToken', $template['bidToken']);
+            /** @var Clients $client */
             $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
 
             $productManager = $this->get('unilend.service_product.product_manager');
@@ -264,14 +265,14 @@ class ProjectsController extends Controller
                 $request->getSession()->remove('bidResult');
             }
 
-            $reasons                              = $productManager->getLenderEligibilityWithReasons($client, $project);
+            $reasons                              = $productManager->checkClientEligibility($client, $project);
             $template['isLenderEligible']         = true;
             $template['lenderNotEligibleReasons'] = [];
 
             if (false === empty($reasons)) {
                 $template['isLenderEligible']         = false;
                 $template['lenderNotEligibleReasons'] = $reasons;
-                $template['amountMax']                = $productManager->getMaxEligibleAmount($product);
+                $template['amountMax']                = $productManager->getMaxEligibleAmount($client, $product);
             }
 
             $cipManager           = $this->get('unilend.service.cip_manager');
@@ -493,11 +494,11 @@ class ProjectsController extends Controller
                     $product = $entityManagerSimulator->getRepository('product');
                     $product->get($project->id_product);
 
-                    $amountMax = $productManager->getMaxEligibleAmount($product);
-                    $reasons   = $productManager->getBidEligibilityWithReasons($bids);
+                    $amountMax = $productManager->getMaxEligibleAmount($client, $product);
+                    $reasons   = $productManager->checkBidEligibility($bids);
                     $amountRest = 0;
                     foreach ($reasons as $reason) {
-                        if ($reason === \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
+                        if ($reason === UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
                             $amountRest = $productManager->getAmountLenderCanStillBid($client, $project);
                         }
                         $currencyFormatter = $this->get('currency_formatter');
@@ -944,7 +945,7 @@ class ProjectsController extends Controller
         $bidEntity->setAmount($amount * 100);
         $bidEntity->setRate($rate);
 
-        $reasons = $productManager->getBidEligibilityWithReasons($bidEntity);
+        $reasons = $productManager->checkBidEligibility($bidEntity);
 
         if (false === empty($reasons)) {
             $pendingBidAmount = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->getSumByWalletAndProjectAndStatus($wallet, $bidEntity->getProject(), Bids::STATUS_BID_PENDING);
@@ -954,10 +955,10 @@ class ProjectsController extends Controller
 
             $translatedReasons = [];
             $amountRest        = 0;
-            $amountMax         = $productManager->getMaxEligibleAmount($product);
+            $amountMax         = $productManager->getMaxEligibleAmount($client, $product);
 
             foreach ($reasons as $reason) {
-                if ($reason === \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
+                if ($reason === UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
                     $amountRest = $productManager->getAmountLenderCanStillBid($client, $project);
                 }
                 $amountRest = $currencyFormatter->formatCurrency($amountRest, 'EUR');

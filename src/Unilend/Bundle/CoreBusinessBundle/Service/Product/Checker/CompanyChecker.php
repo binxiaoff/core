@@ -2,43 +2,43 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
 
 trait CompanyChecker
 {
-    public function isEligibleForCreationDays(\companies $company, \product $product, ProductAttributeManager $productAttributeManager)
+    /**
+     * @param Companies               $company
+     * @param Product                 $product
+     * @param ProductAttributeManager $productAttributeManager
+     *
+     * @return bool
+     */
+    public function isEligibleForCreationDays(Companies $company, Product $product, ProductAttributeManager $productAttributeManager)
     {
         $minDays = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MIN_CREATION_DAYS);
 
         if (empty($minDays)) {
-            return $this->isEligibleForContractCreationDays($company, $product, $productAttributeManager);
+            return true;
         }
 
-        $companyCreationDate = new \DateTime($company->date_creation);
-        if ($companyCreationDate->diff(new \DateTime())->days < $minDays[0]) {
-            return false;
-        }
-
-        return $this->isEligibleForContractCreationDays($company, $product, $productAttributeManager);
+        return $company->getDateCreation()->diff(new \DateTime())->days >= $minDays[0];
     }
 
-    public function isEligibleForRCS(\companies $company, \product $product, ProductAttributeManager $productAttributeManager)
+    public function isEligibleForRCS(Companies $company, Product $product, ProductAttributeManager $productAttributeManager)
     {
         $beRCS = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_RCS);
 
         if (empty($beRCS)) {
-            return $this->isEligibleForContractRCS($company, $product, $productAttributeManager);
+            return true;
         }
 
-        if ($beRCS[0] && empty($company->rcs)) {
-            return false;
-        }
-
-        return $this->isEligibleForContractRCS($company, $product, $productAttributeManager);
+        return (false === (bool) $beRCS[0] && true === empty($company->getRcs())) || (true === (bool) $beRCS[0] && false === empty($company->getRcs()));
     }
 
-    public function isEligibleForNafCode(\companies $company, \product $product, ProductAttributeManager $productAttributeManager)
+    public function isEligibleForNafCode(Companies $company, Product $product, ProductAttributeManager $productAttributeManager)
     {
         $nafCode = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_NAF_CODE);
 
@@ -46,33 +46,6 @@ trait CompanyChecker
             return true;
         }
 
-        return in_array($company->code_naf, $nafCode);
-    }
-
-    public function isEligibleForContractCreationDays(\companies $company, \product $product, ProductAttributeManager $productAttributeManager)
-    {
-        $companyCreationDate = new \DateTime($company->date_creation);
-        $today               = new \DateTime();
-
-        $attrVars = $productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::MIN_CREATION_DAYS);
-        foreach ($attrVars as $contractVars) {
-            if (isset($contractVars[0]) && $companyCreationDate->diff($today)->days < $contractVars[0]) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public function isEligibleForContractRCS(\companies $company, \product $product, ProductAttributeManager $productAttributeManager)
-    {
-        $attrVars = $productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::ELIGIBLE_BORROWER_COMPANY_RCS);
-        foreach ($attrVars as $contractVars) {
-            if (isset($contractVars[0]) && $contractVars[0] && empty($company->rcs)) {
-                return false;
-            }
-        }
-
-        return true;
+        return in_array($company->getCodeNaf(), $nafCode);
     }
 }

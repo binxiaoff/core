@@ -18,13 +18,13 @@
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                         <?php
                             switch ($product['status']) {
-                                case \product::STATUS_OFFLINE:
+                                case \Unilend\Bundle\CoreBusinessBundle\Entity\Product::STATUS_OFFLINE:
                                     $status = 'Desactivé FO (indisponible FO mais disponible BO)';
                                     break;
-                                case \product::STATUS_ONLINE:
+                                case \Unilend\Bundle\CoreBusinessBundle\Entity\Product::STATUS_ONLINE:
                                     $status = 'Activé';
                                     break;
-                                case \product::STATUS_ARCHIVED:
+                                case \Unilend\Bundle\CoreBusinessBundle\Entity\Product::STATUS_ARCHIVED:
                                     $status = 'Archivé (indisponible FO et BO)';
                                     break;
                             }
