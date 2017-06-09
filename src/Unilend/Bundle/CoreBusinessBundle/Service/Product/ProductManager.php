@@ -107,12 +107,12 @@ abstract class ProductManager
     }
 
     /**
-     * @param Clients   $client
-     * @param \projects $project
+     * @param Clients|null       $client When it's null, it's an anonymous client (logout)
+     * @param Projects|\projects $project
      *
      * @return mixed
      */
-    public function checkClientEligibility(Clients $client, \projects $project)
+    public function checkClientEligibility(Clients $client = null, $project)
     {
         $project = $this->convertProject($project);
 

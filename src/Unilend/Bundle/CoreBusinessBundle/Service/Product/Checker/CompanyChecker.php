@@ -27,6 +27,13 @@ trait CompanyChecker
         return $company->getDateCreation()->diff(new \DateTime())->days >= $minDays[0];
     }
 
+    /**
+     * @param Companies               $company
+     * @param Product                 $product
+     * @param ProductAttributeManager $productAttributeManager
+     *
+     * @return bool
+     */
     public function isEligibleForRCS(Companies $company, Product $product, ProductAttributeManager $productAttributeManager)
     {
         $beRCS = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_RCS);
@@ -38,6 +45,13 @@ trait CompanyChecker
         return (false === (bool) $beRCS[0] && true === empty($company->getRcs())) || (true === (bool) $beRCS[0] && false === empty($company->getRcs()));
     }
 
+    /**
+     * @param Companies               $company
+     * @param Product                 $product
+     * @param ProductAttributeManager $productAttributeManager
+     *
+     * @return bool
+     */
     public function isEligibleForNafCode(Companies $company, Product $product, ProductAttributeManager $productAttributeManager)
     {
         $nafCode = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_NAF_CODE);

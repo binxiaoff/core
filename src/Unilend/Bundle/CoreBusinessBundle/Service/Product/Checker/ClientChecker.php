@@ -10,13 +10,13 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
 trait ClientChecker
 {
     /**
-     * @param Clients|int             $client
+     * @param Clients|null            $client
      * @param Product                 $product
      * @param ProductAttributeManager $productAttributeManager
      *
      * @return bool
      */
-    public function isEligibleForClientId(Clients $client, Product $product, ProductAttributeManager $productAttributeManager)
+    public function isEligibleForClientId(Clients $client = null, Product $product, ProductAttributeManager $productAttributeManager)
     {
         $attributes = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_LENDER_ID);
 
@@ -24,7 +24,7 @@ trait ClientChecker
             return true; // No limitation found
         }
 
-        return in_array($client->getIdClient(), $attributes);
+        return $client !== null && in_array($client->getIdClient(), $attributes);
     }
 
 }

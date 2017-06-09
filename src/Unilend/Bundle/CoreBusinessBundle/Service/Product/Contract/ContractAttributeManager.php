@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
+namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract;
 
 use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;

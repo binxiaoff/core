@@ -15,13 +15,13 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
 trait LenderChecker
 {
     /**
-     * @param Clients                 $client
+     * @param Clients|null            $client
      * @param Product                 $product
      * @param ProductAttributeManager $productAttributeManager
      *
      * @return bool
      */
-    public function isEligibleForLenderType(Clients $client, Product $product, ProductAttributeManager $productAttributeManager)
+    public function isEligibleForLenderType(Clients $client = null, Product $product, ProductAttributeManager $productAttributeManager)
     {
         $attributes = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_LENDER_TYPE);
 
@@ -29,7 +29,7 @@ trait LenderChecker
             return true; // No limitation found
         }
 
-        return in_array($client->getType(), $attributes);
+        return $client !== null && in_array($client->getType(), $attributes);
     }
 
     /**
@@ -38,7 +38,7 @@ trait LenderChecker
      *
      *
      * @param Clients         $client
-     * @param Projects       $project
+     * @param Projects        $project
      * @param ContractManager $contractManager
      * @param EntityManager   $entityManager
      *
@@ -62,15 +62,19 @@ trait LenderChecker
     }
 
     /**
-     * @param Clients         $client
+     * @param Clients|null    $client
      * @param Projects        $project
      * @param ContractManager $contractManager
      * @param EntityManager   $entityManager
      *
      * @return bool
      */
-    public function isLenderEligibleForMaxTotalAmount(Clients $client, Projects $project, ContractManager $contractManager, EntityManager $entityManager)
+    public function isLenderEligibleForMaxTotalAmount(Clients $client = null, Projects $project, ContractManager $contractManager, EntityManager $entityManager)
     {
+        if (null === $client) {
+            return false;
+        }
+
         $amountRest = $this->getAmountLenderCanStillBid($client, $project, $contractManager, $entityManager);
         return $amountRest === null || $amountRest > 0;
     }

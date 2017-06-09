@@ -7,7 +7,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Checker\CompanyChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Checker\ProjectChecker;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 use Doctrine\ORM\EntityManager;
 
 class ProjectValidator

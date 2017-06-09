@@ -6,7 +6,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Checker\LenderChecker;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 
 class ClientValidator
 {
@@ -21,12 +21,12 @@ class ClientValidator
     }
 
     /**
-     * @param Clients            $client
+     * @param Clients|null            $client
      * @param UnderlyingContract $contract
      *
      * @return array
      */
-    public function validate(Clients $client, UnderlyingContract $contract)
+    public function validate(Clients $client = null, UnderlyingContract $contract)
     {
         $violations = [];
 

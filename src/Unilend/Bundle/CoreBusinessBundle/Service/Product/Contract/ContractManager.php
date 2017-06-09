@@ -11,7 +11,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Validator\AutoBid
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Validator\BidValidator;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Validator\ClientValidator;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Validator\ProjectValidator;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
 
 class ContractManager
 {
@@ -57,12 +56,12 @@ class ContractManager
     }
 
     /**
-     * @param Clients            $client
+     * @param Clients|null       $client
      * @param UnderlyingContract $contract
      *
      * @return array
      */
-    public function checkClientEligibility(Clients $client, UnderlyingContract $contract)
+    public function checkClientEligibility(Clients $client = null, UnderlyingContract $contract)
     {
         return $this->clientValidator->validate($client, $contract);
     }

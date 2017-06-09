@@ -16,6 +16,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
+use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\librairies\CacheKeys;
 
 class ProjectDisplayManager
@@ -459,11 +460,11 @@ class ProjectDisplayManager
             return self::VISIBILITY_NONE;
         }
 
-        if (null === $user) {
-            return self::VISIBILITY_ANONYMOUS;
+        $client = null;
+        if (null !== $user) {
+            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
         }
 
-        $client     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
         $violations = $this->productManager->checkClientEligibility($client, $project);
 
         if (
@@ -473,23 +474,18 @@ class ProjectDisplayManager
             return self::VISIBILITY_NONE;
         }
 
-        if ($client->isLender()) {
-            if (
-                in_array(ProductAttributeType::ELIGIBLE_LENDER_ID, $lenderEligibility['reason'])
-                || in_array(ProductAttributeType::ELIGIBLE_LENDER_TYPE, $lenderEligibility['reason'])
-            ) {
-                return self::VISIBILITY_NONE;
-            }
+        if (null !== $client) {
+            if ($user instanceof UserLender) {
+                if (in_array($user->getClientStatus(), [ClientsStatus::MODIFICATION, ClientsStatus::VALIDATED])) {
+                    return self::VISIBILITY_FULL;
+                }
 
-            if (in_array($user->getClientStatus(), [ClientsStatus::MODIFICATION, ClientsStatus::VALIDATED])) {
+                return self::VISIBILITY_NOT_VALIDATED_LENDER;
+            } elseif ($client->isBorrower() || $client->isPartner()) {
                 return self::VISIBILITY_FULL;
             }
-
-            return self::VISIBILITY_NOT_VALIDATED_LENDER;
         }
 
-        if ($client->isBorrower() || $client->isPartner()) {
-            return self::VISIBILITY_FULL;
-        }
+        return self::VISIBILITY_ANONYMOUS;
     }
 }

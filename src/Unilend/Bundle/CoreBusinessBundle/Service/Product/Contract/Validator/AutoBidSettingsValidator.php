@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Validator;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Checker\AutoBidSettingsChecker;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 
 class AutoBidSettingsValidator
 {

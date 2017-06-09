@@ -5,10 +5,17 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Checker;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 
 trait CompanyChecker
 {
+    /**
+     * @param Companies                $company
+     * @param UnderlyingContract       $contract
+     * @param ContractAttributeManager $contractAttributeManager
+     *
+     * @return bool
+     */
     public function isEligibleForCreationDays(Companies $company, UnderlyingContract $contract, ContractAttributeManager $contractAttributeManager)
     {
         $minDays = $contractAttributeManager->getContractAttributesByType($contract, UnderlyingContractAttributeType::MIN_CREATION_DAYS);
@@ -20,6 +27,13 @@ trait CompanyChecker
         return $company->getDateCreation()->diff(new \DateTime())->days >= $minDays[0];
     }
 
+    /**
+     * @param Companies                $company
+     * @param UnderlyingContract       $contract
+     * @param ContractAttributeManager $contractAttributeManager
+     *
+     * @return bool
+     */
     public function isEligibleForRCS(Companies $company, UnderlyingContract $contract, ContractAttributeManager $contractAttributeManager)
     {
         $beRCS = $contractAttributeManager->getContractAttributesByType($contract, UnderlyingContractAttributeType::ELIGIBLE_BORROWER_COMPANY_RCS);

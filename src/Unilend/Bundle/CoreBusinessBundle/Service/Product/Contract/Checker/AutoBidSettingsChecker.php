@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Checker;
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 
 trait AutoBidSettingsChecker
 {
