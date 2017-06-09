@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
-use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\DBAL\Connection;
@@ -69,7 +68,7 @@ class WalletRepository extends EntityRepository
         $sql = '
         SELECT
           a.walletId,
-          GREATEST(a.lastOperationDate,b2.lastOperationDate) AS lastOperationDate,
+          GREATEST(a.lastOperationDate, b2.lastOperationDate) AS lastOperationDate,
           w.available_balance AS availableBalance
         FROM (
                SELECT
