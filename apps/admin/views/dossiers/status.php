@@ -6,9 +6,6 @@
         height: 600px;
         width: 100%;
     }
-    .status-chart.half {
-        width: 573px;
-    }
     #second-status-chart {
         float: right;
     }
