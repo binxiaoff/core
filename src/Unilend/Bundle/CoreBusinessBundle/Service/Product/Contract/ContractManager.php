@@ -14,7 +14,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Validator\Project
 
 class ContractManager
 {
-    /** @var  ClientValidator */
+    /** @var ClientValidator */
     private $clientValidator;
 
     /** @var BidValidator */
@@ -26,7 +26,7 @@ class ContractManager
     /** @var AutoBidSettingsValidator */
     private $autoBidSettingsValidator;
 
-    /** @var  ContractAttributeManager */
+    /** @var ContractAttributeManager */
     private $contractAttributeManager;
 
     public function __construct(
