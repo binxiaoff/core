@@ -28,7 +28,7 @@ class AutoBidSettingsValidator
     {
         $violations = [];
 
-        if ($this->isEligibleForEligibility($contract, $this->contractAttributeManager)) {
+        if (false === $this->isEligibleForEligibility($contract, $this->contractAttributeManager)) {
             $violations[] = UnderlyingContractAttributeType::ELIGIBLE_AUTOBID;
         }
 
