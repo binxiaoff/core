@@ -12,6 +12,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\BidValidator;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\ClientValidator;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\LenderValidator;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\ProjectValidator;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
@@ -19,16 +20,25 @@ abstract class ProductManager
 {
     /** @var EntityManagerSimulator */
     protected $entityManagerSimulator;
+
     /** @var ProjectValidator */
     protected $projectValidator;
+
     /** @var BidValidator */
     protected $bidValidator;
+
     /** @var ClientValidator */
     protected $clientValidator;
+
+    /** @var LenderValidator */
+    protected $lenderValidator;
+
     /** @var ProductAttributeManager */
     protected $productAttributeManager;
+
     /** @var ContractManager */
     protected $contractManager;
+
     /** @var  EntityManager */
     protected $entityManager;
 
@@ -39,6 +49,7 @@ abstract class ProductManager
      * @param ProjectValidator        $projectValidator
      * @param BidValidator            $bidValidator
      * @param ClientValidator         $clientValidator
+     * @param LenderValidator         $lenderValidator
      * @param ProductAttributeManager $productAttributeManager
      * @param ContractManager         $contractManager
      * @param EntityManager           $entityManager
@@ -48,6 +59,7 @@ abstract class ProductManager
         ProjectValidator $projectValidator,
         BidValidator $bidValidator,
         ClientValidator $clientValidator,
+        LenderValidator $lenderValidator,
         ProductAttributeManager $productAttributeManager,
         ContractManager $contractManager,
         EntityManager $entityManager
@@ -57,6 +69,7 @@ abstract class ProductManager
         $this->projectValidator        = $projectValidator;
         $this->bidValidator            = $bidValidator;
         $this->clientValidator         = $clientValidator;
+        $this->lenderValidator         = $lenderValidator;
         $this->productAttributeManager = $productAttributeManager;
         $this->contractManager         = $contractManager;
         $this->entityManager           = $entityManager;
@@ -125,9 +138,22 @@ abstract class ProductManager
      *
      * @return bool
      */
-    public function isClientEligible(Clients $client, \projects $project)
+    public function isClientEligible(Clients $client = null, \projects $project)
     {
         return 0 === count($this->checkClientEligibility($client, $project));
+    }
+
+    /**
+     * @param Clients            $client When it's null, it's an anonymous client (logout)
+     * @param Projects|\projects $project
+     *
+     * @return mixed
+     */
+    public function checkLenderEligibility(Clients $client, $project)
+    {
+        $project = $this->convertProject($project);
+
+        return $this->lenderValidator->validate($client, $project);
     }
 
     /**

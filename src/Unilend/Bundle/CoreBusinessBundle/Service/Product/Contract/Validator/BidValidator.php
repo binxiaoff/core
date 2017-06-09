@@ -6,12 +6,12 @@ use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Checker\LenderChecker;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Checker\ClientChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 
 class BidValidator
 {
-    use LenderChecker;
+    use ClientChecker;
 
     /** @var ContractAttributeManager */
     private $contractAttributeManager;
@@ -35,7 +35,7 @@ class BidValidator
     {
         $violations = [];
 
-        if (false === $this->isEligibleForLenderType($bid->getIdLenderAccount()->getIdClient(), $contract, $this->contractAttributeManager)) {
+        if (false === $this->isEligibleForClientType($bid->getIdLenderAccount()->getIdClient(), $contract, $this->contractAttributeManager)) {
             $violations[] = UnderlyingContractAttributeType::ELIGIBLE_LENDER_TYPE;
         }
 

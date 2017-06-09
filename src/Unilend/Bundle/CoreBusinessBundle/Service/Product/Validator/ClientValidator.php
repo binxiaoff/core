@@ -18,11 +18,11 @@ class ClientValidator
     use ClientChecker;
 
     /** @var ProductAttributeManager */
-    private $productAttributeManager;
+    protected $productAttributeManager;
     /** @var ContractManager */
-    private $contractManager;
+    protected $contractManager;
     /** @var EntityManager */
-    private $entityManager;
+    protected $entityManager;
 
     /**
      * ClientValidator constructor.
@@ -43,8 +43,8 @@ class ClientValidator
     }
 
     /**
-     * @param Clients   $client
-     * @param Projects $project
+     * @param Clients|null $client
+     * @param Projects     $project
      *
      * @return array
      */
@@ -57,12 +57,8 @@ class ClientValidator
             $violations[] = ProductAttributeType::ELIGIBLE_LENDER_ID;
         }
 
-        if (false === $this->isEligibleForLenderType($client, $product, $this->productAttributeManager)) {
+        if (false === $this->isEligibleForClientType($client, $product, $this->productAttributeManager)) {
             $violations[] = ProductAttributeType::ELIGIBLE_LENDER_TYPE;
-        }
-
-        if (false === $this->isLenderEligibleForMaxTotalAmount($client, $project, $this->contractManager, $this->entityManager)) {
-            $violations[] = UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO;
         }
 
         $hasEligibleContract = false;

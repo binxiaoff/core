@@ -265,7 +265,7 @@ class ProjectsController extends Controller
                 $request->getSession()->remove('bidResult');
             }
 
-            $reasons                              = $productManager->checkClientEligibility($client, $project);
+            $reasons                              = $productManager->checkLenderEligibility($client, $project);
             $template['isLenderEligible']         = true;
             $template['lenderNotEligibleReasons'] = [];
 

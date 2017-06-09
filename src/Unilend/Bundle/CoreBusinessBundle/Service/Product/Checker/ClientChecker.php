@@ -27,4 +27,21 @@ trait ClientChecker
         return $client !== null && in_array($client->getIdClient(), $attributes);
     }
 
+    /**
+     * @param Clients|null            $client
+     * @param Product                 $product
+     * @param ProductAttributeManager $productAttributeManager
+     *
+     * @return bool
+     */
+    public function isEligibleForClientType(Clients $client = null, Product $product, ProductAttributeManager $productAttributeManager)
+    {
+        $attributes = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_LENDER_TYPE);
+
+        if (empty($attributes)) {
+            return true; // No limitation found
+        }
+
+        return $client !== null && in_array($client->getType(), $attributes);
+    }
 }

@@ -7,7 +7,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 
-trait LenderChecker
+trait ClientChecker
 {
     /**
      * @param Clients|null             $client
@@ -17,7 +17,7 @@ trait LenderChecker
      * @return bool
      * @throws \Exception
      */
-    public function isEligibleForLenderType(Clients $client = null, UnderlyingContract $contract, ContractAttributeManager $contractAttributeManager)
+    public function isEligibleForClientType(Clients $client = null, UnderlyingContract $contract, ContractAttributeManager $contractAttributeManager)
     {
         $attrVars = $contractAttributeManager->getContractAttributesByType($contract, UnderlyingContractAttributeType::ELIGIBLE_LENDER_TYPE);
 

@@ -467,10 +467,7 @@ class ProjectDisplayManager
 
         $violations = $this->productManager->checkClientEligibility($client, $project);
 
-        if (
-            in_array(ProductAttributeType::ELIGIBLE_LENDER_ID, $violations)
-            || in_array(ProductAttributeType::ELIGIBLE_LENDER_TYPE, $violations)
-        ) {
+        if (0 < count($violations)) {
             return self::VISIBILITY_NONE;
         }
 

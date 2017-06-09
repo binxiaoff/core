@@ -9,6 +9,7 @@
             <argument type="service" id="unilend.service_product.project_validator"/>
             <argument type="service" id="unilend.service_product.bid_validator"/>
             <argument type="service" id="unilend.service_product.client_validator"/>
+            <argument type="service" id="unilend.service_product.lender_validator"/>
             <argument type="service" id="unilend.service_product.product_attribute_manager"/>
             <argument type="service" id="unilend.service_product_contract.contract_manager"/>
             <argument type="service" id="doctrine.orm.entity_manager" />
@@ -40,6 +41,12 @@
         </service>
 
         <service id="unilend.service_product.client_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\ClientValidator" public="false">
+            <argument type="service" id="unilend.service_product.product_attribute_manager"/>
+            <argument type="service" id="unilend.service_product_contract.contract_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager" />
+        </service>
+
+        <service id="unilend.service_product.lender_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\LenderValidator" public="false">
             <argument type="service" id="unilend.service_product.product_attribute_manager"/>
             <argument type="service" id="unilend.service_product_contract.contract_manager"/>
             <argument type="service" id="doctrine.orm.entity_manager" />

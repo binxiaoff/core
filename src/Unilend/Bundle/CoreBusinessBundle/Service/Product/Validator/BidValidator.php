@@ -47,7 +47,7 @@ class BidValidator
             $violations[] = ProductAttributeType::ELIGIBLE_LENDER_ID;
         }
 
-        if (false === $this->isEligibleForLenderType($bid->getIdLenderAccount()->getIdClient(), $product, $this->productAttributeManager)) {
+        if (false === $this->isEligibleForClientType($bid->getIdLenderAccount()->getIdClient(), $product, $this->productAttributeManager)) {
             $violations[] = ProductAttributeType::ELIGIBLE_LENDER_TYPE;
         }
 

@@ -50,7 +50,7 @@ class ContractManager
      *
      * @return bool
      */
-    public function isLenderEligible(Clients $client, UnderlyingContract $contract)
+    public function isClientEligible(Clients $client, UnderlyingContract $contract)
     {
         return 0 === count($this->checkClientEligibility($client, $contract));
     }

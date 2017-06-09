@@ -6,32 +6,12 @@ use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
 
 trait LenderChecker
 {
-    /**
-     * @param Clients|null            $client
-     * @param Product                 $product
-     * @param ProductAttributeManager $productAttributeManager
-     *
-     * @return bool
-     */
-    public function isEligibleForLenderType(Clients $client = null, Product $product, ProductAttributeManager $productAttributeManager)
-    {
-        $attributes = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_LENDER_TYPE);
-
-        if (empty($attributes)) {
-            return true; // No limitation found
-        }
-
-        return $client !== null && in_array($client->getType(), $attributes);
-    }
-
     /**
      * Get the amount that the lender can bid compare to the max limit loan amount.
      * For example, the max loan amount for IFP is 2000 €, and a lender has 1500 € pending bid(s), the method will return 500.
@@ -69,7 +49,7 @@ trait LenderChecker
      *
      * @return bool
      */
-    public function isLenderEligibleForMaxTotalAmount(Clients $client = null, Projects $project, ContractManager $contractManager, EntityManager $entityManager)
+    public function canStillBid(Clients $client = null, Projects $project, ContractManager $contractManager, EntityManager $entityManager)
     {
         if (null === $client) {
             return false;
@@ -93,7 +73,7 @@ trait LenderChecker
 
         foreach ($product->getIdContract() as $contract) {
             if (
-                $contractManager->isLenderEligible($client, $contract)
+                $contractManager->isClientEligible($client, $contract)
                 && (false === $isAutobid || $contractManager->isAutobidSettingsEligible($contract))
             ) {
                 $maxAmount = $contractManager->getMaxAmount($contract);
