@@ -36,7 +36,7 @@ class BidValidator
         $violations = [];
 
         if (false === $this->isEligibleForClientType($bid->getIdLenderAccount()->getIdClient(), $contract, $this->contractAttributeManager)) {
-            $violations[] = UnderlyingContractAttributeType::ELIGIBLE_LENDER_TYPE;
+            $violations[] = UnderlyingContractAttributeType::ELIGIBLE_CLIENT_TYPE;
         }
 
         return $violations;

@@ -19,7 +19,7 @@ trait ClientChecker
      */
     public function isEligibleForClientType(Clients $client = null, UnderlyingContract $contract, ContractAttributeManager $contractAttributeManager)
     {
-        $attrVars = $contractAttributeManager->getContractAttributesByType($contract, UnderlyingContractAttributeType::ELIGIBLE_LENDER_TYPE);
+        $attrVars = $contractAttributeManager->getContractAttributesByType($contract, UnderlyingContractAttributeType::ELIGIBLE_CLIENT_TYPE);
 
         if (empty($attrVars)) {
             return true; // No limitation found!

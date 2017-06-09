@@ -18,7 +18,7 @@ trait ClientChecker
      */
     public function isEligibleForClientId(Clients $client = null, Product $product, ProductAttributeManager $productAttributeManager)
     {
-        $attributes = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_LENDER_ID);
+        $attributes = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_CLIENT_ID);
 
         if (empty($attributes)) {
             return true; // No limitation found
@@ -36,7 +36,7 @@ trait ClientChecker
      */
     public function isEligibleForClientType(Clients $client = null, Product $product, ProductAttributeManager $productAttributeManager)
     {
-        $attributes = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_LENDER_TYPE);
+        $attributes = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_CLIENT_TYPE);
 
         if (empty($attributes)) {
             return true; // No limitation found

@@ -31,7 +31,7 @@ class ClientValidator
         $violations = [];
 
         if (false === $this->isEligibleForClientType($client, $contract, $this->contractAttributeManager)) {
-            $violations[] = UnderlyingContractAttributeType::ELIGIBLE_LENDER_TYPE;
+            $violations[] = UnderlyingContractAttributeType::ELIGIBLE_CLIENT_TYPE;
         }
 
         return $violations;

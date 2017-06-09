@@ -44,11 +44,11 @@ class BidValidator
         $product = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($bid->getProject()->getIdProduct());
 
         if (false === $this->isEligibleForClientId($bid->getIdLenderAccount()->getIdClient(), $product, $this->productAttributeManager)) {
-            $violations[] = ProductAttributeType::ELIGIBLE_LENDER_ID;
+            $violations[] = ProductAttributeType::ELIGIBLE_CLIENT_ID;
         }
 
         if (false === $this->isEligibleForClientType($bid->getIdLenderAccount()->getIdClient(), $product, $this->productAttributeManager)) {
-            $violations[] = ProductAttributeType::ELIGIBLE_LENDER_TYPE;
+            $violations[] = ProductAttributeType::ELIGIBLE_CLIENT_TYPE;
         }
 
         // Return the contract level reason, but the check is done in product level, as the max amount is the total of all contracts attached to a product.

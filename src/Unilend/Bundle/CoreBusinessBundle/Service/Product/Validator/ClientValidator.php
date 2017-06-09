@@ -54,11 +54,11 @@ class ClientValidator
         $product    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
 
         if (false === $this->isEligibleForClientId($client, $product, $this->productAttributeManager)) {
-            $violations[] = ProductAttributeType::ELIGIBLE_LENDER_ID;
+            $violations[] = ProductAttributeType::ELIGIBLE_CLIENT_ID;
         }
 
         if (false === $this->isEligibleForClientType($client, $product, $this->productAttributeManager)) {
-            $violations[] = ProductAttributeType::ELIGIBLE_LENDER_TYPE;
+            $violations[] = ProductAttributeType::ELIGIBLE_CLIENT_TYPE;
         }
 
         $hasEligibleContract = false;
