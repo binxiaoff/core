@@ -70,7 +70,8 @@ class VigilanceRuleManager
                 $this->processDepositDetection($clientRepository->getClientsByDepositAmountAndDate(new \DateTime('4 weeks ago 00:00:00'), self::VIGILANCE_CUMULATIVE_DEPOSIT_AMOUNT_4_W, true), $vigilanceRule, true);
                 break;
             case 'max_sold_without_operation_on_period':
-                $this->processInactiveWalletDetection($this->getInactiveLenderWalletOnPeriod(new \DateTime('45 days ago 00:00:00'), self::VIGILANCE_INACTIVE_WALLET_AMOUNT), $vigilanceRule);
+                $walletRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+                $this->processInactiveWalletDetection($walletRepository->getInactiveLenderWalletOnPeriod(new \DateTime('45 days ago 00:00:00'), self::VIGILANCE_INACTIVE_WALLET_AMOUNT), $vigilanceRule);
                 break;
             case 'max_deposit_withdraw_without_operation':
                 $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
@@ -186,25 +187,22 @@ class VigilanceRuleManager
 
         foreach ($inactiveWallets as $wallet) {
             try {
-                $client            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($wallet['idClient']);
-                $atypicalOperation = $clientAtypicalOperationRepository->findOneBy(['client' => $client, 'rule' => $vigilanceRule], ['added' => 'DESC']);
+                $lenderWallet      = $walletRepository->find($wallet['walletId']);
+                $atypicalOperation = $clientAtypicalOperationRepository->findOneBy(['client' => $lenderWallet->getIdClient(), 'rule' => $vigilanceRule], ['added' => 'DESC']);
 
-                if (null !== $atypicalOperation) {
-                    $lenderWallet = $walletRepository->find($wallet['walletId']);
-
-                    if (true === empty($operationRepository->getWithdrawAndProvisionOperationByDateAndWallet($lenderWallet, $atypicalOperation->getAdded()))
-                        && true === empty($bidsRepository->getManualBidByDateAndWallet($lenderWallet, $atypicalOperation->getAdded()))
-                    ) {
-                        continue;
-                    }
+                if (
+                    null !== $atypicalOperation
+                    && true === empty($operationRepository->getWithdrawAndProvisionOperationByDateAndWallet($lenderWallet, $atypicalOperation->getAdded()))
+                    && true === empty($bidsRepository->getManualBidByDateAndWallet($lenderWallet, $atypicalOperation->getAdded()))
+                ) {
+                    continue;
                 }
-
                 $comment           = 'Le client a un solde inactif d\'un montant de ' . number_format($wallet['availableBalance'], 2, ',', ' ') . ' €. Dernière opération le ' . \DateTime::createFromFormat('Y-m-d H:i:s', $wallet['lastOperationDate'])->format('d/m/Y H:i:s');
-                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $wallet['availableBalance'], null, $comment);
-                $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);
+                $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $lenderWallet->getIdClient(), $wallet['availableBalance'], null, $comment);
+                $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($lenderWallet->getIdClient(), $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);
             } catch (\Exception $exception) {
-                $this->logger->error('Could not process the detection: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $wallet['idClient'] .
-                    ' - Error: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $wallet['idClient']]);
+                $this->logger->error('Could not process the detection: ' . $vigilanceRule->getLabel() .
+                    ' - Error: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_wallet' => $wallet['walletId']]);
             }
         }
     }
@@ -256,24 +254,5 @@ class VigilanceRuleManager
                     ' - Error: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $clientRow['idClient']]);
             }
         }
-    }
-
-    /**
-     * @param \DateTime $date
-     * @param  int      $amount
-     *
-     * @return array
-     */
-    private function getInactiveLenderWalletOnPeriod(\DateTime $date, $amount)
-    {
-        $walletRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $inactiveWallets  = $walletRepository->getInactiveLenderWalletOnPeriod($date, $amount);
-        $lastActionDates  = $walletRepository->getLastLenderWalletActionDate(array_column($inactiveWallets, 'walletId'));
-
-        foreach ($inactiveWallets as $walletId => $walletRow) {
-            $inactiveWallets[$walletId] = $walletRow + $lastActionDates[$walletId];
-        }
-
-        return $inactiveWallets;
     }
 }

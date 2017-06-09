@@ -60,82 +60,56 @@ class WalletRepository extends EntityRepository
 
     /**
      * @param \DateTime $inactiveSince
-     * @param float     $minAvailableBalance
+     * @param int       $minAvailableBalance
      *
      * @return array
      */
     public function getInactiveLenderWalletOnPeriod(\DateTime $inactiveSince, $minAvailableBalance)
     {
-        $operationType = $this->getEntityManager()->createQueryBuilder()
-            ->select('ot.id')
-            ->from('UnilendCoreBusinessBundle:OperationType', 'ot')
-            ->where('ot.label IN (\'lender_withdraw\', \'lender_provision\')');
-        $queryBuilder  = $this->createQueryBuilder('w')
-            ->select('o.id, b.idBid, IDENTITY(w.idClient) AS idClient, w.availableBalance, w.id AS walletId')
-            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'wt.id = w.idType')
-            ->innerJoin('UnilendCoreBusinessBundle:WalletBalanceHistory', 'wbh', Join::WITH, 'w.id = wbh.idWallet')
-            ->leftJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.id = wbh.idOperation AND o.idType IN (' . $operationType->getDQL() . ')')
-            ->leftJoin('UnilendCoreBusinessBundle:Bids', 'b', Join::WITH, 'b.idBid = wbh.idBid AND b.idAutobid IS NULL')
-            ->where('wt.label = :lender')
-            ->setParameter('lender', WalletType::LENDER)
-            ->andWhere('w.availableBalance >= :minAvailableBalance')
-            ->setParameter('minAvailableBalance', $minAvailableBalance)
-            ->andWhere('wbh.added > :inactiveSince')
-            ->setParameter('inactiveSince', $inactiveSince)
-            ->groupBy('wbh.idWallet')
-            ->having('o.id IS NULL AND b.idBid IS NULL');
-
-        $result = [];
-
-        foreach ($queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_SCALAR) as $wallet) {
-            $result[$wallet['walletId']] = $wallet;
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param array $walletList
-     *
-     * @return array
-     */
-    public function getLastLenderWalletActionDate($walletList)
-    {
-        $sql = 'SELECT
-          walletId,
-          MAX(lastOperationDate) AS lastOperationDate
+        $sql = '
+        SELECT
+          a.walletId,
+          GREATEST(a.lastOperationDate,b2.lastOperationDate) AS lastOperationDate,
+          w.available_balance AS availableBalance
         FROM (
-            SELECT
+               SELECT
                  COALESCE(o.id_wallet_creditor, o.id_wallet_debtor) AS walletId,
                  MAX(o.added)                                       AS lastOperationDate
                FROM operation o
-                 INNER JOIN operation_type ot ON o.id_type = ot.id AND ot.label IN (\'lender_withdraw\', \'lender_provision\')
-               WHERE o.id_wallet_creditor IN (:walletList) OR o.id_wallet_debtor IN (:walletList)
+                 INNER JOIN operation_type ot ON o.id_type = ot.id AND ot.label IN (:operationType)
                GROUP BY walletId
-               UNION ALL
-               SELECT
-                 am.id_wallet AS walletId,
-                 MAX(added) AS lastOperationDate
-               FROM bids b
-                 INNER JOIN account_matching am ON am.id_lender_account = b.id_lender_account
-               WHERE am.id_wallet IN (:walletList) AND b.id_autobid IS NULL
-               GROUP BY am.id_wallet
+               HAVING lastOperationDate < :inactiveSince
              ) a
-        GROUP BY walletId';
+          INNER JOIN wallet w ON a.walletId = w.id AND w.available_balance >= :minAvailableBalance
+          INNER JOIN wallet_type wt ON wt.id = w.id_type AND wt.label = :lender
+          INNER JOIN (
+                       SELECT
+                         am.id_wallet AS walletId,
+                         MAX(b.added)   AS lastOperationDate
+                       FROM bids b
+                         INNER JOIN account_matching am ON am.id_lender_account = b.id_lender_account
+                       WHERE b.id_autobid IS NULL
+                       GROUP BY am.id_wallet
+                       HAVING lastOperationDate < :inactiveSince
+                     ) b2 ON b2.walletId = a.walletId
+        GROUP BY walletId
+        ';
+        $params = [
+            'operationType'       => [OperationType::LENDER_WITHDRAW, OperationType::LENDER_PROVISION],
+            'lender'              => WalletType::LENDER,
+            'inactiveSince'       => $inactiveSince->format('Y-m-d H:i:s'),
+            'minAvailableBalance' => $minAvailableBalance
+        ];
+        $binds = [
+            'operationType'       => Connection::PARAM_STR_ARRAY,
+            'lender'              => \PDO::PARAM_STR,
+            'inactiveSince'       => \PDO::PARAM_STR,
+            'minAvailableBalance' => \PDO::PARAM_INT
+        ];
 
-        $statement = $this->getEntityManager()
+        return $this->getEntityManager()
             ->getConnection()
-            ->executeQuery(
-                $sql,
-                ['walletList' => $walletList],
-                ['walletList' => Connection::PARAM_INT_ARRAY]
-            );
-        $result    = [];
-
-        while ($wallet = $statement->fetch(\PDO::FETCH_ASSOC)) {
-            $result[$wallet['walletId']] = $wallet;
-        }
-
-        return $result;
+            ->executeQuery($sql, $params, $binds)
+            ->fetchAll();
     }
 }
