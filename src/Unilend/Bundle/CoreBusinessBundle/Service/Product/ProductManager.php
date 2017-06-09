@@ -135,7 +135,7 @@ abstract class ProductManager
      *
      * @return mixed|null
      */
-    public function getEligibleMaxDuration(\product $product)
+    public function getMaxEligibleDuration(\product $product)
     {
         $product = $this->convertProduct($product);
 
@@ -167,7 +167,7 @@ abstract class ProductManager
      *
      * @return string|null
      */
-    public function getEligibleMinDuration(\product $product)
+    public function getMinEligibleDuration(\product $product)
     {
         $durationMinAttr = $this->productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MIN_LOAN_DURATION_IN_MONTH);
         $durationMin     = empty($durationMinAttr) ? null : $durationMinAttr[0];
