@@ -1,9 +1,10 @@
 <?php
 
-use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProduct;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
 class ajaxController extends bootstrap
 {
@@ -398,7 +399,7 @@ class ajaxController extends bootstrap
                         'success' => true
                     ]);
                 }
-            } elseif ($_POST['etape'] == 4.1 && $project->status <= \projects_status::COMITY_REVIEW) {
+            } elseif ($_POST['etape'] == 4.1 && $project->status <= ProjectsStatus::COMITY_REVIEW) {
                 if (false === empty($_POST['target_ratings']) && false === empty($project->id_target_company)) {
                     /** @var \company_rating_history $targetCompanyRatingHistory */
                     $targetCompanyRatingHistory   = $this->loadData('company_rating_history');
@@ -705,7 +706,7 @@ class ajaxController extends bootstrap
         $projectManager = $this->get('unilend.service.project_manager');
         $projectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $project);
 
-        if ($project->status == \projects_status::COMMERCIAL_REJECTION) {
+        if ($project->status == ProjectsStatus::COMMERCIAL_REJECTION) {
             /** @var \projects_status_history $projectStatusHistory */
             $projectStatusHistory = $this->loadData('projects_status_history');
             $projectStatusHistory->loadLastProjectHistory($project->id_project);
@@ -816,9 +817,9 @@ class ajaxController extends bootstrap
         $projectManager = $this->get('unilend.service.project_manager');
 
         if ($_POST['status'] == 1) {
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::COMITY_REVIEW, $project);
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::COMITY_REVIEW, $project);
         } elseif ($_POST['status'] == 2) {
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::ANALYSIS_REJECTION, $project);
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::ANALYSIS_REJECTION, $project);
 
             /** @var \projects_status_history $projectStatusHistory */
             $projectStatusHistory = $this->loadData('projects_status_history');
@@ -877,7 +878,7 @@ class ajaxController extends bootstrap
             || false === $project->get($_POST['id_project'], 'id_project')
             || false === $company->get($project->id_company, 'id_company')
             || false === $client->get($company->id_client_owner, 'id_client')
-            || $_POST['status'] == 1 && (
+            || in_array($_POST['status'], [1, 4]) && (
                 empty($_POST['structure_comite']) || $_POST['structure_comite'] > 10
                 || empty($_POST['rentabilite_comite']) || $_POST['rentabilite_comite'] > 10
                 || empty($_POST['tresorerie_comite']) || $_POST['tresorerie_comite'] > 10
@@ -951,13 +952,13 @@ class ajaxController extends bootstrap
                 }
             }
 
-            if (false === in_array(\projects_status::PREP_FUNDING, $existingStatus)) {
-                $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein', $client);
+            if (false === in_array(ProjectsStatus::PREP_FUNDING, $existingStatus)) {
+                $this->get('mailer')->sendBorrowerAccount($client, 'ouverture-espace-emprunteur-plein');
             }
 
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $project);
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::PREP_FUNDING, $project);
         } elseif ($_POST['status'] == 2) {
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::COMITY_REJECTION, $project);
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::COMITY_REJECTION, $project);
 
             /** @var \projects_status_history $projectStatusHistory */
             $projectStatusHistory = $this->loadData('projects_status_history');
@@ -993,11 +994,25 @@ class ajaxController extends bootstrap
                 $mailer = $this->get('mailer');
                 $mailer->send($message);
             }
+        } elseif ($_POST['status'] == 4) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager        = $this->get('doctrine.orm.entity_manager');
+            $projectCommentEntity = new \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments();
+            $projectCommentEntity->setIdProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project));
+            $projectCommentEntity->setIdUser($this->userEntity);
+            $projectCommentEntity->setContent('<p><u>Conditions suspensives de mise en ligne</u><p>' . $_POST['suspensive_conditions_comment'] . '</p>');
+
+            $entityManager->persist($projectCommentEntity);
+            $entityManager->flush($projectCommentEntity);
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+            $projectManager = $this->get('unilend.service.project_manager');
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::SUSPENSIVE_CONDITIONS, $project);
         }
 
         if (
             false === empty($project->risk) && false === empty($project->period)
-            && false === in_array($project->status, [\projects_status::COMMERCIAL_REJECTION, \projects_status::ANALYSIS_REJECTION, \projects_status::COMITY_REJECTION])
+            && false === in_array($project->status, [ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION])
         ) {
             try {
                 $project->id_rate = $projectManager->getProjectRateRangeId($project);
@@ -1217,36 +1232,8 @@ class ajaxController extends bootstrap
                     $sTypeEmail = 'mot-de-passe-oublie-emprunteur';
                     break;
             }
-            $this->sendEmailBorrowerArea($sTypeEmail, $oClients);
+
+            $this->get('mailer')->sendBorrowerAccount($oClients, $sTypeEmail);
         }
-    }
-
-    private function sendEmailBorrowerArea($sTypeEmail, clients $oClients)
-    {
-        /** @var \settings $oSettings */
-        $oSettings = $this->loadData('settings');
-        $oSettings->get('Facebook', 'type');
-        $sFacebookURL = $this->settings->value;
-        $oSettings->get('Twitter', 'type');
-        $sTwitterURL = $this->settings->value;
-
-        /** @var \temporary_links_login $oTemporaryLink */
-        $oTemporaryLink = $this->loadData('temporary_links_login');
-        $sTemporaryLink = $this->surl . '/espace_emprunteur/securite/' . $oTemporaryLink->generateTemporaryLink($oClients->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG);
-
-        $aVariables = array(
-            'surl'                   => $this->surl,
-            'url'                    => $this->url,
-            'link_compte_emprunteur' => $sTemporaryLink,
-            'lien_fb'                => $sFacebookURL,
-            'lien_tw'                => $sTwitterURL,
-            'prenom'                 => $oClients->prenom
-        );
-
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeEmail, $aVariables);
-        $message->setTo($oClients->email);
-        $mailer = $this->get('mailer');
-        $mailer->send($message);
     }
 }

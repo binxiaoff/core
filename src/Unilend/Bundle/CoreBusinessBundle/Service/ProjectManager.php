@@ -962,8 +962,8 @@ class ProjectManager
         $previousProjects = $projectData->getPreviousProjectsWithSameSiren($project->getIdCompany()->getSiren(), $project->getAdded()->format('Y-m-d H:i:s'));
         $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         foreach ($previousProjects as $previousProject) {
-            if (in_array($previousProject['status'], [\projects_status::IMPOSSIBLE_AUTO_EVALUATION, \projects_status::INCOMPLETE_REQUEST, \projects_status::COMPLETE_REQUEST])) {
-                $previousProjectEntity = $projectRepository->find($previousProject['id_project']);
+            $previousProjectEntity = $projectRepository->find($previousProject['id_project']);
+            if (in_array($previousProjectEntity->getStatus(), [\projects_status::IMPOSSIBLE_AUTO_EVALUATION, \projects_status::INCOMPLETE_REQUEST, \projects_status::COMPLETE_REQUEST])) {
                 $this->addProjectStatus($userId, ProjectsStatus::ABANDONED, $previousProjectEntity, 0, 'same_company_project_rejected');
             }
         }

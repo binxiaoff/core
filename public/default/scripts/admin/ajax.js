@@ -604,23 +604,24 @@ function valid_rejete_etape7(status, id_project) {
         var message            = 'valider',
             note_comite        = $('span.moyenneNote_comite').text(),
             validation_message = 'Note comité : ' + note_comite + ' \nMontant du projet : ' + $('#montant').val() + ' euros \nDurée du projet : ' + $('#duree').val() + ' mois' + rate_message + '\n';
-
     }
     else if (status == 2) var message = 'rejeter';
     else if (status == 3) var message = 'sauvegarder';
+    else if (status == 4) var message = 'valider avec des conditions suspensives de mise en ligne';
 
     if (confirm(validation_message + 'Êtes-vous sûr de ' + message + ' le dossier ?') == true) {
-        var structure                       = parseFloat($('#structure_comite').val().replace(',', '.')),
-            rentabilite                     = parseFloat($('#rentabilite_comite').val().replace(',', '.')),
-            tresorerie                      = parseFloat($('#tresorerie_comite').val().replace(',', '.')),
-            global                          = parseFloat($('#global_comite').val().replace(',', '.')),
-            individuel                      = parseFloat($('#individuel_comite').val().replace(',', '.')),
-            performance_fianciere           = parseFloat($('#performance_fianciere_comite').html().replace(',', '.')),
-            marche_opere                    = parseFloat($('#marche_opere_comite').html().replace(',', '.')),
-            dirigeance                      = parseFloat($('#dirigeance_comite').val().replace(',', '.')),
-            indicateur_risque_dynamique     = parseFloat($('#indicateur_risque_dynamique_comite').val().replace(',', '.')),
-            avis_comite                     = ckedAvis_comite.getData(),
-            rejection_reason                = $('#rejection_reason option:selected').val(),
+        var structure                     = parseFloat($('#structure_comite').val().replace(',', '.')),
+            rentabilite                   = parseFloat($('#rentabilite_comite').val().replace(',', '.')),
+            tresorerie                    = parseFloat($('#tresorerie_comite').val().replace(',', '.')),
+            global                        = parseFloat($('#global_comite').val().replace(',', '.')),
+            individuel                    = parseFloat($('#individuel_comite').val().replace(',', '.')),
+            performance_fianciere         = parseFloat($('#performance_fianciere_comite').html().replace(',', '.')),
+            marche_opere                  = parseFloat($('#marche_opere_comite').html().replace(',', '.')),
+            dirigeance                    = parseFloat($('#dirigeance_comite').val().replace(',', '.')),
+            indicateur_risque_dynamique   = parseFloat($('#indicateur_risque_dynamique_comite').val().replace(',', '.')),
+            avis_comite                   = ckedAvis_comite.getData(),
+            rejection_reason              = $('#rejection_reason option:selected').val(),
+            suspensive_conditions_comment = $('#comment').length ? $('#comment').val() : '',
             form_ok = true;
 
         if (isNaN(structure) != false || isNaN(rentabilite) != false || isNaN(tresorerie) != false || isNaN(performance_fianciere) != false || isNaN(individuel) != false || isNaN(global) != false || isNaN(marche_opere) != false || isNaN(dirigeance) != false || isNaN(indicateur_risque_dynamique) != false) {
@@ -628,12 +629,12 @@ function valid_rejete_etape7(status, id_project) {
             alert('Vous devez renseigner un chiffre infèrieur ou égale à 10 dans les 7 premiers champs');
         }
         else if (structure > 10 || rentabilite > 10 || tresorerie > 10 || performance_fianciere > 10 || individuel > 10 || global > 10 || marche_opere > 10 || dirigeance > 10 || indicateur_risque_dynamique > 10 || structure == 0 || rentabilite == 0 || tresorerie == 0 || performance_fianciere == 0 || individuel == 0 || global == 0 || marche_opere == 0 || dirigeance == 0 || indicateur_risque_dynamique == 0) {
-            if (status == 1) {
+            if (status == 1 || status == 4) {
                 form_ok = false;
                 alert('Vous devez renseigner un chiffre infèrieur ou égale à 10');
             }
         }
-        else if (avis_comite.length < 50 && status == 1) {
+        else if (avis_comite.length < 50 && (status == 1 || status == 4)) {
             form_ok = false;
             alert('Vous devez renseigner un avis (50 caractères minimum)');
         }
@@ -641,7 +642,7 @@ function valid_rejete_etape7(status, id_project) {
             form_ok = false;
             alert('Vous devez renseigner le motif de rejet');
         }
-        else if (status == 1) {
+        else if (status == 1 || status == 4) {
             if ($.isNumeric($('#duree').val()) == false || $('#duree').val() <= 0) {
                 form_ok = false;
                 alert('Vous devez renseigner la durée du prêt');
@@ -666,7 +667,8 @@ function valid_rejete_etape7(status, id_project) {
                 marche_opere_comite: marche_opere,
                 dirigeance_comite: dirigeance,
                 indicateur_risque_dynamique_comite: indicateur_risque_dynamique,
-                rejection_reason: rejection_reason
+                rejection_reason: rejection_reason,
+                suspensive_conditions_comment: suspensive_conditions_comment
             }).done(function(data) {
                 var response = jQuery.parseJSON(data)
 
