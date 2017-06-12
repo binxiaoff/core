@@ -200,7 +200,7 @@ class ClientsRepository extends EntityRepository
                     WHERE c.status = ' . Clients::STATUS_ONLINE . '
                       AND wt.label = "' . WalletType::LENDER . '"
                       AND (ca.id_pays_fiscal = ' . PaysV2::COUNTRY_FRANCE . ' OR ca.id_pays_fiscal = 0)
-                      AND la.id_company_owner = 0
+                      AND c.type IN (1, 3)
                       AND (
                         NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = ca.cp_fiscal)
 -                        OR (SELECT COUNT(*) FROM villes v WHERE v.cp = ca.cp_fiscal AND v.ville = ca.ville_fiscal) <> 1

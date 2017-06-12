@@ -184,7 +184,7 @@ class dossiersController extends bootstrap
             $this->projects_status_history->loadLastProjectHistory($this->projects->id_project);
 
             if (
-                $this->projects->status <= \projects_status::COMMERCIAL_REVIEW
+                $this->projects->status <= ProjectsStatus::COMMERCIAL_REVIEW
                 && empty($this->projects->id_commercial)
                 && empty($this->companies->phone)
                 && 1 === preg_match('/^[0-9]{9}$/', $this->companies->siren)
@@ -204,7 +204,7 @@ class dossiersController extends bootstrap
             $this->rejectionReasonMessage = $projectStatusManager->getRejectionReasonTranslation($this->projects_status_history->content);
             $this->bHasAdvisor            = false;
 
-            if ($this->projects->status == \projects_status::FUNDE) {
+            if ($this->projects->status == ProjectsStatus::FUNDE) {
                 $proxy       = $this->projects_pouvoir->select('id_project = ' . $this->projects->id_project);
                 $this->proxy = empty($proxy) ? [] : $proxy[0];
 
@@ -344,13 +344,13 @@ class dossiersController extends bootstrap
                     $bCreate = (false === $oProjectsStatusHistoryDetails->get($oProjectStatusHistory->id_project_status_history, 'id_project_status_history'));
 
                     switch ($this->projects->status) {
-                        case \projects_status::COMMERCIAL_REJECTION:
+                        case ProjectsStatus::COMMERCIAL_REJECTION:
                             $oProjectsStatusHistoryDetails->commercial_rejection_reason = $_POST['rejection_reason'];
                             break;
-                        case \projects_status::ANALYSIS_REJECTION:
+                        case ProjectsStatus::ANALYSIS_REJECTION:
                             $oProjectsStatusHistoryDetails->analyst_rejection_reason = $_POST['rejection_reason'];
                             break;
-                        case \projects_status::COMITY_REJECTION:
+                        case ProjectsStatus::COMITY_REJECTION:
                             $oProjectsStatusHistoryDetails->comity_rejection_reason = $_POST['rejection_reason'];
                             break;
                     }
@@ -363,7 +363,7 @@ class dossiersController extends bootstrap
                     }
                 }
             } elseif (isset($_POST['pret_refuse']) && $_POST['pret_refuse'] == 1) {
-                if ($this->projects->status < \projects_status::PRET_REFUSE) {
+                if ($this->projects->status < ProjectsStatus::PRET_REFUSE) {
                     $loanRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
                     /** @var \echeanciers $echeanciers */
                     $echeanciers = $this->loadData('echeanciers');
@@ -378,7 +378,7 @@ class dossiersController extends bootstrap
 
                     $entityManager->getConnection()->beginTransaction();
                     try {
-                        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PRET_REFUSE, $this->projects);
+                        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::PRET_REFUSE, $this->projects);
 
                         $echeanciers->delete($this->projects->id_project, 'id_project');
 
@@ -434,7 +434,7 @@ class dossiersController extends bootstrap
 
                 $resetFundsCommissionRate = false;
 
-                if ($this->projects->status <= \projects_status::PREP_FUNDING) {
+                if ($this->projects->status <= ProjectsStatus::PREP_FUNDING) {
                     if (false === empty($_POST['partner']) && $this->projects->id_partner != $_POST['partner']) {
                         $this->projects->id_partner                = $_POST['partner'];
                         $this->projects->id_product                = 0;
@@ -517,10 +517,10 @@ class dossiersController extends bootstrap
                 if (
                     false === empty($_POST['commercial'])
                     && $_POST['commercial'] != $this->projects->id_commercial
-                    && $this->projects->status < \projects_status::COMMERCIAL_REVIEW
+                    && $this->projects->status < ProjectsStatus::COMMERCIAL_REVIEW
                 ) {
-                    if (\projects_status::NOT_ELIGIBLE != $this->projects->status) {
-                        $_POST['status'] = \projects_status::COMMERCIAL_REVIEW;
+                    if (ProjectsStatus::NOT_ELIGIBLE != $this->projects->status) {
+                        $_POST['status'] = ProjectsStatus::COMMERCIAL_REVIEW;
                     }
 
                     $latitude  = (float) $this->companies->latitude;
@@ -541,9 +541,9 @@ class dossiersController extends bootstrap
                 if (
                     false === empty($_POST['analyste'])
                     && $_POST['analyste'] != $this->projects->id_analyste
-                    && $this->projects->status < \projects_status::ANALYSIS_REVIEW
+                    && $this->projects->status < ProjectsStatus::ANALYSIS_REVIEW
                 ) {
-                    $_POST['status'] = \projects_status::ANALYSIS_REVIEW;
+                    $_POST['status'] = ProjectsStatus::ANALYSIS_REVIEW;
                 }
 
                 if ($this->projects->create_bo && empty($this->clients->source) && isset($_POST['source'])) {
@@ -562,7 +562,7 @@ class dossiersController extends bootstrap
                 $this->projects->id_commercial       = isset($_POST['commercial']) ? $_POST['commercial'] : $this->projects->id_commercial;
                 $this->projects->id_borrowing_motive = $_POST['motive'];
 
-                if ($this->projects->status <= \projects_status::COMITY_REVIEW) {
+                if ($this->projects->status <= ProjectsStatus::COMITY_REVIEW) {
                     $this->projects->id_project_need = $_POST['need'];
                     $this->projects->period          = $_POST['duree'];
                     $this->projects->amount          = $this->ficelle->cleanFormatedNumber($_POST['montant']);
@@ -572,7 +572,7 @@ class dossiersController extends bootstrap
                     }
                 }
 
-                if ($this->projects->status <= \projects_status::PREP_FUNDING) {
+                if ($this->projects->status <= ProjectsStatus::PREP_FUNDING) {
                     if (false === empty($_POST['project_partner'])) {
                         $this->projects->id_partner                = $_POST['project_partner'];
                         $this->projects->id_product                = null;
@@ -595,13 +595,13 @@ class dossiersController extends bootstrap
                     }
                 }
 
-                if ($this->projects->status <= \projects_status::A_FUNDER) {
+                if ($this->projects->status <= ProjectsStatus::A_FUNDER) {
                     $sector = $this->translator->trans('company-sector_sector-' . $this->companies->sector);
                     $this->settings->get('Prefixe URL pages projet', 'type');
                     $this->projects->slug = $this->ficelle->generateSlug($this->settings->value . '-' . $sector . '-' . $this->companies->city . '-' . substr(md5($this->projects->title . $this->projects->id_project), 0, 7));
                 }
 
-                if ($this->projects->status == \projects_status::A_FUNDER) {
+                if ($this->projects->status == ProjectsStatus::A_FUNDER) {
                     if (isset($_POST['date_publication']) && ! empty($_POST['date_publication'])) {
                         $publicationDate                  = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_publication'] . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute']);
                         $this->projects->date_publication = $publicationDate->format('Y-m-d H:i:s');
@@ -613,7 +613,7 @@ class dossiersController extends bootstrap
                     }
                 }
 
-                if ($this->projects->status >= \projects_status::PREP_FUNDING) {
+                if ($this->projects->status >= ProjectsStatus::PREP_FUNDING) {
                     if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
                         try {
                             $this->projects->id_rate = $oProjectManager->getProjectRateRangeId($this->projects);
@@ -637,7 +637,7 @@ class dossiersController extends bootstrap
                 if (
                     isset($_POST['date_retrait'], $_POST['date_retrait_heure'], $_POST['date_retrait_minute'])
                     && 1 === preg_match('#[0-9]{2}/[0-9]{2}/[0-9]{8}#', $_POST['date_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute'])
-                    && $this->projects->status <= \projects_status::EN_FUNDING
+                    && $this->projects->status <= ProjectsStatus::EN_FUNDING
                 ) {
                     $endOfPublicationDate = \DateTime::createFromFormat('d/m/YHi', $_POST['date_retrait'] . $_POST['date_retrait_heure'] . $_POST['date_retrait_minute']);
 
@@ -656,7 +656,7 @@ class dossiersController extends bootstrap
             $needs        = $oProjectNeed->getTree();
             $this->aNeeds = $needs;
 
-            if (in_array($this->projects->status, [\projects_status::COMMERCIAL_REJECTION, \projects_status::ANALYSIS_REJECTION, \projects_status::COMITY_REJECTION])) {
+            if (in_array($this->projects->status, [ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION])) {
                 /** @var \projects_status_history_details $oProjectsStatusHistoryDetails */
                 $oProjectsStatusHistoryDetails = $this->loadData('projects_status_history_details');
                 /** @var \project_rejection_reason $oRejectionReason */
@@ -726,7 +726,7 @@ class dossiersController extends bootstrap
                 $this->partnerProduct->get($this->projects->id_product, 'id_partner = ' . $this->projects->id_partner . ' AND id_product');
             }
 
-            if (false === empty($this->projects->risk) && false === empty($this->projects->period) && $this->projects->status >= \projects_status::PREP_FUNDING) {
+            if (false === empty($this->projects->risk) && false === empty($this->projects->period) && $this->projects->status >= ProjectsStatus::PREP_FUNDING) {
                 $fPredictAmountAutoBid = $this->get('unilend.service.autobid_settings_manager')->predictAmount($this->projects->risk, $this->projects->period);
                 $this->fPredictAutoBid = round(($fPredictAmountAutoBid / $this->projects->amount) * 100, 1);
 
@@ -796,7 +796,7 @@ class dossiersController extends bootstrap
     private function isFundsCommissionRateEditable()
     {
         return (
-            $this->projects->status <= \projects_status::FUNDE
+            $this->projects->status <= ProjectsStatus::FUNDE
             && false === empty($this->projects->id_product)
             && in_array($_SESSION['user']['id_user_type'], [\users_types::TYPE_ADMIN, \users_types::TYPE_DIRECTION])
         );
@@ -853,7 +853,7 @@ class dossiersController extends bootstrap
         }
 
         // Disable automatic debits
-        if (in_array($iStatus, array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT))) {
+        if (in_array($iStatus, array(ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE, ProjectsStatus::DEFAUT))) {
             /** @var \prelevements $prelevements */
             $prelevements  = $this->loadData('prelevements');
             $aDirectDebits = $prelevements->select('id_project = ' . $this->projects->id_project . ' AND status = 0 AND type_prelevement = 1 AND date_execution_demande_prelevement > NOW()');
@@ -884,22 +884,22 @@ class dossiersController extends bootstrap
         $aReplacements = array();
 
         switch ($iStatus) {
-            case \projects_status::PROBLEME:
+            case ProjectsStatus::PROBLEME:
                 $sMailType = 'emprunteur-projet-statut-probleme';
                 break;
-            case \projects_status::PROBLEME_J_X:
+            case ProjectsStatus::PROBLEME_J_X:
                 $sMailType = 'emprunteur-projet-statut-probleme-j-x';
                 break;
-            case \projects_status::RECOUVREMENT:
+            case ProjectsStatus::RECOUVREMENT:
                 $sMailType = 'emprunteur-projet-statut-recouvrement';
                 break;
-            case \projects_status::PROCEDURE_SAUVEGARDE:
+            case ProjectsStatus::PROCEDURE_SAUVEGARDE:
                 $sMailType = 'emprunteur-projet-statut-procedure-sauvegarde';
                 break;
-            case \projects_status::REDRESSEMENT_JUDICIAIRE:
+            case ProjectsStatus::REDRESSEMENT_JUDICIAIRE:
                 $sMailType = 'emprunteur-projet-statut-redressement-judiciaire';
                 break;
-            case \projects_status::LIQUIDATION_JUDICIAIRE:
+            case ProjectsStatus::LIQUIDATION_JUDICIAIRE:
                 $sMailType = 'emprunteur-projet-statut-liquidation-judiciaire';
                 break;
             default:
@@ -927,7 +927,7 @@ class dossiersController extends bootstrap
         $oPaymentSchedule = $this->loadData('echeanciers_emprunteur');
         $oPaymentSchedule->get($this->projects->id_project, 'ordre = 1 AND id_project');
 
-        if (in_array($iStatus, array(\projects_status::PROBLEME, \projects_status::PROBLEME_J_X))) {
+        if (in_array($iStatus, array(ProjectsStatus::PROBLEME, ProjectsStatus::PROBLEME_J_X))) {
             $aNextRepayment = $oPaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND date_echeance_emprunteur > "' . date('Y-m-d') . '"', 'date_echeance_emprunteur ASC', 0, 1);
             $oNow           = new \DateTime();
             $aReplacements['delai_regularisation'] = $oNow->diff(new \DateTime($aNextRepayment[0]['date_echeance_emprunteur']))->days;
@@ -938,17 +938,17 @@ class dossiersController extends bootstrap
             }
         }
 
-        if (in_array($iStatus, array(\projects_status::RECOUVREMENT, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
+        if (in_array($iStatus, array(ProjectsStatus::RECOUVREMENT, ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE))) {
             /** @var \echeanciers $oLenderRepaymentSchedule */
             $oLenderRepaymentSchedule = $this->loadData('echeanciers');
             $aReplacements['CRD'] = $this->ficelle->formatNumber($oLenderRepaymentSchedule->getOwedCapital(array('id_project' => $this->projects->id_project)));
 
-            if (\projects_status::RECOUVREMENT == $iStatus) {
+            if (ProjectsStatus::RECOUVREMENT == $iStatus) {
                 $aReplacements['mensualites_impayees'] = $this->ficelle->formatNumber($oLenderRepaymentSchedule->getUnpaidAmountAtDate($this->projects->id_project, new \DateTime('NOW')));
             }
         }
 
-        $aFundingDate = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added ASC, id_project_status_history ASC', 0, 1);
+        $aFundingDate = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . ProjectsStatus::REMBOURSEMENT . ')', 'added ASC, id_project_status_history ASC', 0, 1);
         $iFundingTime = strtotime($aFundingDate[0]['added']);
 
         $aReplacements = $aReplacements + array(
@@ -1015,29 +1015,29 @@ class dossiersController extends bootstrap
         );
 
         switch ($iStatus) {
-            case \projects_status::PROBLEME:
+            case ProjectsStatus::PROBLEME:
                 $iNotificationType = Notifications::TYPE_PROJECT_PROBLEM;
                 $sEmailTypePerson  = 'preteur-projet-statut-probleme';
                 $sEmailTypeSociety = 'preteur-projet-statut-probleme';
                 break;
-            case \projects_status::PROBLEME_J_X:
+            case ProjectsStatus::PROBLEME_J_X:
                 $iNotificationType = Notifications::TYPE_PROJECT_PROBLEM_REMINDER;
                 $sEmailTypePerson  = 'preteur-projet-statut-probleme-j-x';
                 $sEmailTypeSociety = 'preteur-projet-statut-probleme-j-x';
                 break;
-            case \projects_status::RECOUVREMENT:
+            case ProjectsStatus::RECOUVREMENT:
                 $iNotificationType = Notifications::TYPE_PROJECT_RECOVERY;
                 $sEmailTypePerson  = 'preteur-projet-statut-recouvrement';
                 $sEmailTypeSociety = 'preteur-projet-statut-recouvrement';
                 break;
-            case \projects_status::PROCEDURE_SAUVEGARDE:
+            case ProjectsStatus::PROCEDURE_SAUVEGARDE:
                 $iNotificationType = Notifications::TYPE_PROJECT_PRECAUTIONARY_PROCESS;
                 $sEmailTypePerson  = 'preteur-projet-statut-procedure-sauvegarde';
                 $sEmailTypeSociety = 'preteur-projet-statut-procedure-sauvegarde';
                 break;
-            case \projects_status::REDRESSEMENT_JUDICIAIRE:
+            case ProjectsStatus::REDRESSEMENT_JUDICIAIRE:
                 $iNotificationType  = Notifications::TYPE_PROJECT_RECEIVERSHIP;
-                $aCollectiveProcess = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::PROCEDURE_SAUVEGARDE . ')', 'added ASC, id_project_status_history ASC', 0, 1);
+                $aCollectiveProcess = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status = ' . ProjectsStatus::PROCEDURE_SAUVEGARDE . ')', 'added ASC, id_project_status_history ASC', 0, 1);
 
                 if (empty($aCollectiveProcess)) {
                     $sEmailTypePerson  = 'preteur-projet-statut-redressement-judiciaire';
@@ -1047,9 +1047,9 @@ class dossiersController extends bootstrap
                     $sEmailTypeSociety = 'preteur-projet-statut-redressement-judiciaire-post-procedure';
                 }
                 break;
-            case \projects_status::LIQUIDATION_JUDICIAIRE:
+            case ProjectsStatus::LIQUIDATION_JUDICIAIRE:
                 $iNotificationType  = Notifications::TYPE_PROJECT_COMPULSORY_LIQUIDATION;
-                $aCollectiveProcess = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status IN (' . \projects_status::PROCEDURE_SAUVEGARDE . ', ' . \projects_status::REDRESSEMENT_JUDICIAIRE . '))', 'added ASC, id_project_status_history ASC', 0, 1);
+                $aCollectiveProcess = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status IN (' . ProjectsStatus::PROCEDURE_SAUVEGARDE . ', ' . ProjectsStatus::REDRESSEMENT_JUDICIAIRE . '))', 'added ASC, id_project_status_history ASC', 0, 1);
 
                 if (empty($aCollectiveProcess)) {
                     $sEmailTypePerson  = 'preteur-projet-statut-liquidation-judiciaire';
@@ -1059,20 +1059,20 @@ class dossiersController extends bootstrap
                     $sEmailTypeSociety = 'preteur-projet-statut-liquidation-judiciaire-post-procedure';
                 }
                 break;
-            case \projects_status::DEFAUT:
+            case ProjectsStatus::DEFAUT:
                 $iNotificationType = Notifications::TYPE_PROJECT_FAILURE;
                 $sEmailTypePerson  = 'preteur-projet-statut-defaut-personne-physique';
                 $sEmailTypeSociety = 'preteur-projet-statut-defaut-personne-morale';
 
-                $aCompulsoryLiquidation = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::LIQUIDATION_JUDICIAIRE . ')', 'added ASC, id_project_status_history ASC', 0, 1);
+                $aCompulsoryLiquidation = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . ProjectsStatus::LIQUIDATION_JUDICIAIRE . ')', 'added ASC, id_project_status_history ASC', 0, 1);
                 $aCommonReplacements['date_annonce_liquidation_judiciaire'] = date('d/m/Y', strtotime($aCompulsoryLiquidation[0]['added']));
                 break;
         }
 
-        $aRepaymentStatus = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added ASC, id_project_status_history ASC', 0, 1);
+        $aRepaymentStatus = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . ProjectsStatus::REMBOURSEMENT . ')', 'added ASC, id_project_status_history ASC', 0, 1);
         $aCommonReplacements['annee_projet'] = date('Y', strtotime($aRepaymentStatus[0]['added']));
 
-        if (in_array($iStatus, [\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE])) {
+        if (in_array($iStatus, [ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE])) {
             $oMaxClaimsSendingDate = new \DateTime($projectStatusHistoryDetails->date);
             $aCommonReplacements['date_max_envoi_declaration_creances'] = date('d/m/Y', $oMaxClaimsSendingDate->add(new \DateInterval('P2M'))->getTimestamp());
         }
@@ -1102,7 +1102,7 @@ class dossiersController extends bootstrap
                 $this->notifications->create();
 
                 if (
-                    in_array($iStatus, [\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT])
+                    in_array($iStatus, [ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE, ProjectsStatus::DEFAUT])
                     || $this->clients_gestion_notifications->getNotif($wallet->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM, 'immediatement')
                 ) {
                     $this->clients_gestion_mails_notif->id_client       = $wallet->getIdClient()->getIdClient();
@@ -1670,7 +1670,7 @@ class dossiersController extends bootstrap
     {
         $this->projects->id_company                = $companyEntity->getIdCompany();
         $this->projects->create_bo                 = 1;
-        $this->projects->status                    = \projects_status::INCOMPLETE_REQUEST;
+        $this->projects->status                    = ProjectsStatus::INCOMPLETE_REQUEST;
         $this->projects->id_partner                = $partnerId;
         $this->projects->commission_rate_funds     = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
         $this->projects->commission_rate_repayment = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
@@ -1678,7 +1678,7 @@ class dossiersController extends bootstrap
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->get('unilend.service.project_manager');
-        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::INCOMPLETE_REQUEST, $this->projects);
+        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::INCOMPLETE_REQUEST, $this->projects);
 
         $serialize = serialize(['id_project' => $this->projects->id_project]);
         $this->users_history->histo(7, 'dossier create', $_SESSION['user']['id_user'], $serialize);
@@ -1690,21 +1690,21 @@ class dossiersController extends bootstrap
         $this->companies = $this->loadData('companies');
         $this->bids      = $this->loadData('bids');
 
-        $this->lProjects = $this->projects->selectProjectsByStatus([\projects_status::EN_FUNDING]);
+        $this->lProjects = $this->projects->selectProjectsByStatus([ProjectsStatus::EN_FUNDING]);
     }
 
     public function _remboursements()
     {
         $this->setView('remboursements');
         $this->pageTitle = 'Remboursements';
-        $this->listing([\projects_status::FUNDE, \projects_status::REMBOURSEMENT]);
+        $this->listing([ProjectsStatus::FUNDE, ProjectsStatus::REMBOURSEMENT]);
     }
 
     public function _no_remb()
     {
         $this->setView('remboursements');
         $this->pageTitle = 'Incidents de remboursement';
-        $this->listing([\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT]);
+        $this->listing([ProjectsStatus::PROBLEME, ProjectsStatus::RECOUVREMENT, ProjectsStatus::PROBLEME_J_X, ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE, ProjectsStatus::DEFAUT]);
     }
 
     private function listing(array $aStatus)
@@ -2009,7 +2009,7 @@ class dossiersController extends bootstrap
                     $earlyRepaymentEmail->statut       = 0;
                     $earlyRepaymentEmail->create();
 
-                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT_ANTICIPE, $this->projects);
+                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::REMBOURSEMENT_ANTICIPE, $this->projects);
 
 
                     foreach ($this->echeanciers->get_liste_preteur_on_project($this->projects->id_project) as $item) {
@@ -2132,7 +2132,7 @@ class dossiersController extends bootstrap
             $dernierStatut    = $this->projects_status_history->select('id_project = ' . $this->projects->id_project, 'added DESC, id_project_status_history DESC', 0, 1);
             $this->montant_ra = 0;
 
-            $this->projects_status->get(\projects_status::REMBOURSEMENT_ANTICIPE, 'status');
+            $this->projects_status->get(ProjectsStatus::REMBOURSEMENT_ANTICIPE, 'status');
 
             if ($dernierStatut[0]['id_project_status'] == $this->projects_status->id_project_status) {
                 //récupération du montant de la transaction du CRD pour afficher la ligne en fin d'échéancier
@@ -2154,8 +2154,8 @@ class dossiersController extends bootstrap
         $this->earlyRepaymentPossible = true;
         $this->displayActionButton    = $displayActionButton;
 
-        if ($this->projects->status >= \projects_status::REMBOURSEMENT) {
-            if ($this->projects->status == \projects_status::REMBOURSEMENT_ANTICIPE) {
+        if ($this->projects->status >= ProjectsStatus::REMBOURSEMENT) {
+            if ($this->projects->status == ProjectsStatus::REMBOURSEMENT_ANTICIPE) {
                 $this->message                = '<div style="color:green;">Remboursement anticipé effectué</div>';
                 $this->earlyRepaymentPossible = false;
 
@@ -2424,7 +2424,7 @@ class dossiersController extends bootstrap
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
             $oProjectManager = $this->get('unilend.service.project_manager');
-            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::COMMERCIAL_REVIEW, $oProjects, 1, $varMail['liste_pieces']);
+            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::COMMERCIAL_REVIEW, $oProjects, 1, $varMail['liste_pieces']);
 
             unset($_SESSION['project_submission_files_list'][$oProjects->id_project]);
 
@@ -2637,10 +2637,10 @@ class dossiersController extends bootstrap
             return;
         }
 
-        if (isset($this->params[1]) && 'resume' === $this->params[1] && \projects_status::POSTPONED == $this->projects->status) {
+        if (isset($this->params[1]) && 'resume' === $this->params[1] && ProjectsStatus::POSTPONED == $this->projects->status) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
             $projectManager = $this->get('unilend.service.project_manager');
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::COMMERCIAL_REVIEW, $this->projects);
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::COMMERCIAL_REVIEW, $this->projects);
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
             die;
@@ -2655,10 +2655,10 @@ class dossiersController extends bootstrap
             $entityManager->persist($projectCommentEntity);
             $entityManager->flush($projectCommentEntity);
 
-            if ($this->projects->status != \projects_status::POSTPONED) {
+            if ($this->projects->status != ProjectsStatus::POSTPONED) {
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
                 $projectManager = $this->get('unilend.service.project_manager');
-                $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::POSTPONED, $this->projects);
+                $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::POSTPONED, $this->projects);
             }
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
@@ -2701,7 +2701,7 @@ class dossiersController extends bootstrap
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
             $projectManager = $this->get('unilend.service.project_manager');
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::ABANDONED, $this->projects, 0, $abandonReason->label);
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::ABANDONED, $this->projects, 0, $abandonReason->label);
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
             die;
@@ -2751,7 +2751,7 @@ class dossiersController extends bootstrap
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
             $projectManager = $this->get('unilend.service.project_manager');
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::A_FUNDER, $this->projects);
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::A_FUNDER, $this->projects);
 
             $slackManager    = $this->container->get('unilend.service.slack_manager');
             $publicationDate = new \DateTime($this->projects->date_publication);
@@ -2787,18 +2787,115 @@ class dossiersController extends bootstrap
             $projectCommentEntity = new ProjectsComments();
             $projectCommentEntity->setIdProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project));
             $projectCommentEntity->setIdUser($this->userEntity);
-            $projectCommentEntity->setContent("Retour à l'analyse\n--\n" . $_POST['comment']);
+            $projectCommentEntity->setContent('<p><u>Retour à l\'analyse</u><p>' . $_POST['comment'] . '</p>');
 
             $entityManager->persist($projectCommentEntity);
             $entityManager->flush($projectCommentEntity);
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
             $projectManager = $this->get('unilend.service.project_manager');
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::ANALYSIS_REVIEW, $this->projects);
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::ANALYSIS_REVIEW, $this->projects);
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
             die;
         }
+    }
+
+    public function _suspensive_conditions()
+    {
+        $this->hideDecoration();
+
+        $this->projects = $this->loadData('projects');
+
+        if (
+            false === isset($this->params[0])
+            || false === filter_var($this->params[0], FILTER_VALIDATE_INT)
+            || false === $this->projects->get($this->params[0])
+        ) {
+            echo 'Projet inconnu';
+            $this->autoFireView = false;
+            return;
+        }
+    }
+
+    public function _reject_suspensive_conditions()
+    {
+        /** @var \projects $project */
+        $project = $this->loadData('projects');
+        $project->get($this->params[0], 'id_project');
+
+        /** @var \companies $company */
+        $company = $this->loadData('companies');
+        $company->get($project->id_company, 'id_company');
+
+        /** @var \clients $client */
+        $client = $this->loadData('clients');
+        $client->get($company->id_client_owner, 'id_client');
+
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+        $projectManager = $this->get('unilend.service.project_manager');
+        $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::COMITY_REJECTION, $project);
+
+        /** @var \projects_status_history $projectStatusHistory */
+        $projectStatusHistory = $this->loadData('projects_status_history');
+        $projectStatusHistory->loadLastProjectHistory($project->id_project);
+
+        /** @var \projects_status_history_details $historyDetails */
+        $historyDetails                            = $this->loadData('projects_status_history_details');
+        $historyDetails->id_project_status_history = $projectStatusHistory->id_project_status_history;
+        $historyDetails->comity_rejection_reason   = \project_rejection_reason::SUSPENSIVE_CONDITIONS;
+        $historyDetails->create();
+
+        if (false === empty($client->email)) {
+            /** @var \settings $settings */
+            $settings = $this->loadData('settings');
+            $settings->get('Facebook', 'type');
+            $facebookLink = $settings->value;
+
+            $settings->get('Twitter', 'type');
+            $twitterLink = $settings->value;
+
+            $keywords = [
+                'surl'                   => $this->surl,
+                'url'                    => $this->furl,
+                'prenom_e'               => $client->prenom,
+                'link_compte_emprunteur' => $this->furl,
+                'lien_fb'                => $facebookLink,
+                'lien_tw'                => $twitterLink
+            ];
+
+            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
+            $message->setTo($client->email);
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
+        }
+
+        header('Location: ' . $this->lurl . '/dossiers/edit/' . $project->id_project);
+        die;
+    }
+
+    public function _remove_suspensive_conditions()
+    {
+        $this->projects = $this->loadData('projects');
+        $this->projects->get($this->params[0]);
+
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+        $projectManager = $this->get('unilend.service.project_manager');
+        $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::PREP_FUNDING, $this->projects);
+
+        /** @var \companies $company */
+        $company = $this->loadData('companies');
+        $company->get($this->projects->id_company);
+
+        /** @var \clients $client */
+        $client = $this->loadData('clients');
+        $client->get($company->id_client_owner);
+
+        $this->get('unilend.service.email_manager')->sendBorrowerAccount($client, 'ouverture-espace-emprunteur-plein');
+
+        header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+        die;
     }
 
     public function _takeover()
@@ -2863,7 +2960,7 @@ class dossiersController extends bootstrap
                     header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                     die;
                 case 'swap':
-                    if ($this->isTakeover() && false === empty($this->projects->id_target_company) && $this->projects->status < \projects_status::A_FUNDER) {
+                    if ($this->isTakeover() && false === empty($this->projects->id_target_company) && $this->projects->status < ProjectsStatus::A_FUNDER) {
                         /** @var \company_rating_history $companyRatingHistory */
                         $companyRatingHistory   = $this->loadData('company_rating_history');
                         $companyRatingHistory   = $companyRatingHistory->select('id_company = ' . $this->projects->id_target_company, 'added DESC', 0, 1);

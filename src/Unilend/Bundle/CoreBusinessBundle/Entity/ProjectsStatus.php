@@ -26,7 +26,8 @@ class ProjectsStatus
     const ANALYSIS_REJECTION         = 32;
     const COMITY_REVIEW              = 33;
     const COMITY_REJECTION           = 34;
-    const PREP_FUNDING               = 35;
+    const SUSPENSIVE_CONDITIONS      = 35;
+    const PREP_FUNDING               = 37;
     const A_FUNDER                   = 40;
     const AUTO_BID_PLACED            = 45;
     const EN_FUNDING                 = 50;
