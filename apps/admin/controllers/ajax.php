@@ -973,7 +973,7 @@ class ajaxController extends bootstrap
             }
 
             if (false === in_array(ProjectsStatus::PREP_FUNDING, $existingStatus)) {
-                $this->$this->get('mailer')->sendBorrowerAccount($client, 'ouverture-espace-emprunteur-plein');
+                $this->get('mailer')->sendBorrowerAccount($client, 'ouverture-espace-emprunteur-plein');
             }
 
             $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::PREP_FUNDING, $project);
