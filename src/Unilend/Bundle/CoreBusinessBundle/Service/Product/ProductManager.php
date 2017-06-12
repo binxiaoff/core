@@ -144,7 +144,7 @@ abstract class ProductManager
     }
 
     /**
-     * @param Clients            $client When it's null, it's an anonymous client (logout)
+     * @param Clients            $client
      * @param Projects|\projects $project
      *
      * @return mixed
