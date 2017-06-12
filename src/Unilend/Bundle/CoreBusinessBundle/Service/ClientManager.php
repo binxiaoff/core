@@ -25,7 +25,7 @@ class ClientManager
     const SESSION_KEY_TOS_ACCEPTED = 'user_legal_doc_accepted';
 
     /** @var EntityManagerSimulator */
-    private $entityManager;
+    private $entityManagerSimulator;
     /** @var ClientSettingsManager */
     private $clientSettingsManager;
     /** @var TokenStorageInterface */
@@ -37,65 +37,74 @@ class ClientManager
     /** @var WalletCreationManager */
     private $walletCreationManager;
     /** @var EntityManager*/
-    private $em;
+    private $entityManager;
     /** @var LoggerInterface */
     private $logger;
 
     /**
      * ClientManager constructor.
      *
-     * @param EntityManagerSimulator $entityManager
+     * @param EntityManagerSimulator $entityManagerSimulator
      * @param ClientSettingsManager  $clientSettingsManager
      * @param TokenStorageInterface  $tokenStorage
      * @param RequestStack           $requestStack
      * @param WalletCreationManager  $walletCreationManager
-     * @param EntityManager          $em
+     * @param EntityManager          $entityManager
      * @param LoggerInterface        $logger
      * @param RouterInterface        $router
      */
     public function __construct(
-        EntityManagerSimulator $entityManager,
+        EntityManagerSimulator $entityManagerSimulator,
         ClientSettingsManager $clientSettingsManager,
         TokenStorageInterface $tokenStorage,
         RequestStack $requestStack,
         WalletCreationManager $walletCreationManager,
-        EntityManager $em,
+        EntityManager $entityManager,
         LoggerInterface $logger,
         RouterInterface $router
     )
     {
-        $this->entityManager          = $entityManager;
-        $this->clientSettingsManager  = $clientSettingsManager;
-        $this->tokenStorage           = $tokenStorage;
-        $this->requestStack           = $requestStack;
-        $this->walletCreationManager  = $walletCreationManager;
-        $this->em                     = $em;
-        $this->logger                 = $logger;
-        $this->router                 = $router;
+        $this->entityManagerSimulator  = $entityManagerSimulator;
+        $this->clientSettingsManager   = $clientSettingsManager;
+        $this->tokenStorage            = $tokenStorage;
+        $this->requestStack            = $requestStack;
+        $this->walletCreationManager   = $walletCreationManager;
+        $this->entityManager           = $entityManager;
+        $this->logger                  = $logger;
+        $this->router                  = $router;
     }
 
 
     /**
-     * @param \clients $client
+     * @param Clients|\clients $client
      *
      * @return bool
      */
-    public function isBetaTester(\clients $client)
+    public function isBetaTester($client)
     {
+        if ($client instanceof \clients) {
+            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        }
+
         return (bool) $this->clientSettingsManager->getSetting($client, \client_setting_type::TYPE_BETA_TESTER);
     }
 
     /**
-     * @param \clients $client
-     * @param          $legalDocId
+     * @param \clients|Clients $client
+     * @param int              $legalDocId
      *
      * @return bool
      */
-    public function isAcceptedCGV(\clients $client, $legalDocId)
+    public function isAcceptedCGV($client, $legalDocId)
     {
+        if ($client instanceof \clients) {
+            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        }
+
         /** @var \acceptations_legal_docs $oAcceptationLegalDocs */
-        $oAcceptationLegalDocs = $this->entityManager->getRepository('acceptations_legal_docs');
-        return $oAcceptationLegalDocs->exist($client->id_client, 'id_legal_doc = ' . $legalDocId . ' AND id_client ');
+        $oAcceptationLegalDocs = $this->entityManagerSimulator->getRepository('acceptations_legal_docs');
+
+        return $oAcceptationLegalDocs->exist($client->getIdClient(), 'id_legal_doc = ' . $legalDocId . ' AND id_client ');
     }
 
     /**
@@ -117,7 +126,7 @@ class ClientManager
 
             if ($user instanceof UserLender) {
                 /** @var \clients $client */
-                $client = $this->entityManager->getRepository('clients');
+                $client = $this->entityManagerSimulator->getRepository('clients');
 
                 if ($client->get($user->getClientId()) && false === $user->hasAcceptedCurrentTerms()) {
                     $session->set(self::SESSION_KEY_TOS_ACCEPTED, false);
@@ -134,7 +143,7 @@ class ClientManager
     public function getLastTosId($client)
     {
         if ($client instanceof \clients) {
-            $client = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
         }
 
         if (in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
@@ -144,7 +153,7 @@ class ClientManager
         }
 
         /** @var Settings $settingsEntity */
-        $settingsEntity =  $this->em->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => $type]);
+        $settingsEntity =  $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => $type]);
         return $settingsEntity->getValue();
     }
 
@@ -154,7 +163,7 @@ class ClientManager
     public function acceptLastTos($client)
     {
         if ($client instanceof \clients) {
-            $client = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
         }
 
         if (false === empty($client)) {
@@ -162,8 +171,8 @@ class ClientManager
             $termsOfUse->setIdLegalDoc($this->getLastTosId($client));
             $termsOfUse->setIdClient($client->getIdClient());
 
-            $this->em->persist($termsOfUse);
-            $this->em->flush($termsOfUse);
+            $this->entityManager->persist($termsOfUse);
+            $this->entityManager->flush($termsOfUse);
 
             $session = $this->requestStack->getCurrentRequest()->getSession();
             $session->remove(self::SESSION_KEY_TOS_ACCEPTED);
@@ -178,7 +187,7 @@ class ClientManager
     public function isLender($client)
     {
         if ($client instanceof Clients) {
-            $lenderWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
+            $lenderWallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
             return null !== $lenderWallet;
         }
 
@@ -200,7 +209,7 @@ class ClientManager
     public function isBorrower($client)
     {
         if ($client instanceof Clients) {
-            $borrowerWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::BORROWER);
+            $borrowerWallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::BORROWER);
             return null !== $borrowerWallet;
         }
 
@@ -221,22 +230,8 @@ class ClientManager
      */
     public function isPartner(Clients $client)
     {
-        $partnerWallet = $this->em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::PARTNER);
+        $partnerWallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::PARTNER);
         return null !== $partnerWallet;
-    }
-
-    /**
-     * @param \clients $client
-     *
-     * @return float|int|mixed
-     */
-    public function getClientBalance(\clients $client)
-    {
-        /** @var \transactions $transactions */
-        $transactions = $this->entityManager->getRepository('transactions');
-        $balance      = $transactions->getSolde($client->id_client);
-
-        return $balance;
     }
 
     /**
@@ -290,7 +285,7 @@ class ClientManager
     public function isValidated(\clients $client)
     {
         /** @var \clients_status $lastClientStatus */
-        $lastClientStatus = $this->entityManager->getRepository('clients_status');
+        $lastClientStatus = $this->entityManagerSimulator->getRepository('clients_status');
         $lastClientStatus->getLastStatut($client->id_client);
 
         return $lastClientStatus->status == \clients_status::VALIDATED;
@@ -307,7 +302,7 @@ class ClientManager
         $token       = $this->tokenStorage->getToken();
 
         if ($token && $token->getUser() instanceof UserLender) {
-            $client = $this->em->getRepository('UnilendCoreBusinessBundle:Clients')->find($token->getUser()->getClientId());
+            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($token->getUser()->getClientId());
             if (
                 $client && $this->isLender($client) && $client->getEtapeInscriptionPreteur() < Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT) {
                 $redirectPath = $this->getSubscriptionStepRedirectRoute($client);

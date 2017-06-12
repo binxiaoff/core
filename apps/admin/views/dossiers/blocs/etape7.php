@@ -118,8 +118,9 @@
                     <input id="max_rate" type="hidden" value="<?= isset($this->rate_max) ? $this->rate_max : '' ?>">
                     <input type="button" onclick="valid_rejete_etape7(3, <?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
                     <a href="<?= $this->lurl ?>/dossiers/comity_to_analysis/<?= $this->projects->id_project ?>" class="btn btn_link thickbox">Retour à l'analyse</a>
-                    <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/7/<?= $this->projects->id_project ?>" class="btn btnValid_rejet_etape7 btn_link thickbox" style="background:#CC0000;border-color:#CC0000;">Rejeter</a>
-                    <input type="button" onclick="valid_rejete_etape7(1, <?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" style="background:#009933;border-color:#009933;" value="Valider">
+                    <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/7/<?= $this->projects->id_project ?>" class="btn btn_link thickbox" style="background:#CC0000;border-color:#CC0000;">Rejeter</a>
+                    <a href="<?= $this->lurl ?>/dossiers/suspensive_conditions/<?= $this->projects->id_project ?>" class="btn btn_link thickbox" style="background:#009933;border-color:#009933;">Conditions suspensives de mise en ligne</a>
+                    <input type="button" onclick="valid_rejete_etape7(1, <?= $this->projects->id_project ?>)" class="btn" style="background:#009933;border-color:#009933;" value="Valider">
                 </div>
             <?php endif; ?>
         </div>

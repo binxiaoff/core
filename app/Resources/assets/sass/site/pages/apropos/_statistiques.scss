@@ -122,11 +122,11 @@
 
   // These are special SVGs with actual colour set within SVG code
   .bg-icon-linechart {
-    background-image: image-url('apropos/statistiques/bg-icon-linechart.svg');
+    background-image: image-url('apropos/statistiques/bg-icon-linechart.svg', false, false);
   }
 
   .bg-icon-money {
-    background-image: image-url('apropos/statistiques/bg-icon-money.svg');
+    background-image: image-url('apropos/statistiques/bg-icon-money.svg', false, false);
   }
 
   .block-promos-unilend {

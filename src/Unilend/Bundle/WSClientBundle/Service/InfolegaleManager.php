@@ -7,6 +7,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\ScoreDetails;
 
 class InfolegaleManager
@@ -124,11 +125,8 @@ class InfolegaleManager
         if (true === empty($siren)) {
             throw new \InvalidArgumentException('SIREN is missing');
         }
-
-        $result     = null;
-        $monitoring = 'down';
         $wsResource = $this->resourceManager->getResource($resourceLabel);
-        $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren];
+        $logContext = ['class' => __CLASS__, 'resource' => $wsResource->getResourceName(), 'siren' => $siren];
 
         $query = [
             'token' => $this->token,
@@ -136,36 +134,112 @@ class InfolegaleManager
         ];
 
         try {
-            $content = $this->useCache ? $this->callHistoryManager->getStoredResponse($wsResource, $siren) : false;
+            if ($storedResponse = $this->getStoredResponse($wsResource, $siren)) {
+                $storedData = $this->getContentAndErrors($storedResponse);
 
-            if (false === $content || false === simplexml_load_string($content)) {
-                /** @var ResponseInterface $response */
-                $response = $this->client->$method($wsResource->resource_name, [
-                    'query'    => $query,
-                    'on_stats' => $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache)
-                ]);
-
-                if (200 === $response->getStatusCode()) {
-                    $content = $response->getBody()->getContents();
-                } else {
-                    $this->logger->error('Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Response status code: ' . $response->getStatusCode(), $logContext);
+                if (empty($storedData['errors'])) {
+                    return $storedData['content'];
                 }
             }
+            $callback = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
+            /** @var ResponseInterface $response */
+            $response = $this->client->{$method}(
+                $wsResource->getResourceName(),
+                ['query' => $query]
+            );
+            $validity = $this->isValidResponse($response, $logContext);
 
-            if (false === empty($content)) {
-                $xml        = new \SimpleXMLElement($content);
-                $result     = $xml->content[0];
-                $monitoring = 'up';
+            $stream = $response->getBody();
+            $stream->rewind();
+            $content = $stream->getContents();
+            call_user_func($callback, $content, $validity['status']);
+
+            if ('error' !== $validity['status']) {
+                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
+            } else {
+                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
+            }
+
+            if ($validity['is_valid']) {
+                return $validity['content'];
+            } else {
+                return null;
             }
         } catch (\Exception $exception) {
-            $message = 'Call to ' . $wsResource->resource_name . ' using params: ' . json_encode($query) . '. Error message: ' . $exception->getMessage();
+            if (isset($callback)) {
+                call_user_func($callback, isset($content) ? $content : '', 'error');
+            }
+            $message = 'Call to ' . $wsResource->getResourceName() . ' using params: ' . json_encode($query) . '. Error message: ' . $exception->getMessage() . ' Error code: ' . $exception->getCode();
             if (isset($content)) {
                 $message .= $content;
             }
             $this->logger->error($message, $logContext);
+            $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
+
+            return null;
+        }
+    }
+
+    /**
+     * @param WsExternalResource $resource
+     * @param string             $siren
+     *
+     * @return bool|string
+     */
+    private function getStoredResponse(WsExternalResource $resource, $siren)
+    {
+        $storedResponse = $this->callHistoryManager->getStoredResponse($resource, $siren);
+
+        if ($this->useCache
+            && false !== $storedResponse
+            && false !== simplexml_load_string($storedResponse)
+        ) {
+            return $storedResponse;
         }
 
-        $this->callHistoryManager->sendMonitoringAlert($wsResource, $monitoring);
-        return $result;
+        return false;
+    }
+
+    /**
+     * @param ResponseInterface $response
+     * @param array             $logContext
+     *
+     * @return array
+     */
+    private function isValidResponse(ResponseInterface $response, $logContext)
+    {
+        $stream = $response->getBody();
+        $stream->rewind();
+        $content = $stream->getContents();
+
+        if (200 === $response->getStatusCode()) {
+            $data = $this->getContentAndErrors($content);
+
+            if (false === empty($data['errors'])) {
+                $this->logger->warning('Infolegale response error: ' . json_encode($data['errors']), $logContext);
+            }
+            return [
+                'status'   => empty($data['errors']) ? 'valid' : 'warning',
+                'is_valid' => empty($data['errors']),
+                'content'  => $data['content']
+            ];
+        }
+        $this->logger->error('Infolegale response status code ' . $response->getStatusCode() . '. Response: ' . json_encode($content), $logContext);
+
+        return ['status' => 'error', 'is_valid' => false, 'content' => null];
+    }
+
+    /**
+     * @param string $content
+     *
+     * @return array
+     */
+    private function getContentAndErrors($content)
+    {
+        $xml = new \SimpleXMLElement($content);
+        $xml->registerXPathNamespace('ilg', 'Infolegale/Webservices/Main');
+        $errors = $xml->xpath('.//ilg:errors')[0];
+
+        return ['content' => $xml->content[0], 'errors' => $errors];
     }
 }

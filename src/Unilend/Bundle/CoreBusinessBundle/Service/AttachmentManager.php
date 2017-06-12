@@ -178,7 +178,7 @@ class AttachmentManager
      */
     public function getAllTypesForProjects($includeOthers = true)
     {
-        $types = array(
+        $types = [
             AttachmentType::KBIS,
             AttachmentType::RIB,
             AttachmentType::CNI_PASSPORTE_DIRIGEANT,
@@ -189,11 +189,11 @@ class AttachmentManager
             AttachmentType::RELEVE_BANCAIRE_MOIS_N,
             AttachmentType::RELEVE_BANCAIRE_MOIS_N_1,
             AttachmentType::RELEVE_BANCAIRE_MOIS_N_2,
+            AttachmentType::DEBTS_STATEMENT,
             AttachmentType::ETAT_PRIVILEGES_NANTISSEMENTS,
             AttachmentType::CGV,
             AttachmentType::RAPPORT_CAC,
             AttachmentType::STATUTS,
-            AttachmentType::DEBTS_STATEMENT,
             AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_1,
             AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1,
             AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_2,
@@ -211,7 +211,7 @@ class AttachmentManager
             AttachmentType::PHOTOS_ACTIVITE,
             AttachmentType::PRESENTATION_PROJET,
             AttachmentType::PRESENTATION_ENTRERPISE
-        );
+        ];
 
         if ($includeOthers) {
             $types = array_merge($types, [
@@ -222,7 +222,15 @@ class AttachmentManager
             ]);
         }
 
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->findTypesIn($types);
+        $sortedTypes = [];
+        /** @var AttachmentType $attachmentType */
+        foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->findTypesIn($types) as $attachmentType) {
+            $index               = array_search($attachmentType->getId(), $types, true);
+            $sortedTypes[$index] = $attachmentType;
+        }
+        ksort($sortedTypes);
+
+        return $sortedTypes;
     }
 
     /**

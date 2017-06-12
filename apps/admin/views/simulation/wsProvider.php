@@ -31,8 +31,8 @@
                     <select name="resource_label" id="resource_label" title="Nom du WS">
                         <option value="">-Sélectionner un webservice-</option>
                         <?php foreach ($this->resources as $resource) : ?>
-                            <option value="<?= $resource['label'] ?>"<?= isset($_POST['resource_label']) && $_POST['resource_label'] === $resource['label'] ? ' selected' : '' ?>>
-                                <?= $resource['provider_name'] . ' -> ' . $resource['resource_name'] ?>
+                            <option value="<?= $resource->getLabel() ?>"<?= isset($_POST['resource_label']) && $_POST['resource_label'] === $resource->getLabel() ? ' selected' : '' ?>>
+                                <?= $resource->getProviderName() . ' -> ' . $resource->getResourceName() ?>
                             </option>
                         <?php endforeach; ?>
                     </select>

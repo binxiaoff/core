@@ -27,6 +27,8 @@
 // **************************************************************************************************** //
 
 use \Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 
 class echeanciers extends echeanciers_crud
 {
@@ -215,15 +217,6 @@ class echeanciers extends echeanciers_crud
      * @param array $selector
      * @return string
      */
-    public function getEarlyRepaidCapital(array $selector)
-    {
-        return $this->getPartialSum('capital_rembourse', $selector, array(self::STATUS_REPAID, self::STATUS_PARTIALLY_REPAID), 1);
-    }
-
-    /**
-     * @param array $selector
-     * @return string
-     */
     public function getRepaidInterests(array $selector)
     {
         return $this->getPartialSum('interets_rembourses', $selector, array(self::STATUS_REPAID, self::STATUS_PARTIALLY_REPAID), 0);
@@ -309,17 +302,6 @@ class echeanciers extends echeanciers_crud
 
         $result = $this->bdd->query($sql);
         return (int) $this->bdd->result($result);
-    }
-
-    /**
-     * @param int $lenderId
-     * @param int $startDate
-     * @param int $endDate
-     * @return string
-     */
-    public function getRepaidCapitalInDateRange($lenderId, $startDate, $endDate)
-    {
-        return $this->getRepaymentAmountInDateRange($lenderId, $startDate, $endDate, 'e.capital_rembourse', [self::STATUS_PARTIALLY_REPAID, self::STATUS_REPAID]);
     }
 
     /**
@@ -683,310 +665,7 @@ class echeanciers extends echeanciers_crud
         return $this->bdd->fetch_assoc($resultat);
     }
 
-    /**
-     * @param int $iLoanId
-     * @param int $iAnticipatedRepaymentStatus
-     * @param string $sOrder
-     * @return array
-     */
-    public function getRepaymentWithTaxDetails($iLoanId, $iAnticipatedRepaymentStatus = 0, $sOrder = 'e.ordre ASC')
-    {
-        $sql = '
-            SELECT e.*, SUM(IFNULL(tax.amount, 0)) AS tax
-            FROM echeanciers e
-                LEFT JOIN transactions t ON e.id_echeancier = t.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
-                LEFT JOIN tax ON t.id_transaction = tax.id_transaction
-            WHERE e.id_loan = ' . $iLoanId . ' AND e.status_ra = ' . $iAnticipatedRepaymentStatus . '
-            GROUP BY e.id_echeancier
-            ORDER BY ' . $sOrder;
 
-        $result  = $this->bdd->query($sql);
-        $aReturn = array();
-        while ($record = $this->bdd->fetch_assoc($result)) {
-            $aReturn[] = $record;
-        }
-        return $aReturn;
-    }
-
-    /**
-     * @param DateTime $date
-     * @return array|null
-     * @throws Exception
-     */
-    public function getTaxState($date)
-    {
-        $sql = '
-            SELECT
-              c.id_client,
-              e.id_lender,
-              CASE c.type
-                WHEN 1 THEN 1
-                WHEN 3 THEN 1
-                WHEN 2 THEN 2
-                WHEN 4 THEN 2
-              END AS type,
-              (
-                SELECT p.iso
-                FROM lenders_imposition_history lih
-                  JOIN pays_v2 p ON p.id_pays = lih.id_pays
-                WHERE lih.added <= e.date_echeance_reel
-                      AND lih.id_lender = e.id_lender
-                ORDER BY lih.added DESC
-                LIMIT 1
-              ) AS iso_pays,
-              /*if the lender is FR resident and it is a physical person then it is not taxed at source : taxed_at_source = 0*/
-                CASE
-                  (IFNULL(
-                      (SELECT resident_etranger
-                          FROM lenders_imposition_history lih
-                          WHERE lih.id_lender = la.id_lender_account AND lih.added <= e.date_echeance_reel
-                          ORDER BY added DESC
-                          LIMIT 1)
-                      , 0) = 0 AND (1 = c.type OR 3 = c.type))
-                WHEN TRUE
-                  THEN 0
-                  ELSE 1
-                END AS taxed_at_source,
-              CASE
-                  WHEN lte.year IS NULL THEN
-                      0
-                  ELSE
-                      1
-              END AS exonere,
-              (SELECT group_concat(lte.year SEPARATOR ", ")
-               FROM lender_tax_exemption lte
-               WHERE lte.id_lender = la.id_lender_account) AS annees_exoneration,
-              e.id_project,
-              e.id_loan,
-              l.id_type_contract,
-              e.ordre,
-              REPLACE(e.montant, ".", ","),
-              REPLACE(e.capital_rembourse, ".", ","),
-              REPLACE(e.interets_rembourses, ".", ","),
-              REPLACE(ROUND(prelevements_obligatoires.amount / 100, 2), ".", ","),
-              REPLACE(ROUND(retenues_source.amount / 100, 2), ".", ","),
-              REPLACE(ROUND(csg.amount / 100, 2), ".", ","),
-              REPLACE(ROUND(prelevements_sociaux.amount / 100, 2), ".", ","),
-              REPLACE(ROUND(contributions_additionnelles.amount / 100, 2), ".", ","),
-              REPLACE(ROUND(prelevements_solidarite.amount / 100, 2), ".", ","),
-              REPLACE(ROUND(crds.amount / 100, 2), ".", ","),
-              e.date_echeance,
-              e.date_echeance_reel,
-              e.status,
-              e.date_echeance_emprunteur,
-              e.date_echeance_emprunteur_reel
-            FROM echeanciers e
-              INNER JOIN loans l ON l.id_loan = e.id_loan
-              INNER JOIN lenders_accounts la ON la.id_lender_account = e.id_lender
-              INNER JOIN clients c ON c.id_client = la.id_client_owner
-              LEFT JOIN lender_tax_exemption lte ON lte.id_lender = e.id_lender AND lte.year = YEAR(e.date_echeance_reel)
-              INNER JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
-              LEFT JOIN tax prelevements_obligatoires ON prelevements_obligatoires.id_transaction = t.id_transaction AND prelevements_obligatoires.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX . '
-              LEFT JOIN tax retenues_source ON retenues_source.id_transaction = t.id_transaction AND retenues_source.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE . '
-              LEFT JOIN tax csg ON csg.id_transaction = t.id_transaction AND csg.id_tax_type = ' . \tax_type::TYPE_CSG . '
-              LEFT JOIN tax prelevements_sociaux ON prelevements_sociaux.id_transaction = t.id_transaction AND prelevements_sociaux.id_tax_type = ' . \tax_type::TYPE_SOCIAL_DEDUCTIONS . '
-              LEFT JOIN tax contributions_additionnelles ON contributions_additionnelles.id_transaction = t.id_transaction AND contributions_additionnelles.id_tax_type = ' . \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS . '
-              LEFT JOIN tax prelevements_solidarite ON prelevements_solidarite.id_transaction = t.id_transaction AND prelevements_solidarite.id_tax_type = ' . \tax_type::TYPE_SOLIDARITY_DEDUCTIONS . '
-              LEFT JOIN tax crds ON crds.id_transaction = t.id_transaction AND crds.id_tax_type = ' . \tax_type::TYPE_CRDS . '
-            WHERE e.date_echeance_reel BETWEEN :startDate AND :endDate
-                AND e.status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')
-                AND e.status_ra = 0
-            ORDER BY e.date_echeance ASC';
-
-        return $this->bdd->executeQuery(
-            $sql,
-            ['startDate' => $date->format('Y-m-d 00:00:00'), 'endDate' => $date->format('Y-m-d 23:59:59')],
-            ['startDate' => \PDO::PARAM_STR, 'endDate' => \PDO::PARAM_STR]
-        )->fetchAll(\PDO::FETCH_ASSOC);
-    }
-
-    /**
-     * @param DateTime $startDate
-     * @param DateTime $endDate
-     * @param array $taxType
-     * @return array
-     * @throws Exception
-     */
-    public function getFiscalState(\DateTime $startDate, \DateTime $endDate, array $taxType)
-    {
-        $taxDynamicJoin = $this->getDynamicTaxJoins($taxType);
-        $aBind          = [
-            'start_date' => $startDate->format('Y-m-d'),
-            'end_date'   => $endDate->format('Y-m-d'),
-        ];
-        $aType          = [
-            'start_date' => \PDO::PARAM_STR,
-            'end_date'   => \PDO::PARAM_STR,
-        ];
-
-        $sql = '
-            SELECT
-                l.id_type_contract,
-                CASE c.type
-                    WHEN ' . Clients::TYPE_LEGAL_ENTITY . ' THEN "legal_entity"
-                    WHEN ' . Clients::TYPE_LEGAL_ENTITY_FOREIGNER . ' THEN "legal_entity"
-                    WHEN ' . Clients::TYPE_PERSON . ' THEN "person"
-                    WHEN ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN "person"
-                END AS client_type,
-                CASE IFNULL(
-                    (SELECT resident_etranger
-                        FROM lenders_imposition_history lih
-                        WHERE lih.id_lender = la.id_lender_account AND lih.added <= e.date_echeance_reel
-                        ORDER BY added DESC
-                        LIMIT 1), 0
-                    )
-                    WHEN 0 THEN "fr"
-                    ELSE "ww"
-                END AS fiscal_residence,
-                CASE lte.id_lender
-                    WHEN e.id_lender THEN "non_taxable"
-                    ELSE "taxable"
-                END AS exemption_status,
-                ' . $taxDynamicJoin['tax_columns'] . '
-                SUM(ROUND(e.interets_rembourses / 100, 2)) AS interests
-            FROM echeanciers e
-              INNER JOIN loans l ON l.id_loan = e.id_loan AND l.status = 0
-              INNER JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
-              INNER JOIN clients c ON la.id_client_owner = c.id_client
-              INNER JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
-              ' . $taxDynamicJoin['tax_join'] . '
-              LEFT JOIN lender_tax_exemption lte ON lte.id_lender = la.id_lender_account AND lte.year = YEAR(e.date_echeance_reel)
-            WHERE e.status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')
-                AND e.status_ra = 0
-                AND DATE(e.date_echeance_reel) BETWEEN :start_date AND :end_date
-            GROUP BY l.id_type_contract, client_type, fiscal_residence, exemption_status';
-
-        $statement = $this->bdd->executeQuery($sql, $aBind, $aType, new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::LONG_TIME, md5(__METHOD__)));
-        $result    = $statement->fetchAll(\PDO::FETCH_ASSOC);
-        $statement->closeCursor();
-        return $result;
-    }
-
-    /**
-     * @param array $taxType
-     * @param \DateTime $startDate
-     * @param \DateTime $endDate
-     * @param array $clientType
-     * @return array
-     */
-    public function getRepaymentForNonExemptedInDateRange(array $taxType, \DateTime $startDate, \DateTime $endDate, array $clientType)
-    {
-        return $this->getRepaymentsBetweenDate($taxType, $startDate, $endDate, $clientType, 0);
-    }
-
-    /**
-     * @param array $taxType
-     * @param \DateTime $startDate
-     * @param \DateTime $endDate
-     * @param array $clientType
-     * @return array
-     */
-    public function getRepaymentForExemptedInDateRange(array $taxType, \DateTime $startDate, \DateTime $endDate, array $clientType)
-    {
-        return $this->getRepaymentsBetweenDate($taxType, $startDate, $endDate, $clientType, 1);
-    }
-
-    /**
-     * @param array $taxType
-     * @param DateTime $startDate
-     * @param DateTime $endDate
-     * @return array
-     */
-    public function getForeignersRepaymentsInDateRange(array $taxType, \DateTime $startDate, \DateTime $endDate)
-    {
-        return $this->getRepaymentsBetweenDate($taxType, $startDate, $endDate, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER], 2, true);
-    }
-
-    /**
-     * @param array $taxType
-     * @param \DateTime $startDate
-     * @param \DateTime $endDate
-     * @param array $clientType
-     * @param int $exempted
-     * @param boolean $foreigner
-     * @return array
-     * @throws Exception
-     */
-    private function getRepaymentsBetweenDate(array $taxType, \DateTime $startDate, \DateTime $endDate, array $clientType, $exempted, $foreigner = false)
-    {
-        $taxDynamicJoin  = $this->getDynamicTaxJoins($taxType);
-        $aBind           = [
-            'start_date'  => $startDate->format('Y-m-d 00:00:00'),
-            'end_date'    => $endDate->format('Y-m-d 23:59:59'),
-            'client_type' => $clientType
-        ];
-        $aType           = [
-            'start_date'  => \PDO::PARAM_STR,
-            'end_date'    => \PDO::PARAM_STR,
-            'client_type' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_INT_ARRAY
-        ];
-
-        $sExemptionWhere = '';
-
-        switch ($exempted) {
-            case 0:
-                $taxExemptionJoin = ' LEFT JOIN lender_tax_exemption lte ON lte.id_lender = la.id_lender_account AND lte.year = YEAR(e.date_echeance_reel) ';
-                $sExemptionWhere  = 'AND lte.id_lender IS NULL';
-                break;
-            case 1:
-                $taxExemptionJoin = ' INNER JOIN lender_tax_exemption lte ON lte.id_lender = la.id_lender_account AND lte.year = YEAR(e.date_echeance_reel) ';
-                break;
-            default:
-                $taxExemptionJoin = ' LEFT JOIN lender_tax_exemption lte ON lte.id_lender = la.id_lender_account ';
-                break;
-        }
-
-        if (true === $foreigner) {
-            $sForeignerWhere = '
-            AND (SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = la.id_lender_account AND lih.added <= e.date_echeance_reel ORDER BY added DESC LIMIT 1) > 0 ';
-        } else {
-            $sForeignerWhere = '';
-        }
-
-        $sql = '
-        SELECT
-            l.id_type_contract,
-            SUM(e.montant) AS montant,
-            SUM(e.capital_rembourse) AS capital,
-            ' . $taxDynamicJoin['tax_columns'] . '
-            SUM(e.interets_rembourses) AS interets
-        FROM echeanciers e
-            INNER JOIN loans l ON l.id_loan = e.id_loan AND l.status = ' . \loans::STATUS_ACCEPTED . '
-            INNER JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
-            INNER JOIN clients c ON la.id_client_owner = c.id_client
-            INNER JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS
-            . $taxDynamicJoin['tax_join']
-            . $taxExemptionJoin . '
-        WHERE e.status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')
-            AND e.status_ra = 0
-            AND c.type IN (:client_type) '
-            . $sExemptionWhere . $sForeignerWhere . '
-            AND DATE(date_echeance_reel) BETWEEN :start_date AND :end_date
-            GROUP BY l.id_type_contract';
-
-        $statement = $this->bdd->executeQuery($sql, $aBind, $aType, new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::LONG_TIME, md5(__METHOD__)));
-        $result    = $statement->fetchAll(\PDO::FETCH_ASSOC);
-        $statement->closeCursor();
-        return $result;
-    }
-
-    /**
-     * @param array $taxType array of id_tax_type to use in the query
-     * @return array
-     */
-    private function getDynamicTaxJoins(array $taxType)
-    {
-        $taxColumns = '';
-        $taxJoin    = '';
-
-        foreach ($taxType as $row) {
-            $taxName = 'tax_' . $row['id_tax_type'];
-            $taxColumns .= ' ROUND(SUM(' . $taxName . '.amount) / 100, 2) AS ' . $taxName . ', ';
-            $taxJoin    .= ' LEFT JOIN tax ' . $taxName . ' ON ' . $taxName . '.id_transaction = t.id_transaction AND ' . $taxName . '.id_tax_type = ' . $row['id_tax_type'];
-        }
-
-        return ['tax_join' => $taxJoin, 'tax_columns' => $taxColumns];
-    }
 
     /**
      * @param int $lenderId
@@ -1092,37 +771,20 @@ class echeanciers extends echeanciers_crud
     /**
      * Returns capital, interests and tax sum amounts grouped by month, quarter and year for a lender
      * takes into account regular past payments at their real date
-     * recovery payments including commission (fixed value, as done in 'declaration de créances')
+     * recovery payments including commission
      * future payments of healthy (according to stats definition) only projects
      * @param int $lenderId
+     *
      * @return array
      */
     public function getDataForRepaymentWidget($lenderId)
     {
-        $taxTypeForExemptedLender    = [
-            \tax_type::TYPE_CSG,
-            \tax_type::TYPE_SOCIAL_DEDUCTIONS,
-            \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
-            \tax_type::TYPE_SOLIDARITY_DEDUCTIONS,
-            \tax_type::TYPE_CRDS
-        ];
-        $taxTypeForTaxableLender     = [
-            \tax_type::TYPE_INCOME_TAX,
-            \tax_type::TYPE_CSG,
-            \tax_type::TYPE_SOCIAL_DEDUCTIONS,
-            \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
-            \tax_type::TYPE_SOLIDARITY_DEDUCTIONS,
-            \tax_type::TYPE_CRDS
-        ];
-        $taxTypeForForeignerLender   = [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
-        $taxTypeForLegalEntityLender = [\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
-
         $bind  = [
             'id_lender'                    => $lenderId,
-            'tax_type_exempted_lender'     => $taxTypeForExemptedLender,
-            'tax_type_taxable_lender'      => $taxTypeForTaxableLender,
-            'tax_type_foreigner_lender'    => $taxTypeForForeignerLender,
-            'tax_type_legal_entity_lender' => $taxTypeForLegalEntityLender
+            'tax_type_exempted_lender'     => \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager::TAX_TYPE_EXEMPTED_LENDER,
+            'tax_type_taxable_lender'      => \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager::TAX_TYPE_TAXABLE_LENDER,
+            'tax_type_foreigner_lender'    => \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager::TAX_TYPE_FOREIGNER_LENDER,
+            'tax_type_legal_entity_lender' => \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager::TAX_TYPE_LEGAL_ENTITY_LENDER
         ];
         $type  = [
             'id_lender'                    => \PDO::PARAM_INT,
@@ -1133,44 +795,31 @@ class echeanciers extends echeanciers_crud
         ];
         $query = '
             SELECT
-                t.month                        AS month,
-                t.quarter                      AS quarter,
-                t.year                         AS year,
-                ROUND(SUM(t.capital), 2)       AS capital,
+                t.month                          AS month,
+                t.quarter                        AS quarter,
+                t.year                           AS year,
+                ROUND(SUM(t.capital), 2)         AS capital,
                 ROUND(SUM(t.grossInterests), 2)  AS grossInterests,
-                ROUND(SUM(t.netInterests), 2)  AS netInterests,
-                ROUND(SUM(t.repaidTaxes), 2)   AS repaidTaxes,
-                ROUND(SUM(t.upcomingTaxes), 2) AS upcomingTaxes
+                ROUND(SUM(t.netInterests), 2)    AS netInterests,
+                ROUND(SUM(t.repaidTaxes), 2)     AS repaidTaxes,
+                ROUND(SUM(t.upcomingTaxes), 2)   AS upcomingTaxes
             FROM (
                 SELECT
-                    LEFT(t_capital.date_transaction, 7)                                                                                AS month,
-                    QUARTER(t_capital.date_transaction)                                                                                AS quarter,
-                    YEAR(t_capital.date_transaction)                                                                                   AS year,
-                    ROUND(SUM(t_capital.montant) / 100, 2)                                                                             AS capital,
-                    NULL                                                                                                               AS grossInterests,
-                    ROUND(SUM(t_interest.montant) / 100, 2)                                                                            AS netInterests,
-                    SUM((SELECT ROUND(IFNULL(SUM(tax.amount), 0) / 100, 2) FROM tax WHERE id_transaction = t_interest.id_transaction)) AS repaidTaxes,
-                    0                                                                                                                  AS upcomingTaxes
-                FROM lenders_accounts la
-                INNER JOIN transactions t_capital ON t_capital.id_client = la.id_client_owner AND t_capital.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
-                LEFT JOIN transactions t_interest ON t_interest.id_echeancier = t_capital.id_echeancier AND t_interest.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
-                WHERE la.id_lender_account = :id_lender 
-                GROUP BY year, quarter, month
-
-                UNION ALL
-
-                SELECT
-                    LEFT(t.date_transaction, 7)            AS month,
-                    QUARTER(t.date_transaction)            AS quarter,
-                    YEAR(t.date_transaction)               AS year,
-                    ROUND(SUM(t.montant) / 100 / 0.844, 2) AS capital,
-                    0                                      AS grossInterests,
-                    NULL                                   AS netInterests,
-                    0                                      AS repaidTaxes,
-                    0                                      AS upcomingTaxes
-                FROM lenders_accounts l
-                INNER JOIN transactions t ON t.id_client = l.id_client_owner AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . '
-                WHERE l.id_lender_account = :id_lender
+                  LEFT(o_capital.added, 7)     AS month,
+                  QUARTER(o_capital.added)     AS quarter,
+                  YEAR(o_capital.added)        AS year,
+                  SUM(o_capital.amount)        AS capital,
+                  SUM(o_interest.amount)       AS grossInterests,
+                  NULL                         AS netInterests,
+                  SUM((SELECT SUM(amount)
+                       FROM operation o_taxes
+                        INNER JOIN operation_type ot_taxes ON o_taxes.id_type = ot_taxes.id AND ot_taxes.label IN ("' . implode('","', OperationType::TAX_TYPES_FR) . '") 
+                    WHERE o_taxes.id_repayment_schedule = o_interest.id_repayment_schedule)) AS repaidTaxes,
+                  0                          AS upcomingTaxes
+                FROM operation o_capital
+                  INNER JOIN operation_type ot_capital ON o_capital.id_type = ot_capital.id AND ot_capital.label = "' . OperationType::CAPITAL_REPAYMENT . '"
+                  LEFT JOIN operation o_interest ON o_capital.id_repayment_schedule = o_interest.id_repayment_schedule AND o_interest.id_type = (SELECT id FROM operation_type ot_interest WHERE ot_interest.label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '")
+                WHERE o_capital.id_wallet_creditor = :id_lender
                 GROUP BY year, quarter, month
 
                 UNION ALL
@@ -1203,8 +852,8 @@ class echeanciers extends echeanciers_crud
                             SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT tt.rate / 100 FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_legal_entity_lender)) / 100, 2))
                     END                           AS upcomingTaxes
                 FROM echeanciers e
-                INNER JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
-                LEFT JOIN clients c ON la.id_client_owner = c.id_client
+                INNER JOIN wallet w ON e.id_lender = w.id
+                LEFT JOIN clients c ON w.id_client = c.id_client
                 LEFT JOIN lender_tax_exemption lte ON lte.id_lender = e.id_lender AND lte.year = YEAR(e.date_echeance)
                 LEFT JOIN lenders_imposition_history lih ON lih.id_lenders_imposition_history = (SELECT MAX(id_lenders_imposition_history) FROM lenders_imposition_history WHERE id_lender = e.id_lender)
                 LEFT JOIN projects p ON e.id_project = p.id_project
@@ -1253,32 +902,4 @@ class echeanciers extends echeanciers_crud
         $statement->closeCursor();
         return $data;
     }
-
-    public function getRepaidRepaymentToNotify($offset = 0, $limit = 100)
-    {
-        $query = 'SELECT e.*
-                  FROM echeanciers e
-                  INNER join transactions t ON t.id_echeancier = e.id_echeancier
-                  WHERE e.status = :repaid
-                  AND e.status_email_remb = :not_sent
-                  GROUP BY e.id_echeancier
-                  LIMIT :limit OFFSET :offset';
-
-        $bind = [
-            'repaid'   => self::STATUS_REPAID,
-            'not_sent' => self::STATUS_REPAYMENT_EMAIL_NOT_SENT,
-            'limit'    => $limit,
-            'offset'   => $offset,
-        ];
-
-        $type = [
-            'limit' => \PDO::PARAM_INT,
-            'offset' => \PDO::PARAM_INT,
-        ];
-        /** @var \Doctrine\DBAL\Statement $statement */
-        $statement = $this->bdd->executeQuery($query, $bind, $type);
-
-        return $statement->fetchAll(PDO::FETCH_ASSOC);
-    }
-
 }

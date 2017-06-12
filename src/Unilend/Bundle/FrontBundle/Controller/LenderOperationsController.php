@@ -2,72 +2,35 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Doctrine\ORM\EntityManager;
+use Knp\Snappy\GeneratorInterface;
+use PHPExcel_IOFactory;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
-use Unilend\core\Loader;
 
 class LenderOperationsController extends Controller
 {
     const LAST_OPERATION_DATE = '2013-01-01';
-    /**
-     * This is a fictive transaction type,
-     * it will be used only in indexage_vos_operaitons in order to get single repayment line with total of capital and interests repayment amount
-     */
-    const TYPE_REPAYMENT_TRANSACTION = 5;
 
-    // This is public in order to make it useable for old PDF controller
-    public static $transactionTypeList = [
-        1 => [
-            \transactions_types::TYPE_LENDER_SUBSCRIPTION,
-            \transactions_types::TYPE_LENDER_LOAN,
-            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
-            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-            self::TYPE_REPAYMENT_TRANSACTION,
-            \transactions_types::TYPE_DIRECT_DEBIT,
-            \transactions_types::TYPE_LENDER_WITHDRAWAL,
-            \transactions_types::TYPE_WELCOME_OFFER,
-            \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION,
-            \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD,
-            \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD,
-            \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
-            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT,
-            \transactions_types::TYPE_LENDER_BALANCE_TRANSFER
-        ],
-        2 => [
-            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
-            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-            \transactions_types::TYPE_DIRECT_DEBIT,
-            \transactions_types::TYPE_LENDER_WITHDRAWAL,
-            \transactions_types::TYPE_LENDER_BALANCE_TRANSFER
-        ],
-        3 => [
-            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
-            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-            \transactions_types::TYPE_DIRECT_DEBIT,
-            \transactions_types::TYPE_LENDER_BALANCE_TRANSFER
-        ],
-        4 => [\transactions_types::TYPE_LENDER_WITHDRAWAL],
-        5 => [\transactions_types::TYPE_LENDER_LOAN],
-        6 => [
-            self::TYPE_REPAYMENT_TRANSACTION,
-            \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
-            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
-        ]
-    ];
-
-    CONST LOAN_STATUS_FILTER = [
+    const LOAN_STATUS_FILTER = [
         'repayment'      => [\projects_status::REMBOURSEMENT],
         'repaid'         => [\projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE],
         'late-repayment' => [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X],
@@ -85,38 +48,34 @@ class LenderOperationsController extends Controller
     {
         /** @var EntityManagerSimulator $entityManagerSimulator */
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        /** @var \indexage_vos_operations $lenderOperationsIndex */
-        $lenderOperationsIndex = $entityManagerSimulator->getRepository('indexage_vos_operations');
-        /** @var \lenders_accounts $lender */
-        $lender = $entityManagerSimulator->getRepository('lenders_accounts');
-        /** @var \clients $client */
-        $client = $entityManagerSimulator->getRepository('clients');
 
-        $client->get($this->getUser()->getClientId());
-        $lender->get($client->id_client, 'id_client_owner');
-        $this->lenderOperationIndexing($lenderOperationsIndex, $lender);
+        /** @var EntityManager $entityManager */
+        $entityManager= $this->get('doctrine.orm.entity_manager');
+        /** @var LenderOperationsManager $lenderOperationsManager */
+        $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
 
-        $filters = $this->getOperationFilters($request);
+        $wallet                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $filters                = $this->getOperationFilters($request);
+        $operations             = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
+        $lenderOperations       = $lenderOperationsManager->getLenderOperations($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
+        $projectsFundedByLender = array_combine(array_column($lenderOperations, 'id_project'), array_column($lenderOperations, 'title'));
 
-        $lenderOperations       = $lenderOperationsIndex->getLenderOperations(self::$transactionTypeList[$filters['operation']], $this->getUser()->getClientId(), $filters['startDate']->format('Y-m-d'), $filters['endDate']->format('Y-m-d'));
-        $projectsFundedByLender = $lenderOperationsIndex->get_liste_libelle_projet('id_client = ' . $this->getUser()->getClientId() . ' AND DATE(date_operation) >= "' . $filters['startDate']->format('Y-m-d') . '" AND DATE(date_operation) <= "' . $filters['endDate']->format('Y-m-d') . '"');
+        $loans = $this->commonLoans($request, $wallet);
 
-        $loans = $this->commonLoans($request, $lender);
-
-        return $this->render('/pages/lender_operations/layout.html.twig', [
-            'clientId'               => $lender->id_client_owner,
-            'hash'                   => $this->getUser()->getHash(),
-            'lenderOperations'       => $lenderOperations,
-            'projectsFundedByLender' => $projectsFundedByLender,
-            'detailedOperations'     => [self::TYPE_REPAYMENT_TRANSACTION],
-            'loansStatusFilter'      => self::LOAN_STATUS_FILTER,
-            'firstLoanYear'          => $entityManagerSimulator->getRepository('loans')->getFirstLoanYear($lender->id_lender_account),
-            'lenderLoans'            => $loans['lenderLoans'],
-            'seriesData'             => $loans['seriesData'],
-            'repaidCapitalLabel'     => $this->get('translator')->trans('lender-operations_operations-table-repaid-capital-amount-collapse-details'),
-            'repaidInterestsLabel'   => $this->get('translator')->trans('lender-operations_operations-table-repaid-interests-amount-collapse-details'),
-            'currentFilters'         => $filters
-        ]);
+        return $this->render(
+            '/pages/lender_operations/layout.html.twig',
+            [
+                'clientId'               => $wallet->getIdClient()->getIdClient(),
+                'hash'                   => $this->getUser()->getHash(),
+                'lenderOperations'       => $lenderOperations,
+                'projectsFundedByLender' => $projectsFundedByLender,
+                'loansStatusFilter'      => self::LOAN_STATUS_FILTER,
+                'firstLoanYear'          => $entityManagerSimulator->getRepository('loans')->getFirstLoanYear($wallet->getId()),
+                'lenderLoans'            => $loans['lenderLoans'],
+                'seriesData'             => $loans['seriesData'],
+                'currentFilters'         => $filters
+            ]
+        );
     }
 
     /**
@@ -127,11 +86,10 @@ class LenderOperationsController extends Controller
      */
     public function filterLoansAction(Request $request)
     {
-        /** @var \lenders_accounts $lender */
-        $lender = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-
-        $lender->get($this->getUser()->getClientId(), 'id_client_owner');
-        $loans = $this->commonLoans($request, $lender);
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $loans         = $this->commonLoans($request, $wallet);
 
         return $this->json([
             'target'   => 'loans .panel-table',
@@ -150,33 +108,30 @@ class LenderOperationsController extends Controller
      */
     public function filterOperationsAction(Request $request)
     {
-        /** @var EntityManagerSimulator $entityManagerSimulator */
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        /** @var EntityManager $entityManager */
+        $entityManager= $this->get('doctrine.orm.entity_manager');
+        /** @var LenderOperationsManager $lenderOperationsManager */
+        $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
 
-        $filters = $this->getOperationFilters($request);
+        $wallet                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $filters                = $this->getOperationFilters($request);
+        $operations             = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
+        $lenderOperations       = $lenderOperationsManager->getLenderOperations($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
+        $projectsFundedByLender = array_combine(array_column($lenderOperations, 'id_project'), array_column($lenderOperations, 'title'));
 
-        $transactionListFilter = self::$transactionTypeList[$filters['operation']];
-        $startDate             = $filters['startDate']->format('Y-m-d');
-        $endDate               = $filters['endDate']->format('Y-m-d');
-
-        /** @var \indexage_vos_operations $lenderOperationsIndex */
-        $lenderOperationsIndex  = $entityManagerSimulator->getRepository('indexage_vos_operations');
-        $lenderOperations       = $lenderOperationsIndex->getLenderOperations($transactionListFilter, $this->getUser()->getClientId(), $startDate, $endDate, $filters['project']);
-        $projectsFundedByLender = $lenderOperationsIndex->get_liste_libelle_projet('type_transaction IN (' . implode(',', $transactionListFilter) . ') AND id_client = ' . $this->getUser()->getClientId() . ' AND LEFT(date_operation, 10) >= "' . $startDate . '" AND LEFT(date_operation, 10) <= "' . $endDate . '"');
-
-        return $this->json([
-            'target'   => 'operations',
-            'template' => $this->render('/pages/lender_operations/my_operations.html.twig',[
-                'clientId'               => $this->getUser()->getClientId(),
-                'hash'                   => $this->getUser()->getHash(),
-                'detailedOperations'     => [self::TYPE_REPAYMENT_TRANSACTION],
-                'projectsFundedByLender' => $projectsFundedByLender,
-                'lenderOperations'       => $lenderOperations,
-                'repaidCapitalLabel'     => $this->get('translator')->trans('lender-operations_operations-table-repaid-capital-amount-collapse-details'),
-                'repaidInterestsLabel'   => $this->get('translator')->trans('lender-operations_operations-table-repaid-interests-amount-collapse-details'),
-                'currentFilters'         => $filters
-            ])->getContent()
-        ]);
+        return $this->json(
+            [
+                'target'   => 'operations',
+                'template' => $this->render('/pages/lender_operations/my_operations.html.twig',
+                    [
+                        'clientId'               => $this->getUser()->getClientId(),
+                        'hash'                   => $this->getUser()->getHash(),
+                        'projectsFundedByLender' => $projectsFundedByLender,
+                        'lenderOperations'       => $lenderOperations,
+                        'currentFilters'         => $filters
+                    ])->getContent()
+            ]
+        );
     }
 
     /**
@@ -193,216 +148,28 @@ class LenderOperationsController extends Controller
             return $this->redirectToRoute('lender_operations');
         }
 
-        /** @var EntityManagerSimulator $entityManagerSimulator */
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        /** @var \tax $tax */
-        $tax = $entityManagerSimulator->getRepository('tax');
-        /** @var \tax_type $taxType */
-        $taxType = $entityManagerSimulator->getRepository('tax_type');
-        /** @var \tax_type $aTaxType */
-        $aTaxType = $taxType->select('id_tax_type !=' . \tax_type::TYPE_VAT);
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
-        /** @var \indexage_vos_operations $lenderIndexedOperations */
-        $lenderIndexedOperations = $entityManagerSimulator->getRepository('indexage_vos_operations');
-        /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
+        /** @var EntityManager $entityManager */
+        $entityManager= $this->get('doctrine.orm.entity_manager');
+        /** @var LenderOperationsManager $lenderOperationsManager */
+        $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
 
-        $savedFilters          = $session->get('lenderOperationsFilters');
-        $transactionListFilter = self::$transactionTypeList[$savedFilters['operation']];
-        $startDate             = $savedFilters['startDate']->format('Y-m-d');
-        $endDate               = $savedFilters['endDate']->format('Y-m-d');
-        $operations            = $lenderIndexedOperations->getLenderOperations($transactionListFilter, $this->getUser()->getClientId(), $startDate, $endDate, $savedFilters['project']);
-        $content               = '
-        <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8"/>
-        <table border="1">
-            <tr>
-                <th>' . $translator->trans('lender-operations_operations-csv-operation-column') . '</th>
-                <th>' . $translator->trans('lender-operations_operations-csv-contract-column') . '</th>
-                <th>' . $translator->trans('lender-operations_operations-csv-project-id-column') . '</th>
-                <th>' . $translator->trans('lender-operations_operations-csv-project-label-column') . '</th>
-                <th>' . $translator->trans('lender-operations_operations-csv-operation-date-column') . '</th>
-                <th>' . $translator->trans('lender-operations_operations-csv-operation-amount-column') . '</th>
-                <th>' . $translator->trans('lender-operations_operations-csv-repaid-capital-amount-column') . '</th>
-                <th>' . $translator->trans('lender-operations_operations-csv-perceived-interests-amount-column') . '</th>';
-        foreach ($aTaxType as $aType) {
-            $content .= '<th>' . $aType['name'] . '</th>';
-        }
-        $content .= '<th>' . $translator->trans('lender-operations_operations-csv-account-balance-column') . '</th>
-                <td></td>
-            </tr>';
+        $wallet     = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $filters    = $session->get('lenderOperationsFilters');
+        $operations = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
+        $document   = $lenderOperationsManager->getOperationsExcelFile($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
+        $fileName   = 'operations_' . date('Y-m-d_H:i:s');
 
-        $asterix_on    = false;
-        $aTranslations = array(
-            \transactions_types::TYPE_LENDER_SUBSCRIPTION          => $translator->trans('preteur-operations-vos-operations_depot-de-fonds'),
-            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT    => $translator->trans('preteur-operations-vos-operations_depot-de-fonds'),
-            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT  => $translator->trans('preteur-operations-vos-operations_depot-de-fonds'),
-            \transactions_types::TYPE_LENDER_WITHDRAWAL            => $translator->trans('preteur-operations-vos-operations_retrait-dargents'),
-            \transactions_types::TYPE_WELCOME_OFFER                => $translator->trans('preteur-operations-vos-operations_offre-de-bienvenue'),
-            \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION   => $translator->trans('preteur-operations-vos-operations_retrait-offre'),
-            \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD => $translator->trans('preteur-operations-vos-operations_gain-filleul'),
-            \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD   => $translator->trans('preteur-operations-vos-operations_gain-parrain'),
-            \transactions_types::TYPE_LENDER_BALANCE_TRANSFER      => $translator->trans('preteur-operations-vos-operations_balance-transfer')
-        );
+        /** @var \PHPExcel_Writer_Excel2007 $writer */
+        $writer = PHPExcel_IOFactory::createWriter($document, 'Excel2007');
 
-        foreach ($operations as $t) {
-            if ($t['montant_operation'] >= 0) {
-                $couleur = ' style="color:#40b34f;"';
-            } else {
-                $couleur = ' style="color:red;"';
-            }
-            $sProjectId = $t['id_projet'] == 0 ? '' : $t['id_projet'];
-
-            if (in_array($t['type_transaction'], array(self::TYPE_REPAYMENT_TRANSACTION, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
-
-                foreach ($aTaxType as $aType) {
-                    $aTax[$aType['id_tax_type']]['amount'] = 0;
-                }
-
-                if (self::TYPE_REPAYMENT_TRANSACTION == $t['type_transaction']) {
-                    $aTax = $tax->getTaxListByRepaymentId($t['id_echeancier']);
-                }
-
-                if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT) {
-                    $recoveryManager = $this->get('unilend.service.recovery_manager');
-
-                    $capital = $ficelle->formatNumber($t['montant_operation'], 2);
-                    $amount  = $ficelle->formatNumber($recoveryManager->getAmountWithRecoveryTax($t['montant_operation']), 2);
-                } else {
-                    $capital = $ficelle->formatNumber($t['montant_capital'], 2);
-                    $amount  = $ficelle->formatNumber($t['montant_operation'], 2);
-                }
-
-                $content .= '
-                    <tr>
-                        <td>' . $t['libelle_operation'] . '</td>
-                        <td>' . $t['bdc'] . '</td>
-                        <td>' . $sProjectId . '</td>
-                        <td>' . $t['libelle_projet'] . '</td>
-                        <td>' . date('d-m-Y', strtotime($t['date_operation'])) . '</td>
-                        <td' . $couleur . '>' . $amount . '</td>
-                        <td>' . $capital . '</td>
-                        <td>' . $ficelle->formatNumber($t['montant_interet'], 2) . '</td>';
-                foreach ($aTaxType as $aType) {
-                    $content .= '<td>';
-
-                    if (isset($aTax[$aType['id_tax_type']])) {
-                        $content .= $ficelle->formatNumber($aTax[$aType['id_tax_type']]['amount'] / 100, 2);
-                    } else {
-                        $content .= '0';
-                    }
-                    $content .= '</td>';
-                }
-                $content .= '
-                        <td>' . $ficelle->formatNumber($t['solde'], 2) . '</td>
-                        <td></td>
-                    </tr>';
-
-            } elseif (in_array($t['type_transaction'], array_keys($aTranslations))) {
-
-                $array_type_transactions = [
-                    \transactions_types::TYPE_LENDER_SUBSCRIPTION            => $translator->trans('lender-operations_operation-label-money-deposit'),
-                    \transactions_types::TYPE_LENDER_LOAN                    => [
-                        1 => $translator->trans('lender-operations_operation-label-current-offer'),
-                        2 => $translator->trans('lender-operations_operation-label-rejected-offer'),
-                        3 => $translator->trans('lender-operations_operation-label-accepted-offer')
-                    ],
-                    \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $translator->trans('lender-operations_operation-label-money-deposit'),
-                    \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $translator->trans('lender-operations_operation-label-money-deposit'),
-                    self::TYPE_REPAYMENT_TRANSACTION                         => [
-                        1 => $translator->trans('lender-operations_operation-label-repayment'),
-                        2 => $translator->trans('lender-operations_operation-label-recovery')
-                    ],
-                    \transactions_types::TYPE_DIRECT_DEBIT                   => $translator->trans('lender-operations_operation-label-money-deposit'),
-                    \transactions_types::TYPE_LENDER_WITHDRAWAL              => $translator->trans('lender-operations_operation-label-money-withdrawal'),
-                    \transactions_types::TYPE_WELCOME_OFFER                  => $translator->trans('lender-operations_operation-label-welcome-offer'),
-                    \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION     => $translator->trans('lender-operations_operation-label-welcome-offer-withdrawal'),
-                    \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD   => $translator->trans('lender-operations_operation-label-godson-gain'),
-                    \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD     => $translator->trans('lender-operations_operation-label-godfather-gain'),
-                    \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT => $translator->trans('lender-operations_operation-label-anticipated-repayment'),
-                    \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT   => $translator->trans('lender-operations_operation-label-anticipated-repayment'),
-                    \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT      => $translator->trans('lender-operations_operation-label-lender-recovery'),
-                    \transactions_types::TYPE_LENDER_BALANCE_TRANSFER        => $translator->trans('preteur-operations-vos-operations_balance-transfer')
-                ];
-
-                if (isset($array_type_transactions[$t['type_transaction']])) {
-                    $t['libelle_operation'] = $array_type_transactions[$t['type_transaction']];
-                } else {
-                    $t['libelle_operation'] = '';
-                }
-
-                if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_WITHDRAWAL && $t['montant_operation'] > 0) {
-                    $type = "Annulation retrait des fonds - compte bancaire clos";
-                } else {
-                    $type = $t['libelle_operation'];
-                }
-                $content .= '
-                    <tr>
-                        <td>' . $type . '</td>
-                        <td></td>
-                        <td>' . $sProjectId . '</td>
-                        <td></td>
-                        <td>' . date('d-m-Y', strtotime($t['date_operation'])) . '</td>
-                        <td' . $couleur . '>' . $ficelle->formatNumber($t['montant_operation'], 2) . '</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td> 
-                        <td>' . $ficelle->formatNumber($t['solde'], 2) . '</td>
-                        <td></td>
-                    </tr>
-                    ';
-            } elseif ($t['type_transaction'] == \transactions_types::TYPE_LENDER_LOAN) { // ongoing Offer
-                //asterix pour les offres acceptees
-                $asterix       = "";
-                $offre_accepte = false;
-                if ($t['libelle_operation'] == $translator->trans('lender-operations_operation-label-accepted-offer')) {
-                    $asterix       = " *";
-                    $offre_accepte = true;
-                    $asterix_on    = true;
-                }
-                $content .= '
-                    <tr>
-                        <td>' . $t['libelle_operation'] . '</td>
-                        <td>' . $t['bdc'] . '</td>
-                        <td>' . $sProjectId . '</td>
-                        <td>' . $t['libelle_projet'] . '</td>
-                        <td>' . date('d-m-Y', strtotime($t['date_operation'])) . '</td>
-                        <td' . (! $offre_accepte ? $couleur : '') . '>' . $ficelle->formatNumber($t['montant_operation'], 2) . '</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td>' . $ficelle->formatNumber($t['solde'], 2) . '</td>
-                        <td>' . $asterix . '</td>
-                    </tr>
-                   ';
-            }
-        }
-        $content .= '
-        </table>';
-
-        if ($asterix_on) {
-            $content .= '
-            <div>* ' . $translator->trans('lender-operations_csv-export-asterisk-accepted-offer-specific-mention') . '</div>';
-
-        }
-
-        return new Response($content, Response::HTTP_OK, [
+        return new StreamedResponse(
+            function () use ($writer) {
+                $writer->save('php://output');
+            }, Response::HTTP_OK, [
             'Content-type'        => 'application/force-download; charset=utf-8',
             'Expires'             => 0,
             'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
-            'content-disposition' => "attachment;filename=" . 'operations_' . date('Y-m-d_H:i:s') . ".xls"
+            'Content-Disposition' => 'attachment;filename=' . $fileName . '.xlsx'
         ]);
     }
 
@@ -414,16 +181,16 @@ class LenderOperationsController extends Controller
      */
     public function exportLoansCsvAction(Request $request)
     {
-        /** @var \lenders_accounts $lender */
-        $lender = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-        $lender->get($this->getUser()->getClientId(), 'id_client_owner');
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
         /** @var \echeanciers $repaymentSchedule */
         $repaymentSchedule = $this->get('unilend.service.entity_manager')->getRepository('echeanciers');
-        $loans             = $this->commonLoans($request, $lender);
+        $loans             = $this->commonLoans($request, $wallet);
 
         \PHPExcel_Settings::setCacheStorageMethod(
             \PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
-            array('memoryCacheSize' => '2048MB', 'cacheTime' => 1200)
+            ['memoryCacheSize' => '2048MB', 'cacheTime' => 1200]
         );
 
         $oDocument    = new \PHPExcel();
@@ -471,9 +238,9 @@ class LenderOperationsController extends Controller
             } else {
                 $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['next_payment_date'])));
                 $oActiveSheet->setCellValue('H' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['end_date'])));
-                $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), $repaymentSchedule->getRepaidCapital(['id_lender' => $lender->id_lender_account, 'id_project' => $aProjectLoans['id']]));
-                $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), $repaymentSchedule->getRepaidInterests(['id_lender' => $lender->id_lender_account, 'id_project' => $aProjectLoans['id']]));
-                $oActiveSheet->setCellValue('K' . ($iRowIndex + 2), $repaymentSchedule->getOwedCapital(['id_lender' => $lender->id_lender_account, 'id_project' => $aProjectLoans['id']]));
+                $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), $repaymentSchedule->getRepaidCapital(['id_lender' => $wallet->getId(), 'id_project' => $aProjectLoans['id']]));
+                $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), $repaymentSchedule->getRepaidInterests(['id_lender' => $wallet->getId(), 'id_project' => $aProjectLoans['id']]));
+                $oActiveSheet->setCellValue('K' . ($iRowIndex + 2), $repaymentSchedule->getOwedCapital(['id_lender' => $wallet->getId(), 'id_project' => $aProjectLoans['id']]));
             }
 
             $sRisk = isset($aProjectLoans['risk']) ? $aProjectLoans['risk'] : '';
@@ -497,6 +264,7 @@ class LenderOperationsController extends Controller
 
     /**
      * @param string $sRisk a letter that gives the risk value [A-H]
+     *
      * @return string
      */
     private function getProjectNote($sRisk)
@@ -533,98 +301,12 @@ class LenderOperationsController extends Controller
     }
 
     /**
-     * @param \indexage_vos_operations $lenderOperationsIndex
-     * @param \lenders_accounts $lender
-     */
-    private function lenderOperationIndexing(\indexage_vos_operations $lenderOperationsIndex, \lenders_accounts $lender)
-    {
-        /** @var EntityManagerSimulator $entityManagerSimulator */
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        /** @var \transactions $transaction */
-        $transaction = $entityManagerSimulator->getRepository('transactions');
-        /** @var \clients $client */
-        $client = $entityManagerSimulator->getRepository('clients');
-        /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
-
-        /** @var \lender_tax_exemption $taxExemption */
-        $taxExemption = $entityManagerSimulator->getRepository('lender_tax_exemption');
-
-        $client->get($this->getUser()->getClientId());
-
-        $array_type_transactions = [
-            \transactions_types::TYPE_LENDER_SUBSCRIPTION          => $translator->trans('lender-operations_operation-label-money-deposit'),
-            \transactions_types::TYPE_LENDER_LOAN                  => [
-                1 => $translator->trans('lender-operations_operation-label-current-offer'),
-                2 => $translator->trans('lender-operations_operation-label-rejected-offer'),
-                3 => $translator->trans('lender-operations_operation-label-accepted-offer')
-            ],
-            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT    => $translator->trans('lender-operations_operation-label-money-deposit'),
-            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT  => $translator->trans('lender-operations_operation-label-money-deposit'),
-            \transactions_types::TYPE_DIRECT_DEBIT                 => $translator->trans('lender-operations_operation-label-money-deposit'),
-            \transactions_types::TYPE_LENDER_WITHDRAWAL            => $translator->trans('lender-operations_operation-label-money-withdrawal'),
-            \transactions_types::TYPE_WELCOME_OFFER                => $translator->trans('lender-operations_operation-label-welcome-offer'),
-            \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION   => $translator->trans('lender-operations_operation-label-welcome-offer-withdrawal'),
-            \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD => $translator->trans('lender-operations_operation-label-godson-gain'),
-            \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD   => $translator->trans('lender-operations_operation-label-godfather-gain'),
-            \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT => $translator->trans('lender-operations_operation-label-anticipated-repayment'),
-            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT    => $translator->trans('lender-operations_operation-label-lender-recovery'),
-            \transactions_types::TYPE_LENDER_BALANCE_TRANSFER      => $translator->trans('preteur-operations-vos-operations_balance-transfer')
-        ];
-
-        $sLastOperation = $lenderOperationsIndex->getLastOperationDate($this->getUser()->getClientId());
-
-        if (empty($sLastOperation)) {
-            $date_debut_a_indexer = self::LAST_OPERATION_DATE;
-        } else {
-            $date_debut_a_indexer = substr($sLastOperation, 0, 10);
-        }
-
-        $operations = $transaction->getOperationsForIndexing($array_type_transactions, $date_debut_a_indexer, $this->getUser()->getClientId());
-
-        foreach ($operations as $t) {
-            if (0 == $lenderOperationsIndex->counter('id_transaction = ' . $t['id_transaction'] . ' AND libelle_operation = "' . $t['type_transaction_alpha'] . '"')) {
-
-                $libelle_prelevements = $translator->trans('lender-operations_tax-and-social-deductions-label');
-                if ($client->type == Clients::TYPE_PERSON || $client->type == Clients::TYPE_PERSON_FOREIGNER) {
-                    if ($taxExemption->counter('id_lender = ' . $lender->id_lender_account . ' AND year = "' . substr($t['date_transaction'], 0, 4) . '"') > 0) {
-                        $libelle_prelevements = $translator->trans('lender-operations_social-deductions-label');
-                    }
-                } else {
-                    $libelle_prelevements = $this->get('translator')->trans('preteur-operations-vos-operations_retenues-a-la-source');
-                }
-
-                $lenderOperationsIndex->id_client           = $t['id_client'];
-                $lenderOperationsIndex->id_transaction      = $t['id_transaction'];
-                $lenderOperationsIndex->id_echeancier       = $t['id_echeancier'];
-                $lenderOperationsIndex->id_projet           = $t['id_project'];
-                $lenderOperationsIndex->type_transaction    = $t['type_transaction'];
-                $lenderOperationsIndex->libelle_operation   = $t['type_transaction_alpha'];
-                $lenderOperationsIndex->bdc                 = $t['bdc'];
-                $lenderOperationsIndex->libelle_projet      = $t['title'];
-                $lenderOperationsIndex->date_operation      = $t['date_tri'];
-                $lenderOperationsIndex->solde               = $t['solde'];
-                $lenderOperationsIndex->libelle_prelevement = $libelle_prelevements;
-                $lenderOperationsIndex->montant_prelevement = $t['tax_amount'];
-
-                if (self::TYPE_REPAYMENT_TRANSACTION == $t['type_transaction']) {
-                    $lenderOperationsIndex->montant_operation = $t['capital'] + $t['interests'];
-                } else {
-                    $lenderOperationsIndex->montant_operation = $t['amount_operation'];
-                }
-                $lenderOperationsIndex->montant_capital = $t['capital'];
-                $lenderOperationsIndex->montant_interet = $t['interests'] + $t['tax_amount'];
-                $lenderOperationsIndex->create();
-            }
-        }
-    }
-
-    /**
      * @param Request $request
-     * @param \lenders_accounts $lender
+     * @param Wallet $wallet
+     *
      * @return array
      */
-    private function commonLoans(Request $request, \lenders_accounts $lender)
+    private function commonLoans(Request $request, Wallet $wallet)
     {
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         $entityManager          = $this->get('doctrine.orm.entity_manager');
@@ -632,9 +314,6 @@ class LenderOperationsController extends Controller
         $loan = $entityManagerSimulator->getRepository('loans');
         /** @var \projects $project */
         $project = $entityManagerSimulator->getRepository('projects');
-        /** @var \clients $client */
-        $client = $entityManagerSimulator->getRepository('clients');
-        $client->get($lender->id_client_owner);
         $notificationsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Notifications');
 
         $orderField     = $request->request->get('type', 'start');
@@ -679,7 +358,7 @@ class LenderOperationsController extends Controller
         $year               = isset($filters['date']) && false !== filter_var($filters['date'], FILTER_VALIDATE_INT) ? $filters['date'] : null;
         $status             = isset($filters['status']) && in_array($filters['status'], array_keys(self::LOAN_STATUS_FILTER)) ? self::LOAN_STATUS_FILTER[$filters['status']] : null;
         $loanStatus         = array_fill_keys(array_keys(self::LOAN_STATUS_FILTER), 0);
-        $lenderLoans        = $loan->getSumLoansByProject($lender->id_lender_account, $sOrderBy, $year, $status);
+        $lenderLoans        = $loan->getSumLoansByProject($wallet->getId(), $sOrderBy, $year, $status);
         $lenderProjectLoans = [];
 
         foreach ($lenderLoans as $projectLoans) {
@@ -739,7 +418,7 @@ class LenderOperationsController extends Controller
             }
             try {
                 $loanData['activity'] = [
-                    'unread_count' => $notificationsRepository->countUnreadNotificationsForClient($lender->id_lender_account, $projectLoans['id_project'])
+                    'unread_count' => $notificationsRepository->countUnreadNotificationsForClient($wallet->getId(), $projectLoans['id_project'])
                 ];
             } catch (\Exception $exception) {
                 unset($exception);
@@ -750,7 +429,7 @@ class LenderOperationsController extends Controller
 
             $projectLoansDetails = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')
                 ->findBy([
-                    'idLender' => $lender->id_lender_account,
+                    'idLender' => $wallet->getId(),
                     'idProject' => $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectLoans['id_project'])
                 ]);
             $loans               = [];
@@ -814,6 +493,7 @@ class LenderOperationsController extends Controller
      * @param array $projectsInDept
      * @param int $projectId
      * @param $nbDeclarations
+     *
      * @return array
      */
     private function getDocumentDetail($projectStatus, $hash, $loanId, $docTypeId, array $projectsInDept, $projectId, &$nbDeclarations = 0)
@@ -861,7 +541,7 @@ class LenderOperationsController extends Controller
             $end        = isset($filters['end']) && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $filters['end']) ? $filters['end'] : $defaultValues['end'];
             $slide      = isset($filters['slide']) && in_array($filters['slide'], [1, 3, 6, 12]) ? $filters['slide'] : $defaultValues['slide'];
             $year       = isset($filters['year']) && false !== filter_var($filters['year'], FILTER_VALIDATE_INT) ? $filters['year'] : $defaultValues['year'];
-            $operation  = isset($filters['operation']) && array_key_exists($filters['operation'], self::$transactionTypeList) ? $filters['operation'] : $defaultValues['operation'];
+            $operation  = isset($filters['operation']) && array_key_exists($filters['operation'], LenderOperationsManager::ALL_TYPES) ? $filters['operation'] : $defaultValues['operation'];
             $project    = isset($filters['project']) && false !== filter_var($filters['project'], FILTER_VALIDATE_INT) ? $filters['project'] : $defaultValues['project'];
             $lastAction = isset($filters['id_last_action']) ? $filters['id_last_action'] : $defaultValues['id_last_action'];
             $filters    = [
@@ -930,7 +610,8 @@ class LenderOperationsController extends Controller
         } catch (\Exception $exception) {
             $data = [];
             $code = Response::HTTP_INTERNAL_SERVER_ERROR;
-            $this->get('logger')->error('Exception while getting client notifications for id_project: ' . $projectId . ' Message: ' . $exception->getMessage(), ['id_client' => $this->getUser()->getClientId(), 'class' => __CLASS__, 'function' => __FUNCTION__]);
+            $this->get('logger')->error('Exception while getting client notifications for id_project: ' . $projectId . ' Message: ' . $exception->getMessage(),
+                ['id_client' => $this->getUser()->getClientId(), 'class' => __CLASS__, 'function' => __FUNCTION__]);
         }
 
         return new JsonResponse(
@@ -948,18 +629,22 @@ class LenderOperationsController extends Controller
      */
     private function getProjectInformation($projectId)
     {
-        $entityManager      = $this->get('doctrine.orm.entity_manager');
-        $project            = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
-        $projectManager     = $this->get('unilend.service.project_manager');
-        $projectInformation = $projectManager->getProjectEventsDetail($projectId, $this->getUser()->getClientId());
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
+        $entityManager   = $this->get('doctrine.orm.entity_manager');
+        $translator      = $this->get('translator');
+        $numberFormatter = $this->get('number_formatter');
 
-        /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
-        $data       = [];
+        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
 
-        foreach ($projectInformation['projectStatus'] as $projectStatus) {
+        /** @var Projects $project */
+        $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+        /** @var Wallet $wallet */
+        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+
+        $data = [];
+
+        $projectStatusAfterEarlyRepayment = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+            ->getHistoryAfterGivenStatus($project, ProjectsStatus::REMBOURSEMENT_ANTICIPE);
+        foreach ($projectStatusAfterEarlyRepayment as $projectStatus) {
             $titleAndContent = $this->getProjectStatusTitleAndContent($projectStatus, $project, $translator);
             $data[]          = [
                 'id'        => count($data),
@@ -973,7 +658,10 @@ class LenderOperationsController extends Controller
                 'status'    => 'read'
             ];
         }
-        foreach ($projectInformation['projectNotifications'] as $projectNotification) {
+
+        $projectNotifications = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectNotification')
+            ->findBy(['idProject' => $project->getIdProject()], ['notificationDate' => 'DESC']);
+        foreach ($projectNotifications as $projectNotification) {
             $data[] = [
                 'id'        => count($data),
                 'projectId' => $projectNotification->getIdProject()->getIdProject(),
@@ -986,39 +674,83 @@ class LenderOperationsController extends Controller
                 'status'    => 'read'
             ];
         }
-        foreach ($projectInformation['recoveryAndEarlyRepayments'] as $repayment) {
-            $titleAndContent = $this->getRepaymentTitleAndContent($repayment, $project, $translator, $ficelle);
 
-            if (empty($titleAndContent['content'])) {
-                continue;
-            }
+        $capitalEarlyRepaymentType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_EARLY]);
+        /** @var Operation[] $earlyRepayments */
+        $earlyRepayments = $operationRepository->findBy([
+            'idProject'        => $project,
+            'idWalletCreditor' => $wallet,
+            'idSubType'        => $capitalEarlyRepaymentType
+        ]);
+        foreach ($earlyRepayments as $repayment) {
             $data[] = [
                 'id'        => count($data),
                 'projectId' => $projectId,
                 'image'     => 'remboursement',
                 'type'      => 'remboursement',
-                'title'     => $titleAndContent['title'],
-                'content'   => $titleAndContent['content'],
-                'datetime'  => $repayment['dateTransaction'],
-                'iso-8601'  => $repayment['dateTransaction']->format('c'),
+                'title'     => $translator->trans('lender-notifications_early-repayment-title'),
+                'content'   => $translator->trans('lender-notifications_early-repayment-content', [
+                    '%amount%'     => $numberFormatter->format((float) $repayment->getAmount()),
+                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
+                    '%company%'    => $project->getIdCompany()->getName()
+                ]),
+                'datetime'  => $repayment->getAdded(),
+                'iso-8601'  => $repayment->getAdded()->format('c'),
                 'status'    => 'read'
             ];
         }
-        foreach ($projectInformation['scheduledRepayments'] as $repayment) {
-            $titleAndContent = $this->getRepaymentTitleAndContent($repayment, $project, $translator, $ficelle);
 
-            if (empty($titleAndContent['content'])) {
-                continue;
-            }
+        $capitalDebtCollectionRepaymentType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION]);
+        /** @var Operation[] $debtCollectionRepayments */
+        $debtCollectionRepayments = $operationRepository->findBy([
+            'idProject'        => $project,
+            'idWalletCreditor' => $wallet,
+            'idSubType'        => $capitalDebtCollectionRepaymentType
+        ]);
+        foreach ($debtCollectionRepayments as $repayment) {
             $data[] = [
                 'id'        => count($data),
                 'projectId' => $projectId,
                 'image'     => 'remboursement',
                 'type'      => 'remboursement',
-                'title'     => $titleAndContent['title'],
-                'content'   => $titleAndContent['content'],
-                'datetime'  => $repayment['dateTransaction'],
-                'iso-8601'  => $repayment['dateTransaction']->format('c'),
+                'title'     => $translator->trans('lender-notifications_recovery-repayment-title'),
+                'content'   => $translator->trans('lender-notifications_recovery-repayment-content', [
+                    '%amount%'     => $numberFormatter->format((float) $repayment->getAmount()),
+                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
+                    '%company%'    => $project->getIdCompany()->getName()
+                ]),
+                'datetime'  => $repayment->getAdded(),
+                'iso-8601'  => $repayment->getAdded()->format('c'),
+                'status'    => 'read'
+            ];
+        }
+
+        $capitalRepaymentType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::CAPITAL_REPAYMENT]);
+        /** @var Operation[] $scheduledRepayments */
+        $scheduledRepayments = $operationRepository->findBy([
+            'idProject'        => $project,
+            'idWalletCreditor' => $wallet,
+            'idType'           => $capitalRepaymentType,
+            'idSubType'        => null
+        ]);
+        foreach ($scheduledRepayments as $repayment) {
+
+            $title   = $translator->trans('lender-notifications_repayment-title');
+            $content = $translator->trans('lender-notifications_repayment-content', [
+                '%amount%'     => $numberFormatter->format($operationRepository->getNetAmountByRepaymentScheduleId($repayment->getRepaymentSchedule())),
+                '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
+                '%company%'    => $project->getIdCompany()->getName()
+            ]);
+
+            $data[] = [
+                'id'        => count($data),
+                'projectId' => $projectId,
+                'image'     => 'remboursement',
+                'type'      => 'remboursement',
+                'title'     => $title,
+                'content'   => $content,
+                'datetime'  => $repayment->getAdded(),
+                'iso-8601'  => $repayment->getAdded()->format('c'),
                 'status'    => 'read'
             ];
         }
@@ -1109,50 +841,6 @@ class LenderOperationsController extends Controller
     }
 
     /**
-     * @param array               $repayment
-     * @param Projects            $project
-     * @param TranslatorInterface $translator
-     * @param \ficelle            $ficelle
-     * @return array
-     */
-    private function getRepaymentTitleAndContent(array $repayment, Projects $project, TranslatorInterface $translator, \ficelle $ficelle)
-    {
-        switch ($repayment['typeTransaction']) {
-            case \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT:
-                $title   = $translator->trans('lender-notifications_early-repayment-title');
-                $content = $translator->trans('lender-notifications_early-repayment-content', [
-                    '%amount%'     => $ficelle->formatNumber($repayment['amount'] / 100, 2),
-                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
-                    '%company%'    => $project->getIdCompany()->getName()
-                ]);
-                break;
-            case \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT:
-                $title   = $translator->trans('lender-notifications_recovery-repayment-title');
-                $content = $translator->trans('lender-notifications_recovery-repayment-content', [
-                    '%amount%'     => $ficelle->formatNumber($repayment['amount'] / 100, 2),
-                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
-                    '%company%'    => $project->getIdCompany()->getName()
-                ]);
-                break;
-            case \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS:
-            case \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL:
-            $title   = $translator->trans('lender-notifications_repayment-title');
-            $content = $translator->trans('lender-notifications_repayment-content', [
-                '%amount%'     => $ficelle->formatNumber($repayment['amount'] / 100, 2),
-                '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
-                '%company%'    => $project->getIdCompany()->getName()
-            ]);
-            break;
-            default:
-                $title   = '';
-                $content = '';
-                break;
-        }
-
-        return ['title' => $title, 'content' => $content];
-    }
-
-    /**
      * @param array $a
      * @param array $b
      *
@@ -1161,5 +849,57 @@ class LenderOperationsController extends Controller
     private function sortArrayByDate(array $a, array $b)
     {
         return $b['datetime']->getTimestamp() - $a['datetime']->getTimestamp();
+    }
+
+    /**
+     * @Route("/operations/pdf", name="lender_operations_pdf")
+     * @Security("has_role('ROLE_LENDER')")
+     *
+     * @return Response
+     */
+    public function downloadOperationPDF()
+    {
+        /** @var SessionInterface $session */
+        $session = $this->get('session');
+
+        if (false === $session->has('lenderOperationsFilters')) {
+            return $this->redirectToRoute('lender_operations');
+        }
+
+        /** @var EntityManager $entityManager */
+        $entityManager= $this->get('doctrine.orm.entity_manager');
+        /** @var LenderOperationsManager $lenderOperationsManager */
+        $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
+
+        $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $clientAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $wallet->getIdClient()->getIdClient()]);
+        if (false === $wallet->getIdClient()->isNaturalPerson()) {
+            $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $wallet->getIdClient()->getIdClient()]);
+        }
+
+        $filters          = $session->get('lenderOperationsFilters');
+        $operations       = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
+        $lenderOperations = $lenderOperationsManager->getLenderOperations($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
+        $fileName         = 'vos_operations_' . date('Y-m-d') . '.pdf';
+        $pdfContent = $this->renderView('pdf/lender_operations.html.twig', [
+            'lenderOperations'  => $lenderOperations,
+            'client'            => $wallet->getIdClient(),
+            'clientAddress'     => $clientAddress,
+            'company'           => empty($company) ? null : $company,
+            'available_balance' => $wallet->getAvailableBalance()
+        ]);
+
+
+        /** @var GeneratorInterface $snappy */
+        $snappy = $this->get('knp_snappy.pdf');
+
+        return new Response(
+                $snappy->getOutputFromHtml($pdfContent),
+                200,
+                [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => sprintf('attachment; filename="%s"', $fileName)
+                ]
+        );
     }
 }

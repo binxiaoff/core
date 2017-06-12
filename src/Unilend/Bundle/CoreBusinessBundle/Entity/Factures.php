@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Factures
 {
-    const TYPE_COMMISSION_FUNDS   = 1;
+    const TYPE_COMMISSION_FUNDS     = 1;
     const TYPE_COMMISSION_REPAYMENT = 2;
 
     /**
@@ -37,9 +37,12 @@ class Factures
     private $idCompany;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="factures")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
      */
     private $idProject;
 
@@ -58,9 +61,9 @@ class Factures
     private $typeCommission;
 
     /**
-     * @var integer
+     * @var float
      *
-     * @ORM\Column(name="commission", type="integer", nullable=false)
+     * @ORM\Column(name="commission", type="float", nullable=false)
      */
     private $commission;
 
@@ -199,7 +202,7 @@ class Factures
     /**
      * Get idProject
      *
-     * @return integer
+     * @return Projects
      */
     public function getIdProject()
     {
@@ -257,7 +260,7 @@ class Factures
     /**
      * Set commission
      *
-     * @param integer $commission
+     * @param float $commission
      *
      * @return Factures
      */
@@ -271,7 +274,7 @@ class Factures
     /**
      * Get commission
      *
-     * @return integer
+     * @return float
      */
     public function getCommission()
     {

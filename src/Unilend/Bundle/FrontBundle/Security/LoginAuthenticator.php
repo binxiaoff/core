@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Security;
 
+use Doctrine\ORM\EntityManager;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -23,7 +24,8 @@ use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticator;
 use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategyInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
@@ -38,39 +40,43 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     private $securityPasswordEncoder;
     /** @var RouterInterface */
     private $router;
-    /** @var EntityManager */
-    private $entityManager;
+    /** @var EntityManagerSimulator */
+    private $entityManagerSimulator;
     /** @var SessionAuthenticationStrategyInterface */
     private $sessionStrategy;
     /** @var CsrfTokenManagerInterface */
     private $csrfTokenManager;
     /** @var Logger */
     private $logger;
+    /** @var EntityManager */
+    private $entityManager;
 
     /**
      * LoginAuthenticator constructor.
-     * @param UserPasswordEncoder                    $securityPasswordEncoder
-     * @param RouterInterface                        $router
-     * @param EntityManager                          $entityManager
+     * @param UserPasswordEncoder $securityPasswordEncoder
+     * @param RouterInterface $router
+     * @param EntityManagerSimulator $entityManagerSimulator
      * @param SessionAuthenticationStrategyInterface $sessionStrategy
-     * @param CsrfTokenManagerInterface              $csrfTokenManager
-     * @param Logger                                 $logger
+     * @param CsrfTokenManagerInterface $csrfTokenManager
+     * @param Logger $logger
+     * @param EntityManager $entityManager
      */
     public function __construct(
         UserPasswordEncoder $securityPasswordEncoder,
         RouterInterface $router,
-        EntityManager $entityManager,
+        EntityManagerSimulator $entityManagerSimulator,
         SessionAuthenticationStrategyInterface $sessionStrategy,
         CsrfTokenManagerInterface $csrfTokenManager,
-        Logger $logger
-    )
-    {
+        Logger $logger,
+        EntityManager $entityManager
+    ) {
         $this->securityPasswordEncoder = $securityPasswordEncoder;
         $this->router                  = $router;
-        $this->entityManager           = $entityManager;
+        $this->entityManagerSimulator  = $entityManagerSimulator;
         $this->sessionStrategy         = $sessionStrategy;
         $this->csrfTokenManager        = $csrfTokenManager;
         $this->logger                  = $logger;
+        $this->entityManager           = $entityManager;
     }
 
     /**
@@ -184,20 +190,17 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         /** @var BaseUser $user */
         $user = $token->getUser();
         $request->getSession()->remove('captchaInformation');
-
-        /** @var \clients $client */
-        $client = $this->entityManager->getRepository('clients');
-        $client->get($user->getClientId());
-
+        /** @var Clients $client */
+        $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
         // Update the password encoder if it's legacy
         if ($user instanceof EncoderAwareInterface && (null !== $encoderName = $user->getEncoderName())) {
             $user->useDefaultEncoder(); // force to use the default password encoder
             try {
-                $client->password = $this->securityPasswordEncoder->encodePassword($user, $this->getCredentials($request)['password']);
+                $client->setPassword($this->securityPasswordEncoder->encodePassword($user, $this->getCredentials($request)['password']));
             } catch (BadCredentialsException $exeption) {
 
             }
-            $client->update();
+            $this->entityManager->flush($client);
         }
 
         $this->saveLogin($client);
@@ -234,7 +237,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         }
 
         /** @var \login_log $loginLog */
-        $loginLog = $this->entityManager->getRepository('login_log');
+        $loginLog = $this->entityManagerSimulator->getRepository('login_log');
 
         if ($exception instanceof CustomUserMessageAuthenticationException && in_array($exception->getMessage(), ['wrong-password', 'login-unknown', 'wrong captcha', 'wrong-security-token'])) {
             $oNowMinusTenMinutes = new \DateTime('NOW - 10 minutes');
@@ -293,16 +296,29 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     }
 
     /**
-     * @param \clients $client
+     * @param Clients $client
      */
-    private function saveLogin(\clients $client)
+    private function saveLogin(Clients $client)
     {
-        $client->saveLogin(new \DateTime('NOW'));
+        $client->setLastlogin(new \DateTime('NOW'));
+        $this->entityManager->flush($client);
+
+        $isLender        = $client->isLender();
+        $isBorrower      = $client->isBorrower();
+
+        if ($isLender && $isBorrower) {
+            $type = \clients_history::TYPE_CLIENT_LENDER_BORROWER;
+        } elseif ($isLender) {
+            $type = \clients_history::TYPE_CLIENT_LENDER;
+        } elseif ($isBorrower) {
+            $type = \clients_history::TYPE_CLIENT_BORROWER;
+        }
 
         /** @var \clients_history $clientHistory */
-        $clientHistory = $this->entityManager->getRepository('clients_history');
-        $clientHistory->logClientAction($client, \clients_history::STATUS_ACTION_LOGIN);
+        $clientHistory = $this->entityManagerSimulator->getRepository('clients_history');
+        $clientHistory->logClientAction($client->getIdClient(), \clients_history::STATUS_ACTION_LOGIN, $type);
     }
+
 
     /**
      * Remove the host part from URL to avoid the external redirection

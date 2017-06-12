@@ -49,15 +49,15 @@ classNames: 'user-preter-profile'
                             </a>
                             <dl class="list-2col">
                                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-funds-origin-label {% endtrans %}</dt>
-                                <dd id="profile-fiscalite-bank-origin-output">{% if lenderAccount.fiscal_info.fundsOrigin[client.fundsOrigin] is defined %}{{ lenderAccount.fiscal_info.fundsOrigin[client.fundsOrigin] }}{% else %}-{% endif %}</dd>
+                                <dd id="profile-fiscalite-bank-origin-output">{% if lender.fiscal_info.fundsOrigin[client.fundsOrigin] is defined %}{{ lender.fiscal_info.fundsOrigin[client.fundsOrigin] }}{% else %}-{% endif %}</dd>
                                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-bic {% endtrans %}</dt>
                                 <dd id="profile-fiscalite-bank-bic-output">{{ bankAccount.bic }}</dd>
                                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-iban {% endtrans %}</dt>
                                 <dd id="profile-fiscalite-bank-iban-output">{{ bankAccount.iban }}</dd>
                                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-documents {% endtrans %}</dt>
-                                {% if lenderAccount.fiscal_info.rib %}
+                                {% if lender.fiscal_info.rib %}
                                 <dd id="profile-fiscalite-bank-fichier-rib-output">
-                                    {% set ribDate = lenderAccount.fiscal_info.rib.updated|default(lenderAccount.fiscal_info.rib.added)|localizeddate('short', 'none', app.request.locale) %}
+                                    {% set ribDate = lender.fiscal_info.rib.updated|default(lender.fiscal_info.rib.added)|localizeddate('short', 'none', app.request.locale) %}
                                     {% set ribProvidedTranslation = "lender-profile_lender-attachment-provided-label-type-#{constant('\\attachment_type::RIB')}" | transchoice(ribDate, {'%date%': ribDate}) %}
                                     <span id="form-fiscalite-bank-file-rib-1-output" class="file-justificatif file-rib" title="{{ ribProvidedTranslation }}" data-toggle="tooltip">
                                     </span>
@@ -144,8 +144,8 @@ classNames: 'user-preter-profile'
                                              data-fileattach data-fileattach-inputname="iban-certificate"
                                              data-fileattach-maxfiles="1"
                                              data-fileattach-emptyfilelabel="
-                                                 {% if lenderAccount.fiscal_info.rib %}
-                                                    {{ lenderAccount.fiscal_info.rib.path }}
+                                                 {% if lender.fiscal_info.rib %}
+                                                    {{ lender.fiscal_info.rib.path }}
                                                  {% else %}
                                                     {% trans %} lender-profile_fiscal-tab-iban-certificate {% endtrans %}
                                                  {% endif %}">
@@ -167,10 +167,10 @@ classNames: 'user-preter-profile'
                             <h3>{% trans %}lender-profile_fiscal-information-documents-section-title{% endtrans %}</h3>
                         </header><!-- .panel-header -->
 
-                        {% if lenderAccount.fiscal_info.documents is defined %}
+                        {% if lender.fiscal_info.documents is defined %}
                             <div class="panel-content">
                                 <ul class="list-files">
-                                    {% for i, file in lenderAccount.fiscal_info.documents %}
+                                    {% for i, file in lender.fiscal_info.documents %}
                                         <li class="file file-type-pdf">
                                             <p>
                                                 <strong>{% trans with { '%year%'  : file.annee } %} lender-profile_income-for-the-year {% endtrans %}</strong><br/>
@@ -187,9 +187,9 @@ classNames: 'user-preter-profile'
                             <p>{% trans with { '%currentYear%': date()|date('Y'), '%lastYear%': date()|date('Y') - 1 } %} lender-profile_fiscal-solidarity-tax-on-wealth-msg {% endtrans %}</p>
                             <dl class="list-2col">
                                 <dt>{% trans %} lender-profile_balance-to-declare {% endtrans %}</dt>
-                                <dd>{{ lenderAccount.fiscal_info.amounts.balance|localizedcurrency('EUR') }}</dd>
+                                <dd>{{ lender.fiscal_info.amounts.balance|localizedcurrency('EUR') }}</dd>
                                 <dt>{% trans %} lender-profile_owed-capital {% endtrans %}</dt>
-                                <dd>{{ lenderAccount.fiscal_info.amounts.owedCapital|localizedcurrency('EUR') }}</dd>
+                                <dd>{{ lender.fiscal_info.amounts.owedCapital|localizedcurrency('EUR') }}</dd>
                             </dl>
                         </div><!-- /.panel-content -->
                     </article><!-- /#panel-reports.panel -->

@@ -195,11 +195,11 @@
         margin: 0;
         overflow: hidden;
 
-        background-image: image-url('logo/logo-unilend-65x65-white.png');
+        background-image: image-url('logo/logo-unilend-65x65-white.png', false, false);
         background-position: center center;
 
         @include retina {
-          background-image: image-url('logo/logo-unilend-65x65-white@2x.png');
+          background-image: image-url('logo/logo-unilend-65x65-white@2x.png', false, false);
         }
       }
     }

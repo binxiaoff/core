@@ -44,9 +44,20 @@ class OperationType
     const UNILEND_WITHDRAW                              = 'unilend_withdraw';
     const UNILEND_LENDER_REGULARIZATION                 = 'unilend_lender_regularization';
     const UNILEND_BORROWER_REGULARIZATION               = 'unilend_borrower_regularization';
+    const UNILEND_BORROWER_COMMERCIAL_GESTURE           = 'unilend_borrower_commercial_gesture';
     const COLLECTION_COMMISSION_PROVISION               = 'collection_commission_provision';
     const COLLECTION_COMMISSION_BORROWER                = 'collection_commission_borrower';
     const COLLECTION_COMMISSION_LENDER                  = 'collection_commission_lender';
+
+    const TAX_TYPES_FR = [
+        self::TAX_FR_STATUTORY_CONTRIBUTIONS,
+        self::TAX_FR_CSG,
+        self::TAX_FR_SOCIAL_DEDUCTIONS,
+        self::TAX_FR_ADDITIONAL_CONTRIBUTIONS,
+        self::TAX_FR_SOLIDARITY_DEDUCTIONS,
+        self::TAX_FR_CRDS,
+        self::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE
+    ];
 
     /**
      * @var integer

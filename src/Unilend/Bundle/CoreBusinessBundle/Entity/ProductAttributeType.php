@@ -15,8 +15,8 @@ class ProductAttributeType
     const ELIGIBLE_BORROWER_COMPANY_NAF_CODE = 'product_eligible_borrower_company_naf_code';
     const ELIGIBLE_BORROWER_COMPANY_RCS      = 'product_eligible_borrower_company_rcs';
     const ELIGIBLE_BORROWING_MOTIVE          = 'product_eligible_borrowing_motive';
-    const ELIGIBLE_LENDER_ID                 = 'product_eligible_lender_id';
-    const ELIGIBLE_LENDER_TYPE               = 'product_eligible_lender_type';
+    const ELIGIBLE_CLIENT_ID                 = 'product_eligible_lender_id';
+    const ELIGIBLE_CLIENT_TYPE               = 'product_eligible_lender_type';
     const MIN_CREATION_DAYS                  = 'product_min_creation_days';
     const MAX_LOAN_DURATION_IN_MONTH         = 'product_max_loan_duration_in_month';
     const MIN_LOAN_DURATION_IN_MONTH         = 'product_min_loan_duration_in_month';

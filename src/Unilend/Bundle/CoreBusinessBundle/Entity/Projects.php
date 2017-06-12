@@ -16,6 +16,10 @@ class Projects
 {
     //todo: move to the debt collection entity
     const DEBT_COLLECTION_CONDITION_CHANGEMENT_DATE = '2016-04-19';
+
+    const AUTO_REPAYMENT_ON  = 0;
+    const AUTO_REPAYMENT_OFF = 1;
+
     /**
      * @var string
      *
@@ -406,6 +410,13 @@ class Projects
     private $wireTransferOuts;
 
     /**
+     * @var Factures[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Factures", mappedBy="idProject")
+     */
+    private $invoices;
+
+    /**
      * Projects constructor.
      */
     public function __construct()
@@ -414,6 +425,7 @@ class Projects
         $this->mandates         = new ArrayCollection();
         $this->notes            = new ArrayCollection();
         $this->wireTransferOuts = new ArrayCollection();
+        $this->invoices         = new ArrayCollection();
     }
 
     /**
@@ -1600,5 +1612,13 @@ class Projects
     public function getWireTransferOuts()
     {
         return $this->wireTransferOuts;
+    }
+
+    /**
+     * @return ArrayCollection|Factures[]
+     */
+    public function getInvoices()
+    {
+        return $this->invoices;
     }
 }

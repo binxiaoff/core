@@ -5,20 +5,20 @@
         <div><?= $this->clientStatusMessage ?></div>
         <h1>Detail prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
         <div class="btnDroite">
-            <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Enchères</a>
-            <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Consulter Prêteur</a>
-            <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Modifier Prêteur</a>
-            <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Historique des emails</a>
+            <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->clients->id_client ?>" class="btn_link">Enchères</a>
+            <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->clients->id_client ?>" class="btn_link">Consulter Prêteur</a>
+            <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->clients->id_client ?>" class="btn_link">Modifier Prêteur</a>
+            <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->clients->id_client ?>" class="btn_link">Historique des emails</a>
         </div>
         <div>
             <h2>Portefeuille</h2>
 
             <h3>TRI du portefeuille :
-                <?php if(empty($this->IRR)) : ?>
+                <?php if(null === $this->IRR) : ?>
                     Ce prêteur est trop récent. Son TRI n'a pas encore été calculé.
                 <?php else : ?>
-                    <?= $this->IRR['status'] == \lenders_account_stats::STAT_VALID_OK ? $this->IRR['value'] . '%'  : 'TRI non valide'?>
-                    <?= (is_null($this->IRR['date'])) ? '' : '(calculé le ' . $this->dates->formatDateMysqltoShortFR($this->IRR['date']) . ')' ?>
+                    <?= \Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic::STAT_VALID_OK === $this->IRR->getStatus() ? number_format($this->IRR->getValue(), 2, ',', ' ') . '%'  : 'TRI non valide'?>
+                    <?= (is_null($this->IRR->getAdded())) ? '' : '(calculé le ' . $this->IRR->getAdded()->format('d/m/Y') . ')' ?>
                 <?php endif; ?>
             </h3>
             <h3>Nombre de projets à probleme dans le portefeuille : <?= $this->problProjects ?></h3>
@@ -162,9 +162,9 @@
                                 <?php if ($this->hasTransferredLoans) : ?>
                                 <td>
                                     <?php if ($this->loan->get($aProjectLoans['id_loan_if_one_loan']) && false === empty($this->loan->id_transfer)) :
-                                        /** @var \lenders_accounts $formerOwner */
+                                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $formerOwner */
                                         $formerOwner = $this->loanManager->getFormerOwner($this->loan); ?>
-                                        <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->id_lender_account ?>"><?= $formerOwner->id_client_owner ?></a>
+                                        <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->getIdClient() ?>"><?= $formerOwner->getIdClient() ?></a>
                                     <?php endif; ?>
                                 </td>
                                 <?php endif; ?>
@@ -176,7 +176,7 @@
                             <?php endif; ?>
                         </tr>
                         <?php if ($aProjectLoans['nb_loan'] > 1) : ?>
-                            <?php foreach ($this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project']) as $aLoan) : ?>
+                            <?php foreach ($this->loans->select('id_lender = ' . $this->wallet->getId() . ' AND id_project = ' . $aProjectLoans['id_project']) as $aLoan) : ?>
                                 <tr class="sub_loan<?= $iLoanIndex % 2 ? '' : ' odd' ?>">
                                     <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aLoan['amount']/100, 0) ?> €</td>
                                     <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aLoan['rate'], 1) ?> %</td>
@@ -199,9 +199,9 @@
                                         <td>
                                             <?php if (false === empty($aLoan['id_transfer'])) :
                                                 $this->loan->get($aLoan['id_loan']);
-                                                /** @var \lenders_accounts $formerOwner */
+                                                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $formerOwner */
                                                 $formerOwner = $this->loanManager->getFormerOwner($this->loan); ?>
-                                                <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->id_lender_account ?>"><?= $formerOwner->id_client_owner ?></a>
+                                                <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->getIdClient() ?>"><?= $formerOwner->getIdClient() ?></a>
                                             <?php endif; ?>
                                         </td>
                                     <?php endif; ?>

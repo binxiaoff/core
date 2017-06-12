@@ -1,5 +1,6 @@
 <?php
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 ?>
 <script type="text/javascript">
     $(function() {
@@ -44,15 +45,15 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 <script type="text/javascript" src="<?= $this->url ?>/ckeditor/ckeditor.js"></script>
 <div id="contenu">
     <?php if (empty($this->clients->id_client)) : ?>
-        <div class="attention">Attention : Compte <?= $this->params[0] ?> innconu</div>
+        <div class="attention">Attention : Client <?= $this->params[0] ?> innconu</div>
     <?php else : ?>
     <div><?= $this->clientStatusMessage ?></div>
     <h1>Informations prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
     <div class="btnDroite">
-        <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Enchères</a>
-        <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Consulter Prêteur</a>
-        <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Historique des emails</a>
-        <a href="<?= $this->lurl ?>/preteurs/portefeuille/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Portefeuille & Performances</a>
+        <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->clients->id_client ?>" class="btn_link">Enchères</a>
+        <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->clients->id_client ?>" class="btn_link">Consulter Prêteur</a>
+        <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->clients->id_client ?>" class="btn_link">Historique des emails</a>
+        <a href="<?= $this->lurl ?>/preteurs/portefeuille/<?= $this->clients->id_client ?>" class="btn_link">Portefeuille & Performances</a>
     </div>
     <?php if (isset($_SESSION['error_email_exist']) && $_SESSION['error_email_exist'] != '') : ?>
         <p style="color:#c84747;text-align:center;font-size:14px;font-weight:bold;"><?= $_SESSION['error_email_exist'] ?></p>
@@ -370,10 +371,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
                     <th></th>
                     <td></td>
                 </tr>
-                <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?> class="statut_dirigeant_e societe">
+                <tr <?= (Companies::CLIENT_STATUS_MANAGER == $this->companies->status_client ? 'style="display:none;"' : '') ?> class="statut_dirigeant_e societe">
                     <th colspan="4" style="text-align:left;"><br/>Identification du dirigeant :</th>
                 </tr>
-                <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?> class="statut_dirigeant_e societe">
+                <tr <?= (Companies::CLIENT_STATUS_MANAGER == $this->companies->status_client ? 'style="display:none;"' : '') ?> class="statut_dirigeant_e societe">
                     <th>Civilité :</th>
                     <td>
                         <input <?= ($this->companies->civilite_dirigeant == 'Mme' ? 'checked' : '') ?> type="radio" name="civilite2_e" id="civilite21_e" value="Mme"/>
@@ -384,19 +385,19 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
                     <th></th>
                     <td></td>
                 </tr>
-                <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?> class="statut_dirigeant_e societe">
+                <tr <?= (Companies::CLIENT_STATUS_MANAGER == $this->companies->status_client ? 'style="display:none;"' : '') ?> class="statut_dirigeant_e societe">
                     <th><label for="nom2_e">Nom :</label></th>
                     <td><input type="text" name="nom2_e" id="nom2_e" class="input_large" value="<?= $this->companies->nom_dirigeant ?>"/></td>
                     <th><label for="prenom2_e">Prénom :</label></th>
                     <td><input type="text" name="prenom2_e" id="prenom2_e" class="input_large" value="<?= $this->companies->prenom_dirigeant ?>"/></td>
                 </tr>
-                <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?> class="statut_dirigeant_e societe">
+                <tr <?= (Companies::CLIENT_STATUS_MANAGER == $this->companies->status_client ? 'style="display:none;"' : '') ?> class="statut_dirigeant_e societe">
                     <th><label for="fonction2_e">Fonction :</label></th>
                     <td><input type="text" name="fonction2_e" id="fonction2_e" class="input_large" value="<?= $this->companies->fonction_dirigeant ?>"/></td>
                     <th><label for="email2_e">Email :</label></th>
                     <td><input type="text" name="email2_e" id="email2_e" class="input_large" value="<?= $this->companies->email_dirigeant ?>"/></td>
                 </tr>
-                <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?> class="statut_dirigeant_e societe">
+                <tr <?= (Companies::CLIENT_STATUS_MANAGER == $this->companies->status_client ? 'style="display:none;"' : '') ?> class="statut_dirigeant_e societe">
                     <th><label for="phone2_e">Téléphone :</label></th>
                     <td><input type="text" name="phone2_e" id="phone2_e" class="input_moy" value="<?= $this->companies->phone_dirigeant ?>"/></td>
                     <th></th>
@@ -616,10 +617,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
                     <h3>Historique des statuts client</h3>
                         <table class="tablesorter histo_status_client">
                         <?php foreach ($this->lActions as $historyEntry) {
-                            $this->oClientsStatusForHistory->get($historyEntry['id_client_status'], 'id_client_status');
+                            $this->clientsStatusForHistory->get($historyEntry['id_client_status'], 'id_client_status');
                             $this->users->get($historyEntry['id_user'], 'id_user');
 
-                            switch ($this->oClientsStatusForHistory->status) {
+                            switch ($this->clientsStatusForHistory->status) {
                                 case \clients_status::TO_BE_CHECKED: ?>
                                     <tr>
                                         <td>
@@ -768,12 +769,12 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
                         <td colspan="2">
                             <?php if (Clients::STATUS_ONLINE == $this->clients->status) :?>
                                 <input type="button"
-                                       onclick="if(confirm('Voulez vous mettre le client hors ligne et changer son status en Clôturé par Unilend')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->lenders_accounts->id_lender_account ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_OFFLINE ?>';}"
+                                       onclick="if(confirm('Voulez vous mettre le client hors ligne et changer son status en Clôturé par Unilend')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->clients->id_client ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_OFFLINE ?>';}"
                                        class="btnRouge"
                                        value="Hors ligne / Clôturé par Unilend">
                             <?php else: ?>
                                 <input type="button"
-                                       onclick="if(confirm('Voulez vous remettre le client en ligne et revenir au status avant la mis hors ligne ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->lenders_accounts->id_lender_account ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_ONLINE ?>';}"
+                                       onclick="if(confirm('Voulez vous remettre le client en ligne et revenir au status avant la mis hors ligne ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->clients->id_client ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_ONLINE ?>';}"
                                        class="btn"
                                        value="En ligne / Status avant mis hors ligne">
                             <?php endif; ?>
@@ -783,7 +784,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
                         <td colspan="2">
                             <?php if (false === in_array($this->clients_status->status, array(\clients_status::CLOSED_LENDER_REQUEST)) ) : ?>
                             <input type="button"
-                                   onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur (mettre son compte hors ligne et changer son stauts en Clôturé à la demande du preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/deactivate/<?= $this->lenders_accounts->id_lender_account ?>/<?= Clients::STATUS_OFFLINE ?>';}"
+                                   onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur (mettre son compte hors ligne et changer son stauts en Clôturé à la demande du preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/deactivate/<?= $this->clients->id_client ?>/<?= Clients::STATUS_OFFLINE ?>';}"
                                    class="btnRouge" value="Hors ligne / Clôturé à la demande du client">
                             <?php endif; ?>
                         </td>

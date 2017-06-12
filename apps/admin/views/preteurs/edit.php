@@ -14,23 +14,73 @@
         $("#annee").change(function () {
             $('#changeDate').attr('href', "<?= $this->lurl ?>/preteurs/edit/<?=$this->params[0]?>/" + $(this).val());
         });
-    });
-    $(function () {
+
+        // Lender Vigilance / Atypical Operations
         $('#btn-show-lender-vigilance-history').click(function () {
             $('#lender-vigilance-history').toggle();
             $(this).text(function (i, text) {
                 return text === 'Voir l\'historique de vigilance' ? 'Cacher l\'historique' : 'Voir l\'historique de vigilance'
             })
         })
-    })
-    $(function () {
+
         $('#btn-show-lender-atypical-operation').click(function () {
             $('#lender-atypical-operation').toggle();
             $(this).text(function (i, text) {
                 return text === 'Voir les détections' ? 'Cacher les détections' : 'Voir les détections'
             })
         })
-    })
+
+        // Reject Bid
+        $('.deleteBidBtn').click(function () {
+            var id_bid = $(this).data('bid')
+            if (confirm('Etes vous sur de vouloir rejeter ce bid ?')) {
+                var val = {
+                    id_bid: id_bid
+                };
+                $.post(add_url + '/ajax/deleteBidPreteur', val).done(function (data) {
+                    if (data != 'nok') {
+                        $(".lesbidsEncours").html(data);
+                    }
+                });
+            }
+        })
+
+        // Datepickers
+        $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
+
+        $("#datepik_1").datepicker({
+            showOn: 'both',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+            buttonImageOnly: true,
+            changeMonth: true,
+            changeYear: true,
+            yearRange: '<?=(date('Y') - 10)?>:<?=(date('Y') + 10)?>'
+        });
+
+        $("#datepik_2").datepicker({
+            showOn: 'both',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+            buttonImageOnly: true,
+            changeMonth: true,
+            changeYear: true,
+            yearRange: '<?=(date('Y') - 10)?>:<?=(date('Y') + 10)?>'
+        });
+
+        // Filter
+        $("#anneeMouvTransacForm").submit(function(e) {
+            e.preventDefault()
+            var val = {
+                id_client: <?= $this->clients->id_client ?>,
+                year: $(this).find('select').val()
+            };
+            $.post(add_url + '/ajax/loadMouvTransac', val).done(function(data) {
+                if (data != 'nok') {
+
+                    $(".MouvTransac").html(data);
+                }
+            });
+        });
+    });
 </script>
 <style>
     .td-greenPoint-status-valid {
@@ -45,6 +95,19 @@
     table.attachment-list td, th{
         vertical-align: middle;
     }
+    .form-field {
+        width: 140px;
+        margin-right: 20px;
+        float: left;
+    }
+    .form-field input, .form-field select {
+        width: 100%;
+        box-sizing: border-box;
+        height: 30px;
+    }
+    .form-field img {
+        margin-top: -46px;
+    }
 </style>
 <div id="contenu">
     <?php if (empty($this->clients->id_client)) : ?>
@@ -53,10 +116,10 @@
         <div><?= $this->clientStatusMessage ?></div>
         <h1>Detail prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
         <div class="btnDroite">
-            <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Enchères</a>
-            <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Modifier Prêteur</a>
-            <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Historique des emails</a>
-            <a href="<?= $this->lurl ?>/preteurs/portefeuille/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Portefeuille & Performances</a></div>
+            <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->clients->id_client ?>" class="btn_link">Enchères</a>
+            <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->clients->id_client ?>" class="btn_link">Modifier Prêteur</a>
+            <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->clients->id_client ?>" class="btn_link">Historique des emails</a>
+            <a href="<?= $this->lurl ?>/preteurs/portefeuille/<?= $this->clients->id_client ?>" class="btn_link">Portefeuille & Performances</a></div>
         <br>
         <table class="form" style="margin: auto;">
             <tr>
@@ -130,10 +193,10 @@
                 <tr>
                     <th>Exonéré :</th>
                     <td>
-                        <?php if (empty($this->aExemptionYears)) : ?>
+                        <?php if (empty($this->exemptionYears)) : ?>
                             Non
                         <?php else : ?>
-                            <?= implode('<br>', $this->aExemptionYears) ?>
+                            <?= implode('<br>', $this->exemptionYears) ?>
                         <?php endif; ?>
                     </td>
                 </tr>
@@ -295,13 +358,38 @@
         </div>
         <br/><br/>
         <h2>Mouvements</h2>
-        <div class="btnDroite">
-            <select name="anneeMouvTransac" id="anneeMouvTransac" class="select" style="width:95px;">
-                <?php for ($i = date('Y'); $i >= 2008; $i--) : ?>
-                    <option value="<?= $i ?>"><?= $i ?></option>
-                <?php endfor; ?>
-            </select>
+        <div class="gauche" style="border: 0; padding-top: 5px;">
+            <form method="post" name="date_select" action="<?= $this->lurl ?>/preteurs/operations_export/<?= $this->clients->id_client ?>">
+                <div class="form-field">
+                    <input type="text" name="dateStart"
+                           placeholder="Date debut"
+                           id="datepik_1"
+                           class="input_dp"
+                           value="<?= (empty($_POST['id']) && false === empty($_POST['dateStart'])) ? $_POST['dateStart'] : '' ?>"/>
+                </div>
+                <div class="form-field">
+                    <input type="text"
+                           placeholder="Date fin"
+                           name="dateEnd"
+                           id="datepik_2" class="input_dp"
+                           value="<?= (empty($_POST['id']) && false === empty($_POST['dateEnd'])) ? $_POST['dateEnd'] : '' ?>"/>
+                </div>
+                <input type="submit" value="Exporter" title="Valider" name="export_operations" id="export_operations" class="btn" style="height: 30px" />
+            </form>
         </div>
+        <div class="droite" style="padding-top: 5px;">
+            <form method="post" id="anneeMouvTransacForm" action="">
+                <input type="submit" value="Filtrer" name="filter" id="export_operations" class="btn" style="float: right; height: 30px" />
+                <div class="form-field" style="float: right;">
+                    <select name="anneeMouvTransac" id="anneeMouvTransac" class="select" style="width:100%;">
+                        <?php for ($i = date('Y'); $i >= 2013; $i--) : ?>
+                            <option value="<?= $i ?>"><?= $i ?></option>
+                        <?php endfor; ?>
+                    </select>
+                </div>
+            </form>
+        </div>
+
         <div class="MouvTransac">
             <?php $this->fireView('transactions'); ?>
         </div>
@@ -336,7 +424,7 @@
                             <td align="center"><?= $this->projects->period ?></td>
 
                             <td align="center">
-                                <img style="cursor:pointer;" onclick="deleteBid(<?= $e['id_bid'] ?>);" src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer"/>
+                                <a role="button" class="deleteBidBtn" data-bid="<?= $e['id_bid'] ?>">Rejeter ce bid</a>
                             </td>
                         </tr>
                         <?php
@@ -431,30 +519,3 @@
         <?php endif; ?>
     <?php endif; ?>
 </div>
-<script type="text/javascript">
-    $("#anneeMouvTransac").change(function() {
-        var val = {
-            id_client: <?= $this->clients->id_client ?>,
-            year: $(this).val()
-        };
-        $.post(add_url + '/ajax/loadMouvTransac', val).done(function(data) {
-            if (data != 'nok') {
-                $(".MouvTransac").html(data);
-            }
-        });
-    });
-
-    function deleteBid(id_bid) {
-        if (confirm('Etes vous sur de vouloir supprimer ce bid ?')) {
-            var val = {
-                id_bid: id_bid,
-                id_lender: <?= $this->lenders_accounts->id_lender_account ?>
-            };
-            $.post(add_url + '/ajax/deleteBidPreteur', val).done(function (data) {
-                if (data != 'nok') {
-                    $(".lesbidsEncours").html(data);
-                }
-            });
-        }
-    }
-</script>

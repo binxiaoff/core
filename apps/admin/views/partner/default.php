@@ -36,7 +36,7 @@
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Partner $partner */
             foreach ($this->partners as $partner) : ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-                    <td><?= $partner->getName() ?></td>
+                    <td><?= $partner->getIdCompany()->getName() ?></td>
                     <td><?= $partner->getType()->getName() ?></td>
                     <td><?= $partner->getAdded()->format('d/m/Y') ?></td>
                     <td><a href="/partner/third_party/<?= $partner->getId() ?>">Tiers</a></td>
