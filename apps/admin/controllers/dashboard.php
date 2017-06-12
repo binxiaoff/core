@@ -1,5 +1,8 @@
 <?php
 
+use \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
+use \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
+
 class dashboardController extends bootstrap
 {
     private static $saleCollapsedStatus = [
@@ -84,7 +87,8 @@ class dashboardController extends bootstrap
     }
 
     /**
-     * @param users $user
+     * @param \users $user
+     *
      * @return array
      */
     private function getRiskUserProjects(\users $user)
@@ -100,7 +104,8 @@ class dashboardController extends bootstrap
     }
 
     /**
-     * @param users $user
+     * @param \users $user
+     *
      * @return array
      */
     private function getRiskTeamProjects(\users $user)
@@ -116,7 +121,8 @@ class dashboardController extends bootstrap
     }
 
     /**
-     * @param users $user
+     * @param \users $user
+     *
      * @return array
      */
     private function getSaleUserProjects(\users $user)
@@ -133,7 +139,8 @@ class dashboardController extends bootstrap
     }
 
     /**
-     * @param users $user
+     * @param \users $user
+     *
      * @return array
      */
     private function getSaleTeamProjects(\users $user)
@@ -182,6 +189,7 @@ class dashboardController extends bootstrap
 
     /**
      * @param array $projects
+     *
      * @return array
      */
     private function formatProjects(array $projects)
@@ -219,12 +227,12 @@ class dashboardController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \projects $project */
-        $project  = $this->loadData('projects');
+        $project = $this->loadData('projects');
         /** @var \clients $client */
-        $client  = $this->loadData('clients');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+        $client = $this->loadData('clients');
+        /** @var ProjectManager $projectManager */
         $projectManager = $this->get('unilend.service.project_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
+        /** @var ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
 
         $projects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['status' => \projects_status::IMPOSSIBLE_AUTO_EVALUATION]);
@@ -235,6 +243,7 @@ class dashboardController extends bootstrap
                 $client->get($projectEntity->getIdCompany()->getIdClientOwner());
                 $status = empty($client->telephone) ? \projects_status::INCOMPLETE_REQUEST : \projects_status::COMPLETE_REQUEST;
                 $projectManager->addProjectStatus($_SESSION['user']['id_user'], $status, $project);
+                $projectRequestManager->checkEligiblePartnerProduct($project, $_SESSION['user']['id_user'], true);
             }
         }
 

@@ -555,33 +555,10 @@ class ProjectRequestController extends Controller
         $this->project->comments = $request->request->get('project')['description'];
         $this->project->update();
 
-        $productManager = $this->get('unilend.service_product.product_manager');
-        try {
-            $products = $productManager->findEligibleProducts($this->project);
+        $projectRequestManager = $this->get('unilend.service.project_request_manager');
 
-            if (count($products) === 1 && isset($products[0]) && $products[0] instanceof \product) {
-                $entityManager = $this->get('doctrine.orm.entity_manager');
-                /** @var PartnerProduct $partnerProduct */
-                $partnerProduct            = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findOneBy(['idPartner' => $this->project->id_partner, 'idProduct' => $products[0]->id_product]);
-                $this->project->id_product = $products[0]->id_product;
-
-                if (null != $partnerProduct) {
-                    $this->project->commission_rate_funds     = $partnerProduct->getCommissionRateFunds();
-                    $this->project->commission_rate_repayment = $partnerProduct->getCommissionRateRepayment();
-                } else {
-                    $this->get('logger')->warning(
-                        'Relation between partner and product not found',
-                        ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->project->id_project, 'id_partner' => $this->project->id_partner, 'id_product' => $products[0]->id_product]
-                    );
-                }
-                $this->project->update();
-            }
-
-            if (empty($products)) {
-                return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
-            }
-        } catch (\Exception $exception) {
-            $this->get('logger')->warning($exception->getMessage(), ['method' => __METHOD__, 'line' => __LINE__]);
+        if (0 === $projectRequestManager->checkEligiblePartnerProduct($this->project)) {
+            return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
         }
 
         if (\projects_status::IMPOSSIBLE_AUTO_EVALUATION == $this->project->status) {
