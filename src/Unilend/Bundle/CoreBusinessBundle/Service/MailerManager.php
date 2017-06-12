@@ -1988,4 +1988,29 @@ class MailerManager
         $message->setTo($client->getEmail());
         $this->mailer->send($message);
     }
+
+    /**
+     * @param \clients $client
+     * @param string   $email
+     */
+    public function sendBorrowerAccount(\clients $client, $email = 'ouverture-espace-emprunteur')
+    {
+        /** @var \temporary_links_login $temporaryLink */
+        $temporaryLink  = $this->entityManagerSimulator->getRepository('temporary_links_login');
+        $sTemporaryLink = $this->sSUrl . '/espace_emprunteur/securite/' . $temporaryLink->generateTemporaryLink($client->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG);
+        $keywords       = [
+            'surl'                   => $this->sSUrl,
+            'url'                    => $this->sFUrl,
+            'prenom'                 => $client->prenom,
+            'link_compte_emprunteur' => $sTemporaryLink,
+            'lien_fb'                => $this->getFacebookLink(),
+            'lien_tw'                => $this->getTwitterLink(),
+            'year'                   => date('Y')
+        ];
+
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage($email, $keywords);
+        $message->setTo($client->email);
+        $this->mailer->send($message);
+    }
 }
