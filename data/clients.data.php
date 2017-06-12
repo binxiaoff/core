@@ -27,18 +27,12 @@
 // **************************************************************************************************** //
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients AS clientEntity;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 
 class clients extends clients_crud
 {
-    const OCTROI_FINANCMENT           = 1;
-    const VIREMENT                    = 2;
-    const COMMISSION_DEBLOCAGE        = 3;
-    const PRLV_MENSUALITE             = 4;
-    const AFF_MENSUALITE_PRETEURS     = 5;
-    const COMMISSION_MENSUELLE        = 6;
-    const REMBOURSEMENT_ANTICIPE      = 7;
-    const AFFECTATION_RA_PRETEURS     = 8;
-
     //Type, Status, Subscription Step & Title constants moved to Entity
 
     public function __construct($bdd, $params = '')
@@ -289,41 +283,40 @@ class clients extends clients_crud
 
         $where .= $and;
 
-        $sql = "
-            SELECT
-                la.id_lender_account as id_lender_account,
-                c.id_client as id_client,
-                c.status as status,
-                c.email as email,
-                c.telephone as telephone,
-                c.status_inscription_preteur as status_inscription_preteur,
-                CASE la.id_company_owner
-                    WHEN 0 THEN c.prenom
+        $sql = '
+                SELECT
+                  c.id_client AS id_client,
+                  c.status AS status,
+                  c.email AS email,
+                  c.telephone AS telephone,
+                  c.status_inscription_preteur AS status_inscription_preteur,
+                  CASE c.type
+                    WHEN ' . ClientEntity::TYPE_PERSON . ' OR ' . ClientEntity::TYPE_PERSON_FOREIGNER . ' THEN c.prenom
                     ELSE
-                        (SELECT
-                            CASE co.status_client
-                                WHEN 1 THEN CONCAT(c.prenom,' ',c.nom)
-                                ELSE CONCAT(co.prenom_dirigeant,' ',co.nom_dirigeant)
-                            END as dirigeant
-                         FROM companies co WHERE co.id_company = la.id_company_owner)
-                END as prenom_ou_dirigeant,
-                CASE la.id_company_owner
-                    WHEN 0 THEN c.nom
-                    ELSE (SELECT co.name FROM companies co WHERE co.id_company = la.id_company_owner)
-                END as nom_ou_societe,
-                CASE la.id_company_owner
-                    WHEN 0 THEN REPLACE(c.nom_usage,'Nom D\'usage','')
-                    ELSE ''
-                END as nom_usage
-            FROM lenders_accounts la
-            LEFT JOIN clients c ON c.id_client = la.id_client_owner
-                LEFT JOIN companies co ON co.id_company = la.id_company_owner
-            " . $where . "
-            GROUP BY la.id_lender_account
-            ORDER BY la.id_lender_account DESC " . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+                    (SELECT
+                       CASE co.status_client
+                       WHEN 1 THEN CONCAT(c.prenom," ",c.nom)
+                       ELSE CONCAT(co.prenom_dirigeant," ",co.nom_dirigeant)
+                       END as dirigeant
+                     FROM companies co WHERE co.id_client_owner = c.id_client)
+                  END AS prenom_ou_dirigeant,
+                  CASE c.type
+                    WHEN ' . ClientEntity::TYPE_PERSON . ' OR ' . ClientEntity::TYPE_PERSON_FOREIGNER . ' THEN c.nom
+                  ELSE (SELECT co.name FROM companies co WHERE co.id_client_owner = c.id_client)
+                  END AS nom_ou_societe,
+                  CASE c.type
+                    WHEN ' . ClientEntity::TYPE_PERSON . ' OR ' . ClientEntity::TYPE_PERSON_FOREIGNER . ' THEN REPLACE(c.nom_usage,"Nom D\'usage","")
+                    ELSE ""
+                  END AS nom_usage
+                FROM clients c
+                  INNER JOIN wallet w ON c.id_client = w.id_client AND w.id_type = (SELECT id FROM wallet_type WHERE label = "' . WalletType::LENDER . '")
+                  LEFT JOIN companies co ON co.id_client_owner = c.id_client
+            ' . $where . '
+            GROUP BY c.id_client
+            ORDER BY c.id_client DESC ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
-        $result   = array();
+        $result   = [];
 
         $i = 0;
         while ($record = $this->bdd->fetch_array($resultat)) {
@@ -358,16 +351,15 @@ class clients extends clients_crud
                 cs.label AS label_status,
                 csh.added AS added_status,
                 clsh.id_client_status_history,
-                l.id_company_owner as id_company,
-                l.type_transfert as type_transfert,
-                l.motif as motif,
-                l.fonds,
-                l.id_lender_account as id_lender
+                com.id_company as id_company,
+                w.wire_transfer_pattern as motif,
+                w.available_balance as balance
             FROM clients c
             INNER JOIN (SELECT id_client, MAX(id_client_status_history) AS id_client_status_history FROM clients_status_history GROUP BY id_client) clsh ON c.id_client = clsh.id_client
             INNER JOIN clients_status_history csh ON clsh.id_client_status_history = csh.id_client_status_history
             INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
-            INNER JOIN lenders_accounts l ON c.id_client = l.id_client_owner
+            INNER JOIN wallet w ON c.id_client = w.id_client
+            LEFT JOIN companies com ON c.id_client = com.id_client_owner
             ' . $where . $status . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
@@ -455,8 +447,13 @@ class clients extends clients_crud
 
     public function isLender()
     {
-        $oLendersAccounts = new \lenders_accounts($this->bdd);
-        return $oLendersAccounts->exist($this->id_client, 'id_client_owner');
+        $query = 'SELECT COUNT(*) FROM wallet w
+                    INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . WalletType::LENDER . '"
+                  WHERE w.id_client = :idClient';
+
+        $statement =  $this->bdd->executeQuery($query, ['idClient' => $this->id_client]);
+
+        return ($statement->fetchColumn(0) == 1);
     }
 
     public function isBorrower()
@@ -471,307 +468,18 @@ class clients extends clients_crud
         }
     }
 
-    public function getDataForBorrowerOperations(array $aProjects, DateTime $oStartDate, DateTime $oEndDate, $iOperation = null, $iClientId = null)
-    {
-        if (empty($aProjects)) {
-            return [];
-        }
-
-        if (null === $iClientId) {
-            $iClientId = $this->id_client;
-        }
-
-        if ($iOperation == 0) {
-            $aOperations = array(
-                self::AFF_MENSUALITE_PRETEURS,
-                self::AFFECTATION_RA_PRETEURS,
-                self::COMMISSION_DEBLOCAGE,
-                self::COMMISSION_MENSUELLE,
-                self::OCTROI_FINANCMENT,
-                self::PRLV_MENSUALITE,
-                self::REMBOURSEMENT_ANTICIPE,
-                self::VIREMENT
-            );
-        } else {
-            $aOperations = array($iOperation);
-        }
-
-        $sStartDate = '"' . $oStartDate->format('Y-m-d') . ' 00:00:00"';
-        $sEndDate   = '"' . $oEndDate->format('Y-m-d') . ' 23:59:59"';
-
-        $aDataForBorrowerOperations = array();
-
-        foreach ($aOperations as $iOperation) {
-            switch ($iOperation) {
-                case self::COMMISSION_DEBLOCAGE:
-                    $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationCommissionOnFinancing($aProjects, $sStartDate, $sEndDate));
-                    break;
-                case self::OCTROI_FINANCMENT:
-                    $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationAllLoans($aProjects, $sStartDate, $sEndDate));
-                    break;
-                case self::VIREMENT:
-                    $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationTransferFinancing($iClientId, $aProjects, $sStartDate, $sEndDate));
-                    break;
-                case self::PRLV_MENSUALITE:
-                    if (false === in_array(self::COMMISSION_MENSUELLE, $aOperations)) {
-                        $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationMonthlyDueAndCommission($aProjects, $sStartDate, $sEndDate, self::PRLV_MENSUALITE));
-                    } else {
-                        $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationMonthlyDueAndCommission($aProjects, $sStartDate, $sEndDate));
-                    }
-                    break;
-                case self::COMMISSION_MENSUELLE:
-                    if (false === in_array(self::PRLV_MENSUALITE, $aOperations)) {
-                        $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationMonthlyDueAndCommission($aProjects, $sStartDate, $sEndDate, self::COMMISSION_MENSUELLE));
-                    }
-                    break;
-                case self::AFF_MENSUALITE_PRETEURS:
-                    $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationMonthlyDueToLenders($aProjects, $sStartDate, $sEndDate));
-                    break;
-                case self::REMBOURSEMENT_ANTICIPE:
-                    $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationEarlyRefunding($aProjects, $sStartDate, $sEndDate));
-                    break;
-                case self::AFFECTATION_RA_PRETEURS:
-                    $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationEarlyRefundingToLenders($aProjects, $sStartDate, $sEndDate));
-                    break;
-            }
-        }
-
-        usort($aDataForBorrowerOperations, function ($aFirstArray, $aSecondArray) {
-            if ($aFirstArray['date'] === $aSecondArray['date']) {
-                if ($aFirstArray['type'] == 'prelevement-mensualite') {
-                    return 1;
-                } elseif ($aFirstArray['type'] == 'commission-mensuelle') {
-                    return -1;
-                }
-                if ($aFirstArray['type'] == 'commission-deblocage') {
-                    if ($aSecondArray['type'] == 'virement'){
-                        return 1;
-                    } else {
-                        return -1;
-                    }
-                } elseif ($aFirstArray['type'] == 'virement') {
-                    return -1;
-                } elseif ($aFirstArray['type'] == 'financement') {
-                    return 1;
-                }
-            } else {
-                return $aFirstArray['date'] < $aSecondArray['date'];
-            }
-        });
-        return $aDataForBorrowerOperations;
-    }
-
-    private function getBorrowerOperationAllLoans($aProjects, $sStartDate, $sEndDate)
-    {
-        $aDataForBorrowerOperations = array();
-        $sql = 'SELECT
-                    sum(l.amount)/100 AS montant,
-                    DATE(psh.added) AS date,
-                    l.id_project,
-                    "financement" AS type
-                FROM
-                    `loans` l
-                    INNER JOIN projects_status_history psh ON l.id_project = psh.id_project
-                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                WHERE
-                    l.id_project IN (' . implode(',', $aProjects) . ')
-                    AND ps.status = ' . \projects_status::REMBOURSEMENT . '
-                    AND psh.added BETWEEN ' . $sStartDate . 'AND ' . $sEndDate . '
-                GROUP BY
-                    id_project';
-
-        $result = $this->bdd->query($sql);
-
-            while ($record = $this->bdd->fetch_assoc($result)) {
-                $aDataForBorrowerOperations[] = $record;
-            }
-        return $aDataForBorrowerOperations;
-    }
-
-    private function getBorrowerOperationTransferFinancing($iClientId, $aProjects, $sStartDate, $sEndDate)
-    {
-        $aDataForBorrowerOperations = array();
-        $sql = '
-            SELECT
-                montant / 100 AS montant,
-                DATE(date_transaction) AS date,
-                id_project,
-                "virement" AS type
-            FROM transactions
-            WHERE
-                id_project IN (' . implode(',', $aProjects) . ')
-                AND id_client = ' . $iClientId . '
-                AND date_transaction BETWEEN ' . $sStartDate . 'AND ' . $sEndDate . '
-                AND type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT;
-
-        $result = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_assoc($result)) {
-            if ($record['montant'] != 0) {
-                $aDataForBorrowerOperations[] = $record;
-            }
-        }
-        return $aDataForBorrowerOperations;
-    }
-
-    private function getBorrowerOperationMonthlyDueAndCommission($aProjects, $sStartDate, $sEndDate, $iType = null)
-    {
-        $aDataForBorrowerOperations = array();
-        $sql = '
-            SELECT
-                id_project,
-                SUM(montant + commission + tva) / 100 AS montant,
-                -commission / 100 AS commission,
-                -tva / 100 AS tva,
-                DATE(date_echeance_emprunteur_reel) AS date
-            FROM echeanciers_emprunteur
-            WHERE
-                id_project IN (' . implode(',', $aProjects) . ')
-                AND status_emprunteur = 1
-                AND DATE(date_echeance_emprunteur_reel) BETWEEN ' . $sStartDate . ' AND ' . $sEndDate . '
-                AND status_ra = 0
-            GROUP BY id_project, DATE(date_echeance_emprunteur_reel)';
-
-        $result = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_assoc($result)) {
-            if ($iType === self::PRLV_MENSUALITE || $iType === null ) {
-                $aDataForBorrowerOperations[] = array(
-                    'id_project' => $record['id_project'],
-                    'montant'    => $record['montant'],
-                    'date'       => $record['date'],
-                    'type'       => 'prelevement-mensualite'
-                );
-            }
-            if ($iType === self::COMMISSION_MENSUELLE || $iType === null) {
-                $aDataForBorrowerOperations[] = array(
-                    'id_project' => $record['id_project'],
-                    'montant'    => $record['commission'] + $record['tva'],
-                    'commission' => $record['commission'],
-                    'tva'        => $record['tva'],
-                    'date'       => $record['date'],
-                    'type'       => 'commission-mensuelle'
-                );
-            }
-        }
-        return $aDataForBorrowerOperations;
-    }
-
-    private function getBorrowerOperationMonthlyDueToLenders($aProjects, $sStartDate, $sEndDate)
-    {
-        $aDataForBorrowerOperations = array();
-        $sql = 'SELECT
-                    `id_project`,
-                    -SUM(`capital` + `interets`)/100 AS montant,
-                    DATE(date_echeance_reel) AS date,
-                    `ordre`,
-                    "affectation-preteurs" AS type
-                FROM
-                    `echeanciers`
-                WHERE
-                    `id_project` IN (' . implode(',', $aProjects) . ')
-                    AND DATE(`date_echeance_reel`) BETWEEN ' . $sStartDate . ' AND ' . $sEndDate . '
-                    AND `status` = 1
-                    AND `status_ra` = 0
-                GROUP BY
-                    `id_project`,
-                    DATE(`date_echeance`)';
-
-        $result = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_assoc($result)) {
-            $aDataForBorrowerOperations[] = $record;
-        }
-        return $aDataForBorrowerOperations;
-    }
-
-    private function getBorrowerOperationEarlyRefunding($aProjects, $sStartDate, $sEndDate)
-    {
-        $aDataForBorrowerOperations = array();
-        $sql = '
-            SELECT id_project,
-                montant / 100 AS montant,
-                DATE(added) as date,
-                "remboursement-anticipe" AS type
-            FROM transactions
-            WHERE type_transaction = ' . \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT . '
-                AND id_project IN (' . implode(', ', $aProjects) . ')
-                AND added BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
-            GROUP BY id_project';
-
-        $result = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_assoc($result)) {
-            $aDataForBorrowerOperations[] = $record;
-        }
-
-        return $aDataForBorrowerOperations;
-    }
-
-    private function getBorrowerOperationEarlyRefundingToLenders($aProjects, $sStartDate, $sEndDate)
-    {
-        $aDataForBorrowerOperations = array();
-        $sql = 'SELECT
-                    `id_project`,
-                    - SUM(`capital`)/100 AS montant,
-                    DATE(date_echeance_reel) AS date,
-                    "affectation-ra-preteur" AS type
-                FROM
-                    `echeanciers`
-                WHERE
-                    `id_project` IN (' . implode(',', $aProjects) . ')
-                    AND `date_echeance_reel` BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
-                    AND `status` = 1
-                    AND `status_ra` = 1
-                GROUP BY
-                    `date_echeance_reel`';
-
-        $result = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_assoc($result)) {
-            $aDataForBorrowerOperations[] = $record;
-        }
-
-        return $aDataForBorrowerOperations;
-    }
-
-    private function getBorrowerOperationCommissionOnFinancing($aProjects, $sStartDate, $sEndDate)
-    {
-        $aDataForBorrowerOperations = array();
-
-        $sql = 'SELECT
-                        id_project,
-                        -montant_ttc/100 AS montant,
-                        -montant_ht/100 AS commission,
-                        -tva/100 AS tva,
-                        date,
-                        \'commission-deblocage\' AS type
-                    FROM
-                        `factures`
-                    WHERE
-                        `id_project` IN (' . implode(',', $aProjects) . ')
-                        AND `date` BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
-                        AND type_commission = ' . \Unilend\Bundle\CoreBusinessBundle\Entity\Factures::TYPE_COMMISSION_FUNDS;
-
-        $result = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_assoc($result)) {
-            $aDataForBorrowerOperations[] = $record;
-        }
-
-        return $aDataForBorrowerOperations;
-    }
-
     /**
      * Retrieve pattern that lender must use in bank transfer label
-     * @param int $iClientId
+     * @param int $idClient
      * @return string
      */
-    public function getLenderPattern($iClientId)
+    public function getLenderPattern($idClient)
     {
-        $this->get($iClientId);
+        $query = 'SELECT wire_transfer_pattern FROM wallet WHERE id_client = :idClient';
+        /** @var \Doctrine\DBAL\Statement $statement */
+        $statement = $this->bdd->executeQuery($query, ['idClient' => $idClient]);
 
-        $oToolkit = new \ficelle();
-
-        return mb_strtoupper(
-            str_pad($this->id_client, 6, 0, STR_PAD_LEFT) .
-            substr($oToolkit->stripAccents($this->prenom), 0, 1) .
-            $oToolkit->stripAccents($this->nom)
-        );
+        return $statement->fetchColumn(0);
     }
 
     /**
@@ -864,11 +572,12 @@ class clients extends clients_crud
                     ) AS date_validation
                 FROM
                     clients c
+                    INNER JOIN wallet w ON w.id_client = c.id_client
                     LEFT JOIN companies ON c.id_client = companies.id_client_owner
                 WHERE
                     DATE(c.added) BETWEEN "' . $sStartDate . '" AND ' . $sEndDate . '
                     AND NOT EXISTS (SELECT obd.id_client FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
-                    AND NOT EXISTS (SELECT t.id_transaction FROM transactions t WHERE t.type_transaction = ' . \transactions_types::TYPE_WELCOME_OFFER . ' AND t.id_client = c.id_client)
+                    AND NOT EXISTS (SELECT o.id FROM operation o WHERE o.id_type = (SELECT id FROM operation_type WHERE label = \'' . OperationType::UNILEND_PROMOTIONAL_OPERATION . '\') AND o.id_wallet_creditor = w.id)
                     ' . $sWhereID;
 
         $resultat = $this->bdd->query($sql);
@@ -1089,9 +798,10 @@ class clients extends clients_crud
                          FROM clients
                              LEFT JOIN clients_adresses USING (id_client)
                              LEFT JOIN companies ON clients.id_client = companies.id_client_owner
-                             INNER JOIN lenders_accounts ON clients.id_client = lenders_accounts.id_client_owner
-                         WHERE clients.status = '. ClientEntity::STATUS_ONLINE .' AND lenders_accounts.status = 1
-                         AND (clients_adresses.id_pays_fiscal = ' . \pays_v2::COUNTRY_FRANCE . ' OR companies.id_pays = ' . \pays_v2::COUNTRY_FRANCE . ')) AS client_base
+                             INNER JOIN wallet w ON clients.id_client = w.id_client
+                             INNER JOIN wallet_type wt ON w.id_type = wt.id
+                         WHERE clients.status = '. ClientEntity::STATUS_ONLINE .'
+                         AND (clients_adresses.id_pays_fiscal = ' . PaysV2::COUNTRY_FRANCE . ' OR companies.id_pays = ' . PaysV2::COUNTRY_FRANCE . ')) AS client_base
                     GROUP BY insee_region_code
                     HAVING insee_region_code != "0"';
 

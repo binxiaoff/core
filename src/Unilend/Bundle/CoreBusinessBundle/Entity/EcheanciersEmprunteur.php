@@ -12,6 +12,12 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class EcheanciersEmprunteur
 {
+    const STATUS_PENDING = 0;
+    const STATUS_PAID    = 1;
+
+    const STATUS_NO_EARLY_REPAYMENT   = 0;
+    const STATUS_EARLY_REPAYMENT_DONE = 1;
+
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
@@ -114,8 +120,6 @@ class EcheanciersEmprunteur
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $idEcheancierEmprunteur;
-
-
 
     /**
      * Set idProject

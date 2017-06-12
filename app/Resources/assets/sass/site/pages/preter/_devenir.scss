@@ -26,14 +26,14 @@
     @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0, $padding-md: 0, $padding-lg: 0);
 
     background-color: $c-bg3;
-    background-image: image-url('backgrounds/bg-guy.jpg');
+    background-image: image-url('backgrounds/bg-guy.jpg', false, false);
     background-position: top center;
     background-repeat: no-repeat;
     background-size: contain;
 
     // Change background image for landing page
     // &.page-lp {
-    //   background-image: image-url('backgrounds/bg-guy-2.jpg');
+    //   background-image: image-url('backgrounds/bg-guy-2.jpg', false, false);
     // }
 
     @include devices('xs') {

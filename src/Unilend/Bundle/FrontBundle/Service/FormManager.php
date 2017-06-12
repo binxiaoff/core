@@ -4,14 +4,15 @@
 namespace Unilend\Bundle\FrontBundle\Service;
 
 
+use Doctrine\ORM\EntityManager;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\BankAccountType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\CompanyAddressType;
@@ -30,16 +31,23 @@ class FormManager
     private $formFactory;
     /** @var TranslatorInterface  */
     private $translator;
+    /** EntityManager */
+    private $entityMananger;
 
     /**
      * FormManager constructor.
-     * @param FormFactory $formFactory
+     * @param FormFactory         $formFactory
      * @param TranslatorInterface $translator
+     * @param EntityManager       $entityMananger
      */
-    public function __construct(FormFactory $formFactory, TranslatorInterface $translator)
-    {
-        $this->formFactory = $formFactory;
-        $this->translator = $translator;
+    public function __construct(
+        FormFactory $formFactory,
+        TranslatorInterface $translator,
+        EntityManager $entityMananger
+    ) {
+        $this->formFactory    = $formFactory;
+        $this->translator     = $translator;
+        $this->entityMananger = $entityMananger;
     }
 
     /**
@@ -184,5 +192,27 @@ class FormManager
         }
 
         return $fileNames;
+    }
+
+    /**
+     * @param Clients|\clients $client
+     * @param string           $formName
+     * @param string           $serialize
+     * @param string           $ip
+     */
+    public function saveFormSubmission($client, $formName, $serialize, $ip)
+    {
+        if ($client instanceof \clients) {
+            $client = $this->entityMananger->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        }
+
+        $clientAction = new ClientsHistoryActions();
+        $clientAction->setNomForm($formName);
+        $clientAction->setIdClient($client);
+        $clientAction->setSerialize($serialize);
+        $clientAction->setIP($ip);
+
+        $this->entityMananger->persist($clientAction);
+        $this->entityMananger->flush($clientAction);
     }
 }

@@ -15,13 +15,6 @@ class Autobid
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_lender", type="integer", nullable=false)
-     */
-    private $idLender;
-
-    /**
-     * @var integer
-     *
      * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
@@ -77,31 +70,17 @@ class Autobid
      */
     private $idAutobid;
 
-
-
     /**
-     * Set idLender
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
      *
-     * @param integer $idLender
-     *
-     * @return Autobid
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id")
+     * })
      */
-    public function setIdLender($idLender)
-    {
-        $this->idLender = $idLender;
+    private $idLender;
 
-        return $this;
-    }
 
-    /**
-     * Get idLender
-     *
-     * @return integer
-     */
-    public function getIdLender()
-    {
-        return $this->idLender;
-    }
 
     /**
      * Set status
@@ -279,5 +258,29 @@ class Autobid
     public function getIdAutobid()
     {
         return $this->idAutobid;
+    }
+
+    /**
+     * Set idLender
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender
+     *
+     * @return Autobid
+     */
+    public function setIdLender(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender)
+    {
+        $this->idLender = $idLender;
+
+        return $this;
+    }
+
+    /**
+     * Get idLender
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     */
+    public function getIdLender()
+    {
+        return $this->idLender;
     }
 }

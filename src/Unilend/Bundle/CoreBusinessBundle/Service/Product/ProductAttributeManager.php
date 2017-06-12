@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Cache\CacheItemPoolInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\librairies\CacheKeys;
 
@@ -29,21 +30,26 @@ class ProductAttributeManager
     }
 
     /**
-     * @param \product $product
-     * @param string   $attributeType
+     * @param \product|Product $product
+     * @param string           $attributeType
      *
      * @return array
      */
-    public function getProductAttributesByType(\product $product, $attributeType)
+    public function getProductAttributesByType($product, $attributeType)
     {
-        $cachedItem = $this->cachePool->getItem(CacheKeys::PRODUCT_ATTRIBUTE_BY_TYPE . '_' . $product->id_product . '_' . $attributeType);
+        if ($product instanceof Product) {
+            $productId = $product->getIdProduct();
+        } else {
+            $productId = $product->id_product;
+        }
+        $cachedItem = $this->cachePool->getItem(CacheKeys::PRODUCT_ATTRIBUTE_BY_TYPE . '_' . $productId . '_' . $attributeType);
         if (false === $cachedItem->isHit()) {
             /** @var \product_attribute $productAttr */
             $productAttr          = $this->entityManagerSimulator->getRepository('product_attribute');
             $productAttributeType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProductAttributeType')->findOneBy(['label' => $attributeType]);
 
             if ($productAttributeType) {
-                $attrVars          = $productAttr->select('id_product = ' . $product->id_product . ' AND id_type = ' . $productAttributeType->getIdType());
+                $attrVars          = $productAttr->select('id_product = ' . $productId . ' AND id_type = ' . $productAttributeType->getIdType());
                 $productAttributes = [];
                 if (count($attrVars) === 1) {
                     $productAttributes = [array_values($attrVars)[0]['attribute_value']];
@@ -60,50 +66,5 @@ class ProductAttributeManager
         }
 
         return $productAttributes;
-    }
-
-    /**
-     * @param \product $product
-     * @param string   $attributeType
-     *
-     * @return array
-     */
-    public function getProductContractAttributesByType(\product $product, $attributeType)
-    {
-        $cachedItem = $this->cachePool->getItem(CacheKeys::PRODUCT_CONTRACT_ATTRIBUTE_BY_TYPE . '_' . $product->id_product . '_' . $attributeType);
-        if (false === $cachedItem->isHit()) {
-            /** @var \product_underlying_contract $productContract */
-            $productContract = $this->entityManagerSimulator->getRepository('product_underlying_contract');
-            /** @var \underlying_contract_attribute $contractAttr */
-            $contractAttr = $this->entityManagerSimulator->getRepository('underlying_contract_attribute');
-            /** @var \underlying_contract_attribute_type $contractAttrType */
-            $contractAttrType = $this->entityManagerSimulator->getRepository('underlying_contract_attribute_type');
-            /** @var \underlying_contract $underlyingContract */
-            $underlyingContract = $this->entityManagerSimulator->getRepository('underlying_contract');
-
-            $contracts          = $productContract->select('id_product = ' . $product->id_product);
-            $contractTypeValues = [];
-            foreach ($contracts as $contract) {
-                $underlyingContract->get($contract['id_contract']);
-                if ($contractAttrType->get($attributeType, 'label')) {
-                    $attrVars = $contractAttr->select('id_contract = ' . $underlyingContract->id_contract . ' AND id_type = ' . $contractAttrType->id_type);
-                    if (empty($attrVars)) {
-                        $contractTypeValues[$underlyingContract->label] = [];
-                    } elseif (count($attrVars) === 1) {
-                        $contractTypeValues[$underlyingContract->label] = [array_values($attrVars)[0]['attribute_value']];
-                    } elseif (count($attrVars) > 1) {
-                        $contractTypeValues[$underlyingContract->label] = array_column($attrVars, 'attribute_value');
-                    }
-                    $cachedItem->set($contractTypeValues)->expiresAfter(CacheKeys::SHORT_TIME);
-                    $this->cachePool->save($cachedItem);
-                } else {
-                    throw new \InvalidArgumentException('The loan contract attribute type ' . $attributeType . ' does not exist');
-                }
-            }
-        } else {
-            $contractTypeValues = $cachedItem->get();
-        }
-
-        return $contractTypeValues;
     }
 }

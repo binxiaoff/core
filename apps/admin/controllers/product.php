@@ -1,6 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
 
 class productController extends bootstrap
 {
@@ -59,8 +60,8 @@ class productController extends bootstrap
         $this->creationDaysMin = $productManager->getAttributesByType($this->product, ProductAttributeType::MIN_CREATION_DAYS);
         $this->rcs             = $productManager->getAttributesByType($this->product, ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_RCS);
         $this->nafcodes        = $productManager->getAttributesByType($this->product, ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_NAF_CODE);
-        $this->lenderId        = $productManager->getAttributesByType($this->product, ProductAttributeType::ELIGIBLE_LENDER_ID);
-        $this->lenderType      = $productManager->getAttributesByType($this->product, ProductAttributeType::ELIGIBLE_LENDER_TYPE);
+        $this->lenderId        = $productManager->getAttributesByType($this->product, ProductAttributeType::ELIGIBLE_CLIENT_ID);
+        $this->lenderType      = $productManager->getAttributesByType($this->product, ProductAttributeType::ELIGIBLE_CLIENT_TYPE);
     }
 
     public function _contract_details()
@@ -75,12 +76,12 @@ class productController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager $contractManager */
         $contractManager = $this->get('unilend.service_product_contract.contract_manager');
 
-        $this->lenderType         = $contractManager->getAttributesByType($this->contract, \underlying_contract_attribute_type::ELIGIBLE_LENDER_TYPE);
-        $this->loanAmountMax      = $contractManager->getAttributesByType($this->contract, \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
-        $this->loanQtyMax         = $contractManager->getAttributesByType($this->contract, \underlying_contract_attribute_type::TOTAL_QUANTITY_LIMITATION);
-        $this->loanDurationMax    = $contractManager->getAttributesByType($this->contract, \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
-        $this->eligibilityAutobid = $contractManager->getAttributesByType($this->contract, \underlying_contract_attribute_type::ELIGIBLE_AUTOBID);
-        $this->creationDaysMin    = $contractManager->getAttributesByType($this->contract, \underlying_contract_attribute_type::MIN_CREATION_DAYS);
-        $this->rcs                = $contractManager->getAttributesByType($this->contract, \underlying_contract_attribute_type::ELIGIBLE_BORROWER_COMPANY_RCS);
+        $this->lenderType         = $contractManager->getAttributesByType($this->contract, UnderlyingContractAttributeType::ELIGIBLE_CLIENT_TYPE);
+        $this->loanAmountMax      = $contractManager->getAttributesByType($this->contract, UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
+        $this->loanQtyMax         = $contractManager->getAttributesByType($this->contract, UnderlyingContractAttributeType::TOTAL_QUANTITY_LIMITATION);
+        $this->loanDurationMax    = $contractManager->getAttributesByType($this->contract, UnderlyingContractAttributeType::MAX_LOAN_DURATION_IN_MONTH);
+        $this->eligibilityAutobid = $contractManager->getAttributesByType($this->contract, UnderlyingContractAttributeType::ELIGIBLE_AUTOBID);
+        $this->creationDaysMin    = $contractManager->getAttributesByType($this->contract, UnderlyingContractAttributeType::MIN_CREATION_DAYS);
+        $this->rcs                = $contractManager->getAttributesByType($this->contract, UnderlyingContractAttributeType::ELIGIBLE_BORROWER_COMPANY_RCS);
     }
 }

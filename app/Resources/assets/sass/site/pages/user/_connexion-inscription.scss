@@ -20,7 +20,7 @@
       // margin-bottom: 50px;
 
       background-color: $c-bg3;
-      background-image: image-url('user/bg-connexioninscription.jpg');
+      background-image: image-url('user/bg-connexioninscription.jpg', false, false);
       background-position: center center;
       background-repeat: no-repeat;
       background-size: cover;

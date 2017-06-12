@@ -16,7 +16,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
@@ -82,7 +87,7 @@ class ProjectsController extends Controller
         $start         = $pagination['start'];
         $sort          = [];
         $sortDirection = strtoupper($sortDirection);
-        $lenderAccount = null;
+        $client        = null;
 
         if (
             in_array($sortType, [\projects::SORT_FIELD_SECTOR, \projects::SORT_FIELD_AMOUNT, \projects::SORT_FIELD_RATE, \projects::SORT_FIELD_RISK, \projects::SORT_FIELD_END])
@@ -96,12 +101,10 @@ class ProjectsController extends Controller
             && $authorizationChecker->isGranted('ROLE_LENDER')
             && $user instanceof UserLender
         ) {
-            /** @var \lenders_accounts $lenderAccount */
-            $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-            $lenderAccount->get($user->getClientId(), 'id_client_owner');
+            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
         }
 
-        $template['projects'] = $projectDisplayManager->getProjectsList([], $sort, $start, $limit, $lenderAccount);
+        $template['projects'] = $projectDisplayManager->getProjectsList([], $sort, $start, $limit, $client);
 
         array_walk($template['projects'], function(&$project) use ($translator, $projectDisplayManager, $user, $projectRepository) {
             if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($projectRepository->find($project['projectId']), $user)) {
@@ -204,6 +207,7 @@ class ProjectsController extends Controller
 
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         $authorizationChecker  = $this->get('security.authorization_checker');
+        $entityManager         = $this->get('doctrine.orm.entity_manager');
         $user                  = $this->getUser();
 
         $template = [
@@ -233,10 +237,8 @@ class ProjectsController extends Controller
             && $authorizationChecker->isGranted('ROLE_LENDER')
         ) {
             $request->getSession()->set('bidToken', $template['bidToken']);
-
-            /** @var \lenders_accounts $lenderAccount */
-            $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-            $lenderAccount->get($user->getClientId(), 'id_client_owner');
+            /** @var Clients $client */
+            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
 
             $productManager = $this->get('unilend.service_product.product_manager');
             /** @var \product $product */
@@ -251,11 +253,11 @@ class ProjectsController extends Controller
             /** @var LenderAccountDisplayManager $lenderAccountDisplayManager */
             $lenderAccountDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
             $template['project']['lender'] = [
-                'bids' => $lenderAccountDisplayManager->getBidsForProject($project->id_project, $lenderAccount)
+                'bids' => $lenderAccountDisplayManager->getBidsForProject($project->id_project, $client)
             ];
 
             if ($project->status >= \projects_status::FUNDE) {
-                $template['project']['lender']['loans'] = $lenderAccountDisplayManager->getLoansForProject($project->id_project, $lenderAccount);
+                $template['project']['lender']['loans'] = $lenderAccountDisplayManager->getLoansForProject($project->id_project, $client);
             }
 
             if (false === empty($request->getSession()->get('bidResult'))) {
@@ -263,19 +265,19 @@ class ProjectsController extends Controller
                 $request->getSession()->remove('bidResult');
             }
 
-            $reasons = $productManager->getLenderEligibilityWithReasons($lenderAccount, $project);
-            $template['isLenderEligible'] = true;
+            $reasons                              = $productManager->checkLenderEligibility($client, $project);
+            $template['isLenderEligible']         = true;
             $template['lenderNotEligibleReasons'] = [];
 
             if (false === empty($reasons)) {
                 $template['isLenderEligible']         = false;
                 $template['lenderNotEligibleReasons'] = $reasons;
-                $template['amountMax']                = $productManager->getMaxEligibleAmount($product);
+                $template['amountMax']                = $productManager->getMaxEligibleAmount($client, $product);
             }
 
             $cipManager           = $this->get('unilend.service.cip_manager');
             $productContracts     = $productManager->getAvailableContracts($product);
-            $displayCipDisclaimer = in_array(\underlying_contract::CONTRACT_MINIBON, array_column($productContracts, 'label')) && $cipManager->hasValidEvaluation($lenderAccount);
+            $displayCipDisclaimer = in_array(\underlying_contract::CONTRACT_MINIBON, array_column($productContracts, 'label')) && $cipManager->hasValidEvaluation($client);
         }
 
         $projectEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
@@ -298,10 +300,10 @@ class ProjectsController extends Controller
                 ];
             }
         } else {
-            $translator    = $this->get('translator');
-            $entityManager = $this->get('unilend.service.entity_manager');
+            $translator             = $this->get('translator');
+            $entityManagerSimulator = $this->get('unilend.service.entity_manager');
             /** @var \companies $company */
-            $company = $entityManager->getRepository('companies');
+            $company = $entityManagerSimulator->getRepository('companies');
 
             $template['project']['title'] = $translator->trans('company-sector_sector-' . $template['project']['company']['sectorId']);
 
@@ -360,7 +362,7 @@ class ProjectsController extends Controller
 
         if (
             $project->status >= \projects_status::A_FUNDER && $project->status < \projects_status::EN_FUNDING
-            || ProjectDisplayManager::VISIBILITY_FULL === $projectDisplayManager->getVisibility($projectEntity, $this->getUser())
+            || ProjectDisplayManager::VISIBILITY_NONE !== $projectDisplayManager->getVisibility($projectEntity, $this->getUser())
             || $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && 28002 == $project->id_project
         ) {
             return $project;
@@ -440,10 +442,13 @@ class ProjectsController extends Controller
             ($post = $request->request->get('invest'))
             && isset($post['amount'], $post['interest'], $post['bidToken'])
         ) {
-            $entityManager = $this->get('unilend.service.entity_manager');
-            $translator    = $this->get('translator');
+            $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+            $translator             = $this->get('translator');
+            $entityManager          = $this->get('doctrine.orm.entity_manager');
             /** @var \projects $project */
-            $project = $entityManager->getRepository('projects');
+            $project = $entityManagerSimulator->getRepository('projects');
+
+            $formManager = $this->get('unilend.frontbundle.service.form_manager');
 
             if (false === $project->get($projectId)) {
                 return $this->redirectToRoute('home');
@@ -459,14 +464,10 @@ class ProjectsController extends Controller
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }
 
-            /** @var \clients_history_actions $clientHistoryActions */
-            $clientHistoryActions = $entityManager->getRepository('clients_history_actions');
-            $clientHistoryActions->histo(9, 'bid', $user->getClientId(), serialize(array('id_client' => $user->getClientId(), 'post' => $post, 'id_projet' => $projectId)));
+            $client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
+            $formManager->saveFormSubmission($client, ClientsHistoryActions::LENDER_BID, serialize(['id_client' => $user->getClientId(), 'post' => $post, 'id_projet' => $projectId]), $request->getClientIp());
 
-            /** @var \lenders_accounts $lenderAccount */
-            $lenderAccount = $entityManager->getRepository('lenders_accounts');
-            $lenderAccount->get($user->getClientId(), 'id_client_owner');
-
+            $wallet    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user->getClientId(), WalletType::LENDER);
             $bidAmount = floor($post['amount']); // the cents is not allowed
             $rate      = $post['interest'];
 
@@ -479,10 +480,8 @@ class ProjectsController extends Controller
             /** @var BidManager $bidManager */
             $bidManager = $this->get('unilend.service.bid_manager');
             try {
-                $walletMatching = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AccountMatching')->findOneBy(['idLenderAccount' => $lenderAccount->id_lender_account]);
-                $wallet         = $walletMatching->getIdWallet();
                 $projectEntity  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
-                $bids           = $bidManager->bid($wallet, $lenderAccount->id_lender_account, $projectEntity, $bidAmount, $rate);
+                $bids           = $bidManager->bid($wallet, $projectEntity, $bidAmount, $rate);
                 /** @var MemcacheCachePool $oCachePool */
                 $oCachePool = $this->get('memcache.default');
                 $oCachePool->deleteItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $project->id_project);
@@ -492,15 +491,15 @@ class ProjectsController extends Controller
                     $productManager     = $this->get('unilend.service_product.product_manager');
 
                     /** @var \product $product */
-                    $product = $entityManager->getRepository('product');
+                    $product = $entityManagerSimulator->getRepository('product');
                     $product->get($project->id_product);
 
-                    $amountMax = $productManager->getMaxEligibleAmount($product);
-                    $reasons   = $productManager->getBidEligibilityWithReasons($bids);
+                    $amountMax = $productManager->getMaxEligibleAmount($client, $product);
+                    $reasons   = $productManager->checkBidEligibility($bids);
                     $amountRest = 0;
                     foreach ($reasons as $reason) {
-                        if ($reason === \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
-                            $amountRest = $productManager->getAmountLenderCanStillBid($lenderAccount, $project);
+                        if ($reason === UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
+                            $amountRest = $productManager->getAmountLenderCanStillBid($client, $project);
                         }
                         $currencyFormatter = $this->get('currency_formatter');
                         $amountRest        = $currencyFormatter->formatCurrency($amountRest, 'EUR');
@@ -535,16 +534,17 @@ class ProjectsController extends Controller
             return new Response('not an ajax request');
         }
 
-        $template      = [];
-        $entityManager = $this->get('unilend.service.entity_manager');
-        $oCachePool    = $this->get('memcache.default');
-        $oCachedItem   = $oCachePool->getItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $projectId . '_' . $rate);
+        $template               = [];
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
+        $oCachePool             = $this->get('memcache.default');
+        $oCachedItem            = $oCachePool->getItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $projectId . '_' . $rate);
 
         if (true === $oCachedItem->isHit()) {
             $template['bids'] = $oCachedItem->get();
         } else {
             /** @var \bids $bidEntity */
-            $bidEntity = $entityManager->getRepository('bids');
+            $bidEntity = $entityManagerSimulator->getRepository('bids');
 
             $bids = $bidEntity->select('id_project = ' . $projectId . ' AND rate = ' . $rate, 'ordre ASC');
             $template['bids'] = [];
@@ -573,14 +573,12 @@ class ProjectsController extends Controller
         if ($user instanceof UserLender) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
             $autoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
-            /** @var \lenders_accounts $lenderAccount */
-            $lenderAccount = $entityManager->getRepository('lenders_accounts');
-            $lenderAccount->get($user->getClientId(), 'id_client_owner');
+            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user->getClientId(), WalletType::LENDER);
 
-            $template['canSeeAutobid'] = $autoBidSettingsManager->isQualified($lenderAccount);
+            $template['canSeeAutobid'] = $autoBidSettingsManager->isQualified($wallet->getIdClient());
 
-            array_walk($template['bids'], function(&$bid) use ($lenderAccount) {
-                if ($bid['lenderId'] == $lenderAccount->id_lender_account) {
+            array_walk($template['bids'], function(&$bid) use ($wallet) {
+                if ($bid['lenderId'] == $wallet->getId()) {
                     $bid['userInvolved'] = true;
                 }
             });
@@ -798,9 +796,9 @@ class ProjectsController extends Controller
      */
     public function exportBidsAction($projectId)
     {
-        $entityManager = $this->get('unilend.service.entity_manager');
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \projects $project */
-        $project = $entityManager->getRepository('projects');
+        $project = $entityManagerSimulator->getRepository('projects');
 
         if ($project->get($projectId, 'id_project')) {
             $translator = $this->get('translator');
@@ -811,7 +809,7 @@ class ProjectsController extends Controller
                 echo '"N°";"' . $translator->trans('preteur-projets_taux-dinteret') . '";"' . $translator->trans('preteur-projets_montant') . '";"' . $translator->trans('preteur-projets_statuts') . '"' . PHP_EOL;
 
                 /** @var \bids $bids */
-                $bids = $entityManager->getRepository('bids');
+                $bids = $entityManagerSimulator->getRepository('bids');
 
                 $offset    = 0;
                 $limit     = 1000;
@@ -882,14 +880,15 @@ class ProjectsController extends Controller
      */
     public function preCheckBidAction($projectSlug, $amount, $rate, Request $request)
     {
-        $entityManager     = $this->get('unilend.service.entity_manager');
-        $cipManager        = $this->get('unilend.service.cip_manager');
-        $translator        = $this->get('translator');
-        $productManager    = $this->get('unilend.service_product.product_manager');
-        $currencyFormatter = $this->get('currency_formatter');
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
+        $cipManager             = $this->get('unilend.service.cip_manager');
+        $translator             = $this->get('translator');
+        $productManager         = $this->get('unilend.service_product.product_manager');
+        $currencyFormatter      = $this->get('currency_formatter');
 
         /** @var \projects $project */
-        $project = $entityManager->getRepository('projects');
+        $project = $entityManagerSimulator->getRepository('projects');
 
         if (false === $project->get($projectSlug, 'slug')) {
             return new JsonResponse([
@@ -899,7 +898,7 @@ class ProjectsController extends Controller
         }
 
         /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
+        $settings = $entityManagerSimulator->getRepository('settings');
         $settings->get('Pret min', 'type');
         $amountMin = (int) trim($settings->value);
 
@@ -912,7 +911,9 @@ class ProjectsController extends Controller
         }
 
         /** @var UserLender $user */
-        $user = $this->getUser();
+        $user   = $this->getUser();
+        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
+        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
         if (false === ($user instanceof UserLender)) {
             return new JsonResponse([
@@ -922,10 +923,7 @@ class ProjectsController extends Controller
             ]);
         }
 
-        $clientId      = $user->getClientId();
-        $lenderBalance = $entityManager->getRepository('transactions')->getSolde($clientId);
-
-        if ($lenderBalance < $amount) {
+        if ($wallet->getAvailableBalance() < $amount) {
             return new JsonResponse([
                 'error'    => true,
                 'title'    => $translator->trans('project-detail_modal-bid-error-amount-title'),
@@ -933,32 +931,35 @@ class ProjectsController extends Controller
             ]);
         }
 
-        /** @var \lenders_accounts $lenderAccount */
-        $lender = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-        $lender->get($clientId, 'id_client_owner');
-
         /** @var \bids $bid */
-        $bid                    = $entityManager->getRepository('bids');
-        $bid->id_lender_account = $lender->id_lender_account;
+        $bid                    = $entityManagerSimulator->getRepository('bids');
+        $bid->id_lender_account = $wallet->getId();
         $bid->id_project        = $project->id_project;
         $bid->amount            = $amount * 100;
         $bid->rate              = $rate;
 
-        $reasons = $productManager->getBidEligibilityWithReasons($bid);
+        //necessary as some methods need an entity and some a data. And as the bid is not persisted yet it can't be selected from the database
+        $bidEntity = new Bids();
+        $bidEntity->setProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project));
+        $bidEntity->setIdLenderAccount($wallet);
+        $bidEntity->setAmount($amount * 100);
+        $bidEntity->setRate($rate);
+
+        $reasons = $productManager->checkBidEligibility($bidEntity);
 
         if (false === empty($reasons)) {
-            $pendingBidAmount = $bid->getBidsEncours($project->id_project,$bid->id_lender_account);
+            $pendingBidAmount = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->getSumByWalletAndProjectAndStatus($wallet, $bidEntity->getProject(), Bids::STATUS_BID_PENDING);
 
-            $product = $entityManager->getRepository('product');
+            $product = $entityManagerSimulator->getRepository('product');
             $product->get($project->id_product);
 
             $translatedReasons = [];
             $amountRest        = 0;
-            $amountMax         = $productManager->getMaxEligibleAmount($product);
+            $amountMax         = $productManager->getMaxEligibleAmount($client, $product);
 
             foreach ($reasons as $reason) {
-                if ($reason === \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
-                    $amountRest = $productManager->getAmountLenderCanStillBid($lender, $project);
+                if ($reason === UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO) {
+                    $amountRest = $productManager->getAmountLenderCanStillBid($client, $project);
                 }
                 $amountRest = $currencyFormatter->formatCurrency($amountRest, 'EUR');
                 $amountMax  = $currencyFormatter->formatCurrency($amountMax, 'EUR');
@@ -979,23 +980,23 @@ class ProjectsController extends Controller
         $response         = ['validation' => $validationNeeded];
 
         if ($validationNeeded) {
-            $evaluation = $cipManager->getCurrentEvaluation($lender);
+            $evaluation = $cipManager->getCurrentEvaluation($client);
 
             if (null !== $evaluation && $cipManager->isValidEvaluation($evaluation)) {
                 $advices    = [];
-                $indicators = $cipManager->getIndicators($lender);
+                $indicators = $cipManager->getIndicators($client);
 
                 if (null !== $indicators[CIPManager::INDICATOR_TOTAL_AMOUNT]) {
                     /** @var \bids $bids */
-                    $bids        = $entityManager->getRepository('bids');
+                    $bids      = $entityManagerSimulator->getRepository('bids');
                     $totalBids = $bids->sum(
-                        'id_lender_account = ' . $lender->id_lender_account . ' AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')',
+                        'id_lender_account = ' . $wallet->getId() . ' AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')',
                         'ROUND(amount / 100)'
                     );
                     /** @var \loans $loans */
-                    $loans      = $entityManager->getRepository('loans');
+                    $loans      = $entityManagerSimulator->getRepository('loans');
                     $totalLoans = $loans->sum(
-                        'id_lender = ' . $lender->id_lender_account . ' AND status = ' . \loans::STATUS_ACCEPTED,
+                        'id_lender = ' . $wallet->getId() . ' AND status = ' . \loans::STATUS_ACCEPTED,
                         'ROUND(amount / 100)'
                     );
 
@@ -1008,14 +1009,14 @@ class ProjectsController extends Controller
 
                 if (null !== $indicators[CIPManager::INDICATOR_AMOUNT_BY_MONTH]) {
                     /** @var \bids $bids */
-                    $bids        = $entityManager->getRepository('bids');
+                    $bids        = $entityManagerSimulator->getRepository('bids');
                     $totalBids = $bids->sum(
-                        'id_lender_account = ' . $lender->id_lender_account . ' AND added >= DATE_SUB(NOW(), INTERVAL 1 MONTH) AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')',
+                        'id_lender_account = ' . $wallet->getId() . ' AND added >= DATE_SUB(NOW(), INTERVAL 1 MONTH) AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')',
                         'ROUND(amount / 100)');
                     /** @var \loans $loans */
-                    $loans      = $entityManager->getRepository('loans');
+                    $loans      = $entityManagerSimulator->getRepository('loans');
                     $totalLoans = $loans->sum(
-                        'id_lender = ' . $lender->id_lender_account . ' AND added >= DATE_SUB(NOW(), INTERVAL 1 MONTH) AND status = ' . \loans::STATUS_ACCEPTED,
+                        'id_lender = ' . $wallet->getId() . ' AND added >= DATE_SUB(NOW(), INTERVAL 1 MONTH) AND status = ' . \loans::STATUS_ACCEPTED,
                         'ROUND(amount / 100)'
                     );
 
@@ -1054,7 +1055,7 @@ class ProjectsController extends Controller
                 }
             } else {
                 if (null === $evaluation) {
-                    $evaluation = $cipManager->createEvaluation($lender);
+                    $evaluation = $cipManager->createEvaluation($client);
                 }
 
                 $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_BID_EVALUATION_NEEDED);
@@ -1080,10 +1081,9 @@ class ProjectsController extends Controller
             return $project;
         }
 
-        $entityManager = $this->get('unilend.service.entity_manager');
-
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \product $product */
-        $product = $entityManager->getRepository('product');
+        $product = $entityManagerSimulator->getRepository('product');
         $product->get($project->id_product);
 
         $productManager     = $this->get('unilend.service_product.product_manager');
@@ -1163,19 +1163,19 @@ class ProjectsController extends Controller
      */
     private function getDIRSProject(\projects $project)
     {
-        $entityManager     = $this->get('unilend.service.entity_manager');
-        $em                = $this->get('doctrine.orm.entity_manager');
-        $attachmentManager = $this->get('unilend.service.attachment_manager');
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
+        $attachmentManager      = $this->get('unilend.service.attachment_manager');
         /** @var \companies $company */
-        $company = $entityManager->getRepository('companies');
+        $company = $entityManagerSimulator->getRepository('companies');
         $company->get($project->id_company);
 
-        $projectEntity  = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
-        $attachmentType = $em->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::DEBTS_STATEMENT);
-        $attachment     = $em->getRepository('UnilendCoreBusinessBundle:Attachment')->getProjectAttachmentByType($projectEntity, $attachmentType);
+        $projectEntity  = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+        $attachmentType = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::DEBTS_STATEMENT);
+        $attachment     = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->getProjectAttachmentByType($projectEntity, $attachmentType);
 
         /** @var \project_rate_settings $projectRateSettings */
-        $projectRateSettings = $entityManager->getRepository('project_rate_settings');
+        $projectRateSettings = $entityManagerSimulator->getRepository('project_rate_settings');
         $projectRateSettings->get($project->id_rate);
         $minimumBidRate = (float) $projectRateSettings->rate_min;
 

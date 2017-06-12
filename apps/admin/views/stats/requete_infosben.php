@@ -32,19 +32,13 @@
             </thead>
             <tbody>
                 <?php $i = 0; ?>
-                <?php foreach ($this->aLenders as $aLender) : ?>
-                    <?php
-                        $sPrenom = substr($this->ficelle->stripAccents(trim($aLender['prenom'])), 0, 1);
-                        $sNom    = $this->ficelle->stripAccents(trim($aLender['nom']));
-                        $motif   = mb_strtoupper($aLender['id_client'] . $sPrenom . $sNom, 'UTF-8');
-                        $motif   = substr($motif, 0, 10);
-                    ?>
+                <?php foreach ($this->walletsWithMouvements as $wallet) : ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                         <td>1</td>
-                        <td><?= $motif ?></td>
+                        <td><?= $wallet->getWireTransferPattern() ?></td>
                         <td>14378</td>
                         <td></td>
-                        <td><?= $aLender['id_client'] ?></td>
+                        <td><?= $wallet->getIdClient()->getIdClient() ?></td>
                         <td>4</td>
                         <td>6</td>
                         <td>P</td>

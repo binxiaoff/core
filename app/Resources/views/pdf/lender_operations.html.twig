@@ -1,0 +1,192 @@
+{% extends 'pdf/layout.html.twig' %}
+
+{% block cssFiles %}
+    {{ parent() }}
+    <style>
+        .item-amount, .item-balance {
+            text-align: right;
+        }
+        .item-date {
+            text-align: left;
+        }
+        .table {
+            margin-bottom: 2em;
+        }
+        .table tr .th {
+            display: table-cell;
+            background-color: #eceaed;
+            color: #9f9d9f;
+            font-size: 10px!important;
+            padding-top: 1em;
+            padding-bottom: 1em;
+            line-height: 1em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .table tr td {
+            font-size: 0.725em!important;
+            padding-top: 0.5em;
+            padding-bottom: 0.5em;
+        }
+        .table tr td.item-project {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+        .table tr.details {
+            color: #9f9d9f;
+        }
+        .table tr.details > td:first-child {
+            padding-left: 30px!important;
+        }
+        .table tr, .table tr td {
+            page-break-inside: avoid;
+        }
+        .table tr td.tf {
+            padding-top: 1em;
+            padding-bottom: 1em;
+            font-weight: bold;
+            border-top: 1px solid #eceaed;
+            border-bottom: 1px solid #eceaed;
+        }
+        .footer .small {
+            font-size: 0.675em;
+        }
+    </style>
+{% endblock %}
+
+
+{% set hasAcceptedOffers = false %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-6 col-lg-6">
+            <p>
+                <b>Unilend – Société Française pour le financement des PME</b><br/>
+                6 Rue du général Clergerie<br/>
+                75116 Paris
+            </p>
+        </div>
+        <div class="col-md-6 col-lg-6">
+            <p class="text-align-right">
+                <b>{% trans with {'%date%' : 'now'|date('d/m/Y')} %}lender-operations_pdf-location-date{% endtrans %}</b><br/>
+                {% if company is empty %}
+                    <b>{{ client.prenom }} {{ client.nom }}</b><br/>
+                    {{ clientAddress.adresse1 }}<br>
+                    {{ clientAddress.cp }} {{ clientAddress.ville }}
+                {% else %}
+                    <b>{{ company.name }}</b><br/>
+                    <b>{% trans %} lender-operations_pdf-company-representative {% endtrans %}{{ client.civilite }} {{ client.prenom }} {{ client.nom }}</b><br/>
+                    {{ company.adresse1 }} <br/>
+                    {{ company.zip }} {{ company.city }}
+                {% endif %}
+            </p>
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 col-lg-8">
+            <p>
+                <b style="font-size: 1rem; line-height: 1.5rem;">{% trans with { '%idClient%' : client.idClient } %}lender-operations_pdf-subject-line{% endtrans %}</b><br/>
+                {% trans with {'%name' => client.nom, '%firstName%' => client.prenom }%}lender-operations_pdf-owner-line{% endtrans %}
+            </p>
+        </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <td class="th item-operation">{% trans %} lender-operations_operations-table-operation-column {% endtrans %}</td>
+                <td class="th item-contract">{% trans %} lender-operations_loans-table-contract-column {% endtrans %}</td>
+                <td class="th item-project">{% trans %} lender-operations_operations-table-project-column {% endtrans %}</td>
+                <td class="th item-date">{% trans %} lender-operations_operations-table-date-column {% endtrans %}</td>
+                <td class="th item-amount">{% trans %} lender-operations_operations-table-amount-column {% endtrans %}</td>
+                <td class="th item-balance">{% trans %} lender-operations_operations-table-account-balance-column {% endtrans %}</td>
+            </tr>
+            {% for op in lenderOperations %}
+
+                {% if (loop.index is odd) %}
+                    {% set backgroundClass = 'bg-bg3' %}
+                {% else %}
+                    {% set backgroundClass = '' %}
+                {% endif %}
+
+                {% if (op.amount > 0) %}
+                    {% set colorClass = 'c-success' %}
+                {% else %}
+                    {% set colorClass = 'c-error' %}
+                {% endif %}
+
+                <tr class="transaction-{{ op.label }} {{ backgroundClass }}">
+                    <td class="item-operation">
+                        {{ ('lender-operations_operation-label-'~op.label)|trans }}
+                    </td>
+                    <td class="item-contract">
+                        {{ op.id_loan }}
+                    </td>
+                    <td class="item-project">
+                        {{ op.title }}
+                    </td>
+                    <td class="item-date">
+                        {{ op.date|date('d/m/y') }}
+                    </td>
+                    <td class="item-amount {{ colorClass }}">
+                        {{ op.amount|localizedcurrency('EUR') }}&nbsp
+                    </td>
+                    <td class="item-balance">
+                        {% spaceless %}
+                        {{ op.available_balance|localizedcurrency('EUR') }}&nbsp
+                        {% if op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationType::LENDER_LOAN') %}
+                            {% set hasAcceptedOffers = true %}
+                            *
+                        {% endif %}
+                        {% endspaceless %}
+                    </td>
+                </tr>
+                {% if op.detail is defined %}
+                    {% for item in op.detail.items %}
+                        {% if (item.value > 0) %}
+                            {% set colorClass = 'c-success' %}
+                        {% else %}
+                            {% set colorClass = 'c-error' %}
+                        {% endif %}
+                        <tr class="details transaction-{{ op.label }}-details {{ backgroundClass }} {% if loop.index == op.detail|length + 1 %} last {% endif %}">
+                            <td colspan="3">{{ item.label }}</td>
+                            <td>&nbsp;</td>
+                            <td style="text-align: right" class="{{ colorClass }}">{{ item.value|localizednumber }}&nbsp</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+            <tr class="tfooter">
+                <td class="tf tf-label" colspan="3">
+                    {% trans %}lender-operations_pdf-balance{% endtrans %}
+                </td>
+                <td class="tf tf-date text-aling-left" colspan="2">
+                    {{ 'NOW'|date('d/m/Y') }}
+                </td>
+                <td class="tf tf-amount text-aling-left">
+                    {{ available_balance|localizedcurrency('EUR') }}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="footer">
+        {% if hasAcceptedOffers %}
+            <p class="legend">{% trans %} lender-operations_pdf-accepted-offer-legend {% endtrans %}</p>
+        {% endif %}
+        <p class="small">
+            {% trans %} lender-operations_pdf-unilend-description {% endtrans %}
+        </p>
+        <p class="small">
+            {% trans %} lender-operations_pdf-spfmei-description {% endtrans %}
+        </p>
+    </div>
+{% endblock %}

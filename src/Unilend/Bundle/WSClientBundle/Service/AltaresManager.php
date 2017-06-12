@@ -2,26 +2,34 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
-use JMS\Serializer\DeserializationContext;
 use JMS\Serializer\Serializer;
 use Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetList;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetListDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyIdentity;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyIdentityDetail;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyRatingDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentity;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyRating;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummary;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummaryListDetail;
 
 class AltaresManager
 {
-    const RESOURCE_COMPANY_SCORE           = 'get_score_altares';
-    const RESOURCE_BALANCE_SHEET           = 'get_balance_sheet_altares';
-    const RESOURCE_COMPANY_IDENTITY        = 'get_company_identity_altares';
-    const RESOURCE_ESTABLISHMENT_IDENTITY  = 'get_establishment_identity_altares';
-    const RESOURCE_FINANCIAL_SUMMARY       = 'get_financial_summary_altares';
-    const RESOURCE_MANAGEMENT_LINE         = 'get_balance_management_line_altares';
+    const RESOURCE_COMPANY_SCORE          = 'get_score_altares';
+    const RESOURCE_BALANCE_SHEET          = 'get_balance_sheet_altares';
+    const RESOURCE_COMPANY_IDENTITY       = 'get_company_identity_altares';
+    const RESOURCE_ESTABLISHMENT_IDENTITY = 'get_establishment_identity_altares';
+    const RESOURCE_FINANCIAL_SUMMARY      = 'get_financial_summary_altares';
+    const RESOURCE_MANAGEMENT_LINE        = 'get_balance_management_line_altares';
 
-    const EXCEPTION_CODE_INVALID_OR_UNKNOWN_SIREN = [101, 102, 108, 109];
+    const EXCEPTION_CODE_INVALID_OR_UNKNOWN_SIREN = [101, 102, 108, 109, 106];
     const EXCEPTION_CODE_NO_FINANCIAL_DATA        = [118];
+    const EXCEPTION_CODE_TECHNICAL_ERROR          = [-1, 0, 1, 2, 3, 4, 5, 7, 8];
+
+    const CALL_TIMEOUT = 8;
 
     /** @var string */
     private $login;
@@ -88,12 +96,15 @@ class AltaresManager
     /**
      * @param string $siren
      *
-     * @return null|CompanyRating
+     * @return CompanyRatingDetail
      */
     public function getScore($siren)
     {
         if (null !== ($response = $this->soapCall('risk', self::RESOURCE_COMPANY_SCORE, ['siren' => $siren]))) {
-            return $this->serializer->deserialize(json_encode($response), CompanyRating::class, 'json');
+            /** @var CompanyRating $companyRating */
+            $companyRating = $this->serializer->deserialize(json_encode($response->return), CompanyRating::class, 'json');
+
+            return $companyRating->getMyInfo();
         }
 
         return null;
@@ -103,15 +114,18 @@ class AltaresManager
      * @param string $siren
      * @param int    $balanceSheetsCount
      *
-     * @return null|BalanceSheetList
+     * @return BalanceSheetListDetail
      */
     public function getBalanceSheets($siren, $balanceSheetsCount = 3)
     {
         if (null !== ($response = $this->soapCall('identity', self::RESOURCE_BALANCE_SHEET, ['siren' => $siren, 'nbBilans' => $balanceSheetsCount]))) {
-            if (isset($response->nbBilan) && 1 === $response->nbBilan) {
-                $response->bilans = [$response->bilans];
+            if (isset($response->return->myInfo->nbBilan) && 1 === $response->return->myInfo->nbBilan) {
+                $response->return->myInfo->bilans = [$response->return->myInfo->bilans];
             }
-            return $this->serializer->deserialize(json_encode($response), BalanceSheetList::class, 'json');
+            /** @var BalanceSheetList $balanceSheetList */
+            $balanceSheetList = $this->serializer->deserialize(json_encode($response->return), BalanceSheetList::class, 'json');
+
+            return $balanceSheetList->getMyInfo();
         }
 
         return null;
@@ -120,14 +134,17 @@ class AltaresManager
     /**
      * @param string $siren
      *
-     * @return null|CompanyIdentity
+     * @return null|CompanyIdentityDetail
      *
      * @throws \Exception
      */
     public function getCompanyIdentity($siren)
     {
         if (null !== ($response = $this->soapCall('identity', self::RESOURCE_COMPANY_IDENTITY, ['sirenRna' => $siren]))) {
-            return $this->serializer->deserialize(json_encode($response), CompanyIdentity::class, 'json');
+            /** @var CompanyIdentity $companyIdentity */
+            $companyIdentity = $this->serializer->deserialize(json_encode($response->return), CompanyIdentity::class, 'json');
+
+            return $companyIdentity->getMyInfo();
         }
 
         return null;
@@ -136,14 +153,17 @@ class AltaresManager
     /**
      * @param string $siren
      *
-     * @return null|EstablishmentIdentity
+     * @return null|EstablishmentIdentityDetail
      *
      * @throws \Exception
      */
     public function getEstablishmentIdentity($siren)
     {
         if (null !== ($response = $this->soapCall('identity', self::RESOURCE_ESTABLISHMENT_IDENTITY, ['sirenSiret' => $siren]))) {
-            return $this->serializer->deserialize(json_encode($response), EstablishmentIdentity::class, 'json');
+            /** @var EstablishmentIdentity $establishmentIdentity */
+            $establishmentIdentity = $this->serializer->deserialize(json_encode($response->return), EstablishmentIdentity::class, 'json');
+
+            return $establishmentIdentity->getMyInfo();
         }
 
         return null;
@@ -153,14 +173,17 @@ class AltaresManager
      * @param string $siren
      * @param string $balanceId
      *
-     * @return null|FinancialSummary[]
+     * @return null|FinancialSummaryListDetail
      *
      * @throws \Exception
      */
     public function getFinancialSummary($siren, $balanceId)
     {
         if (null !== ($response = $this->soapCall('identity', self::RESOURCE_FINANCIAL_SUMMARY, ['siren' => $siren, 'bilanId' => $balanceId]))) {
-            return $this->serializer->deserialize(json_encode($response->syntheseFinanciereList), 'ArrayCollection<' . FinancialSummary::class . '>', 'json', DeserializationContext::create()->setGroups(['summary']));
+            /** @var FinancialSummary $financialSummary */
+            $financialSummary = $this->serializer->deserialize(json_encode($response->return), FinancialSummary::class, 'json');
+
+            return $financialSummary->getMyInfo();
         }
 
         return null;
@@ -170,14 +193,17 @@ class AltaresManager
      * @param string $siren
      * @param string $balanceId
      *
-     * @return null|FinancialSummary[]
+     * @return null|FinancialSummaryListDetail
      *
      * @throws \Exception
      */
     public function getBalanceManagementLine($siren, $balanceId)
     {
         if (null !== ($response = $this->soapCall('identity', self::RESOURCE_MANAGEMENT_LINE, ['siren' => $siren, 'bilanId' => $balanceId]))) {
-            return $this->serializer->deserialize(json_encode($response->SIGList), 'ArrayCollection<' . FinancialSummary::class . '>', 'json', DeserializationContext::create()->setGroups(['management_line']));
+            /** @var FinancialSummary $financialSummaryListDetail */
+            $balanceManagementLine = $this->serializer->deserialize(json_encode($response->return), FinancialSummary::class, 'json');
+
+            return $balanceManagementLine->getMyInfo();
         }
 
         return null;
@@ -190,49 +216,51 @@ class AltaresManager
      *
      * @return mixed
      */
-    private function soapCall($client, $resourceLabel, $params)
+    private function soapCall($client, $resourceLabel, array $params)
     {
         $wsResource = $this->resourceManager->getResource($resourceLabel);
-        $siren      = $params[$this->getSirenKey($wsResource->resource_name)];
+        $siren      = $params[$this->getSirenKey($wsResource->getResourceName())];
 
         try {
-            $response = $this->useCache ? $this->callHistoryManager->getStoredResponse($wsResource, $siren) : false;
-
-            if (false === $this->isValidResponse($response)) {
-                $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
-                ini_set('default_socket_timeout', 8);
-
-                /** @var \SoapClient $soapClient */
-                $soapClient = $this->{$client . 'Client'};
-                $response   = $soapClient->__soapCall(
-                    $wsResource->resource_name, [
-                    ['identification' => $this->getIdentification(), 'refClient' => 'sffpme'] + $params
-                ]);
-
-                call_user_func($callable, json_encode($response));
-            } else {
-                $response = json_decode($response);
-            }
-
-            if (null !== $response) {
-                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
-
-                if ($this->isValidResponse($response)) {
-                    return isset($response->return->myInfo) ? $response->return->myInfo : null;
+            if ($storedResponse = $this->getStoredResponse($wsResource, $siren)) {
+                if ($this->isValidResponse($storedResponse)['is_valid']) {
+                    return $storedResponse;
                 }
             }
+            $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
+            ini_set('default_socket_timeout', self::CALL_TIMEOUT);
 
-            $this->logger->error(
-                'Altares response could not be handled: "' . (isset($response->return->exception->description, $response->return->exception->code) ? $response->return->exception->code . ' : ' . $response->return->exception->description : print_r($response, true)) . '"',
-                ['class' => __CLASS__, 'resource' => $resourceLabel] + $params
-            );
-            return null;
+            /** @var \SoapClient $soapClient */
+            $soapClient = $this->{$client . 'Client'};
+            $response   = $soapClient->__soapCall(
+                $wsResource->getResourceName(), [
+                ['identification' => $this->getIdentification(), 'refClient' => 'sffpme'] + $params
+            ]);
+
+            $validity = $this->isValidResponse($response, ['class' => __CLASS__, 'resource' => $wsResource->getLabel()] + $params);
+            call_user_func($callable, json_encode($response), $validity['status']);
+
+            if ('error' !== $validity['status']) {
+                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
+            } else {
+                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
+            }
+            if ($validity['is_valid']) {
+                return $response;
+            } else {
+                return null;
+            }
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage(), ['class' => __CLASS__, 'resource' => $resourceLabel] + $params);
-        }
+            if (isset($callable)) {
+                call_user_func($callable, isset($response) ? json_encode($response) : null, 'error');
+            }
+            $this->logger->error($exception->getMessage() . ' - Code ' . $exception->getCode(),
+                ['class' => __CLASS__, 'resource' => $wsResource->getLabel()] + $params
+            );
+            $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
 
-        $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
-        return null;
+            return null;
+        }
     }
 
     /**
@@ -261,19 +289,70 @@ class AltaresManager
     }
 
     /**
-     * @param mixed  $response
+     * @param mixed $response
+     * @param array $logContext
      *
-     * @return bool
+     * @return array
      */
-    private function isValidResponse($response)
+    private function isValidResponse($response, array $logContext = [])
     {
-        if (is_string($response)) {
-            $response = json_decode($response);
+        if (
+            false === isset($response->return)
+            || (false === isset($response->return->exception) && false === isset($response->return->myInfo))
+            || (isset($response->return->exception, $response->return->myInfo))
+        ) {
+            if (false === empty($logContext)) {
+                $this->logger->error('Altares response could not be handled: "' . json_encode($response) . '"', $logContext);
+            }
+            return ['status' => 'error', 'is_valid' => false];
         }
 
-        return (
-            isset($response->return->myInfo, $response->return->correct) && $response->return->correct
-            || isset($response->return->exception->code) && in_array($response->return->exception->code, self::EXCEPTION_CODE_NO_FINANCIAL_DATA + self::EXCEPTION_CODE_INVALID_OR_UNKNOWN_SIREN)
-        );
+        if (isset($response->return->exception)) {
+            if (
+                in_array($response->return->exception->code, self::EXCEPTION_CODE_INVALID_OR_UNKNOWN_SIREN)
+                || in_array($response->return->exception->code, self::EXCEPTION_CODE_NO_FINANCIAL_DATA)
+            ) {
+                return ['status' => 'valid', 'is_valid' => true];
+            } elseif (in_array($response->return->exception->code, self::EXCEPTION_CODE_TECHNICAL_ERROR)) {
+                if (false === empty($logContext)) {
+                    $this->logger->error('Altares response technical error: "' . $response->return->exception->code . ' : ' . $response->return->exception->description . '"', $logContext);
+                }
+
+                return ['status' => 'error', 'is_valid' => false];
+            } else {
+                if (false === empty($logContext)) {
+                    $this->logger->warning('Altares response code not expected: "' . $response->return->exception->code . ' : ' . $response->return->exception->description . '"', $logContext);
+                }
+
+                return ['status' => 'warning', 'is_valid' => false];
+            }
+        } elseif (isset($response->return->myInfo)) {
+            return ['status' => 'valid', 'is_valid' => true];
+        }
+        if (false === empty($logContext)) {
+            $this->logger->error('Unexpected Altares response: ' . json_encode($response), $logContext);
+        }
+
+        return ['status' => 'error', 'is_valid' => false];
+    }
+
+    /**
+     * @param WsExternalResource $resource
+     * @param string             $siren
+     *
+     * @return mixed;
+     */
+    private function getStoredResponse($resource, $siren)
+    {
+        if (
+            $this->useCache
+            && false !== ($storedResponse = $this->callHistoryManager->getStoredResponse($resource, $siren))
+            && null !== ($storedResponse = json_decode($storedResponse))
+            && isset($storedResponse->return)
+        ) {
+            return $storedResponse;
+        }
+
+        return false;
     }
 }

@@ -48,6 +48,9 @@ class GenerateCrudCommand extends ContainerAwareCommand
             foreach ($dataFiles as $file) {
                 if (false === is_dir($file) && 1 === preg_match('#(.+)\.data\.php$#', $file, $matches)) {
                     $table = $matches[1];
+                    if ('transactions_types' === $table) {
+                        continue;
+                    }
                     try {
                         if ($entityManager->getRepository($table)) {
                             $generatedCruds[] = [$table, 'OK'];

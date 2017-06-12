@@ -6,8 +6,9 @@ use Doctrine\ORM\EntityManager;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetList;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummary;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetListDetail;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummaryDetail;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummaryListDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Codinf\PaymentIncident;
 use Unilend\Bundle\WSClientBundle\Entity\Infogreffe\CompanyIndebtedness;
 use Unilend\Bundle\WSClientBundle\Service\AltaresManager;
@@ -126,7 +127,7 @@ class CompanyFinanceCheck
     /**
      * @param string $siren
      *
-     * @return null|BalanceSheetList
+     * @return null|BalanceSheetListDetail
      */
     public function getBalanceSheets($siren)
     {
@@ -187,13 +188,13 @@ class CompanyFinanceCheck
     }
 
     /**
-     * @param BalanceSheetList $balanceSheetList
+     * @param BalanceSheetListDetail $balanceSheetList
      * @param string           $siren
      * @param string           $rejectionReason
      *
      * @return bool
      */
-    public function hasNegativeCapitalStock(BalanceSheetList $balanceSheetList, $siren, &$rejectionReason)
+    public function hasNegativeCapitalStock(BalanceSheetListDetail $balanceSheetList, $siren, &$rejectionReason)
     {
         $lastBalanceSheet = $balanceSheetList->getLastBalanceSheet();
         try {
@@ -219,13 +220,13 @@ class CompanyFinanceCheck
     }
 
     /**
-     * @param BalanceSheetList $balanceSheetList
-     * @param string           $siren
-     * @param string           $rejectionReason
+     * @param BalanceSheetListDetail $balanceSheetList
+     * @param string                 $siren
+     * @param string                 $rejectionReason
      *
      * @return bool
      */
-    public function hasNegativeRawOperatingIncomes(BalanceSheetList $balanceSheetList, $siren, &$rejectionReason)
+    public function hasNegativeRawOperatingIncomes(BalanceSheetListDetail $balanceSheetList, $siren, &$rejectionReason)
     {
         $lastBalanceSheet = $balanceSheetList->getLastBalanceSheet();
         try {
@@ -321,14 +322,14 @@ class CompanyFinanceCheck
     }
 
     /**
-     * @param FinancialSummary[] $postList
-     * @param string             $postType
+     * @param FinancialSummaryListDetail $postList
+     * @param string                     $postType
      *
-     * @return null|FinancialSummary
+     * @return null|FinancialSummaryDetail
      */
-    private function getSummaryFinancialPost(array $postList, $postType)
+    private function getSummaryFinancialPost(FinancialSummaryListDetail $postList, $postType)
     {
-        foreach ($postList as $post) {
+        foreach ($postList->getFinancialSummaryList() as $post) {
             if ($post->getPost() === $postType) {
                 return $post;
             }
@@ -338,14 +339,14 @@ class CompanyFinanceCheck
     }
 
     /**
-     * @param FinancialSummary[] $postList
-     * @param string             $postType
+     * @param FinancialSummaryListDetail $postList
+     * @param string                     $postType
      *
-     * @return null|FinancialSummary
+     * @return null|FinancialSummaryDetail
      */
-    private function getManagementLineFinancialPost(array $postList, $postType)
+    private function getManagementLineFinancialPost(FinancialSummaryListDetail $postList, $postType)
     {
-        foreach ($postList as $post) {
+        foreach ($postList->getBalanceManagementLine() as $post) {
             if ($post->getKeyPost() === $postType) {
                 return $post;
             }
