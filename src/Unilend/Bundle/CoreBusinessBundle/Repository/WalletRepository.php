@@ -119,10 +119,11 @@ class WalletRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'wt.id = w.idType')
             ->where('wt.label = :lender')
             ->andWhere('ot.label IN (:operationTypes)')
-            ->andWhere('YEAR(o.added) = :year')
+            ->andWhere('wbh.added BETWEEN :start AND :end')
             ->setParameter('lender', WalletType::LENDER)
-            ->setParameter('operationTypes', $operationTypes, Connection::PARAM_INT_ARRAY)
-            ->setParameter('year', $year);
+            ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
+            ->setParameter('start', $year . '-01-01 00:00:00')
+            ->setParameter('end', $year . '-12-31- 23:59:59');
 
         return $qb->getQuery()->useResultCache(true, CacheKeys::LONG_TIME)->getResult();
     }

@@ -4,6 +4,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
@@ -155,12 +156,12 @@ class statsController extends bootstrap
         $taxTypes = $this->loadData('tax_type');
 
         if (in_array(date('m'), ['01', '02', '03'])) {
-            $year = (date('Y')-1);
+            $year = (date('Y') - 1);
         } else {
             $year = date('Y');
         }
 
-        $operationTypes       = [
+        $operationTypes = [
             OperationType::LENDER_LOAN,
             OperationType::CAPITAL_REPAYMENT,
             OperationType::GROSS_INTEREST_REPAYMENT
@@ -169,8 +170,9 @@ class statsController extends bootstrap
         $walletRepository     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
         $walletsWithMovements = $walletRepository->getLenderWalletsWithOperationsInYear($operationTypes, $year);
 
+        $data     = [];
         $filename = 'requete_beneficiaires' . date('Ymd');
-        $headers = ['id_client', 'Cbene', 'Nom', 'Qualité', 'NomJFille', 'Prénom', 'DateNaissance', 'DépNaissance', 'ComNaissance', 'LieuNaissance', 'NomMari', 'Siret', 'AdISO', 'Adresse', 'Voie', 'CodeCommune', 'Commune', 'CodePostal', 'Ville / nom pays', 'IdFiscal', 'PaysISO', 'Entité', 'ToRS', 'Plib', 'Tél', 'Banque', 'IBAN', 'BIC', 'EMAIL', 'Obs', ''];
+        $headers  = ['id_client', 'Cbene', 'Nom', 'Qualité', 'NomJFille', 'Prénom', 'DateNaissance', 'DépNaissance', 'ComNaissance', 'LieuNaissance', 'NomMari', 'Siret', 'AdISO', 'Adresse', 'Voie', 'CodeCommune', 'Commune', 'CodePostal', 'Ville / nom pays', 'IdFiscal', 'PaysISO', 'Entité', 'ToRS', 'Plib', 'Tél', 'Banque', 'IBAN', 'BIC', 'EMAIL', 'Obs', ''];
 
         /** @var Wallet $wallet */
         foreach ($walletsWithMovements as $wallet) {
@@ -178,16 +180,21 @@ class statsController extends bootstrap
             $clientAddress->get($clientEntity->getIdClient(), 'id_client');
             $fiscalAndLocationData = [];
 
-            if (in_array($clientEntity->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
+            $bankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($clientEntity->getIdClient());
+            if (null == $bankAccount) {
+                var_dump($clientEntity->getIdClient());
+            }
+
+            if ($clientEntity->isNaturalPerson()) {
                 $fiscalAndLocationData = [
-                    'address'    => $clientAddress->meme_adresse_fiscal == 1 && empty($clientAddress->adresse_fiscal) ? trim($clientAddress->adresse1) : trim($clientAddress->adresse_fiscal),
-                    'zip'        => $clientAddress->meme_adresse_fiscal == 1 && empty($clientAddress->cp_fiscal) ? trim($clientAddress->cp) : trim($clientAddress->cp_fiscal),
-                    'city'       => $clientAddress->meme_adresse_fiscal == 1 && empty($clientAddress->ville_fiscal) ? trim($clientAddress->ville) : trim($clientAddress->ville_fiscal),
-                    'id_country' => $clientAddress->meme_adresse_fiscal == 1 && empty($clientAddress->id_pays_fiscal) ? $clientAddress->id_pays : $clientAddress->id_pays_fiscal
+                    'address'    => ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $clientAddress->meme_adresse_fiscal && empty($clientAddress->adresse_fiscal) ? trim($clientAddress->adresse1) : trim($clientAddress->adresse_fiscal),
+                    'zip'        => ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $clientAddress->meme_adresse_fiscal && empty($clientAddress->cp_fiscal) ? trim($clientAddress->cp) : trim($clientAddress->cp_fiscal),
+                    'city'       => ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $clientAddress->meme_adresse_fiscal && empty($clientAddress->ville_fiscal) ? trim($clientAddress->ville) : trim($clientAddress->ville_fiscal),
+                    'id_country' => ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $clientAddress->meme_adresse_fiscal && empty($clientAddress->id_pays_fiscal) ? $clientAddress->id_pays : $clientAddress->id_pays_fiscal
                 ];
 
                 if (0 == $fiscalAndLocationData['id_country']) {
-                    $fiscalAndLocationData['id_country'] = 1;
+                    $fiscalAndLocationData['id_country'] = PaysV2::COUNTRY_FRANCE;
                 }
 
                 $countries->get($fiscalAndLocationData['id_country'], 'id_pays');
@@ -246,7 +253,7 @@ class statsController extends bootstrap
             }
 
             if ($company->get($clientEntity->getIdClient(), 'id_client_owner') && in_array($clientEntity->getType(), [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
-                $company->id_pays = (0 == $company->id_pays) ? 1 : $company->id_pays;
+                $company->id_pays = (0 == $company->id_pays) ? PaysV2::COUNTRY_FRANCE : $company->id_pays;
                 $countries->get($company->id_pays, 'id_pays');
                 $fiscalAndLocationData['isoFiscal']   = $countries->iso;
                 $fiscalAndLocationData['inseeFiscal'] = $cities->getInseeCode($company->zip, $company->city);
@@ -290,8 +297,8 @@ class statsController extends bootstrap
             'N',
             $client->getTelephone(),
             '',
-            $bankAccount->getIban(),
-            $bankAccount->getBic(),
+            null === $bankAccount ? '' : $bankAccount->getIban(),
+            null === $bankAccount ? '' : $bankAccount->getBic(),
             $client->getEmail(),
             ''
         ];
@@ -330,8 +337,8 @@ class statsController extends bootstrap
             'N',
             $company->phone,
             '',
-            $bankAccount->getIban(),
-            $bankAccount->getBic(),
+            null === $bankAccount ? '' : $bankAccount->getIban(),
+            null === $bankAccount ? '' : $bankAccount->getBic(),
             $client->getEmail(),
             ''
         ];
@@ -347,7 +354,7 @@ class statsController extends bootstrap
             $year = (int) $this->params[0];
         }
 
-        $operationTypes       = [
+        $operationTypes = [
             OperationType::LENDER_LOAN,
             OperationType::CAPITAL_REPAYMENT,
             OperationType::GROSS_INTEREST_REPAYMENT

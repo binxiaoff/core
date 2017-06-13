@@ -190,8 +190,9 @@ class OperationRepository extends EntityRepository
         }
 
         if (null !== $year) {
-            $qb->andWhere('YEAR(o.added) = :year')
-                ->setParameter('year', $year);
+            $qb->andWhere('o.added BETWEEN :start AND :end')
+                ->setParameter('start', $year . '01-01- 00:00:00')
+                ->setParameter('end', $year . '12-31 23:59:59');
         }
 
         return $qb->getQuery()->getSingleScalarResult();
