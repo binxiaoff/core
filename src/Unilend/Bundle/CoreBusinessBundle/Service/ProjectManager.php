@@ -585,9 +585,6 @@ class ProjectManager
 
     private function createAmortizationRepaymentSchedule(\projects $oProject)
     {
-        ini_set('max_execution_time', 300);
-        ini_set('memory_limit', '512M');
-
         /** @var \loans $oLoan */
         $oLoan = $this->entityManagerSimulator->getRepository('loans');
         /** @var \echeanciers $oRepaymentSchedule */
@@ -654,9 +651,6 @@ class ProjectManager
      */
     private function createDeferredRepaymentSchedule(\projects $project)
     {
-        ini_set('max_execution_time', 300);
-        ini_set('memory_limit', '512M');
-
         /** @var \loans $loanEntity */
         $loanEntity = $this->entityManagerSimulator->getRepository('loans');
         /** @var \echeanciers $repaymentScheduleEntity */
@@ -745,8 +739,6 @@ class ProjectManager
      */
     public function createAmortizationPaymentSchedule(\projects $oProject)
     {
-        ini_set('memory_limit', '512M');
-
         /** @var \echeanciers_emprunteur $oPaymentSchedule */
         $oPaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
         /** @var \echeanciers $oRepaymentSchedule */
@@ -799,8 +791,6 @@ class ProjectManager
      */
     public function createDeferredPaymentSchedule(\projects $project)
     {
-        ini_set('memory_limit', '512M');
-
         /** @var \echeanciers_emprunteur $borrowerPaymentSchedule */
         $borrowerPaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
         /** @var \echeanciers $lenderRepaymentSchedule */
@@ -809,7 +799,7 @@ class ProjectManager
         $taxType = $this->entityManagerSimulator->getRepository('tax_type');
 
         $taxRate = $taxType->getTaxRateByCountry('fr');
-        $vatRate = $taxRate[\tax_type::TYPE_VAT] / 100;
+        $vatRate = $taxRate[TaxType::TYPE_VAT] / 100;
 
         // @todo raw deferred duration
         $deferredDuration        = 12;
