@@ -61,9 +61,9 @@ class Factures
     private $typeCommission;
 
     /**
-     * @var integer
+     * @var float
      *
-     * @ORM\Column(name="commission", type="integer", nullable=false)
+     * @ORM\Column(name="commission", type="float", nullable=false)
      */
     private $commission;
 
@@ -260,7 +260,7 @@ class Factures
     /**
      * Set commission
      *
-     * @param integer $commission
+     * @param float $commission
      *
      * @return Factures
      */
@@ -274,7 +274,7 @@ class Factures
     /**
      * Get commission
      *
-     * @return integer
+     * @return float
      */
     public function getCommission()
     {

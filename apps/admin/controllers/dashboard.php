@@ -2,18 +2,21 @@
 
 use \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+
 
 class dashboardController extends bootstrap
 {
     private static $saleCollapsedStatus = [
-        \projects_status::POSTPONED,
-        \projects_status::PENDING_ANALYSIS,
-        \projects_status::ANALYSIS_REVIEW,
-        \projects_status::COMITY_REVIEW,
-        \projects_status::A_FUNDER,
-        \projects_status::AUTO_BID_PLACED,
-        \projects_status::EN_FUNDING,
-        \projects_status::BID_TERMINATED
+        ProjectsStatus::POSTPONED,
+        ProjectsStatus::PENDING_ANALYSIS,
+        ProjectsStatus::ANALYSIS_REVIEW,
+        ProjectsStatus::COMITY_REVIEW,
+        ProjectsStatus::SUSPENSIVE_CONDITIONS,
+        ProjectsStatus::A_FUNDER,
+        ProjectsStatus::AUTO_BID_PLACED,
+        ProjectsStatus::EN_FUNDING,
+        ProjectsStatus::BID_TERMINATED
     ];
 
     public function initialize()
@@ -235,13 +238,13 @@ class dashboardController extends bootstrap
         /** @var ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
 
-        $projects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['status' => \projects_status::IMPOSSIBLE_AUTO_EVALUATION]);
+        $projects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['status' => ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION]);
         foreach ($projects as $projectEntity) {
             $project->get($projectEntity->getIdProject());
 
             if (null === $projectRequestManager->checkProjectRisk($project, $_SESSION['user']['id_user'])) {
                 $client->get($projectEntity->getIdCompany()->getIdClientOwner());
-                $status = empty($client->telephone) ? \projects_status::INCOMPLETE_REQUEST : \projects_status::COMPLETE_REQUEST;
+                $status = empty($client->telephone) ? ProjectsStatus::INCOMPLETE_REQUEST : ProjectsStatus::COMPLETE_REQUEST;
                 $projectManager->addProjectStatus($_SESSION['user']['id_user'], $status, $project);
                 $projectRequestManager->checkEligiblePartnerProduct($project, $_SESSION['user']['id_user'], true);
             }

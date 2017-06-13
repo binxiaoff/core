@@ -1,5 +1,7 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+
 class projects_status extends projects_status_crud
 {
     const IMPOSSIBLE_AUTO_EVALUATION = 1;
@@ -15,7 +17,7 @@ class projects_status extends projects_status_crud
     const ANALYSIS_REJECTION         = 32;
     const COMITY_REVIEW              = 33;
     const COMITY_REJECTION           = 34;
-    const PREP_FUNDING               = 35;
+    const PREP_FUNDING               = 37;
     const A_FUNDER                   = 40;
     const AUTO_BID_PLACED            = 45;
     const EN_FUNDING                 = 50;
@@ -61,13 +63,13 @@ class projects_status extends projects_status_crud
      * @var array $runningRepayment
      */
     public static $runningRepayment = [
-        self::REMBOURSEMENT,
-        self::PROBLEME,
-        self::PROBLEME_J_X,
-        self::RECOUVREMENT,
-        self::PROCEDURE_SAUVEGARDE,
-        self::REDRESSEMENT_JUDICIAIRE,
-        self::LIQUIDATION_JUDICIAIRE
+        ProjectsStatus::REMBOURSEMENT,
+        ProjectsStatus::PROBLEME,
+        ProjectsStatus::PROBLEME_J_X,
+        ProjectsStatus::RECOUVREMENT,
+        ProjectsStatus::PROCEDURE_SAUVEGARDE,
+        ProjectsStatus::REDRESSEMENT_JUDICIAIRE,
+        ProjectsStatus::LIQUIDATION_JUDICIAIRE
     ];
 
     /**
@@ -75,16 +77,16 @@ class projects_status extends projects_status_crud
      * @var array
      */
     public static $afterRepayment = [
-        self::REMBOURSEMENT,
-        self::REMBOURSE,
-        self::REMBOURSEMENT_ANTICIPE,
-        self::PROBLEME,
-        self::PROBLEME_J_X,
-        self::RECOUVREMENT,
-        self::PROCEDURE_SAUVEGARDE,
-        self::REDRESSEMENT_JUDICIAIRE,
-        self::LIQUIDATION_JUDICIAIRE,
-        self::DEFAUT
+        ProjectsStatus::REMBOURSEMENT,
+        ProjectsStatus::REMBOURSE,
+        ProjectsStatus::REMBOURSEMENT_ANTICIPE,
+        ProjectsStatus::PROBLEME,
+        ProjectsStatus::PROBLEME_J_X,
+        ProjectsStatus::RECOUVREMENT,
+        ProjectsStatus::PROCEDURE_SAUVEGARDE,
+        ProjectsStatus::REDRESSEMENT_JUDICIAIRE,
+        ProjectsStatus::LIQUIDATION_JUDICIAIRE,
+        ProjectsStatus::DEFAUT
     ];
 
     /**
@@ -92,17 +94,18 @@ class projects_status extends projects_status_crud
      * @var array
      */
     public static $saleTeam = [
-        self::POSTPONED,
-        self::COMMERCIAL_REVIEW,
-        self::PENDING_ANALYSIS,
-        self::ANALYSIS_REVIEW,
-        self::COMITY_REVIEW,
-        self::PREP_FUNDING,
-        self::A_FUNDER,
-        self::AUTO_BID_PLACED,
-        self::EN_FUNDING,
-        self::BID_TERMINATED,
-        self::FUNDE
+        ProjectsStatus::POSTPONED,
+        ProjectsStatus::COMMERCIAL_REVIEW,
+        ProjectsStatus::PENDING_ANALYSIS,
+        ProjectsStatus::ANALYSIS_REVIEW,
+        ProjectsStatus::COMITY_REVIEW,
+        ProjectsStatus::SUSPENSIVE_CONDITIONS,
+        ProjectsStatus::PREP_FUNDING,
+        ProjectsStatus::A_FUNDER,
+        ProjectsStatus::AUTO_BID_PLACED,
+        ProjectsStatus::EN_FUNDING,
+        ProjectsStatus::BID_TERMINATED,
+        ProjectsStatus::FUNDE
     ];
 
     /**
@@ -110,8 +113,8 @@ class projects_status extends projects_status_crud
      * @var array
      */
     public static $upcomingSaleTeam = [
-        self::INCOMPLETE_REQUEST,
-        self::COMPLETE_REQUEST
+        ProjectsStatus::INCOMPLETE_REQUEST,
+        ProjectsStatus::COMPLETE_REQUEST
     ];
 
     /**
@@ -119,9 +122,10 @@ class projects_status extends projects_status_crud
      * @var array
      */
     public static $riskTeam = [
-        self::PENDING_ANALYSIS,
-        self::ANALYSIS_REVIEW,
-        self::COMITY_REVIEW
+        ProjectsStatus::PENDING_ANALYSIS,
+        ProjectsStatus::ANALYSIS_REVIEW,
+        ProjectsStatus::COMITY_REVIEW,
+        ProjectsStatus::SUSPENSIVE_CONDITIONS
     ];
 
     public function __construct($bdd, $params = '')
