@@ -24,8 +24,8 @@
         cursor: pointer;
     }
     .projects .status-line td {
-        background-color: #6d1f4f;
-        color: #fff;
+        background-color: #6d1f4f !important;
+        color: #fff !important;
         font-size: 13px;
     }
     .status-line .sign:after{
