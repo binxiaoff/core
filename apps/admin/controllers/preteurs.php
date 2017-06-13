@@ -1274,9 +1274,13 @@ class preteursController extends bootstrap
                 $this->clientStatusMessage = '<div class="attention">Attention : compte définitivement fermé </div>';
                 break;
             default:
-                /** @var \Psr\Log\LoggerInterface $logger */
-                $logger = $this->get('logger');
-                $logger->warning('Unknown client status "' . $currentStatus . '"', ['client' => $this->clients->id_client]);
+                if (Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION == $this->clients->etape_inscription_preteur) {
+                    $this->clientStatusMessage = '<div class="attention">Attention : Inscription non terminé </div>';
+                } else {
+                    /** @var \Psr\Log\LoggerInterface $logger */
+                    $logger = $this->get('logger');
+                    $logger->warning('Unknown client status "' . $currentStatus . '"', ['client' => $this->clients->id_client]);
+                }
                 break;
         }
     }
