@@ -16,7 +16,7 @@
             <a href="<?= $this->lurl ?>/stats/requete_infosben_csv" class="btn-primary pull-right">Recuperation du CSV</a>
         </div>
     </div>
-    <?php  if (count($this->aLenders) > 0) : ?>
+    <?php if (count($this->walletsWithMovements) > 0) : ?>
         <table class="tablesorter">
             <thead>
                 <tr>
@@ -47,6 +47,8 @@
                 <?php endforeach; ?>
             </tbody>
         </table>
+    <?php else : ?>
+        <p>Il n'y a aucun client concerné pour le moment.</p>
     <?php endif; ?>
     <?php if ($this->nb_lignes != '') : ?>
         <table>
@@ -63,7 +65,5 @@
                 </td>
             </tr>
         </table>
-    <?php else : ?>
-        <p>Il n'y a aucun dossier pour le moment.</p>
     <?php endif; ?>
 </div>

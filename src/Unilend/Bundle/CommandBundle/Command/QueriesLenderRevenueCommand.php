@@ -61,7 +61,7 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
         $activeSheet->setCellValueByColumnAndRow(6, $row, 'idClient');
         $row ++;
 
-        $operationTypes       = [
+        $operationTypes = [
             OperationType::LENDER_LOAN,
             OperationType::CAPITAL_REPAYMENT,
             OperationType::GROSS_INTEREST_REPAYMENT

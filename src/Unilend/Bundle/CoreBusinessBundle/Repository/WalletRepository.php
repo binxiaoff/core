@@ -9,6 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\librairies\CacheKeys;
 
 class WalletRepository extends EntityRepository
 {
@@ -123,7 +124,7 @@ class WalletRepository extends EntityRepository
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_INT_ARRAY)
             ->setParameter('year', $year);
 
-        return $qb->getQuery()->getResult();
+        return $qb->getQuery()->useResultCache(true, CacheKeys::LONG_TIME)->getResult();
     }
 
     /**
