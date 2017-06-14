@@ -26,7 +26,7 @@ class ProjectEligibilityRuleSet
     /**
      * @var int
      *
-     * @ORM\Column(name="status", type="int", length=4, nullable=false)
+     * @ORM\Column(name="status", type="integer", length=4, nullable=false)
      */
     private $status;
 

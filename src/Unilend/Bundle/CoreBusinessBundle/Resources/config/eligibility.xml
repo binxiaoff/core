@@ -6,21 +6,10 @@
     <services>
         <service id="unilend.service.eligibility.eligibility_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\EligibilityManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
-            <argument type="service" id="unilend.service.project_manager"/>
             <argument type="service" id="unilend.service.eligibility.company_validator"/>
-            <argument type="service" id="unilend.service.eligibility.company_director_validator"/>
-            <argument type="service" id="unilend.service.eligibility.project_validator"/>
         </service>
 
         <service id="unilend.service.eligibility.company_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator\CompanyValidator" public="false">
-            <argument type="service" id="doctrine.orm.entity_manager"/>
-        </service>
-
-        <service id="unilend.service.eligibility.company_director_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator\CompanyDirectorValidator" public="false">
-            <argument type="service" id="doctrine.orm.entity_manager"/>
-        </service>
-
-        <service id="unilend.service.eligibility.project_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator\ProjectValidator" public="false">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.ws_client.altares_manager"/>
             <argument type="service" id="unilend.service.ws_client.euler_manager"/>
