@@ -167,6 +167,10 @@ class statsController extends bootstrap
 
         $data     = [];
         $filename = 'requete_beneficiaires' . date('Ymd');
+        /*
+         * Headers contain still Bank information, however as it is not mandatory information we leave the fields empty
+         * when this file is modified the next time, check if the fields can not be simply deleted as well as other non mandatory fields
+         */
         $headers  = ['id_client', 'Cbene', 'Nom', 'Qualité', 'NomJFille', 'Prénom', 'DateNaissance', 'DépNaissance', 'ComNaissance', 'LieuNaissance', 'NomMari', 'Siret', 'AdISO', 'Adresse', 'Voie', 'CodeCommune', 'Commune', 'CodePostal', 'Ville / nom pays', 'IdFiscal', 'PaysISO', 'Entité', 'ToRS', 'Plib', 'Tél', 'Banque', 'IBAN', 'BIC', 'EMAIL', 'Obs', ''];
 
         /** @var Wallet $wallet */
@@ -174,11 +178,6 @@ class statsController extends bootstrap
             $clientEntity = $wallet->getIdClient();
             $clientAddress->get($clientEntity->getIdClient(), 'id_client');
             $fiscalAndLocationData = [];
-
-            $bankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($clientEntity->getIdClient());
-            if (null == $bankAccount) {
-                var_dump($clientEntity->getIdClient());
-            }
 
             if ($clientEntity->isNaturalPerson()) {
                 $fiscalAndLocationData = [
@@ -262,8 +261,6 @@ class statsController extends bootstrap
     private function addPersonLineToBeneficiaryQueryData(&$data, Wallet $wallet, $fiscalAndLocationData)
     {
         $client      = $wallet->getIdClient();
-        /** @var BankAccount $bankAccount */
-        $bankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client->getIdClient());
 
         $data[] = [
             $client->getIdClient(),
@@ -292,8 +289,8 @@ class statsController extends bootstrap
             'N',
             $client->getTelephone(),
             '',
-            null === $bankAccount ? '' : $bankAccount->getIban(),
-            null === $bankAccount ? '' : $bankAccount->getBic(),
+            '',
+            '',
             $client->getEmail(),
             ''
         ];
@@ -301,9 +298,7 @@ class statsController extends bootstrap
 
     private function addLegalEntityLineToBeneficiaryQueryData(&$data, \companies $company, Wallet $wallet, $fiscalAndLocationData)
     {
-        $client      = $wallet->getIdClient();
-        /** @var BankAccount $bankAccount */
-        $bankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client->getIdClient());
+        $client = $wallet->getIdClient();
 
         $data[] = [
             $client->getIdClient(),
@@ -332,8 +327,8 @@ class statsController extends bootstrap
             'N',
             $company->phone,
             '',
-            null === $bankAccount ? '' : $bankAccount->getIban(),
-            null === $bankAccount ? '' : $bankAccount->getBic(),
+            '',
+            '',
             $client->getEmail(),
             ''
         ];

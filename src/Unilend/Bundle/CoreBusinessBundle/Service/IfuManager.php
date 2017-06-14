@@ -41,7 +41,7 @@ class IfuManager
             ];
             $walletRepository     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
             $walletsWithMovements = $walletRepository->getLenderWalletsWithOperationsInYear($operationTypes, $year);
-            $cachedItem->set($walletsWithMovements)->expiresAfter(CacheKeys::LONG_TIME);
+            $cachedItem->set($walletsWithMovements)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
 
             return $walletsWithMovements;
