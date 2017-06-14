@@ -146,7 +146,7 @@ class InfolegaleManager
         $executives = $this->getExecutives($siren);
         if (null !== $executives) {
             foreach ($executives->getExecutives() as $executive) {
-                $mandates->add($this->getExecutiveMandates($siren, $executive->getExecutiveId()));
+                $mandates->set($executive->getExecutiveId(), $this->getExecutiveMandates($siren, $executive->getExecutiveId()));
             }
         }
 
@@ -165,7 +165,7 @@ class InfolegaleManager
 
         if (null !== $executives) {
             foreach ($executives->getExecutives() as $executive) {
-                $homonyms->add($this->getExecutiveHomonyms($siren, $executive->getExecutiveId()));
+                $homonyms->set($executive->getExecutiveId(), $this->getExecutiveHomonyms($siren, $executive->getExecutiveId()));
             }
         }
         return $homonyms;
@@ -183,7 +183,7 @@ class InfolegaleManager
 
         if (null !== $executives) {
             foreach ($executives->getExecutives() as $executive) {
-                $announcement->add($this->getExecutiveDirectorAnnouncements($siren, $executive->getExecutiveId()));
+                $announcement->set($executive->getExecutiveId(), $this->getExecutiveDirectorAnnouncements($siren, $executive->getExecutiveId()));
             }
         }
         return $announcement;
@@ -254,7 +254,7 @@ class InfolegaleManager
         $query = array_merge($query, $parameters);
 
         try {
-            if ($storedResponse = $this->getStoredResponse($wsResource, $siren)) {
+            if ($storedResponse = $this->getStoredResponse($wsResource, $siren, $parameters)) {
                 $storedData = $this->getContentAndErrors($storedResponse);
 
                 if (empty($storedData['errors'])) {
@@ -272,7 +272,7 @@ class InfolegaleManager
             $stream = $response->getBody();
             $stream->rewind();
             $content = $stream->getContents();
-            call_user_func($callback, $content, $validity['status']);
+            call_user_func($callback, $content, $validity['status'], $parameters);
 
             if ('error' !== $validity['status']) {
                 $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
@@ -303,12 +303,13 @@ class InfolegaleManager
     /**
      * @param WsExternalResource $resource
      * @param string             $siren
+     * @param array              $parameters
      *
      * @return bool|string
      */
-    private function getStoredResponse(WsExternalResource $resource, $siren)
+    private function getStoredResponse(WsExternalResource $resource, $siren, $parameters = [])
     {
-        $storedResponse = $this->callHistoryManager->getStoredResponse($resource, $siren);
+        $storedResponse = $this->callHistoryManager->getStoredResponse($resource, $siren, $parameters);
 
         if ($this->useCache
             && false !== $storedResponse

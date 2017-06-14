@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\WSClientBundle\Service;
 
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
+use Doctrine\ODM\MongoDB\Query\Builder;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
@@ -36,6 +37,7 @@ class CallHistoryManager
 
     /**
      * WSProviderCallHistoryManager constructor.
+     *
      * @param EntityManager          $entityManager
      * @param Stopwatch              $stopwatch
      * @param SlackManager           $slackManager
@@ -81,19 +83,20 @@ class CallHistoryManager
         if (null !== $wsResource) {
             $this->stopwatch->start($wsResource->getIdResource());
 
-            return function ($result = null, $callStatus) use ($wsResource, $siren, $useCache) {
+            return function ($result = null, $callStatus, $parameter = []) use ($wsResource, $siren, $useCache) {
                 try {
                     $event         = $this->stopwatch->stop($wsResource->getIdResource());
                     $transferTime  = $event->getDuration() / 1000;
                     $wsCallHistory = $this->createLog($wsResource, $siren, $transferTime, $callStatus);
 
                     if ($useCache) {
-                        $this->storeResponse($wsResource, $siren, $result, $wsCallHistory);
+                        $this->storeResponse($wsCallHistory, $parameter, $result);
                     }
 
                     return $wsCallHistory;
                 } catch (\Exception $exception) {
-                    $this->logger->error('Unable to log response time into database. Error message: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]);
+                    $this->logger->error('Unable to log response time into database. Error message: ' . $exception->getMessage(),
+                        ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]);
                     unset($exception);
                 }
 
@@ -174,15 +177,20 @@ class CallHistoryManager
     }
 
     /**
-     * @param WsExternalResource $wsResource
-     * @param string             $siren
-     * @param string             $response
+     * @param WsCallHistory $callHistory
+     * @param array         $parameter
+     * @param string        $response
      */
-    private function storeResponse(WsExternalResource $wsResource, $siren, $response, WsCallHistory $callHistory)
+    private function storeResponse(WsCallHistory $callHistory, $parameter, $response)
     {
         try {
-            $wsCall = new WsCall();
+            $wsResource = $callHistory->getIdResource();
+            $siren      = $callHistory->getSiren();
+            $wsCall     = new WsCall();
             $wsCall->setSiren($siren);
+            if (false === empty($parameter)) {
+                $wsCall->setParameter(json_encode($parameter));
+            }
             $wsCall->setProvider($wsResource->getProviderName());
             $wsCall->setResource($wsResource->getResourceName());
             $wsCall->setResponse($response);
@@ -199,31 +207,36 @@ class CallHistoryManager
 
     /**
      * @param string         $siren
+     * @param array          $parameter
      * @param string         $provider
      * @param string         $resource
      * @param null|\DateTime $date
+     *
      * @return false|WsCall
      */
-    public function fetchLatestDataFromMongo($siren, $provider, $resource, \DateTime $date)
+    public function fetchLatestDataFromMongo($siren, $parameter, $provider, $resource, \DateTime $date)
     {
         $logContext = ['class' => __CLASS__, 'function' => __FUNCTION__, 'query_params' => json_encode([$siren, $provider, $resource, $date->format('Y-m-d H:i:s')])];
         $wsCall     = false;
         $time       = time();
         $this->stopwatch->start(__FUNCTION__ . $time);
-
         try {
-            /** @var WsCall $wsCall */
-            $wsCall = $this->managerRegistry->getManager()
-                ->createQueryBuilder('UnilendStoreBundle:WsCall')
-                ->field('siren')->equals($siren)
+            /** @var Builder $queryBuilder */
+            $queryBuilder = $this->managerRegistry->getManager()->createQueryBuilder('UnilendStoreBundle:WsCall');
+
+            if (false === empty($parameter)) {
+                $queryBuilder->field('parameter')->equals(json_encode($parameter));
+            }
+
+            $queryBuilder->field('siren')->equals((string) $siren)
                 ->field('provider')->equals($provider)
                 ->field('resource')->equals($resource)
                 ->field('added')->gte($date)
                 ->sort('added', 'desc')
                 ->limit(1)
-                ->refresh()
-                ->getQuery()
-                ->getSingleResult();
+                ->refresh();
+
+            $wsCall = $queryBuilder->getQuery()->getSingleResult();
         } catch (\Exception $exception) {
             $this->logger->warning('Unable to fetch data from mongoDB: ' . $exception->getMessage(), $logContext);
         }
@@ -234,20 +247,24 @@ class CallHistoryManager
     /**
      * @param WsExternalResource $wsResource
      * @param string             $siren
+     * @param array              $parameter
+     *
      * @return mixed
      */
-    public function getStoredResponse(WsExternalResource $wsResource, $siren)
+    public function getStoredResponse(WsExternalResource $wsResource, $siren, $parameter = [])
     {
         if ($wsResource->isIsAvailable() > 0) {
             $data = $this->fetchLatestDataFromMongo(
                 $siren,
+                $parameter,
                 $wsResource->getProviderName(),
                 $wsResource->getResourceName(),
                 $this->getDateTimeFromPassedDays($wsResource->getValidityDays())
             );
 
             if ($data instanceof WsCall) {
-                $this->logger->debug('Fetched data from mongoDB for ' . $data->getProvider() . '->' . $data->getResource() . ': ' . $data->getResponse() . ' --- Stored at: ' . $data->getAdded()->format('Y-m-d H:i:s'), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $data->getSiren()]);
+                $this->logger->debug('Fetched data from mongoDB for ' . $data->getProvider() . '->' . $data->getResource() . ': ' . $data->getResponse() . ' --- Stored at: ' . $data->getAdded()
+                        ->format('Y-m-d H:i:s'), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $data->getSiren()]);
                 return $data->getResponse();
             }
         }
@@ -257,6 +274,7 @@ class CallHistoryManager
 
     /**
      * @param int $days
+     *
      * @return \DateTime
      */
     public function getDateTimeFromPassedDays($days = 3)
@@ -296,6 +314,7 @@ class CallHistoryManager
 
     /**
      * @param int $module
+     *
      * @return string
      */
     private function module2string($module)

@@ -110,7 +110,7 @@ class simulationController extends bootstrap
                 if (false === empty($_POST['siren']) && null !== $wsResource) {
                     $days         = empty($_POST['nbDaysAgo']) ? 3 : $_POST['nbDaysAgo'];
                     $date         = (new \DateTime())->sub(new \DateInterval('P' . $days . 'D'));
-                    $this->result = $wsCallHistory->fetchLatestDataFromMongo($_POST['siren'], $wsResource->getProviderName(), $wsResource->getResourceName(), $date);
+                    $this->result = $wsCallHistory->fetchLatestDataFromMongo($_POST['siren'], [], $wsResource->getProviderName(), $wsResource->getResourceName(), $date);
                 } else {
                     $this->result = 'Please give a siren and a valid resource from the drop down list';
                 }
