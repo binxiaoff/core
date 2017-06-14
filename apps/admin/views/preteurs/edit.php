@@ -333,7 +333,7 @@
         <?php if (false === empty($this->vigilanceStatusHistory)) : ?>
             <button class="btn" id="btn-show-lender-vigilance-history">Voir l'historique de vigilance</button>
         <?php endif; ?>
-        <a class="thickbox btn" href="<?= $this->lurl ?>/client_atypical_operation/process_detection_box/add/<?= $this->clients->id_client ?>">
+        <a class="thickbox btn-primary" href="<?= $this->lurl ?>/client_atypical_operation/process_detection_box/add/<?= $this->clients->id_client ?>">
             Ajouter
         </a>
         <div id="lender-atypical-operation" style="display: none;">
@@ -374,12 +374,12 @@
                            id="datepik_2" class="input_dp"
                            value="<?= (empty($_POST['id']) && false === empty($_POST['dateEnd'])) ? $_POST['dateEnd'] : '' ?>"/>
                 </div>
-                <input type="submit" value="Exporter" title="Valider" name="export_operations" id="export_operations" class="btn" style="height: 30px" />
+                <input type="submit" value="Exporter" title="Valider" name="export_operations" id="export_operations" class="btn-primary" style="height: 30px" />
             </form>
         </div>
         <div class="droite" style="padding-top: 5px;">
             <form method="post" id="anneeMouvTransacForm" action="">
-                <input type="submit" value="Filtrer" name="filter" id="export_operations" class="btn" style="float: right; height: 30px" />
+                <input type="submit" value="Filtrer" name="filter" id="export_operations" class="btn-primary" style="float: right; height: 30px" />
                 <div class="form-field" style="float: right;">
                     <select name="anneeMouvTransac" id="anneeMouvTransac" class="select" style="width:100%;">
                         <?php for ($i = date('Y'); $i >= 2013; $i--) : ?>
@@ -390,78 +390,93 @@
             </form>
         </div>
 
-        <div class="MouvTransac">
-            <?php $this->fireView('transactions'); ?>
-        </div>
-        <div class="lesbidsEncours">
-            <h2>Suivi des enchères en cours</h2>
-            <?php if (count($this->lBids) > 0) :?>
-                <table class="tablesorter bidsEncours">
-                    <thead>
-                    <tr>
-                        <th>id bid</th>
-                        <th>Projet</th>
-                        <th>Date</th>
-                        <th>Montant enchere (€)</th>
-                        <th>Taux</th>
-                        <th>Nbre de mois</th>
-                        <th>&nbsp;</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php
-                    $i = 1;
-                    foreach ($this->lBids as $e) :
-                        $this->projects->get($e['id_project'], 'id_project'); ?>
-                        <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-                            <td align="center"><?= $e['id_bid'] ?></td>
-                            <td>
-                                <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>"><?= $this->projects->title ?></a>
-                            </td>
-                            <td><?= date('d/m/Y', strtotime($e['added'])) ?></td>
-                            <td align="center"><?= number_format($e['amount'] / 100, 2, '.', ' ') ?></td>
-                            <td align="center"><?= number_format($e['rate'], 2, '.', ' ') ?> %</td>
-                            <td align="center"><?= $this->projects->period ?></td>
-
-                            <td align="center">
-                                <a role="button" class="deleteBidBtn" data-bid="<?= $e['id_bid'] ?>">Rejeter ce bid</a>
-                            </td>
-                        </tr>
-                        <?php
-                        $i++;
-                    endforeach; ?>
-                    </tbody>
-                </table>
-                <?php if ($this->nb_lignes != '') : ?>
-                    <table>
-                        <tr>
-                            <td id="pager">
-                                <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first"/>
-                                <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev"/>
-                                <input type="text" class="pagedisplay"/>
-                                <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
-                                <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
-                                <select class="pagesize">
-                                    <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
-                                </select>
-                            </td>
-                        </tr>
-                    </table>
-                <?php endif; ?>
-            <?php endif; ?>
+        <div class="MouvTransac row">
+            <div class="col-md-12">
+                <?php $this->fireView('transactions'); ?>
+            </div>
         </div>
 
         <br/><br/>
-        <h2>Suivi des enchères</h2>
-        <div class="btnDroite">
-            <select name="annee" id="annee" class="select" style="width:95px;">
-                <?php for ($i = date('Y'); $i >= 2008; $i--) : ?>
-                    <option <?= (isset($this->params[1]) && $this->params[1] == $i ? 'selected' : '') ?> value="<?= $i ?>"><?= $i ?></option>
-                <?php endfor; ?>
-            </select>
-            <a id="changeDate" href="<?= $this->lurl ?>/preteurs/edit/<?= $this->params[0] ?>/2013" class="btn_link">OK</a>
+
+        <div class="lesbidsEncours row">
+            <div class="col-md-12">
+                <h2>Suivi des enchères en cours</h2>
+                <?php if (count($this->lBids) > 0) :?>
+                    <table class="tablesorter bidsEncours">
+                        <thead>
+                        <tr>
+                            <th>id bid</th>
+                            <th>Projet</th>
+                            <th>Date</th>
+                            <th>Montant enchere (€)</th>
+                            <th>Taux</th>
+                            <th>Nbre de mois</th>
+                            <th>&nbsp;</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php
+                        $i = 1;
+                        foreach ($this->lBids as $e) :
+                            $this->projects->get($e['id_project'], 'id_project'); ?>
+                            <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
+                                <td align="center"><?= $e['id_bid'] ?></td>
+                                <td>
+                                    <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>"><?= $this->projects->title ?></a>
+                                </td>
+                                <td><?= date('d/m/Y', strtotime($e['added'])) ?></td>
+                                <td align="center"><?= number_format($e['amount'] / 100, 2, '.', ' ') ?></td>
+                                <td align="center"><?= number_format($e['rate'], 2, '.', ' ') ?> %</td>
+                                <td align="center"><?= $this->projects->period ?></td>
+
+                                <td align="center">
+                                    <a role="button" class="deleteBidBtn" data-bid="<?= $e['id_bid'] ?>">Rejeter ce bid</a>
+                                </td>
+                            </tr>
+                            <?php
+                            $i++;
+                        endforeach; ?>
+                        </tbody>
+                    </table>
+                    <?php if ($this->nb_lignes != '') : ?>
+                        <table>
+                            <tr>
+                                <td id="pager">
+                                    <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first"/>
+                                    <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev"/>
+                                    <input type="text" class="pagedisplay"/>
+                                    <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
+                                    <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
+                                    <select class="pagesize">
+                                        <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                    <?php endif; ?>
+                <?php endif; ?>
+            </div>
         </div>
-        <?php if (count($this->lEncheres) > 0) : ?>
+
+        <br/><br/>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Suivi des enchères</h2>
+            </div>
+            <div class="col-md-6 text-right">
+
+                    <select name="annee" id="annee" class="select" style="width:95px; height: 30px">
+                        <?php for ($i = date('Y'); $i >= 2008; $i--) : ?>
+                            <option <?= (isset($this->params[1]) && $this->params[1] == $i ? 'selected' : '') ?> value="<?= $i ?>"><?= $i ?></option>
+                        <?php endfor; ?>
+                    </select>
+                    <a id="changeDate" href="<?= $this->lurl ?>/preteurs/edit/<?= $this->params[0] ?>/2013" class="btn-primary">OK</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+            <?php if (count($this->lEncheres) > 0) : ?>
             <table class="tablesorter encheres">
                 <thead>
                     <tr>
@@ -517,5 +532,8 @@
                 </table>
             <?php endif; ?>
         <?php endif; ?>
+            </div>
+        </div>
     <?php endif; ?>
+
 </div>
