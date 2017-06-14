@@ -74,12 +74,11 @@ class WalletRepository extends EntityRepository
             INNER JOIN wallet_type wt ON wt.id = w.id_type AND wt.label = :lender
             INNER JOIN (
               SELECT
-                am.id_wallet AS walletId,
+                b.id_lender_account AS walletId,
                 MAX(b.added)   AS lastOperationDate
               FROM bids b
-              INNER JOIN account_matching am ON am.id_lender_account = b.id_lender_account
               WHERE b.id_autobid IS NULL
-              GROUP BY am.id_wallet
+              GROUP BY b.id_lender_account
               HAVING lastOperationDate < :inactiveSince
             ) b2 ON b2.walletId = a.walletId
             GROUP BY walletId';
