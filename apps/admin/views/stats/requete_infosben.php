@@ -32,7 +32,7 @@
             </thead>
             <tbody>
                 <?php $i = 0; ?>
-                <?php foreach ($this->walletsWithMouvements as $wallet) : ?>
+                <?php foreach ($this->walletsWithMovements as $wallet) : ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                         <td>1</td>
                         <td><?= $wallet->getWireTransferPattern() ?></td>

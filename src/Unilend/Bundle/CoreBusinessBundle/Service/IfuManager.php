@@ -33,6 +33,7 @@ class IfuManager
     public function getWallets($year)
     {
         $cachedItem = $this->cachePool->getItem(CacheKeys::IFU_WALLETS . $year);
+
         if (false === $cachedItem->isHit()) {
             $operationTypes = [
                 OperationType::LENDER_LOAN,
@@ -41,6 +42,7 @@ class IfuManager
             ];
             $walletRepository     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
             $walletsWithMovements = $walletRepository->getLenderWalletsWithOperationsInYear($operationTypes, $year);
+
             $cachedItem->set($walletsWithMovements)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
 
