@@ -32,8 +32,6 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $start = microtime(true);
-
         $year              = $input->getArgument('year');
         $filePath          = $this->getContainer()->getParameter('path.protected') . '/' . 'requete_revenus' . date('Ymd') . '.csv';
         $yesterday         = new \DateTime('yesterday');
