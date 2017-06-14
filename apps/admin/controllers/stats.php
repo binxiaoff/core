@@ -161,14 +161,9 @@ class statsController extends bootstrap
             $year = date('Y');
         }
 
-        $operationTypes = [
-            OperationType::LENDER_LOAN,
-            OperationType::CAPITAL_REPAYMENT,
-            OperationType::GROSS_INTEREST_REPAYMENT
-        ];
-        /** @var WalletRepository $walletRepository */
-        $walletRepository     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $walletsWithMovements = $walletRepository->getLenderWalletsWithOperationsInYear($operationTypes, $year);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\IfuManager $ifuManager */
+        $ifuManager           = $this->get('unilend.service.ifu_manager');
+        $walletsWithMovements = $ifuManager->getWallets($year);
 
         $data     = [];
         $filename = 'requete_beneficiaires' . date('Ymd');
@@ -354,15 +349,9 @@ class statsController extends bootstrap
             $year = (int) $this->params[0];
         }
 
-        $operationTypes = [
-            OperationType::LENDER_LOAN,
-            OperationType::CAPITAL_REPAYMENT,
-            OperationType::GROSS_INTEREST_REPAYMENT
-        ];
-
-        /** @var WalletRepository $walletRepository */
-        $walletRepository           = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $this->walletsWithMovements = $walletRepository->getLenderWalletsWithOperationsInYear($operationTypes, $year);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\IfuManager $ifuManager */
+        $ifuManager                 = $this->get('unilend.service.ifu_manager');
+        $this->walletsWithMovements = $ifuManager->getWallets($year);
     }
 
     public function _requete_infosben_csv()
@@ -374,16 +363,9 @@ class statsController extends bootstrap
         if (isset($this->params[0]) && is_numeric($this->params[0])) {
             $year = (int) $this->params[0];
         }
-
-        $operationTypes       = [
-            OperationType::LENDER_LOAN,
-            OperationType::CAPITAL_REPAYMENT,
-            OperationType::GROSS_INTEREST_REPAYMENT
-        ];
-
-        /** @var WalletRepository $walletRepository */
-        $walletRepository     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $walletsWithMovements = $walletRepository->getLenderWalletsWithOperationsInYear($operationTypes, $year);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\IfuManager $ifuManager */
+        $ifuManager           = $this->get('unilend.service.ifu_manager');
+        $walletsWithMovements = $ifuManager->getWallets($year);
 
         $header = "Cdos;Cbéné;CEtabl;CGuichet;RéfCompte;NatCompte;TypCompte;CDRC;";
 

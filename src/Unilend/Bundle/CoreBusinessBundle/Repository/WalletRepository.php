@@ -110,7 +110,7 @@ class WalletRepository extends EntityRepository
      *
      * @return array Wallet[]
      */
-    public function getLenderWalletsWithOperationsInYear($operationTypes, $year)
+    public function getLenderWalletsWithOperationsInYear(array $operationTypes, $year)
     {
         $qb = $this->createQueryBuilder('w');
         $qb->innerJoin('UnilendCoreBusinessBundle:WalletBalanceHistory', 'wbh', Join::WITH, 'w.id = wbh.idWallet')
@@ -120,12 +120,13 @@ class WalletRepository extends EntityRepository
             ->where('wt.label = :lender')
             ->andWhere('ot.label IN (:operationTypes)')
             ->andWhere('wbh.added BETWEEN :start AND :end')
+            ->groupBy('w.id')
             ->setParameter('lender', WalletType::LENDER)
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
             ->setParameter('start', $year . '-01-01 00:00:00')
             ->setParameter('end', $year . '-12-31- 23:59:59');
 
-        return $qb->getQuery()->useResultCache(true, CacheKeys::LONG_TIME)->getResult();
+        return $qb->getQuery()->getResult();
     }
 
     /**

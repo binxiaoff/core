@@ -422,5 +422,10 @@
             <argument type="service" id="assets.packages"/>
             <argument>%router.request_context.scheme%://%url.host_default%</argument>
         </service>
+
+        <service id="unilend.service.ifu_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\IfuManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="memcache.default" />
+        </service>
     </services>
 </container>

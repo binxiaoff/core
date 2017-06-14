@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Unilend\Bundle\CommandBundle\Command;
-
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
@@ -14,7 +12,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 
 class QueriesLenderRevenueCommand extends ContainerAwareCommand
 {
-
     /**
      * @see Command
      */
@@ -35,6 +32,8 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $start = microtime(true);
+
         $year              = $input->getArgument('year');
         $filePath          = $this->getContainer()->getParameter('path.protected') . '/' . 'requete_revenus' . date('Ymd') . '.csv';
         $yesterday         = new \DateTime('yesterday');
@@ -61,14 +60,8 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
         $activeSheet->setCellValueByColumnAndRow(6, $row, 'idClient');
         $row ++;
 
-        $operationTypes = [
-            OperationType::LENDER_LOAN,
-            OperationType::CAPITAL_REPAYMENT,
-            OperationType::GROSS_INTEREST_REPAYMENT
-        ];
         $operationRepository  = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Operation');
-        $walletRepository     = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $walletsWithMovements = $walletRepository->getLenderWalletsWithOperationsInYear($operationTypes, $year);
+        $walletsWithMovements = $this->getContainer()->get('unilend.service.ifu_manager')->getWallets($year);
 
         /** @var Wallet $wallet */
         foreach ($walletsWithMovements as $wallet) {

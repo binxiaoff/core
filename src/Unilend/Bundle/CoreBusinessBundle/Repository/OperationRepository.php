@@ -518,6 +518,7 @@ class OperationRepository extends EntityRepository
     {
         return 'SELECT
                   LEFT(o.added, 10) AS day,
+                  MONTH(o.added) AS month,
                   SUM(o.amount) AS amount,
                   CASE ot.label
                    WHEN "' . OperationType::LENDER_PROVISION . '" THEN
@@ -544,9 +545,8 @@ class OperationRepository extends EntityRepository
         $start->setTime(0, 0, 0);
         $end->setTime(23, 59, 59);
 
-        $query = $this->getDailyStateQuery() .
-                    'WHERE
-                      o.added BETWEEN :start AND :end
+        $query = $this->getDailyStateQuery() . ' 
+                    WHERE o.added BETWEEN :start AND :end
                     AND ot.label IN ("' . implode('","', $operationTypes) . '")
                     GROUP BY day, movement
                     ORDER BY o.added ASC';
@@ -575,9 +575,8 @@ class OperationRepository extends EntityRepository
         $start->setTime(0, 0, 0);
         $requestedDate->setTime(23, 59, 59);
 
-        $query = $this->getDailyStateQuery() .
-                    'WHERE
-                      o.added BETWEEN :start AND :end
+        $query = $this->getDailyStateQuery() . ' 
+                    WHERE o.added BETWEEN :start AND :end
                       AND ot.label IN ("' . implode('","', $operationTypes) . '")
                     GROUP BY month, movement
                     ORDER BY o.added ASC';
