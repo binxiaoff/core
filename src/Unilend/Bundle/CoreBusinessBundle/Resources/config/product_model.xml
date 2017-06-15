@@ -30,7 +30,6 @@
 
         <service id="unilend.service_product.project_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\ProjectValidator" public="false">
             <argument type="service" id="unilend.service_product.product_attribute_manager"/>
-            <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service_product_contract.contract_manager"/>
         </service>
 
