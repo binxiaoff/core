@@ -147,6 +147,7 @@ class NotificationManager
             $clientNotificationSettings->id_notif  = $notification['id_client_gestion_type_notif'];
 
             $defaultImmediate = [
+                \clients_gestion_type_notif::TYPE_NEW_PROJECT,
                 \clients_gestion_type_notif::TYPE_BID_REJECTED,
                 \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT,
                 \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT,
@@ -154,7 +155,6 @@ class NotificationManager
             ];
 
             $defaultDaily = [
-                \clients_gestion_type_notif::TYPE_NEW_PROJECT,
                 \clients_gestion_type_notif::TYPE_BID_PLACED,
                 \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED,
                 \clients_gestion_type_notif::TYPE_REPAYMENT
