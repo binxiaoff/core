@@ -953,7 +953,7 @@ class ajaxController extends bootstrap
             }
 
             if (false === in_array(ProjectsStatus::PREP_FUNDING, $existingStatus)) {
-                $this->get('mailer')->sendBorrowerAccount($client, 'ouverture-espace-emprunteur-plein');
+                $this->get('unilend.service.email_manager')->sendBorrowerAccount($client, 'ouverture-espace-emprunteur-plein');
             }
 
             $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::PREP_FUNDING, $project);
@@ -1233,7 +1233,7 @@ class ajaxController extends bootstrap
                     break;
             }
 
-            $this->get('mailer')->sendBorrowerAccount($oClients, $sTypeEmail);
+            $this->get('unilend.service.email_manager')->sendBorrowerAccount($oClients, $sTypeEmail);
         }
     }
 }
