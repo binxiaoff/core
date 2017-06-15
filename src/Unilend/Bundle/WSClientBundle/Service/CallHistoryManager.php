@@ -4,6 +4,7 @@ namespace Unilend\Bundle\WSClientBundle\Service;
 
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ORM\EntityManager;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Stopwatch\Stopwatch;
@@ -12,11 +13,14 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\CoreBusinessBundle\Service\SlackManager;
 use Unilend\Bundle\StoreBundle\Document\WsCall;
+use Unilend\librairies\CacheKeys;
 
 class CallHistoryManager
 {
     /** @var EntityManager */
     private $entityManager;
+    /** @var CacheItemPoolInterface */
+    private $cacheItemPool;
     /** @var Stopwatch */
     private $stopwatch;
     /** @var SlackManager */
@@ -25,18 +29,18 @@ class CallHistoryManager
     private $alertChannel;
     /** @var Packages */
     private $assetPackage;
-    /** @var  LoggerInterface */
+    /** @var LoggerInterface */
     private $logger;
     /** @var ManagerRegistry */
     private $managerRegistry;
-    /** @var  LoggerInterface */
+    /** @var LoggerInterface */
     private $mongoDBLogger;
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
 
     /**
-     * WSProviderCallHistoryManager constructor.
      * @param EntityManager          $entityManager
+     * @param CacheItemPoolInterface $cacheItemPool
      * @param Stopwatch              $stopwatch
      * @param SlackManager           $slackManager
      * @param string                 $alertChannel
@@ -48,6 +52,7 @@ class CallHistoryManager
      */
     public function __construct(
         EntityManager $entityManager,
+        CacheItemPoolInterface $cacheItemPool,
         Stopwatch $stopwatch,
         SlackManager $slackManager,
         $alertChannel,
@@ -59,6 +64,7 @@ class CallHistoryManager
     )
     {
         $this->entityManager          = $entityManager;
+        $this->cacheItemPool          = $cacheItemPool;
         $this->stopwatch              = $stopwatch;
         $this->slackManager           = $slackManager;
         $this->alertChannel           = $alertChannel;
@@ -189,12 +195,17 @@ class CallHistoryManager
             $wsCall->setIdWsCallHistory($callHistory->getIdCallHistory());
             $wsCall->setAdded(new \DateTime());
 
-            $dm = $this->managerRegistry->getManager();
-            $dm->persist($wsCall);
-            $dm->flush();
+            $documentManager = $this->managerRegistry->getManager();
+            $documentManager->persist($wsCall);
+            $documentManager->flush();
         } catch (\Exception $exception) {
             $this->logger->warning('Unable to save response to mongoDB: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]);
         }
+
+        $cachedItem = $this->cacheItemPool->getItem($this->getCacheKey($wsResource));
+        $cachedItem->set($response)->expiresAfter(CacheKeys::LONG_TIME);
+
+        $this->cacheItemPool->save($cachedItem);
     }
 
     /**
@@ -234,22 +245,27 @@ class CallHistoryManager
     /**
      * @param WsExternalResource $wsResource
      * @param string             $siren
+     *
      * @return mixed
      */
     public function getStoredResponse(WsExternalResource $wsResource, $siren)
     {
-        if ($wsResource->isIsAvailable() > 0) {
-            $data = $this->fetchLatestDataFromMongo(
-                $siren,
-                $wsResource->getProviderName(),
-                $wsResource->getResourceName(),
-                $this->getDateTimeFromPassedDays($wsResource->getValidityDays())
-            );
+        $cachedItem = $this->cacheItemPool->getItem($this->getCacheKey($wsResource));
 
-            if ($data instanceof WsCall) {
-                $this->logger->debug('Fetched data from mongoDB for ' . $data->getProvider() . '->' . $data->getResource() . ': ' . $data->getResponse() . ' --- Stored at: ' . $data->getAdded()->format('Y-m-d H:i:s'), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $data->getSiren()]);
-                return $data->getResponse();
-            }
+        if ($cachedItem->isHit()) {
+            return $cachedItem->get();
+        }
+
+        $data = $this->fetchLatestDataFromMongo(
+            $siren,
+            $wsResource->getProviderName(),
+            $wsResource->getResourceName(),
+            $this->getDateTimeFromPassedDays($wsResource->getValidityDays())
+        );
+
+        if ($data instanceof WsCall) {
+            $this->logger->debug('Fetched data from mongoDB for ' . $data->getProvider() . '->' . $data->getResource() . ': ' . $data->getResponse() . ' --- Stored at: ' . $data->getAdded()->format('Y-m-d H:i:s'), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $data->getSiren()]);
+            return $data->getResponse();
         }
 
         return false;
@@ -314,5 +330,15 @@ class CallHistoryManager
             default:
                 return 'UNKNOWN';
         }
+    }
+
+    /**
+     * @param WsExternalResource $resource
+     *
+     * @return string
+     */
+    private function getCacheKey(WsExternalResource $resource)
+    {
+        return 'WS_call_' . $resource->getLabel();
     }
 }

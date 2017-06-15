@@ -3,7 +3,6 @@
 /**
  * @todo
  * - WS managers may throw a specific exception when response is unexpected that may be catched in the validate method and return a "\projects_status::UNEXPECTED_RESPONSE . 'WS_NAME'" error
- * - Add memcache cache on WS calls
  * - Save data when calling WS
  */
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator;
@@ -37,19 +36,19 @@ class CompanyValidator
     /** @var InfogreffeManager */
     private $infogreffeManager;
 
-    private static $checkMethodReferences = [
-        'checkSiren'                    => 'TC-RISK-001',
-        'checkActiveCompany'            => 'TC-RISK-002',
-        'checkCollectiveProceeding'     => 'TC-RISK-003',
-        'checkPaymentIncidents'         => 'TC-RISK-005',
-        'checkAltaresScore'             => 'TC-RISK-006',
-        'checkCapitalStock'             => 'TC-RISK-007',
-        'checkGrossOperatingSurplus'    => 'TC-RISK-008',
-        'checkEliminationXerfiScore'    => 'TC-RISK-009',
-        'checkAltaresScoreVsXerfiScore' => 'TC-RISK-010',
-        'checkEulerHermesTrafficLight'  => 'TC-RISK-011',
-        'checkInfolegaleScore'          => 'TC-RISK-013',
-        'checkEulerHermesGrade'         => 'TC-RISK-015'
+    const CHECK_RULE_METHODS = [
+        'TC-RISK-001' => 'checkSiren',
+        'TC-RISK-002' => 'checkActiveCompany',
+        'TC-RISK-003' => 'checkCollectiveProceeding',
+        'TC-RISK-005' => 'checkPaymentIncidents',
+        'TC-RISK-006' => 'checkAltaresScore',
+        'TC-RISK-007' => 'checkCapitalStock',
+        'TC-RISK-008' => 'checkGrossOperatingSurplus',
+        'TC-RISK-009' => 'checkEliminationXerfiScore',
+        'TC-RISK-010' => 'checkAltaresScoreVsXerfiScore',
+        'TC-RISK-011' => 'checkEulerHermesTrafficLight',
+        'TC-RISK-013' => 'checkInfolegaleScore',
+        'TC-RISK-015' => 'checkEulerHermesGrade'
     ];
 
     /**
@@ -85,17 +84,17 @@ class CompanyValidator
      */
     public function validate($siren, Projects $project = null)
     {
-        $sirenCheck = $this->checkRule('checkSiren', $siren, $project);
+        $sirenCheck = $this->checkRule('TC-RISK-001', $siren, $project);
         if (false === empty($sirenCheck)) {
             return $sirenCheck;
         }
 
-        $activeCompanyCheck = $this->checkRule('checkActiveCompany', $siren, $project);
+        $activeCompanyCheck = $this->checkRule('TC-RISK-002', $siren, $project);
         if (false === empty($activeCompanyCheck)) {
             return $activeCompanyCheck;
         }
 
-        $collectiveProceedingCheck = $this->checkRule('checkCollectiveProceeding', $siren, $project);
+        $collectiveProceedingCheck = $this->checkRule('TC-RISK-003', $siren, $project);
         if (false === empty($collectiveProceedingCheck)) {
             return $collectiveProceedingCheck;
         }
@@ -106,51 +105,51 @@ class CompanyValidator
             return $this->checkNoActivityCompany($siren, $project);
         }
 
-        $paymentIncidentsCheck = $this->checkRule('checkPaymentIncidents', $siren, $project);
+        $paymentIncidentsCheck = $this->checkRule('TC-RISK-005', $siren, $project);
         if (false === empty($paymentIncidentsCheck)) {
             return $paymentIncidentsCheck;
         }
 
-        $altaresScoreCheck = $this->checkRule('checkAltaresScore', $siren, $project);
+        $altaresScoreCheck = $this->checkRule('TC-RISK-006', $siren, $project);
         if (false === empty($altaresScoreCheck)) {
             return $altaresScoreCheck;
         }
 
-        $capitalStockCheck = $this->checkRule('checkCapitalStock', $siren, $project);
+        $capitalStockCheck = $this->checkRule('TC-RISK-007', $siren, $project);
         if (false === empty($capitalStockCheck)) {
             return $capitalStockCheck;
         }
 
-        $grossOperatingSurplusCheck = $this->checkRule('checkGrossOperatingSurplus', $siren, $project);
+        $grossOperatingSurplusCheck = $this->checkRule('TC-RISK-008', $siren, $project);
         if (false === empty($grossOperatingSurplusCheck)) {
             return $grossOperatingSurplusCheck;
         }
 
-        $eliminationXerfiScoreCheck = $this->checkRule('checkEliminationXerfiScore', $siren, $project);
+        $eliminationXerfiScoreCheck = $this->checkRule('TC-RISK-009', $siren, $project);
         if (false === empty($eliminationXerfiScoreCheck)) {
             return $eliminationXerfiScoreCheck;
         }
 
-        $altaresScoreVsXerfiScoreCheck = $this->checkRule('checkAltaresScoreVsXerfiScore', $siren, $project);
+        $altaresScoreVsXerfiScoreCheck = $this->checkRule('TC-RISK-010', $siren, $project);
         if (false === empty($altaresScoreVsXerfiScoreCheck)) {
             return $altaresScoreVsXerfiScoreCheck;
         }
 
-        $eulerHermesTrafficLightCheck = $this->checkRule('checkEulerHermesTrafficLight', $siren, $project);
+        $eulerHermesTrafficLightCheck = $this->checkRule('TC-RISK-011', $siren, $project);
         if (false === empty($eulerHermesTrafficLightCheck)) {
             return $eulerHermesTrafficLightCheck;
         }
 
         // TC-RISK-012
 
-        $infolegaleScoreCheck = $this->checkRule('checkInfolegaleScore', $siren, $project);
+        $infolegaleScoreCheck = $this->checkRule('TC-RISK-013', $siren, $project);
         if (false === empty($infolegaleScoreCheck)) {
             return $infolegaleScoreCheck;
         }
 
         // TC-RISK-014
 
-        $eulerHermesGradeCheck = $this->checkRule('checkEulerHermesGrade', $siren, $project);
+        $eulerHermesGradeCheck = $this->checkRule('TC-RISK-015', $siren, $project);
         if (false === empty($eulerHermesGradeCheck)) {
             return $eulerHermesGradeCheck;
         }
@@ -163,7 +162,7 @@ class CompanyValidator
      *
      * @return array
      */
-    public function checkSiren($siren)
+    private function checkSiren($siren)
     {
         if (
             Companies::INVALID_SIREN_EMPTY === $siren
@@ -179,7 +178,7 @@ class CompanyValidator
      *
      * @return array
      */
-    public function checkActiveCompany($siren)
+    private function checkActiveCompany($siren)
     {
         $companyData = $this->altaresManager->getCompanyIdentity($siren);
         if (in_array($companyData->getCompanyStatus(), [7, 9])) {
@@ -193,7 +192,7 @@ class CompanyValidator
      *
      * @return array
      */
-    public function checkCollectiveProceeding($siren)
+    private function checkCollectiveProceeding($siren)
     {
         $companyData = $this->altaresManager->getCompanyIdentity($siren);
         if ($companyData->getCollectiveProcedure()) {
@@ -207,7 +206,7 @@ class CompanyValidator
      *
      * @return array
      */
-    public function checkPaymentIncidents($siren)
+    private function checkPaymentIncidents($siren)
     {
         $nonAllowedIncident = [2, 3, 4, 5, 6];
         $startDate          = (new \DateTime())->sub(new \DateInterval('P1Y'));
@@ -241,7 +240,7 @@ class CompanyValidator
      *
      * @return array
      */
-    public function checkAltaresScore($siren)
+    private function checkAltaresScore($siren)
     {
         $altaresScore = $this->altaresManager->getScore($siren);
         if (null === $altaresScore) {
@@ -260,7 +259,7 @@ class CompanyValidator
      *
      * @return array
      */
-    public function checkCapitalStock($siren)
+    private function checkCapitalStock($siren)
     {
         $lastBalanceSheet = $this->getLastBalanceSheetUpToDate($siren);
         if (null === $lastBalanceSheet) {
@@ -296,7 +295,7 @@ class CompanyValidator
      *
      * @return array
      */
-    public function checkGrossOperatingSurplus($siren)
+    private function checkGrossOperatingSurplus($siren)
     {
         $lastBalanceSheet = $this->getLastBalanceSheetUpToDate($siren);
         if (null === $lastBalanceSheet) {
@@ -332,7 +331,7 @@ class CompanyValidator
      *
      * @return array
      */
-    public function checkEliminationXerfiScore($siren)
+    private function checkEliminationXerfiScore($siren)
     {
         $nafCode = $this->getNAFCode($siren);
         $xerfi   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($nafCode);
@@ -349,7 +348,7 @@ class CompanyValidator
      *
      * @return array
      */
-    public function checkAltaresScoreVsXerfiScore($siren)
+    private function checkAltaresScoreVsXerfiScore($siren)
     {
         $altaresScore = $this->altaresManager->getScore($siren);
         if (null === $altaresScore) {
@@ -374,7 +373,7 @@ class CompanyValidator
      *
      * @return array
      */
-    public function checkEulerHermesTrafficLight($siren)
+    private function checkEulerHermesTrafficLight($siren)
     {
         $trafficLight = $this->eulerHermesManager->getTrafficLight($siren, 'fr');
 
@@ -420,7 +419,7 @@ class CompanyValidator
      *
      * @return array
      */
-    public function checkInfolegaleScore($siren)
+    private function checkInfolegaleScore($siren)
     {
         $infolegaleScore = $this->infolegaleManager->getScore($siren);
         if (null === $infolegaleScore) {
@@ -439,7 +438,7 @@ class CompanyValidator
      *
      * @return array
      */
-    public function checkEulerHermesGrade($siren)
+    private function checkEulerHermesGrade($siren)
     {
         $eulerHermesGrade = $this->eulerHermesManager->getGrade($siren, 'fr');
         if (null === $eulerHermesGrade) {
@@ -479,12 +478,12 @@ class CompanyValidator
      */
     private function checkNoActivityCompany($siren, Projects $project = null)
     {
-        $altaresScoreCheck = $this->checkRule('checkAltaresScore', $siren, $project);
+        $altaresScoreCheck = $this->checkRule('TC-RISK-006', $siren, $project);
         if (false === empty($altaresScoreCheck)) {
             return $altaresScoreCheck;
         }
 
-        $infolegaleScoreCheck = $this->checkRule('checkInfolegaleScore', $siren, $project);
+        $infolegaleScoreCheck = $this->checkRule('TC-RISK-013', $siren, $project);
         if (false === empty($infolegaleScoreCheck)) {
             return $infolegaleScoreCheck;
         }
@@ -529,16 +528,16 @@ class CompanyValidator
     }
 
     /**
-     * @param string        $methodName
+     * @param string        $ruleName
      * @param string        $siren
      * @param Projects|null $project
      *
      * @return array
      */
-    private function checkRule($methodName, $siren, Projects $project = null)
+    private function checkRule($ruleName, $siren, Projects $project = null)
     {
-        $object = new \ReflectionObject($this);
-        $method = $object->getMethod($methodName);
+        $method = new \ReflectionMethod($this, self::CHECK_RULE_METHODS[$ruleName]);
+        $method->setAccessible(true);
         $result = $method->invoke($this, $siren);
 
         if ($project instanceof Projects) {
@@ -547,7 +546,7 @@ class CompanyValidator
             $ruleSetMemberRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityRuleSetMember');
             $ruleSet                 = $ruleSetRepository->findOneBy(['status' => ProjectEligibilityRuleSet::STATUS_ACTIVE]);
 
-            $rule          = $ruleRepository->findOneBy(['label' => self::$checkMethodReferences[$methodName]]);
+            $rule          = $ruleRepository->findOneBy(['label' => $ruleName]);
             $ruleSetMember = $ruleSetMemberRepository->findOneBy([
                 'idRuleSet' => $ruleSet,
                 'idRule'    => $rule
