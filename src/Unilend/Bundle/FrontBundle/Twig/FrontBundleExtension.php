@@ -1,7 +1,9 @@
 <?php
+
 namespace Unilend\Bundle\FrontBundle\Twig;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
@@ -34,7 +36,8 @@ class FrontBundleExtension extends \Twig_Extension
         EntityManager $entityManager,
         MemcacheCachePool $cachePool,
         LocationManager $locationManager
-    ) {
+    )
+    {
         $this->rootDir            = $rootDir;
         $this->packages           = $assetsPackages;
         $this->statisticsManager  = $statisticsManager;
@@ -135,7 +138,7 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function completeUrlMediaFunction($sPath)
     {
-        return  $this->packages->getUrl('/assets/images/' . $sPath);
+        return $this->packages->getUrl('/assets/images/' . $sPath);
     }
 
     public function getStatisticFunction($statisticType, $date = null)
@@ -156,12 +159,12 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function projectImagePathFilter($image, $size = 'source')
     {
-        return  $this->packages->getUrl('/images/dyn/projets/' . $size . '/' . $image);
+        return $this->packages->getUrl('/images/dyn/projets/' . $size . '/' . $image);
     }
 
     public function addBaseUrl($sUrl)
     {
-        return  $this->packages->getUrl($sUrl);
+        return $this->packages->getUrl($sUrl);
     }
 
     public function getCountry($countryId)
@@ -172,6 +175,9 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function getNationality($nationalityId)
     {
+        if (0 == $nationalityId) {
+            $nationalityId = PaysV2::COUNTRY_FRANCE;
+        }
         $nationalityList = $this->locationManager->getNationalities();
         return $nationalityList[$nationalityId];
     }
@@ -182,8 +188,8 @@ class FrontBundleExtension extends \Twig_Extension
 
         if (false === $cachedItem->isHit()) {
             /** @var \dates $dates */
-            $dates = Loader::loadLib('dates');
-            $monthList =  $dates->tableauMois['fr'];
+            $dates     = Loader::loadLib('dates');
+            $monthList = $dates->tableauMois['fr'];
 
             $cachedItem->set($monthList)->expiresAfter(3600);
             $this->cachePool->save($cachedItem);
@@ -197,16 +203,18 @@ class FrontBundleExtension extends \Twig_Extension
     /**
      * @param string $image
      * @param string $format
+     *
      * @return string
      */
     public function photo($image, $format = '')
     {
-        $photos = new \photos([$this->rootDir . '/../public/default/var/',  $this->packages->getUrl('')]);
+        $photos = new \photos([$this->rootDir . '/../public/default/var/', $this->packages->getUrl('')]);
         return $photos->display($image, $format);
     }
 
     /**
      * @param string $section
+     *
      * @return array
      */
     public function dictionary($section)
