@@ -206,7 +206,7 @@ class UniversignController extends Controller
         $tos = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCgv')->find($tosId);
 
         if ($tos && $tos->getStatus() == UniversignEntityInterface::STATUS_PENDING && $tosName === $tos->getName()) {
-            $tosLastUpdateDate = $tos->getUpdated();
+            $tosLastUpdateDate = $tos->getLastUpdated();
             if ($tosLastUpdateDate->format('Y-m-d') === date('Y-m-d') && false === empty($tos->getUrlUniversign()) || $universignManager->createTos($tos)) {
                 return $this->redirect($tos->getUrlUniversign());
             }
