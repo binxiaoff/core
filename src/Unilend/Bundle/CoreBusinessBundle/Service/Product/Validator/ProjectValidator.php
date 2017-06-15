@@ -9,7 +9,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker\CompanyChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker\ProjectChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class ProjectValidator
 {
@@ -19,16 +18,12 @@ class ProjectValidator
     /** @var ProductAttributeManager */
     private $productAttributeManager;
 
-    /** @var EntityManager */
-    private $entityManager;
-
     /** @var ContractManager */
     private $contractManager;
 
-    public function __construct(ProductAttributeManager $productAttributeManager, EntityManager $entityManager, ContractManager $contractManager)
+    public function __construct(ProductAttributeManager $productAttributeManager, ContractManager $contractManager)
     {
         $this->productAttributeManager = $productAttributeManager;
-        $this->entityManager           = $entityManager;
         $this->contractManager         = $contractManager;
     }
 
