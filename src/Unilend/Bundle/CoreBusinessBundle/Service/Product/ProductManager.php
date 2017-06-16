@@ -88,7 +88,7 @@ abstract class ProductManager
         $product = $this->convertProduct($product);
         $project = $this->convertProject($project);
 
-        return $this->isProductUsable($product) && 0 === count($this->projectValidator->validate($project, $product));
+        return $this->isProductUsable($product) && 0 === count($this->checkProjectEligibility($project, $product));
     }
 
     public function checkProjectEligibility($project, $product)
