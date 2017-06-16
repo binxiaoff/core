@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -69,7 +70,7 @@ class Product
     private $idProduct;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\RepaymentType
+     * @var RepaymentType
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\RepaymentType")
      * @ORM\JoinColumns({
@@ -94,13 +95,23 @@ class Product
     private $idContract;
 
     /**
+     * @var ProductAttribute[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttribute", mappedBy="idProduct")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_product", referencedColumnName="id_product")
+     * })
+     */
+    private $productAttributes;
+
+    /**
      * Constructor
      */
     public function __construct()
     {
-        $this->idContract = new ArrayCollection();
+        $this->idContract        = new ArrayCollection();
+        $this->productAttributes = new ArrayCollection();
     }
-
 
     /**
      * Set label
@@ -259,11 +270,11 @@ class Product
     /**
      * Set idRepaymentType
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\RepaymentType $idRepaymentType
+     * @param RepaymentType $idRepaymentType
      *
      * @return Product
      */
-    public function setIdRepaymentType(\Unilend\Bundle\CoreBusinessBundle\Entity\RepaymentType $idRepaymentType = null)
+    public function setIdRepaymentType(RepaymentType $idRepaymentType = null)
     {
         $this->idRepaymentType = $idRepaymentType;
 
@@ -273,7 +284,7 @@ class Product
     /**
      * Get idRepaymentType
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\RepaymentType
+     * @return RepaymentType
      */
     public function getIdRepaymentType()
     {
@@ -283,13 +294,13 @@ class Product
     /**
      * Add idContract
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract $idContract
+     * @param UnderlyingContract $idContract
      *
      * @return Product
      */
-    public function addIdContract(\Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract $idContract)
+    public function addIdContract(UnderlyingContract $idContract)
     {
-        $this->idContract[] = $idContract;
+        $this->idContract->add($idContract);
 
         return $this;
     }
@@ -297,9 +308,9 @@ class Product
     /**
      * Remove idContract
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract $idContract
+     * @param UnderlyingContract $idContract
      */
-    public function removeIdContract(\Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract $idContract)
+    public function removeIdContract(UnderlyingContract $idContract)
     {
         $this->idContract->removeElement($idContract);
     }
@@ -312,5 +323,22 @@ class Product
     public function getIdContract()
     {
         return $this->idContract;
+    }
+
+    /**
+     * @param ProductAttributeType|null $attributeType
+     *
+     * @return ProductAttribute[]|ArrayCollection
+     */
+    public function getProductAttributes(ProductAttributeType $attributeType = null)
+    {
+        if (null !== $attributeType) {
+            $criteria = Criteria::create()
+                ->where(Criteria::expr()->eq('idType', $attributeType));
+
+            return $this->productAttributes->matching($criteria);
+        }
+
+        return $this->productAttributes;
     }
 }
