@@ -161,7 +161,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                 <tr class="particulier">
                     <th></th>
                     <td>
-                        <input style="font-size: 11px; height: 25px; width: 105px;" type="button" id="generer_mdp2" name="generer_mdp2" value="Générer mdp" class="btn" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/>
+                        <input style="font-size: 11px; height: 25px; width: 105px;" type="button" id="generer_mdp2" name="generer_mdp2" value="Générer mdp" class="btn-primary" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/>
                         <span style="margin-left:5px;color:green; display:none;" class="reponse">mdp généré</span>
                     </td>
                 </tr>
@@ -201,7 +201,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                     <td></td>
                     <th></th>
                     <td>
-                        <input style="font-size: 11px; height: 25px; width: 105px;" type="button" id="generer_mdp" name="generer_mdp" value="Générer mdp" class="btn" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/>
+                        <input style="font-size: 11px; height: 25px; width: 105px;" type="button" id="generer_mdp" name="generer_mdp" value="Générer mdp" class="btn-primary" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/>
                         <span style="margin-left:5px;color:green; display:none;" class="reponse">mdp généré</span>
                     </td>
                 </tr>
@@ -237,7 +237,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                 </tr>
                 <tr>
                     <th></th>
-                    <td><input type="submit" value="Valider ce pays et appliquer aux échéanciers" class="btn" id="valider_pays" name="valider_pays"></td>
+                    <td><input type="submit" value="Valider ce pays et appliquer aux échéanciers" class="btn-primary" id="valider_pays" name="valider_pays"></td>
                     <th></th>
                     <td></td>
                 </tr>
@@ -752,14 +752,14 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                     <tr>
                         <td colspan="2">
                             <?php if (clients_status::VALIDATED != $this->clients_status->status && Clients::STATUS_ONLINE == $this->clients->status) : ?>
-                            <input type="button" id="valider_preteur" class="btn" value="Valider le prêteur">
+                            <input type="button" id="valider_preteur" class="btn-primary" value="Valider le prêteur">
                             <?php endif; ?>
                         </td>
                     </tr>
                     <tr>
                         <td colspan="2">
                             <?php if (false === in_array($this->clients_status->status, array(\clients_status::CLOSED_BY_UNILEND, \clients_status::CLOSED_LENDER_REQUEST))) : ?>
-                            <input type="button" id="completude_edit" class="btn btnCompletude" value="Complétude">
+                            <input type="button" id="completude_edit" class="btn-primary btnCompletude" value="Complétude">
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -770,12 +770,12 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                             <?php if (Clients::STATUS_ONLINE == $this->clients->status) :?>
                                 <input type="button"
                                        onclick="if(confirm('Voulez vous mettre le client hors ligne et changer son status en Clôturé par Unilend')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->clients->id_client ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_OFFLINE ?>';}"
-                                       class="btnRouge"
+                                       class="btn-primary" style="background: #FF0000; border: 1px solid #FF0000;"
                                        value="Hors ligne / Clôturé par Unilend">
                             <?php else: ?>
                                 <input type="button"
                                        onclick="if(confirm('Voulez vous remettre le client en ligne et revenir au status avant la mis hors ligne ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->clients->id_client ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_ONLINE ?>';}"
-                                       class="btn"
+                                       class="btn-primary"
                                        value="En ligne / Status avant mis hors ligne">
                             <?php endif; ?>
                         </td>
@@ -785,7 +785,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                             <?php if (false === in_array($this->clients_status->status, array(\clients_status::CLOSED_LENDER_REQUEST)) ) : ?>
                             <input type="button"
                                    onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur (mettre son compte hors ligne et changer son stauts en Clôturé à la demande du preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/deactivate/<?= $this->clients->id_client ?>/<?= Clients::STATUS_OFFLINE ?>';}"
-                                   class="btnRouge" value="Hors ligne / Clôturé à la demande du client">
+                                   class="btn-primary" value="Hors ligne / Clôturé à la demande du client" style="background: #FF0000; border: 1px solid #FF0000;">
                             <?php endif; ?>
                         </td>
                     </tr>
