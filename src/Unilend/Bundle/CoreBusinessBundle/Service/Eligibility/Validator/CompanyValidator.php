@@ -309,7 +309,7 @@ class CompanyValidator
 
         $grossOperatingSurplus = null;
         foreach ($balanceManagementLine->getBalanceManagementLine() as $post) {
-            if ($post->getPost() === 'posteSIG_EBE') {
+            if ($post->getKeyPost() === 'posteSIG_EBE') {
                 $grossOperatingSurplus = $post;
                 break;
             }
@@ -541,20 +541,15 @@ class CompanyValidator
         $result = $method->invoke($this, $siren);
 
         if ($project instanceof Projects) {
-            $ruleRepository          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityRule');
-            $ruleSetRepository       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityRuleSet');
-            $ruleSetMemberRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityRuleSetMember');
-            $ruleSet                 = $ruleSetRepository->findOneBy(['status' => ProjectEligibilityRuleSet::STATUS_ACTIVE]);
-
-            $rule          = $ruleRepository->findOneBy(['label' => $ruleName]);
-            $ruleSetMember = $ruleSetMemberRepository->findOneBy([
-                'idRuleSet' => $ruleSet,
-                'idRule'    => $rule
-            ]);
+            $ruleRepository    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityRule');
+            $ruleSetRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityRuleSet');
+            $rule              = $ruleRepository->findOneBy(['label' => $ruleName]);
+            $ruleSet           = $ruleSetRepository->findOneBy(['status' => ProjectEligibilityRuleSet::STATUS_ACTIVE]);
 
             $assessment = new ProjectEligibilityAssessment();
             $assessment->setIdProject($project);
-            $assessment->setIdRuleSetMember($ruleSetMember);
+            $assessment->setIdRule($rule);
+            $assessment->setIdRuleSet($ruleSet);
             $assessment->setStatus(empty($result));
 
             $this->entityManager->persist($assessment);

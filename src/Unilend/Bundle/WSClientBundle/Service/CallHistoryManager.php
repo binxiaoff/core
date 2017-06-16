@@ -202,7 +202,7 @@ class CallHistoryManager
             $this->logger->warning('Unable to save response to mongoDB: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]);
         }
 
-        $cachedItem = $this->cacheItemPool->getItem($this->getCacheKey($wsResource));
+        $cachedItem = $this->cacheItemPool->getItem($this->getCacheKey($wsResource, $siren));
         $cachedItem->set($response)->expiresAfter(CacheKeys::LONG_TIME);
 
         $this->cacheItemPool->save($cachedItem);
@@ -213,6 +213,7 @@ class CallHistoryManager
      * @param string         $provider
      * @param string         $resource
      * @param null|\DateTime $date
+     *
      * @return false|WsCall
      */
     public function fetchLatestDataFromMongo($siren, $provider, $resource, \DateTime $date)
@@ -250,7 +251,7 @@ class CallHistoryManager
      */
     public function getStoredResponse(WsExternalResource $wsResource, $siren)
     {
-        $cachedItem = $this->cacheItemPool->getItem($this->getCacheKey($wsResource));
+        $cachedItem = $this->cacheItemPool->getItem($this->getCacheKey($wsResource, $siren));
 
         if ($cachedItem->isHit()) {
             return $cachedItem->get();
@@ -334,11 +335,12 @@ class CallHistoryManager
 
     /**
      * @param WsExternalResource $resource
+     * @param string             $siren
      *
      * @return string
      */
-    private function getCacheKey(WsExternalResource $resource)
+    private function getCacheKey(WsExternalResource $resource, $siren)
     {
-        return 'WS_call_' . $resource->getLabel();
+        return 'WS_call_' . $resource->getLabel() . '_' . $siren;
     }
 }

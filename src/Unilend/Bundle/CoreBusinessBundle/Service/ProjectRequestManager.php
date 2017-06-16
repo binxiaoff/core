@@ -10,9 +10,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\EligibilityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetListDetail;
+use Unilend\Bundle\WSClientBundle\Service\AltaresManager;
 
 class ProjectRequestManager
 {
@@ -28,10 +29,10 @@ class ProjectRequestManager
     private $sourceManager;
     /** @var PartnerManager */
     private $partnerManager;
-    /** @var CompanyFinanceCheck */
-    private $companyFinanceCheck;
-    /** @var CompanyScoringCheck */
-    private $companyScoringCheck;
+    /** @var EligibilityManager */
+    private $eligibilityManager;
+    /** @var AltaresManager */
+    private $altaresManager;
     /** @var CompanyBalanceSheetManager */
     private $companyBalanceSheetManager;
     /** @var LoggerInterface */
@@ -44,8 +45,8 @@ class ProjectRequestManager
      * @param WalletCreationManager      $walletCreationManager
      * @param SourceManager              $sourceManager
      * @param PartnerManager             $partnerManager
-     * @param CompanyFinanceCheck        $companyFinanceCheck
-     * @param CompanyScoringCheck        $companyScoringCheck
+     * @param EligibilityManager         $eligibilityManager
+     * @param AltaresManager             $altaresManager
      * @param CompanyBalanceSheetManager $companyBalanceSheetManager
      * @param LoggerInterface            $logger
      */
@@ -56,8 +57,8 @@ class ProjectRequestManager
         WalletCreationManager $walletCreationManager,
         SourceManager $sourceManager,
         PartnerManager $partnerManager,
-        CompanyFinanceCheck $companyFinanceCheck,
-        CompanyScoringCheck $companyScoringCheck,
+        EligibilityManager $eligibilityManager,
+        AltaresManager $altaresManager,
         CompanyBalanceSheetManager $companyBalanceSheetManager,
         LoggerInterface $logger
     )
@@ -68,12 +69,15 @@ class ProjectRequestManager
         $this->walletCreationManager      = $walletCreationManager;
         $this->sourceManager              = $sourceManager;
         $this->partnerManager             = $partnerManager;
-        $this->companyFinanceCheck        = $companyFinanceCheck;
-        $this->companyScoringCheck        = $companyScoringCheck;
+        $this->eligibilityManager         = $eligibilityManager;
+        $this->altaresManager             = $altaresManager;
         $this->companyBalanceSheetManager = $companyBalanceSheetManager;
         $this->logger                     = $logger;
     }
 
+    /**
+     * @return float
+     */
     public function getMonthlyRateEstimate()
     {
         /** @var \projects $projects */
@@ -82,6 +86,13 @@ class ProjectRequestManager
         return round($projects->getGlobalAverageRateOfFundedProjects(50), 1);
     }
 
+    /**
+     * @param int   $amount
+     * @param int   $period
+     * @param float $estimatedRate
+     *
+     * @return float
+     */
     public function getMonthlyPaymentEstimate($amount, $period, $estimatedRate)
     {
         /** @var \PHPExcel_Calculation_Financial $oFinancial */
@@ -102,6 +113,7 @@ class ProjectRequestManager
      * @param array $formData
      *
      * @return \projects
+     *
      * @throws \Exception
      */
     public function saveSimulatorRequest($formData)
@@ -190,24 +202,24 @@ class ProjectRequestManager
     }
 
     /**
-     * @param \companies                  $company
-     * @param int                         $userId
-     * @param null|BalanceSheetListDetail $balanceSheetList
-     * @return null|string
+     * @param Companies $company
+     * @param int       $userId
+     *
+     * @return array
      */
-    public function checkCompanyRisk(\companies &$company, $userId, BalanceSheetListDetail &$balanceSheetList = null)
+    public function checkCompanyRisk(Companies $company, $userId)
     {
         /** @var \company_rating $companyRating */
         $companyRating                  = $this->entityManagerSimulator->getRepository('company_rating');
         $companyRatingHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRatingHistory');
         $lastCompanyRatingHistory       = $companyRatingHistoryRepository->findOneBy(
-            ['idCompany' => $company->id_company],
+            ['idCompany' => $company->getIdCompany()],
             ['added' => 'DESC']
         );
 
         /** @var \company_rating_history $companyRatingHistory */
         $companyRatingHistory             = $this->entityManagerSimulator->getRepository('company_rating_history');
-        $companyRatingHistory->id_company = $company->id_company;
+        $companyRatingHistory->id_company = $company->getIdCompany();
         $companyRatingHistory->id_user    = $userId;
         $companyRatingHistory->action     = \company_rating_history::ACTION_WS;
         $companyRatingHistory->create();
@@ -223,13 +235,34 @@ class ProjectRequestManager
             }
         }
 
-        $riskCheck = $this->checkRisk($company, $balanceSheetList, $companyRatingHistory, $companyRating);
+        $eligibility = $this->eligibilityManager->checkCompanyEligibility($company);
 
-        if (null !== $balanceSheetList) {
-            $this->companyBalanceSheetManager->setCompanyBalance($company, $balanceSheetList, $project);
+        if (empty($eligibility) || false === in_array(\projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN, $eligibility)) {
+            $companyIdentity = $this->altaresManager->getCompanyIdentity($company->getSiren());
+
+            if (null !== $companyIdentity) {
+                $company->setName($company->getName() ?: $companyIdentity->getCorporateName());
+                $company->setForme($company->getForme() ?: $companyIdentity->getCompanyForm());
+                $company->setCapital($company->getCapital() ?: $companyIdentity->getCapital());
+                $company->setCodeNaf($company->getCodeNaf() ?: $companyIdentity->getNAFCode());
+                $company->setAdresse1($company->getAdresse1() ?: $companyIdentity->getAddress());
+                $company->setCity($company->getCity() ?: $companyIdentity->getCity());
+                $company->setZip($company->getZip() ?: $companyIdentity->getPostCode());
+                $company->setSiret($company->getSiret() ?: $companyIdentity->getSiret());
+                $company->setDateCreation($company->getDateCreation() ?: $companyIdentity->getCreationDate());
+                $company->setRcs($company->getRcs() ?: $companyIdentity->getRcs());
+                $company->setTribunalCom($company->getTribunalCom() ?: $companyIdentity->getCommercialCourt());
+
+                $this->entityManager->flush($company);
+
+                $this->companyBalanceSheetManager->setCompanyBalance(
+                    $company,
+                    $this->altaresManager->getBalanceSheets($company->getSiren())
+                );
+            }
         }
 
-        return $riskCheck;
+        return $eligibility;
     }
 
     /**
@@ -240,87 +273,28 @@ class ProjectRequestManager
      */
     public function checkProjectRisk(\projects $project, $userId)
     {
-        /** @var \companies $company */
-        $company = $this->entityManagerSimulator->getRepository('companies');
-        $company->get($project->id_company);
-
-        $balanceSheetList = null;
-        $riskCheck        = $this->checkCompanyRisk($company, $userId, $balanceSheetList);
+        $company     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($project->id_company);
+        $eligibility = $this->checkCompanyRisk($company, $userId);
 
         $companyRatingHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRatingHistory');
         $lastCompanyRatingHistory       = $companyRatingHistoryRepository->findOneBy(
-            ['idCompany' => $company->id_company],
+            ['idCompany' => $company->getIdCompany()],
             ['added' => 'DESC']
         );
 
-        $project->balance_count             = null === $company->date_creation ? 0 : \DateTime::createFromFormat('Y-m-d', $company->date_creation)->diff(new \DateTime())->y;
+        $lastBalance = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompaniesBilans')
+            ->findBy(['idCompany' => $company->getIdCompany()], ['clotureExerciceFiscal' => 'DESC'], 1);
+
+        if (null !== $lastBalance) {
+            $project->id_dernier_bilan = $lastBalance[0]->getIdBilan();
+        }
+
+        $project->balance_count             = null === $company->getDateCreation() ? 0 : $company->getDateCreation()->diff(new \DateTime())->y;
         $project->id_company_rating_history = $lastCompanyRatingHistory->getIdCompanyRatingHistory();
         $project->update();
 
-        if (null !== $balanceSheetList) {
-            $this->companyBalanceSheetManager->setCompanyBalance($company, $balanceSheetList, $project);
-        }
-
-        if (null !== $riskCheck) {
-            return $this->addRejectionProjectStatus($riskCheck, $project, $userId);
-        }
-
-        return null;
-    }
-
-    /**
-     * @param \companies                   $company
-     * @param null|BalanceSheetListDetail  $balanceSheetList
-     * @param null|\company_rating_history $companyRatingHistory
-     * @param null|\company_rating         $companyRating
-     * @return null|string
-     */
-    public function checkRisk(\companies &$company, &$balanceSheetList = null, $companyRatingHistory = null, $companyRating = null)
-    {
-        if (false === $this->companyFinanceCheck->isCompanySafe($company, $rejectionReason)) {
-            return $rejectionReason;
-        }
-
-        if ($company->code_naf === Companies::NAF_CODE_NO_ACTIVITY) {
-            $altaresScore = $this->companyScoringCheck->getAltaresScore($company->siren);
-
-            if (
-                true === $this->companyScoringCheck->isAltaresScoreLow($altaresScore, $rejectionReason, $companyRatingHistory, $companyRating)
-                || true === $this->companyScoringCheck->isInfolegaleScoreLow($company->siren, $rejectionReason, $companyRatingHistory, $companyRating)
-            ) {
-                return $rejectionReason;
-            }
-        } else {
-            if (true === $this->companyFinanceCheck->hasCodinfPaymentIncident($company->siren, $rejectionReason)) {
-                return $rejectionReason;
-            }
-
-            $altaresScore = $this->companyScoringCheck->getAltaresScore($company->siren);
-
-            if (true === $this->companyScoringCheck->isAltaresScoreLow($altaresScore, $rejectionReason, $companyRatingHistory, $companyRating)) {
-                return $rejectionReason;
-            }
-
-            $balanceSheetList = $this->companyFinanceCheck->getBalanceSheets($company->siren);
-
-            if (null !== $balanceSheetList && (new \DateTime())->diff($balanceSheetList->getLastBalanceSheet()->getCloseDate())->days <= \company_balance::MAX_COMPANY_BALANCE_DATE) {
-                if (
-                    true === $this->companyFinanceCheck->hasNegativeCapitalStock($balanceSheetList, $company->siren, $rejectionReason)
-                    || true === $this->companyFinanceCheck->hasNegativeRawOperatingIncomes($balanceSheetList, $company->siren, $rejectionReason)
-                ) {
-                    return $rejectionReason;
-                }
-            }
-
-            if (
-                false === $this->companyScoringCheck->isXerfiUnilendOk($company->code_naf, $rejectionReason, $companyRatingHistory, $companyRating)
-                || false === $this->companyScoringCheck->combineAltaresScoreAndUnilendXerfi($altaresScore, $company->code_naf, $rejectionReason)
-                || false === $this->companyScoringCheck->combineEulerTrafficLightXerfiAltaresScore($altaresScore, $company, $rejectionReason, $companyRatingHistory, $companyRating)
-                || true === $this->companyScoringCheck->isInfolegaleScoreLow($company->siren, $rejectionReason, $companyRatingHistory, $companyRating)
-                || false === $this->companyScoringCheck->combineEulerGradeUnilendXerfiAltaresScore($altaresScore, $company, $rejectionReason, $companyRatingHistory, $companyRating)
-            ) {
-                return $rejectionReason;
-            }
+        if (is_array($eligibility) && false === empty($eligibility)) {
+            return $this->addRejectionProjectStatus($eligibility[0], $project, $userId);
         }
 
         return null;
@@ -330,9 +304,10 @@ class ProjectRequestManager
      * @param string    $motive
      * @param \projects $project
      * @param int       $userId
+     *
      * @return array
      */
-    public function addRejectionProjectStatus($motive, &$project, $userId)
+    public function addRejectionProjectStatus($motive, $project, $userId)
     {
         $status = substr($motive, 0, strlen(\projects_status::UNEXPECTED_RESPONSE)) === \projects_status::UNEXPECTED_RESPONSE
             ? \projects_status::IMPOSSIBLE_AUTO_EVALUATION

@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ProjectEligibilityAssessment
  *
- * @ORM\Table(name="project_eligibility_assessment", indexes={@ORM\Index(name="fk_project_eligibility_assessment_id_project", columns={"id_project"}), @ORM\Index(name="fk_project_eligibility_assessment_id_rule_set_member", columns={"id_rule_set_member"})})
+ * @ORM\Table(name="project_eligibility_assessment", indexes={@ORM\Index(name="fk_project_eligibility_assessment_id_project", columns={"id_project"}), @ORM\Index(name="fk_project_eligibility_assessment_id_rule", columns={"id_rule"}), @ORM\Index(name="fk_project_eligibility_assessment_id_rule_set", columns={"id_rule_set"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
@@ -37,14 +37,24 @@ class ProjectEligibilityAssessment
     private $id;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSetMember
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRule
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSetMember")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRule")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_rule_set_member", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_rule", referencedColumnName="id")
      * })
      */
-    private $idRuleSetMember;
+    private $idRule;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSet
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSet")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_rule_set", referencedColumnName="id")
+     * })
+     */
+    private $idRuleSet;
 
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
@@ -117,27 +127,51 @@ class ProjectEligibilityAssessment
     }
 
     /**
-     * Set idRuleSetMember
+     * Set idRule
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSetMember $idRuleSetMember
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRule $idRule
      *
      * @return ProjectEligibilityAssessment
      */
-    public function setIdRuleSetMember(\Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSetMember $idRuleSetMember = null)
+    public function setIdRule(\Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRule $idRule = null)
     {
-        $this->idRuleSetMember = $idRuleSetMember;
+        $this->idRule = $idRule;
 
         return $this;
     }
 
     /**
-     * Get idRuleSetMember
+     * Get idRule
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSetMember
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRule
      */
-    public function getIdRuleSetMember()
+    public function getIdRule()
     {
-        return $this->idRuleSetMember;
+        return $this->idRule;
+    }
+
+    /**
+     * Set idRuleSet
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSet $idRuleSet
+     *
+     * @return ProjectEligibilityAssessment
+     */
+    public function setIdRuleSet(\Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSet $idRuleSet = null)
+    {
+        $this->idRuleSet = $idRuleSet;
+
+        return $this;
+    }
+
+    /**
+     * Get idRuleSet
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSet
+     */
+    public function getIdRuleSet()
+    {
+        return $this->idRuleSet;
     }
 
     /**
