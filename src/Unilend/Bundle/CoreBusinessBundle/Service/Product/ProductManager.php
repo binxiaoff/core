@@ -189,12 +189,13 @@ abstract class ProductManager
     }
 
     /**
-     * @param \product $product
+     * @param \product|Product $product
      *
      * @return string|null
      */
-    public function getMinEligibleDuration(\product $product)
+    public function getMinEligibleDuration($product)
     {
+        $product         = $this->convertProduct($product);
         $durationMinAttr = $this->productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MIN_LOAN_DURATION_IN_MONTH);
         $durationMin     = empty($durationMinAttr) ? null : $durationMinAttr[0];
 
@@ -230,13 +231,15 @@ abstract class ProductManager
     }
 
     /**
-     * @param \product $product
-     * @param          $attributeType
+     * @param \product|Product $product
+     * @param string           $attributeType
      *
      * @return array
      */
-    public function getAttributesByType(\product $product, $attributeType)
+    public function getAttributesByType($product, $attributeType)
     {
+        $product = $this->convertProduct($product);
+
         return $this->productAttributeManager->getProductAttributesByType($product, $attributeType);
     }
 
