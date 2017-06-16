@@ -406,7 +406,7 @@ class statsController extends bootstrap
             readfile($filePath);
             exit;
         } else {
-            echo "Le fichier n'a pas été généré cette nuit. Le cron s'execuet que de novembre à mars";
+            echo "Le fichier n'a pas été généré cette nuit. Le cron s'execute que de novembre à mars";
         }
     }
 
@@ -451,7 +451,7 @@ class statsController extends bootstrap
             $this->autoFireView = false;
             $this->hideDecoration();
 
-            $header = "Id_echeancier;Id_lender;Id_projet;Id_loan;Ordre;Montant;Capital;Capital_restant;Interets;Prelevements_obligatoires;Retenues_source;CSG;Prelevements_sociaux;Contributions_additionnelles;Prelevements_solidarite;CRDS;Date_echeance;Date_echeance_reel;Date_echeance_emprunteur;Date_echeance_emprunteur_reel;Status;";
+            $header = "Id_echeancier;Id_client;Id_projet;Id_loan;Ordre;Montant;Capital;Capital_restant;Interets;Prelevements_obligatoires;Retenues_source;CSG;Prelevements_sociaux;Contributions_additionnelles;Prelevements_solidarite;CRDS;Date_echeance;Date_echeance_reel;Date_echeance_emprunteur;Date_echeance_emprunteur_reel;Status;";
             $header = utf8_encode($header);
 
             $csv = "";
