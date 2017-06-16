@@ -34,20 +34,18 @@ class ProjectValidator
      */
     public function validate(Projects $project, UnderlyingContract $contract)
     {
-        $violations = [];
-
         if (false === $this->isEligibleForMaxDuration($project, $contract, $this->contractAttributeManager)) {
-            $violations[] = UnderlyingContractAttributeType::MAX_LOAN_DURATION_IN_MONTH;
+            return [UnderlyingContractAttributeType::MAX_LOAN_DURATION_IN_MONTH];
         }
 
         if (false === $this->isEligibleForCreationDays($project->getIdCompany(), $contract, $this->contractAttributeManager)) {
-            $violations[] = UnderlyingContractAttributeType::MAX_LOAN_DURATION_IN_MONTH;
+            return [UnderlyingContractAttributeType::MIN_CREATION_DAYS];
         }
 
         if (false === $this->isEligibleForRCS($project->getIdCompany(), $contract, $this->contractAttributeManager)) {
-            $violations[] = UnderlyingContractAttributeType::MAX_LOAN_DURATION_IN_MONTH;
+            return [UnderlyingContractAttributeType::ELIGIBLE_BORROWER_COMPANY_RCS];
         }
 
-        return $violations;
+        return [];
     }
 }

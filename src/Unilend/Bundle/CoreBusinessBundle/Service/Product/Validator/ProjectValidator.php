@@ -35,30 +35,28 @@ class ProjectValidator
      */
     public function validate(Projects $project, Product $product)
     {
-        $violations = [];
-
         if (false === $this->isEligibleForMinDuration($project, $product, $this->productAttributeManager)) {
-            $violations[] = ProductAttributeType::MIN_LOAN_DURATION_IN_MONTH;
+            return [ProductAttributeType::MIN_LOAN_DURATION_IN_MONTH];
         }
 
         if (false === $this->isEligibleForMaxDuration($project, $product, $this->productAttributeManager)) {
-            $violations[] = ProductAttributeType::MAX_LOAN_DURATION_IN_MONTH;
+            return [ProductAttributeType::MAX_LOAN_DURATION_IN_MONTH];
         }
 
         if (false === $this->isEligibleForMotive($project, $product, $this->productAttributeManager)) {
-            $violations[] = ProductAttributeType::ELIGIBLE_BORROWING_MOTIVE;
+            return [ProductAttributeType::ELIGIBLE_BORROWING_MOTIVE];
         }
 
         if (false === $this->isEligibleForCreationDays($project->getIdCompany(), $product, $this->productAttributeManager)) {
-            $violations[] = ProductAttributeType::MIN_CREATION_DAYS;
+            return [ProductAttributeType::MIN_CREATION_DAYS];
         }
 
         if (false === $this->isEligibleForRCS($project->getIdCompany(), $product, $this->productAttributeManager)) {
-            $violations[] = ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_RCS;
+            return [ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_RCS];
         }
 
         if (false === $this->isEligibleForNafCode($project->getIdCompany(), $product, $this->productAttributeManager)) {
-            $violations[] = ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_NAF_CODE;
+            return [ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_NAF_CODE];
         }
 
         $hasEligibleContract = false;
@@ -73,9 +71,9 @@ class ProjectValidator
         }
 
         if (false === $hasEligibleContract) {
-            $violations = array_merge($violations, $violationsContract);
+            return $violationsContract;
         }
 
-        return $violations;
+        return [];
     }
 }
