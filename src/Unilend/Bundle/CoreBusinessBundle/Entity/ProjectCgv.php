@@ -318,4 +318,16 @@ class ProjectCgv implements UniversignEntityInterface
     {
         return '/pdf/cgv_emprunteurs/' . $this->idProject->getIdProject() . '/' . $this->generateFileName();
     }
+
+    /**
+     * @return \DateTime
+     */
+    public function getLastUpdated()
+    {
+        if (null === $this->updated) {
+            return $this->added;
+        }
+
+        return  $this->updated;
+    }
 }

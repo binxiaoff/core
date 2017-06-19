@@ -8,6 +8,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -36,6 +37,8 @@ class ProjectRequestManager
     private $companyBalanceSheetManager;
     /** @var LoggerInterface */
     private $logger;
+    /** @var  PartnerProductManager */
+    private $partnerProductManager;
 
     /**
      * @param EntityManagerSimulator     $entityManagerSimulator
@@ -48,6 +51,7 @@ class ProjectRequestManager
      * @param CompanyScoringCheck        $companyScoringCheck
      * @param CompanyBalanceSheetManager $companyBalanceSheetManager
      * @param LoggerInterface            $logger
+     * @param PartnerProductManager      $partnerProductManager
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -59,7 +63,8 @@ class ProjectRequestManager
         CompanyFinanceCheck $companyFinanceCheck,
         CompanyScoringCheck $companyScoringCheck,
         CompanyBalanceSheetManager $companyBalanceSheetManager,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        PartnerProductManager $partnerProductManager
     )
     {
         $this->entityManagerSimulator     = $entityManagerSimulator;
@@ -72,6 +77,7 @@ class ProjectRequestManager
         $this->companyScoringCheck        = $companyScoringCheck;
         $this->companyBalanceSheetManager = $companyBalanceSheetManager;
         $this->logger                     = $logger;
+        $this->partnerProductManager      = $partnerProductManager;
     }
 
     public function getMonthlyRateEstimate()
@@ -341,5 +347,47 @@ class ProjectRequestManager
         $this->projectManager->addProjectStatus($userId, $status, $project, 0, $motive);
 
         return ['motive' => $motive, 'status' => $status];
+    }
+
+    /**
+     * @param \projects $project
+     * @param null|int  $userId
+     * @param boolean   $addProjectStatus
+     *
+     * @return int
+     */
+    public function assignEligiblePartnerProduct(\projects $project, $userId = null, $addProjectStatus = false)
+    {
+        try {
+            if (false === empty($project->id_partner)) {
+                $products = $this->partnerProductManager->findEligibleProducts($project);
+
+                if (count($products) === 1 && isset($products[0]) && $products[0] instanceof \product) {
+                    $project->id_product = $products[0]->id_product;
+
+                    $partnerProduct = $this->entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')
+                        ->findOneBy(['idPartner' => $project->id_partner, 'idProduct' => $products[0]->id_product]);
+
+                    if (null !== $partnerProduct) {
+                        $project->id_product                = $partnerProduct->getIdProduct()->getIdProduct();
+                        $project->commission_rate_funds     = $partnerProduct->getCommissionRateFunds();
+                        $project->commission_rate_repayment = $partnerProduct->getCommissionRateRepayment();
+                        $project->update();
+                    }
+                }
+
+                if (empty($products) && $addProjectStatus) {
+                    $this->projectManager->addProjectStatus($userId, ProjectsStatus::NOT_ELIGIBLE, $project, 0, \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
+                }
+
+                return count($products);
+            } else {
+                $this->logger->warning('Cannot find eligible partner product for project ' . $project->id_project . ' id_partner is empty', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
+            }
+        } catch (\Exception $exception) {
+            $this->logger->warning($exception->getMessage(), ['method' => __METHOD__, 'line' => __LINE__, 'id_project' => $project->id_project]);
+        }
+
+        return 0;
     }
 }
