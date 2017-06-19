@@ -25,5 +25,4 @@ class ExecutiveCollection
     {
         return $this->executives;
     }
-
 }

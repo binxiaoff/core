@@ -9,7 +9,6 @@ use JMS\Serializer\Annotation as JMS;
  */
 class HomonymCollection
 {
-
     /**
      * @var Homonym[]
      *
@@ -26,5 +25,4 @@ class HomonymCollection
     {
         return $this->homonyms;
     }
-
 }

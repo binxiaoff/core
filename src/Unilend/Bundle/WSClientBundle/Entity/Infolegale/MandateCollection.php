@@ -9,7 +9,6 @@ use JMS\Serializer\Annotation as JMS;
  */
 class MandateCollection
 {
-
     /**
      * @var Mandate[]
      *
@@ -26,5 +25,4 @@ class MandateCollection
     {
         return $this->mandates;
     }
-
 }

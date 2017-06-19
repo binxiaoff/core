@@ -95,8 +95,10 @@ class CallHistoryManager
 
                     return $wsCallHistory;
                 } catch (\Exception $exception) {
-                    $this->logger->error('Unable to log response time into database. Error message: ' . $exception->getMessage(),
-                        ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]);
+                    $this->logger->error(
+                        'Unable to log response time into database. Error message: ' . $exception->getMessage(),
+                        ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]
+                    );
                     unset($exception);
                 }
 
@@ -263,8 +265,10 @@ class CallHistoryManager
             );
 
             if ($data instanceof WsCall) {
-                $this->logger->debug('Fetched data from mongoDB for ' . $data->getProvider() . '->' . $data->getResource() . ': ' . $data->getResponse() . ' --- Stored at: ' . $data->getAdded()
-                        ->format('Y-m-d H:i:s'), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $data->getSiren()]);
+                $this->logger->debug(
+                    'Fetched data from mongoDB for ' . $data->getProvider() . '->' . $data->getResource() . ': ' . $data->getResponse() . ' --- Stored at: ' . $data->getAdded()->format('Y-m-d H:i:s'),
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $data->getSiren()]
+                );
                 return $data->getResponse();
             }
         }
