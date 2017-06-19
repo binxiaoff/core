@@ -557,7 +557,7 @@ class ProjectRequestController extends Controller
 
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
 
-        if (0 === $projectRequestManager->checkEligiblePartnerProduct($this->project)) {
+        if (0 === $projectRequestManager->assignEligiblePartnerProduct($this->project)) {
             return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
         }
 

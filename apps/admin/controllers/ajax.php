@@ -284,7 +284,7 @@ class ajaxController extends bootstrap
                 }
 
                 if (null === $result) {
-                    $projectRequestManager->checkEligiblePartnerProduct($project);
+                    $projectRequestManager->assignEligiblePartnerProduct($project);
                 }
 
                 echo json_encode([

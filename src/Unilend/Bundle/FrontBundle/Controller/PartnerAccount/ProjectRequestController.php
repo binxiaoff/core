@@ -210,7 +210,7 @@ class ProjectRequestController extends Controller
         $riskCheck             = $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
 
         if (null === $riskCheck) {
-            $projectRequestManager->checkEligiblePartnerProduct($project, Users::USER_ID_FRONT, true);
+            $projectRequestManager->assignEligiblePartnerProduct($project, Users::USER_ID_FRONT, true);
         }
 
         return $this->redirectToRoute('partner_project_request_eligibility', ['hash' => $project->hash]);

@@ -246,7 +246,7 @@ class dashboardController extends bootstrap
                 $client->get($projectEntity->getIdCompany()->getIdClientOwner());
                 $status = empty($client->telephone) ? ProjectsStatus::INCOMPLETE_REQUEST : ProjectsStatus::COMPLETE_REQUEST;
                 $projectManager->addProjectStatus($_SESSION['user']['id_user'], $status, $project);
-                $projectRequestManager->checkEligiblePartnerProduct($project, $_SESSION['user']['id_user'], true);
+                $projectRequestManager->assignEligiblePartnerProduct($project, $_SESSION['user']['id_user'], true);
             }
         }
 

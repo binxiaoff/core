@@ -355,7 +355,7 @@ class ProjectRequestManager
      *
      * @return int
      */
-    public function checkEligiblePartnerProduct(\projects $project, $userId = null, $addProjectStatus = false)
+    public function assignEligiblePartnerProduct(\projects $project, $userId = null, $addProjectStatus = false)
     {
         try {
             if (false === empty($project->id_partner)) {
