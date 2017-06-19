@@ -26,6 +26,7 @@ class Receptions
 
     const TYPE_DIRECT_DEBIT  = 1;
     const TYPE_WIRE_TRANSFER = 2;
+    const TYPE_CHEQUE        = 3;
 
     const WIRE_TRANSFER_STATUS_RECEIVED = 1;
     const WIRE_TRANSFER_STATUS_SENT     = 2;
@@ -33,6 +34,8 @@ class Receptions
 
     const DIRECT_DEBIT_STATUS_SENT     = 2;
     const DIRECT_DEBIT_STATUS_REJECTED = 3;
+
+    const CHEQUE_STATUS_RECEIVED = 1; //uses the same field as wire_transfer_status
 
     /**
      * @var string

@@ -27,9 +27,9 @@ parameters:
     payline.merchant_id:            '16828263878877'
     payline.access_key:             'vtPtmVrGFhFx6OPeg7No'
 
-    ekomi.url:                       http://apps.ekomi.com/srr/add-recipient
-    ekomi.shop_id:                   ~
-    ekomi.password:                  ~
+    ekomi.url:                      http://apps.ekomi.com/srr/add-recipient
+    ekomi.shop_id:                  ~
+    ekomi.password:                 ~
 
     euler.account_key:              JTP0gJbzwOzct7HTsKYcpjayoK5urpcLkxSAKIPnoXMNUEhN6RMe4bJjalU6n
     euler.grading_key:              kXZVEwuNtZhczOicgd2X74Gj8tSI5NqKKyPXr1ll30zyWUftRSN7aQ0M3mxvOBtX
@@ -54,49 +54,55 @@ parameters:
     altares.wsdl_url_identity:      'https://intuiz.altares.fr/iws-v3.13/services/CallistoIdentite?wsdl'
     altares.wsdl_url_risk:          'https://intuiz.altares.fr/iws-v3.13/services/CallistoRisque?wsdl'
 
-    slack.default_channel:           '#it-testing'
+    ellisphere.contract_id:         ~
+    ellisphere.user_prefix:         ~
+    ellisphere.user_id:             ~
+    ellisphere.password:            ~
+    ellisphere.url:                 https://services-test.data-access-gateway.com/1/rest/
+
+    slack.default_channel:          '#it-testing'
 
     # End of parameters managed also by Ansible
 
-    dbal_wrapper_class:              Unilend\Bridge\Doctrine\DBAL\Connection
-    dbal_driver_class:               Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver
+    dbal_wrapper_class:             Unilend\Bridge\Doctrine\DBAL\Connection
+    dbal_driver_class:              Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver
 
-    mongodb_server:                  mongodb://datalake-shard-00-00-lnres.mongodb.net:27017,datalake-shard-00-01-lnres.mongodb.net:27017,datalake-shard-00-02-lnres.mongodb.net:27017/ws_call_%kernel.environment%?ssl=true&replicaSet=DataLake-shard-0&authSource=admin
-    mongodb_username:                uld-mdb-admin
-    mongodb_password:                cyPKA2c0C6hq3JLp
+    mongodb_server:                 mongodb://datalake-shard-00-00-lnres.mongodb.net:27017,datalake-shard-00-01-lnres.mongodb.net:27017,datalake-shard-00-02-lnres.mongodb.net:27017/ws_call_%kernel.environment%?ssl=true&replicaSet=DataLake-shard-0&authSource=admin
+    mongodb_username:               uld-mdb-admin
+    mongodb_password:               cyPKA2c0C6hq3JLp
 
-    secret:                          440caf9a41b35b72dc75ec333e3a33b7cab2366b
-    locale:                          fr_FR
+    secret:                         440caf9a41b35b72dc75ec333e3a33b7cab2366b
+    locale:                         fr_FR
 
-    server1.memcache_host:           127.0.0.1
-    server1.memcache_port:           11211
+    server1.memcache_host:          127.0.0.1
+    server1.memcache_port:          11211
 
     image_resize:
         projets:
-            authorized:              [72, 169] # Authorized heights
-            height:                  1365      # Source image maximum height
-            width:                   2048      # Source image maximum width
+            authorized:             [72, 169] # Authorized heights
+            height:                 1365      # Source image maximum height
+            width:                  2048      # Source image maximum width
 
-    router.request_context.scheme:   https
+    router.request_context.scheme:  https
 
-    path.static:                     /data/sites/unilend/public/default/
-    path.shared:                     /data/medias/nfs/
-    path.shared_tmp:                 %path.shared%tmp/
-    path.user:                       %path.shared%var/
-    path.sftp:                       %path.shared%sftp/
-    path.protected:                  %path.shared%protected/
-    path.payline:                    /data/sites/unilend/librairies/payline/
-    path.gulp_rev_manifest:          %kernel.root_dir%/../public/default/assets/rev-manifest.json
+    path.static:                    /data/sites/unilend/public/default/
+    path.shared:                    /data/medias/nfs/
+    path.shared_tmp:                %path.shared%tmp/
+    path.user:                      %path.shared%var/
+    path.sftp:                      %path.shared%sftp/
+    path.protected:                 %path.shared%protected/
+    path.payline:                   /data/sites/unilend/librairies/payline/
+    path.gulp_rev_manifest:         %kernel.root_dir%/../public/default/assets/rev-manifest.json
 
-    mapbox.token:                    pk.eyJ1IjoidW5pbGVuZCIsImEiOiJjaXJiczA4ejQwMDVvaWZsdzdmMmpnOGRtIn0._IBtG2TUy17m7S6jwVBrcg
+    mapbox.token:                   pk.eyJ1IjoidW5pbGVuZCIsImEiOiJjaXJiczA4ejQwMDVvaWZsdzdmMmpnOGRtIn0._IBtG2TUy17m7S6jwVBrcg
 
-    security.bcrypt.cost:            13
+    security.bcrypt.cost:           13
 
-    new_relic.front_app_name:        Unilend-front
-    new_relic.back_app_name:         Unilend-backoffice
-    new_relic.console_app_name:      Unilend-batchjobs
+    new_relic.front_app_name:       Unilend-front
+    new_relic.back_app_name:        Unilend-backoffice
+    new_relic.console_app_name:     Unilend-batchjobs
 
-    slack.team_id:                   T09JRNH40
-    slack.token:                     xoxb-54621264262-6EXEn7g59rpWe7vDxzHht5z5
-    slack.command_token:             u2AOiDVHg1WQQgL1MjZ83IQe
-    slack.monitoring_channel:        '#it-monitoring'
+    slack.team_id:                  T09JRNH40
+    slack.token:                    xoxb-54621264262-6EXEn7g59rpWe7vDxzHht5z5
+    slack.command_token:            u2AOiDVHg1WQQgL1MjZ83IQe
+    slack.monitoring_channel:       '#it-monitoring'

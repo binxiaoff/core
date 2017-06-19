@@ -731,19 +731,24 @@ class transfertsController extends bootstrap
                 $entityManager->flush();
                 $entityManager->getConnection()->commit();
 
-                try {
-                    if ($this->getParameter('kernel.environment') === 'prod') {
+                if ($this->getParameter('kernel.environment') === 'prod') {
+                    try {
                         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Ekomi $ekomi */
                         $ekomi = $this->get('unilend.service.ekomi');
                         $ekomi->sendProjectEmail($project);
+                    } catch (\Exception $exception) {
+                        // Nothing to do, but it must not disturb the DB transaction.
+                        $logger->error('Ekomi send project email failed. Error message : ' . $exception->getMessage());
                     }
+                }
 
+                try {
                     $slackManager = $this->container->get('unilend.service.slack_manager');
                     $message      = $slackManager->getProjectName($project) . ' - Fonds débloqués par ' . $_SESSION['user']['firstname'] . ' ' . $_SESSION['user']['name'];
                     $slackManager->sendMessage($message);
                 } catch (\Exception $exception) {
                     // Nothing to do, but it must not disturb the DB transaction.
-                    $logger->error('Ekomi send project email or slack message for release funds failed. Erorr messages : ' . $exception->getMessage());
+                    $logger->error('Slack message for release funds failed. Error message : ' . $exception->getMessage());
                 }
 
             } catch (\Exception $exception) {

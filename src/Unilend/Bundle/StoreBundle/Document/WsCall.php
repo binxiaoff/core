@@ -45,6 +45,11 @@ class WsCall
     protected $added;
 
     /**
+     * @MongoDB\Field(type="string")
+     */
+    protected $parameter;
+
+    /**
      * Get id
      *
      * @return string $id
@@ -166,5 +171,21 @@ class WsCall
     public function setIdWsCallHistory($idWsCallHistory)
     {
         $this->idWsCallHistory = $idWsCallHistory;
+    }
+
+    /**
+     * @return string
+     */
+    public function getParameter()
+    {
+        return $this->parameter;
+    }
+
+    /**
+     * @param $parameter
+     */
+    public function setParameter($parameter)
+    {
+        $this->parameter = $parameter;
     }
 }

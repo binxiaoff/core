@@ -287,6 +287,10 @@ guzzle:
             base_url: "%infolegale.url%"
             options:
                 http_errors: false
+        ellisphere:
+            base_url: "%ellisphere.url%"
+            options:
+                http_errors: false
 
 jms_serializer:
     enable_short_alias: false
