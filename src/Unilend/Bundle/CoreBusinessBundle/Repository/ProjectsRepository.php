@@ -106,9 +106,7 @@ class ProjectsRepository extends EntityRepository
             ->setParameter('projectStatus', ProjectsStatus::INCOMPLETE_REQUEST)
             ->setParameter('excludedStatus', [ProjectsStatus::ABANDONED, ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION])
             ->setParameter('noAutoEvaluationStatus', ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION)
-            ->orderBy('p.added', 'DESC')
-            ->getQuery()
-            ->getResult();
+            ->orderBy('p.added', 'DESC');
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -126,9 +124,7 @@ class ProjectsRepository extends EntityRepository
             ->andWhere($queryBuilder->expr()->in('p.status', ':projectStatus'))
             ->setParameter('userCompanies', $companies)
             ->setParameter('projectStatus', [ProjectsStatus::ABANDONED])
-            ->orderBy('p.added', 'DESC')
-            ->getQuery()
-            ->getResult();
+            ->orderBy('p.added', 'DESC');
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -146,9 +142,7 @@ class ProjectsRepository extends EntityRepository
             ->andWhere($queryBuilder->expr()->in('p.status', ':projectStatus'))
             ->setParameter('userCompanies', $companies)
             ->setParameter('projectStatus', [ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION])
-            ->orderBy('p.added', 'DESC')
-            ->getQuery()
-            ->getResult();
+            ->orderBy('p.added', 'DESC');
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -219,5 +213,22 @@ class ProjectsRepository extends EntityRepository
         }
 
         return $statistics;
+    }
+
+    /**
+     * @param int       $status
+     * @param \DateTime $from
+     *
+     * @return Projects[]
+     */
+    public function getProjectsByStatusFromDate($status, \DateTime $from)
+    {
+        $queryBuilder = $this->createQueryBuilder('p')
+            ->where('p.status = :status')
+            ->setParameter('status', $status)
+            ->andWhere('p.added >= :from')
+            ->setParameter('from', $from);
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }

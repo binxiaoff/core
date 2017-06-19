@@ -240,11 +240,6 @@ class AltaresManager
             $validity = $this->isValidResponse($response, ['class' => __CLASS__, 'resource' => $wsResource->getLabel()] + $params);
             call_user_func($callable, json_encode($response), $validity['status']);
 
-            if ('error' !== $validity['status']) {
-                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
-            } else {
-                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
-            }
             if ($validity['is_valid']) {
                 return $response;
             } else {
@@ -257,7 +252,6 @@ class AltaresManager
             $this->logger->error($exception->getMessage() . ' - Code ' . $exception->getCode(),
                 ['class' => __CLASS__, 'resource' => $wsResource->getLabel()] + $params
             );
-            $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
 
             return null;
         }

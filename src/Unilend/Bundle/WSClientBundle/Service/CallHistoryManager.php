@@ -139,8 +139,8 @@ class CallHistoryManager
                 if (false == $wsResource->isIsAvailable()) {
                     return;
                 }
-
-                $wsResource->setIsAvailable(WsExternalResource::STATUS_UNAVAILABLE);
+                $wsResource->setIsAvailable(WsExternalResource::STATUS_UNAVAILABLE)
+                    ->setUpdated(new \DateTime());
                 $slackMessage = $wsResource->getProviderName() . '(' . $wsResource->getResourceName() . ') is down  :skull_and_crossbones:';
 
                 if (null !== $extraInfo) {
@@ -151,9 +151,13 @@ class CallHistoryManager
                 if ($wsResource->isIsAvailable()) {
                     return;
                 }
-
-                $wsResource->setIsAvailable(WsExternalResource::STATUS_AVAILABLE);
+                $wsResource->setIsAvailable(WsExternalResource::STATUS_AVAILABLE)
+                    ->setUpdated(new \DateTime());
                 $slackMessage = $wsResource->getProviderName() . '(' . $wsResource->getResourceName() . ') is up  :white_check_mark:';
+
+                if (null !== $extraInfo) {
+                    $slackMessage .= "\n> " . $extraInfo;
+                }
                 break;
             default:
                 return;
@@ -177,6 +181,7 @@ class CallHistoryManager
      * @param WsExternalResource $wsResource
      * @param string             $siren
      * @param string             $response
+     * @param WsCallHistory      $callHistory
      */
     private function storeResponse(WsExternalResource $wsResource, $siren, $response, WsCallHistory $callHistory)
     {
@@ -202,6 +207,7 @@ class CallHistoryManager
      * @param string         $provider
      * @param string         $resource
      * @param null|\DateTime $date
+     *
      * @return false|WsCall
      */
     public function fetchLatestDataFromMongo($siren, $provider, $resource, \DateTime $date)
@@ -234,6 +240,7 @@ class CallHistoryManager
     /**
      * @param WsExternalResource $wsResource
      * @param string             $siren
+     *
      * @return mixed
      */
     public function getStoredResponse(WsExternalResource $wsResource, $siren)
@@ -257,6 +264,7 @@ class CallHistoryManager
 
     /**
      * @param int $days
+     *
      * @return \DateTime
      */
     public function getDateTimeFromPassedDays($days = 3)
@@ -296,6 +304,7 @@ class CallHistoryManager
 
     /**
      * @param int $module
+     *
      * @return string
      */
     private function module2string($module)
