@@ -133,7 +133,7 @@ class ProjectContractAssessment
      *
      * @return ProjectContractAssessment
      */
-    public function setIdProject(Projects $idProject = null)
+    public function setIdProject(Projects $idProject)
     {
         $this->idProject = $idProject;
 
@@ -157,7 +157,7 @@ class ProjectContractAssessment
      *
      * @return ProjectContractAssessment
      */
-    public function setIdContract(UnderlyingContract $idContract = null)
+    public function setIdContract(UnderlyingContract $idContract)
     {
         $this->idContract = $idContract;
 
@@ -181,7 +181,7 @@ class ProjectContractAssessment
      *
      * @return ProjectContractAssessment
      */
-    public function setIdContractAttributeType(UnderlyingContractAttributeType $idContractAttributeType = null)
+    public function setIdContractAttributeType(UnderlyingContractAttributeType $idContractAttributeType)
     {
         $this->idContractAttributeType = $idContractAttributeType;
 

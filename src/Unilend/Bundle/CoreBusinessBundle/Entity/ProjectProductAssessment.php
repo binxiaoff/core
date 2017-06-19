@@ -131,7 +131,7 @@ class ProjectProductAssessment
      *
      * @return ProjectProductAssessment
      */
-    public function setIdProject(\Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject = null)
+    public function setIdProject(\Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject)
     {
         $this->idProject = $idProject;
 
@@ -155,7 +155,7 @@ class ProjectProductAssessment
      *
      * @return ProjectProductAssessment
      */
-    public function setIdProduct(\Unilend\Bundle\CoreBusinessBundle\Entity\Product $idProduct = null)
+    public function setIdProduct(\Unilend\Bundle\CoreBusinessBundle\Entity\Product $idProduct)
     {
         $this->idProduct = $idProduct;
 
@@ -179,7 +179,7 @@ class ProjectProductAssessment
      *
      * @return ProjectProductAssessment
      */
-    public function setIdProductAttributeType(\Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType $idProductAttributeType = null)
+    public function setIdProductAttributeType(\Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType $idProductAttributeType)
     {
         $this->idProductAttributeType = $idProductAttributeType;
 
