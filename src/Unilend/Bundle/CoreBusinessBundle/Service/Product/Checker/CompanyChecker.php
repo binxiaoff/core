@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
+use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
@@ -61,5 +62,30 @@ trait CompanyChecker
         }
 
         return in_array($company->getCodeNaf(), $nafCode);
+    }
+
+    public function isEligibleForHeadquartersLocation(Companies $company, Product $product, ProductAttributeManager $productAttributeManager)
+    {
+        $exclusiveLocations = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::HEADQUARTERS_LOCATION_EXCLUSIVE);
+
+        if (empty($exclusiveLocations)) {
+            return true;
+        }
+        $departement = in_array(substr($company->getZip(), 0, 2), ['97', '98']) ? substr($company->getZip(), 0, 3) : substr($company->getZip(), 0, 2);
+
+        return false === in_array($departement, $exclusiveLocations);
+    }
+
+    public function isEligibleForMaxXerfiScore(Companies $company, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    {
+        $maxXerfiScore = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MAX_XERFI_SCORE);
+
+        if (empty($maxXerfiScore)) {
+            return true;
+        }
+
+        $xerfiScore = $entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($company->getCodeNaf());
+
+        return $xerfiScore <= $maxXerfiScore;
     }
 }

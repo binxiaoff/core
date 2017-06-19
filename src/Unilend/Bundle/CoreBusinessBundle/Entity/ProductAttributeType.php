@@ -20,6 +20,9 @@ class ProductAttributeType
     const MIN_CREATION_DAYS                  = 'product_min_creation_days';
     const MAX_LOAN_DURATION_IN_MONTH         = 'product_max_loan_duration_in_month';
     const MIN_LOAN_DURATION_IN_MONTH         = 'product_min_loan_duration_in_month';
+    const REQUESTER_IS_ONE_OF_THE_DIRECTOR   = 'requester_is_one_of_the_director';
+    const HEADQUARTERS_LOCATION_EXCLUSIVE    = 'headquarters_location_exclusive';
+    const MAX_XERFI_SCORE                    = 'max_xerfi_score';
 
     /**
      * @var string
@@ -50,8 +53,6 @@ class ProductAttributeType
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $idType;
-
-
 
     /**
      * Set label

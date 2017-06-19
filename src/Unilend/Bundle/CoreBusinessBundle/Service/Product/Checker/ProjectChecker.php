@@ -2,10 +2,12 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
+use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
+use Unilend\Bundle\WSClientBundle\Service\InfolegaleManager;
 
 trait ProjectChecker
 {
@@ -68,5 +70,28 @@ trait ProjectChecker
         }
 
         return in_array($project->getIdBorrowingMotive(), $eligibleMotives);
+    }
+
+    public function isEligibleForRequesterName(Projects $project, Product $product, ProductAttributeManager $productAttributeManager, InfolegaleManager $infolegaleManager, EntityManager $entityManager)
+    {
+        $eligibleRequester = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::REQUESTER_IS_ONE_OF_THE_DIRECTOR);
+        if (empty($eligibleRequester)) {
+            return true;
+        }
+
+        $company         = $project->getIdCompany();
+        $companyIdentity = $infolegaleManager->getIdentity($company->getSiren());
+        if ($companyIdentity) {
+            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner());
+            foreach ($companyIdentity->getDirectors() as $director) {
+                if ($client->getNom() === $director->getName() && $client->getPrenom() === $director->getFirstName()) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        return true;
     }
 }

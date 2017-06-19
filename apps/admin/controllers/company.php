@@ -80,10 +80,10 @@ class companyController extends bootstrap
             if ($altaresEstablishmentIdentity instanceof EstablishmentIdentityDetail) {
                 $companyIdentity['phoneNumber'] = $altaresEstablishmentIdentity->getPhoneNumber();
             }
-            if (false === empty($infoLegaleIdentity->dirigeants->dirigeant)) {
-                $companyIdentity['title']          = (string) $infoLegaleIdentity->dirigeants->dirigeant->civilite;
-                $companyIdentity['ownerName']      = (string) $infoLegaleIdentity->dirigeants->dirigeant->nom;
-                $companyIdentity['ownerFirstName'] = (string) $infoLegaleIdentity->dirigeants->dirigeant->prenom;
+            if (false === empty($infoLegaleIdentity->getDirectors())) {
+                $companyIdentity['title']          = $infoLegaleIdentity->getDirectors()->first()->getTitle();
+                $companyIdentity['ownerName']      = $infoLegaleIdentity->getDirectors()->first()->getName();
+                $companyIdentity['ownerFirstName'] = $infoLegaleIdentity->getDirectors()->first()->getFirstName();
             }
 
             /** @var \JMS\Serializer\Serializer $serializer */

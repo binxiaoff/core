@@ -11,6 +11,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker\CompanyChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker\ProjectChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
+use Unilend\Bundle\WSClientBundle\Service\InfolegaleManager;
 
 class ProjectValidator
 {
@@ -26,11 +27,15 @@ class ProjectValidator
     /** @var EntityManager */
     private $entityManager;
 
-    public function __construct(ProductAttributeManager $productAttributeManager, ContractManager $contractManager, EntityManager $entityManager)
+    /** @var InfolegaleManager */
+    private $infolegaleManager;
+
+    public function __construct(ProductAttributeManager $productAttributeManager, ContractManager $contractManager, EntityManager $entityManager, InfolegaleManager $infolegaleManager)
     {
         $this->productAttributeManager = $productAttributeManager;
         $this->contractManager         = $contractManager;
         $this->entityManager           = $entityManager;
+        $this->infolegaleManager       = $infolegaleManager;
     }
 
     /**
@@ -106,6 +111,15 @@ class ProjectValidator
                 break;
             case ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_NAF_CODE:
                 $checkResult = $this->isEligibleForNafCode($project->getIdCompany(), $product, $this->productAttributeManager);
+                break;
+            case ProductAttributeType::REQUESTER_IS_ONE_OF_THE_DIRECTOR:
+                $checkResult = $this->isEligibleForRequesterName($project, $product, $this->productAttributeManager, $this->infolegaleManager, $this->entityManager);
+                break;
+            case ProductAttributeType::HEADQUARTERS_LOCATION_EXCLUSIVE:
+                $checkResult = $this->isEligibleForHeadquartersLocation($project->getIdCompany(), $product, $this->productAttributeManager);
+                break;
+                case ProductAttributeType::MAX_XERFI_SCORE:
+                $checkResult = $this->isEligibleForMaxXerfiScore($project->getIdCompany(), $product, $this->productAttributeManager, $this->entityManager);
                 break;
             default;
                 return true;
