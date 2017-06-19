@@ -210,25 +210,7 @@ class ProjectRequestController extends Controller
         $riskCheck             = $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
 
         if (null === $riskCheck) {
-            try {
-                $productManager = $this->get('unilend.service_product.product_manager');
-                $products       = $productManager->findEligibleProducts($project);
-
-                if (count($products) === 1 && isset($products[0]) && $products[0] instanceof \product) {
-                    /** @var PartnerProduct $partnerProduct */
-                    $partnerProduct                     = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findOneBy(['idPartner' => $user->getPartner(), 'idProduct' => $products[0]->id_product]);
-                    $project->commission_rate_funds     = $partnerProduct->getCommissionRateFunds();
-                    $project->commission_rate_repayment = $partnerProduct->getCommissionRateRepayment();
-                    $project->id_product                = $products[0]->id_product;
-                    $project->update();
-                }
-
-                if (empty($products)) {
-                    $projectManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::NOT_ELIGIBLE, $project, 0, \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
-                }
-            } catch (\Exception $exception) {
-                $this->get('logger')->warning($exception->getMessage(), ['method' => __METHOD__, 'line' => __LINE__]);
-            }
+            $projectRequestManager->assignEligiblePartnerProduct($project, Users::USER_ID_FRONT, true);
         }
 
         return $this->redirectToRoute('partner_project_request_eligibility', ['hash' => $project->hash]);
