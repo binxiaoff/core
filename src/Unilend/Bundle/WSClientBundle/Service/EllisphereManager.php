@@ -23,7 +23,7 @@ class EllisphereManager
 
     const RESOURCE_ONLINE_ORDER = 'get_online_order_ellisphere';
 
-    /** @var string */
+    /** @var int */
     private $contractId;
 
     /** @var string */
@@ -89,6 +89,11 @@ class EllisphereManager
         $this->serializer         = $serializer;
     }
 
+    /**
+     * @param $siren
+     *
+     * @return Report|null
+     */
     public function getReport($siren)
     {
         $wsResource = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WsExternalResource')->findOneBy(['label' => self::RESOURCE_ONLINE_ORDER]);
@@ -100,6 +105,12 @@ class EllisphereManager
         return null;
     }
 
+    /**
+     * @param WsExternalResource $wsResource
+     * @param                    $parameters
+     *
+     * @return null|\SimpleXMLElement
+     */
     private function sendRequest(WsExternalResource $wsResource, $parameters)
     {
         $endpoint   = $wsResource->getResourceName();
@@ -113,9 +124,9 @@ class EllisphereManager
             if ($content = $this->getStoredResponse($wsResource, $siren)) {
                 return new \SimpleXMLElement($content);
             }
-        }
 
-        $callback = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
+            $callback = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
+        }
 
         $headers = ['Content-type' => 'application/xml'];
         $body    = $this->generateXMLRequest($endpoint, $parameters)->asXML();
@@ -134,8 +145,6 @@ class EllisphereManager
             }
             if ('valid' === $validity['status']) {
                 return new \SimpleXMLElement($content);
-            } else {
-                return null;
             }
         } catch (\Exception $exception) {
             call_user_func($callback, isset($content) ? $content : '', 'error');
@@ -145,9 +154,9 @@ class EllisphereManager
             }
             $this->logger->error($message, $logContext);
             $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
-
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -167,6 +176,9 @@ class EllisphereManager
         return $xml;
     }
 
+    /**
+     * @param \SimpleXMLElement $element
+     */
     private function addIdentification(\SimpleXMLElement $element)
     {
         $identification = $element->addChild('admin');
@@ -183,6 +195,11 @@ class EllisphereManager
         $context->addChild('date', (new \DateTime())->format('c'));
     }
 
+    /**
+     * @param \SimpleXMLElement $element
+     * @param sting             $endpoint
+     * @param array             $parameters
+     */
     private function addRequest(\SimpleXMLElement $element, $endpoint, $parameters)
     {
         $request = $element->addChild('request');
@@ -217,7 +234,8 @@ class EllisphereManager
     {
         $storedResponse = $this->callHistoryManager->getStoredResponse($resource, $siren);
 
-        if ($this->useCache
+        if (
+            $this->useCache
             && false !== $storedResponse
             && false !== simplexml_load_string($storedResponse)
         ) {
@@ -273,6 +291,7 @@ class EllisphereManager
                 'content' => $content
             ];
         } catch (Exception $exception) {
+            $this->logger->error('Error occurs when parse the Ellisphere response. Error messages : ' . $exception->getMessage(), $logContext);
             return ['status' => 'error', 'is_valid' => false, 'content' => null];
         }
     }
