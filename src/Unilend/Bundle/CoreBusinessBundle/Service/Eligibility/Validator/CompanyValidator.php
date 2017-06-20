@@ -13,28 +13,16 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityAssessment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Xerfi;
+use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyBalanceSheet;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerHermesCompanyRating;
-use Unilend\Bundle\WSClientBundle\Service\AltaresManager;
-use Unilend\Bundle\WSClientBundle\Service\CodinfManager;
-use Unilend\Bundle\WSClientBundle\Service\EulerHermesManager;
-use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
-use Unilend\Bundle\WSClientBundle\Service\InfolegaleManager;
 
 class CompanyValidator
 {
     /** @var EntityManager */
     private $entityManager;
-    /** @var AltaresManager */
-    private $altaresManager;
-    /** @var EulerHermesManager */
-    private $eulerHermesManager;
-    /** @var CodinfManager */
-    private $codinfManager;
-    /** @var InfolegaleManager */
-    private $infolegaleManager;
-    /** @var InfogreffeManager */
-    private $infogreffeManager;
+    /** @var ExternalDataManager */
+    private $externalDataManager;
 
     const CHECK_RULE_METHODS = [
         'TC-RISK-001' => 'checkSiren',
@@ -52,38 +40,32 @@ class CompanyValidator
     ];
 
     /**
-     * @param EntityManager      $entityManager
-     * @param AltaresManager     $altaresManager
-     * @param EulerHermesManager $eulerHermesManager
-     * @param CodinfManager      $codinfManager
-     * @param InfolegaleManager  $infolegaleManager
-     * @param InfogreffeManager  $infogreffeManager
+     * @param EntityManager       $entityManager
+     * @param ExternalDataManager $externalDataManager
      */
-    public function __construct(
-        EntityManager $entityManager,
-        AltaresManager $altaresManager,
-        EulerHermesManager $eulerHermesManager,
-        CodinfManager $codinfManager,
-        InfolegaleManager $infolegaleManager,
-        InfogreffeManager $infogreffeManager
-    )
+    public function __construct(EntityManager $entityManager, ExternalDataManager $externalDataManager)
     {
-        $this->entityManager      = $entityManager;
-        $this->altaresManager     = $altaresManager;
-        $this->eulerHermesManager = $eulerHermesManager;
-        $this->codinfManager      = $codinfManager;
-        $this->infolegaleManager  = $infolegaleManager;
-        $this->infogreffeManager  = $infogreffeManager;
+        $this->entityManager       = $entityManager;
+        $this->externalDataManager = $externalDataManager;
     }
 
     /**
-     * @param string        $siren
-     * @param Projects|null $project
+     * @param string         $siren
+     * @param Companies|null $company
+     * @param Projects|null  $project
      *
      * @return array
      */
-    public function validate($siren, Projects $project = null)
+    public function validate($siren, Companies $company = null, Projects $project = null)
     {
+        if (null !== $company) {
+            $lastCompanyRatingHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRatingHistory')->findOneBy(
+                ['idCompany' => $company->getIdCompany()],
+                ['added' => 'DESC']
+            );
+            $this->externalDataManager->setCompanyRatingHistory($lastCompanyRatingHistory);
+        }
+
         $sirenCheck = $this->checkRule('TC-RISK-001', $siren, $project);
         if (false === empty($sirenCheck)) {
             return $sirenCheck;
@@ -166,7 +148,7 @@ class CompanyValidator
     {
         if (
             Companies::INVALID_SIREN_EMPTY === $siren
-            || null === $this->altaresManager->getCompanyIdentity($siren)
+            || null === $this->externalDataManager->getCompanyIdentity($siren)
         ) {
             return [\projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN];
         }
@@ -180,7 +162,7 @@ class CompanyValidator
      */
     private function checkActiveCompany($siren)
     {
-        $companyData = $this->altaresManager->getCompanyIdentity($siren);
+        $companyData = $this->externalDataManager->getCompanyIdentity($siren);
         if (in_array($companyData->getCompanyStatus(), [7, 9])) {
             return [\projects_status::NON_ELIGIBLE_REASON_INACTIVE];
         }
@@ -194,7 +176,7 @@ class CompanyValidator
      */
     private function checkCollectiveProceeding($siren)
     {
-        $companyData = $this->altaresManager->getCompanyIdentity($siren);
+        $companyData = $this->externalDataManager->getCompanyIdentity($siren);
         if ($companyData->getCollectiveProcedure()) {
             return [\projects_status::NON_ELIGIBLE_REASON_PROCEEDING];
         }
@@ -211,7 +193,7 @@ class CompanyValidator
         $nonAllowedIncident = [2, 3, 4, 5, 6];
         $startDate          = (new \DateTime())->sub(new \DateInterval('P1Y'));
         $currentDate        = new \DateTime();
-        $incidentList       = $this->codinfManager->getIncidentList($siren, $startDate, $currentDate);
+        $incidentList       = $this->externalDataManager->getPaymentIncidents($siren, $startDate, $currentDate);
 
         if (null === $incidentList) {
             return [\projects_status::UNEXPECTED_RESPONSE . 'codinf_incident'];
@@ -242,7 +224,7 @@ class CompanyValidator
      */
     private function checkAltaresScore($siren)
     {
-        $altaresScore = $this->altaresManager->getScore($siren);
+        $altaresScore = $this->externalDataManager->getAltaresScore($siren);
         if (null === $altaresScore) {
             return [\projects_status::UNEXPECTED_RESPONSE . 'altares_score'];
         }
@@ -266,7 +248,7 @@ class CompanyValidator
             return [];
         }
 
-        $financialSummary = $this->altaresManager->getFinancialSummary($siren, $lastBalanceSheet->getBalanceSheetId());
+        $financialSummary = $this->externalDataManager->getFinancialSummary($siren, $lastBalanceSheet);
         if (null === $financialSummary) {
             return [\projects_status::UNEXPECTED_RESPONSE . 'altares_fpro'];
         }
@@ -302,7 +284,7 @@ class CompanyValidator
             return [];
         }
 
-        $balanceManagementLine = $this->altaresManager->getBalanceManagementLine($siren, $lastBalanceSheet->getBalanceSheetId());
+        $balanceManagementLine = $this->externalDataManager->getBalanceManagementLine($siren, $lastBalanceSheet);
         if (null === $balanceManagementLine) {
             return [\projects_status::UNEXPECTED_RESPONSE . 'altares_ebe'];
         }
@@ -350,7 +332,7 @@ class CompanyValidator
      */
     private function checkAltaresScoreVsXerfiScore($siren)
     {
-        $altaresScore = $this->altaresManager->getScore($siren);
+        $altaresScore = $this->externalDataManager->getAltaresScore($siren);
         if (null === $altaresScore) {
             return [\projects_status::UNEXPECTED_RESPONSE . 'altares_score'];
         }
@@ -375,7 +357,7 @@ class CompanyValidator
      */
     private function checkEulerHermesTrafficLight($siren)
     {
-        $trafficLight = $this->eulerHermesManager->getTrafficLight($siren, 'fr');
+        $trafficLight = $this->externalDataManager->getEulerHermesTrafficLight($siren);
 
         if (null === $trafficLight) {
             return [\projects_status::UNEXPECTED_RESPONSE . 'euler_traffic_light_score'];
@@ -389,7 +371,7 @@ class CompanyValidator
             return [\projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT];
         }
 
-        $altaresScore = $this->altaresManager->getScore($siren);
+        $altaresScore = $this->externalDataManager->getAltaresScore($siren);
         if (null === $altaresScore) {
             return [\projects_status::UNEXPECTED_RESPONSE . 'altares_score'];
         }
@@ -421,7 +403,7 @@ class CompanyValidator
      */
     private function checkInfolegaleScore($siren)
     {
-        $infolegaleScore = $this->infolegaleManager->getScore($siren);
+        $infolegaleScore = $this->externalDataManager->getInfolegaleScore($siren);
         if (null === $infolegaleScore) {
             return [\projects_status::UNEXPECTED_RESPONSE . 'infolegale_score'];
         }
@@ -440,7 +422,7 @@ class CompanyValidator
      */
     private function checkEulerHermesGrade($siren)
     {
-        $eulerHermesGrade = $this->eulerHermesManager->getGrade($siren, 'fr');
+        $eulerHermesGrade = $this->externalDataManager->getEulerHermesGrade($siren);
         if (null === $eulerHermesGrade) {
             return [\projects_status::UNEXPECTED_RESPONSE . 'euler_grade'];
         }
@@ -455,7 +437,7 @@ class CompanyValidator
             return [\projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_UNILEND_XERFI];
         }
 
-        $altaresScore = $this->altaresManager->getScore($siren);
+        $altaresScore = $this->externalDataManager->getAltaresScore($siren);
         if (null === $altaresScore) {
             return [\projects_status::UNEXPECTED_RESPONSE . 'altares_score'];
         }
@@ -498,7 +480,7 @@ class CompanyValidator
      */
     private function getLastBalanceSheetUpToDate($siren)
     {
-        $balanceSheetList = $this->altaresManager->getBalanceSheets($siren);
+        $balanceSheetList = $this->externalDataManager->getBalanceSheets($siren);
         if (null === $balanceSheetList) {
             return null;
         }
@@ -523,7 +505,7 @@ class CompanyValidator
      */
     private function getNAFCode($siren)
     {
-        $companyData = $this->altaresManager->getCompanyIdentity($siren);
+        $companyData = $this->externalDataManager->getCompanyIdentity($siren);
         return $companyData->getNAFCode();
     }
 

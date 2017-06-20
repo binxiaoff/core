@@ -64,7 +64,7 @@ class EligibilityManager
      */
     public function checkCompanyEligibility(Companies $company)
     {
-        return $this->companyValidator->validate($company->getSiren());
+        return $this->companyValidator->validate($company->getSiren(), $company);
     }
 
     /**
@@ -84,6 +84,6 @@ class EligibilityManager
      */
     public function checkProjectEligibility(Projects $project)
     {
-        return $this->companyValidator->validate($project->getIdCompany()->getSiren(), $project);
+        return $this->companyValidator->validate($project->getIdCompany()->getSiren(), $project->getIdCompany(), $project);
     }
 }

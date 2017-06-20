@@ -7,13 +7,13 @@ use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRating;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\EligibilityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
-use Unilend\Bundle\WSClientBundle\Service\AltaresManager;
 
 class ProjectRequestManager
 {
@@ -31,24 +31,18 @@ class ProjectRequestManager
     private $partnerManager;
     /** @var EligibilityManager */
     private $eligibilityManager;
-    /** @var AltaresManager */
-    private $altaresManager;
-    /** @var CompanyBalanceSheetManager */
-    private $companyBalanceSheetManager;
     /** @var LoggerInterface */
     private $logger;
 
     /**
-     * @param EntityManagerSimulator     $entityManagerSimulator
-     * @param EntityManager              $entityManager
-     * @param ProjectManager             $projectManager
-     * @param WalletCreationManager      $walletCreationManager
-     * @param SourceManager              $sourceManager
-     * @param PartnerManager             $partnerManager
-     * @param EligibilityManager         $eligibilityManager
-     * @param AltaresManager             $altaresManager
-     * @param CompanyBalanceSheetManager $companyBalanceSheetManager
-     * @param LoggerInterface            $logger
+     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param EntityManager          $entityManager
+     * @param ProjectManager         $projectManager
+     * @param WalletCreationManager  $walletCreationManager
+     * @param SourceManager          $sourceManager
+     * @param PartnerManager         $partnerManager
+     * @param EligibilityManager     $eligibilityManager
+     * @param LoggerInterface        $logger
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -58,21 +52,17 @@ class ProjectRequestManager
         SourceManager $sourceManager,
         PartnerManager $partnerManager,
         EligibilityManager $eligibilityManager,
-        AltaresManager $altaresManager,
-        CompanyBalanceSheetManager $companyBalanceSheetManager,
         LoggerInterface $logger
     )
     {
-        $this->entityManagerSimulator     = $entityManagerSimulator;
-        $this->entityManager              = $entityManager;
-        $this->projectManager             = $projectManager;
-        $this->walletCreationManager      = $walletCreationManager;
-        $this->sourceManager              = $sourceManager;
-        $this->partnerManager             = $partnerManager;
-        $this->eligibilityManager         = $eligibilityManager;
-        $this->altaresManager             = $altaresManager;
-        $this->companyBalanceSheetManager = $companyBalanceSheetManager;
-        $this->logger                     = $logger;
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->entityManager          = $entityManager;
+        $this->projectManager         = $projectManager;
+        $this->walletCreationManager  = $walletCreationManager;
+        $this->sourceManager          = $sourceManager;
+        $this->partnerManager         = $partnerManager;
+        $this->eligibilityManager     = $eligibilityManager;
+        $this->logger                 = $logger;
     }
 
     /**
@@ -226,7 +216,7 @@ class ProjectRequestManager
 
         if (null !== $lastCompanyRatingHistory) {
             foreach ($companyRating->getHistoryRatingsByType($lastCompanyRatingHistory->getIdCompanyRatingHistory()) as $rating => $value) {
-                if (false === in_array($rating, \company_rating::$automaticRatingTypes)) {
+                if (false === in_array($rating, CompanyRating::AUTOMATIC_RATING_TYPES)) {
                     $companyRating->id_company_rating_history = $companyRatingHistory->id_company_rating_history;
                     $companyRating->type                      = $rating;
                     $companyRating->value                     = $value['value'];
@@ -235,34 +225,7 @@ class ProjectRequestManager
             }
         }
 
-        $eligibility = $this->eligibilityManager->checkCompanyEligibility($company);
-
-        if (empty($eligibility) || false === in_array(\projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN, $eligibility)) {
-            $companyIdentity = $this->altaresManager->getCompanyIdentity($company->getSiren());
-
-            if (null !== $companyIdentity) {
-                $company->setName($company->getName() ?: $companyIdentity->getCorporateName());
-                $company->setForme($company->getForme() ?: $companyIdentity->getCompanyForm());
-                $company->setCapital($company->getCapital() ?: $companyIdentity->getCapital());
-                $company->setCodeNaf($company->getCodeNaf() ?: $companyIdentity->getNAFCode());
-                $company->setAdresse1($company->getAdresse1() ?: $companyIdentity->getAddress());
-                $company->setCity($company->getCity() ?: $companyIdentity->getCity());
-                $company->setZip($company->getZip() ?: $companyIdentity->getPostCode());
-                $company->setSiret($company->getSiret() ?: $companyIdentity->getSiret());
-                $company->setDateCreation($company->getDateCreation() ?: $companyIdentity->getCreationDate());
-                $company->setRcs($company->getRcs() ?: $companyIdentity->getRcs());
-                $company->setTribunalCom($company->getTribunalCom() ?: $companyIdentity->getCommercialCourt());
-
-                $this->entityManager->flush($company);
-
-                $this->companyBalanceSheetManager->setCompanyBalance(
-                    $company,
-                    $this->altaresManager->getBalanceSheets($company->getSiren())
-                );
-            }
-        }
-
-        return $eligibility;
+        return $this->eligibilityManager->checkCompanyEligibility($company);
     }
 
     /**
@@ -285,7 +248,7 @@ class ProjectRequestManager
         $lastBalance = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompaniesBilans')
             ->findBy(['idCompany' => $company->getIdCompany()], ['clotureExerciceFiscal' => 'DESC'], 1);
 
-        if (null !== $lastBalance) {
+        if (false === empty($lastBalance)) {
             $project->id_dernier_bilan = $lastBalance[0]->getIdBilan();
         }
 
