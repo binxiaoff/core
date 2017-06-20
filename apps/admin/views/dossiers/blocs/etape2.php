@@ -43,15 +43,13 @@
 
         // STREETVIEW
 
-        // Prevent multiple clicks if address is invalid
-        var invalidAddress = false;
-        // Prevent double alert
-        var alertShown = false;
         // Avoid re-initialisation
         var streetviewOpen = false;
-        // Prepare streetview container
-        var initStreetview = function(location) {
+
+        // 1. Prepare Streetview container
+        var initStreetview = function(street, postcode, city) {
             if (!streetviewOpen) {
+                streetviewOpen = true;
                 var streetview = document.getElementById('streetview');
                 var container = document.getElementById('streetview_container');
                 var offsetSpace = 50;
@@ -71,87 +69,111 @@
                         streetviewAspectRatio = aspectRatio * 100 + '%';
                     }
                     $(container).animate({'padding-bottom': streetviewAspectRatio}, animationTime, function () {
-                        showStreetView(location);
+                        resolveAddress(street, postcode, city);
+                        initAutocomplete();
                     });
                 });
             } else {
-                showStreetView(location);
+                resolveAddress(street, postcode, city);
+                initAutocomplete();
             }
         }
-        // Resolve address
-        var resolveAddress = function(street, city, postcode) {
+
+        // 2. Check if Address is valid
+        var resolveAddress = function(street, postcode, city) {
             var address = [street, postcode, city];
             address = address.join(", ");
-            console.log(address)
+            console.log('Resolving address... ' + address)
+
             // Init Geocoder
             var geocoder = new google.maps.Geocoder();
             geocoder.geocode({'address': address}, function(results, status) {
                 if (status === 'OK') {
-                    // Show Streetview
-                    initStreetview(results[0].geometry.location);
-                    initAutocomplete();
+                    console.log('Address resolved.');
+                    console.log('Checking if Streetview is available... ');
+                    var location = results[0].geometry.location;
+                    resolveStreetview(location)
                 } else {
-                    console.log(status);
-                    invalidAddress = true;
-                    if (alertShown === false) {
-                        $.colorbox({inline:true, href:"#popup-streetview-error"});
-                        alertShown = true;
-                    }
+                    console.log('Address is invalid.');
+                    streetviewError('address');
                 }
             });
         }
-        // Init Streetview
-        var showStreetView = function(location) {
-            console.log(location);
-            streetviewOpen = true;
+
+        // 3. Check if Streetview is available
+        var resolveStreetview = function(location) {
+            var streetViewService = new google.maps.StreetViewService();
+            var STREETVIEW_MAX_DISTANCE = 30;
+            streetViewService.getPanoramaByLocation(location, STREETVIEW_MAX_DISTANCE, function (streetViewPanoramaData, status) {
+                if (status === google.maps.StreetViewStatus.OK) {
+                    console.log('Streetview is available');
+                    displayStreetView(location);
+                } else {
+                    console.log('Streetview is not available. Please try a different address');
+                    streetviewError('streetview');
+                }
+            });
+        }
+
+        // 4. Display Streetview
+        var displayStreetView = function(location) {
             new google.maps.StreetViewPanorama(document.getElementById('streetview'), {
                 position: location,
                 pov: {heading: 165, pitch: 0},
                 zoom: 1
             });
         }
+
+        // 5. Streetview Errors
+        var streetviewError = function(error) {
+            var $el = $('#popup-streetview-error')
+            if (error === 'address') {
+                $el.find('.title').text('Invalid Address')
+            } else if (error === 'streetview') {
+                $el.find('.title').text('Streetview not available')
+            }
+            $.colorbox({inline:true, href:"#popup-streetview-error"});
+        }
+
+        // AUTOCOMPLETE
+        var googleAutoComplete;
+        var initAutocomplete = function() {
+            googleAutoComplete = new google.maps.places.Autocomplete((document.getElementById('google-autocomplete')),{types: ['geocode']});
+            googleAutoComplete.addListener('place_changed', initAutocompleteStreetview);
+        }
+        var getAddressFromFields = function() {
+            var street = $('#address_etape2').val();
+            var city = $('#ville_etape2').val();
+            var postcode = $('#postal_etape2').val();
+            var address = [street, postcode, city];
+            return address
+        }
+        var initAutocompleteStreetview = function() {
+            // Get the place details from the autocomplete object.
+            var $place = $('<div id="autocomplete-address" />');
+            $place.html(googleAutoComplete.getPlace().adr_address)
+            var street = $place.find('.street-address').text();
+            var postcode = $place.find('.postal-code').text();
+            var city = $place.find('.locality').text();
+            initStreetview(street, postcode, city);
+        }
+
         // Open streetview
         $("#etape2").on('click', '#streetview_open', function(e) {
             e.preventDefault();
-            if (invalidAddress === false) {
-                var street = $('#address_etape2').val();
-                var city = $('#ville_etape2').val();
-                var postcode = $('#postal_etape2').val();
-                resolveAddress(street, city, postcode);
-            }
-        });
-        // Reset invalid address on change
-        $("#etape2").on('change', '#address_etape2, #postal_etape2, #ville_etape2', function(e) {
-            invalidAddress = false;
-            alertShown = false;
+            var address = getAddressFromFields();
+            initStreetview(address);
+            $('#google-autocomplete').val(address);
         });
         // Close streetview
         $("#etape2").on('click', '#streetview_close', function(e) {
             e.preventDefault();
-            alertShown = false;
             var $container = $(this).closest('#streetview_container')
             $container.animate({'padding-bottom': 0}, 200, function(){
                 $container.hide();
                 streetviewOpen = false;
             });
         });
-
-        //Google Places Autocomplete
-        var googleAutoComplete;
-        function initAutocomplete() {
-            googleAutoComplete = new google.maps.places.Autocomplete((document.getElementById('google-autocomplete')),{types: ['geocode']});
-            googleAutoComplete.addListener('place_changed', updateStreetview);
-        }
-        function updateStreetview() {
-            // Get the place details from the autocomplete object.
-            var $place = $('<div id="autocomplete-address" />');
-            $place.html(googleAutoComplete.getPlace().adr_address)
-            var street = $place.find('.street-address').text();
-            var city = $place.find('.locality').text();
-            var postcode = $place.find('.postal-code').text();
-            console.log(postcode)
-            resolveAddress(street, city, postcode);
-        }
     });
 </script>
 <style>
@@ -243,8 +265,8 @@
                                     <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"/>
                                 </a>
                                 <div id="popup-content">
-                                    <h2 style="padding-top: 30px">Erreur</h2>
-                                    <p style="margin: 0; line-height: 18px;">Aucun résultat pour cette adresse. Veuillez saisir une nouvelle adresse, ville ou code postale et réessayez.</p>
+                                    <h2 style="padding-top: 30px" class="title">Erreur</h2>
+                                    <p style="margin: 0; line-height: 18px;">Veuillez saisir une nouvelle adresse, ville ou code postale et réessayez.</p>
                                 </div>
                             </div>
                         </div>
