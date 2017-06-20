@@ -12,6 +12,7 @@ use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyRatingDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummaryListDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Codinf\IncidentList;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
+use Unilend\Bundle\WSClientBundle\Entity\Infogreffe\CompanyIndebtedness;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\ScoreDetails;
 use Unilend\Bundle\WSClientBundle\Service\AltaresManager;
 use Unilend\Bundle\WSClientBundle\Service\CodinfManager;
@@ -268,6 +269,11 @@ class ExternalDataManager
         return $score;
     }
 
+    /**
+     * @param string $siren
+     *
+     * @return CompanyIndebtedness|array|null
+     */
     public function getIndebtedness($siren)
     {
         $indebtedness = $this->infogreffeManager->getIndebtedness($siren);

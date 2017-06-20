@@ -188,12 +188,13 @@ class CallHistoryManager
      * @param array         $parameter
      * @param string        $response
      */
-    private function storeResponse(WsCallHistory $callHistory, $parameter, $response)
+    private function storeResponse(WsCallHistory $callHistory, array $parameter, $response)
     {
+        $wsResource = $callHistory->getIdResource();
+        $siren      = $callHistory->getSiren();
+
         try {
-            $wsResource = $callHistory->getIdResource();
-            $siren      = $callHistory->getSiren();
-            $wsCall     = new WsCall();
+            $wsCall = new WsCall();
             $wsCall->setSiren($siren);
             if (false === empty($parameter)) {
                 $wsCall->setParameter(json_encode($parameter));
@@ -211,7 +212,7 @@ class CallHistoryManager
             $this->logger->warning('Unable to save response to mongoDB: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]);
         }
 
-        $cachedItem = $this->cacheItemPool->getItem($this->getCacheKey($wsResource, $siren));
+        $cachedItem = $this->cacheItemPool->getItem($this->getCacheKey($wsResource, $siren, $parameter));
         $cachedItem->set($response)->expiresAfter(CacheKeys::LONG_TIME);
 
         $this->cacheItemPool->save($cachedItem);
@@ -265,7 +266,7 @@ class CallHistoryManager
      */
     public function getStoredResponse(WsExternalResource $wsResource, $siren, $parameter = [])
     {
-        $cachedItem = $this->cacheItemPool->getItem($this->getCacheKey($wsResource, $siren));
+        $cachedItem = $this->cacheItemPool->getItem($this->getCacheKey($wsResource, $siren, $parameter));
 
         if ($cachedItem->isHit()) {
             return $cachedItem->get();
@@ -356,11 +357,12 @@ class CallHistoryManager
     /**
      * @param WsExternalResource $resource
      * @param string             $siren
+     * @param array              $parameter
      *
      * @return string
      */
-    private function getCacheKey(WsExternalResource $resource, $siren)
+    private function getCacheKey(WsExternalResource $resource, $siren, array $parameter)
     {
-        return 'WS_call_' . $resource->getLabel() . '_' . $siren;
+        return 'WS_call_' . $resource->getLabel() . '_' . $siren . '_' . md5(json_encode($parameter));
     }
 }
