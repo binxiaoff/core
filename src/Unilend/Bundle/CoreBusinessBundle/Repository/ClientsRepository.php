@@ -203,7 +203,7 @@ class ClientsRepository extends EntityRepository
                       AND c.type IN (1, 3)
                       AND (
                         NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = ca.cp_fiscal)
--                        OR (SELECT COUNT(*) FROM villes v WHERE v.cp = ca.cp_fiscal AND v.ville = ca.ville_fiscal) <> 1
+                        OR (SELECT COUNT(*) FROM villes v WHERE v.cp = ca.cp_fiscal AND v.ville = ca.ville_fiscal) <> 1
                       )
                   LIMIT :limit
                 ) perso
