@@ -19,12 +19,24 @@
 
     <nav class="site-nav" role="navigation">
         <ul class="site-nav-menu">
-
-            <li role="presentation"><a href="{{ path('home') }}" tabindex="-1">{% trans %} header_mobile-menu-home {% endtrans %}</a></li>
-            <li role="presentation"><a href="{{ path('pourquoi-preter') }}" tabindex="-1">{% trans %} header_menu-item-lend {% endtrans %}</a></li>
-            <li role="presentation"><a href="{{ path('pourquoi-emprunter') }}" tabindex="-1">{% trans %} header_menu-item-borrow {% endtrans %}</a></li>
-            <li role="presentation"><a href="{{ path('projects_list') }}" tabindex="-1">{% trans %} header_menu-item-projects {% endtrans %}</a></li>
-            <li role="presentation"><a href="{{ path('qui-sommes-nous') }}" tabindex="-1">{% trans %} header_menu-item-about {% endtrans %}</a></li>
+            {% if not is_granted('ROLE_PARTNER') %}
+                <li role="presentation"><a href="{{ path('home') }}" tabindex="-1">{% trans %} header_mobile-menu-home {% endtrans %}</a></li>
+                {% if app.user is defined and app.user is not empty %}
+                    {% if is_granted('ROLE_LENDER') %}
+                        <li role="presentation"><a href="{{ path('pourquoi-preter') }}" tabindex="-1">{% trans %} header_menu-item-lend {% endtrans %}</a></li>
+                        <li role="presentation"><a href="{{ path('projects_list') }}" tabindex="-1">{% trans %} header_menu-item-projects {% endtrans %}</a></li>
+                    {%  endif %}
+                    {% if is_granted('ROLE_BORROWER') %}
+                        <li role="presentation"><a href="{{ path('pourquoi-emprunter') }}" tabindex="-1">{% trans %} header_menu-item-borrow {% endtrans %}</a></li>
+                    {%  endif %}
+                {% else %}
+                    <li role="presentation"><a href="{{ path('pourquoi-preter') }}" tabindex="-1">{% trans %} header_menu-item-lend {% endtrans %}</a></li>
+                    <li role="presentation"><a href="{{ path('pourquoi-emprunter') }}" tabindex="-1">{% trans %} header_menu-item-borrow {% endtrans %}</a></li>
+                    <li role="presentation"><a href="{{ path('projects_list') }}" tabindex="-1">{% trans %} header_menu-item-projects {% endtrans %}</a></li>
+                {% endif %}
+                <li role="presentation"><a href="{{ path('qui-sommes-nous') }}" tabindex="-1">{% trans %} header_menu-item-about {% endtrans %}</a></li>
+                <li role="presentation"><a href="https://blog.unilend.fr/" tabindex="-1">{% trans %} header_menu-item-blog {% endtrans %}</a></li>
+            {% endif %}
         </ul>
         {% include 'partials/components/list-socialmedia.html.twig' %}
     </nav><!-- /.site-nav -->

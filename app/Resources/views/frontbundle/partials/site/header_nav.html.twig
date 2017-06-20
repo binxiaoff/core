@@ -1,14 +1,9 @@
 <nav class="site-nav" role="navigation">
     <ul class="site-nav-menu">
-
     {# Keep the header empty for Partners #}
-    {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_DEFAULT'))
-    or is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN'))
-    or is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_USER')) %}
-    {% else %}
-
+    {% if not is_granted('ROLE_PARTNER') %}
         {# Lender #}
-        {% if is_granted('ROLE_BORROWER') == false %}
+        {% if not is_granted('ROLE_BORROWER') %}
             <li role="presentation"{% if app.request.attributes.get('_route') in [
                 'pourquoi-preter',
                 'jouvre-mon-compte-preteur',
@@ -20,7 +15,7 @@
         {% endif %}
 
         {# Borrower #}
-        {% if is_granted('ROLE_LENDER') == false %}
+        {% if not is_granted('ROLE_LENDER') %}
             <li role="presentation"{% if app.request.attributes.get('_route') in [
                 'pourquoi-emprunter',
                 'ma-premiere-demande-de-financement',
@@ -30,7 +25,7 @@
         {% endif %}
 
         {# Projects #}
-        {% if is_granted('ROLE_BORROWER') == false %}
+        {% if not is_granted('ROLE_BORROWER') %}
             <li role="presentation"{% if app.request.attributes.get('_route') in [
             'projects_list',
             'project_detail'
@@ -38,7 +33,7 @@
         {% endif %}
 
         {# About #}
-        {% if is_granted('ROLE_BORROWER') == false and is_granted('ROLE_LENDER') == false %}
+        {% if not is_granted('ROLE_BORROWER') and not is_granted('ROLE_LENDER') %}
             <li role="presentation"{% if app.request.attributes.get('_route') in [
             'about_us',
             'statistics',
@@ -47,13 +42,12 @@
         {% endif %}
 
         {# FAQ #}
-        {% if is_granted('ROLE_BORROWER') == true %}
+        {% if is_granted('ROLE_BORROWER') %}
             <li role="presentation"><a href="http://unilend.desk.com/?b_id=13135" tabindex="2" target="_blank">{% trans %} header_menu-item-faq {% endtrans %}</a></li>
         {% endif %}
 
         {# Blog #}
         <li role="presentation"><a href="https://blog.unilend.fr/" tabindex="2" target="_blank">{% trans %} header_menu-item-blog {% endtrans %}</a></li>
-
     {% endif %}
     </ul>
 </nav><!-- /.site-nav -->
