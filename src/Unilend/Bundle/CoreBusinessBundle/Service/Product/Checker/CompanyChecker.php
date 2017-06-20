@@ -64,6 +64,13 @@ trait CompanyChecker
         return in_array($company->getCodeNaf(), $nafCode);
     }
 
+    /**
+     * @param Companies               $company
+     * @param Product                 $product
+     * @param ProductAttributeManager $productAttributeManager
+     *
+     * @return bool
+     */
     public function isEligibleForHeadquartersLocation(Companies $company, Product $product, ProductAttributeManager $productAttributeManager)
     {
         $exclusiveLocations = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::HEADQUARTERS_LOCATION_EXCLUSIVE);
@@ -76,6 +83,14 @@ trait CompanyChecker
         return false === in_array($departement, $exclusiveLocations);
     }
 
+    /**
+     * @param Companies               $company
+     * @param Product                 $product
+     * @param ProductAttributeManager $productAttributeManager
+     * @param EntityManager           $entityManager
+     *
+     * @return bool
+     */
     public function isEligibleForMaxXerfiScore(Companies $company, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
     {
         $maxXerfiScore = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MAX_XERFI_SCORE);
