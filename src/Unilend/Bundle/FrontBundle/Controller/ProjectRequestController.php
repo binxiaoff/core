@@ -152,9 +152,9 @@ class ProjectRequestController extends Controller
         if ($this->get('session')->getFlashBag()->has('borrowerLandingPageErrors')) {
             $request->getSession()->set('projectRequest', [
                 'values' => [
-                    'amount'   => $amount,
-                    'siren'    => $siren,
-                    'email'    => $email
+                    'amount' => $amount,
+                    'siren'  => $siren,
+                    'email'  => $email
                 ]
             ]);
 
@@ -193,7 +193,7 @@ class ProjectRequestController extends Controller
             ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))
             ->setSlugOrigine($sourceManager->getSource(SourceManager::ENTRY_SLUG));
 
-        $siret = $sirenLength === 14 ? str_replace(' ', '', $request->request->get('siren')) : '';
+        $siret         = $sirenLength === 14 ? str_replace(' ', '', $request->request->get('siren')) : '';
         $this->company = new Companies();
         $this->company->setSiren($siren)
             ->setSiret($siret)
@@ -586,35 +586,38 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        $entityManager = $this->get('unilend.service.entity_manager');
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \companies_actif_passif $companyAssetsDebts */
-        $companyAssetsDebts = $entityManager->getRepository('companies_actif_passif');
+        $companyAssetsDebts = $entityManagerSimulator->getRepository('companies_actif_passif');
         /** @var \companies_bilans $annualAccountsEntity */
-        $annualAccountsEntity = $entityManager->getRepository('companies_bilans');
-        $em = $this->get('doctrine.orm.entity_manager');
+        $annualAccountsEntity = $entityManagerSimulator->getRepository('companies_bilans');
         /** @var Partner $partner */
-        $partner = $em->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->project->id_partner);
+        $partner = $this->get('doctrine.orm.entity_manager')
+            ->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->project->id_partner);
 
         $template['attachmentTypes'] = [];
         if ($partner) {
             $partnerAttachmentTypes = $partner->getAttachmentTypes(true);
-            foreach($partnerAttachmentTypes as $partnerAttachmentType) {
+            foreach ($partnerAttachmentTypes as $partnerAttachmentType) {
                 $template['attachmentTypes'][] = $partnerAttachmentType->getAttachmentType();
             }
         }
-        $altaresCapitalStock     = 0;
-        $altaresOperationIncomes = 0;
-        $altaresRevenue          = 0;
-        $annualAccounts          = $annualAccountsEntity->select('id_company = ' . $this->company->getIdCompany(), 'cloture_exercice_fiscal DESC', 0, 1);
+        $balanceSheetValues['altaresCapitalStock']     = null;
+        $balanceSheetValues['altaresOperationIncomes'] = null;
+        $balanceSheetValues['altaresRevenue']          = null;
+        $annualAccounts                                = $annualAccountsEntity->select('id_company = ' . $this->company->getIdCompany(), 'cloture_exercice_fiscal DESC', 0, 1);
+
+        $request->getSession()->remove('companyBalanceSheetValues');
 
         if (false === empty($annualAccounts)) {
             $companyAssetsDebts->get($annualAccounts[0]['id_bilan'], 'id_bilan');
             $annualAccountsEntity->get($annualAccounts[0]['id_bilan']);
-            $incomeStatement         = $this->get('unilend.service.company_balance_sheet_manager')->getIncomeStatement($annualAccountsEntity);
-            $altaresCapitalStock     = $companyAssetsDebts->capitaux_propres;
-            $altaresOperationIncomes = $incomeStatement['details']['project-detail_finance-column-resultat-exploitation'];
-            $altaresRevenue          = $incomeStatement['details']['project-detail_finance-column-ca'];
+            $incomeStatement                               = $this->get('unilend.service.company_balance_sheet_manager')->getIncomeStatement($annualAccountsEntity);
+            $balanceSheetValues['altaresCapitalStock']     = $companyAssetsDebts->capitaux_propres;
+            $balanceSheetValues['altaresOperationIncomes'] = $incomeStatement['details']['project-detail_finance-column-resultat-exploitation'];
+            $balanceSheetValues['altaresRevenue']          = $incomeStatement['details']['project-detail_finance-column-ca'];
         }
+        $request->getSession()->set('companyBalanceSheetValues', $balanceSheetValues);
 
         $session = $request->getSession()->get('projectRequest');
         $values  = isset($session['values']) ? $session['values'] : [];
@@ -627,10 +630,10 @@ class ProjectRequestController extends Controller
 
             if (isset($values['ag_2035'])) {
                 $template['form']['values']['ag_2035'] = $values['ag_2035'];
-            } elseif (false === empty($this->project->ca_declara_client) || $this->project->ca_declara_client != $altaresRevenue) {
+            } elseif (false === empty($this->project->ca_declara_client)) {
                 $template['form']['values']['ag_2035'] = $this->project->ca_declara_client;
-            } elseif (null === $altaresRevenue) {
-                $template['form']['values']['ag_2035'] = $altaresRevenue;
+            } elseif (null !== $balanceSheetValues['altaresRevenue']) {
+                $template['form']['values']['ag_2035'] = $balanceSheetValues['altaresRevenue'];
             } else {
                 $template['form']['values']['ag_2035'] = '';
             }
@@ -640,30 +643,30 @@ class ProjectRequestController extends Controller
 
             if (isset($values['dl'])) {
                 $template['form']['values']['dl'] = $values['dl'];
-            } elseif (false === empty($this->project->fonds_propres_declara_client) || $this->project->fonds_propres_declara_client != $altaresCapitalStock) {
+            } elseif (false === empty($this->project->fonds_propres_declara_client)) {
                 $template['form']['values']['dl'] = $this->project->fonds_propres_declara_client;
-            } elseif (null === $altaresCapitalStock) {
-                $template['form']['values']['dl'] = $altaresCapitalStock;
+            } elseif (null !== $balanceSheetValues['altaresCapitalStock']) {
+                $template['form']['values']['dl'] = $balanceSheetValues['altaresCapitalStock'];
             } else {
                 $template['form']['values']['dl'] = '';
             }
 
             if (isset($values['fl'])) {
                 $template['form']['values']['fl'] = $values['fl'];
-            } elseif (false === empty($this->project->ca_declara_client) || $this->project->ca_declara_client != $altaresRevenue) {
+            } elseif (false === empty($this->project->ca_declara_client)) {
                 $template['form']['values']['fl'] = $this->project->ca_declara_client;
-            } elseif (null === $altaresRevenue) {
-                $template['form']['values']['fl'] = $altaresRevenue;
+            } elseif (null !== $balanceSheetValues['altaresRevenue']) {
+                $template['form']['values']['fl'] = $balanceSheetValues['altaresRevenue'];
             } else {
                 $template['form']['values']['fl'] = '';
             }
 
             if (isset($values['gg'])) {
                 $template['form']['values']['gg'] = $values['gg'];
-            } elseif (false === empty($this->project->resultat_exploitation_declara_client) || $this->project->resultat_exploitation_declara_client != $altaresOperationIncomes) {
+            } elseif (false === empty($this->project->resultat_exploitation_declara_client)) {
                 $template['form']['values']['gg'] = $this->project->resultat_exploitation_declara_client;
-            } elseif (null === $altaresOperationIncomes) {
-                $template['form']['values']['gg'] = $altaresOperationIncomes;
+            } elseif (null !== $balanceSheetValues['altaresOperationIncomes']) {
+                $template['form']['values']['gg'] = $balanceSheetValues['altaresOperationIncomes'];
             } else {
                 $template['form']['values']['gg'] = '';
             }
@@ -700,12 +703,11 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        $entityManager     = $this->get('unilend.service.entity_manager');
         $attachmentManager = $this->get('unilend.service.attachment_manager');
-        $em                = $this->get('doctrine.orm.entity_manager');
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
         $logger            = $this->get('logger');
 
-        $project = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->project->id_project);
+        $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->project->id_project);
         $errors  = [];
         $values  = $request->request->get('finance');
         $values  = is_array($values) ? $values : [];
@@ -728,7 +730,7 @@ class ProjectRequestController extends Controller
         $taxReturnFile = $request->files->get('accounts');
         if ($taxReturnFile instanceof UploadedFile && $this->client instanceof Clients) {
             try {
-                $attachmentType = $em->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::DERNIERE_LIASSE_FISCAL);
+                $attachmentType = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::DERNIERE_LIASSE_FISCAL);
                 $attachment     = $attachmentManager->upload($this->client, $attachmentType, $taxReturnFile);
                 $attachmentManager->attachToProject($attachment, $project);
             } catch (\Exception $exception) {
@@ -749,13 +751,13 @@ class ProjectRequestController extends Controller
         }
 
         if ('true' === $request->request->get('extra_files')) {
-            $files = $request->files->all();
+            $files     = $request->files->all();
             $fileTypes = $request->request->get('files', []);
-            foreach ($files as $inputName =>  $file) {
+            foreach ($files as $inputName => $file) {
                 if ('accounts' !== $inputName && $file instanceof UploadedFile && false === empty($fileTypes[$inputName])) {
                     $attachmentTypeId = $fileTypes[$inputName];
                     try {
-                        $attachmentType = $em->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
+                        $attachmentType = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
                         $attachment     = $attachmentManager->upload($this->client, $attachmentType, $file);
                         $attachmentManager->attachToProject($attachment, $project);
                     } catch (\Exception $exception) {
@@ -770,7 +772,7 @@ class ProjectRequestController extends Controller
         $ficelle = Loader::loadLib('ficelle');
 
         if (empty($this->company->getRcs())) {
-            $this->project->ca_declara_client = $values['ag_2035'];
+            $this->project->ca_declara_client = $ficelle->cleanFormatedNumber($values['ag_2035']);
             $updateDeclaration                = true;
         } else {
             $updateDeclaration = false;
@@ -778,44 +780,28 @@ class ProjectRequestController extends Controller
             $values['fl']      = $ficelle->cleanFormatedNumber($values['fl']);
             $values['gg']      = $ficelle->cleanFormatedNumber($values['gg']);
 
-            /** @var \companies_actif_passif $companyAssetsDebts */
-            $companyAssetsDebts = $entityManager->getRepository('companies_actif_passif');
-            /** @var \companies_bilans $annualAccountsEntity */
-            $annualAccountsEntity = $entityManager->getRepository('companies_bilans');
+            $balanceSheetValues = $request->getSession()->get('companyBalanceSheetValues');
 
-            $altaresCapitalStock     = 0;
-            $altaresRevenue          = 0;
-            $altaresOperationIncomes = 0;
-            $annualAccounts          = $annualAccountsEntity->select('id_company = ' . $this->company->getIdCompany(), 'cloture_exercice_fiscal DESC', 0, 1);
-
-            if (false === empty($annualAccounts)) {
-                $companyAssetsDebts->get($annualAccounts[0]['id_bilan'], 'id_bilan');
-
-                $altaresCapitalStock     = $companyAssetsDebts->capitaux_propres;
-                $altaresRevenue          = $annualAccounts[0]['ca'];
-                $altaresOperationIncomes = $annualAccounts[0]['resultat_exploitation'];
-            }
-
-            if ($altaresCapitalStock != $values['dl']) {
+            if ($balanceSheetValues['altaresCapitalStock'] != $values['dl']) {
                 $this->project->fonds_propres_declara_client = $values['dl'];
                 $updateDeclaration                           = true;
-            } elseif (false === empty($this->project->fonds_propres_declara_client) && $altaresCapitalStock == $values['dl']) {
+            } elseif (false === empty($this->project->fonds_propres_declara_client) && $balanceSheetValues['altaresCapitalStock'] == $values['dl']) {
                 $this->project->fonds_propres_declara_client = 0;
                 $updateDeclaration                           = true;
             }
 
-            if ($altaresRevenue != $values['fl']) {
+            if ($balanceSheetValues['altaresRevenue'] != $values['fl']) {
                 $this->project->ca_declara_client = $values['fl'];
                 $updateDeclaration                = true;
-            } elseif (false === empty($this->project->ca_declara_client) && $altaresRevenue == $values['fl']) {
+            } elseif (false === empty($this->project->ca_declara_client) && $balanceSheetValues['altaresRevenue'] == $values['fl']) {
                 $this->project->ca_declara_client = 0;
                 $updateDeclaration                = true;
             }
 
-            if ($altaresOperationIncomes != $values['gg']) {
+            if ($balanceSheetValues['altaresOperationIncomes'] != $values['gg']) {
                 $this->project->resultat_exploitation_declara_client = $values['gg'];
                 $updateDeclaration                                   = true;
-            } elseif (false === empty($this->project->resultat_exploitation_declara_client) && $altaresOperationIncomes == $values['gg']) {
+            } elseif (false === empty($this->project->resultat_exploitation_declara_client) && $balanceSheetValues['altaresOperationIncomes'] == $values['gg']) {
                 $this->project->resultat_exploitation_declara_client = 0;
                 $updateDeclaration                                   = true;
             }
@@ -871,17 +857,17 @@ class ProjectRequestController extends Controller
         /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \settings $settings */
-        $settings       = $entityManager->getRepository('settings');
-        $em             = $this->get('doctrine.orm.entity_manager');
+        $settings = $entityManager->getRepository('settings');
+        $em       = $this->get('doctrine.orm.entity_manager');
         /** @var Projects $project */
         $project = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->project->id_project);
 
-        $partnerAttachments = $project->getIdPartner()->getAttachmentTypes();
-        $template['attachmentTypes']    = [];
-        $labels    = [];
+        $partnerAttachments          = $project->getIdPartner()->getAttachmentTypes();
+        $template['attachmentTypes'] = [];
+        $labels                      = [];
         foreach ($partnerAttachments as $partnerAttachment) {
             $template['attachmentTypes'][] = $partnerAttachment->getAttachmentType();
-            $labels[] = $partnerAttachment->getAttachmentType()->getLabel();
+            $labels[]                      = $partnerAttachment->getAttachmentType()->getLabel();
         }
 
         array_multisort($labels, SORT_ASC, $template['attachmentTypes']);
@@ -1173,8 +1159,9 @@ class ProjectRequestController extends Controller
         ];
 
         $entityManager = $this->get('unilend.service.entity_manager');
-        $em            = $this->get('doctrine.orm.entity_manager');        /** @var Projects $project */
-        $project       = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find( $this->project->id_project);
+        $em            = $this->get('doctrine.orm.entity_manager');
+        /** @var Projects $project */
+        $project = $em->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->project->id_project);
 
         $projectAttachments = $project->getAttachments();
         $partnerAttachments = $project->getIdPartner()->getAttachmentTypes();
@@ -1227,7 +1214,7 @@ class ProjectRequestController extends Controller
         $logger            = $this->get('logger');
         $project           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->project->id_project);
 
-        $files = $request->files->all();
+        $files     = $request->files->all();
         $fileTypes = $request->request->get('files', []);
         foreach ($files as $inputName => $file) {
             if ($file instanceof UploadedFile && false === empty($fileTypes[$inputName])) {
@@ -1605,7 +1592,7 @@ class ProjectRequestController extends Controller
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
-        $em =  $this->get('doctrine.orm.entity_manager');
+        $em = $this->get('doctrine.orm.entity_manager');
         /** @var ClientsRepository $clientRepository */
         $clientRepository = $em->getRepository('UnilendCoreBusinessBundle:Clients');
         if ($clientRepository->existEmail($email) && $this->removeEmailSuffix($this->client->getEmail()) !== $email) {
