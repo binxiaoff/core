@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Repository\WsCallHistoryRepository;
 use Unilend\Bundle\WSClientBundle\Service\CallHistoryManager;
 
@@ -65,7 +66,7 @@ class WsMonitoringManager
         /** @var WsCallHistoryRepository $wsCallHistoryRepository */
         $wsCallHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WsCallHistory');
 
-        $interval = new \DateInterval('P' . $frequency . 'i');
+        $frequencyInterval = new \DateInterval('PT' . $frequency . 'M');
 
         foreach ($rateByCallStatus['rateByCallStatus'] as $resourceId => $rate) {
             $wsResource = $wsExternalResourceRepository->find($resourceId);
@@ -80,26 +81,28 @@ class WsMonitoringManager
                     ' (' . $rate['error']['rate'] . '% d\'appels en erreur sur les ' . $rateByCallStatus['timeLapse'] . ' dernières minutes)'
                 );
             } else {
-                $date        = $wsCallHistoryRepository->getFirstUpCallFromDate($wsResource, new \DateTime($rateByCallStatus['timeLapse'] . ' minutes ago'));
-                $firstUpCall = \DateTime::createFromFormat('Y-m-d H:i:s', $date['firstUpCallDate']);
+                $date           = $wsCallHistoryRepository->getFirstUpCallFromDate($wsResource, new \DateTime($rateByCallStatus['timeLapse'] . ' minutes ago'));
+                $firstUpCall    = \DateTime::createFromFormat('Y-m-d H:i:s', $date['firstUpCallDate']);
+                $lastStatusDate = $wsResource->getUpdated();
+                $lastStatusDate->sub($frequencyInterval);
 
                 if (false === ($firstUpCall instanceof \DateTime)) {
                     continue;
                 }
-                $callHistory = $wsCallHistoryRepository->getCallStatusHistoryFromDate($wsResource, $wsResource->getUpdated(), true);
+                $callHistory = $wsCallHistoryRepository->getCallStatusHistoryFromDate($wsResource, $lastStatusDate, true);
 
                 if (false === empty($callHistory)) {
                     $errorRate = round(100 * $callHistory[0]['nbErrorCalls'] / $callHistory[0]['totalByResource'], 2);
                 } else {
                     $errorRate = 0;
                 }
-                $projectList = $this->getNonEvaluatedProjectsList($projectsRepository->getProjectsByStatusFromDate(ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION, $wsResource->getUpdated()->sub($interval)));
+                $projectList = $this->getNonEvaluatedProjectsList($projectsRepository->getProjectsByStatusFromDate(ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION, $lastStatusDate));
                 $projectList = (empty($projectList)) ? '' : ', liste des projets non évalués : ' . $projectList;
                 $this->callHistoryManager->sendMonitoringAlert(
                     $wsResource,
                     'up',
                     'Le service ' . $wsResource->getResourceName() . ' du fournisseur ' . $wsResource->getProviderName() . ' est à nouveau disponible depuis le ' . $this->formatDate($firstUpCall) .
-                    ' (' . $errorRate . '% d\'appels en erreur depuis le ' . $this->formatDate($wsResource->getUpdated()) . $projectList . ')'
+                    ' (' . $errorRate . '% d\'appels en erreur depuis le ' . $this->formatDate($lastStatusDate) . $projectList . ')'
                 );
             }
         }
