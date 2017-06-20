@@ -610,7 +610,6 @@ class ProjectRequestController extends Controller
         $request->getSession()->remove('companyBalanceSheetValues');
 
         if (false === empty($annualAccounts)) {
-            $balanceSheetValues = [];
             $companyAssetsDebts->get($annualAccounts[0]['id_bilan'], 'id_bilan');
             $annualAccountsEntity->get($annualAccounts[0]['id_bilan']);
             $incomeStatement                               = $this->get('unilend.service.company_balance_sheet_manager')->getIncomeStatement($annualAccountsEntity);
