@@ -3027,16 +3027,16 @@ class dossiersController extends bootstrap
 
     private function checkTargetCompanyRisk()
     {
-        /** @var \companies $company */
-        $company = $this->loadData('companies');
-        $company->get($this->projects->id_target_company);
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->projects->id_target_company);
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
-        $riskCheck             = $projectRequestManager->checkCompanyRisk($company, $_SESSION['user']['id_user']);
+        $eligibility           = $projectRequestManager->checkCompanyRisk($company, $_SESSION['user']['id_user']);
 
-        if (null !== $riskCheck) {
-            $projectRequestManager->addRejectionProjectStatus($riskCheck, $this->projects, $_SESSION['user']['id_user']);
+        if (is_array($eligibility) && false === empty($eligibility)) {
+            $projectRequestManager->addRejectionProjectStatus($eligibility[0], $this->projects, $_SESSION['user']['id_user']);
         }
     }
 

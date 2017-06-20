@@ -145,11 +145,19 @@
             <argument type="service" id="unilend.service.wallet_creation_manager"/>
             <argument type="service" id="unilend.frontbundle.service.source_manager"/>
             <argument type="service" id="unilend.service.partner_manager"/>
-            <argument type="service" id="unilend.service.company_finance_check"/>
-            <argument type="service" id="unilend.service.company_scoring_check"/>
-            <argument type="service" id="unilend.service.company_balance_sheet_manager"/>
+            <argument type="service" id="unilend.service.eligibility.eligibility_manager"/>
             <argument type="service" id="logger"/>
             <argument type="service" id="unilend.service_product.product_manager"/>
+        </service>
+
+        <service id="unilend.service.external_data_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.ws_client.altares_manager"/>
+            <argument type="service" id="unilend.service.ws_client.euler_manager"/>
+            <argument type="service" id="unilend.service.ws_client.codinf_manager"/>
+            <argument type="service" id="unilend.service.ws_client.infolegale_manager"/>
+            <argument type="service" id="unilend.service.ws_client.infogreffe_manager"/>
+            <argument type="service" id="unilend.service.company_balance_sheet_manager"/>
         </service>
 
         <service id="unilend.service.location_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LocationManager">
@@ -263,28 +271,6 @@
 
         <service id="unilend.service.client_vigilance_status_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ClientVigilanceStatusManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
-        </service>
-
-        <service id="unilend.service.company_scoring_check" class="Unilend\Bundle\CoreBusinessBundle\Service\CompanyScoringCheck">
-            <argument type="service" id="unilend.service.entity_manager"/>
-            <argument type="service" id="unilend.service.company_balance_sheet_manager"/>
-            <argument type="service" id="unilend.service.project_manager"/>
-            <argument type="service" id="cache"/>
-            <argument type="service" id="logger"/>
-            <argument type="service" id="unilend.service.ws_client.altares_manager"/>
-            <argument type="service" id="unilend.service.ws_client.infolegale_manager"/>
-            <argument type="service" id="unilend.service.ws_client.euler_manager"/>
-        </service>
-
-        <service id="unilend.service.company_finance_check" class="Unilend\Bundle\CoreBusinessBundle\Service\CompanyFinanceCheck">
-            <argument type="service" id="doctrine.orm.entity_manager"/>
-            <argument type="service" id="unilend.service.company_balance_sheet_manager"/>
-            <argument type="service" id="unilend.service.project_manager"/>
-            <argument type="service" id="cache"/>
-            <argument type="service" id="logger"/>
-            <argument type="service" id="unilend.service.ws_client.altares_manager"/>
-            <argument type="service" id="unilend.service.ws_client.codinf_manager"/>
-            <argument type="service" id="unilend.service.ws_client.infogreffe_manager"/>
         </service>
 
         <service id="unilend.service.slack_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\SlackManager">
