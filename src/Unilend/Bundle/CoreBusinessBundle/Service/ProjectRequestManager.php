@@ -8,6 +8,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRating;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
@@ -198,12 +199,13 @@ class ProjectRequestManager
     }
 
     /**
-     * @param Companies $company
-     * @param int       $userId
+     * @param Companies     $company
+     * @param int           $userId
+     * @param Projects|null $project
      *
      * @return array
      */
-    public function checkCompanyRisk(Companies $company, $userId)
+    public function checkCompanyRisk(Companies $company, $userId, Projects $project = null)
     {
         /** @var \company_rating $companyRating */
         $companyRating                  = $this->entityManagerSimulator->getRepository('company_rating');
@@ -231,19 +233,24 @@ class ProjectRequestManager
             }
         }
 
+        if ($project instanceof Projects) {
+            return $this->eligibilityManager->checkProjectEligibility($project);
+        }
+
         return $this->eligibilityManager->checkCompanyEligibility($company);
     }
 
     /**
-     * @param \projects $project
+     * @param \projects $projectData
      * @param int       $userId
      *
      * @return null|array
      */
-    public function checkProjectRisk(\projects $project, $userId)
+    public function checkProjectRisk(\projects $projectData, $userId)
     {
-        $company     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($project->id_company);
-        $eligibility = $this->checkCompanyRisk($company, $userId);
+        $project     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectData->id_project);
+        $company     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($projectData->id_company);
+        $eligibility = $this->checkCompanyRisk($company, $userId, $project);
 
         $companyRatingHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRatingHistory');
         $lastCompanyRatingHistory       = $companyRatingHistoryRepository->findOneBy(
@@ -255,15 +262,15 @@ class ProjectRequestManager
             ->findBy(['idCompany' => $company->getIdCompany()], ['clotureExerciceFiscal' => 'DESC'], 1);
 
         if (false === empty($lastBalance)) {
-            $project->id_dernier_bilan = $lastBalance[0]->getIdBilan();
+            $projectData->id_dernier_bilan = $lastBalance[0]->getIdBilan();
         }
 
-        $project->balance_count             = null === $company->getDateCreation() ? 0 : $company->getDateCreation()->diff(new \DateTime())->y;
-        $project->id_company_rating_history = $lastCompanyRatingHistory->getIdCompanyRatingHistory();
-        $project->update();
+        $projectData->balance_count             = null === $company->getDateCreation() ? 0 : $company->getDateCreation()->diff(new \DateTime())->y;
+        $projectData->id_company_rating_history = $lastCompanyRatingHistory->getIdCompanyRatingHistory();
+        $projectData->update();
 
         if (is_array($eligibility) && false === empty($eligibility)) {
-            return $this->addRejectionProjectStatus($eligibility[0], $project, $userId);
+            return $this->addRejectionProjectStatus($eligibility[0], $projectData, $userId);
         }
 
         return null;

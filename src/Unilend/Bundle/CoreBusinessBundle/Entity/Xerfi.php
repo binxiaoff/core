@@ -22,9 +22,9 @@ class Xerfi
     private $label;
 
     /**
-     * @var boolean
+     * @var integer
      *
-     * @ORM\Column(name="score", type="boolean", nullable=false)
+     * @ORM\Column(name="score", type="integer", nullable=false)
      */
     private $score;
 
@@ -73,7 +73,7 @@ class Xerfi
     /**
      * Set score
      *
-     * @param boolean $score
+     * @param integer $score
      *
      * @return Xerfi
      */
@@ -87,7 +87,7 @@ class Xerfi
     /**
      * Get score
      *
-     * @return boolean
+     * @return integer
      */
     public function getScore()
     {
