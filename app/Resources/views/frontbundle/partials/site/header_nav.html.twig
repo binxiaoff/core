@@ -3,32 +3,32 @@
 
         {# Lender #}
         {% if is_granted('ROLE_BORROWER') == false %}
-        <li role="presentation"{% if app.request.attributes.get('_route') in [
-            'pourquoi-preter',
-            'jouvre-mon-compte-preteur',
-            'mon-premier-pret',
-            'diversifier',
-            'aller-plus-loin',
-            'fiscalite'
-        ] %} class="active"{% endif %}><a href="{{ absolute_url('/pourquoi-preter') }}" tabindex="2">{% trans %} header_menu-item-lend {% endtrans %}</a></li>
+            <li role="presentation"{% if app.request.attributes.get('_route') in [
+                'pourquoi-preter',
+                'jouvre-mon-compte-preteur',
+                'mon-premier-pret',
+                'diversifier',
+                'aller-plus-loin',
+                'fiscalite'
+            ] %} class="active"{% endif %}><a href="{{ absolute_url('/pourquoi-preter') }}" tabindex="2">{% trans %} header_menu-item-lend {% endtrans %}</a></li>
         {% endif %}
 
         {# Borrower #}
         {% if is_granted('ROLE_LENDER') == false %}
-        <li role="presentation"{% if app.request.attributes.get('_route') in [
-            'pourquoi-emprunter',
-            'ma-premiere-demande-de-financement',
-            'guide-de-l-emprunteur',
-            'testimonials'
-        ] %} class="active"{% endif %}><a href="{{ absolute_url('/pourquoi-emprunter') }}" tabindex="2">{% trans %} header_menu-item-borrow {% endtrans %}</a></li>
+            <li role="presentation"{% if app.request.attributes.get('_route') in [
+                'pourquoi-emprunter',
+                'ma-premiere-demande-de-financement',
+                'guide-de-l-emprunteur',
+                'testimonials'
+            ] %} class="active"{% endif %}><a href="{{ absolute_url('/pourquoi-emprunter') }}" tabindex="2">{% trans %} header_menu-item-borrow {% endtrans %}</a></li>
         {% endif %}
 
         {# Projects #}
         {% if is_granted('ROLE_BORROWER') == false %}
-        <li role="presentation"{% if app.request.attributes.get('_route') in [
-        'projects_list',
-        'project_detail'
-        ] %} class="active"{% endif %}><a href="{{ path('projects_list') }}" tabindex="2">{% trans %} header_menu-item-projects {% endtrans %}</a></li>
+            <li role="presentation"{% if app.request.attributes.get('_route') in [
+            'projects_list',
+            'project_detail'
+            ] %} class="active"{% endif %}><a href="{{ path('projects_list') }}" tabindex="2">{% trans %} header_menu-item-projects {% endtrans %}</a></li>
         {% endif %}
 
         {# About #}
