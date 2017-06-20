@@ -717,25 +717,19 @@ class preteursController extends bootstrap
         $this->clients      = $this->loadData('clients');
         $this->companies    = $this->loadData('companies');
 
-        $aStatusNotValidated = [
+        $statusOrderedByPriority = [
             \clients_status::TO_BE_CHECKED,
-            \clients_status::COMPLETENESS,
-            \clients_status::COMPLETENESS_REMINDER,
+            \clients_status::MODIFICATION,
             \clients_status::COMPLETENESS_REPLY,
-            \clients_status::MODIFICATION
+            \clients_status::COMPLETENESS,
+            \clients_status::COMPLETENESS_REMINDER
         ];
 
-        $this->lPreteurs     = $this->clients->selectPreteursByStatus(
-            implode(',', $aStatusNotValidated),
-            '',
-            'CASE status_client
-            WHEN ' . \clients_status::TO_BE_CHECKED . ' THEN 1
-            WHEN ' . \clients_status::COMPLETENESS_REPLY . ' THEN 2
-            WHEN ' . \clients_status::MODIFICATION . ' THEN 3
-            WHEN ' . \clients_status::COMPLETENESS . ' THEN 4
-            WHEN ' . \clients_status::COMPLETENESS_REPLY . ' THEN 5
-            WHEN ' . \clients_status::COMPLETENESS_REMINDER . ' THEN 6
-            END ASC, c.added DESC');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientsRepository */
+        $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $this->lPreteurs   = $clientsRepository->getClientsToValidate($statusOrderedByPriority);
 
         if (false === empty($this->lPreteurs)) {
             /** @var \greenpoint_kyc $oGreenPointKYC */
