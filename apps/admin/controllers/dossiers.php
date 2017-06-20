@@ -3443,16 +3443,18 @@ class dossiersController extends bootstrap
 
     /**
      * @param string $label
+     * @param string $codeLabel
      * @param array  $codes
      * @param string $formType
      * @param string $domId
      * @param bool   $displayNegativeValue
      * @param array  $amountsToUse
+     *
      * @return string
      */
-    protected function generateBalanceSubTotalLineHtml($label, $codes, $formType, $domId = '', $displayNegativeValue = true, $amountsToUse = [])
+    protected function generateBalanceSubTotalLineHtml($label, $codeLabel, $codes, $formType, $domId = '', $displayNegativeValue = true, $amountsToUse = [])
     {
-        $html             = '<tr class="sub-total"><td colspan="2">' . $label . '</td>';
+        $html             = '<tr class="sub-total"><td>' . $label . '</td><td>' . $codeLabel . '</td>';
         $previousTotal    = null;
         $column           = 0;
         $index            = 0;
@@ -3498,11 +3500,13 @@ class dossiersController extends bootstrap
      * @param string $totalLabel
      * @param array  $code
      * @param string $formType
+     * @param string $subTotalCodeLabel
+     *
      * @return string
      */
-    protected function generateBalanceGroupHtml($totalLabel, array $code, $formType)
+    protected function generateBalanceGroupHtml($totalLabel, array $code, $formType, $subTotalCodeLabel = '')
     {
-        return $this->generateBalanceLineHtml($code, $formType) . $this->generateBalanceSubTotalLineHtml($totalLabel, $code, $formType)['html'];
+        return $this->generateBalanceLineHtml($code, $formType) . $this->generateBalanceSubTotalLineHtml($totalLabel, $subTotalCodeLabel, $code, $formType)['html'];
     }
 
     /**
@@ -3510,6 +3514,7 @@ class dossiersController extends bootstrap
      * @param array  $codes
      * @param string $formType
      * @param string $domId
+     *
      * @return string
      */
     protected function generateBalanceTotalLineHtml($label, array $codes, $formType, $domId = '')

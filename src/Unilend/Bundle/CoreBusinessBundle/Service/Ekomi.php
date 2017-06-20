@@ -63,7 +63,7 @@ class Ekomi
             return false;
         }
 
-        $projectStatus        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status', ProjectsStatus::FUNDE]);
+        $projectStatus        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => ProjectsStatus::FUNDE]);
         $projectStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->findOneBy([
             'idProjectStatus' => $projectStatus->getIdProjectStatus(),
             'idProject'       => $project->getIdProject()
@@ -125,6 +125,6 @@ class Ekomi
      */
     private function logProjectAlert(Projects $project, $message)
     {
-        $this->logger->alert($message, ['class' => __CLASS__, 'function' => __FUNCTION__, 'projectId' => $project->getIdProject()]);
+        $this->logger->error($message, ['class' => __CLASS__, 'function' => __FUNCTION__, 'projectId' => $project->getIdProject()]);
     }
 }

@@ -49,10 +49,10 @@
 </style>
 <div id="contenu">
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <h1>Sources Emprunteurs</h1>
         </div>
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <form method="post" name="recupCSV">
                 <input type="hidden" name="extraction_csv"/>
                 <input type="hidden" name="dateStart" value="<?= (false === empty($_POST['dateStart']) ? $_POST['dateStart'] : '' ) ?>"/>

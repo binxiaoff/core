@@ -106,7 +106,7 @@
     <h1>
         Mon équipe (<span id="team-projects-count"><?= $this->teamProjects['count'] ?></span>)
         <?php if ('sale' === $this->template) : ?>
-            <select id="sales-projects-selector" style="margin-left: 10px">
+            <select id="sales-projects-selector" style="margin-left: 10px; width: 200px;">
                 <option value=""></option>
                 <?php foreach ($this->salesPeople as $salesperson) : ?>
                     <option value="<?= $salesperson['id_user'] ?>"><?= $salesperson['firstname'] ?> <?= $salesperson['name'] ?></option>

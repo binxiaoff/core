@@ -1,11 +1,11 @@
 <div id="header">
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <div class="logo_header">
                 <a href="<?= $this->lurl ?>"><img src="<?= $this->surl ?>/styles/default/images/logo.png" alt="Unilend"/></a>
             </div>
         </div>
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <div class="bloc_info_header">
                 <div>
                     <a href="<?= $this->lurl ?>/users/edit_perso/<?= $_SESSION['user']['id_user'] ?>" class="thickbox">

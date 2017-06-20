@@ -2,20 +2,29 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use JMS\Serializer\Serializer;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
+use Unilend\Bundle\WSClientBundle\Entity\Infolegale\DirectorAnnouncementCollection;
+use Unilend\Bundle\WSClientBundle\Entity\Infolegale\ExecutiveCollection;
+use Unilend\Bundle\WSClientBundle\Entity\Infolegale\HomonymCollection;
+use Unilend\Bundle\WSClientBundle\Entity\Infolegale\MandateCollection;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\ScoreDetails;
 
 class InfolegaleManager
 {
-    const RESOURCE_COMPANY_SCORE    = 'get_score_infolegale';
-    const RESOURCE_SEARCH_COMPANY   = 'search_company_infolegale';
-    const RESOURCE_COMPANY_IDENTITY = 'get_identity_infolegale';
-    const RESOURCE_LEGAL_NOTICE     = 'get_legal_notice_infolegale';
+    const RESOURCE_COMPANY_SCORE          = 'get_score_infolegale';
+    const RESOURCE_SEARCH_COMPANY         = 'search_company_infolegale';
+    const RESOURCE_COMPANY_IDENTITY       = 'get_identity_infolegale';
+    const RESOURCE_LEGAL_NOTICE           = 'get_legal_notice_infolegale';
+    const RESOURCE_EXECUTIVES             = 'get_executives_infolegale';
+    const RESOURCE_MANDATES               = 'get_mandates_infolegale';
+    const RESOURCE_HOMONYMS               = 'get_homonyms_infolegale';
+    const RESOURCE_ANNOUNCEMENTS_DIRECTOR = 'get_announcements__director_infolegale';
 
     /** @var Client */
     private $client;
@@ -114,13 +123,122 @@ class InfolegaleManager
     }
 
     /**
+     * @param $siren
+     *
+     * @return ExecutiveCollection|null
+     */
+    public function getExecutives($siren)
+    {
+        if (null !== ($result = $this->sendRequest(self::RESOURCE_EXECUTIVES, $siren))) {
+            return $this->serializer->deserialize($result->asXML(), ExecutiveCollection::class, 'xml');
+        }
+        return null;
+    }
+
+    /**
+     * @param $siren
+     *
+     * @return ArrayCollection
+     */
+    public function getMandates($siren)
+    {
+        $mandates   = new ArrayCollection();
+        $executives = $this->getExecutives($siren);
+        if (null !== $executives) {
+            foreach ($executives->getExecutives() as $executive) {
+                $mandates->set($executive->getExecutiveId(), $this->getExecutiveMandates($siren, $executive->getExecutiveId()));
+            }
+        }
+
+        return $mandates;
+    }
+
+    /**
+     * @param $siren
+     *
+     * @return ArrayCollection
+     */
+    public function getHomonyms($siren)
+    {
+        $homonyms   = new ArrayCollection();
+        $executives = $this->getExecutives($siren);
+
+        if (null !== $executives) {
+            foreach ($executives->getExecutives() as $executive) {
+                $homonyms->set($executive->getExecutiveId(), $this->getExecutiveHomonyms($siren, $executive->getExecutiveId()));
+            }
+        }
+        return $homonyms;
+    }
+
+    /**
+     * @param $siren
+     *
+     * @return ArrayCollection
+     */
+    public function getDirectorAnnouncements($siren)
+    {
+        $announcement = new ArrayCollection();
+        $executives   = $this->getExecutives($siren);
+
+        if (null !== $executives) {
+            foreach ($executives->getExecutives() as $executive) {
+                $announcement->set($executive->getExecutiveId(), $this->getExecutiveDirectorAnnouncements($siren, $executive->getExecutiveId()));
+            }
+        }
+        return $announcement;
+    }
+
+    /**
+     * @param $siren
+     * @param $executiveId
+     *
+     * @return MandateCollection|null
+     */
+    private function getExecutiveMandates($siren, $executiveId)
+    {
+        if (null !== $result = $this->sendRequest(self::RESOURCE_MANDATES, $siren, ['execId' => $executiveId])) {
+            return $this->serializer->deserialize($result->asXML(), MandateCollection::class, 'xml');
+        }
+        return null;
+    }
+
+    /**
+     * @param $siren
+     * @param $executiveId
+     *
+     * @return HomonymCollection|null
+     */
+    private function getExecutiveHomonyms($siren, $executiveId)
+    {
+        if (null !== $result = $this->sendRequest(self::RESOURCE_HOMONYMS, $siren, ['execId' => $executiveId])) {
+            return $this->serializer->deserialize($result->asXML(), HomonymCollection::class, 'xml');
+        }
+        return null;
+    }
+
+    /**
+     * @param $siren
+     * @param $executiveId
+     *
+     * @return DirectorAnnouncementCollection|null
+     */
+    private function getExecutiveDirectorAnnouncements($siren, $executiveId)
+    {
+        if (null !== $result = $this->sendRequest(self::RESOURCE_ANNOUNCEMENTS_DIRECTOR, $siren, ['execId' => $executiveId])) {
+            return $this->serializer->deserialize($result->asXML(), DirectorAnnouncementCollection::class, 'xml');
+        }
+        return null;
+    }
+
+    /**
      * @param string $resourceLabel
      * @param string $siren
-     * @param string $method
+     * @param array  $parameters
      *
      * @return null|\SimpleXMLElement
      */
-    private function sendRequest($resourceLabel, $siren, $method = 'get')
+    private function sendRequest($resourceLabel, $siren, $parameters = [])
     {
         if (true === empty($siren)) {
             throw new \InvalidArgumentException('SIREN is missing');
@@ -133,8 +251,10 @@ class InfolegaleManager
             'siren' => $siren
         ];
 
+        $query = array_merge($query, $parameters);
+
         try {
-            if ($storedResponse = $this->getStoredResponse($wsResource, $siren)) {
+            if ($storedResponse = $this->getStoredResponse($wsResource, $siren, $parameters)) {
                 $storedData = $this->getContentAndErrors($storedResponse);
 
                 if (empty($storedData['errors'])) {
@@ -143,7 +263,7 @@ class InfolegaleManager
             }
             $callback = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
             /** @var ResponseInterface $response */
-            $response = $this->client->{$method}(
+            $response = $this->client->{strtolower($wsResource->getMethod())}(
                 $wsResource->getResourceName(),
                 ['query' => $query]
             );
@@ -152,7 +272,7 @@ class InfolegaleManager
             $stream = $response->getBody();
             $stream->rewind();
             $content = $stream->getContents();
-            call_user_func($callback, $content, $validity['status']);
+            call_user_func($callback, $content, $validity['status'], $parameters);
 
             if ($validity['is_valid']) {
                 return $validity['content'];
@@ -176,12 +296,13 @@ class InfolegaleManager
     /**
      * @param WsExternalResource $resource
      * @param string             $siren
+     * @param array              $parameters
      *
      * @return bool|string
      */
-    private function getStoredResponse(WsExternalResource $resource, $siren)
+    private function getStoredResponse(WsExternalResource $resource, $siren, $parameters = [])
     {
-        $storedResponse = $this->callHistoryManager->getStoredResponse($resource, $siren);
+        $storedResponse = $this->callHistoryManager->getStoredResponse($resource, $siren, $parameters);
 
         if ($this->useCache
             && false !== $storedResponse
