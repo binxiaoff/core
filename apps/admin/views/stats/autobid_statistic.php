@@ -29,10 +29,10 @@
 </script>
 <div id="contenu">
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <h1>Statistiques Autolend</h1>
         </div>
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <form method="post" name="recupCSV">
                 <input type="hidden" name="extraction_csv"/>
                 <input type="hidden" name="date_from" value="<?= isset($_POST['date_from'])? $_POST['date_from'] : '' ?>"/>

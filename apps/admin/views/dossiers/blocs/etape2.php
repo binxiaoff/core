@@ -198,7 +198,7 @@
         border: 0;
     }
 </style>
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBJQJHPnNXye8Hhsf7CUK6dPQ9dvD861k4&libraries=places"></script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAJuJqNo7NITU0E8B7mMVlR_nq3UvABu8U&libraries=places"></script>
 
 <a class="tab_title" id="section-contact-details" href="#section-contact-details">2. Coordonnées</a>
 <div class="tab_content" id="etape2">

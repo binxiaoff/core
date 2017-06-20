@@ -29,10 +29,10 @@
 </script>
 <div id="contenu">
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <h1>Etape d'inscription des utilisateurs</h1>
         </div>
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <form method="post" name="recupCSV">
                 <input type="hidden" name="recup"/>
                 <input type="hidden" name="spy_date1" value="<?= $_POST['date1'] ?>"/>

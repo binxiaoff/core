@@ -9,10 +9,10 @@
 </script>
 <div id="contenu">
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <h1>Liste des campagnes</h1>
         </div>
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <a href="<?= $this->lurl ?>/partenaires/add" class="btn-primary pull-right thickbox">Ajouter une campagne</a>
         </div>
     </div>
