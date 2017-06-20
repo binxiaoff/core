@@ -144,6 +144,7 @@ class InfolegaleManager
     {
         $mandates   = new ArrayCollection();
         $executives = $this->getExecutives($siren);
+
         if (null !== $executives) {
             foreach ($executives->getExecutives() as $executive) {
                 $mandates->set($executive->getExecutiveId(), $this->getExecutiveMandates($siren, $executive->getExecutiveId()));
@@ -263,7 +264,7 @@ class InfolegaleManager
             }
             $callback = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
             /** @var ResponseInterface $response */
-            $response = $this->client->{strtolower($wsResource->getMethod())}(
+            $response = $this->client->{strtolower($wsResource->getMethod())} (
                 $wsResource->getResourceName(),
                 ['query' => $query]
             );

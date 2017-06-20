@@ -36,6 +36,7 @@ class CompanyValidator
         'TC-RISK-010' => 'checkAltaresScoreVsXerfiScore',
         'TC-RISK-011' => 'checkEulerHermesTrafficLight',
         'TC-RISK-013' => 'checkInfolegaleScore',
+        'TC-RISK-014' => 'checkCurrentExecutivesHistory',
         'TC-RISK-015' => 'checkEulerHermesGrade'
     ];
 
@@ -129,7 +130,10 @@ class CompanyValidator
             return $infolegaleScoreCheck;
         }
 
-        // TC-RISK-014
+        $currentExecutivesHistory = $this->checkRule('TC-RISK-014', $siren, $project);
+        if (false === empty($currentExecutivesHistory)) {
+            return $currentExecutivesHistory;
+        }
 
         $eulerHermesGradeCheck = $this->checkRule('TC-RISK-015', $siren, $project);
         if (false === empty($eulerHermesGradeCheck)) {
@@ -413,6 +417,15 @@ class CompanyValidator
         }
 
         return [];
+    }
+
+    private function checkCurrentExecutivesHistory($siren)
+    {
+        $directors = $this->externalDataManager->getExecutives($siren);
+
+        //
+
+        return $directors;
     }
 
     /**
