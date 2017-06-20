@@ -7,7 +7,8 @@
       <span class="sr-only">{% trans %} site-general_search-submit {% endtrans %}</span>
     </button>
   </div>
-  <input id="site-search-input" type="text" name="search" placeholder="{% trans %} site-general_search-placeholder {% endtrans %}"
+
+    <input id="site-search-input" type="text" name="search" placeholder="{% if app.user is defined and app.user is not empty %} {% trans %} site-general_search-placeholder {% endtrans %}{% else %}{% trans %} site-general_search-placeholder-short {% endtrans %}{% endif %}"
          value="" tabindex="1" class="input-field site-search-input">
 
   {# @TODO needs search autocomplete hooked up to AJAX, no?
