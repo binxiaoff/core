@@ -35,6 +35,7 @@ class CompanyValidator
         'TC-RISK-009' => 'checkEliminationXerfiScore',
         'TC-RISK-010' => 'checkAltaresScoreVsXerfiScore',
         'TC-RISK-011' => 'checkEulerHermesTrafficLight',
+        'TC-RISK-012' => 'checkEllispehereIncidents',
         'TC-RISK-013' => 'checkInfolegaleScore',
         'TC-RISK-015' => 'checkEulerHermesGrade'
     ];
@@ -122,7 +123,10 @@ class CompanyValidator
             return $eulerHermesTrafficLightCheck;
         }
 
-        // TC-RISK-012
+        $ellisphereIncidentsCheck = $this->checkRule('TC-RISK-012', $siren, $project);
+        if (false === empty($ellisphereIncidentsCheck)) {
+            return $ellisphereIncidentsCheck;
+        }
 
         $infolegaleScoreCheck = $this->checkRule('TC-RISK-013', $siren, $project);
         if (false === empty($infolegaleScoreCheck)) {
@@ -393,6 +397,16 @@ class CompanyValidator
             return [\projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI];
         }
 
+        return [];
+    }
+
+    /**
+     * @param string $siren
+     *
+     * @return array
+     */
+    private function checkEllispehereIncidents($siren)
+    {
         return [];
     }
 
