@@ -1,7 +1,7 @@
 <?php use Unilend\Bundle\CoreBusinessBundle\Entity\Virements; ?>
 <style type="text/css">
     table.tablesorter tbody td.grisfonceBG, .grisfonceBG {
-        background: #D2D2D2;
+        background: #d2d2d2!important;
         text-align: right;
     }
 
@@ -108,7 +108,7 @@
     }
 
     table.annual-accounts .sub-total td {
-        background-color: #d2d2d2;
+        background-color: #d2d2d2!important;
         font-weight: bold;
     }
 
