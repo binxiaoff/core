@@ -340,7 +340,9 @@
     }
 
     // No user logged in, so always show the full site search (unless breakpoint isn't wide enough for it)
-    #{$js-no-user} & {
+    #{$js-user-type-borrower} &,
+    #{$js-user-type-lender} &,
+    #{$js-user-type-partner} & {
       @include devices('tablet-l') {
         @include site-search-compact;
       }
@@ -355,9 +357,7 @@
     }
 
     // User logged in, so show the compact site search
-    #{$js-user-type-borrower} &,
-    #{$js-user-type-lender} &,
-    #{$js-user-type-partner} & {
+    #{$js-no-user} & {
       @include devices('md') {
         @include site-search-compact;
       }
