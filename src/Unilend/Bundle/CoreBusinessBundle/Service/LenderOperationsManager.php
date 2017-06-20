@@ -11,7 +11,6 @@ use PHPExcel_Style_Conditional;
 use PHPExcel_Style_NumberFormat;
 use Symfony\Component\Translation\Translator;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
@@ -67,6 +66,7 @@ class LenderOperationsManager
         self::OP_REPAYMENT,
         self::OP_EARLY_REPAYMENT,
         self::OP_RECOVERY_REPAYMENT,
+        OperationType::COLLECTION_COMMISSION_LENDER,
         self::OP_BID,
         self::OP_REFUSED_BID,
         self::OP_AUTOBID,
@@ -128,7 +128,7 @@ class LenderOperationsManager
                 && false === empty($historyLine['id_repayment_schedule'])
             ) {
                 $repaymentDetail                  = $operationRepository->getDetailByRepaymentScheduleId($historyLine['id_repayment_schedule']);
-                $historyLine['label']             = 'repayment';
+                $historyLine['label']             = self::OP_REPAYMENT;
                 $historyLine['amount']            = bcsub(bcadd($repaymentDetail['capital'], $repaymentDetail['interest'], 2), $repaymentDetail['taxes'], 2);
                 $historyLine['available_balance'] = $repaymentDetail['available_balance'];
                 $historyLine['detail']            = [
@@ -147,7 +147,7 @@ class LenderOperationsManager
 
                 if ($repaymentDetail['taxes']) {
                     $taxLabel = $this->translator->trans('lender-operations_tax-and-social-deductions-label');
-                    if ($wallet->getIdClient()->getType() == Clients::TYPE_PERSON || $wallet->getIdClient()->getType() == Clients::TYPE_PERSON_FOREIGNER) {
+                    if ($wallet->getIdClient()->isNaturalPerson()) {
                         if ($taxExemptionRepository->isLenderExemptedInYear($wallet, substr($historyLine['date'], 0, 4))) {
                             $taxLabel = $this->translator->trans('lender-operations_social-deductions-label');
                         }
@@ -161,15 +161,12 @@ class LenderOperationsManager
                 }
             }
 
-            if (
-                (in_array(self::OP_EARLY_REPAYMENT, $operations) || in_array(self::OP_RECOVERY_REPAYMENT, $operations))
-                && in_array($historyLine['sub_type_label'], [OperationSubType::CAPITAL_REPAYMENT_EARLY, OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION])
-            ) {
-                if (OperationSubType::CAPITAL_REPAYMENT_EARLY === $historyLine['sub_type_label']) {
-                    $historyLine['label'] = 'early-repayment';
-                } else {
-                    $historyLine['label']             = 'recovery-repayment';
-                }
+            if (OperationSubType::CAPITAL_REPAYMENT_EARLY === $historyLine['sub_type_label']) {
+                $historyLine['label'] = self::OP_EARLY_REPAYMENT;
+            }
+
+            if (OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION === $historyLine['sub_type_label']) {
+                $historyLine['label'] = self::OP_RECOVERY_REPAYMENT;
             }
 
             if (self::OP_REFUSED_BID === $historyLine['label']) {
