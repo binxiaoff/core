@@ -24,11 +24,7 @@ trait CompanyChecker
             return true;
         }
 
-        if ($company->getDateCreation() instanceof \DateTime) {
-            return $company->getDateCreation()->diff(new \DateTime())->days >= $minDays[0];
-        }
-
-        return false;
+        return $company->getDateCreation()->diff(new \DateTime())->days >= $minDays[0];
     }
 
     /**
