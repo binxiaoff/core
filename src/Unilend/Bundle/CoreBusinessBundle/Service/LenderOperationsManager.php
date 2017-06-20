@@ -259,6 +259,7 @@ class LenderOperationsManager
         $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $lenderOperations    = $this->getLenderOperations($wallet, $start, $end, $idProject, $operationTypes);
         $taxColumns          = [];
+        $hasLoanRow          = false;
 
         $style = [
             'borders' => [
@@ -349,9 +350,18 @@ class LenderOperationsManager
             $activeSheet->setCellValueExplicitByColumnAndRow($balanceColumn, $row, $operation['available_balance'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->getCellByColumnAndRow($balanceColumn, $row)->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 
+            if (OperationType::LENDER_LOAN === $operation['label']) {
+                $asteriskColumn = $balanceColumn + 1;
+                $activeSheet->setCellValueByColumnAndRow($asteriskColumn, $row, '*');
+                $hasLoanRow = true;
+            }
+
             $row++;
         }
-        $activeSheet->setCellValueByColumnAndRow(0, $row, $this->translator->trans('lender-operations_operation-label-accepted-offer'));
+
+        if ($hasLoanRow) {
+            $activeSheet->setCellValueByColumnAndRow(0, $row, $this->translator->trans('lender-operations_csv-export-asterisk-accepted-offer-specific-mention'));
+        }
 
         $maxCoordinates = $activeSheet->getHighestRowAndColumn();
         $activeSheet->getStyle('A1:' . $maxCoordinates['column'] . $maxCoordinates['row'])->applyFromArray($style);
