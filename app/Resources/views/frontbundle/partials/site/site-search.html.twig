@@ -10,23 +10,4 @@
 
     <input id="site-search-input" type="text" name="search" placeholder="{% if app.user is defined and app.user is not empty %} {% trans %} site-general_search-placeholder {% endtrans %}{% else %}{% trans %} site-general_search-placeholder-short {% endtrans %}{% endif %}"
          value="" tabindex="1" class="input-field site-search-input">
-
-  {# @TODO needs search autocomplete hooked up to AJAX, no?
-  <div id="site-search-autocomplete" class="autocomplete" aria-hidden="true">
-    <ul class="autocomplete-results">
-      <!-- Site search AutoComplete AJAX results will be rendered here -->
-      <li><a href="#" tabindex="-1">Comment les prêteurs alimentent leur compte&nbsp;?</a></li>
-      <li><a href="#" tabindex="-1">Comment prêter sur un projet&nbsp;?</a></li>
-      <li><a href="#" tabindex="-1">Comment sont calculés les intérêts&nbsp;?</a></li>
-      <li><a href="#" tabindex="-1">Comment l'argent des prêteurs est-il transféré à l'entreprise&nbsp;?</a></li>
-      <li><a href="#" tabindex="-1">Comment savoir que mon portefeuille est performant&nbsp;?</a></li>
-      <li><a href="#" tabindex="-1">Comment se met en place le remboursement du prêt&nbsp;?</a></li>
-      <li><a href="#" tabindex="-1">Comment Unilend dépose sur le compte des prêteurs&nbsp;?</a></li>
-      <li><a href="#" tabindex="-1">Comment supprimer mon compte&nbsp;?</a></li>
-    </ul>
-    <div class="autocomplete-footer">
-      <button class="btn-primary btn-shape-md btn-size-full">{% trans %} site-general_search-show-all-results {% endtrans %}</button>
-    </div>
-  </div><!-- /.autocomplete -->
-  #}
 </form><!-- /.site-search -->

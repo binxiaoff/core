@@ -319,18 +319,6 @@
   }
 }
 
-// @note Potential legacy code
-.site-search {
-  .form-field-inline {
-    width: 100%;
-
-    .site-search-input {
-      @include input;
-      padding-left: 40px;
-    }
-  }
-}
-
 // Site header site search
 .site-header {
   .site-search {
