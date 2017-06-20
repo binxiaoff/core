@@ -24,8 +24,7 @@ class CacheKeys
     /**
      * constant for product
      */
-    const PRODUCT_ATTRIBUTE_BY_TYPE          = 'product_attribute_by_type';
-    const PRODUCT_CONTRACT_ATTRIBUTE_BY_TYPE = 'product_contract_attribute_by_type';
+    const PRODUCT_ATTRIBUTE_BY_TYPE = 'product_attribute_by_type';
 
     /**
      * constant for underlying contract

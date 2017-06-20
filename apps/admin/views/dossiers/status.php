@@ -6,9 +6,6 @@
         height: 600px;
         width: 100%;
     }
-    .status-chart.half {
-        width: 573px;
-    }
     #second-status-chart {
         float: right;
     }
@@ -75,18 +72,24 @@
             <button type="submit" class="btn-primary pull-right">Rechercher</button>
         </fieldset>
     </form>
-    <?php if (isset($this->history)) : ?>
-        <span id="status-chart" class="status-chart<?php if (isset($this->compareHistory)) : ?> half<?php endif; ?>"><?= $this->firstRangeStart->format('d/m/Y') ?></span>
-        <?php if (isset($this->compareHistory)) : ?>
-            <span id="second-status-chart" class="status-chart half"></span>
+    <div class="row">
+        <?php if (isset($this->history)) : ?>
+            <div class="col-md-<?php if (isset($this->compareHistory)) : ?>6<?php else : ?>12<?php endif; ?>">
+                <div id="status-chart" class="status-chart"><?= $this->firstRangeStart->format('d/m/Y') ?></div>
+            </div>
+            <?php if (isset($this->compareHistory)) : ?>
+                <div class="col-md-6">
+                    <div id="second-status-chart" class="status-chart"></div>
+                </div>
+            <?php endif; ?>
         <?php endif; ?>
-    <?php endif; ?>
 
-    <?php if (isset($this->params[0]) && false === isset($this->history)) : ?>
-        <div class="attention" style="background-color:#F2F258">
-            Les critères de recherche n'ont retourné aucun résultat.
-        </div>
-    <?php endif; ?>
+        <?php if (isset($this->params[0]) && false === isset($this->history)) : ?>
+            <div class="attention" style="background-color:#F2F258">
+                Les critères de recherche n'ont retourné aucun résultat.
+            </div>
+        <?php endif; ?>
+    </div> <!--.row-->
 </div>
 <script type="text/javascript">
     $(function() {

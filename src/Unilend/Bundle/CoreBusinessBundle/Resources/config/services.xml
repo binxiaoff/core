@@ -147,6 +147,7 @@
             <argument type="service" id="unilend.service.partner_manager"/>
             <argument type="service" id="unilend.service.eligibility.eligibility_manager"/>
             <argument type="service" id="logger"/>
+            <argument type="service" id="unilend.service_product.product_manager"/>
         </service>
 
         <service id="unilend.service.external_data_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager">

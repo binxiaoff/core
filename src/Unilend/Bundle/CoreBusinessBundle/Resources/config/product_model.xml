@@ -12,7 +12,7 @@
             <argument type="service" id="unilend.service_product.lender_validator"/>
             <argument type="service" id="unilend.service_product.product_attribute_manager"/>
             <argument type="service" id="unilend.service_product_contract.contract_manager"/>
-            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="doctrine.orm.entity_manager"/>
         </service>
 
         <service id="unilend.service_product.product_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\PartnerProductManager" parent="unilend.service_product.base_product_manager"/>
@@ -24,33 +24,28 @@
 
         <service id="unilend.service_product.product_attribute_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager" public="false">
             <argument type="service" id="doctrine.orm.entity_manager"/>
-            <argument type="service" id="unilend.service.entity_manager"/>
-            <argument type="service" id="memcache.default"/>
+            <argument type="service" id="cache"/>
         </service>
 
         <service id="unilend.service_product.project_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\ProjectValidator" public="false">
             <argument type="service" id="unilend.service_product.product_attribute_manager"/>
-            <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service_product_contract.contract_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
         </service>
 
         <service id="unilend.service_product.bid_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\BidValidator" public="false">
             <argument type="service" id="unilend.service_product.product_attribute_manager"/>
             <argument type="service" id="unilend.service_product_contract.contract_manager"/>
-            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="doctrine.orm.entity_manager"/>
         </service>
 
         <service id="unilend.service_product.client_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\ClientValidator" public="false">
             <argument type="service" id="unilend.service_product.product_attribute_manager"/>
             <argument type="service" id="unilend.service_product_contract.contract_manager"/>
-            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="doctrine.orm.entity_manager"/>
         </service>
 
-        <service id="unilend.service_product.lender_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\LenderValidator" public="false">
-            <argument type="service" id="unilend.service_product.product_attribute_manager"/>
-            <argument type="service" id="unilend.service_product_contract.contract_manager"/>
-            <argument type="service" id="doctrine.orm.entity_manager" />
-        </service>
+        <service id="unilend.service_product.lender_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\LenderValidator" parent="unilend.service_product.client_validator" public="false"/>
 
         <service id="unilend.service_product_contract.contract_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager">
             <argument type="service" id="unilend.service_product_contract.client_validator"/>

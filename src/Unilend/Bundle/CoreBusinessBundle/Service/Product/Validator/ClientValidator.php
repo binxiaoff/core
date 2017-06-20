@@ -6,7 +6,6 @@ use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker\ClientChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker\LenderChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;

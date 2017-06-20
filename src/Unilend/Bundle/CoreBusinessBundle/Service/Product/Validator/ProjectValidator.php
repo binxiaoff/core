@@ -2,14 +2,15 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator;
 
+use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectProductAssessment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker\CompanyChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker\ProjectChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class ProjectValidator
 {
@@ -19,17 +20,17 @@ class ProjectValidator
     /** @var ProductAttributeManager */
     private $productAttributeManager;
 
-    /** @var EntityManager */
-    private $entityManager;
-
     /** @var ContractManager */
     private $contractManager;
 
-    public function __construct(ProductAttributeManager $productAttributeManager, EntityManager $entityManager, ContractManager $contractManager)
+    /** @var EntityManager */
+    private $entityManager;
+
+    public function __construct(ProductAttributeManager $productAttributeManager, ContractManager $contractManager, EntityManager $entityManager)
     {
         $this->productAttributeManager = $productAttributeManager;
-        $this->entityManager           = $entityManager;
         $this->contractManager         = $contractManager;
+        $this->entityManager           = $entityManager;
     }
 
     /**
@@ -40,30 +41,21 @@ class ProjectValidator
      */
     public function validate(Projects $project, Product $product)
     {
-        $violations = [];
+        $productAttributeTypes = [
+            ProductAttributeType::MIN_LOAN_DURATION_IN_MONTH,
+            ProductAttributeType::MAX_LOAN_DURATION_IN_MONTH,
+            ProductAttributeType::ELIGIBLE_BORROWING_MOTIVE,
+            ProductAttributeType::MIN_CREATION_DAYS,
+            ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_RCS,
+            ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_NAF_CODE,
+        ];
 
-        if (false === $this->isEligibleForMinDuration($project, $product, $this->productAttributeManager)) {
-            $violations[] = ProductAttributeType::MIN_LOAN_DURATION_IN_MONTH;
-        }
+        foreach ($productAttributeTypes as $productAttributeType) {
+            if (false === $this->check($project, $product, $productAttributeType)) {
+                $this->entityManager->flush();
 
-        if (false === $this->isEligibleForMaxDuration($project, $product, $this->productAttributeManager)) {
-            $violations[] = ProductAttributeType::MAX_LOAN_DURATION_IN_MONTH;
-        }
-
-        if (false === $this->isEligibleForMotive($project, $product, $this->productAttributeManager)) {
-            $violations[] = ProductAttributeType::ELIGIBLE_BORROWING_MOTIVE;
-        }
-
-        if (false === $this->isEligibleForCreationDays($project->getIdCompany(), $product, $this->productAttributeManager)) {
-            $violations[] = ProductAttributeType::MIN_CREATION_DAYS;
-        }
-
-        if (false === $this->isEligibleForRCS($project->getIdCompany(), $product, $this->productAttributeManager)) {
-            $violations[] = ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_RCS;
-        }
-
-        if (false === $this->isEligibleForNafCode($project->getIdCompany(), $product, $this->productAttributeManager)) {
-            $violations[] = ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_NAF_CODE;
+                return [$productAttributeType];
+            }
         }
 
         $hasEligibleContract = false;
@@ -78,9 +70,58 @@ class ProjectValidator
         }
 
         if (false === $hasEligibleContract) {
-            $violations = array_merge($violations, $violationsContract);
+            $this->entityManager->flush();
+
+            return $violationsContract;
+        }
+        $this->entityManager->flush();
+
+        return [];
+    }
+
+    /**
+     * @param Projects $project
+     * @param Product  $product
+     * @param string   $productAttributeTypeLabel
+     *
+     * @return bool
+     */
+    private function check(Projects $project, Product $product, $productAttributeTypeLabel)
+    {
+        switch ($productAttributeTypeLabel) {
+            case ProductAttributeType::MIN_LOAN_DURATION_IN_MONTH:
+                $checkResult = $this->isEligibleForMinDuration($project, $product, $this->productAttributeManager);
+                break;
+            case ProductAttributeType::MAX_LOAN_DURATION_IN_MONTH:
+                $checkResult = $this->isEligibleForMaxDuration($project, $product, $this->productAttributeManager);
+                break;
+            case ProductAttributeType::ELIGIBLE_BORROWING_MOTIVE:
+                $checkResult = $this->isEligibleForMotive($project, $product, $this->productAttributeManager);
+                break;
+            case ProductAttributeType::MIN_CREATION_DAYS:
+                $checkResult = $this->isEligibleForCreationDays($project->getIdCompany(), $product, $this->productAttributeManager);
+                break;
+            case ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_RCS:
+                $checkResult = $this->isEligibleForRCS($project->getIdCompany(), $product, $this->productAttributeManager);
+                break;
+            case ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_NAF_CODE:
+                $checkResult = $this->isEligibleForNafCode($project->getIdCompany(), $product, $this->productAttributeManager);
+                break;
+            default;
+                return true;
+        }
+        $productAttributeType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProductAttributeType')->findOneBy(['label' => $productAttributeTypeLabel]);
+
+        if ($productAttributeType) {
+            $assessment = new ProjectProductAssessment();
+            $assessment->setIdProject($project)
+                ->setIdProduct($product)
+                ->setIdProductAttributeType($productAttributeType)
+                ->setStatus($checkResult);
+
+            $this->entityManager->persist($assessment);
         }
 
-        return $violations;
+        return $checkResult;
     }
 }
