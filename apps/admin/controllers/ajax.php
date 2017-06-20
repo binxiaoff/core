@@ -285,27 +285,8 @@ class ajaxController extends bootstrap
                     return;
                 }
 
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager $productManager */
-                $productManager   = $this->get('unilend.service_product.product_manager');
-                $eligibleProducts = $productManager->findEligibleProducts($project, true);
-
-                if (1 === count($eligibleProducts)) {
-                    /** @var \Doctrine\ORM\EntityManager $entityManager */
-                    $entityManager = $this->get('doctrine.orm.entity_manager');
-                    /** @var PartnerProduct $partnerProduct */
-                    $partnerProduct      = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findOneBy(['idPartner' => $project->id_partner, 'idProduct' => $eligibleProducts[0]->id_product]);
-                    $project->id_product = $eligibleProducts[0]->id_product;
-
-                    if (null != $partnerProduct) {
-                        $project->commission_rate_funds     = $partnerProduct->getCommissionRateFunds();
-                        $project->commission_rate_repayment = $partnerProduct->getCommissionRateRepayment();
-                    } else {
-                        $this->get('logger')->warning(
-                            'Relation between partner and product not found',
-                            ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project, 'id_partner' => $project->id_partner, 'id_product' => $eligibleProducts[0]->id_product]
-                        );
-                    }
-                    $project->update();
+                if (null === $result) {
+                    $projectRequestManager->assignEligiblePartnerProduct($project);
                 }
 
                 echo json_encode([

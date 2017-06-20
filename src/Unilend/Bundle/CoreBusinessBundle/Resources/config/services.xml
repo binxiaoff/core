@@ -149,6 +149,7 @@
             <argument type="service" id="unilend.service.company_scoring_check"/>
             <argument type="service" id="unilend.service.company_balance_sheet_manager"/>
             <argument type="service" id="logger"/>
+            <argument type="service" id="unilend.service_product.product_manager"/>
         </service>
 
         <service id="unilend.service.location_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LocationManager">

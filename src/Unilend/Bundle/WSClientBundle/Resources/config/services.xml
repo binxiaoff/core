@@ -9,10 +9,10 @@
             <argument type="service" id="debug.stopwatch"/>
             <argument type="service" id="unilend.service.slack_manager"/>
             <argument>%slack.monitoring_channel%</argument>
-            <argument type="service" id="assets.packages" />
-            <argument type="service" id="logger" />
+            <argument type="service" id="assets.packages"/>
+            <argument type="service" id="logger"/>
             <argument type="service" id="doctrine_mongodb"/>
-            <argument type="service" id="monolog.logger.mongodb" />
+            <argument type="service" id="monolog.logger.mongodb"/>
             <argument type="service" id="unilend.service.entity_manager"/>
             <call method="handleMongoDBLogging"/>
         </service>
@@ -90,7 +90,7 @@
             <argument type="service" id="unilend.service.ws_client.resource_manager"/>
         </service>
 
-        <service id="unilend.service.ws_client.altares_manager" class="Unilend\Bundle\WSClientBundle\Service\AltaresManager" >
+        <service id="unilend.service.ws_client.altares_manager" class="Unilend\Bundle\WSClientBundle\Service\AltaresManager">
             <argument>%altares.login%</argument>
             <argument>%altares.password%</argument>
             <argument type="service" id="logger"/>
@@ -99,6 +99,18 @@
             <argument type="service" id="unilend.service.ws_client.soap_client.altares_risque"/>
             <argument type="service" id="jms_serializer"/>
             <argument type="service" id="unilend.service.ws_client.resource_manager"/>
+        </service>
+
+        <service id="unilend.service.ws_client.ellisphere_manager" class="Unilend\Bundle\WSClientBundle\Service\EllisphereManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="guzzle.client.ellisphere"/>
+            <argument type="service" id="unilend.service.ws_client.call_history_handler"/>
+            <argument type="service" id="jms_serializer"/>
+            <argument type="service" id="logger"/>
+            <argument>%ellisphere.contract_id%</argument>
+            <argument>%ellisphere.user_prefix%</argument>
+            <argument>%ellisphere.user_id%</argument>
+            <argument>%ellisphere.password%</argument>
         </service>
     </services>
 </container>

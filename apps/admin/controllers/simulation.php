@@ -1,6 +1,7 @@
 <?php
 
 use \Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
+use \Doctrine\ORM\EntityRepository;
 
 class simulationController extends bootstrap
 {
@@ -8,21 +9,25 @@ class simulationController extends bootstrap
      * @var array
      */
     private $methods = [
-        'get_incident_list_codinf'            => 'getIncidentList',
-        'get_score_altares'                   => 'getScore',
-        'get_company_identity_altares'        => 'getCompanyIdentity',
-        'get_establishment_identity_altares'  => 'getEstablishmentIdentity',
-        'get_balance_sheet_altares'           => 'getBalanceSheets',
-        'get_financial_summary_altares'       => 'getFinancialSummary',
-        'get_balance_management_line_altares' => 'getBalanceManagementLine',
-        'get_score_infolegale'                => 'getScore',
-        'search_company_infolegale'           => 'searchCompany',
-        'get_identity_infolegale'             => 'getIdentity',
-        'get_legal_notice_infolegale'         => 'getListAnnonceLegale',
-        'get_indebtedness_infogreffe'         => 'getIndebtedness',
-        'search_company_euler'                => 'searchCompany',
-        'get_grade_euler'                     => 'getGrade',
-        'get_traffic_light_euler'             => 'getTrafficLight'
+        'get_incident_list_codinf'               => 'getIncidentList',
+        'get_score_altares'                      => 'getScore',
+        'get_company_identity_altares'           => 'getCompanyIdentity',
+        'get_establishment_identity_altares'     => 'getEstablishmentIdentity',
+        'get_balance_sheet_altares'              => 'getBalanceSheets',
+        'get_financial_summary_altares'          => 'getFinancialSummary',
+        'get_balance_management_line_altares'    => 'getBalanceManagementLine',
+        'get_score_infolegale'                   => 'getScore',
+        'search_company_infolegale'              => 'searchCompany',
+        'get_identity_infolegale'                => 'getIdentity',
+        'get_legal_notice_infolegale'            => 'getListAnnonceLegale',
+        'get_indebtedness_infogreffe'            => 'getIndebtedness',
+        'search_company_euler'                   => 'searchCompany',
+        'get_grade_euler'                        => 'getGrade',
+        'get_traffic_light_euler'                => 'getTrafficLight',
+        'get_executives_infolegale'              => 'getExecutives',
+        'get_mandates_infolegale'                => 'getMandates',
+        'get_homonyms_infolegale'                => 'getHomonyms',
+        'get_announcements__director_infolegale' => 'getDirectorAnnouncements',
     ];
 
     public function initialize()
@@ -43,7 +48,7 @@ class simulationController extends bootstrap
     public function _wsProvider()
     {
         $this->hideDecoration();
-        /** @var WsExternalResource $wsResourceRepository */
+        /** @var EntityRepository $wsResourceRepository */
         $wsResourceRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:WsExternalResource');
         $this->resources      = $wsResourceRepository->findBy([], ['providerName' => 'ASC', 'resourceName' => 'ASC']);
         $this->result         = false;
@@ -91,7 +96,7 @@ class simulationController extends bootstrap
         $this->hideDecoration();
         /** @var \Unilend\Bundle\WSClientBundle\Service\CallHistoryManager $wsCallHistory */
         $wsCallHistory = $this->get('unilend.service.ws_client.call_history_handler');
-        /** @var WsExternalResource $wsResourceRepository */
+        /** @var EntityRepository $wsResourceRepository */
         $wsResourceRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:WsExternalResource');
         $this->resources      = $wsResourceRepository->findBy([], ['providerName' => 'ASC', 'resourceName' => 'ASC']);
         $this->result         = false;
@@ -105,7 +110,7 @@ class simulationController extends bootstrap
                 if (false === empty($_POST['siren']) && null !== $wsResource) {
                     $days         = empty($_POST['nbDaysAgo']) ? 3 : $_POST['nbDaysAgo'];
                     $date         = (new \DateTime())->sub(new \DateInterval('P' . $days . 'D'));
-                    $this->result = $wsCallHistory->fetchLatestDataFromMongo($_POST['siren'], $wsResource->getProviderName(), $wsResource->getResourceName(), $date);
+                    $this->result = $wsCallHistory->fetchLatestDataFromMongo($_POST['siren'], [], $wsResource->getProviderName(), $wsResource->getResourceName(), $date);
                 } else {
                     $this->result = 'Please give a siren and a valid resource from the drop down list';
                 }
