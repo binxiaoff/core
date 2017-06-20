@@ -20,7 +20,7 @@ trait CompanyChecker
     {
         $minDays = $contractAttributeManager->getContractAttributesByType($contract, UnderlyingContractAttributeType::MIN_CREATION_DAYS);
 
-        if (empty($minDays)) {
+        if (empty($minDays) || empty($company->getDateCreation())) {
             return true;
         }
 

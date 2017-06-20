@@ -20,15 +20,11 @@ trait CompanyChecker
     {
         $minDays = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MIN_CREATION_DAYS);
 
-        if (empty($minDays)) {
+        if (empty($minDays) || empty($company->getDateCreation())) {
             return true;
         }
 
-        if ($company->getDateCreation() instanceof \DateTime) {
-            return $company->getDateCreation()->diff(new \DateTime())->days >= $minDays[0];
-        }
-
-        return false;
+        return $company->getDateCreation()->diff(new \DateTime())->days >= $minDays[0];
     }
 
     /**
