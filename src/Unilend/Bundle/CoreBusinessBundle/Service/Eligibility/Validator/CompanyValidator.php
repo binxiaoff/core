@@ -422,6 +422,16 @@ class CompanyValidator
      */
     private function checkEulerHermesGrade($siren)
     {
+        $trafficLight = $this->externalDataManager->getEulerHermesTrafficLight($siren);
+
+        if (null === $trafficLight) {
+            return [\projects_status::UNEXPECTED_RESPONSE . 'euler_traffic_light_score'];
+        }
+
+        if (EulerHermesCompanyRating::COLOR_WHITE === $trafficLight->getColor()) {
+            return [];
+        }
+
         $eulerHermesGrade = $this->externalDataManager->getEulerHermesGrade($siren);
         if (null === $eulerHermesGrade) {
             return [\projects_status::UNEXPECTED_RESPONSE . 'euler_grade'];
