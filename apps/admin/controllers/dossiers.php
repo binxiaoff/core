@@ -2076,19 +2076,21 @@ class dossiersController extends bootstrap
         $this->walletRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         $this->operationRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
 
-        $this->loan    = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($this->params[1]);
-        $this->client  = $this->loan->getIdLender()->getIdClient();
-        $this->lRemb   = $repaymentScheduleRepository->findBy(['idLoan' =>$this->loan, 'statusRa' => Echeanciers::IS_NOT_EARLY_REPAID]);
+        if (isset($this->params[1])) {
+            $this->loan    = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($this->params[1]);
+            $this->client  = $this->loan->getIdLender()->getIdClient();
+            $this->lRemb   = $repaymentScheduleRepository->findBy(['idLoan' => $this->loan, 'statusRa' => Echeanciers::IS_NOT_EARLY_REPAID]);
 
-        // on check si on est en remb anticipé
-        // ON recup la date de statut remb
-        $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
+            // on check si on est en remb anticipé
+            // ON recup la date de statut remb
+            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
 
-        $this->montant_ra = 0;
+            $this->montant_ra = 0;
 
-        if (ProjectsStatus::REMBOURSEMENT_ANTICIPE === $project->getStatus()) {
-            $this->montant_ra = $repaymentScheduleRepository->getEarlyRepaidCapitalByLoan($this->loan);
-            $this->date_ra    = $repaymentScheduleRepository->findOneBy(['idLoan' => $this->loan, 'statusRa' => Echeanciers::IS_EARLY_REPAID])->getDateEcheanceReel();
+            if (ProjectsStatus::REMBOURSEMENT_ANTICIPE === $project->getStatus()) {
+                $this->montant_ra = $repaymentScheduleRepository->getEarlyRepaidCapitalByLoan($this->loan);
+                $this->date_ra    = $repaymentScheduleRepository->findOneBy(['idLoan' => $this->loan, 'statusRa' => Echeanciers::IS_EARLY_REPAID])->getDateEcheanceReel();
+            }
         }
     }
 

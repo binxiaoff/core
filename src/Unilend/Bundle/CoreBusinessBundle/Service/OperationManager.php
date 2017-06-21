@@ -419,9 +419,9 @@ class OperationManager
      */
     private function tax(Loans $loan, $amountInterestGross, $origin)
     {
-        $walletRepo        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $walletTypeRepo    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType');
-        $operationTypeRepo = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType');
+        $walletRepository        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $walletTypeRepository    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType');
+        $operationTypeRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType');
 
         $underlyingContract = $loan->getIdTypeContract();
         $taxes              = $this->taxManager->getLenderRepaymentInterestTax($loan->getIdLender()->getIdClient(), $amountInterestGross, new \DateTime(), $underlyingContract);
@@ -462,9 +462,9 @@ class OperationManager
                     continue;
             }
 
-            $walletTaxType = $walletTypeRepo->findOneBy(['label' => $walletType]);
-            $walletTax     = $walletRepo->findOneBy(['idType' => $walletTaxType]);
-            $operationType = $operationTypeRepo->findOneBy(['label' => $operationType]);
+            $walletTaxType = $walletTypeRepository->findOneBy(['label' => $walletType]);
+            $walletTax     = $walletRepository->findOneBy(['idType' => $walletTaxType]);
+            $operationType = $operationTypeRepository->findOneBy(['label' => $operationType]);
 
             $this->newOperation($tax, $operationType, null, $loan->getIdLender(), $walletTax, $origin);
         }
