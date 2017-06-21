@@ -75,37 +75,6 @@
                 </div>
             <?php endif; ?>
         </div>
-        <div class="div-right-pos">
-            <h2>Historique</h2>
-            <?php if (false === empty($this->aEmails) || false === empty($this->project_cgv->id)) : ?>
-                <table class="tablesorter">
-                    <tbody>
-                    <?php if (false === empty($this->project_cgv->id)) : ?>
-                        <tr>
-                            <td>
-                                CGV envoyées le <?= date('d/m/Y à H:i:s', strtotime($this->project_cgv->added)) ?>
-                                (<a href="<?= $this->furl . $this->project_cgv->getUrlPath() ?>" target="_blank">PDF</a>)
-                                <?php if (\Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED == $this->project_cgv->status) : ?>
-                                    <br/>
-                                    <strong>signées</strong> le <?= date('d/m/Y à H:i:s', strtotime($this->project_cgv->updated)) ?>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php endif; ?>
-                    <?php foreach ($this->aEmails as $aEmail) : ?>
-                        <tr>
-                            <td>
-                                <?php $this->users->get($aEmail['id_user'], 'id_user'); ?>
-                                Envoyé le <?= date('d/m/Y à H:i:s', strtotime($aEmail['added'])) ?> par <?= $this->users->name ?>
-                                <br>
-                                <?= $aEmail['content'] ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php endif; ?>
-        </div>
     </div>
     <br><br>
     <?php $this->fireView('../blocs/acceptedLegalDocumentList'); ?>
