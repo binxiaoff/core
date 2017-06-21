@@ -51,9 +51,6 @@ EOF
             AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT,
             AttachmentType::CNI_PASSPORTE_DIRIGEANT,
             AttachmentType::RIB,
-            AttachmentType::DELEGATION_POUVOIR,
-            AttachmentType::KBIS,
-            AttachmentType::JUSTIFICATIF_FISCAL,
         ];
         $clients                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getLendersInStatus($statusToCheck);
 
@@ -86,7 +83,6 @@ EOF
                     try {
                         switch ($attachment->getType()->getId()) {
                             case AttachmentType::CNI_PASSPORTE:
-                            case AttachmentType::CNI_PASSPORTE_VERSO:
                             case AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT:
                             case AttachmentType::CNI_PASSPORTE_DIRIGEANT:
                                 $type = greenPoint::REQUEST_TYPE_ID;
