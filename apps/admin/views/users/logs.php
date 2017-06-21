@@ -9,10 +9,10 @@
 </script>
 <div id="contenu">
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <h1>Historiques des connexions à la partie d'administration du site</h1>
         </div>
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <a href="<?= $this->lurl ?>/users/export_logs" class="btn-primary pull-right thickbox">Export</a>
         </div>
     </div>

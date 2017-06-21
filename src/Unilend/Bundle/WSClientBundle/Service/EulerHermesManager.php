@@ -258,7 +258,7 @@ class EulerHermesManager
                 case self::RESOURCE_SEARCH_COMPANY:
                     return isset($response->Id) && false === empty($response->Id);
                 case self::RESOURCE_EULER_GRADE:
-                    return isset($response->message, $response->code) && is_numeric($response->message) && is_numeric($response->code);
+                    return isset($response->message) && in_array($response->message, array_merge(range(1, 10), ['NA']));
                 default:
                     return false;
             }

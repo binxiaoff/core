@@ -223,6 +223,30 @@ class CompanyScoringCheck
     }
 
     /**
+     * @param string $siren
+     * @param string $countryCode
+     *
+     * @return bool
+     */
+    public function isEulerTrafficLightWhite($siren, $countryCode = 'fr')
+    {
+        try {
+            $trafficLight = $this->wsEuler->getTrafficLight($siren, $countryCode);
+
+            if (null !== $trafficLight && EulerCompanyRating::COLOR_WHITE === $trafficLight->getColor()) {
+                return true;
+            }
+        } catch (\Exception $exception) {
+            $this->logger->error(
+                'Could not get Euler traffic light: EulerHermesManager::getTrafficLight(' . $siren . ', ' . $countryCode . '). Message: ' . $exception->getMessage(),
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $siren]
+            );
+        }
+
+        return false;
+    }
+
+    /**
      * @param string                       $siren
      * @param string                       $rejectionReason
      * @param null|\company_rating_history $companyRatingHistory
