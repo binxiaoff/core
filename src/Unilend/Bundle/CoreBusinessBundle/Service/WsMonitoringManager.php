@@ -28,17 +28,12 @@ class WsMonitoringManager
      */
     public function getRateByCallStatus($resourceLabel)
     {
-        $rateByCallStatus = [];
-        $wsResource       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WsExternalResource')->findOneBy(['label' => $resourceLabel]);
-        $setting          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => $wsResource->getProviderName() . ' monitoring time lapse']);
-
-        if (null == $setting) {
-            $minutesLeftSetting = 30;
-        } else {
-            $minutesLeftSetting = $setting->getValue();
-        }
-        $from        = new \DateTime($minutesLeftSetting . ' minutes ago');
-        $callHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WsCallHistory')->getCallStatusHistoryFromDate($wsResource, $from);
+        $rateByCallStatus    = [];
+        $wsResource          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WsExternalResource')->findOneBy(['label' => $resourceLabel]);
+        $setting             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => $wsResource->getProviderName() . ' monitoring time lapse']);
+        $minutesLeftSetting  = (null !== $setting) ? $setting->getValue() : 30;
+        $historyStartingDate = new \DateTime($minutesLeftSetting . ' minutes ago');
+        $callHistory         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WsCallHistory')->getCallStatusHistoryFromDate($wsResource, $historyStartingDate);
 
         if (false === empty($callHistory)) {
             foreach ($callHistory as $resourceCallHistory) {
@@ -63,8 +58,7 @@ class WsMonitoringManager
         $pingDom                      = 'ok';
         $wsExternalResourceRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WsExternalResource');
         $projectsRepository           = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        /** @var WsCallHistoryRepository $wsCallHistoryRepository */
-        $wsCallHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WsCallHistory');
+        $wsCallHistoryRepository      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WsCallHistory');
 
         $frequencyInterval = new \DateInterval('PT' . $frequency . 'M');
 
@@ -122,6 +116,7 @@ class WsMonitoringManager
         foreach ($projects as $project) {
             $projectIds[] = $project->getIdProject();
         }
+
         return implode(', ', $projectIds);
     }
 

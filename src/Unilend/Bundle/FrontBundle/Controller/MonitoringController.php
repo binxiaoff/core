@@ -33,9 +33,8 @@ class MonitoringController extends Controller
 
         try {
             $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
-
-            $siren          = '790766034';
-            $altaresManager = $this->get('unilend.service.ws_client.altares_manager')->setUseCache(false);
+            $siren               = '790766034';
+            $altaresManager      = $this->get('unilend.service.ws_client.altares_manager')->setUseCache(false);
             $altaresManager->getCompanyIdentity($siren);
             $altaresManager->getScore($siren);
 
@@ -61,9 +60,8 @@ class MonitoringController extends Controller
 
         try {
             $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
-
-            $siren         = '790766034';
-            $codinfManager = $this->get('unilend.service.ws_client.codinf_manager')->setUseCache(false);
+            $siren               = '790766034';
+            $codinfManager       = $this->get('unilend.service.ws_client.codinf_manager')->setUseCache(false);
             $codinfManager->getIncidentList($siren);
 
             $response = $wsMonitoringManager->sendNotifications($wsMonitoringManager->getRateByCallStatus(CodinfManager::RESOURCE_INCIDENT_LIST), self::PINGDOM_FREQUENCY);
@@ -88,9 +86,8 @@ class MonitoringController extends Controller
 
         try {
             $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
-
-            $siren        = '790766034';
-            $eulerManager = $this->get('unilend.service.ws_client.euler_manager')->setUseCache(false);
+            $siren               = '790766034';
+            $eulerManager        = $this->get('unilend.service.ws_client.euler_manager')->setUseCache(false);
             $eulerManager->searchCompany($siren, 'fr');
 
             $response = $wsMonitoringManager->sendNotifications($wsMonitoringManager->getRateByCallStatus(EulerHermesManager::RESOURCE_SEARCH_COMPANY), self::PINGDOM_FREQUENCY);
@@ -118,9 +115,8 @@ class MonitoringController extends Controller
 
         try {
             $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
-
-            $siren             = '790766034';
-            $infogreffeManager = $this->get('unilend.service.ws_client.infogreffe_manager')->setUseCache(false)->setMonitoring(true);
+            $siren               = '790766034';
+            $infogreffeManager   = $this->get('unilend.service.ws_client.infogreffe_manager')->setUseCache(false)->setMonitoring(true);
             $infogreffeManager->getIndebtedness($siren);
 
             $response = $wsMonitoringManager->sendNotifications($wsMonitoringManager->getRateByCallStatus(InfogreffeManager::RESOURCE_INDEBTEDNESS), self::PINGDOM_FREQUENCY);
@@ -145,9 +141,8 @@ class MonitoringController extends Controller
 
         try {
             $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
-
-            $siren             = '790766034';
-            $infolegaleManager = $this->get('unilend.service.ws_client.infolegale_manager')->setUseCache(false);
+            $siren               = '790766034';
+            $infolegaleManager   = $this->get('unilend.service.ws_client.infolegale_manager')->setUseCache(false);
             $infolegaleManager->getScore($siren);
 
             $response = $wsMonitoringManager->sendNotifications($wsMonitoringManager->getRateByCallStatus(InfolegaleManager::RESOURCE_COMPANY_SCORE), self::PINGDOM_FREQUENCY);

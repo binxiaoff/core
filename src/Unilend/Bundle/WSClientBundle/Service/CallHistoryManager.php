@@ -186,7 +186,7 @@ class CallHistoryManager
      * @param WsCallHistory $callHistory
      * @param array         $parameter
      * @param string        $response
-     * @param WsCallHistory      $callHistory
+     * @param WsCallHistory $callHistory
      */
     private function storeResponse(WsCallHistory $callHistory, $parameter, $response)
     {

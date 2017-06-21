@@ -18,7 +18,6 @@ class WsCallHistoryRepository extends EntityRepository
      */
     public function getCallStatusHistoryFromDate(WsExternalResource $wsResource, \DateTime $from, $onlyGivenResource = false)
     {
-
         $firstDownQb = $this->createQueryBuilder('wchMin')
             ->select('MIN(wchMin.added)')
             ->where('wchMin.idResource = wer.idResource')
@@ -67,7 +66,6 @@ class WsCallHistoryRepository extends EntityRepository
             ->where('lastDown.idResource = :resource')
             ->andWhere('lastDown.callStatus = :error')
             ->andWhere('lastDown.added < :from');
-
 
         $queryBuilder = $this->createQueryBuilder('wchMin')
             ->select('MIN(wchMin.added) AS firstUpCallDate')
