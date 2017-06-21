@@ -1859,7 +1859,7 @@ class dossiersController extends bootstrap
                         if (0 < count($repaymentSchedules)) {
                             $entityManager->getConnection()->beginTransaction();
                             try {
-                                $repaymentNb = $projectRepaymentManager->repay($project, $paidPaymentSchedule->getOrdre());
+                                $repaymentNb = $projectRepaymentManager->repay($project, $paidPaymentSchedule->getOrdre(), $_SESSION['user']['id_user']);
                                 if (0 === $repaymentNb) {
                                     $_SESSION['freeow']['title']   = 'Remboursement prêteur';
                                     $_SESSION['freeow']['message'] = "Aucun remboursement n'a été effectué aux prêteurs !";

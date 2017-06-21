@@ -380,7 +380,7 @@ class LenderOperationsController extends Controller
             $loanData['end_date']                 = $projectLoans['fin'];
             $loanData['next_payment_date']        = $projectLoans['next_echeance'];
             $loanData['monthly_repayment_amount'] = $projectLoans['monthly_repayment_amount'];
-            $loanData['duration']                 = $remainingDuration->y * 12 + $remainingDuration->m;
+            $loanData['duration']                 = $remainingDuration->y * 12 + $remainingDuration->m + ($remainingDuration->d > 0 ? 1 : 0);
             $loanData['final_repayment_date']     = $projectLoans['final_repayment_date'];
             $loanData['remaining_capital_amount'] = $projectLoans['remaining_capital'];
             $loanData['project_status']           = $projectLoans['project_status'];

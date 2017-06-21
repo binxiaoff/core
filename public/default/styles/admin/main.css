@@ -79,8 +79,8 @@ table.login label { cursor: pointer; font-weight: bold; }
 
 #quick_search { margin-top: 10px; }
 
-#navigation { height: 34px; background: #b20066; text-align: center;}
-#navigation ul { list-style: none; margin: 0; padding: 0; width: 100%; }
+#navigation { height: 34px; background: #b20066; text-align: center; position: relative; }
+#navigation ul { list-style: none; margin: 0; padding: 0; width: 100%; position: absolute; top: 0; left: 0; }
 #navigation > ul { display: table; }
 #navigation > ul > li { display: table-cell; position: relative;  }
 #navigation ul li > * { display: block; padding: 10px 12px; color: #fff; text-decoration: none; font-weight: bold; cursor: pointer; }

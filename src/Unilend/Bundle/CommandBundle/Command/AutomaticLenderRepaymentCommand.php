@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsRemb;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 
 
 class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
@@ -32,7 +33,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
             try {
                 $stopWatch->start('autoRepayment');
                 $project        = $projectRepayment->getIdProject();
-                $repaymentNb    = $projectRepaymentManager->repay($project, $projectRepayment->getOrdre());
+                $repaymentNb    = $projectRepaymentManager->repay($project, $projectRepayment->getOrdre(), Users::USER_ID_CRON);
                 $stopWatchEvent = $stopWatch->stop('autoRepayment');
 
                 $message = $slackManager->getProjectName($project) .

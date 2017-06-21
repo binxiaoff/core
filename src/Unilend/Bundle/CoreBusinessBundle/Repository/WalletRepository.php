@@ -9,6 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\librairies\CacheKeys;
 
 class WalletRepository extends EntityRepository
 {
@@ -73,12 +74,11 @@ class WalletRepository extends EntityRepository
             INNER JOIN wallet_type wt ON wt.id = w.id_type AND wt.label = :lender
             INNER JOIN (
               SELECT
-                am.id_wallet AS walletId,
+                b.id_lender_account AS walletId,
                 MAX(b.added)   AS lastOperationDate
               FROM bids b
-              INNER JOIN account_matching am ON am.id_lender_account = b.id_lender_account
               WHERE b.id_autobid IS NULL
-              GROUP BY am.id_wallet
+              GROUP BY b.id_lender_account
               HAVING lastOperationDate < :inactiveSince
             ) b2 ON b2.walletId = a.walletId
             GROUP BY walletId';
@@ -109,7 +109,7 @@ class WalletRepository extends EntityRepository
      *
      * @return array Wallet[]
      */
-    public function getLenderWalletsWithOperationsInYear($operationTypes, $year)
+    public function getLenderWalletsWithOperationsInYear(array $operationTypes, $year)
     {
         $qb = $this->createQueryBuilder('w');
         $qb->innerJoin('UnilendCoreBusinessBundle:WalletBalanceHistory', 'wbh', Join::WITH, 'w.id = wbh.idWallet')
@@ -118,10 +118,12 @@ class WalletRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'wt.id = w.idType')
             ->where('wt.label = :lender')
             ->andWhere('ot.label IN (:operationTypes)')
-            ->andWhere('YEAR(o.added) = :year')
+            ->andWhere('wbh.added BETWEEN :start AND :end')
+            ->groupBy('w.id')
             ->setParameter('lender', WalletType::LENDER)
-            ->setParameter('operationTypes', $operationTypes, Connection::PARAM_INT_ARRAY)
-            ->setParameter('year', $year);
+            ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
+            ->setParameter('start', $year . '-01-01 00:00:00')
+            ->setParameter('end', $year . '-12-31- 23:59:59');
 
         return $qb->getQuery()->getResult();
     }

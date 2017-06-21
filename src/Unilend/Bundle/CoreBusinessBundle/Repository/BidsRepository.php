@@ -57,8 +57,7 @@ class BidsRepository extends EntityRepository
     public function getManualBidByDateAndWallet(Wallet $wallet, \DateTime $date)
     {
         $queryBuilder = $this->createQueryBuilder('b');
-        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:AccountMatching', 'am', Join::WITH, 'am.idWallet = :walletId')
-            ->where('b.idLenderAccount = am.idLenderAccount')
+        $queryBuilder->where('b.idLenderAccount = :walletId')
             ->andWhere('b.idAutobid IS NULL')
             ->andWhere('b.added > :date')
             ->setParameter('walletId', $wallet->getId())

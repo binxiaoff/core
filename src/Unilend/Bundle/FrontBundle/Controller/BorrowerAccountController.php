@@ -16,6 +16,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
@@ -38,7 +39,6 @@ class BorrowerAccountController extends Controller
     const OP_LENDER_MONTHLY_REPAYMENT       = 'lender-monthly-repayment';
     const OP_LENDER_EARLY_REPAYMENT         = 'lender-early-repayment';
     const OP_LENDER_RECOVERY_REPAYMENT      = 'lender-recovery-repayment';
-    const OP_MONTHLY_COMMISSION             = 'monthly-commission';
 
 
     /**
@@ -182,11 +182,11 @@ class BorrowerAccountController extends Controller
         $projectsIds         = array_column($projectsPostFunding, 'id_project');
         $operationTypes      = [
             OperationType::LENDER_LOAN,
-            OperationType::BORROWER_COMMISSION,
             OperationType::BORROWER_WITHDRAW,
+            OperationSubType::BORROWER_COMMISSION_FUNDS,
             self::OP_MONTHLY_PAYMENT,
             self::OP_MONTHLY_PAYMENT_REGULARIZATION,
-            self::OP_MONTHLY_COMMISSION,
+            OperationSubType::BORROWER_COMMISSION_REPAYMENT,
             self::OP_EARLY_PAYMENT,
             self::OP_LENDER_MONTHLY_REPAYMENT,
             self::OP_LENDER_EARLY_REPAYMENT,

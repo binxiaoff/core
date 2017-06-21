@@ -264,6 +264,10 @@
 
     @include devices('lg') {
       padding: 40px;
+      margin-left: -20px;
+      .field-label {
+        margin-left: -20px;
+      }
     }
   }
 

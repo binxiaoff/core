@@ -9,10 +9,10 @@
 </script>
 <div id="contenu">
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <h1>Liste des menus</h1>
         </div>
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <a href="<?= $this->lurl ?>/menus/add" class="btn-primary pull-right thickbox">Ajouter un menu</a>
         </div>
     </div>

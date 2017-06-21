@@ -39,10 +39,10 @@
 </script>
 <div id="contenu">
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <h1>Historique des emails</h1>
         </div>
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <a href="<?= $this->lurl ?>/mails/recherche" class="btn-primary pull-right thickbox">Rechercher</a>
         </div>
     </div>
