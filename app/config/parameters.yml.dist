@@ -58,7 +58,7 @@ parameters:
     ellisphere.user_prefix:         ~
     ellisphere.user_id:             ~
     ellisphere.password:            ~
-    ellisphere.url:                 https://services-test.data-access-gateway.com/1/rest/
+    ellisphere.url:                 https://services.data-access-gateway.com/1/rest/
 
     slack.default_channel:          '#it-testing'
 
