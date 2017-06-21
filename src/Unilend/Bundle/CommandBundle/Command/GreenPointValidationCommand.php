@@ -66,6 +66,10 @@ EOF
                     if (false === in_array($attachment->getType()->getId(), $attachmentTypeToValidate)) {
                         continue;
                     }
+                    if (false == file_exists(realpath($attachmentManager->getFullPath($attachment)))) {
+                        $logger->error('Attachment file not found (ID ' . $attachment->getId() . ')', ['class' => __CLASS__, 'function' => __FUNCTION__]);
+                        continue;
+                    }
                     $greenPointAttachment = $attachment->getGreenpointAttachment();
                     if (null === $greenPointAttachment) {
                         $greenPointAttachment = new GreenpointAttachment();
@@ -76,10 +80,6 @@ EOF
                         continue;
                     }
 
-                    if (false == file_exists(realpath($attachmentManager->getFullPath($attachment)))) {
-                        $logger->error('Attachment file not found (ID ' . $attachment->getId() . ')', ['class' => __CLASS__, 'function' => __FUNCTION__]);
-                        continue;
-                    }
                     try {
                         switch ($attachment->getType()->getId()) {
                             case AttachmentType::CNI_PASSPORTE:
