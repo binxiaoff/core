@@ -53,6 +53,12 @@ class ProjectValidator
             ProductAttributeType::MIN_CREATION_DAYS,
             ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_RCS,
             ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_NAF_CODE,
+            ProductAttributeType::VERIFICATION_REQUESTER_IS_ONE_OF_THE_DIRECTOR,
+            ProductAttributeType::ELIGIBLE_HEADQUARTERS_LOCATION_EXCLUSIVE,
+            ProductAttributeType::MAX_XERFI_SCORE,
+            ProductAttributeType::MIN_NO_IN_PROGRESS_BLEND_PROJECT_DAYS,
+            ProductAttributeType::MIN_NO_INCIDENT_BLEND_PROJECT_DAYS,
+            ProductAttributeType::MIN_NO_INCIDENT_UNILEND_PROJECT_DAYS,
         ];
 
         foreach ($productAttributeTypes as $productAttributeType) {
@@ -112,18 +118,28 @@ class ProjectValidator
             case ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_NAF_CODE:
                 $checkResult = $this->isEligibleForNafCode($project->getIdCompany(), $product, $this->productAttributeManager);
                 break;
-            case ProductAttributeType::REQUESTER_IS_ONE_OF_THE_DIRECTOR:
+            case ProductAttributeType::VERIFICATION_REQUESTER_IS_ONE_OF_THE_DIRECTOR:
                 $checkResult = $this->isEligibleForRequesterName($project, $product, $this->productAttributeManager, $this->infolegaleManager, $this->entityManager);
                 break;
-            case ProductAttributeType::HEADQUARTERS_LOCATION_EXCLUSIVE:
+            case ProductAttributeType::ELIGIBLE_HEADQUARTERS_LOCATION_EXCLUSIVE:
                 $checkResult = $this->isEligibleForHeadquartersLocation($project->getIdCompany(), $product, $this->productAttributeManager);
                 break;
-                case ProductAttributeType::MAX_XERFI_SCORE:
+            case ProductAttributeType::MAX_XERFI_SCORE:
                 $checkResult = $this->isEligibleForMaxXerfiScore($project->getIdCompany(), $product, $this->productAttributeManager, $this->entityManager);
+                break;
+            case ProductAttributeType::MIN_NO_IN_PROGRESS_BLEND_PROJECT_DAYS:
+                $checkResult = $this->isEligibleForNoBlendProject($project->getIdCompany(), $product, $this->productAttributeManager, $this->entityManager);
+                break;
+            case ProductAttributeType::MIN_NO_INCIDENT_UNILEND_PROJECT_DAYS:
+                $checkResult = $this->isEligibleForNoUnilendProjectIncident($project->getIdCompany(), $product, $this->productAttributeManager, $this->entityManager);
+                break;
+            case ProductAttributeType::MIN_NO_INCIDENT_BLEND_PROJECT_DAYS:
+                $checkResult = $this->isEligibleForNoBlendProjectIncident($project->getIdCompany(), $product, $this->productAttributeManager, $this->entityManager);
                 break;
             default;
                 return true;
         }
+
         $productAttributeType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProductAttributeType')->findOneBy(['label' => $productAttributeTypeLabel]);
 
         if ($productAttributeType) {

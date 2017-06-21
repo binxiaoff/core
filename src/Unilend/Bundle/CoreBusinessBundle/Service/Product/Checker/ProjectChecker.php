@@ -16,18 +16,18 @@ trait ProjectChecker
      * @param Product                 $product
      * @param ProductAttributeManager $productAttributeManager
      *
-     * @return bool
+     * @return bool|null Return true when the check is OK, false when the check is failed, null when the check cannot be done (lack of data for example).
      */
-    public function isEligibleForMinDuration(Projects $project, Product $product, ProductAttributeManager $productAttributeManager)
+    private function isEligibleForMinDuration(Projects $project, Product $product, ProductAttributeManager $productAttributeManager)
     {
-        if (empty($project->getPeriod())) {
-            return true;
-        }
-
         $minDuration = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MIN_LOAN_DURATION_IN_MONTH);
 
         if (empty($minDuration)) {
             return true;
+        }
+
+        if (empty($project->getPeriod())) {
+            return null;
         }
 
         return $project->getPeriod() >= $minDuration[0];
@@ -38,18 +38,18 @@ trait ProjectChecker
      * @param Product                 $product
      * @param ProductAttributeManager $productAttributeManager
      *
-     * @return bool
+     * @return bool|null Return true when the check is OK, false when the check is failed, null when the check cannot be done (lack of data for example).
      */
-    public function isEligibleForMaxDuration(Projects $project, Product $product, ProductAttributeManager $productAttributeManager)
+    private function isEligibleForMaxDuration(Projects $project, Product $product, ProductAttributeManager $productAttributeManager)
     {
-        if (empty($project->getPeriod())) {
-            return true;
-        }
-
         $maxDuration = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MAX_LOAN_DURATION_IN_MONTH);
 
         if (empty($maxDuration)) {
             return true;
+        }
+
+        if (empty($project->getPeriod())) {
+            return null;
         }
 
         return $project->getPeriod() <= $maxDuration[0];
@@ -60,31 +60,54 @@ trait ProjectChecker
      * @param Product                 $product
      * @param ProductAttributeManager $productAttributeManager
      *
-     * @return bool
+     * @return bool|null Return true when the check is OK, false when the check is failed, null when the check cannot be done (lack of data for example).
      */
-    public function isEligibleForMotive(Projects $project, Product $product, ProductAttributeManager $productAttributeManager)
+    private function isEligibleForMotive(Projects $project, Product $product, ProductAttributeManager $productAttributeManager)
     {
         $eligibleMotives = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_BORROWING_MOTIVE);
+
         if (empty($eligibleMotives)) {
             return true;
+        }
+
+        if (empty($project->getIdBorrowingMotive())) {
+            return null;
         }
 
         return in_array($project->getIdBorrowingMotive(), $eligibleMotives);
     }
 
-    public function isEligibleForRequesterName(Projects $project, Product $product, ProductAttributeManager $productAttributeManager, InfolegaleManager $infolegaleManager, EntityManager $entityManager)
+    /**
+     * @param Projects                $project
+     * @param Product                 $product
+     * @param ProductAttributeManager $productAttributeManager
+     * @param InfolegaleManager       $infolegaleManager
+     * @param EntityManager           $entityManager
+     *
+     * @return bool|null
+     */
+    private function isEligibleForRequesterName(
+        Projects $project,
+        Product $product,
+        ProductAttributeManager $productAttributeManager,
+        InfolegaleManager $infolegaleManager,
+        EntityManager $entityManager
+    )
     {
-        $eligibleRequester = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::REQUESTER_IS_ONE_OF_THE_DIRECTOR);
+        $eligibleRequester = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::VERIFICATION_REQUESTER_IS_ONE_OF_THE_DIRECTOR);
+
         if (empty($eligibleRequester)) {
             return true;
         }
 
         $company         = $project->getIdCompany();
         $companyIdentity = $infolegaleManager->getIdentity($company->getSiren());
-        if ($companyIdentity) {
-            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner());
+        $client          = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner());
+        if ($companyIdentity && $client && $client->getNom() && $client->getPrenom()) {
             foreach ($companyIdentity->getDirectors() as $director) {
-                if ($client->getNom() === $director->getName() && $client->getPrenom() === $director->getFirstName()) {
+               if (
+                    mb_strtolower(trim($client->getNom())) === mb_strtolower(trim($director->getName()))
+                    && mb_strtolower(trim($client->getPrenom())) === mb_strtolower(trim($director->getFirstName()))) {
                     return true;
                 }
             }
@@ -92,6 +115,6 @@ trait ProjectChecker
             return false;
         }
 
-        return true;
+        return null;
     }
 }
