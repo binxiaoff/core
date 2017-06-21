@@ -9,167 +9,178 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="projects_notes", uniqueConstraints={@ORM\UniqueConstraint(name="id_project", columns={"id_project"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class ProjectsNotes
 {
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
      */
     private $idProject;
 
     /**
+     * @var integer
+     *
+     * @ORM\Column(name="pre_scoring", type="integer")
+     */
+    private $preScoring;
+
+    /**
      * @var float
      *
-     * @ORM\Column(name="performance_fianciere", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="performance_fianciere", type="float", precision=10, scale=0)
      */
     private $performanceFianciere;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="structure", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="structure", type="float", precision=10, scale=0)
      */
     private $structure;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="rentabilite", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="rentabilite", type="float", precision=10, scale=0)
      */
     private $rentabilite;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="tresorerie", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="tresorerie", type="float", precision=10, scale=0)
      */
     private $tresorerie;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="marche_opere", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="marche_opere", type="float", precision=10, scale=0)
      */
     private $marcheOpere;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="global", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="global", type="float", precision=10, scale=0)
      */
     private $global;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="individuel", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="individuel", type="float", precision=10, scale=0)
      */
     private $individuel;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="dirigeance", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="dirigeance", type="float", precision=10, scale=0)
      */
     private $dirigeance;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="indicateur_risque_dynamique", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="indicateur_risque_dynamique", type="float", precision=10, scale=0)
      */
     private $indicateurRisqueDynamique;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="avis", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="avis", type="text", length=16777215)
      */
     private $avis;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="note", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="note", type="float", precision=10, scale=0)
      */
     private $note;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="performance_fianciere_comite", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="performance_fianciere_comite", type="float", precision=10, scale=0)
      */
     private $performanceFianciereComite;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="structure_comite", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="structure_comite", type="float", precision=10, scale=0)
      */
     private $structureComite;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="rentabilite_comite", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="rentabilite_comite", type="float", precision=10, scale=0)
      */
     private $rentabiliteComite;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="tresorerie_comite", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="tresorerie_comite", type="float", precision=10, scale=0)
      */
     private $tresorerieComite;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="marche_opere_comite", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="marche_opere_comite", type="float", precision=10, scale=0)
      */
     private $marcheOpereComite;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="global_comite", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="global_comite", type="float", precision=10, scale=0)
      */
     private $globalComite;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="individuel_comite", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="individuel_comite", type="float", precision=10, scale=0)
      */
     private $individuelComite;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="dirigeance_comite", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="dirigeance_comite", type="float", precision=10, scale=0)
      */
     private $dirigeanceComite;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="indicateur_risque_dynamique_comite", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="indicateur_risque_dynamique_comite", type="float", precision=10, scale=0)
      */
     private $indicateurRisqueDynamiqueComite;
 
     /**
      * @var float
      *
-     * @ORM\Column(name="note_comite", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="note_comite", type="float", precision=10, scale=0)
      */
     private $noteComite;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="avis_comite", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="avis_comite", type="text", length=16777215)
      */
     private $avisComite;
 
@@ -183,7 +194,7 @@ class ProjectsNotes
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime")
      */
     private $updated;
 
@@ -201,11 +212,11 @@ class ProjectsNotes
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param Projects $idProject
      *
      * @return ProjectsNotes
      */
-    public function setIdProject($idProject)
+    public function setIdProject(Projects $idProject)
     {
         $this->idProject = $idProject;
 
@@ -215,11 +226,35 @@ class ProjectsNotes
     /**
      * Get idProject
      *
-     * @return integer
+     * @return Projects
      */
     public function getIdProject()
     {
         return $this->idProject;
+    }
+
+    /**
+     * Set preScoring
+     *
+     * @param integer $preScoring
+     *
+     * @return ProjectsNotes
+     */
+    public function setPreScoring($preScoring)
+    {
+        $this->preScoring = $preScoring;
+
+        return $this;
+    }
+
+    /**
+     * Get preScoring
+     *
+     * @return integer
+     */
+    public function getPreScoring()
+    {
+        return $this->preScoring;
     }
 
     /**
@@ -806,5 +841,23 @@ class ProjectsNotes
     public function getIdProjectNotes()
     {
         return $this->idProjectNotes;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }
