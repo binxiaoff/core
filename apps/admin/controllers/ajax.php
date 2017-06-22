@@ -760,6 +760,8 @@ class ajaxController extends bootstrap
         if (null === $projectRating) {
             $projectRating = new ProjectsNotes();
             $projectRating->setIdProject($project);
+
+            $entityManager->persist($projectRating);
         }
 
         $projectRating->setStructure(round(str_replace(',', '.', $_POST['structure']), 1));
@@ -784,10 +786,6 @@ class ajaxController extends bootstrap
         $projectRating->setDirigeanceComite(empty($projectRating->getDirigeanceComite()) ? $projectRating->getDirigeance() : $projectRating->getDirigeanceComite());
         $projectRating->setIndicateurRisqueDynamiqueComite(empty($projectRating->getIndicateurRisqueDynamiqueComite()) ? $projectRating->getIndicateurRisqueDynamique() : $projectRating->getIndicateurRisqueDynamiqueComite());
         $projectRating->setNoteComite(empty($projectRating->getNoteComite()) ? $projectRating->getNote() : $projectRating->getNoteComite());
-
-        if (empty($projectRating->getIdProjectNotes())) {
-            $entityManager->persist($projectRating);
-        }
 
         $entityManager->flush($projectRating);
 
