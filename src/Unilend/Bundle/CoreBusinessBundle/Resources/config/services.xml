@@ -388,5 +388,10 @@
             <argument>%kernel.root_dir%</argument>
             <argument>%kernel.default_locale%</argument>
         </service>
+
+        <service id="unilend.service.ws_monitoring_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\WsMonitoringManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.ws_client.call_history_handler"/>
+        </service>
     </services>
 </container>

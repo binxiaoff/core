@@ -703,9 +703,9 @@ class transfertsController extends bootstrap
 
                 foreach ($allAcceptedBids as $bid) {
                     $lender->get($bid['id_lender']);
+                    $bidAmount = round(bcdiv($bid['amount'], 100, 4), 2);
 
-                    $notification = $notificationManager->createNotification(Notifications::TYPE_LOAN_ACCEPTED, $lender->id_client_owner, $project->getIdProject(), $bid['amount'],
-                        $bid['id_bid']);
+                    $notification = $notificationManager->createNotification(Notifications::TYPE_LOAN_ACCEPTED, $lender->id_client_owner, $project->getIdProject(), $bidAmount, $bid['id_bid']);
 
                     $loansForBid = $acceptedBids->select('id_bid = ' . $bid['id_bid']);
 
