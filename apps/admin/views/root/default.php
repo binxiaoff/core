@@ -85,8 +85,8 @@
             });
 
             var _chartData = {
+                // Day  -  last 24 hours / status
                 day: {
-                    startDate: '01/01/2013 08:00',
                     status: {
                         valid: [
                             {
@@ -132,8 +132,8 @@
                         ]
                     }
                 },
+                // Week  - last 7 days / status
                 week: {
-                    startDate: '01/01/2013 08:00',
                     status: {
                         valid: [
                             {
@@ -227,8 +227,8 @@
                         ]
                     }
                 },
+                // Month - last 30 days / status
                 month: {
-                    startDate: '01/01/2013 08:00',
                     status: {
                         valid: [
                             {
