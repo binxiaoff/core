@@ -274,12 +274,6 @@ class InfolegaleManager
             $content = $stream->getContents();
             call_user_func($callback, $content, $validity['status'], $parameters);
 
-            if ('error' !== $validity['status']) {
-                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
-            } else {
-                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
-            }
-
             if ($validity['is_valid']) {
                 return $validity['content'];
             } else {
@@ -294,7 +288,6 @@ class InfolegaleManager
                 $message .= $content;
             }
             $this->logger->error($message, $logContext);
-            $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
 
             return null;
         }
