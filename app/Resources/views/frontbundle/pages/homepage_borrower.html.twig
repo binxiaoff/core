@@ -164,7 +164,15 @@
                             </li>
                         </ul>
                     </div><!-- /.emprunter-sim-nav -->
-
+                    <div id="form-borrower-lp-notifications">
+                        {% if app.session.flashBag.has('projectSimulatorError') %}
+                            <div class="message-error">
+                                {% for error in app.session.flashBag.get('projectSimulatorError') %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
                     <div class="tab-content emprunter-sim-content">
                         <div id="esim1" role="tabpanel" class="tab-pane active">
                             <fieldset class="emprunter-sim-pane-inner" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
