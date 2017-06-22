@@ -205,7 +205,7 @@
                     continue;
                 }
                 if ($greenPointAttachment) {
-                    $greenpointLabel = $greenPointAttachment->getValidationStatusLabel();
+                    $greenpointLabel = empty($greenPointAttachment->getValidationStatusLabel()) ? 'Erreur d\'appel GreenPoint' : $greenPointAttachment->getValidationStatusLabel();
                     if (\Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment::STATUS_VALIDATION_VALID === $greenPointAttachment->getValidationStatus()) {
                         $greenpointFinalStatus = 'Statut définitif';
                     } else {
