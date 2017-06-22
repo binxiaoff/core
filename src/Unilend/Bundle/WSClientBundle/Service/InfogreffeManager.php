@@ -20,7 +20,7 @@ class InfogreffeManager
     const RETURN_CODE_NO_DEBTOR                = '013';
     const RETURN_CODE_TECHNICAL_ERROR          = ['001', '002', '003', '004', '005', '007', '010', '012', '014', '015', '065', '999'];
 
-    const CALL_TIMEOUT = 8;
+    const CALL_TIMEOUT = 20;
 
     /** @var string */
     private $login;
