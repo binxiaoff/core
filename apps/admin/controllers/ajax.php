@@ -272,7 +272,7 @@ class ajaxController extends bootstrap
                 // NAF code may be filled in in checkProjectRisk method
                 $company->get($project->id_company, 'id_company');
 
-                if (true === is_array($result) && \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN === $result['motive']) {
+                if (true === is_array($result) && ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN === $result['motive']) {
                     echo json_encode([
                         'success' => false,
                         'error'   => 'SIREN inconu'
@@ -653,7 +653,7 @@ class ajaxController extends bootstrap
             $idClient               = filter_var($_POST['id_client'], FILTER_VALIDATE_INT);
             $wallet                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($idClient, WalletType::LENDER);
             $start                  = new \DateTime();
-            $start->setDate($year, 1,1);
+            $start->setDate($year, 1, 1);
             $end                    = new \DateTime();
             $end->setDate($year, 12, 31);
             $this->lenderOperations = $lenderOperationsManager->getLenderOperations($wallet, $start, $end, null, LenderOperationsManager::ALL_TYPES);

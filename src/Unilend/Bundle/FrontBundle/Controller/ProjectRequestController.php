@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
@@ -11,7 +10,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
@@ -19,7 +17,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
 use Unilend\core\Loader;
@@ -91,7 +88,6 @@ class ProjectRequestController extends Controller
         $email  = null;
         $reason = null;
 
-        /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
 
         if (empty($request->request->get('amount'))) {
@@ -162,7 +158,6 @@ class ProjectRequestController extends Controller
         }
 
         if (14 === $sirenLength) {
-            /** @var LoggerInterface $logger */
             $logger = $this->get('logger');
             $logger->info(
                 'Project ' . $this->project->id_project . ' requested with SIRET value: ' . $request->request->get('siren'),
@@ -513,7 +508,6 @@ class ProjectRequestController extends Controller
                 $advisorClient->get($advisor->id_client);
             }
 
-            /** @var ClientsRepository $clientRepo */
             $clientRepo = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
             $email      = $request->request->get('advisor')['email'];
             if (
@@ -831,19 +825,19 @@ class ProjectRequestController extends Controller
         }
 
         if (isset($values['dl']) && $values['dl'] < 0) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL);
+            return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL);
         }
 
         if (isset($values['fl']) && $values['fl'] < \projects::MINIMUM_REVENUE) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER);
+            return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_LOW_TURNOVER);
         }
 
         if (isset($values['gg']) && $values['gg'] < 0) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES);
+            return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES);
         }
 
         if (isset($values['ag_2035']) && $values['ag_2035'] < \projects::MINIMUM_REVENUE) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER);
+            return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_LOW_TURNOVER);
         }
 
         if ('true' === $request->request->get('extra_files')) {
@@ -1268,7 +1262,6 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        /** @var TranslatorInterface $translator */
         $translator   = $this->get('translator');
         $addMoreFiles = false;
 
@@ -1312,21 +1305,21 @@ class ProjectRequestController extends Controller
                 $rejectReasons = explode(',', $projectStatusHistory->content);
 
                 // Display only one reason (priority defined in TST-51)
-                if (in_array(\projects_status::NON_ELIGIBLE_REASON_PROCEEDING, $rejectReasons)) {
+                if (in_array(ProjectsStatus::NON_ELIGIBLE_REASON_PROCEEDING, $rejectReasons)) {
                     $message = $translator->trans('project-request_end-page-collective-proceeding-message');
                 } elseif (
-                    in_array(\projects_status::NON_ELIGIBLE_REASON_INACTIVE, $rejectReasons)
-                    || in_array(\projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN, $rejectReasons)
+                    in_array(ProjectsStatus::NON_ELIGIBLE_REASON_INACTIVE, $rejectReasons)
+                    || in_array(ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN, $rejectReasons)
                 ) {
                     $message = $translator->trans('project-request_end-page-no-siren-message');
                 } elseif (
-                    in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK, $rejectReasons)
-                    || in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES, $rejectReasons)
-                    || in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL, $rejectReasons)
-                    || in_array(\projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER, $rejectReasons)
+                    in_array(ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK, $rejectReasons)
+                    || in_array(ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES, $rejectReasons)
+                    || in_array(ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL, $rejectReasons)
+                    || in_array(ProjectsStatus::NON_ELIGIBLE_REASON_LOW_TURNOVER, $rejectReasons)
                 ) {
                     $message = $translator->trans('project-request_end-page-negative-operating-result-message');
-                } elseif (in_array(\projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND, $rejectReasons)) {
+                } elseif (in_array(ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND, $rejectReasons)) {
                     $message = $translator->trans('project-request_end-page-product-not-found-message');
                 } else {
                     $message = $translator->trans('project-request_end-page-external-rating-rejection-default-message');
