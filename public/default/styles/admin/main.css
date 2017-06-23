@@ -36,6 +36,16 @@ body { background: #E3E4E5; }
 
 body.loginBody { background: #FFF; }
 
+#contener.debug { margin-top: 45px; }
+
+.debug-environment { position:fixed; top:0; width:100%; height:45px; background-color:#8acf00; z-index:999; font-size:12px; text-align:center; color:#fff; line-height:45px }
+
+.debug-environment .environment { background-color:#b20066; padding:8px 10px; display:inline; height:40px; text-align:center; color:#f1f1f1; }
+
+.debug-environment .wiki { background-color:#b20066; padding:8px 10px; margin-left: 10px; display:inline; height:40px; text-align:center; }
+
+.debug-environment .wiki a { color:#f1f1f1; }
+
 #contenerIframe { position: absolute;  top: 0; left: 0; margin: 0; padding: 0; width: 100%; text-align: left;}
 
 #logo_site { width: 252px; margin: 150px auto 30px; }

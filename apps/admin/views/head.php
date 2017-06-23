@@ -106,10 +106,12 @@
     </script>
 </head>
 <body>
-<div id="contener" class="container<?php if ('prod' !== $this->getParameter('kernel.environment')) : ?> debug<?php endif; ?>">
+
 <?php if ('prod' !== $this->getParameter('kernel.environment')) : ?>
     <div class="debug-environment">
         <div class="environment">Environnement de <?= $this->getParameter('kernel.environment') ?></div>
         <div class="wiki"><a href="https://unilend.atlassian.net/wiki/pages/viewpage.action?pageId=46694427">Wiki</a></div>
     </div>
 <?php endif; ?>
+<div id="contener" class="container<?php if ('prod' !== $this->getParameter('kernel.environment')) : ?> debug<?php endif; ?>">
+
