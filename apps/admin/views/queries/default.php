@@ -9,10 +9,10 @@
 </script>
 <div id="contenu">
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <h1>Liste des requêtes</h1>
         </div>
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <?php if (\users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) : ?>
                 <a href="<?= $this->lurl ?>/queries/add" class="btn-primary pull-right thickbox">Ajouter une requête</a>
             <?php endif; ?>

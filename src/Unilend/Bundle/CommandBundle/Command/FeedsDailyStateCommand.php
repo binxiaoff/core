@@ -218,11 +218,13 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
     private function addBalanceData(\PHPExcel_Worksheet $activeSheet, \DateTime $firstDay, \DateTime $requestedDate, array $specificRows)
     {
         $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $walletBalanceHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
-
         $previousDay                    = $firstDay->sub(\DateInterval::createFromDateString('1 day'));
-        $previousBalanceHistory         = $entityManager->getRepository('UnilendCoreBusinessBundle:DailyStateBalanceHistory')->findOneBy(['date' => $previousDay->format('Y-m-d')]);
-        $this->addBalanceLine($activeSheet, $previousBalanceHistory, $specificRows['previousMonth'], $specificRows);
+        $previousDayBalanceHistory      = $entityManager->getRepository('UnilendCoreBusinessBundle:DailyStateBalanceHistory')->findOneBy(['date' => $previousDay->format('Y-m-d')]);
+
+        if (null === $previousDayBalanceHistory) {
+            $previousDayBalanceHistory = $this->newDailyStateBalanceHistory($previousDay);
+        }
+        $this->addBalanceLine($activeSheet, $previousDayBalanceHistory, $specificRows['previousMonth'], $specificRows);
 
         foreach ($specificRows['coordinatesDay'] as $date => $row) {
             $dateTime = \DateTime::createFromFormat('Y-m-d', $date);
@@ -234,17 +236,8 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
 
             $balanceHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:DailyStateBalanceHistory')->findOneBy(['date' => $date]);
             if (null === $balanceHistory) {
-                $balanceDate = ($date == $requestedDate->format('Y-m-d')) ? $requestedDate : $dateTime;
-
-                $balanceHistory = new DailyStateBalanceHistory();
-                $balanceHistory->setLenderBorrowerBalance($walletBalanceHistoryRepository->sumBalanceForDailyState($balanceDate, [WalletType::LENDER, WalletType::BORROWER]));
-                $balanceHistory->setUnilendBalance($walletBalanceHistoryRepository->sumBalanceForDailyState($balanceDate, [WalletType::UNILEND]));
-                $balanceHistory->setUnilendPromotionalBalance($walletBalanceHistoryRepository->sumBalanceForDailyState($balanceDate, [WalletType::UNILEND_PROMOTIONAL_OPERATION]));
-                $balanceHistory->setTaxBalance($walletBalanceHistoryRepository->sumBalanceForDailyState($balanceDate, WalletType::TAX_FR_WALLETS));
-                $balanceHistory->setDate($balanceDate->format('Y-m-d'));
-
-                $entityManager->persist($balanceHistory);
-                $entityManager->flush($balanceHistory);
+                $balanceDate    = ($date == $requestedDate->format('Y-m-d')) ? $requestedDate : $dateTime;
+                $balanceHistory = $this->newDailyStateBalanceHistory($balanceDate);
             }
             $this->addBalanceLine($activeSheet, $balanceHistory, $row, $specificRows);
 
@@ -255,8 +248,12 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
 
         $previousYear = new \DateTime('Last day of december ' . $requestedDate->format('Y'));
         $previousYear->sub(\DateInterval::createFromDateString('1 year'));
-        $previousBalanceHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:DailyStateBalanceHistory')->findOneBy(['date' => $previousYear->format('Y-m-d')]);
-        $this->addBalanceLine($activeSheet, $previousBalanceHistory, $specificRows['previousYear'], $specificRows);
+        $previousMonthBalanceHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:DailyStateBalanceHistory')->findOneBy(['date' => $previousYear->format('Y-m-d')]);
+
+        if (null === $previousMonthBalanceHistory) {
+            $previousMonthBalanceHistory = $this->newDailyStateBalanceHistory($previousYear);
+        }
+        $this->addBalanceLine($activeSheet, $previousMonthBalanceHistory, $specificRows['previousMonth'], $specificRows);
 
         foreach ($specificRows['coordinatesMonth'] as $month => $row) {
             $lastDayOfMonth = \DateTime::createFromFormat('n-Y', $month . '-' . $requestedDate->format('Y'));
@@ -271,6 +268,29 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
                 }
             }
         }
+    }
+
+    /**
+     * @param \DateTime $balanceDate
+     *
+     * @return DailyStateBalanceHistory
+     */
+    private function newDailyStateBalanceHistory(\DateTime $balanceDate)
+    {
+        $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $walletBalanceHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
+
+        $balanceHistory = new DailyStateBalanceHistory();
+        $balanceHistory->setLenderBorrowerBalance($walletBalanceHistoryRepository->sumBalanceForDailyState($balanceDate, [WalletType::LENDER, WalletType::BORROWER]));
+        $balanceHistory->setUnilendBalance($walletBalanceHistoryRepository->sumBalanceForDailyState($balanceDate, [WalletType::UNILEND]));
+        $balanceHistory->setUnilendPromotionalBalance($walletBalanceHistoryRepository->sumBalanceForDailyState($balanceDate, [WalletType::UNILEND_PROMOTIONAL_OPERATION]));
+        $balanceHistory->setTaxBalance($walletBalanceHistoryRepository->sumBalanceForDailyState($balanceDate, WalletType::TAX_FR_WALLETS));
+        $balanceHistory->setDate($balanceDate->format('Y-m-d'));
+
+        $entityManager->persist($balanceHistory);
+        $entityManager->flush($balanceHistory);
+
+        return $balanceHistory;
     }
 
     /**
