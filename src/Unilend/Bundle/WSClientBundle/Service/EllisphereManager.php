@@ -271,9 +271,8 @@ class EllisphereManager
     {
         if (500 <= $response->getStatusCode()) {
             return [
-                'status'   => 'error',
-                'is_valid' => false,
-                'content'  => null
+                'status'  => 'error',
+                'content' => null
             ];
         }
 
@@ -287,9 +286,8 @@ class EllisphereManager
             $this->logger->error('Error occurs while parsing Ellisphere response. Error messages : ' . $exception->getMessage(), $logContext);
 
             return [
-                'status'   => 'error',
-                'is_valid' => false,
-                'content'  => null
+                'status'  => 'error',
+                'content' => null
             ];
         }
     }
@@ -315,17 +313,15 @@ class EllisphereManager
                 $this->logger->warning('Ellisphere error: ' . $error, $logContext);
 
                 return [
-                    'status'   => 'warning',
-                    'is_valid' => false,
-                    'content'  => $content
+                    'status'  => 'warning',
+                    'content' => $content
                 ];
             }
         }
 
         return [
-            'status'   => 'valid',
-            'is_valid' => true,
-            'content'  => $content
+            'status'  => 'valid',
+            'content' => $content
         ];
     }
 }
