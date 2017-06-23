@@ -74,4 +74,21 @@ class ProjectsRepository extends EntityRepository
 
         return $query->getResult();
     }
+
+    /**
+     * @param int       $status
+     * @param \DateTime $from
+     *
+     * @return Projects[]
+     */
+    public function getProjectsByStatusFromDate($status, \DateTime $from)
+    {
+        $queryBuilder = $this->createQueryBuilder('p')
+            ->where('p.status = :status')
+            ->setParameter('status', $status)
+            ->andWhere('p.added >= :from')
+            ->setParameter('from', $from);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
 }

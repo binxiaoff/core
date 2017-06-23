@@ -97,8 +97,8 @@ class EllisphereManager
     public function getReport($siren)
     {
         $wsResource = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WsExternalResource')->findOneBy(['label' => self::RESOURCE_ONLINE_ORDER]);
-
-        if (null !== ($result = $this->sendRequest($wsResource, ['siren' => $siren]))) {
+        $result = $this->sendRequest($wsResource, ['siren' => $siren]);
+        if ($result && isset($result->response->report)) {
             return $this->serializer->deserialize($result->response->report->asXML(), Report::class, 'xml');
         }
 
