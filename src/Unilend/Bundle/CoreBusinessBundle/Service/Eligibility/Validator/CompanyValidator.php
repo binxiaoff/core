@@ -36,6 +36,7 @@ class CompanyValidator
         'TC-RISK-009' => 'checkEliminationXerfiScore',
         'TC-RISK-010' => 'checkAltaresScoreVsXerfiScore',
         'TC-RISK-011' => 'checkEulerHermesTrafficLight',
+        'TC-RISK-012' => 'checkEllispehereReport',
         'TC-RISK-013' => 'checkInfolegaleScore',
         'TC-RISK-015' => 'checkEulerHermesGrade'
     ];
@@ -123,7 +124,10 @@ class CompanyValidator
             return $eulerHermesTrafficLightCheck;
         }
 
-        // TC-RISK-012
+        $ellisphereReportCheck = $this->checkRule('TC-RISK-012', $siren, $project);
+        if (false === empty($ellisphereReportCheck)) {
+            return $ellisphereReportCheck;
+        }
 
         $infolegaleScoreCheck = $this->checkRule('TC-RISK-013', $siren, $project);
         if (false === empty($infolegaleScoreCheck)) {
@@ -399,6 +403,31 @@ class CompanyValidator
         }
 
         return [];
+    }
+
+    /**
+     * @param string $siren
+     *
+     * @return array
+     */
+    private function checkEllispehereReport($siren)
+    {
+        $eligibility      = [];
+        $ellisphereReport = $this->externalDataManager->getEllispehereReport($siren);
+
+        if (null !== $ellisphereReport->getDefaults()->getDefaultsNoted()) {
+            $eligibility[] = ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_DEFAULTS;
+        }
+
+        if ($ellisphereReport->getDefaults()->getSocialSecurityPrivilegesCount()->getCount()) {
+            $eligibility[] = ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_SOCIAL_SECURITY_PRIVILEGES;
+        }
+
+        if ($ellisphereReport->getDefaults()->getTreasuryTaxPrivilegesCount()->getCount()) {
+            $eligibility[] = ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_TREASURY_TAX_PRIVILEGES;
+        }
+
+        return $eligibility;
     }
 
     /**

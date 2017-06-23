@@ -157,6 +157,7 @@
             <argument type="service" id="unilend.service.ws_client.codinf_manager"/>
             <argument type="service" id="unilend.service.ws_client.infolegale_manager"/>
             <argument type="service" id="unilend.service.ws_client.infogreffe_manager"/>
+            <argument type="service" id="unilend.service.ws_client.ellisphere_manager"/>
             <argument type="service" id="unilend.service.company_balance_sheet_manager"/>
         </service>
 
