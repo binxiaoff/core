@@ -190,4 +190,12 @@ class RiskDataMonitoring
     {
         return $this->idCompany;
     }
+
+    /**
+     * @return bool
+     */
+    public function isOngoing()
+    {
+        return empty($this->getEnd());
+    }
 }

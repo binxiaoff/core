@@ -112,5 +112,10 @@
             <argument>%ellisphere.user_id%</argument>
             <argument>%ellisphere.password%</argument>
         </service>
+
+        <service id="unilend.service.ws_client.risk_data_monitoring_manager" class="Unilend\Bundle\WSClientBundle\Service\RiskDataMonitoringManager">
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="unilend.service.ws_client.euler_manager" />
+        </service>
     </services>
 </container>

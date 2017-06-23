@@ -12,6 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class CompanyRating
 {
+    const TYPE_EULER_HERMES_GRADE         = 'grade_euler_hermes';
+
     /**
      * @var integer
      *
