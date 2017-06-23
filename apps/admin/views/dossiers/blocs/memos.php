@@ -34,8 +34,7 @@
                 $memoContainer.attr('data-comment-id', '')
             }
         }
-        var edit = function(comment, commentId, public) {
-            $memoContainer.attr('data-comment-id', commentId)
+        var edit = function(comment, public) {
             var $checks =  $memoContainer.find('[name="public_memo"]')
             if (public === true) {
                 $checks.each(function(){
@@ -55,6 +54,7 @@
         }
         var editMemo = function(comment, commentId, public) {
             destroyMemo()
+            $memoContainer.attr('data-comment-id', commentId)
             if ($memoContainer.is(':visible')) {
                 $memoContainer.slideUp(300, function(){
                     edit(comment, commentId, public)
@@ -124,18 +124,18 @@
             cancelMemo()
         })
         $(document).on('click', '#submit_memo', function() {
-            submitMemo($memoContainer.data('project-id'), $memoContainer.data('comment-id'))
+            submitMemo($('#text_memo').attr('data-project-id'), $('#text_memo').attr('data-comment-id'))
         })
         $(document).on('click', '.btn-edit-memo, .btn-delete-memo', function() {
             var $tr = $(this).closest('tr')
-            var projectId = $tr.data('project-id')
-            var commentId = $tr.data('comment-id')
+            var projectId = $tr.attr('data-project-id')
+            var commentId = $tr.attr('data-comment-id')
             var public = $tr.data('public')
             if ($(this).is('.btn-edit-memo')) {
                 var comment = $tr.find('.content-memo').html()
-                editMemo(comment, commentId, public);
+                editMemo(comment, commentId, public)
             } else {
-                deleteMemo(projectId, commentId)
+                deleteMemo(projectId, commentId);
             }
         })
     })
