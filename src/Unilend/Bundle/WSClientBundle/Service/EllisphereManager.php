@@ -107,11 +107,11 @@ class EllisphereManager
 
     /**
      * @param WsExternalResource $wsResource
-     * @param                    $parameters
+     * @param array              $parameters
      *
      * @return null|\SimpleXMLElement
      */
-    private function sendRequest(WsExternalResource $wsResource, $parameters)
+    private function sendRequest(WsExternalResource $wsResource, array $parameters)
     {
         $endpoint   = $wsResource->getResourceName();
         $logContext = ['method' => __METHOD__, 'resource' => $endpoint];
