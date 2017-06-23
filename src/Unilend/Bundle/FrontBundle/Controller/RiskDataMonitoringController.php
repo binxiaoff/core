@@ -63,7 +63,9 @@ class RiskDataMonitoringController extends Controller
             return new JsonResponse(['type' => 'Validation error', 'error' => 'This siren is no longer monitored'], 404);
         }
 
-        return new Response('Grade change in Siren successfully saved', 200);
+        $riskDataMonitoringManager->saveEulerHermesGradeMonitoringEvent($data['siren']);
+
+        return new Response(['type' => 'Success', 'message' => 'Grade change has been saved'], 200);
     }
 
     /**
