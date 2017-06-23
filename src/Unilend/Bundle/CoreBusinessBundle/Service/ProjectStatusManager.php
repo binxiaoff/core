@@ -88,6 +88,12 @@ class ProjectStatusManager
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-grade-vs-altares-score');
             case ProjectsStatus::NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES:
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infogreffe-privileges');
+            case ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_DEFAULTS:
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-ellisphere-defaults');
+            case ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_SOCIAL_SECURITY_PRIVILEGES:
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-ellisphere-social-security-privileges');
+            case ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_TREASURY_TAX_PRIVILEGES:
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-ellisphere-treasury-tax-privileges');
             case ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity':
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-altares-identity-error');
             case ProjectsStatus::UNEXPECTED_RESPONSE . 'codinf_incident':

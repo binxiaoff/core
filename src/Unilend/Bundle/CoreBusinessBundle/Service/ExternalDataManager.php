@@ -261,7 +261,7 @@ class ExternalDataManager
      *
      * @return EllispehereReport|null
      */
-    public function getEllispehereIncidents($siren)
+    public function getEllispehereReport($siren)
     {
         return $this->ellisphereManager->getReport($siren);
     }
