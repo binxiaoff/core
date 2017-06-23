@@ -2,7 +2,7 @@
 
 /**
  * @todo
- * - WS managers may throw a specific exception when response is unexpected that may be catched in the validate method and return a "\projects_status::UNEXPECTED_RESPONSE . 'WS_NAME'" error
+ * - WS managers may throw a specific exception when response is unexpected that may be catched in the validate method and return a "ProjectsStatus::UNEXPECTED_RESPONSE . 'WS_NAME'" error
  */
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator;
 
@@ -12,6 +12,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityAssessment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsNotes;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Xerfi;
 use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyBalanceSheet;
@@ -154,7 +155,7 @@ class CompanyValidator
             Companies::INVALID_SIREN_EMPTY === $siren
             || null === $this->externalDataManager->getCompanyIdentity($siren)
         ) {
-            return [\projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN];
+            return [ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN];
         }
         return [];
     }
@@ -168,7 +169,7 @@ class CompanyValidator
     {
         $companyData = $this->externalDataManager->getCompanyIdentity($siren);
         if (in_array($companyData->getCompanyStatus(), [7, 9])) {
-            return [\projects_status::NON_ELIGIBLE_REASON_INACTIVE];
+            return [ProjectsStatus::NON_ELIGIBLE_REASON_INACTIVE];
         }
         return [];
     }
@@ -182,7 +183,7 @@ class CompanyValidator
     {
         $companyData = $this->externalDataManager->getCompanyIdentity($siren);
         if ($companyData->getCollectiveProcedure()) {
-            return [\projects_status::NON_ELIGIBLE_REASON_PROCEEDING];
+            return [ProjectsStatus::NON_ELIGIBLE_REASON_PROCEEDING];
         }
         return [];
     }
@@ -200,13 +201,13 @@ class CompanyValidator
         $incidentList       = $this->externalDataManager->getPaymentIncidents($siren, $startDate, $currentDate);
 
         if (null === $incidentList) {
-            return [\projects_status::UNEXPECTED_RESPONSE . 'codinf_incident'];
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'codinf_incident'];
         }
 
         $incidents = $incidentList->getIncidentList();
 
         if (count($incidents) > 2) {
-            return [\projects_status::NON_ELIGIBLE_REASON_TOO_MUCH_PAYMENT_INCIDENT];
+            return [ProjectsStatus::NON_ELIGIBLE_REASON_TOO_MUCH_PAYMENT_INCIDENT];
         }
 
         foreach ($incidents as $incident) {
@@ -214,7 +215,7 @@ class CompanyValidator
             $period = (int) $diff->format('%y') * 12 + (int) $diff->format('%m');
 
             if (true === in_array($incident->getType(), $nonAllowedIncident) && 12 >= $period) {
-                return [\projects_status::NON_ELIGIBLE_REASON_NON_ALLOWED_PAYMENT_INCIDENT];
+                return [ProjectsStatus::NON_ELIGIBLE_REASON_NON_ALLOWED_PAYMENT_INCIDENT];
             }
         }
 
@@ -230,11 +231,11 @@ class CompanyValidator
     {
         $altaresScore = $this->externalDataManager->getAltaresScore($siren);
         if (null === $altaresScore) {
-            return [\projects_status::UNEXPECTED_RESPONSE . 'altares_score'];
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_score'];
         }
 
         if ($altaresScore->getScore20() < 4) {
-            return [\projects_status::NON_ELIGIBLE_REASON_LOW_ALTARES_SCORE];
+            return [ProjectsStatus::NON_ELIGIBLE_REASON_LOW_ALTARES_SCORE];
         }
 
         return [];
@@ -254,7 +255,7 @@ class CompanyValidator
 
         $financialSummary = $this->externalDataManager->getFinancialSummary($siren, $lastBalanceSheet);
         if (null === $financialSummary) {
-            return [\projects_status::UNEXPECTED_RESPONSE . 'altares_fpro'];
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_fpro'];
         }
 
         $capitalStockPost = null;
@@ -266,11 +267,11 @@ class CompanyValidator
         }
 
         if (null === $capitalStockPost) {
-            return [\projects_status::UNEXPECTED_RESPONSE . 'altares_fpro'];
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_fpro'];
         }
 
         if ($capitalStockPost->getAmountY() < 0) {
-            return [\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK];
+            return [ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK];
         }
 
         return [];
@@ -290,7 +291,7 @@ class CompanyValidator
 
         $balanceManagementLine = $this->externalDataManager->getBalanceManagementLine($siren, $lastBalanceSheet);
         if (null === $balanceManagementLine) {
-            return [\projects_status::UNEXPECTED_RESPONSE . 'altares_ebe'];
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_ebe'];
         }
 
         $grossOperatingSurplus = null;
@@ -302,11 +303,11 @@ class CompanyValidator
         }
 
         if (null === $grossOperatingSurplus) {
-            return [\projects_status::UNEXPECTED_RESPONSE . 'altares_ebe'];
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_ebe'];
         }
 
         if ($grossOperatingSurplus->getAmountY() < 0) {
-            return [\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES];
+            return [ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES];
         }
 
         return [];
@@ -323,7 +324,7 @@ class CompanyValidator
         $xerfi   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($nafCode);
 
         if (Xerfi::UNILEND_ELIMINATION_SCORE === $xerfi->getUnilendRating()) {
-            return [\projects_status::NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE];
+            return [ProjectsStatus::NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE];
         }
 
         return [];
@@ -338,7 +339,7 @@ class CompanyValidator
     {
         $altaresScore = $this->externalDataManager->getAltaresScore($siren);
         if (null === $altaresScore) {
-            return [\projects_status::UNEXPECTED_RESPONSE . 'altares_score'];
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_score'];
         }
 
         $nafCode = $this->getNAFCode($siren);
@@ -348,7 +349,7 @@ class CompanyValidator
             in_array($altaresScore->getScore20(), [4, 5])
             && $xerfi->getScore() <= 75
         ) {
-            return [\projects_status::NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_ALTARES_SCORE];
+            return [ProjectsStatus::NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_ALTARES_SCORE];
         }
 
         return [];
@@ -364,7 +365,7 @@ class CompanyValidator
         $trafficLight = $this->externalDataManager->getEulerHermesTrafficLight($siren);
 
         if (null === $trafficLight) {
-            return [\projects_status::UNEXPECTED_RESPONSE . 'euler_traffic_light_score'];
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'euler_traffic_light_score'];
         }
 
         if (in_array($trafficLight->getColor(), [EulerHermesCompanyRating::COLOR_WHITE, EulerHermesCompanyRating::COLOR_GREEN, EulerHermesCompanyRating::COLOR_YELLOW])) {
@@ -372,19 +373,19 @@ class CompanyValidator
         }
 
         if (EulerHermesCompanyRating::COLOR_BLACK === $trafficLight->getColor()) {
-            return [\projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT];
+            return [ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT];
         }
 
         $altaresScore = $this->externalDataManager->getAltaresScore($siren);
         if (null === $altaresScore) {
-            return [\projects_status::UNEXPECTED_RESPONSE . 'altares_score'];
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_score'];
         }
 
         if (
             EulerHermesCompanyRating::COLOR_RED === $trafficLight->getColor()
             && $altaresScore->getScore20() < 12
         ) {
-            return [\projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE];
+            return [ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE];
         }
 
         $nafCode = $this->getNAFCode($siren);
@@ -394,7 +395,7 @@ class CompanyValidator
             EulerHermesCompanyRating::COLOR_RED === $trafficLight->getColor()
             && $xerfi->getScore() > 75
         ) {
-            return [\projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI];
+            return [ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI];
         }
 
         return [];
@@ -409,11 +410,11 @@ class CompanyValidator
     {
         $infolegaleScore = $this->externalDataManager->getInfolegaleScore($siren);
         if (null === $infolegaleScore) {
-            return [\projects_status::UNEXPECTED_RESPONSE . 'infolegale_score'];
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'infolegale_score'];
         }
 
         if ($infolegaleScore->getScore() < 5) {
-            return [\projects_status::NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE];
+            return [ProjectsStatus::NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE];
         }
 
         return [];
@@ -429,7 +430,7 @@ class CompanyValidator
         $trafficLight = $this->externalDataManager->getEulerHermesTrafficLight($siren);
 
         if (null === $trafficLight) {
-            return [\projects_status::UNEXPECTED_RESPONSE . 'euler_traffic_light_score'];
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'euler_traffic_light_score'];
         }
 
         if (EulerHermesCompanyRating::COLOR_WHITE === $trafficLight->getColor()) {
@@ -438,7 +439,7 @@ class CompanyValidator
 
         $eulerHermesGrade = $this->externalDataManager->getEulerHermesGrade($siren);
         if (null === $eulerHermesGrade) {
-            return [\projects_status::UNEXPECTED_RESPONSE . 'euler_grade'];
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'euler_grade'];
         }
 
         $nafCode = $this->getNAFCode($siren);
@@ -448,19 +449,19 @@ class CompanyValidator
             $eulerHermesGrade->getGrade() >= 9
             || $eulerHermesGrade->getGrade() == 8 && $xerfi->getScore() > 75
         ) {
-            return [\projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_UNILEND_XERFI];
+            return [ProjectsStatus::NON_ELIGIBLE_REASON_EULER_GRADE_VS_UNILEND_XERFI];
         }
 
         $altaresScore = $this->externalDataManager->getAltaresScore($siren);
         if (null === $altaresScore) {
-            return [\projects_status::UNEXPECTED_RESPONSE . 'altares_score'];
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_score'];
         }
 
         if (
             $eulerHermesGrade->getGrade() >= 5 && $altaresScore->getScore20() == 4
             || $eulerHermesGrade->getGrade() >= 7 && $altaresScore->getScore20() == 5
         ) {
-            return [\projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE];
+            return [ProjectsStatus::NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE];
         }
 
         return [];

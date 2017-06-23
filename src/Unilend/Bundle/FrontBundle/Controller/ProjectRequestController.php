@@ -300,7 +300,7 @@ class ProjectRequestController extends Controller
             }
 
             if (empty($products)) {
-                return $this->redirectStatus(self::PAGE_ROUTE_END, \projects_status::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
+                return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
             }
         } catch (\Exception $exception) {
             $this->get('logger')->warning($exception->getMessage(), ['method' => __METHOD__, 'line' => __LINE__]);
