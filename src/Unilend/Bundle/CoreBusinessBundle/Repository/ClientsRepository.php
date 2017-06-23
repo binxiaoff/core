@@ -203,7 +203,7 @@ class ClientsRepository extends EntityRepository
                       AND c.type IN (1, 3)
                       AND (
                         NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = ca.cp_fiscal)
--                        OR (SELECT COUNT(*) FROM villes v WHERE v.cp = ca.cp_fiscal AND v.ville = ca.ville_fiscal) <> 1
+                        OR (SELECT COUNT(*) FROM villes v WHERE v.cp = ca.cp_fiscal AND v.ville = ca.ville_fiscal) <> 1
                       )
                   LIMIT :limit
                 ) perso
@@ -391,5 +391,39 @@ class ClientsRepository extends EntityRepository
                       c.id_client";
 
         return $this->getEntityManager()->getConnection()->executeQuery($query);
+    }
+
+    /**
+     * @param array $status
+     *
+     * @return array
+     */
+    public function getClientsToValidate(array $status)
+    {
+        $query = 'SELECT
+                      c.*,
+                      cs.status               AS status_client,
+                      cs.label                AS label_status,
+                      csh.added               AS added_status,
+                      clsh.id_client_status_history,
+                      com.id_company          AS id_company,
+                      w.wire_transfer_pattern AS motif,
+                      w.available_balance     AS balance
+                    FROM clients c
+                      INNER JOIN (SELECT id_client, MAX(id_client_status_history) AS id_client_status_history
+                                  FROM clients_status_history
+                                  GROUP BY id_client) clsh ON c.id_client = clsh.id_client
+                      INNER JOIN clients_status_history csh ON clsh.id_client_status_history = csh.id_client_status_history
+                      INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
+                      INNER JOIN wallet w ON c.id_client = w.id_client
+                      LEFT JOIN companies com ON c.id_client = com.id_client_owner
+                    HAVING status_client IN (:clientsStatus)
+                    ORDER BY FIELD(cs.status, :clientsStatus), c.added DESC';
+
+        $result = $this->getEntityManager()->getConnection()
+            ->executeQuery($query, ['clientsStatus' => $status], ['clientsStatus' => Connection::PARAM_INT_ARRAY])
+            ->fetchAll(PDO::FETCH_ASSOC);
+
+        return $result;
     }
 }

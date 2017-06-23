@@ -75,7 +75,6 @@ class StatisticsManager
                 $statsEntry = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->findOneBy(['typeStat' => CacheKeys::UNILEND_STATISTICS], ['added' => 'DESC']);
             } else {
                 $statsEntry = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->getStatisticAtDate($date, CacheKeys::UNILEND_STATISTICS);
-                //$statsEntry = $unilendStats->select('type_stat = "' . CacheKeys::UNILEND_STATISTICS . '" AND DATE(added) = "' . $date->format('Y-m-d') . '"','added DESC', null, '1')[0];
             }
             $statistics = json_decode($statsEntry->getValue(), true);
             $cachedItem->set($statistics)->expiresAfter(CacheKeys::DAY);

@@ -43,7 +43,7 @@
                             <td><input type="text" name="debut" id="datepik_1" class="input_dp" value="<?= $this->sDisplayDateTimeStart ?>"/></td>
                             <th><label for="datepik_2">Fin :</label></th>
                             <td><input type="text" name="fin" id="datepik_2" class="input_dp" value="<?= $this->sDisplayDateTimeEnd ?>"/></td>
-                            <td><input type="submit" value="Filtrer par date" name="send_dates" class="btn"/></td>
+                            <td><input type="submit" value="Filtrer par date" name="send_dates" class="btn-primary"/></td>
                         </tr>
                     </table>
                 </fieldset>

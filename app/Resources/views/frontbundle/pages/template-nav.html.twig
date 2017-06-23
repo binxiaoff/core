@@ -27,7 +27,9 @@
                             {% for nav in navigation %}
                                 <li role="presentation" class="{% if nav.selected %}active{% endif %}{% if nav.highlighted_lender %} c-p1 {% elseif nav.highlighted_borrower %}c-p2 {% endif %}">
                                     {% if nav.slug == constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\MainController::SLUG_PAGE_BECOME_BORROWER') %}
-                                        <a href="{{ path('home_borrower') }}#homeemp-section-esim">{{ nav.label }}</a></li>
+                                        <a href="{{ path('home_borrower') }}#homeemp-section-esim">{{ nav.label }}</a>
+                                    {% elseif nav.slug == constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\MainController::SLUG_PAGE_BECOME_LENDER') and app.user is defined and is_granted('ROLE_LENDER') %}
+                                        <a href="{{ path('lender_dashboard') }}">{% trans %} header_nav-lender-dashboard-logged-in {% endtrans %}</a>
                                     {% else %}
                                         <a href="{{ path(nav.slug) }}">{{ nav.label }}</a>
                                     {% endif %}

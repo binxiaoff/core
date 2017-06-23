@@ -142,12 +142,14 @@
                     </li>
                 {% endif %}
 
-                <li role="presentation" class="user-nav-minor">
-                    <a href="{{ path('search') }}" class="ui-open-site-search">
-                        <span class="icon fa-search"></span>
-                        <div class="label">{% trans %} mobile-navigation_search-link {% endtrans %}</div>
-                    </a>
-                </li>
+                {% if not is_granted('ROLE_PARTNER') %}
+                    <li role="presentation" class="user-nav-minor">
+                        <a href="{{ path('search') }}" class="ui-open-site-search">
+                            <span class="icon fa-search"></span>
+                            <div class="label">{% trans %} mobile-navigation_search-link {% endtrans %}</div>
+                        </a>
+                    </li>
+                {% endif %}
 
                 <li role="presentation" class="user-nav-minor">
                     <a href="{{ path('contact') }}">

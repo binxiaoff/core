@@ -9,14 +9,14 @@
 </script>
 <div id="contenu">
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <h1>Requete infosben</h1>
         </div>
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <a href="<?= $this->lurl ?>/stats/requete_infosben_csv" class="btn-primary pull-right">Recuperation du CSV</a>
         </div>
     </div>
-    <?php  if (count($this->aLenders) > 0) : ?>
+    <?php if (count($this->walletsWithMovements) > 0) : ?>
         <table class="tablesorter">
             <thead>
                 <tr>
@@ -32,7 +32,7 @@
             </thead>
             <tbody>
                 <?php $i = 0; ?>
-                <?php foreach ($this->walletsWithMouvements as $wallet) : ?>
+                <?php foreach ($this->walletsWithMovements as $wallet) : ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                         <td>1</td>
                         <td><?= $wallet->getWireTransferPattern() ?></td>
@@ -47,6 +47,8 @@
                 <?php endforeach; ?>
             </tbody>
         </table>
+    <?php else : ?>
+        <p>Il n'y a aucun client concerné pour le moment.</p>
     <?php endif; ?>
     <?php if ($this->nb_lignes != '') : ?>
         <table>
@@ -63,7 +65,5 @@
                 </td>
             </tr>
         </table>
-    <?php else : ?>
-        <p>Il n'y a aucun dossier pour le moment.</p>
     <?php endif; ?>
 </div>
