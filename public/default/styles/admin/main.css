@@ -36,8 +36,6 @@ body { background: #E3E4E5; }
 
 body.loginBody { background: #FFF; }
 
-#contener { margin-top: 45px; }
-
 #contenerIframe { position: absolute;  top: 0; left: 0; margin: 0; padding: 0; width: 100%; text-align: left;}
 
 #logo_site { width: 252px; margin: 150px auto 30px; }

@@ -102,33 +102,14 @@
                 )
                 <?php unset($_SESSION['freeow']); ?>
             <?php endif; ?>
-
-            // Ad custom header function if in dev mode
-            var envRegex = /admin\.([a-z0-9]+)\..+/,
-                found = window.location.hostname.match(envRegex),
-                wiki = false,
-                wikiUrl = ''
-
-            if (found[1] !== 'unilend') {
-                switch (found[1]) {
-                    case 'demo01':
-                    case 'demo02':
-                    case 'preprod':
-                        wiki = true
-                        break
-                }
-
-                if (wiki) {
-                    wikiUrl = '<div style="background-color:#b20066; padding:8px 10px; margin-left: 10px; display:inline; height:40px; text-align:center;"><a style="color:#f1f1f1;" href="https://unilend.atlassian.net/wiki/pages/viewpage.action?pageId=46694427">Wiki</a></div>'
-                }
-
-                var element = '<div style="position:fixed; top:0; width:100%; height:45px; background-color:#8acf00; z-index:999; font-size:12px; text-align:center; color:#fff; line-height:45px"><div id="dev-box" style="background-color:#b20066; padding:8px 10px; display:inline; height:40px; text-align:center; color:#f1f1f1;"></div>' + wikiUrl + '</div>'
-                document.getElementById('contener').style.top = "45px"
-                $('body').append(element)
-                $('#dev-box').html('Environnement de ' + found[1].toUpperCase())
-            }
         })
     </script>
 </head>
 <body>
-<div id="contener" class="container">
+<div id="contener" class="container<?php if ('prod' !== $this->getParameter('kernel.environment')) : ?> debug<?php endif; ?>">
+<?php if ('prod' !== $this->getParameter('kernel.environment')) : ?>
+    <div class="debug-environment">
+        <div class="environment">Environnement de <?= $this->getParameter('kernel.environment') ?></div>
+        <div class="wiki"><a href="https://unilend.atlassian.net/wiki/pages/viewpage.action?pageId=46694427">Wiki</a></div>
+    </div>
+<?php endif; ?>
