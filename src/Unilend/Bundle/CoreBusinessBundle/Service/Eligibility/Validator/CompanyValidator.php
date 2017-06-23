@@ -532,7 +532,7 @@ class CompanyValidator
 
         if (null === $projectNotes || null === $projectNotes->getPreScoring()) {
             $siren            = $project->getIdCompany()->getSiren();
-            $preScoring       = 0;
+            $preScoring       = null;
             $altaresScore     = $this->externalDataManager->getAltaresScore($siren);
             $infolegaleScore  = $this->externalDataManager->getInfolegaleScore($siren);
             $eulerHermesGrade = $this->externalDataManager->getEulerHermesGrade($siren);
@@ -541,7 +541,7 @@ class CompanyValidator
                 $eulerHermesGrade = EulerHermesCompanyRating::GRADE_UNKNOWN;
             }
 
-            if (in_array(null, [$altaresScore, $infolegaleScore, $eulerHermesGrade], true)) {
+            if (false === in_array(null, [$altaresScore, $infolegaleScore, $eulerHermesGrade], true)) {
                 $preScoringEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:PreScoring')->findOneBy([
                     'altares'          => $altaresScore->getScore20(),
                     'infolegale'       => $infolegaleScore->getScore(),
