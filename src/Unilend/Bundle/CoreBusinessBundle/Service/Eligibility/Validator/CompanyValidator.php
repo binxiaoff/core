@@ -3,7 +3,6 @@
 /**
  * @todo
  * - WS managers may throw a specific exception when response is unexpected that may be catched in the validate method and return a "\projects_status::UNEXPECTED_RESPONSE . 'WS_NAME'" error
- * - Save data when calling WS
  */
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator;
 
@@ -12,6 +11,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityAssessment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsNotes;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Xerfi;
 use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyBalanceSheet;
@@ -134,6 +134,10 @@ class CompanyValidator
         $eulerHermesGradeCheck = $this->checkRule('TC-RISK-015', $siren, $project);
         if (false === empty($eulerHermesGradeCheck)) {
             return $eulerHermesGradeCheck;
+        }
+
+        if (null !== $project) {
+            $this->calculatePreScoring($project);
         }
 
         return [];
@@ -517,6 +521,49 @@ class CompanyValidator
     {
         $companyData = $this->externalDataManager->getCompanyIdentity($siren);
         return $companyData->getNAFCode();
+    }
+
+    /**
+     * @param Projects $project
+     */
+    private function calculatePreScoring(Projects $project)
+    {
+        $projectNotes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project]);
+
+        if (null === $projectNotes || null === $projectNotes->getPreScoring()) {
+            $siren            = $project->getIdCompany()->getSiren();
+            $preScoring       = null;
+            $altaresScore     = $this->externalDataManager->getAltaresScore($siren);
+            $infolegaleScore  = $this->externalDataManager->getInfolegaleScore($siren);
+            $eulerHermesGrade = $this->externalDataManager->getEulerHermesGrade($siren);
+
+            if (null === $eulerHermesGrade && EulerHermesCompanyRating::COLOR_WHITE === $this->externalDataManager->getEulerHermesTrafficLight($siren)) {
+                $eulerHermesGrade = EulerHermesCompanyRating::GRADE_UNKNOWN;
+            }
+
+            if (false === in_array(null, [$altaresScore, $infolegaleScore, $eulerHermesGrade], true)) {
+                $preScoringEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:PreScoring')->findOneBy([
+                    'altares'          => $altaresScore->getScore20(),
+                    'infolegale'       => $infolegaleScore->getScore(),
+                    'eulerHermesGrade' => $eulerHermesGrade->getGrade()
+                ]);
+
+                if (null !== $preScoringEntity) {
+                    $preScoring = $preScoringEntity->getNote();
+                }
+            }
+
+            if (null === $projectNotes) {
+                $projectNotes = new ProjectsNotes();
+                $projectNotes->setIdProject($project);
+
+                $this->entityManager->persist($projectNotes);
+            }
+
+            $projectNotes->setPreScoring($preScoring);
+
+            $this->entityManager->flush($projectNotes);
+        }
     }
 
     /**
