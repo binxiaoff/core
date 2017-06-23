@@ -1,7 +1,6 @@
 <?php
 
 use \Unilend\Bundle\TranslationBundle\Service\TranslationManager;
-use \Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProduct;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
 class ajaxController extends bootstrap
@@ -269,7 +268,7 @@ class ajaxController extends bootstrap
                 // NAF code may be filled in in checkProjectRisk method
                 $company->get($project->id_company, 'id_company');
 
-                if (true === is_array($result) && \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN === $result['motive']) {
+                if (true === is_array($result) && ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN === $result['motive']) {
                     echo json_encode([
                         'success' => false,
                         'error'   => 'SIREN inconu'

@@ -98,7 +98,7 @@ class CompanyScoringCheck
             }
 
             if ($altaresScore->getScore20() < 4) {
-                $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_LOW_ALTARES_SCORE;
+                $rejectionReason = ProjectsStatus::NON_ELIGIBLE_REASON_LOW_ALTARES_SCORE;
 
                 return true;
             }
@@ -106,7 +106,7 @@ class CompanyScoringCheck
             return false;
         }
 
-        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'altares_score';
+        $rejectionReason = ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_score';
         return true;
     }
 
@@ -140,7 +140,7 @@ class CompanyScoringCheck
         }
 
         if ('ELIMINATOIRE' === $xerfi->unilend_rating) {
-            $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE;
+            $rejectionReason = ProjectsStatus::NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE;
 
             return false;
         }
@@ -161,7 +161,7 @@ class CompanyScoringCheck
         $xerfi = $this->entityManager->getRepository('xerfi');
 
         if (in_array($altaresScore->getScore20(), [4, 5]) && $xerfi->get($codeNaf) && $xerfi->score <= 75) {
-            $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_ALTARES_SCORE;
+            $rejectionReason = ProjectsStatus::NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_ALTARES_SCORE;
 
             return false;
         }
@@ -191,12 +191,12 @@ class CompanyScoringCheck
                 }
 
                 if ($eulerTrafficLight->getColor() === EulerCompanyRating::COLOR_BLACK) {
-                    $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT;
+                    $rejectionReason = ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT;
                     return false;
                 }
 
                 if ($eulerTrafficLight->getColor() === EulerCompanyRating::COLOR_RED && $altaresScore->getScore20() < 12) {
-                    $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE;
+                    $rejectionReason = ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE;
                     return false;
                 }
 
@@ -205,7 +205,7 @@ class CompanyScoringCheck
                 $xerfi->get($company->code_naf);
 
                 if ($eulerTrafficLight->getColor() === EulerCompanyRating::COLOR_RED && $xerfi->score > 75) {
-                    $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI;
+                    $rejectionReason = ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI;
                     return false;
                 }
 
@@ -218,7 +218,7 @@ class CompanyScoringCheck
             );
         }
 
-        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'euler_traffic_light_score';
+        $rejectionReason = ProjectsStatus::UNEXPECTED_RESPONSE . 'euler_traffic_light_score';
         return false;
     }
 
@@ -263,7 +263,7 @@ class CompanyScoringCheck
                 }
 
                 if ($infolegaleScore->getScore() < 5) {
-                    $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE;
+                    $rejectionReason = ProjectsStatus::NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE;
                     return true;
                 }
 
@@ -276,7 +276,7 @@ class CompanyScoringCheck
             );
         }
 
-        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'infolegale_score';
+        $rejectionReason = ProjectsStatus::UNEXPECTED_RESPONSE . 'infolegale_score';
         return true;
     }
 
@@ -302,13 +302,13 @@ class CompanyScoringCheck
                 $xerfi->get($company->code_naf);
 
                 if ($eulerGrade->getGrade() >= 9 || ($eulerGrade->getGrade() == 8 && $xerfi->score > 75)) {
-                    $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_UNILEND_XERFI;
+                    $rejectionReason = ProjectsStatus::NON_ELIGIBLE_REASON_EULER_GRADE_VS_UNILEND_XERFI;
 
                     return false;
                 }
 
                 if ($eulerGrade->getGrade() >= 5 && $altaresScore->getScore20() == 4 || $eulerGrade->getGrade() >= 7 && $altaresScore->getScore20() == 5) {
-                    $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE;
+                    $rejectionReason = ProjectsStatus::NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE;
 
                     return false;
                 }
@@ -322,7 +322,7 @@ class CompanyScoringCheck
             );
         }
 
-        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'euler_grade';
+        $rejectionReason = ProjectsStatus::UNEXPECTED_RESPONSE . 'euler_grade';
 
         return false;
     }

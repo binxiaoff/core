@@ -558,7 +558,7 @@ class ProjectRequestController extends Controller
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
 
         if (0 === $projectRequestManager->assignEligiblePartnerProduct($this->project)) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
+            return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
         }
 
         if (ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION == $this->project->status) {
@@ -812,19 +812,19 @@ class ProjectRequestController extends Controller
         }
 
         if (isset($values['dl']) && $values['dl'] < 0) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL);
+            return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL);
         }
 
         if (isset($values['fl']) && $values['fl'] < \projects::MINIMUM_REVENUE) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER);
+            return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_LOW_TURNOVER);
         }
 
         if (isset($values['gg']) && $values['gg'] < 0) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES);
+            return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES);
         }
 
         if (isset($values['ag_2035']) && $values['ag_2035'] < \projects::MINIMUM_REVENUE) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER);
+            return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_LOW_TURNOVER);
         }
 
         if ('true' === $request->request->get('extra_files')) {
@@ -1296,21 +1296,21 @@ class ProjectRequestController extends Controller
                 $rejectReasons = explode(',', $projectStatusHistory->content);
 
                 // Display only one reason (priority defined in TST-51)
-                if (in_array(\projects_status::NON_ELIGIBLE_REASON_PROCEEDING, $rejectReasons)) {
+                if (in_array(ProjectsStatus::NON_ELIGIBLE_REASON_PROCEEDING, $rejectReasons)) {
                     $message = $translator->trans('project-request_end-page-collective-proceeding-message');
                 } elseif (
-                    in_array(\projects_status::NON_ELIGIBLE_REASON_INACTIVE, $rejectReasons)
-                    || in_array(\projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN, $rejectReasons)
+                    in_array(ProjectsStatus::NON_ELIGIBLE_REASON_INACTIVE, $rejectReasons)
+                    || in_array(ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN, $rejectReasons)
                 ) {
                     $message = $translator->trans('project-request_end-page-no-siren-message');
                 } elseif (
-                    in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK, $rejectReasons)
-                    || in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES, $rejectReasons)
-                    || in_array(\projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL, $rejectReasons)
-                    || in_array(\projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER, $rejectReasons)
+                    in_array(ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK, $rejectReasons)
+                    || in_array(ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES, $rejectReasons)
+                    || in_array(ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL, $rejectReasons)
+                    || in_array(ProjectsStatus::NON_ELIGIBLE_REASON_LOW_TURNOVER, $rejectReasons)
                 ) {
                     $message = $translator->trans('project-request_end-page-negative-operating-result-message');
-                } elseif (in_array(\projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND, $rejectReasons)) {
+                } elseif (in_array(ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND, $rejectReasons)) {
                     $message = $translator->trans('project-request_end-page-product-not-found-message');
                 } else {
                     $message = $translator->trans('project-request_end-page-external-rating-rejection-default-message');

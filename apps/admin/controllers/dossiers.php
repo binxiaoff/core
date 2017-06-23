@@ -187,7 +187,7 @@ class dossiersController extends bootstrap
                 && empty($this->projects->id_commercial)
                 && empty($this->companies->phone)
                 && 1 === preg_match('/^[0-9]{9}$/', $this->companies->siren)
-                && \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN !== $this->projects_status_history->content
+                && ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN !== $this->projects_status_history->content
             ) {
                 /** @var \Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentity $establishmentIdentity */
                 $establishmentIdentity  = $this->get('unilend.service.ws_client.altares_manager')->getEstablishmentIdentity($this->companies->siren);
