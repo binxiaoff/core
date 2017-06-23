@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManager;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetListDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummaryDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummaryListDetail;
@@ -76,7 +77,7 @@ class CompanyFinanceCheck
     public function isCompanySafe(\companies &$company, &$rejectionReason)
     {
         if (Companies::INVALID_SIREN_EMPTY === $company->siren) {
-            $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN;
+            $rejectionReason = ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN;
             return false;
         }
 
@@ -99,12 +100,12 @@ class CompanyFinanceCheck
                 }
 
                 if (true === in_array($companyData->getCompanyStatus(), [7, 9])) {
-                    $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_INACTIVE;
+                    $rejectionReason = ProjectsStatus::NON_ELIGIBLE_REASON_INACTIVE;
                     return false;
                 }
 
                 if (true === $companyData->getCollectiveProcedure()) {
-                    $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_PROCEEDING;
+                    $rejectionReason = ProjectsStatus::NON_ELIGIBLE_REASON_PROCEEDING;
                     return false;
                 }
 
@@ -116,11 +117,11 @@ class CompanyFinanceCheck
                 ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $company->siren]
             );
 
-            $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'altares_identity';
+            $rejectionReason = ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity';
             return false;
         }
 
-        $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN;
+        $rejectionReason = ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN;
         return false;
     }
 
@@ -163,13 +164,13 @@ class CompanyFinanceCheck
                 $incidents = $incidentList->getIncidentList();
 
                 if (count($incidents) > 2) {
-                    $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_TOO_MUCH_PAYMENT_INCIDENT;
+                    $rejectionReason = ProjectsStatus::NON_ELIGIBLE_REASON_TOO_MUCH_PAYMENT_INCIDENT;
                     return true;
                 }
 
                 foreach ($incidents as $incident) {
                     if (true === in_array($incident->getType(), $nonAllowedIncident) && 12 >= $this->numberOfMonthsAgo($incident->getDate())) {
-                        $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_NON_ALLOWED_PAYMENT_INCIDENT;
+                        $rejectionReason = ProjectsStatus::NON_ELIGIBLE_REASON_NON_ALLOWED_PAYMENT_INCIDENT;
                         return true;
                     }
                 }
@@ -183,7 +184,7 @@ class CompanyFinanceCheck
             );
         }
 
-        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'codinf_incident';
+        $rejectionReason = ProjectsStatus::UNEXPECTED_RESPONSE . 'codinf_incident';
         return true;
     }
 
@@ -201,7 +202,7 @@ class CompanyFinanceCheck
             if (null !== ($financialSummary = $this->wsAltares->getFinancialSummary($siren, $lastBalanceSheet->getBalanceSheetId()))) {
                 if (null !== ($capitalStockPost = $this->getSummaryFinancialPost($financialSummary, 'posteSF_FPRO'))) {
                     if ($capitalStockPost->getAmountY() < 0) {
-                        $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK;
+                        $rejectionReason = ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK;
                         return true;
                     }
 
@@ -215,7 +216,7 @@ class CompanyFinanceCheck
             );
         }
 
-        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'altares_fpro';
+        $rejectionReason = ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_fpro';
         return true;
     }
 
@@ -233,7 +234,7 @@ class CompanyFinanceCheck
             if (null !== ($balanceManagementLine = $this->wsAltares->getBalanceManagementLine($siren, $lastBalanceSheet->getBalanceSheetId()))) {
                 if (null !== ($rawOperatingIncomePost = $this->getManagementLineFinancialPost($balanceManagementLine, 'posteSIG_EBE'))) {
                     if ($rawOperatingIncomePost->getAmountY() < 0) {
-                        $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES;
+                        $rejectionReason = ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES;
                         return true;
                     }
 
@@ -247,7 +248,7 @@ class CompanyFinanceCheck
             );
         }
 
-        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'altares_ebe';
+        $rejectionReason = ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_ebe';
         return true;
     }
 
@@ -283,7 +284,7 @@ class CompanyFinanceCheck
                 if (count($subscription3) > 0) {
                     foreach ($subscription3 as $item) {
                         if (true === $item->getValid()) {
-                            $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES;
+                            $rejectionReason = ProjectsStatus::NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES;
                             return true;
                         }
                     }
@@ -293,7 +294,7 @@ class CompanyFinanceCheck
                 if (count($subscription4) > 0) {
                     foreach ($subscription4 as $item) {
                         if (true === $item->getValid()) {
-                            $rejectionReason = \projects_status::NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES;
+                            $rejectionReason = ProjectsStatus::NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES;
                             return true;
                         }
                     }
@@ -305,7 +306,7 @@ class CompanyFinanceCheck
             $this->logger->warning('Could not get infogreffe privileges: InfogreffeManager::getIndebtedness(' . $siren .'). Message: ' . $exception->getMessage(), $logContext);
         }
 
-        $rejectionReason = \projects_status::UNEXPECTED_RESPONSE . 'infogreffe_privileges';
+        $rejectionReason = ProjectsStatus::UNEXPECTED_RESPONSE . 'infogreffe_privileges';
         return true;
     }
 

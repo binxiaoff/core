@@ -107,11 +107,12 @@ class ProjectRepaymentManager
      *
      * @param Projects $project
      * @param int      $repaymentSequence
+     * @param int|null $idUser
      *
      * @return int
      * @throws \Exception
      */
-    public function repay(Projects $project, $repaymentSequence)
+    public function repay(Projects $project, $repaymentSequence, $idUser = null)
     {
         $this->entityManager->getConnection()->beginTransaction();
         try {
@@ -189,7 +190,7 @@ class ProjectRepaymentManager
                 $pendingRepaymentSchedule = $repaymentScheduleRepository->findByProject($project, null, null, Echeanciers::STATUS_PENDING, null, null, 0, 1);
 
                 if (0 === count($pendingRepaymentSchedule)) {
-                    $this->projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::REMBOURSE, $project);
+                    $this->projectManager->addProjectStatus($idUser, ProjectsStatus::REMBOURSE, $project);
                     $this->emailManager->setLogger($this->logger);
                     $this->emailManager->sendInternalNotificationEndOfRepayment($project);
                     $this->emailManager->sendClientNotificationEndOfRepayment($project);

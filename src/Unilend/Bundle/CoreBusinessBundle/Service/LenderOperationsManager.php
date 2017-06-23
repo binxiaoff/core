@@ -11,7 +11,6 @@ use PHPExcel_Style_Conditional;
 use PHPExcel_Style_NumberFormat;
 use Symfony\Component\Translation\Translator;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
@@ -67,6 +66,7 @@ class LenderOperationsManager
         self::OP_REPAYMENT,
         self::OP_EARLY_REPAYMENT,
         self::OP_RECOVERY_REPAYMENT,
+        OperationType::COLLECTION_COMMISSION_LENDER,
         self::OP_BID,
         self::OP_REFUSED_BID,
         self::OP_AUTOBID,
@@ -128,7 +128,7 @@ class LenderOperationsManager
                 && false === empty($historyLine['id_repayment_schedule'])
             ) {
                 $repaymentDetail                  = $operationRepository->getDetailByRepaymentScheduleId($historyLine['id_repayment_schedule']);
-                $historyLine['label']             = 'repayment';
+                $historyLine['label']             = self::OP_REPAYMENT;
                 $historyLine['amount']            = bcsub(bcadd($repaymentDetail['capital'], $repaymentDetail['interest'], 2), $repaymentDetail['taxes'], 2);
                 $historyLine['available_balance'] = $repaymentDetail['available_balance'];
                 $historyLine['detail']            = [
@@ -147,7 +147,7 @@ class LenderOperationsManager
 
                 if ($repaymentDetail['taxes']) {
                     $taxLabel = $this->translator->trans('lender-operations_tax-and-social-deductions-label');
-                    if ($wallet->getIdClient()->getType() == Clients::TYPE_PERSON || $wallet->getIdClient()->getType() == Clients::TYPE_PERSON_FOREIGNER) {
+                    if ($wallet->getIdClient()->isNaturalPerson()) {
                         if ($taxExemptionRepository->isLenderExemptedInYear($wallet, substr($historyLine['date'], 0, 4))) {
                             $taxLabel = $this->translator->trans('lender-operations_social-deductions-label');
                         }
@@ -161,15 +161,12 @@ class LenderOperationsManager
                 }
             }
 
-            if (
-                (in_array(self::OP_EARLY_REPAYMENT, $operations) || in_array(self::OP_RECOVERY_REPAYMENT, $operations))
-                && in_array($historyLine['sub_type_label'], [OperationSubType::CAPITAL_REPAYMENT_EARLY, OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION])
-            ) {
-                if (OperationSubType::CAPITAL_REPAYMENT_EARLY === $historyLine['sub_type_label']) {
-                    $historyLine['label'] = 'early-repayment';
-                } else {
-                    $historyLine['label']             = 'recovery-repayment';
-                }
+            if (OperationSubType::CAPITAL_REPAYMENT_EARLY === $historyLine['sub_type_label']) {
+                $historyLine['label'] = self::OP_EARLY_REPAYMENT;
+            }
+
+            if (OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION === $historyLine['sub_type_label']) {
+                $historyLine['label'] = self::OP_RECOVERY_REPAYMENT;
             }
 
             if (self::OP_REFUSED_BID === $historyLine['label']) {
@@ -259,6 +256,7 @@ class LenderOperationsManager
         $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $lenderOperations    = $this->getLenderOperations($wallet, $start, $end, $idProject, $operationTypes);
         $taxColumns          = [];
+        $hasLoanRow          = false;
 
         $style = [
             'borders' => [
@@ -349,9 +347,18 @@ class LenderOperationsManager
             $activeSheet->setCellValueExplicitByColumnAndRow($balanceColumn, $row, $operation['available_balance'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->getCellByColumnAndRow($balanceColumn, $row)->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 
+            if (OperationType::LENDER_LOAN === $operation['label']) {
+                $asteriskColumn = $balanceColumn + 1;
+                $activeSheet->setCellValueByColumnAndRow($asteriskColumn, $row, '*');
+                $hasLoanRow = true;
+            }
+
             $row++;
         }
-        $activeSheet->setCellValueByColumnAndRow(0, $row, $this->translator->trans('lender-operations_operation-label-accepted-offer'));
+
+        if ($hasLoanRow) {
+            $activeSheet->setCellValueByColumnAndRow(0, $row, $this->translator->trans('lender-operations_csv-export-asterisk-accepted-offer-specific-mention'));
+        }
 
         $maxCoordinates = $activeSheet->getHighestRowAndColumn();
         $activeSheet->getStyle('A1:' . $maxCoordinates['column'] . $maxCoordinates['row'])->applyFromArray($style);

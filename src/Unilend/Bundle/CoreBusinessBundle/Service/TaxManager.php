@@ -92,25 +92,36 @@ class TaxManager
      */
     public function getLenderRepaymentInterestTax(Clients $client, $interestsGross, \DateTime $taxDate, UnderlyingContract $underlyingContract)
     {
-        switch ($client->getType()) {
-            case Clients::TYPE_LEGAL_ENTITY:
-            case Clients::TYPE_LEGAL_ENTITY_FOREIGNER:
-                return $this->getLegalEntityLenderRepaymentInterestsTax($interestsGross);
-            case Clients::TYPE_PERSON:
-            case Clients::TYPE_PERSON_FOREIGNER:
-            default:
-                return $this->getNaturalPersonLenderRepaymentInterestsTax($client, $interestsGross, $taxDate, $underlyingContract);
+        if (false === $client->isNaturalPerson()) {
+            return $this->getLegalEntityLenderRepaymentInterestsTax($interestsGross);
+        } else {
+            return $this->getNaturalPersonLenderRepaymentInterestsTax($client, $interestsGross, $taxDate, $underlyingContract);
         }
     }
 
+    /**
+     * @param float $interestsGross
+     *
+     * @return array
+     */
     private function getLegalEntityLenderRepaymentInterestsTax($interestsGross)
     {
         return $this->calculateTaxes($interestsGross, [TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE]);
     }
 
+    /**
+     * @param Clients                 $client
+     * @param float                   $interestsGross
+     * @param \DateTime               $taxDate
+     * @param UnderlyingContract|null $underlyingContract
+     *
+     * @return array
+     * @throws \Exception
+     */
     private function getNaturalPersonLenderRepaymentInterestsTax(Clients $client, $interestsGross, \DateTime $taxDate, UnderlyingContract $underlyingContract = null)
     {
         $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
+
         if (null === $wallet) {
             throw new \Exception('Unable to load lender wallet with client ID ' . $client->getIdClient());
         }

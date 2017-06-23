@@ -149,7 +149,7 @@ class OperationRepository extends EntityRepository
             ->where('ot.label IN (:operationTypes)')
             ->andWhere('o.idWalletCreditor = :idWallet')
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
-            ->setParameter('idWallet', $creditorWallet);
+            ->setParameter('idWallet', $creditorWallet->getId());
 
         if (null !== $operationSubTypes) {
             $qb->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
@@ -158,8 +158,9 @@ class OperationRepository extends EntityRepository
         }
 
         if (null !== $year) {
-            $qb->andWhere('YEAR(o.added) = :year')
-                ->setParameter('year', $year);
+            $qb->andWhere('o.added BETWEEN :start AND :end')
+                ->setParameter('start', $year . '-01-01- 00:00:00')
+                ->setParameter('end', $year . '-12-31 23:59:59');
         }
 
         return $qb->getQuery()->getSingleScalarResult();
@@ -181,7 +182,7 @@ class OperationRepository extends EntityRepository
             ->where('ot.label IN (:operationTypes)')
             ->andWhere('o.idWalletDebtor = :idWallet')
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
-            ->setParameter('idWallet', $debtorWallet);
+            ->setParameter('idWallet', $debtorWallet->getId());
 
         if (null !== $operationSubTypes) {
             $qb->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
@@ -190,8 +191,9 @@ class OperationRepository extends EntityRepository
         }
 
         if (null !== $year) {
-            $qb->andWhere('YEAR(o.added) = :year')
-                ->setParameter('year', $year);
+            $qb->andWhere('o.added BETWEEN :start AND :end')
+                ->setParameter('start', $year . '-01-01- 00:00:00')
+                ->setParameter('end', $year . '-12-31 23:59:59');
         }
 
         return $qb->getQuery()->getSingleScalarResult();
@@ -517,6 +519,7 @@ class OperationRepository extends EntityRepository
     {
         return 'SELECT
                   LEFT(o.added, 10) AS day,
+                  MONTH(o.added) AS month,
                   SUM(o.amount) AS amount,
                   CASE ot.label
                    WHEN "' . OperationType::LENDER_PROVISION . '" THEN
@@ -543,9 +546,8 @@ class OperationRepository extends EntityRepository
         $start->setTime(0, 0, 0);
         $end->setTime(23, 59, 59);
 
-        $query = $this->getDailyStateQuery() .
-                    'WHERE
-                      o.added BETWEEN :start AND :end
+        $query = $this->getDailyStateQuery() . ' 
+                    WHERE o.added BETWEEN :start AND :end
                     AND ot.label IN ("' . implode('","', $operationTypes) . '")
                     GROUP BY day, movement
                     ORDER BY o.added ASC';
@@ -574,9 +576,8 @@ class OperationRepository extends EntityRepository
         $start->setTime(0, 0, 0);
         $requestedDate->setTime(23, 59, 59);
 
-        $query = $this->getDailyStateQuery() .
-                    'WHERE
-                      o.added BETWEEN :start AND :end
+        $query = $this->getDailyStateQuery() . ' 
+                    WHERE o.added BETWEEN :start AND :end
                       AND ot.label IN ("' . implode('","', $operationTypes) . '")
                     GROUP BY month, movement
                     ORDER BY o.added ASC';

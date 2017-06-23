@@ -4,10 +4,10 @@
             <tr>
                 <th width="15%">Type d'operation</th>
                 <th width="5%">Id loan</th>
-                <th width="25%">Projet</th>
+                <th width="20%">Projet</th>
                 <th width="5%">Date</th>
                 <th width="45%">Montant de l'opération</th>
-                <th width="5%">Solde</th>
+                <th width="10%">Solde</th>
             </tr>
         </thead>
         <tbody>

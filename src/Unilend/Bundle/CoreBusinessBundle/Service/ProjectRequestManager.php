@@ -7,8 +7,8 @@ use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -184,13 +184,13 @@ class ProjectRequestManager
         $project->ca_declara_client                    = 0;
         $project->resultat_exploitation_declara_client = 0;
         $project->fonds_propres_declara_client         = 0;
-        $project->status                               = \projects_status::INCOMPLETE_REQUEST;
+        $project->status                               = ProjectsStatus::INCOMPLETE_REQUEST;
         $project->id_partner                           = $this->partnerManager->getDefaultPartner()->getId();
         $project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
         $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
         $project->create();
 
-        $this->projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::INCOMPLETE_REQUEST, $project);
+        $this->projectManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::INCOMPLETE_REQUEST, $project);
 
         return $project;
     }
@@ -323,9 +323,14 @@ class ProjectRequestManager
                 || false === $this->companyScoringCheck->combineAltaresScoreAndUnilendXerfi($altaresScore, $company->code_naf, $rejectionReason)
                 || false === $this->companyScoringCheck->combineEulerTrafficLightXerfiAltaresScore($altaresScore, $company, $rejectionReason, $companyRatingHistory, $companyRating)
                 || true === $this->companyScoringCheck->isInfolegaleScoreLow($company->siren, $rejectionReason, $companyRatingHistory, $companyRating)
-                || false === $this->companyScoringCheck->combineEulerGradeUnilendXerfiAltaresScore($altaresScore, $company, $rejectionReason, $companyRatingHistory, $companyRating)
             ) {
                 return $rejectionReason;
+            }
+
+            if (false === $this->companyScoringCheck->isEulerTrafficLightWhite($company->siren)) {
+                if (false === $this->companyScoringCheck->combineEulerGradeUnilendXerfiAltaresScore($altaresScore, $company, $rejectionReason, $companyRatingHistory, $companyRating)) {
+                    return $rejectionReason;
+                }
             }
         }
 
@@ -340,9 +345,9 @@ class ProjectRequestManager
      */
     public function addRejectionProjectStatus($motive, &$project, $userId)
     {
-        $status = substr($motive, 0, strlen(\projects_status::UNEXPECTED_RESPONSE)) === \projects_status::UNEXPECTED_RESPONSE
-            ? \projects_status::IMPOSSIBLE_AUTO_EVALUATION
-            : \projects_status::NOT_ELIGIBLE;
+        $status = substr($motive, 0, strlen(ProjectsStatus::UNEXPECTED_RESPONSE)) === ProjectsStatus::UNEXPECTED_RESPONSE
+            ? ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION
+            : ProjectsStatus::NOT_ELIGIBLE;
 
         $this->projectManager->addProjectStatus($userId, $status, $project, 0, $motive);
 
@@ -377,7 +382,7 @@ class ProjectRequestManager
                 }
 
                 if (empty($products) && $addProjectStatus) {
-                    $this->projectManager->addProjectStatus($userId, ProjectsStatus::NOT_ELIGIBLE, $project, 0, \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
+                    $this->projectManager->addProjectStatus($userId, ProjectsStatus::NOT_ELIGIBLE, $project, 0, ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
                 }
 
                 return count($products);
