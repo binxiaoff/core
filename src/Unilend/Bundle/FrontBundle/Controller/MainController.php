@@ -212,26 +212,7 @@ class MainController extends Controller
         } catch (\Exception $exception) {
             $this->get('logger')->warning('Could not save project : ' . $exception->getMessage() . '. Form data = ' . json_encode($formData), ['class' => __CLASS__, 'function' => __FUNCTION__]);
             if ($exception instanceof \InvalidArgumentException) {
-                switch ($exception->getCode()) {
-                    case ProjectRequestManager::EXCEPTION_CODE_INVALID_SIREN:
-                        $this->addFlash('projectSimulatorError', $translator->trans('project-request-simulator_invalid-siren'));
-                        break;
-                    case ProjectRequestManager::EXCEPTION_CODE_INVALID_EMAIL:
-                        $this->addFlash('projectSimulatorError', $translator->trans('project-request-simulator_invalid-email'));
-                        break;
-                    case ProjectRequestManager::EXCEPTION_CODE_INVALID_AMOUNT:
-                        $this->addFlash('projectSimulatorError', $translator->trans('project-request-simulator_invalid-amount'));
-                        break;
-                    case ProjectRequestManager::EXCEPTION_CODE_INVALID_DURATION:
-                        $this->addFlash('projectSimulatorError', $translator->trans('project-request-simulator_invalid-duration'));
-                        break;
-                    case ProjectRequestManager::EXCEPTION_CODE_INVALID_REASON:
-                        $this->addFlash('projectSimulatorError', $translator->trans('project-request-simulator_invalid-reason'));
-                        break;
-                    default:
-                        $this->addFlash('projectSimulatorError', $translator->trans('project-request-simulator_unknown-error'));
-                        break;
-                }
+                $this->addFlash('projectSimulatorError', $exception->getCode());
             }
             return $this->redirect($this->generateUrl('home_borrower') . '#homeemp-section-esim');
         }
