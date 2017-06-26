@@ -11,7 +11,6 @@
     <div class="row" style="margin-top: 15px">
         <?php if ($this->type === 'add') : ?>
             <button style="float:right" class="btn_link" onclick="editMemo(<?= $this->params['0'] ?>)">Ajouter</button>
-            <?php print_r($this->params['0']) ?>
         <?php else : ?>
             <button style="float:right" class="btn_link" onclick="editMemo(<?= $this->params['0'] ?>, <?= $this->params['1'] ?>)">Modifier</button>
         <?php endif; ?>
