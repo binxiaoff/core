@@ -50,12 +50,15 @@ class ProjectValidator
             ProductAttributeType::MIN_LOAN_DURATION_IN_MONTH,
             ProductAttributeType::MAX_LOAN_DURATION_IN_MONTH,
             ProductAttributeType::ELIGIBLE_BORROWING_MOTIVE,
+            ProductAttributeType::ELIGIBLE_EXCLUDED_BORROWING_MOTIVE,
             ProductAttributeType::MIN_CREATION_DAYS,
             ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_RCS,
             ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_NAF_CODE,
-            ProductAttributeType::VERIFICATION_REQUESTER_IS_ONE_OF_THE_DIRECTOR,
-            ProductAttributeType::ELIGIBLE_HEADQUARTERS_LOCATION_EXCLUSIVE,
             ProductAttributeType::MAX_XERFI_SCORE,
+            ProductAttributeType::MIN_PRE_SOCRE,
+            ProductAttributeType::MAX_PRE_SOCRE,
+            ProductAttributeType::VERIFICATION_REQUESTER_IS_ONE_OF_THE_DIRECTOR,
+            ProductAttributeType::ELIGIBLE_EXCLUDED_HEADQUARTERS_LOCATION,
             ProductAttributeType::MIN_NO_IN_PROGRESS_BLEND_PROJECT_DAYS,
             ProductAttributeType::MIN_NO_INCIDENT_BLEND_PROJECT_DAYS,
             ProductAttributeType::MIN_NO_INCIDENT_UNILEND_PROJECT_DAYS,
@@ -109,6 +112,9 @@ class ProjectValidator
             case ProductAttributeType::ELIGIBLE_BORROWING_MOTIVE:
                 $checkResult = $this->isEligibleForMotive($project, $product, $this->productAttributeManager);
                 break;
+            case ProductAttributeType::ELIGIBLE_EXCLUDED_BORROWING_MOTIVE:
+                $checkResult = $this->isEligibleForExcludedMotive($project, $product, $this->productAttributeManager);
+                break;
             case ProductAttributeType::MIN_CREATION_DAYS:
                 $checkResult = $this->isEligibleForCreationDays($project->getIdCompany(), $product, $this->productAttributeManager);
                 break;
@@ -127,8 +133,8 @@ class ProjectValidator
             case ProductAttributeType::VERIFICATION_REQUESTER_IS_ONE_OF_THE_DIRECTOR:
                 $checkResult = $this->isEligibleForRequesterName($project, $product, $this->productAttributeManager, $this->infolegaleManager, $this->entityManager);
                 break;
-            case ProductAttributeType::ELIGIBLE_HEADQUARTERS_LOCATION_EXCLUSIVE:
-                $checkResult = $this->isEligibleForHeadquartersLocation($project->getIdCompany(), $product, $this->productAttributeManager);
+            case ProductAttributeType::ELIGIBLE_EXCLUDED_HEADQUARTERS_LOCATION:
+                $checkResult = $this->isEligibleForExcludedHeadquartersLocation($project->getIdCompany(), $product, $this->productAttributeManager);
                 break;
             case ProductAttributeType::MAX_XERFI_SCORE:
                 $checkResult = $this->isEligibleForMaxXerfiScore($project->getIdCompany(), $product, $this->productAttributeManager, $this->entityManager);

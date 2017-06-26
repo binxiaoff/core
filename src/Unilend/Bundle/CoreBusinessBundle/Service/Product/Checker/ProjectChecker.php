@@ -81,6 +81,28 @@ trait ProjectChecker
      * @param Projects                $project
      * @param Product                 $product
      * @param ProductAttributeManager $productAttributeManager
+     *
+     * @return bool|null Return true when the check is OK, false when the check is failed, null when the check cannot be done (lack of data for example).
+     */
+    private function isEligibleForExcludedMotive(Projects $project, Product $product, ProductAttributeManager $productAttributeManager)
+    {
+        $eligibleExcludedMotives = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_EXCLUDED_BORROWING_MOTIVE);
+
+        if (empty($eligibleExcludedMotives)) {
+            return true;
+        }
+
+        if (empty($project->getIdBorrowingMotive())) {
+            return null;
+        }
+
+        return false === in_array($project->getIdBorrowingMotive(), $eligibleExcludedMotives);
+    }
+
+    /**
+     * @param Projects                $project
+     * @param Product                 $product
+     * @param ProductAttributeManager $productAttributeManager
      * @param InfolegaleManager       $infolegaleManager
      * @param EntityManager           $entityManager
      *

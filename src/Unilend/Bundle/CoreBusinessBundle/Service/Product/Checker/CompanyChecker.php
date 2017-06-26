@@ -80,9 +80,9 @@ trait CompanyChecker
      *
      * @return bool
      */
-    private function isEligibleForHeadquartersLocation(Companies $company, Product $product, ProductAttributeManager $productAttributeManager)
+    private function isEligibleForExcludedHeadquartersLocation(Companies $company, Product $product, ProductAttributeManager $productAttributeManager)
     {
-        $exclusiveLocations = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_HEADQUARTERS_LOCATION_EXCLUSIVE);
+        $exclusiveLocations = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_EXCLUDED_HEADQUARTERS_LOCATION);
 
         if (empty($exclusiveLocations)) {
             return true;
