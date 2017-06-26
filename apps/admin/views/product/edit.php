@@ -107,5 +107,53 @@
                 <? endif ?>
             </td>
         </tr>
+
+        <tr>
+            <th>Le siège social est hors les codes postale suivants</th>
+            <td>
+                <?php if (empty($this->checkExcludedLocation)) : ?>
+                    <em>Pas de contrôle</em>
+                <?php else : ?>
+                    <?php foreach ($this->checkExcludedLocation as $localtion) : ?>
+                        <?= $localtion ?>
+                    <?php endforeach; ?>
+                <? endif ?>
+            </td>
+        </tr>
+
+        <tr>
+            <th>Score Xerfi max</th>
+            <td><?= isset($this->maxXerfiScore[0]) ? $this->maxXerfiScore[0] : '<em>Pas de contrôle</em>' ?></td>
+        </tr>
+
+        <tr>
+            <th>N'a aucun projet avec produit B-LEND en cours depuis</th>
+            <td><?= isset($this->minNoIncidentBlendDays[0]) ? $this->minNoIncidentBlendDays[0] . ' jours' : '<em>Pas de contrôle</em>' ?></td>
+        </tr>
+
+        <tr>
+            <th>Aucun incident sur un projet Unilend depuis</th>
+            <td><?= isset($this->minNoIncidentUnilendDays[0]) ? $this->minNoIncidentUnilendDays[0] . ' jours' : '<em>Pas de contrôle</em>' ?></td>
+        </tr>
+
+        <tr>
+            <th>Aucun incident sur un projet B-LEND depuis</th>
+            <td><?= isset($this->minNoIncidentBlendDays[0]) ? $this->minNoIncidentBlendDays[0] . ' jours' : '<em>Pas de contrôle</em>' ?></td>
+        </tr>
+
+        <tr>
+            <th>Vérification du nom du déposant</th>
+            <td><?= isset($this->checkOwner[0]) ? ($this->rcs[0] == 1 ? 'Il doit figurer parmi les dirigeants obtenus via Infolegale.' : '<em>Pas de contrôle</em>') : '<em>Pas de contrôle</em>' ?></td>
+        </tr>
+
+        <tr>
+            <th>Pre-score min</th>
+            <td><?= isset($this->minPreScore[0]) ? $this->minPreScore[0] : '<em>Pas de contrôle</em>' ?></td>
+        </tr>
+
+        <tr>
+            <th>Pre-score max</th>
+            <td><?= isset($this->maxPreScore[0]) ? $this->maxPreScore[0] : '<em>Pas de contrôle</em>' ?></td>
+        </tr>
     </table>
 </div>
