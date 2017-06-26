@@ -15,9 +15,12 @@ class CompanyRating
     const TYPE_EULER_HERMES_GRADE         = 'grade_euler_hermes';
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRatingHistory
      *
-     * @ORM\Column(name="id_company_rating_history", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRatingHistory")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_company_rating_history", referencedColumnName="id_company_rating_history")
+     * })
      */
     private $idCompanyRatingHistory;
 
@@ -49,11 +52,11 @@ class CompanyRating
     /**
      * Set idCompanyRatingHistory
      *
-     * @param integer $idCompanyRatingHistory
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRatingHistory $idCompanyRatingHistory
      *
      * @return CompanyRating
      */
-    public function setIdCompanyRatingHistory($idCompanyRatingHistory)
+    public function setIdCompanyRatingHistory(\Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRatingHistory $idCompanyRatingHistory)
     {
         $this->idCompanyRatingHistory = $idCompanyRatingHistory;
 
@@ -63,7 +66,7 @@ class CompanyRating
     /**
      * Get idCompanyRatingHistory
      *
-     * @return integer
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRatingHistory
      */
     public function getIdCompanyRatingHistory()
     {

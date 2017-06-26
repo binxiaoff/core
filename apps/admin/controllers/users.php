@@ -140,8 +140,8 @@ class usersController extends bootstrap
             die;
         }
 
-        $onlineUsers  = $this->users->select('id_user != 1 AND status = ' . Users::STATUS_ONLINE, 'name ASC');
-        $offlineUsers = $this->users->select('id_user != 1 AND status = ' . Users::STATUS_OFFLINE, 'name ASC');
+        $onlineUsers  = $this->users->select('id_user NOT IN (-1, -2,  1) AND status = ' . Users::STATUS_ONLINE, 'name ASC');
+        $offlineUsers = $this->users->select('id_user NOT IN (-1, -2,  1) AND status = ' . Users::STATUS_OFFLINE, 'name ASC');
         $this->users  = [Users::STATUS_ONLINE => $onlineUsers, Users::STATUS_OFFLINE => $offlineUsers];
     }
 

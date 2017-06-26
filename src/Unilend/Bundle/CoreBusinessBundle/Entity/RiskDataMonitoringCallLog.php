@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="risk_data_monitoring_call_log", indexes={@ORM\Index(name="idx_risk_data_monitoring_call_log_risk_data_monitoring", columns={"id_risk_data_monitoring"}), @ORM\Index(name="idx_risk_data_monitoring_call_log_company_rating_history", columns={"id_company_rating_history"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks()
  */
 class RiskDataMonitoringCallLog
 {
@@ -18,6 +19,13 @@ class RiskDataMonitoringCallLog
      * @ORM\Column(name="added", type="datetime", nullable=false)
      */
     private $added;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
+     */
+    private $updated;
 
     /**
      * @var integer
@@ -75,6 +83,30 @@ class RiskDataMonitoringCallLog
     }
 
     /**
+     * Set updated
+     *
+     * @param \DateTime $updated
+     *
+     * @return RiskDataMonitoringCallLog
+     */
+    public function setUpdated($updated)
+    {
+        $this->updated = $updated;
+
+        return $this;
+    }
+
+    /**
+     * Get updated
+     *
+     * @return \DateTime
+     */
+    public function getUpdated()
+    {
+        return $this->updated;
+    }
+
+    /**
      * Get id
      *
      * @return integer
@@ -115,7 +147,7 @@ class RiskDataMonitoringCallLog
      *
      * @return RiskDataMonitoringCallLog
      */
-    public function setIdCompanyRatingHistory(CompanyRatingHistory $idCompanyRatingHistory)
+    public function setIdCompanyRatingHistory(CompanyRatingHistory $idCompanyRatingHistory = null)
     {
         $this->idCompanyRatingHistory = $idCompanyRatingHistory;
 
@@ -130,5 +162,23 @@ class RiskDataMonitoringCallLog
     public function getIdCompanyRatingHistory()
     {
         return $this->idCompanyRatingHistory;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }
