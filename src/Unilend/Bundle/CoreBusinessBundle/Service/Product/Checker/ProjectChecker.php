@@ -117,4 +117,54 @@ trait ProjectChecker
 
         return null;
     }
+
+    /**
+     * @param Projects                $project
+     * @param Product                 $product
+     * @param ProductAttributeManager $productAttributeManager
+     * @param EntityManager           $entityManager
+     *
+     * @return bool|null
+     */
+    private function isEligibleForMinPreSocre(Projects $project, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    {
+        $minPreScore = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MIN_PRE_SCORE);
+
+        if (empty($minPreScore)) {
+            return true;
+        }
+
+        $projectNote = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project->getIdProject()]);
+
+        if (empty($projectNote->getPreScoring())) {
+            return null;
+        }
+
+        return $projectNote->getPreScoring() >= $minPreScore[0];
+    }
+
+    /**
+     * @param Projects                $project
+     * @param Product                 $product
+     * @param ProductAttributeManager $productAttributeManager
+     * @param EntityManager           $entityManager
+     *
+     * @return bool|null
+     */
+    private function isEligibleForMaxPreSocre(Projects $project, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    {
+        $maxPreScore = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MAX_PRE_SCORE);
+
+        if (empty($minPreScore)) {
+            return true;
+        }
+
+        $projectNote = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project->getIdProject()]);
+
+        if (empty($projectNote->getPreScoring())) {
+            return null;
+        }
+
+        return $projectNote->getPreScoring() <= $maxPreScore[0];
+    }
 }

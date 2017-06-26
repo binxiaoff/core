@@ -118,6 +118,12 @@ class ProjectValidator
             case ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_NAF_CODE:
                 $checkResult = $this->isEligibleForNafCode($project->getIdCompany(), $product, $this->productAttributeManager);
                 break;
+            case ProductAttributeType::MIN_PRE_SOCRE:
+                $checkResult = $this->isEligibleForMinPreSocre($project, $product, $this->productAttributeManager, $this->entityManager);
+                break;
+            case ProductAttributeType::MAX_PRE_SOCRE:
+                $checkResult = $this->isEligibleForMaxPreSocre($project, $product, $this->productAttributeManager, $this->entityManager);
+                break;
             case ProductAttributeType::VERIFICATION_REQUESTER_IS_ONE_OF_THE_DIRECTOR:
                 $checkResult = $this->isEligibleForRequesterName($project, $product, $this->productAttributeManager, $this->infolegaleManager, $this->entityManager);
                 break;
