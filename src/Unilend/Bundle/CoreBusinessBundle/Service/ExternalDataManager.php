@@ -340,7 +340,7 @@ class ExternalDataManager
      *
      * @return DirectorAnnouncement[]
      */
-    public function getDirectorAnnouncements($executiveId)
+    public function getExecutiveAnnouncements($executiveId)
     {
         return $this->infolegaleManager->getDirectorAnnouncements($executiveId)->getAnnouncements();
     }
