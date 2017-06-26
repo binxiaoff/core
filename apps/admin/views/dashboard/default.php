@@ -109,13 +109,13 @@
     </h1>
     <?php if ('sale' === $this->template) : ?>
         <select id="sales-projects-selector" class="form-control input-sm pull-left" style="margin: 22px 10px 0; width: 200px;">
-            <option value=""></option>
+            <option value="">Sélectionner</option>
             <?php foreach ($this->salesPeople as $salesperson) : ?>
                 <option value="<?= $salesperson['id_user'] ?>"><?= $salesperson['firstname'] ?> <?= $salesperson['name'] ?></option>
             <?php endforeach; ?>
         </select>
     <?php endif; ?>
-    <div id="team-projects">
+    <div id="team-projects" style="clear: both;">
         <?php $this->templateProjects = $this->teamProjects; ?>
         <?php $this->fireView($this->template . 'Projects'); ?>
     </div>
