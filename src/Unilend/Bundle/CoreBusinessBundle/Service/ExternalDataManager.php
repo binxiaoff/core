@@ -347,36 +347,41 @@ class ExternalDataManager
 
     /**
      * @param Executive $executive
-     * @param string    $siren
-     * @param string    $positionCode
      */
-    public function refreshExecutiveChanges($executive, $siren, $positionCode)
+    public function refreshExecutiveChanges($executive)
     {
         $mandates                 = $this->infolegaleManager->getMandates($executive->getExecutiveId())->getMandates();
         $personalChangeRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange');
+        $refreshedCompanyPosition = [];
 
         foreach ($mandates as $mandate) {
-            if ($siren !== $mandate->getSiren() || $mandate->getPosition()->getCode() !== $positionCode) {
+            if (isset($refreshedCompanyPosition[$mandate->getSiren()][$mandate->getPosition()->getCode()])) {
                 continue;
             }
-            $change = $personalChangeRepository->findOneBy(['idExecutive' => $executive->getExecutiveId(), 'siren' => $siren, 'codePosition' => $mandate->getPosition()->getCode()]);
+            $refreshedCompanyPosition[$mandate->getSiren()] = $mandate->getPosition()->getCode();
+
+            $change = $personalChangeRepository->findOneBy([
+                'idExecutive'  => $executive->getExecutiveId(),
+                'siren'        => $mandate->getSiren(),
+                'codePosition' => $mandate->getPosition()->getCode()
+            ]);
 
             if (null === $change) {
                 $change = new InfolegaleExecutivePersonalChange();
                 $change->setIdExecutive($executive->getExecutiveId())
                     ->setFirstName($executive->getFirstName())
                     ->setLastName($executive->getName())
-                    ->setSiren($siren)
+                    ->setSiren($mandate->getSiren())
                     ->setPosition($mandate->getPosition()->getLabel())
                     ->setCodePosition($mandate->getPosition()->getCode());
                 $this->entityManager->persist($change);
             }
 
             if (null === $change->getNominated()) {
-                $change->setNominated($this->getExecutiveNominated($siren, $executive->getExecutiveId(), $mandate->getPosition()->getCode()));
+                $change->setNominated($this->getExecutiveNominated($mandate->getSiren(), $executive->getExecutiveId(), $mandate->getPosition()->getCode()));
             }
             if (null === $change->getEnded()) {
-                $change->setEnded($this->getExecutiveEnded($mandates, $siren, $mandate->getPosition()->getCode()));
+                $change->setEnded($this->getExecutiveEnded($mandates, $mandate->getSiren(), $mandate->getPosition()->getCode()));
             }
 
             $this->entityManager->flush($change);

@@ -18,6 +18,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Xerfi;
 use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyBalanceSheet;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerHermesCompanyRating;
+use Unilend\Bundle\WSClientBundle\Entity\Infolegale\Executive;
 
 class CompanyValidator
 {
@@ -40,7 +41,8 @@ class CompanyValidator
         'TC-RISK-012' => 'checkEllispehereReport',
         'TC-RISK-013' => 'checkInfolegaleScore',
         'TC-RISK-014' => 'checkCurrentExecutivesHistory',
-        'TC-RISK-015' => 'checkEulerHermesGrade'
+        'TC-RISK-015' => 'checkEulerHermesGrade',
+        'TC-RISK-018' => 'checkRecentExecutivesHistory',
     ];
 
     /**
@@ -144,6 +146,11 @@ class CompanyValidator
         $eulerHermesGradeCheck = $this->checkRule('TC-RISK-015', $siren, $project);
         if (false === empty($eulerHermesGradeCheck)) {
             return $eulerHermesGradeCheck;
+        }
+
+        $recentExecutivesHistory = $this->checkRule('TC-RISK-018', $siren, $project);
+        if (false === empty($recentExecutivesHistory)) {
+            return $recentExecutivesHistory;
         }
 
         if (null !== $project) {
@@ -454,64 +461,92 @@ class CompanyValidator
         return [];
     }
 
+    /**
+     * @param $siren
+     *
+     * @return array
+     */
     private function checkCurrentExecutivesHistory($siren)
     {
         $executives = $this->externalDataManager->getExecutives($siren);
-        $now        = new \DateTime();
-
         foreach ($executives as $executive) {
-            if (in_array($executive->getChange(), ['Nomination', 'Modification', 'Sans précision'])) {
-                $mandates = $this->externalDataManager->getExecutiveMandates($executive->getExecutiveId());
-                foreach ($mandates as $mandate) {
-                    if ($mandate->getChangeDate() && $mandate->getChangeDate()->diff($now)->y < 5) {
-                        $checkedSiren[] = $mandate->getSiren();
-                        $this->externalDataManager->refreshExecutiveChanges($executive, $mandate->getSiren(), $mandate->getposition()->getCode());
-                        $changes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')
-                            ->findBy(['idExecutive' => $executive->getExecutiveId(), 'siren' => $mandate->getSiren()]);
-                        foreach ($changes as $change) {
-                            if (null === $change->getNominated()) {
-                                $mockedNominatedDate = new \DateTime('5 years ago');
-                                if (null !== $change->getEnded() && $change->getEnded() > $mockedNominatedDate) {
-                                    $change->setNominated($mockedNominatedDate);
-                                } else {
-                                    $change->setNominated($change->getEnded());
-                                }
-                            }
-                            if (null === $change->getEnded()) {
-                                $change->setEnded($now);
-                            }
-                        }
+            if (false === in_array($executive->getChange(), ['Nomination', 'Modification', 'Sans précision'])) {
+                continue;
+            }
+            $this->externalDataManager->refreshExecutiveChanges($executive);
 
+            if ($this->hasIncidentAnnouncements($executive, 5, 1)) {
+                return [ProjectsStatus::NON_ELIGIBLE_REASON_EXECUTIVE_HAS_INCIDENT];
+            }
+        }
+
+        return [];
+    }
+
+    /**
+     * @param $siren
+     *
+     * @return array
+     */
+    private function checkRecentExecutivesHistory($siren)
+    {
+        $executives = $this->externalDataManager->getExecutives($siren);
+        $now        = new \DateTime();
+        foreach ($executives as $executive) {
+            if ($executive->getChangeDate()->diff($now)->y > 4) {
+                continue;
+            }
+            $this->externalDataManager->refreshExecutiveChanges($executive);
+
+            if ($this->hasIncidentAnnouncements($executive, 1, 0)) {
+                return [ProjectsStatus::NON_ELIGIBLE_REASON_EXECUTIVE_HAS_INCIDENT];
+            }
+        }
+
+        return [];
+    }
+
+    /**
+     * @param Executive $executive
+     * @param int       $since
+     * @param int       $extended
+     *
+     * @return bool
+     */
+    private function hasIncidentAnnouncements(Executive $executive, $since, $extended)
+    {
+        $now                   = new \DateTime();
+        $incidentAnnouncements = $this->externalDataManager->getDirectorAnnouncements($executive->getExecutiveId());
+        foreach ($incidentAnnouncements as $announcement) {
+            $changes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->findBy([
+                'idExecutive' => $executive->getExecutiveId(),
+                'siren'       => $announcement->getSiren()
+            ]);
+            foreach ($changes as $change) {
+
+                $ended = null === $change->getEnded() ? $now : $change->getEnded();
+
+                if (null === $change->getNominated()) {
+                    $mockedNominatedDate = new \DateTime('5 years ago');
+                    if ($change->getEnded() > $mockedNominatedDate) {
+                        $started = $mockedNominatedDate;
+                    } else {
+                        $started = $change->getEnded();
                     }
+                } else {
+                    $started = $change->getNominated();
                 }
 
-                $incidentAnnouncements = $this->externalDataManager->getDirectorAnnouncements($executive->getExecutiveId());
-
-                foreach ($incidentAnnouncements as $announcement) {
-                    $changes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')
-                        ->findBy(['idExecutive' => $executive->getExecutiveId(), 'siren' => $announcement->getSiren()]);
-                    foreach ($changes as $change) {
-                        if (null === $change->getNominated()) {
-                            $mockedNominatedDate = new \DateTime('5 years ago');
-                            if (null !== $change->getEnded() && $change->getEnded() > $mockedNominatedDate) {
-                                $change->setNominated($mockedNominatedDate);
-                            } else {
-                                $change->setNominated($change->getEnded());
-                            }
-                        }
-                        if (null === $change->getEnded() || $change->getEnded()->diff($now)->y < 1) {
-                            $change->setEnded($now);
-                        }
-
-                        if ($change->getNominated() <= $announcement->getPublishedDate() && $change->getEnded() >= $announcement->getPublishedDate()) {
-                            return [ProjectsStatus::NON_ELIGIBLE_REASON_EXECUTIVE_HAS_INCIDENT];
-                        }
+                if ($ended->diff($now)->y <= $since) {
+                    $ended->modify('+' . $extended . ' year');
+                    if ($started <= $announcement->getPublishedDate() && $ended >= $announcement->getPublishedDate()) {
+                        return true;
                     }
                 }
             }
         }
 
-        return [];
+        return false;
     }
 
     /**
