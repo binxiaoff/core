@@ -692,15 +692,15 @@ class pdfController extends bootstrap
             $this->lEcheances = array_values($this->echeanciers->getYearlySchedule(array('id_loan' => $this->oLoans->id_loan)));
             $this->lenderCountry = '';
 
-            if ($this->preteur->type == Clients::TYPE_LEGAL_ENTITY) {
-                $this->preteurCompanie->get($this->lender->id_company_owner, 'id_company');
+            if (false === $wallet->getIdClient()->isNaturalPerson()) {
+                $this->preteurCompanie->get($this->preteur->id_client, 'id_client_owner');
 
                 $this->nomPreteur     = $this->preteurCompanie->name;
                 $this->adressePreteur = $this->preteurCompanie->adresse1;
                 $this->cpPreteur      = $this->preteurCompanie->zip;
                 $this->villePreteur   = $this->preteurCompanie->city;
             } else {
-                if ($this->preteur_adresse->id_pays > 1) {
+                if ($this->preteur_adresse->id_pays > \Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2::COUNTRY_FRANCE) {
                     /** @var \pays_v2 $country */
                     $country = $this->loadData('pays_v2');
                     $country->get($this->preteur_adresse->id_pays, 'id_pays');

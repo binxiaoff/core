@@ -1,9 +1,9 @@
 <div id="contenu">
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <h1>Gestion de la grille de taux</h1>
         </div>
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <a href="/project_rate_settings/warn_confirmation_box" class="btn-primary pull-right thickbox">Notifier les prêteurs</a>
         </div>
     </div>

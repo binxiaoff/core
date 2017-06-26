@@ -1,16 +1,16 @@
 <?php
 
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatisticQueue;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class transfertsController extends bootstrap
 {
@@ -676,9 +676,9 @@ class transfertsController extends bootstrap
 
                 foreach ($allAcceptedBids as $bid) {
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Bids $bidEntity */
-                    $bidEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($bid['id_bid']);
-                    $notification = $notificationManager->createNotification(Notifications::TYPE_LOAN_ACCEPTED, $bidEntity->getIdLenderAccount()->getIdClient()->getIdClient(), $project->getIdProject(), $bid['amount'],
-                        $bid['id_bid']);
+                    $bidEntity    = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($bid['id_bid']);
+                    $bidAmount    = round(bcdiv($bid['amount'], 100, 4), 2);
+                    $notification = $notificationManager->createNotification(Notifications::TYPE_LOAN_ACCEPTED, $bidEntity->getIdLenderAccount()->getIdClient()->getIdClient(), $project->getIdProject(), $bidAmount, $bid['id_bid']);
 
                     $loansForBid = $acceptedBids->select('id_bid = ' . $bid['id_bid']);
 

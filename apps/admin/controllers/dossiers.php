@@ -188,7 +188,7 @@ class dossiersController extends bootstrap
                 && empty($this->projects->id_commercial)
                 && empty($this->companies->phone)
                 && 1 === preg_match('/^[0-9]{9}$/', $this->companies->siren)
-                && \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN !== $this->projects_status_history->content
+                && ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN !== $this->projects_status_history->content
             ) {
                 /** @var \Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentity $establishmentIdentity */
                 $establishmentIdentity  = $this->get('unilend.service.ws_client.altares_manager')->getEstablishmentIdentity($this->companies->siren);
@@ -228,7 +228,6 @@ class dossiersController extends bootstrap
             $this->aAnnualAccountsDates = array();
             $this->aAnalysts            = $this->users->select('(status = 1 AND id_user_type = 2) OR id_user = ' . $this->projects->id_analyste);
             $this->aSalesPersons        = $this->users->select('(status = 1 AND id_user_type = 3) OR id_user = 23 OR id_user = ' . $this->projects->id_commercial); // ID user 23 corresponds to Arnaud
-            $this->aEmails              = $this->projects_status_history->select('content != "" AND id_user > 0 AND id_project = ' . $this->projects->id_project, 'added DESC, id_project_status_history DESC');
             $this->projectComments      = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ProjectsComments')->findBy(['idProject' => $this->projects->id_project], ['added' => 'DESC']);
             $this->aAllAnnualAccounts   = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
             $this->lProjects_status     = $projectStatusManager->getPossibleStatus($this->projects);
@@ -1859,7 +1858,7 @@ class dossiersController extends bootstrap
                         if (0 < count($repaymentSchedules)) {
                             $entityManager->getConnection()->beginTransaction();
                             try {
-                                $repaymentNb = $projectRepaymentManager->repay($project, $paidPaymentSchedule->getOrdre());
+                                $repaymentNb = $projectRepaymentManager->repay($project, $paidPaymentSchedule->getOrdre(), $_SESSION['user']['id_user']);
                                 if (0 === $repaymentNb) {
                                     $_SESSION['freeow']['title']   = 'Remboursement prêteur';
                                     $_SESSION['freeow']['message'] = "Aucun remboursement n'a été effectué aux prêteurs !";
@@ -2076,19 +2075,21 @@ class dossiersController extends bootstrap
         $this->walletRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         $this->operationRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
 
-        $this->loan    = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($this->params[1]);
-        $this->client  = $this->loan->getIdLender()->getIdClient();
-        $this->lRemb   = $repaymentScheduleRepository->findBy(['idLoan' =>$this->loan, 'statusRa' => Echeanciers::IS_NOT_EARLY_REPAID]);
+        if (isset($this->params[1])) {
+            $this->loan    = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($this->params[1]);
+            $this->client  = $this->loan->getIdLender()->getIdClient();
+            $this->lRemb   = $repaymentScheduleRepository->findBy(['idLoan' => $this->loan, 'statusRa' => Echeanciers::IS_NOT_EARLY_REPAID]);
 
-        // on check si on est en remb anticipé
-        // ON recup la date de statut remb
-        $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
+            // on check si on est en remb anticipé
+            // ON recup la date de statut remb
+            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
 
-        $this->montant_ra = 0;
+            $this->montant_ra = 0;
 
-        if (ProjectsStatus::REMBOURSEMENT_ANTICIPE === $project->getStatus()) {
-            $this->montant_ra = $repaymentScheduleRepository->getEarlyRepaidCapitalByLoan($this->loan);
-            $this->date_ra    = $repaymentScheduleRepository->findOneBy(['idLoan' => $this->loan, 'statusRa' => Echeanciers::IS_EARLY_REPAID])->getDateEcheanceReel();
+            if (ProjectsStatus::REMBOURSEMENT_ANTICIPE === $project->getStatus()) {
+                $this->montant_ra = $repaymentScheduleRepository->getEarlyRepaidCapitalByLoan($this->loan);
+                $this->date_ra    = $repaymentScheduleRepository->findOneBy(['idLoan' => $this->loan, 'statusRa' => Echeanciers::IS_EARLY_REPAID])->getDateEcheanceReel();
+            }
         }
     }
 

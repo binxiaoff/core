@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * WsCallHistory
  *
  * @ORM\Table(name="ws_call_history", indexes={@ORM\Index(name="id_resource", columns={"id_resource"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\WsCallHistoryRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class WsCallHistory

@@ -12,6 +12,8 @@ class CompanyRating
     const COLOR_GREEN  = 'Green';
     const COLOR_WHITE  = 'White';
 
+    const GRADE_UNKNOWN = 'NA';
+
     /**
      * @JMS\Groups({"grade"})
      * @JMS\SerializedName("message")

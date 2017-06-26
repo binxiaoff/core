@@ -34,10 +34,10 @@
 </script>
 <div id="contenu">
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <h1>Virements prêteurs</h1>
         </div>
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <a href="<?= $this->lurl ?>/transferts/preteurs/csv" class="btn-primary pull-right thickbox">Export CSV</a>
         </div>
     </div>

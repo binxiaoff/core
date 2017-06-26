@@ -20,7 +20,7 @@ class InfogreffeManager
     const RETURN_CODE_NO_DEBTOR                = '013';
     const RETURN_CODE_TECHNICAL_ERROR          = ['001', '002', '003', '004', '005', '007', '010', '012', '014', '015', '065', '999'];
 
-    const CALL_TIMEOUT = 8;
+    const CALL_TIMEOUT = 20;
 
     /** @var string */
     private $login;
@@ -135,7 +135,6 @@ class InfogreffeManager
             } else {
                 call_user_func($callBack, $this->client->__getLastResponse(), 'error');
                 $this->logger->error('Calling Infogreffe: ' . $exception->getMessage() . ' Code: ' . $exception->getCode(), $logContext);
-                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down', $exception->getMessage());
 
                 return null;
             }
@@ -145,11 +144,6 @@ class InfogreffeManager
         $validity = $this->isValidResponse($result, $logContext);
         call_user_func($callBack, $response, $validity['status']);
 
-        if ($validity['status'] === 'error') {
-            $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
-        } else {
-            $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
-        }
         if ($validity['is_valid']) {
             return $result;
         }

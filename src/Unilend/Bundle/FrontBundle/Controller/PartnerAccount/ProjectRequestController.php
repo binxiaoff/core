@@ -258,34 +258,37 @@ class ProjectRequestController extends Controller
             $borrowerServiceEmail = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse emprunteur']);
 
             switch ($reason) {
-                case \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN:
-                case \projects_status::NON_ELIGIBLE_REASON_INACTIVE:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_INACTIVE:
                     $translation = 'partner-project-request_not-eligible-reason-unknown-or-inactive-siren';
                     break;
-                case \projects_status::NON_ELIGIBLE_REASON_PROCEEDING:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_PROCEEDING:
                     $translation = 'partner-project-request_not-eligible-reason-collective-proceeding';
                     break;
-                case \projects_status::NON_ELIGIBLE_REASON_TOO_MUCH_PAYMENT_INCIDENT:
-                case \projects_status::NON_ELIGIBLE_REASON_NON_ALLOWED_PAYMENT_INCIDENT:
-                case \projects_status::NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE:
-                case \projects_status::NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_ALTARES_SCORE:
-                case \projects_status::NON_ELIGIBLE_REASON_LOW_ALTARES_SCORE:
-                case \projects_status::NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE:
-                case \projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT:
-                case \projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE:
-                case \projects_status::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI:
-                case \projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE:
-                case \projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_UNILEND_XERFI:
-                case \projects_status::NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_TOO_MUCH_PAYMENT_INCIDENT:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_NON_ALLOWED_PAYMENT_INCIDENT:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_ALTARES_SCORE:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_LOW_ALTARES_SCORE:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_EULER_GRADE_VS_UNILEND_XERFI:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_DEFAULTS:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_SOCIAL_SECURITY_PRIVILEGES:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_TREASURY_TAX_PRIVILEGES:
                     $translation = 'partner-project-request_not-eligible-reason-scoring';
                     break;
-                case \projects_status::NON_ELIGIBLE_REASON_LOW_TURNOVER:
-                case \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK:
-                case \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL:
-                case \projects_status::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_LOW_TURNOVER:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES:
                     $translation = 'partner-project-request_not-eligible-reason-financial-data';
                     break;
-                case \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND:
                 default:
                     $translation = 'partner-project-request_not-eligible-reason-no-product';
                     break;

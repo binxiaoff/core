@@ -183,11 +183,6 @@ class EulerHermesManager
             $content = $stream->getContents();
             call_user_func($callable, $content, $validity['status']);
 
-            if ('error' !== $validity['status']) {
-                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
-            } else {
-                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down', 'Status code: ' . $response->getStatusCode());
-            }
             if ($validity['is_valid']) {
                 return $content;
             } else {
@@ -201,7 +196,6 @@ class EulerHermesManager
                 'Exception at line: ' . __LINE__ . '. Message: ' . $exception->getMessage(),
                 ['class' => __CLASS__, 'resource' => $wsResource->getLabel(), 'uri' => $uri]
             );
-            $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down', $exception->getMessage());
 
             return null;
         }
@@ -258,7 +252,7 @@ class EulerHermesManager
                 case self::RESOURCE_SEARCH_COMPANY:
                     return isset($response->Id) && false === empty($response->Id);
                 case self::RESOURCE_EULER_GRADE:
-                    return isset($response->message, $response->code) && is_numeric($response->message) && is_numeric($response->code);
+                    return isset($response->message) && in_array($response->message, array_merge(range(1, 10), ['NA']));
                 default:
                     return false;
             }

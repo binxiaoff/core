@@ -46,6 +46,31 @@ class ProjectsStatus
     const LIQUIDATION_JUDICIAIRE     = 150;
     const DEFAUT                     = 160;
 
+    const NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND                     = 'product_not_found';
+    const NON_ELIGIBLE_REASON_INACTIVE                              = 'entity_inactive';
+    const NON_ELIGIBLE_REASON_UNKNOWN_SIREN                         = 'unknown_siren';
+    const NON_ELIGIBLE_REASON_PROCEEDING                            = 'in_proceeding';
+    const NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES        = 'negative_raw_operating_incomes';
+    const NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK                = 'negative_capital_stock';
+    const NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL               = 'negative_equity_capital';
+    const NON_ELIGIBLE_REASON_LOW_TURNOVER                          = 'low_turnover';
+    const NON_ELIGIBLE_REASON_TOO_MUCH_PAYMENT_INCIDENT             = 'too_much_payment_incident';
+    const NON_ELIGIBLE_REASON_NON_ALLOWED_PAYMENT_INCIDENT          = 'non_allowed_payment_incident';
+    const NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE       = 'unilend_xerfi_elimination_score';
+    const NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_ALTARES_SCORE        = 'unilend_xerfi_vs_altares_score';
+    const NON_ELIGIBLE_REASON_LOW_ALTARES_SCORE                     = 'low_altares_score';
+    const NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE                  = 'low_infolegale_score';
+    const NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT                   = 'euler_traffic_light';
+    const NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE  = 'euler_traffic_light_vs_altares_score';
+    const NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI  = 'euler_traffic_light_vs_unilend_xerfi';
+    const NON_ELIGIBLE_REASON_EULER_GRADE_VS_UNILEND_XERFI          = 'euler_grade_vs_unilend_xerfi';
+    const NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE          = 'euler_grade_vs_altares_score';
+    const NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES                 = 'has_infogreffe_privileges';
+    const NON_ELIGIBLE_REASON_ELLISPHERE_DEFAULTS                   = 'ellisphere_default';
+    const NON_ELIGIBLE_REASON_ELLISPHERE_SOCIAL_SECURITY_PRIVILEGES = 'ellisphere_social_security_privileges';
+    const NON_ELIGIBLE_REASON_ELLISPHERE_TREASURY_TAX_PRIVILEGES    = 'ellisphere_treasury_tax_privileges';
+    const UNEXPECTED_RESPONSE                                       = 'unexpected_response_from_';
+
     /**
      * @var string
      *
