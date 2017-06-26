@@ -105,9 +105,10 @@ trait ProjectChecker
         $client          = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner());
         if ($companyIdentity && $client && $client->getNom() && $client->getPrenom()) {
             foreach ($companyIdentity->getDirectors() as $director) {
-               if (
+                if (
                     mb_strtolower(trim($client->getNom())) === mb_strtolower(trim($director->getName()))
-                    && mb_strtolower(trim($client->getPrenom())) === mb_strtolower(trim($director->getFirstName()))) {
+                    && mb_strtolower(trim($client->getPrenom())) === mb_strtolower(trim($director->getFirstName()))
+                ) {
                     return true;
                 }
             }
