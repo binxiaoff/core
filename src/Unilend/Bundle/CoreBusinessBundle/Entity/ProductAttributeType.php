@@ -26,8 +26,8 @@ class ProductAttributeType
     const MIN_NO_IN_PROGRESS_BLEND_PROJECT_DAYS         = 'product_min_no_in_progress_blend_project_days';
     const MIN_NO_INCIDENT_UNILEND_PROJECT_DAYS          = 'product_min_no_incident_unilend_project_days';
     const MIN_NO_INCIDENT_BLEND_PROJECT_DAYS            = 'product_min_no_incident_blend_project_days';
-    const MIN_PRE_SOCRE                                 = 'product_min_pre_socre';
-    const MAX_PRE_SOCRE                                 = 'product_max_pre_socre ';
+    const MIN_PRE_SCORE                                 = 'product_min_pre_score';
+    const MAX_PRE_SCORE                                 = 'product_max_pre_score ';
     const VERIFICATION_REQUESTER_IS_ONE_OF_THE_DIRECTOR = 'product_verification_requester_is_one_of_the_director';
 
     /**

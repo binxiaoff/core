@@ -55,8 +55,8 @@ class ProjectValidator
             ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_RCS,
             ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_NAF_CODE,
             ProductAttributeType::MAX_XERFI_SCORE,
-            ProductAttributeType::MIN_PRE_SOCRE,
-            ProductAttributeType::MAX_PRE_SOCRE,
+            ProductAttributeType::MIN_PRE_SCORE,
+            ProductAttributeType::MAX_PRE_SCORE,
             ProductAttributeType::VERIFICATION_REQUESTER_IS_ONE_OF_THE_DIRECTOR,
             ProductAttributeType::ELIGIBLE_EXCLUDED_HEADQUARTERS_LOCATION,
             ProductAttributeType::MIN_NO_IN_PROGRESS_BLEND_PROJECT_DAYS,
@@ -124,11 +124,11 @@ class ProjectValidator
             case ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_NAF_CODE:
                 $checkResult = $this->isEligibleForNafCode($project->getIdCompany(), $product, $this->productAttributeManager);
                 break;
-            case ProductAttributeType::MIN_PRE_SOCRE:
-                $checkResult = $this->isEligibleForMinPreSocre($project, $product, $this->productAttributeManager, $this->entityManager);
+            case ProductAttributeType::MIN_PRE_SCORE:
+                $checkResult = $this->isEligibleForMinPreScore($project, $product, $this->productAttributeManager, $this->entityManager);
                 break;
-            case ProductAttributeType::MAX_PRE_SOCRE:
-                $checkResult = $this->isEligibleForMaxPreSocre($project, $product, $this->productAttributeManager, $this->entityManager);
+            case ProductAttributeType::MAX_PRE_SCORE:
+                $checkResult = $this->isEligibleForMaxPreScore($project, $product, $this->productAttributeManager, $this->entityManager);
                 break;
             case ProductAttributeType::VERIFICATION_REQUESTER_IS_ONE_OF_THE_DIRECTOR:
                 $checkResult = $this->isEligibleForRequesterName($project, $product, $this->productAttributeManager, $this->infolegaleManager, $this->entityManager);

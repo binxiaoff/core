@@ -149,7 +149,7 @@ trait ProjectChecker
      *
      * @return bool|null
      */
-    private function isEligibleForMinPreSocre(Projects $project, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    private function isEligibleForMinPreScore(Projects $project, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
     {
         $minPreScore = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MIN_PRE_SCORE);
 
@@ -174,7 +174,7 @@ trait ProjectChecker
      *
      * @return bool|null
      */
-    private function isEligibleForMaxPreSocre(Projects $project, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    private function isEligibleForMaxPreScore(Projects $project, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
     {
         $maxPreScore = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MAX_PRE_SCORE);
 
