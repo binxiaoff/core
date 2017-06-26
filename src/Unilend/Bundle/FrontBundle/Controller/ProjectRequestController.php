@@ -843,7 +843,7 @@ class ProjectRequestController extends Controller
 
         $product = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
         if ($product && Product::PRODUCT_BLEND === $product->getLabel()) {
-            return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, \projects_status::NON_ELIGIBLE_REASON_PRODUCT_BLEND);
+            return $this->redirectStatus(self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_BLEND);
         }
 
         if ('true' === $request->request->get('extra_files')) {

@@ -289,6 +289,7 @@ class ProjectRequestController extends Controller
                     $translation = 'partner-project-request_not-eligible-reason-financial-data';
                     break;
                 case ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_BLEND:
                 default:
                     $translation = 'partner-project-request_not-eligible-reason-no-product';
                     break;

@@ -47,6 +47,7 @@ class ProjectsStatus
     const DEFAUT                     = 160;
 
     const NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND                     = 'product_not_found';
+    const NON_ELIGIBLE_REASON_PRODUCT_BLEND                         = 'product_blend';
     const NON_ELIGIBLE_REASON_INACTIVE                              = 'entity_inactive';
     const NON_ELIGIBLE_REASON_UNKNOWN_SIREN                         = 'unknown_siren';
     const NON_ELIGIBLE_REASON_PROCEEDING                            = 'in_proceeding';
