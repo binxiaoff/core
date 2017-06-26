@@ -85,7 +85,7 @@ class InfolegaleManager
      */
     public function getScore($siren)
     {
-        if (null !== ($result = $this->sendRequest(self::RESOURCE_COMPANY_SCORE, $siren))) {
+        if (null !== ($result = $this->sendRequest(self::RESOURCE_COMPANY_SCORE, ['siren' => $siren]))) {
             return $this->serializer->deserialize($result->scoreInfo[0]->asXML(), ScoreDetails::class, 'xml');
         }
 
@@ -99,7 +99,7 @@ class InfolegaleManager
      */
     public function searchCompany($siren)
     {
-        return $this->sendRequest(self::RESOURCE_SEARCH_COMPANY, $siren);
+        return $this->sendRequest(self::RESOURCE_SEARCH_COMPANY, ['siren' => $siren]);
     }
 
     /**
@@ -109,7 +109,7 @@ class InfolegaleManager
      */
     public function getIdentity($siren)
     {
-        return $this->sendRequest(self::RESOURCE_COMPANY_IDENTITY, $siren);
+        return $this->sendRequest(self::RESOURCE_COMPANY_IDENTITY, ['siren' => $siren]);
     }
 
     /**
@@ -119,7 +119,7 @@ class InfolegaleManager
      */
     public function getListAnnonceLegale($siren)
     {
-        return $this->sendRequest(self::RESOURCE_LEGAL_NOTICE, $siren);
+        return $this->sendRequest(self::RESOURCE_LEGAL_NOTICE, ['siren' => $siren]);
     }
 
     /**
@@ -129,76 +129,20 @@ class InfolegaleManager
      */
     public function getExecutives($siren)
     {
-        if (null !== ($result = $this->sendRequest(self::RESOURCE_EXECUTIVES, $siren))) {
+        if (null !== ($result = $this->sendRequest(self::RESOURCE_EXECUTIVES, ['siren' => $siren]))) {
             return $this->serializer->deserialize($result->asXML(), ExecutiveCollection::class, 'xml');
         }
         return null;
     }
 
     /**
-     * @param $siren
-     *
-     * @return ArrayCollection
-     */
-    public function getMandates($siren)
-    {
-        $mandates   = new ArrayCollection();
-        $executives = $this->getExecutives($siren);
-
-        if (null !== $executives) {
-            foreach ($executives->getExecutives() as $executive) {
-                $mandates->set($executive->getExecutiveId(), $this->getExecutiveMandates($siren, $executive->getExecutiveId()));
-            }
-        }
-
-        return $mandates;
-    }
-
-    /**
-     * @param $siren
-     *
-     * @return ArrayCollection
-     */
-    public function getHomonyms($siren)
-    {
-        $homonyms   = new ArrayCollection();
-        $executives = $this->getExecutives($siren);
-
-        if (null !== $executives) {
-            foreach ($executives->getExecutives() as $executive) {
-                $homonyms->set($executive->getExecutiveId(), $this->getExecutiveHomonyms($siren, $executive->getExecutiveId()));
-            }
-        }
-        return $homonyms;
-    }
-
-    /**
-     * @param $siren
-     *
-     * @return ArrayCollection
-     */
-    public function getDirectorAnnouncements($siren)
-    {
-        $announcement = new ArrayCollection();
-        $executives   = $this->getExecutives($siren);
-
-        if (null !== $executives) {
-            foreach ($executives->getExecutives() as $executive) {
-                $announcement->set($executive->getExecutiveId(), $this->getExecutiveDirectorAnnouncements($siren, $executive->getExecutiveId()));
-            }
-        }
-        return $announcement;
-    }
-
-    /**
-     * @param $siren
      * @param $executiveId
      *
      * @return MandateCollection|null
      */
-    private function getExecutiveMandates($siren, $executiveId)
+    public function getMandates($executiveId)
     {
-        if (null !== $result = $this->sendRequest(self::RESOURCE_MANDATES, $siren, ['execId' => $executiveId])) {
+        if (null !== $result = $this->sendRequest(self::RESOURCE_MANDATES, ['execId' => $executiveId])) {
             return $this->serializer->deserialize($result->asXML(), MandateCollection::class, 'xml');
         }
         return null;
@@ -210,23 +154,22 @@ class InfolegaleManager
      *
      * @return HomonymCollection|null
      */
-    private function getExecutiveHomonyms($siren, $executiveId)
+    public function getHomonyms($siren, $executiveId)
     {
-        if (null !== $result = $this->sendRequest(self::RESOURCE_HOMONYMS, $siren, ['execId' => $executiveId])) {
+        if (null !== $result = $this->sendRequest(self::RESOURCE_HOMONYMS, ['execId' => $executiveId])) {
             return $this->serializer->deserialize($result->asXML(), HomonymCollection::class, 'xml');
         }
         return null;
     }
 
     /**
-     * @param $siren
      * @param $executiveId
      *
      * @return DirectorAnnouncementCollection|null
      */
-    private function getExecutiveDirectorAnnouncements($siren, $executiveId)
+    public function getDirectorAnnouncements($executiveId)
     {
-        if (null !== $result = $this->sendRequest(self::RESOURCE_ANNOUNCEMENTS_DIRECTOR, $siren, ['execId' => $executiveId])) {
+        if (null !== $result = $this->sendRequest(self::RESOURCE_ANNOUNCEMENTS_DIRECTOR, ['execId' => $executiveId])) {
             return $this->serializer->deserialize($result->asXML(), DirectorAnnouncementCollection::class, 'xml');
         }
         return null;
@@ -234,23 +177,24 @@ class InfolegaleManager
 
     /**
      * @param string $resourceLabel
-     * @param string $siren
      * @param array  $parameters
      *
      * @return null|\SimpleXMLElement
      */
-    private function sendRequest($resourceLabel, $siren, $parameters = [])
+    private function sendRequest($resourceLabel, $parameters = [])
     {
-        if (true === empty($siren)) {
-            throw new \InvalidArgumentException('SIREN is missing');
-        }
         $wsResource = $this->resourceManager->getResource($resourceLabel);
-        $logContext = ['class' => __CLASS__, 'resource' => $wsResource->getResourceName(), 'siren' => $siren];
-
-        $query = [
-            'token' => $this->token,
-            'siren' => $siren
+        $logContext = ['class' => __CLASS__, 'resource' => $wsResource->getResourceName()];
+        $siren      = null;
+        $query      = [
+            'token' => $this->token
         ];
+
+        if (isset($parameters['siren'])) {
+            $siren               = $parameters['siren'];
+            $logContext['siren'] = $siren;
+            $query['siren']      = $siren;
+        }
 
         $query = array_merge($query, $parameters);
 

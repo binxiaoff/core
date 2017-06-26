@@ -4,6 +4,7 @@
  * @todo
  * - WS managers may throw a specific exception when response is unexpected that may be catched in the validate method and return a "\projects_status::UNEXPECTED_RESPONSE . 'WS_NAME'" error
  */
+
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator;
 
 use Doctrine\ORM\EntityManager;
@@ -423,13 +424,64 @@ class CompanyValidator
         return [];
     }
 
-    private function checkCurrentExecutivesHistory($siren)
+    public function checkCurrentExecutivesHistory($siren)
     {
-        $directors = $this->externalDataManager->getExecutives($siren);
+        $executives = $this->externalDataManager->getExecutives($siren);
+        $now        = new \DateTime();
 
-        //
+        foreach ($executives as $executive) {
+            if (in_array($executive->getChange(), ['Nomination', 'Modification', 'Sans précision'])) {
+                $mandates = $this->externalDataManager->getExecutiveMandates($executive->getExecutiveId());
+                foreach ($mandates as $mandate) {
+                    if ($mandate->getChangeDate() && $mandate->getChangeDate()->diff($now)->y < 5) {
+                        $checkedSiren[] = $mandate->getSiren();
+                        $this->externalDataManager->refreshExecutiveChanges($executive, $mandate->getSiren(), $mandate->getposition()->getCode());
+                        $changes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')
+                            ->findBy(['idExecutive' => $executive->getExecutiveId(), 'siren' => $mandate->getSiren()]);
+                        foreach ($changes as $change) {
+                            if (null === $change->getNominated()) {
+                                $mockedNominatedDate = new \DateTime('5 years ago');
+                                if (null !== $change->getEnded() && $change->getEnded() > $mockedNominatedDate) {
+                                    $change->setNominated($mockedNominatedDate);
+                                } else {
+                                    $change->setNominated($change->getEnded());
+                                }
+                            }
+                            if (null === $change->getEnded()) {
+                                $change->setEnded($now);
+                            }
+                        }
 
-        return $directors;
+                    }
+                }
+
+                $incidentAnnouncements = $this->externalDataManager->getDirectorAnnouncements($executive->getExecutiveId());
+
+                foreach ($incidentAnnouncements as $announcement) {
+                    $changes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')
+                        ->findBy(['idExecutive' => $executive->getExecutiveId(), 'siren' => $announcement->getSiren()]);
+                    foreach ($changes as $change) {
+                        if (null === $change->getNominated()) {
+                            $mockedNominatedDate = new \DateTime('5 years ago');
+                            if (null !== $change->getEnded() && $change->getEnded() > $mockedNominatedDate) {
+                                $change->setNominated($mockedNominatedDate);
+                            } else {
+                                $change->setNominated($change->getEnded());
+                            }
+                        }
+                        if (null === $change->getEnded() || $change->getEnded()->diff($now)->y < 1) {
+                            $change->setEnded($now);
+                        }
+
+                        if ($change->getNominated() <= $announcement->getPublishedDate() && $change->getEnded() >= $announcement->getPublishedDate()) {
+                            return [\projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE];
+                        }
+                    }
+                }
+            }
+        }
+
+        return [];
     }
 
     /**
