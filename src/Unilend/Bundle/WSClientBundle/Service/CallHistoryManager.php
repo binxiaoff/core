@@ -149,8 +149,8 @@ class CallHistoryManager
                 if (false == $wsResource->isIsAvailable()) {
                     return;
                 }
-
-                $wsResource->setIsAvailable(WsExternalResource::STATUS_UNAVAILABLE);
+                $wsResource->setIsAvailable(WsExternalResource::STATUS_UNAVAILABLE)
+                    ->setUpdated(new \DateTime());
                 $slackMessage = $wsResource->getProviderName() . '(' . $wsResource->getResourceName() . ') is down  :skull_and_crossbones:';
 
                 if (null !== $extraInfo) {
@@ -161,9 +161,13 @@ class CallHistoryManager
                 if ($wsResource->isIsAvailable()) {
                     return;
                 }
-
-                $wsResource->setIsAvailable(WsExternalResource::STATUS_AVAILABLE);
+                $wsResource->setIsAvailable(WsExternalResource::STATUS_AVAILABLE)
+                    ->setUpdated(new \DateTime());
                 $slackMessage = $wsResource->getProviderName() . '(' . $wsResource->getResourceName() . ') is up  :white_check_mark:';
+
+                if (null !== $extraInfo) {
+                    $slackMessage .= "\n> " . $extraInfo;
+                }
                 break;
             default:
                 return;
@@ -187,6 +191,7 @@ class CallHistoryManager
      * @param WsCallHistory $callHistory
      * @param array         $parameter
      * @param string        $response
+     * @param WsCallHistory $callHistory
      */
     private function storeResponse(WsCallHistory $callHistory, array $parameter, $response)
     {

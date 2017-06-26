@@ -12,6 +12,7 @@ use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyIdentityDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyRatingDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummaryListDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Codinf\IncidentList;
+use Unilend\Bundle\WSClientBundle\Entity\Ellisphere\Report as EllispehereReport;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
 use Unilend\Bundle\WSClientBundle\Entity\Infogreffe\CompanyIndebtedness;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\DirectorAnnouncement;
@@ -20,6 +21,7 @@ use Unilend\Bundle\WSClientBundle\Entity\Infolegale\Mandate;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\ScoreDetails;
 use Unilend\Bundle\WSClientBundle\Service\AltaresManager;
 use Unilend\Bundle\WSClientBundle\Service\CodinfManager;
+use Unilend\Bundle\WSClientBundle\Service\EllisphereManager;
 use Unilend\Bundle\WSClientBundle\Service\EulerHermesManager;
 use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
 use Unilend\Bundle\WSClientBundle\Service\InfolegaleManager;
@@ -38,6 +40,8 @@ class ExternalDataManager
     private $infolegaleManager;
     /** @var InfogreffeManager */
     private $infogreffeManager;
+    /** @var EllisphereManager */
+    private $ellisphereManager;
     /** @var CompanyBalanceSheetManager */
     private $companyBalanceSheetManager;
     /** @var CompanyRatingHistory */
@@ -50,6 +54,7 @@ class ExternalDataManager
      * @param CodinfManager              $codinfManager
      * @param InfolegaleManager          $infolegaleManager
      * @param InfogreffeManager          $infogreffeManager
+     * @param EllisphereManager          $ellisphereManager
      * @param CompanyBalanceSheetManager $companyBalanceSheetManager
      */
     public function __construct(
@@ -59,6 +64,7 @@ class ExternalDataManager
         CodinfManager $codinfManager,
         InfolegaleManager $infolegaleManager,
         InfogreffeManager $infogreffeManager,
+        EllisphereManager $ellisphereManager,
         CompanyBalanceSheetManager $companyBalanceSheetManager
     )
     {
@@ -68,6 +74,7 @@ class ExternalDataManager
         $this->codinfManager              = $codinfManager;
         $this->infolegaleManager          = $infolegaleManager;
         $this->infogreffeManager          = $infogreffeManager;
+        $this->ellisphereManager          = $ellisphereManager;
         $this->companyBalanceSheetManager = $companyBalanceSheetManager;
     }
 
@@ -251,6 +258,16 @@ class ExternalDataManager
         }
 
         return $eulerHermesGrade;
+    }
+
+    /**
+     * @param string $siren
+     *
+     * @return EllispehereReport|null
+     */
+    public function getEllispehereReport($siren)
+    {
+        return $this->ellisphereManager->getReport($siren);
     }
 
     /**

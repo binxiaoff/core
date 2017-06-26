@@ -319,18 +319,6 @@
   }
 }
 
-// @note Potential legacy code
-.site-search {
-  .form-field-inline {
-    width: 100%;
-
-    .site-search-input {
-      @include input;
-      padding-left: 40px;
-    }
-  }
-}
-
 // Site header site search
 .site-header {
   .site-search {
@@ -339,7 +327,9 @@
       display: none;
     }
 
-    // No user logged in, so always show the full site search (unless breakpoint isn't wide enough for it)
+    // Show the full site search for laptops and desktops
+    #{$js-user-type-borrower} &,
+    #{$js-user-type-lender} &,
     #{$js-no-user} & {
       @include devices('tablet-l') {
         @include site-search-compact;
@@ -354,16 +344,19 @@
       }
     }
 
-    // User logged in, so show the compact site search
-    #{$js-user-type-borrower} &,
-    #{$js-user-type-lender} &,
-    #{$js-user-type-partner} & {
-      @include devices('md') {
-        @include site-search-compact;
+    // Special adjustments for not logged in users
+    #{$js-no-user} & {
+      @include devices('laptop') {
+        width: $width-site-header-search-full-md - 30px;
+        &>.input-field {
+          padding-left: 38px;
+        }
       }
-
       @include devices('lg') {
-        @include site-search-compact-lg;
+        width: $width-site-header-search-full-lg - 80px;
+        &>.input-field {
+          padding-left: 38px;
+        }
       }
 
       // Modification to adjacent site-user
@@ -376,6 +369,11 @@
           margin-right: 0;
         }
       }
+    }
+
+    // No search for Partners just yet
+    #{$js-user-type-partner} & {
+      display: none;
     }
   }
 }

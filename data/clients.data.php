@@ -793,7 +793,7 @@ class clients extends clients_crud
                       ELSE "0"
                       END AS insee_region_code,
                       COUNT(*) AS count
-                    FROM (SELECT id_client,
+                    FROM (SELECT clients.id_client,
                          CASE WHEN clients.type IN (' . implode(',', [ClientEntity::TYPE_PERSON, ClientEntity::TYPE_PERSON_FOREIGNER]) . ') THEN clients_adresses.cp_fiscal ELSE companies.zip END AS cp
                          FROM clients
                              LEFT JOIN clients_adresses USING (id_client)
