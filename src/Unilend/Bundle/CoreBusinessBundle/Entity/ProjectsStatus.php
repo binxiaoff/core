@@ -69,6 +69,7 @@ class ProjectsStatus
     const NON_ELIGIBLE_REASON_ELLISPHERE_DEFAULTS                   = 'ellisphere_default';
     const NON_ELIGIBLE_REASON_ELLISPHERE_SOCIAL_SECURITY_PRIVILEGES = 'ellisphere_social_security_privileges';
     const NON_ELIGIBLE_REASON_ELLISPHERE_TREASURY_TAX_PRIVILEGES    = 'ellisphere_treasury_tax_privileges';
+    const NON_ELIGIBLE_REASON_EXECUTIVE_HAS_INCIDENT                = 'executive_has_incident';
     const UNEXPECTED_RESPONSE                                       = 'unexpected_response_from_';
 
     /**
@@ -93,8 +94,6 @@ class ProjectsStatus
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $idProjectStatus;
-
-
 
     /**
      * Set label

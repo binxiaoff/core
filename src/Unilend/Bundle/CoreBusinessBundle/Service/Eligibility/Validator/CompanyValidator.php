@@ -454,7 +454,7 @@ class CompanyValidator
         return [];
     }
 
-    public function checkCurrentExecutivesHistory($siren)
+    private function checkCurrentExecutivesHistory($siren)
     {
         $executives = $this->externalDataManager->getExecutives($siren);
         $now        = new \DateTime();
@@ -504,7 +504,7 @@ class CompanyValidator
                         }
 
                         if ($change->getNominated() <= $announcement->getPublishedDate() && $change->getEnded() >= $announcement->getPublishedDate()) {
-                            return [\projects_status::NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE];
+                            return [ProjectsStatus::NON_ELIGIBLE_REASON_EXECUTIVE_HAS_INCIDENT];
                         }
                     }
                 }
