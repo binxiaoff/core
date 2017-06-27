@@ -199,19 +199,26 @@ class MainController extends Controller
     public function projectSimulatorStepTwoAction(Request $request)
     {
         $formData = $request->request->get('esim');
+        $session  = $request->getSession();
 
         try {
             /** @var ProjectRequestManager $projectRequestManager */
             $projectRequestManager = $this->get('unilend.service.project_request_manager');
             $project               = $projectRequestManager->saveSimulatorRequest($formData);
 
-            $session = $request->getSession();
-            $session->set('esim/project_id', $project->id_project);
+            $session->remove('esim');
 
             return $this->redirectToRoute('project_request_simulator_start', ['hash' => $project->hash]);
         } catch (\Exception $exception) {
-            $this->get('logger')->warning('Could not save project : ' . $exception->getMessage() . 'form data = ' . json_encode($formData), ['class' => __CLASS__, 'function' => __FUNCTION__]);
-            return $this->redirectToRoute('home_borrower');
+            $this->get('logger')->warning('Could not save project : ' . $exception->getMessage() . '. Form data = ' . json_encode($formData), ['class' => __CLASS__, 'function' => __FUNCTION__]);
+
+            if ($exception instanceof \InvalidArgumentException) {
+                $this->addFlash('projectSimulatorError', $exception->getCode());
+            }
+
+            $session->set('esim', $formData);
+
+            return $this->redirect($this->generateUrl('home_borrower') . '#homeemp-section-esim');
         }
     }
 

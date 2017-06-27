@@ -906,7 +906,7 @@ class BorrowerAccountController extends Controller
 
                 switch ($operationEntity->getWireTransferIn()->getTypeRemb()) {
                     case Receptions::REPAYMENT_TYPE_EARLY:
-                        $operation['label'] =  self::OP_MONTHLY_PAYMENT;
+                        $operation['label'] =  self::OP_EARLY_PAYMENT;
                         break;
                     case Receptions::REPAYMENT_TYPE_NORMAL:
                         $operation['label'] = self::OP_MONTHLY_PAYMENT;
