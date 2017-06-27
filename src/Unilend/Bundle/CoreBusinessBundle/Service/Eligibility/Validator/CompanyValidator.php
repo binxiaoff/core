@@ -4,6 +4,7 @@
  * @todo
  * - WS managers may throw a specific exception when response is unexpected that may be catched in the validate method and return a "ProjectsStatus::UNEXPECTED_RESPONSE . 'WS_NAME'" error
  */
+
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator;
 
 use Doctrine\ORM\EntityManager;
@@ -29,12 +30,12 @@ class CompanyValidator
         'TC-RISK-001' => 'checkSiren',
         'TC-RISK-002' => 'checkActiveCompany',
         'TC-RISK-003' => 'checkCollectiveProceeding',
+        'TC-RISK-004' => 'checkLocation',
         'TC-RISK-005' => 'checkPaymentIncidents',
         'TC-RISK-006' => 'checkAltaresScore',
         'TC-RISK-007' => 'checkCapitalStock',
         'TC-RISK-008' => 'checkGrossOperatingSurplus',
         'TC-RISK-009' => 'checkEliminationXerfiScore',
-        'TC-RISK-010' => 'checkAltaresScoreVsXerfiScore',
         'TC-RISK-011' => 'checkEulerHermesTrafficLight',
         'TC-RISK-012' => 'checkEllispehereReport',
         'TC-RISK-013' => 'checkInfolegaleScore',
@@ -192,6 +193,19 @@ class CompanyValidator
         return [];
     }
 
+    private function checkLocation($siren)
+    {
+        $companyData = $this->externalDataManager->getCompanyIdentity($siren);
+        if (
+            in_array(substr($companyData->getPostCode(), 0, 2), ['2A', '2B']) // Corse
+            || in_array(substr($companyData->getPostCode(), 0, 3), ['973', '976']) // Guyane et Mayotte
+        ) {
+            return [ProjectsStatus::NON_ELIGIBLE_REASON_COMPANY_LOCATION];
+        }
+
+        return [];
+    }
+
     /**
      * @param string $siren
      *
@@ -329,31 +343,6 @@ class CompanyValidator
 
         if (Xerfi::UNILEND_ELIMINATION_SCORE === $xerfi->getUnilendRating()) {
             return [ProjectsStatus::NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE];
-        }
-
-        return [];
-    }
-
-    /**
-     * @param string $siren
-     *
-     * @return array
-     */
-    private function checkAltaresScoreVsXerfiScore($siren)
-    {
-        $altaresScore = $this->externalDataManager->getAltaresScore($siren);
-        if (null === $altaresScore) {
-            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_score'];
-        }
-
-        $nafCode = $this->getNAFCode($siren);
-        $xerfi   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($nafCode);
-
-        if (
-            in_array($altaresScore->getScore20(), [4, 5])
-            && $xerfi->getScore() <= 75
-        ) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_ALTARES_SCORE];
         }
 
         return [];

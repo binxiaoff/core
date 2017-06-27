@@ -12,6 +12,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\DirectorAnnouncementCollection;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\ExecutiveCollection;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\HomonymCollection;
+use Unilend\Bundle\WSClientBundle\Entity\Infolegale\Identity;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\MandateCollection;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\ScoreDetails;
 
@@ -105,11 +106,15 @@ class InfolegaleManager
     /**
      * @param string $siren
      *
-     * @return null|\SimpleXMLElement
+     * @return null|Identity
      */
     public function getIdentity($siren)
     {
-        return $this->sendRequest(self::RESOURCE_COMPANY_IDENTITY, $siren);
+        if (null !== ($result = $this->sendRequest(self::RESOURCE_COMPANY_IDENTITY, $siren))) {
+            return $this->serializer->deserialize($result->asXML(), Identity::class, 'xml');
+        }
+
+        return null;
     }
 
     /**

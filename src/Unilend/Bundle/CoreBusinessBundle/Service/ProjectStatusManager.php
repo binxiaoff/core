@@ -125,6 +125,10 @@ class ProjectStatusManager
                 return $this->translator->trans('project-rejection-reason-bo_negative-operating-result');
             case ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND:
                 return $this->translator->trans('project-rejection-reason-bo_product-not-found');
+            case ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_BLEND:
+                return $this->translator->trans('project-rejection-reason-bo_product-blend');
+            case ProjectsStatus::NON_ELIGIBLE_REASON_COMPANY_LOCATION:
+                return $this->translator->trans('project-rejection-reason-bo_company-location');
             default:
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-default');
         }

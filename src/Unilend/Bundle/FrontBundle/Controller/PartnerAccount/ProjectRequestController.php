@@ -262,6 +262,9 @@ class ProjectRequestController extends Controller
                 case ProjectsStatus::NON_ELIGIBLE_REASON_INACTIVE:
                     $translation = 'partner-project-request_not-eligible-reason-unknown-or-inactive-siren';
                     break;
+                case ProjectsStatus::NON_ELIGIBLE_REASON_COMPANY_LOCATION:
+                    $translation = 'partner-project-request_not-eligible-reason-company-location';
+                    break;
                 case ProjectsStatus::NON_ELIGIBLE_REASON_PROCEEDING:
                     $translation = 'partner-project-request_not-eligible-reason-collective-proceeding';
                     break;
@@ -289,6 +292,7 @@ class ProjectRequestController extends Controller
                     $translation = 'partner-project-request_not-eligible-reason-financial-data';
                     break;
                 case ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_BLEND:
                 default:
                     $translation = 'partner-project-request_not-eligible-reason-no-product';
                     break;

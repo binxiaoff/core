@@ -4,7 +4,7 @@ namespace Unilend\Bundle\WSClientBundle\Entity\Infolegale;
 
 use JMS\Serializer\Annotation as JMS;
 
-class Executive
+class Executive extends Staff
 {
     /**
      * @var int
@@ -13,31 +13,6 @@ class Executive
      * @JMS\Type("integer")
      */
     private $executiveId;
-
-    /**
-     * @var string
-     *
-     * @JMS\SerializedName("civilite")
-     * @JMS\Type("string")
-     */
-    private $title;
-
-    /**
-     * @var string
-     *
-     * @JMS\SerializedName("nom")
-     * @JMS\Type("string")
-     */
-    private $name;
-
-    /**
-     * @var string
-     *
-     * @JMS\SerializedName("prenom")
-     * @JMS\Type("string")
-     */
-    private $firstName;
-
     /**
      * @var string
      *
@@ -79,14 +54,6 @@ class Executive
     private $birthday;
 
     /**
-     * @var Position
-     *
-     * @JMS\SerializedName("fonction")
-     * @JMS\Type("Unilend\Bundle\WSClientBundle\Entity\Infolegale\Position")
-     */
-    private $position;
-
-    /**
      * @var string
      *
      * @JMS\SerializedName("mouvement")
@@ -108,30 +75,6 @@ class Executive
     public function getExecutiveId()
     {
         return $this->executiveId;
-    }
-
-    /**
-     * @return string
-     */
-    public function getTitle()
-    {
-        return $this->title;
-    }
-
-    /**
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
-     * @return string
-     */
-    public function getFirstName()
-    {
-        return $this->firstName;
     }
 
     /**
@@ -164,22 +107,6 @@ class Executive
     public function getCountry()
     {
         return $this->country;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getBirthday()
-    {
-        return $this->birthday;
-    }
-
-    /**
-     * @return Position
-     */
-    public function getPosition()
-    {
-        return $this->position;
     }
 
     /**
