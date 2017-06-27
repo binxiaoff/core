@@ -177,7 +177,7 @@ class UserProvider implements UserProviderInterface
 
             $rootCompany = $partnerRole->getIdCompany();
 
-            while ($rootCompany->getIdParentCompany()) {
+            while ($rootCompany->getIdParentCompany() && $rootCompany->getIdParentCompany()->getIdCompany()) {
                 $rootCompany = $rootCompany->getIdParentCompany();
             }
 

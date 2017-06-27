@@ -34,6 +34,7 @@ class clients_history extends clients_history_crud
     const TYPE_CLIENT_LENDER               = 1;
     const TYPE_CLIENT_BORROWER             = 2;
     const TYPE_CLIENT_LENDER_BORROWER      = 3;
+    const TYPE_CLIENT_PARTNER              = 4;
 
     function clients_history($bdd, $params = '')
     {

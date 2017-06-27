@@ -303,8 +303,9 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $client->setLastlogin(new \DateTime('NOW'));
         $this->entityManager->flush($client);
 
-        $isLender        = $client->isLender();
-        $isBorrower      = $client->isBorrower();
+        $isLender   = $client->isLender();
+        $isBorrower = $client->isBorrower();
+        $isPartner  = $client->isPartner();
 
         if ($isLender && $isBorrower) {
             $type = \clients_history::TYPE_CLIENT_LENDER_BORROWER;
@@ -312,6 +313,8 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             $type = \clients_history::TYPE_CLIENT_LENDER;
         } elseif ($isBorrower) {
             $type = \clients_history::TYPE_CLIENT_BORROWER;
+        } elseif ($isPartner) {
+            $type = \clients_history::TYPE_CLIENT_PARTNER;
         }
 
         /** @var \clients_history $clientHistory */

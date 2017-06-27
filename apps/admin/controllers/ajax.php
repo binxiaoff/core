@@ -971,6 +971,7 @@ class ajaxController extends bootstrap
             $projectCommentEntity->setIdProject($project);
             $projectCommentEntity->setIdUser($this->userEntity);
             $projectCommentEntity->setContent('<p><u>Conditions suspensives de mise en ligne</u><p>' . $_POST['suspensive_conditions_comment'] . '</p>');
+            $projectCommentEntity->setPublic(true);
 
             $entityManager->persist($projectCommentEntity);
             $entityManager->flush($projectCommentEntity);
