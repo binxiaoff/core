@@ -161,9 +161,9 @@
                                 <?php if ($aProjectLoans['nb_loan'] == 1) : ?>
                                     <td>
                                         <?php if ($this->loan->get($aProjectLoans['id_loan_if_one_loan']) && false === empty($this->loan->id_transfer)) :
-                                            /** @var \lenders_accounts $formerOwner */
+                                            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $formerOwner */
                                             $formerOwner = $this->loanManager->getFormerOwner($this->loan); ?>
-                                            <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->id_lender_account ?>"><?= $formerOwner->id_client_owner ?></a>
+                                            <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->getIdClient() ?>"><?= $formerOwner->id_client_owner ?></a>
                                         <?php endif; ?>
                                     </td>
                                 <?php else : ?>

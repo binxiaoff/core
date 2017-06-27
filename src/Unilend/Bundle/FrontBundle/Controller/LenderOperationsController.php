@@ -843,50 +843,6 @@ class LenderOperationsController extends Controller
     }
 
     /**
-     * @param array               $repayment
-     * @param Projects            $project
-     * @param TranslatorInterface $translator
-     * @param \ficelle            $ficelle
-     * @return array
-     */
-    private function getRepaymentTitleAndContent(array $repayment, Projects $project, TranslatorInterface $translator, \ficelle $ficelle)
-    {
-        switch ($repayment['typeTransaction']) {
-            case \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT:
-                $title   = $translator->trans('lender-notifications_early-repayment-title');
-                $content = $translator->trans('lender-notifications_early-repayment-content', [
-                    '%amount%'     => $ficelle->formatNumber($repayment['amount'] / 100, 2),
-                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
-                    '%company%'    => $project->getIdCompany()->getName()
-                ]);
-                break;
-            case \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT:
-                $title   = $translator->trans('lender-notifications_recovery-repayment-title');
-                $content = $translator->trans('lender-notifications_recovery-repayment-content', [
-                    '%amount%'     => $ficelle->formatNumber($repayment['amount'] / 100, 2),
-                    '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
-                    '%company%'    => $project->getIdCompany()->getName()
-                ]);
-                break;
-            case \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS:
-            case \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL:
-            $title   = $translator->trans('lender-notifications_repayment-title');
-            $content = $translator->trans('lender-notifications_repayment-content', [
-                '%amount%'     => $ficelle->formatNumber($repayment['amount'] / 100, 2),
-                '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
-                '%company%'    => $project->getIdCompany()->getName()
-            ]);
-            break;
-            default:
-                $title   = '';
-                $content = '';
-                break;
-        }
-
-        return ['title' => $title, 'content' => $content];
-    }
-
-    /**
      * @param array $a
      * @param array $b
      *
