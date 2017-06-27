@@ -362,70 +362,71 @@ class LenderOperationsController extends Controller
         $lenderProjectLoans = [];
 
         foreach ($lenderLoans as $projectLoans) {
-            $loanData = [];
-            /** @var \DateTime $startDateTime */
-            $startDateTime = new \DateTime(date('Y-m-d'));
-            /** @var \DateTime $endDateTime */
-            $endDateTime = new \DateTime($projectLoans['fin']);
-            /** @var \DateInterval $remainingDuration */
-            $remainingDuration = $startDateTime->diff($endDateTime);
+            if ($projectLoans['project_status'] >= ProjectsStatus::REMBOURSEMENT) {
+                $loanData = [];
+                /** @var \DateTime $startDateTime */
+                $startDateTime = new \DateTime(date('Y-m-d'));
+                /** @var \DateTime $endDateTime */
+                $endDateTime = new \DateTime($projectLoans['fin']);
+                /** @var \DateInterval $remainingDuration */
+                $remainingDuration = $startDateTime->diff($endDateTime);
 
-            $loanData['id']                       = $projectLoans['id_project'];
-            $loanData['url']                      = $this->generateUrl('project_detail', ['projectSlug' => $projectLoans['slug']]);
-            $loanData['name']                     = $projectLoans['title'];
-            $loanData['rate']                     = round($projectLoans['rate'], 1);
-            $loanData['risk']                     = $projectLoans['risk'];
-            $loanData['amount']                   = round($projectLoans['amount']);
-            $loanData['start_date']               = $projectLoans['debut'];
-            $loanData['end_date']                 = $projectLoans['fin'];
-            $loanData['next_payment_date']        = $projectLoans['next_echeance'];
-            $loanData['monthly_repayment_amount'] = $projectLoans['monthly_repayment_amount'];
-            $loanData['duration']                 = $remainingDuration->y * 12 + $remainingDuration->m + ($remainingDuration->d > 0 ? 1 : 0);
-            $loanData['final_repayment_date']     = $projectLoans['final_repayment_date'];
-            $loanData['remaining_capital_amount'] = $projectLoans['remaining_capital'];
-            $loanData['project_status']           = $projectLoans['project_status'];
+                $loanData['id']                       = $projectLoans['id_project'];
+                $loanData['url']                      = $this->generateUrl('project_detail', ['projectSlug' => $projectLoans['slug']]);
+                $loanData['name']                     = $projectLoans['title'];
+                $loanData['rate']                     = round($projectLoans['rate'], 1);
+                $loanData['risk']                     = $projectLoans['risk'];
+                $loanData['amount']                   = round($projectLoans['amount']);
+                $loanData['start_date']               = $projectLoans['debut'];
+                $loanData['end_date']                 = $projectLoans['fin'];
+                $loanData['next_payment_date']        = $projectLoans['next_echeance'];
+                $loanData['monthly_repayment_amount'] = $projectLoans['monthly_repayment_amount'];
+                $loanData['duration']                 = $remainingDuration->y * 12 + $remainingDuration->m + ($remainingDuration->d > 0 ? 1 : 0);
+                $loanData['final_repayment_date']     = $projectLoans['final_repayment_date'];
+                $loanData['remaining_capital_amount'] = $projectLoans['remaining_capital'];
+                $loanData['project_status']           = $projectLoans['project_status'];
 
-            switch ($projectLoans['project_status']) {
-                case \projects_status::PROBLEME:
-                case \projects_status::PROBLEME_J_X:
-                    $loanData['status'] = 'late';
-                    ++$loanStatus['late-repayment'];
-                    break;
-                case \projects_status::RECOUVREMENT:
-                    $loanData['status'] = 'completing';
-                    ++$loanStatus['problem'];
-                    break;
-                case \projects_status::PROCEDURE_SAUVEGARDE:
-                case \projects_status::REDRESSEMENT_JUDICIAIRE:
-                case \projects_status::LIQUIDATION_JUDICIAIRE:
-                    $loanData['status'] = 'problem';
-                    ++$loanStatus['problem'];
-                    break;
-                case \projects_status::DEFAUT:
-                    $loanData['status'] = 'defaulted';
-                    ++$loanStatus['problem'];
-                    break;
-                case \projects_status::REMBOURSE:
-                case \projects_status::REMBOURSEMENT_ANTICIPE:
-                    $loanData['status'] = 'completed';
-                    ++$loanStatus['repaid'];
-                    break;
-                case \projects_status::REMBOURSEMENT:
-                default:
-                    $loanData['status'] = 'inprogress';
-                    ++$loanStatus['repayment'];
-                    break;
-            }
-            try {
-                $loanData['activity'] = [
-                    'unread_count' => $notificationsRepository->countUnreadNotificationsForClient($wallet->getId(), $projectLoans['id_project'])
-                ];
-            } catch (\Exception $exception) {
-                unset($exception);
-                $loanData['activity'] = [
-                    'unread_count' => 0
-                ];
-            }
+                switch ($projectLoans['project_status']) {
+                    case \projects_status::PROBLEME:
+                    case \projects_status::PROBLEME_J_X:
+                        $loanData['status'] = 'late';
+                        ++$loanStatus['late-repayment'];
+                        break;
+                    case \projects_status::RECOUVREMENT:
+                        $loanData['status'] = 'completing';
+                        ++$loanStatus['problem'];
+                        break;
+                    case \projects_status::PROCEDURE_SAUVEGARDE:
+                    case \projects_status::REDRESSEMENT_JUDICIAIRE:
+                    case \projects_status::LIQUIDATION_JUDICIAIRE:
+                        $loanData['status'] = 'problem';
+                        ++$loanStatus['problem'];
+                        break;
+                    case \projects_status::DEFAUT:
+                        $loanData['status'] = 'defaulted';
+                        ++$loanStatus['problem'];
+                        break;
+                    case \projects_status::REMBOURSE:
+                    case \projects_status::REMBOURSEMENT_ANTICIPE:
+                        $loanData['status'] = 'completed';
+                        ++$loanStatus['repaid'];
+                        break;
+                    case \projects_status::REMBOURSEMENT:
+                    default:
+                        $loanData['status'] = 'inprogress';
+                        ++$loanStatus['repayment'];
+                        break;
+                }
+                try {
+                    $loanData['activity'] = [
+                        'unread_count' => $notificationsRepository->countUnreadNotificationsForClient($lender->id_lender_account, $projectLoans['id_project'])
+                    ];
+                } catch (\Exception $exception) {
+                    unset($exception);
+                    $loanData['activity'] = [
+                        'unread_count' => 0
+                    ];
+                }
 
             $projectLoansDetails = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')
                 ->findBy([
@@ -439,27 +440,28 @@ class LenderOperationsController extends Controller
                 'declaration' => 0
             ];
 
-            foreach ($projectLoansDetails as $partialLoan) {
-                (1 == $partialLoan->getIdTypeContract()->getIdContract()) ? $loanData['count']['bond']++ : $loanData['count']['contract']++;
+                foreach ($projectLoansDetails as $partialLoan) {
+                    (1 == $partialLoan->getIdTypeContract()->getIdContract()) ? $loanData['count']['bond']++ : $loanData['count']['contract']++;
 
-                $loans[] = [
-                    'rate'      => round($partialLoan->getRate(), 1),
-                    'amount'    => bcdiv($partialLoan->getAmount(), 100, 0),
-                    'documents' => $this->getDocumentDetail(
-                        $projectLoans['project_status'],
-                        $user->getHash(),
-                        $partialLoan->getIdLoan(),
-                        $partialLoan->getIdTypeContract()->getIdContract(),
-                        $projectsInDept,
-                        $projectLoans['id_project'],
-                        $loanData['count']['declaration']
-                    )
-                ];
+                    $loans[] = [
+                        'rate'      => round($partialLoan->getRate(), 1),
+                        'amount'    => bcdiv($partialLoan->getAmount(), 100, 0),
+                        'documents' => $this->getDocumentDetail(
+                            $projectLoans['project_status'],
+                            $user->getHash(),
+                            $partialLoan->getIdLoan(),
+                            $partialLoan->getIdTypeContract()->getIdContract(),
+                            $projectsInDept,
+                            $projectLoans['id_project'],
+                            $loanData['count']['declaration']
+                        )
+                    ];
+                }
+
+                $loanData['loans']    = $loans;
+                $lenderProjectLoans[] = $loanData;
+                unset($loans, $loanData);
             }
-
-            $loanData['loans']    = $loans;
-            $lenderProjectLoans[] = $loanData;
-            unset($loans, $loanData);
         }
 
         $seriesData  = [];

@@ -230,9 +230,9 @@ class projects extends projects_crud
             case self::SORT_FIELD_END:
             default:
                 if ($sortDirection === self::SORT_DIRECTION_ASC) {
-                    $order = 'lestatut DESC, IF(lestatut = 2, p.date_fin, "") ASC, IF(lestatut = 1, p.date_fin, "") DESC, p.status ASC';
+                    $order = 'lestatut DESC, IF(lestatut = 2, p.date_retrait, "") ASC, IF(lestatut = 1, p.date_fin, "") DESC, p.status ASC';
                 } else {
-                    $order = 'lestatut ASC, IF(lestatut = 2, p.date_fin, "") DESC, IF(lestatut = 1, p.date_fin, "") ASC, p.status DESC';
+                    $order = 'lestatut ASC, IF(lestatut = 2, p.date_retrait, "") DESC, IF(lestatut = 1, p.date_fin, "") ASC, p.status DESC';
                 }
                 break;
         }
@@ -1367,7 +1367,6 @@ class projects extends projects_crud
             ->innerJoin('p', 'companies', 'co', 'p.id_company = co.id_company')
             ->innerJoin('p', 'projects_status', 'ps', 'p.status = ps.status')
             ->where('p.status = :status')
-            ->andWhere('p.added > DATE_SUB(NOW(), INTERVAL 1 WEEK)')
             ->setParameter('status', \projects_status::IMPOSSIBLE_AUTO_EVALUATION, PDO::PARAM_INT)
             ->addOrderBy('creation', 'ASC')
             ->addOrderBy('amount', 'DESC')
