@@ -15,11 +15,13 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
@@ -439,7 +441,7 @@ class LenderOperationsController extends Controller
                 'contract'    => 0,
                 'declaration' => 0
             ];
-
+                /** @var Loans $partialLoan */
                 foreach ($projectLoansDetails as $partialLoan) {
                     (1 == $partialLoan->getIdTypeContract()->getIdContract()) ? $loanData['count']['bond']++ : $loanData['count']['contract']++;
 
@@ -450,7 +452,7 @@ class LenderOperationsController extends Controller
                             $projectLoans['project_status'],
                             $user->getHash(),
                             $partialLoan->getIdLoan(),
-                            $partialLoan->getIdTypeContract()->getIdContract(),
+                            $partialLoan->getIdTypeContract(),
                             $projectsInDept,
                             $projectLoans['id_project'],
                             $loanData['count']['declaration']
@@ -491,21 +493,21 @@ class LenderOperationsController extends Controller
      * @param int $projectStatus
      * @param string $hash
      * @param int $loanId
-     * @param int $docTypeId
+     * @param UnderlyingContract $contract
      * @param array $projectsInDept
      * @param int $projectId
      * @param $nbDeclarations
      *
      * @return array
      */
-    private function getDocumentDetail($projectStatus, $hash, $loanId, $docTypeId, array $projectsInDept, $projectId, &$nbDeclarations = 0)
+    private function getDocumentDetail($projectStatus, $hash, $loanId, UnderlyingContract $contract, array $projectsInDept, $projectId, &$nbDeclarations = 0)
     {
         $documents = [];
 
         if ($projectStatus >= \projects_status::REMBOURSEMENT) {
             $documents[] = [
                 'url'   => $this->get('assets.packages')->getUrl('') . '/pdf/contrat/' . $hash . '/' . $loanId,
-                'label' => $this->get('translator')->trans('lender-operations_contract-type-' . $docTypeId),
+                'label' => $this->get('translator')->trans('contract-type-label_' . $contract->getLabel()),
                 'type'  => 'bond'
             ];
         }
