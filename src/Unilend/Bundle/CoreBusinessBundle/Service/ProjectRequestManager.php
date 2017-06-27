@@ -16,6 +16,12 @@ use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetListDetail;
 
 class ProjectRequestManager
 {
+    const EXCEPTION_CODE_INVALID_SIREN    = 100;
+    const EXCEPTION_CODE_INVALID_EMAIL    = 101;
+    const EXCEPTION_CODE_INVALID_AMOUNT   = 102;
+    const EXCEPTION_CODE_INVALID_DURATION = 103;
+    const EXCEPTION_CODE_INVALID_REASON   = 104;
+
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
     /** @var EntityManager */
@@ -113,27 +119,32 @@ class ProjectRequestManager
     {
         /** @var \projects $project */
         $project = $this->entityManagerSimulator->getRepository('projects');
+        $anyWhiteSpaces = '/\s/';
 
         if (empty($formData['email']) || false === filter_var($formData['email'], FILTER_VALIDATE_EMAIL)) {
-            throw new \InvalidArgumentException('Invalid email');
+            throw new \InvalidArgumentException('Invalid email', self::EXCEPTION_CODE_INVALID_EMAIL);
         }
+
         if (false === empty($formData['siren'])) {
-            $formData['siren'] = str_replace(' ', '', $formData['siren']);
+            $formData['siren'] = preg_replace($anyWhiteSpaces, '', $formData['siren']);
         }
         if (empty($formData['siren']) || 1 !== preg_match('/^([0-9]{9}|[0-9]{14})$/', $formData['siren'])) {
-            throw new \InvalidArgumentException('Invalid SIREN = ' . $formData['siren']);
+            throw new \InvalidArgumentException('Invalid SIREN = ' . $formData['siren'], self::EXCEPTION_CODE_INVALID_SIREN);
         }
+
         if (false === empty($formData['amount'])) {
-            $formData['amount'] = str_replace([' ', '€'], '', $formData['amount']);
+            $formData['amount'] = preg_replace([$anyWhiteSpaces, '/€/'], '', $formData['amount']);
         }
         if (empty($formData['amount']) || false === filter_var($formData['amount'], FILTER_VALIDATE_INT)) {
-            throw new \InvalidArgumentException('Invalid amount = ' . $formData['amount']);
+            throw new \InvalidArgumentException('Invalid amount = ' . $formData['amount'], self::EXCEPTION_CODE_INVALID_AMOUNT);
         }
+
         if (empty($formData['duration']) || false === filter_var($formData['duration'], FILTER_VALIDATE_INT)) {
-            throw new \InvalidArgumentException('Invalid duration');
+            throw new \InvalidArgumentException('Invalid duration', self::EXCEPTION_CODE_INVALID_DURATION);
         }
+
         if (empty($formData['reason']) || false === filter_var($formData['reason'], FILTER_VALIDATE_INT)) {
-            throw new \InvalidArgumentException('Invalid reason');
+            throw new \InvalidArgumentException('Invalid reason', self::EXCEPTION_CODE_INVALID_REASON);
         }
 
         $email = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($formData['email']) ? $formData['email'] . '-' . time() : $formData['email'];
