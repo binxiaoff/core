@@ -13,7 +13,7 @@
         <?php $i = 1; ?>
         <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments $comment */ ?>
         <?php foreach ($this->projectComments as $comment) : ?>
-            <tr<?= ($i++ % 2 == 1 ? '' : ' class="odd"') ?>>
+            <tr<?= ($i++ % 2 == 1 ? '' : ' class="odd"') ?> data-project-id="<?= $comment->getIdProject()->getIdProject() ?>" data-comment-id="<?= $comment->getIdProjectComment() ?>" data-public="<?php if (false == $comment->getPublic()) : ?>false<?php else: ?>true<?php endif; ?>">
                 <td><?php if (false == $comment->getPublic()) : ?><img src="<?= $this->surl ?>/images/admin/lock.png" alt="Privé" style="margin: 0"><?php endif; ?></td>
                 <td>
                     <?= $comment->getAdded()->format('d/m/Y H:i') ?>
@@ -27,11 +27,11 @@
                         <?= $this->users->firstname ?> <?= $this->users->name ?>
                     <?php endif; ?>
                 </td>
-                <td><?= preg_replace('/(https?:\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/i', '<a href="$1" target="_blank">$1</a>', $comment->getContent()) ?></td>
+                <td class="content-memo"><?= preg_replace('/([^"])(https?:\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])([^"]?)/i', '$1<a href="$2" target="_blank">$2</a>$3', $comment->getContent()) ?></td>
                 <td align="center">
                     <?php if ($this->userEntity == $comment->getIdUser()) : ?>
-                        <a href="<?= $this->lurl ?>/dossiers/memo/<?= $comment->getIdProject()->getIdProject() ?>/<?= $comment->getIdProjectComment() ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier"/></a>
-                        <img style="cursor:pointer;" onclick="deleteMemo(<?= $comment->getIdProject()->getIdProject() ?>, <?= $comment->getIdProjectComment() ?>)" src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer"/>
+                        <a role="button" class="btn-edit-memo"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier"/></a>
+                        <a role="button" class="btn-delete-memo"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer"/></a>
                     <?php endif; ?>
                 </td>
             </tr>
