@@ -128,7 +128,7 @@
 
         <tr>
             <th>N'a aucun projet avec produit B-LEND en cours depuis</th>
-            <td><?= isset($this->minNoIncidentBlendDays[0]) ? $this->minNoIncidentBlendDays[0] . ' jours' : '<em>Pas de contrôle</em>' ?></td>
+            <td><?= isset($this->minNoIncidentBlendDays[0]) ? $this->minNoBlendDays[0] . ' jours' : '<em>Pas de contrôle</em>' ?></td>
         </tr>
 
         <tr>
@@ -143,7 +143,7 @@
 
         <tr>
             <th>Vérification du nom du déposant</th>
-            <td><?= isset($this->checkOwner[0]) ? ($this->rcs[0] == 1 ? 'Il doit figurer parmi les dirigeants obtenus via Infolegale.' : '<em>Pas de contrôle</em>') : '<em>Pas de contrôle</em>' ?></td>
+            <td><?= isset($this->checkOwner[0]) ? ($this->checkOwner[0] == 1 ? 'Il doit figurer parmi les dirigeants obtenus via Infolegale.' : '<em>Pas de contrôle</em>') : '<em>Pas de contrôle</em>' ?></td>
         </tr>
 
         <tr>
