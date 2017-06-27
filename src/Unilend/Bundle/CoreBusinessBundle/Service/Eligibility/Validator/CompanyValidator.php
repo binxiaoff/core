@@ -18,8 +18,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Xerfi;
 use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyBalanceSheet;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerHermesCompanyRating;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\Executive;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\Mandate;
 
 class CompanyValidator
 {
@@ -139,19 +137,14 @@ class CompanyValidator
             return $infolegaleScoreCheck;
         }
 
-        $currentExecutivesHistory = $this->checkRule('TC-RISK-014', $siren, $project);
-        if (false === empty($currentExecutivesHistory)) {
-            return $currentExecutivesHistory;
-        }
-
         $eulerHermesGradeCheck = $this->checkRule('TC-RISK-015', $siren, $project);
         if (false === empty($eulerHermesGradeCheck)) {
             return $eulerHermesGradeCheck;
         }
 
-        $previousExecutivesHistory = $this->checkRule('TC-RISK-018', $siren, $project);
-        if (false === empty($previousExecutivesHistory)) {
-            return $previousExecutivesHistory;
+        $executivesHistoryCheck = $this->checkExecutivesHistory($siren);
+        if (false === empty($executivesHistoryCheck)) {
+            return $executivesHistoryCheck;
         }
 
         if (null !== $project) {
@@ -467,16 +460,33 @@ class CompanyValidator
      *
      * @return array
      */
+    private function checkExecutivesHistory($siren)
+    {
+        $this->externalDataManager->refreshExecutiveChanges($siren);
+
+        $currentExecutivesHistory = $this->checkRule('TC-RISK-014', $siren);
+        if (false === empty($currentExecutivesHistory)) {
+            return $currentExecutivesHistory;
+        }
+
+        $previousExecutivesHistory = $this->checkRule('TC-RISK-018', $siren);
+        if (false === empty($previousExecutivesHistory)) {
+            return $previousExecutivesHistory;
+        }
+
+        return [];
+    }
+
+    /**
+     * @param $siren
+     *
+     * @return array
+     */
     private function checkCurrentExecutivesHistory($siren)
     {
-        $executives = $this->externalDataManager->getExecutives($siren);
-        foreach ($executives as $executive) {
-            if (false === in_array($executive->getChange(), [Mandate::CHANGE_NOMINATION, Mandate::CHANGE_MODIFICATION, Mandate::CHANGE_CONFIRMATION])) {
-                continue;
-            }
-            $this->externalDataManager->refreshExecutiveChanges($executive);
-
-            if ($this->hasIncidentAnnouncements($executive, 5, 1)) {
+        $activeExecutives = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->getActiveExecutives($siren);
+        foreach ($activeExecutives as $executiveId) {
+            if ($this->hasIncidentAnnouncements($executiveId, 5, 1)) {
                 return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_INCIDENT];
             }
         }
@@ -491,14 +501,8 @@ class CompanyValidator
      */
     private function checkPreviousExecutivesHistory($siren)
     {
-        $executives = $this->externalDataManager->getExecutives($siren);
-        $now        = new \DateTime();
-        foreach ($executives as $executive) {
-            if ($executive->getChangeDate()->diff($now)->y > 4 || in_array($executive->getChange(), [Mandate::CHANGE_NOMINATION, Mandate::CHANGE_MODIFICATION, Mandate::CHANGE_CONFIRMATION])) {
-                continue;
-            }
-            $this->externalDataManager->refreshExecutiveChanges($executive);
-
+        $previousExecutives = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->getPreviousExecutivesLeftAfter($siren, new \DateTime('4 years ago'));
+        foreach ($previousExecutives as $executive) {
             if ($this->hasIncidentAnnouncements($executive, 1, 0)) {
                 return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT];
             }
@@ -508,23 +512,22 @@ class CompanyValidator
     }
 
     /**
-     * @param Executive $executive
-     * @param int       $since
-     * @param int       $extended
+     * @param int $executiveId
+     * @param int $since
+     * @param int $extended
      *
      * @return bool
      */
-    private function hasIncidentAnnouncements(Executive $executive, $since, $extended)
+    private function hasIncidentAnnouncements($executiveId, $since, $extended)
     {
         $now                   = new \DateTime();
-        $incidentAnnouncements = $this->externalDataManager->getExecutiveAnnouncements($executive->getExecutiveId());
+        $incidentAnnouncements = $this->externalDataManager->getExecutiveAnnouncements($executiveId);
         foreach ($incidentAnnouncements as $announcement) {
             $changes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->findBy([
-                'idExecutive' => $executive->getExecutiveId(),
+                'idExecutive' => $executiveId,
                 'siren'       => $announcement->getSiren()
             ]);
             foreach ($changes as $change) {
-
                 $ended = null === $change->getEnded() ? $now : $change->getEnded();
 
                 if (null === $change->getNominated()) {

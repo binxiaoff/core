@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * InfolegaleExecutivePersonalChange
  *
  * @ORM\Table(name="infolegale_executive_personal_change", uniqueConstraints={@ORM\UniqueConstraint(name="unq_id_executive_infolegale_siren", columns={"id_executive", "siren", "code_position"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\InfolegaleExecutivePersonalChangeRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class InfolegaleExecutivePersonalChange
@@ -51,7 +51,7 @@ class InfolegaleExecutivePersonalChange
     /**
      * @var string
      *
-     * @ORM\Column(name="position", type="string", length=50, nullable=false)
+     * @ORM\Column(name="position", type="string", length=50, nullable=true)
      */
     private $position;
 

@@ -346,45 +346,58 @@ class ExternalDataManager
     }
 
     /**
-     * @param Executive $executive
+     * @param $siren
      */
-    public function refreshExecutiveChanges($executive)
+    public function refreshExecutiveChanges($siren)
     {
-        $mandates                 = $this->infolegaleManager->getMandates($executive->getExecutiveId())->getMandates();
-        $personalChangeRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange');
-        $refreshedCompanyPosition = [];
-
-        foreach ($mandates as $mandate) {
-            if (isset($refreshedCompanyPosition[$mandate->getSiren()][$mandate->getPosition()->getCode()])) {
+        $executives         = $this->infolegaleManager->getExecutives($siren)->getExecutives();
+        $refreshedExecutive = [];
+        foreach ($executives as $executive) {
+            if (in_array($executive->getExecutiveId(), $refreshedExecutive)) {
                 continue;
             }
-            $refreshedCompanyPosition[$mandate->getSiren()] = $mandate->getPosition()->getCode();
+            $refreshedExecutive[] = $executive->getExecutiveId();
 
-            $change = $personalChangeRepository->findOneBy([
-                'idExecutive'  => $executive->getExecutiveId(),
-                'siren'        => $mandate->getSiren(),
-                'codePosition' => $mandate->getPosition()->getCode()
-            ]);
-
-            if (null === $change) {
-                $change = new InfolegaleExecutivePersonalChange();
-                $change->setIdExecutive($executive->getExecutiveId())
-                    ->setFirstName($executive->getFirstName())
-                    ->setLastName($executive->getName())
-                    ->setSiren($mandate->getSiren())
-                    ->setPosition($mandate->getPosition()->getLabel())
-                    ->setCodePosition($mandate->getPosition()->getCode());
-                $this->entityManager->persist($change);
+            $mandateCollection = $this->infolegaleManager->getMandates($executive->getExecutiveId());
+            if (null === $mandateCollection) {
+                continue;
             }
+            $mandates                 = $mandateCollection->getMandates();
+            $personalChangeRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange');
+            $refreshedCompanyPosition = [];
 
-            if (null === $change->getNominated()) {
-                $change->setNominated($this->getExecutiveNominated($mandate->getSiren(), $executive->getExecutiveId(), $mandate->getPosition()->getCode()));
-            }
-            if (null === $change->getEnded()) {
-                $change->setEnded($this->getExecutiveEnded($mandates, $mandate->getSiren(), $mandate->getPosition()->getCode()));
-            }
+            foreach ($mandates as $mandate) {
+                if (isset($refreshedCompanyPosition[$mandate->getSiren()][$mandate->getPosition()->getCode()])) {
+                    continue;
+                }
+                $refreshedCompanyPosition[$mandate->getSiren()] = $mandate->getPosition()->getCode();
 
-            $this->entityManager->flush($change);
+                $change = $personalChangeRepository->findOneBy([
+                    'idExecutive'  => $executive->getExecutiveId(),
+                    'siren'        => $mandate->getSiren(),
+                    'codePosition' => $mandate->getPosition()->getCode()
+                ]);
+
+                if (null === $change) {
+                    $change = new InfolegaleExecutivePersonalChange();
+                    $change->setIdExecutive($executive->getExecutiveId())
+                        ->setFirstName($executive->getFirstName())
+                        ->setLastName($executive->getName())
+                        ->setSiren($mandate->getSiren())
+                        ->setPosition($mandate->getPosition()->getLabel())
+                        ->setCodePosition($mandate->getPosition()->getCode());
+                    $this->entityManager->persist($change);
+                }
+
+                if (null === $change->getNominated()) {
+                    $change->setNominated($this->getExecutiveNominated($mandate->getSiren(), $executive->getExecutiveId(), $mandate->getPosition()->getCode()));
+                }
+                if (null === $change->getEnded()) {
+                    $change->setEnded($this->getExecutiveEnded($mandate->getSiren(), $executive->getExecutiveId(), $mandate->getPosition()->getCode()));
+                }
+
+                $this->entityManager->flush($change);
+            }
         }
     }
 
@@ -395,25 +408,28 @@ class ExternalDataManager
      *
      * @return \DateTime|null
      */
-    private function getExecutiveNominated($siren, $executiveId, $positionCode)
+    public function getExecutiveNominated($siren, $executiveId, $positionCode)
     {
-        $nominated = null;
-        $mandates  = $this->infolegaleManager->getMandates($executiveId)->getMandates();
-        foreach ($mandates as $mandate) {
-            if ($siren !== $mandate->getSiren() || $positionCode !== $mandate->getPosition()->getCode()) {
-                continue;
-            }
-            if (Mandate::CHANGE_NOMINATION === $mandate->getChange()) {
-                if ($mandate->getChangeDate()) {
-                    $nominated = $mandate->getChangeDate();
-                    break;
+        $nominated         = null;
+        $mandateCollection = $this->infolegaleManager->getMandates($executiveId);
+        if ($mandateCollection) {
+            $mandates = $mandateCollection->getMandates();
+            foreach ($mandates as $mandate) {
+                if ($siren !== $mandate->getSiren() || $positionCode !== $mandate->getPosition()->getCode()) {
+                    continue;
                 }
-            } elseif (in_array($mandate->getChange(), [Mandate::CHANGE_MODIFICATION, Mandate::CHANGE_CONFIRMATION, Mandate::CHANGE_UNSPECIFIED])) {
-                if ($mandate->getChangeDate()) {
-                    if (null === $nominated) {
+                if (Mandate::CHANGE_NOMINATION === $mandate->getChange()) {
+                    if ($mandate->getChangeDate()) {
                         $nominated = $mandate->getChangeDate();
-                    } else {
-                        $nominated = $nominated > $mandate->getChangeDate() ? $mandate->getChangeDate() : $nominated;
+                        break;
+                    }
+                } elseif (in_array($mandate->getChange(), [Mandate::CHANGE_MODIFICATION, Mandate::CHANGE_CONFIRMATION, Mandate::CHANGE_UNSPECIFIED])) {
+                    if ($mandate->getChangeDate()) {
+                        if (null === $nominated) {
+                            $nominated = $mandate->getChangeDate();
+                        } else {
+                            $nominated = $nominated > $mandate->getChangeDate() ? $mandate->getChangeDate() : $nominated;
+                        }
                     }
                 }
             }
@@ -423,23 +439,29 @@ class ExternalDataManager
     }
 
     /**
-     * @param Mandate[] $mandates
-     * @param string    $siren
-     * @param string    $positionCode
+     * @param string $siren
+     * @param int    $executiveId
+     * @param string $positionCode
      *
      * @return \DateTime|null
      */
-    private function getExecutiveEnded($mandates, $siren, $positionCode)
+    public function getExecutiveEnded($siren, $executiveId, $positionCode)
     {
-        $ended = null;
-        foreach ($mandates as $mandate) {
-            if ($siren !== $mandate->getSiren() || $positionCode !== $mandate->getPosition()->getCode()) {
-                continue;
-            }
-            if (in_array($mandate->getChange(), [Mandate::CHANGE_REVOCATION, Mandate::CHANGE_RESIGN, Mandate::CHANGE_DEAD, Mandate::CHANGE_LEFT])) {
-                if ($mandate->getChangeDate()) {
-                    $ended = $mandate->getChangeDate();
-                    break;
+        $ended             = null;
+        $mandateCollection = $this->infolegaleManager->getMandates($executiveId);
+
+        if ($mandateCollection) {
+            $mandates = $mandateCollection->getMandates();
+
+            foreach ($mandates as $mandate) {
+                if ($siren !== $mandate->getSiren() || $positionCode !== $mandate->getPosition()->getCode()) {
+                    continue;
+                }
+                if (in_array($mandate->getChange(), [Mandate::CHANGE_REVOCATION, Mandate::CHANGE_RESIGN, Mandate::CHANGE_DEAD, Mandate::CHANGE_LEFT])) {
+                    if ($mandate->getChangeDate()) {
+                        $ended = $mandate->getChangeDate();
+                        break;
+                    }
                 }
             }
         }
