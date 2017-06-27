@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
@@ -23,14 +24,13 @@ class LenderCIPController extends Controller
      */
     public function indexAction()
     {
-        $cipManager = $this->get('unilend.service.cip_manager');
-        $lender     = $this->getLenderAccount();
-        $template   = [
+        /** @var Clients $client */
+        $client                 = $this->getClient();
+        $cipManager             = $this->get('unilend.service.cip_manager');
+        $template               = [
             'isCIPActive' => true
         ];
-
-        $evaluation = $cipManager->getCurrentEvaluation($lender);
-
+        $evaluation             = $cipManager->getCurrentEvaluation($client);
         $template['clientHash'] = $this->getUser()->getHash();
 
         if (null === $evaluation) {
@@ -39,7 +39,7 @@ class LenderCIPController extends Controller
             $template['evaluation'] = true;
         } else {
             $template['evaluation'] = true;
-            $template['advices']    = $this->getFormatedAdvice($lender);
+            $template['advices']    = $this->getFormatedAdvice($client);
         }
 
         return $this->render('lender_cip/index.html.twig', $template);
@@ -53,16 +53,17 @@ class LenderCIPController extends Controller
      */
     public function startQuestionnaireAction(Request $request)
     {
+        /** @var Clients $client */
+        $client     = $this->getClient();
         $cipManager = $this->get('unilend.service.cip_manager');
-        $lender     = $this->getLenderAccount();
-        $evaluation = $cipManager->getCurrentEvaluation($lender);
+        $evaluation = $cipManager->getCurrentEvaluation($client);
 
         if (null !== $evaluation && count($cipManager->getAnswersByType($evaluation)) > 0) {
             return $this->redirectToRoute('cip_continue_questionnaire');
         }
 
         if (null !== $request->query->get('start')) {
-            $cipManager->startEvaluation($lender);
+            $cipManager->startEvaluation($client);
             return $this->redirectToRoute('cip_continue_questionnaire');
         }
 
@@ -80,9 +81,10 @@ class LenderCIPController extends Controller
      */
     public function questionnaireAction()
     {
+        /** @var Clients $client */
+        $client     = $this->getClient();
         $cipManager = $this->get('unilend.service.cip_manager');
-        $lender     = $this->getLenderAccount();
-        $evaluation = $cipManager->getCurrentEvaluation($lender);
+        $evaluation = $cipManager->getCurrentEvaluation($client);
         $template = [
             'isCIPActive' => true,
             'total_steps' => self::TOTAL_QUESTIONNAIRE_STEPS
@@ -98,7 +100,7 @@ class LenderCIPController extends Controller
         $lastAnswer   = $answers[$lastQuestion->type];
 
         if (null === $nextQuestion && '' !== $lastAnswer['first_answer']) {
-            $advices = $this->getFormatedAdvice($lender);
+            $advices = $this->getFormatedAdvice($client);
 
             $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_ADVICE, $advices);
 
@@ -123,7 +125,7 @@ class LenderCIPController extends Controller
             }
 
             if ($lastQuestion->isBooleanType($lastQuestion->type)) {
-                $template['lenderType'] = in_array($this->getClient()->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 'physical' : 'moral';
+                $template['lenderType'] = $client->isNaturalPerson() ? 'physical' : 'moral';
 
                 if (\lender_questionnaire_question::TYPE_AWARE_DIVIDE_INVESTMENTS === $lastQuestion->type) {
                     $template['question']['valid_answer']   = \lender_questionnaire_question::VALUE_BOOLEAN_FALSE;
@@ -146,9 +148,10 @@ class LenderCIPController extends Controller
      */
     public function questionnaireFormAction(Request $request)
     {
-        $cipManager    = $this->get('unilend.service.cip_manager');
-        $lender        = $this->getLenderAccount();
-        $evaluation    = $cipManager->getCurrentEvaluation($lender);
+        /** @var Clients $client */
+        $client     = $this->getClient();
+        $cipManager = $this->get('unilend.service.cip_manager');
+        $evaluation = $cipManager->getCurrentEvaluation($client);
 
         if (null === $evaluation) {
             // @todo error message
@@ -233,9 +236,11 @@ class LenderCIPController extends Controller
      */
     public function validateQuestionnaireAction(Request $request)
     {
+        /** @var Clients $client */
+        $client     = $this->getClient();
         $cipManager = $this->get('unilend.service.cip_manager');
-        $cipManager->validateLenderEvaluation($this->getLenderAccount());
-        $this->sendAdviceEmail($this->getClient());
+        $cipManager->validateLenderEvaluation($client);
+        $this->sendAdviceEmail($client);
 
         $bid = $request->getSession()->getFlashBag()->peek('cipBid');
 
@@ -261,7 +266,7 @@ class LenderCIPController extends Controller
     public function resetQuestionnaireAction()
     {
         $cipManager = $this->get('unilend.service.cip_manager');
-        $cipManager->endLenderEvaluation($this->getLenderAccount());
+        $cipManager->endLenderEvaluation($this->getClient());
 
         return $this->redirectToRoute('cip_start_questionnaire');
     }
@@ -278,23 +283,21 @@ class LenderCIPController extends Controller
         $cipManager = $this->get('unilend.service.cip_manager');
         /** @var GeneratorInterface $snappy */
         $snappy = $this->get('knp_snappy.pdf');
+        /** @var Clients $client */
+        $client = $this->getClient();
 
-        /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $client->get($clientHash, 'hash');
-
-        /** @var \lenders_accounts $lender */
-        $lender = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-        $lender->get($client->id_client, 'id_client_owner');
+        if ($client->getHash() !== $clientHash) {
+            throw new \Exception('ClientHash does not match the client in session');
+        }
 
         $pdfHeader             = $this->renderView('/pdf/cip/header.html.twig');
         $pdfFooter             = $this->renderView('/pdf/cip/footer.html.twig');
 
-        $content['advice']     = $this->getFormatedAdvice($lender);
-        $content['clientName'] = $client->prenom;
+        $content['advice']     = $this->getFormatedAdvice($client);
+        $content['clientName'] = $client->getPrenom();
         $pdfContent            = $this->renderView('/pdf/cip/advice.html.twig', $content);
 
-        $evaluation            = $cipManager->getCurrentEvaluation($lender);
+        $evaluation            = $cipManager->getCurrentEvaluation($client);
         $evaluationDate        = new \DateTime($evaluation->expiry_date . ' - 1 year');
         $filename              = sprintf('conseils-investissement-%s.pdf', $evaluationDate->format('Y-m-d'));
 
@@ -317,7 +320,10 @@ class LenderCIPController extends Controller
         );
     }
 
-    private function sendAdviceEmail(\clients $client)
+    /**
+     * @param Clients $client
+     */
+    private function sendAdviceEmail(Clients $client)
     {
         /** @var \settings $settings */
         $settings =  $this->get('unilend.service.entity_manager')->getRepository('settings');
@@ -325,22 +331,23 @@ class LenderCIPController extends Controller
         $fbLink = $settings->value;
         $settings->get('Twitter', 'type');
         $twLink = $settings->value;
+        $wallet = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
         $varMail = [
             'surl'                 => $this->get('assets.packages')->getUrl(''),
             'url'                  => $this->get('assets.packages')->getUrl(''),
-            'prenom'               => $client->prenom,
-            'email_p'              => $client->email,
-            'advice'               => str_replace('h5', 'h3', $this->getFormatedAdvice($this->getLenderAccount())),
-            'advice_pdf_link'      => $this->generateUrl('pdf_cip', ['clientHash' => $client->hash], UrlGeneratorInterface::ABSOLUTE_URL),
-            'motif_virement'       => $client->getLenderPattern($client->id_client),
+            'prenom'               => $client->getPrenom(),
+            'email_p'              => $client->getEmail(),
+            'advice'               => str_replace('h5', 'h3', $this->getFormatedAdvice($client)),
+            'advice_pdf_link'      => $this->generateUrl('pdf_cip', ['clientHash' => $client->getHash()], UrlGeneratorInterface::ABSOLUTE_URL),
+            'motif_virement'       => $wallet->getWireTransferPattern(),
             'lien_fb'              => $fbLink,
             'lien_tw'              => $twLink
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-conseil-cip', $varMail);
-        $message->setTo($client->email);
+        $message->setTo($client->getEmail());
         $mailer = $this->get('mailer');
         $mailer->send($message);
     }
@@ -349,36 +356,21 @@ class LenderCIPController extends Controller
     {
         /** @var UserLender $user */
         $user     = $this->getUser();
-        $clientId = $user->getClientId();
-
-        /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $client->get($clientId);
+        $client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
 
         return $client;
     }
 
     /**
-     * @return \lenders_accounts
+     * @param Clients $client
+     *
+     * @return string
      */
-    private function getLenderAccount()
-    {
-        /** @var UserLender $user */
-        $user     = $this->getUser();
-        $clientId = $user->getClientId();
-
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-        $lenderAccount->get($clientId, 'id_client_owner');
-
-        return $lenderAccount;
-    }
-
-    private function getFormatedAdvice(\lenders_accounts $lender)
+    private function getFormatedAdvice(Clients $client)
     {
         /** @var CIPManager $cipManager */
         $cipManager = $this->get('unilend.service.cip_manager');
-        $advices    = $cipManager->getAdvices($lender);
+        $advices    = $cipManager->getAdvices($client);
 
         if (null === $advices) {
             $advices = [];

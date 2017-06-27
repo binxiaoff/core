@@ -24,8 +24,6 @@
                     <th>Lien</th>
                     <th>Type</th>
                     <th>Nb de clics</th>
-                    <th>Nb Cmdes</th>
-                    <th>CA (TTC)</th>
                     <th>&nbsp;</th>
                 </tr>
                </thead>
@@ -34,9 +32,6 @@
             <?php foreach ($this->lPartenaires as $p) : ?>
                 <?php
                     $this->partenaires_types->get($p['id_type'],'id_type');
-
-                    $capart = $this->partenaires->recupCA($p['id_partenaire']);
-                    $nbcmd  = $this->partenaires->recupCmde($p['id_partenaire']);
                     $nbclic = $this->partenaires->nbClicTotal($p['id_partenaire']);
                 ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
@@ -44,8 +39,6 @@
                     <td>/p/<?= $p['hash'] ?>/</td>
                     <td><?= $this->partenaires_types->nom ?></td>
                     <td><?= $nbclic ?></td>
-                    <td><?= $nbcmd ?></td>
-                    <td><?= $this->ficelle->formatNumber($capart) ?>&nbsp;&euro;</td>
                     <td align="center">
                         <a href="<?= $this->lurl ?>/partenaires/status/<?= $p['id_partenaire'] ?>/<?= $p['status'] ?>" title="<?= ($p['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>">
                             <img src="<?= $this->surl ?>/images/admin/<?= ($p['status'] == 1 ? 'offline' : 'online') ?>.png" alt="<?= ($p['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>"/>

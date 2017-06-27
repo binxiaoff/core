@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Bids
  *
- * @ORM\Table(name="bids", indexes={@ORM\Index(name="id_lender_account", columns={"id_lender_account"}), @ORM\Index(name="idprojectstatus", columns={"id_project", "status"}), @ORM\Index(name="idx_bids_id_lender_wallet_line", columns={"id_lender_wallet_line"}), @ORM\Index(name="idx_id_autobid", columns={"id_autobid"})})
+ * @ORM\Table(name="bids", indexes={@ORM\Index(name="id_lender_account", columns={"id_lender_account"}), @ORM\Index(name="idprojectstatus", columns={"id_project", "status"}), @ORM\Index(name="idx_id_autobid", columns={"id_autobid"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\BidsRepository")
@@ -19,12 +19,6 @@ class Bids
     const STATUS_BID_REJECTED                 = 2;
     const STATUS_AUTOBID_REJECTED_TEMPORARILY = 3;
 
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_lender_account", type="integer", nullable=false)
-     */
-    private $idLenderAccount;
 
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
@@ -45,13 +39,6 @@ class Bids
      * })
      */
     private $idAutobid;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_lender_wallet_line", type="integer", nullable=false)
-     */
-    private $idLenderWalletLine;
 
     /**
      * @var integer
@@ -81,7 +68,6 @@ class Bids
      */
     private $status;
 
-
     /**
      * @var \DateTime
      *
@@ -105,30 +91,15 @@ class Bids
      */
     private $idBid;
 
-
     /**
-     * Set idLenderAccount
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
      *
-     * @param integer $idLenderAccount
-     *
-     * @return Bids
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_lender_account", referencedColumnName="id")
+     * })
      */
-    public function setIdLenderAccount($idLenderAccount)
-    {
-        $this->idLenderAccount = $idLenderAccount;
-
-        return $this;
-    }
-
-    /**
-     * Get idLenderAccount
-     *
-     * @return integer
-     */
-    public function getIdLenderAccount()
-    {
-        return $this->idLenderAccount;
-    }
+    private $idLenderAccount;
 
     /**
      * Set Project
@@ -179,27 +150,27 @@ class Bids
     }
 
     /**
-     * Set idLenderWalletLine
+     * Set idLenderAccount
      *
-     * @param integer $idLenderWalletLine
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLenderAccount
      *
      * @return Bids
      */
-    public function setIdLenderWalletLine($idLenderWalletLine)
+    public function setIdLenderAccount(Wallet $idLenderAccount)
     {
-        $this->idLenderWalletLine = $idLenderWalletLine;
+        $this->idLenderAccount = $idLenderAccount;
 
         return $this;
     }
 
     /**
-     * Get idLenderWalletLine
+     * Get idLenderAccount
      *
-     * @return integer
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
      */
-    public function getIdLenderWalletLine()
+    public function getIdLenderAccount()
     {
-        return $this->idLenderWalletLine;
+        return $this->idLenderAccount;
     }
 
     /**

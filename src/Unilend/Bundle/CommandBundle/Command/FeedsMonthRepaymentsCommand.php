@@ -6,7 +6,6 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
 {
@@ -42,34 +41,33 @@ class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
 
         $output->writeln('Generating repayment file for ' . $previousDay->format('Y-m-d'));
 
-        $aHeader = array (
-            0 => 'id_client',
-            1 => 'id_lender_account',
-            2 => 'type',
-            3 => 'iso_pays',
-            4 => 'taxed_at_source',
-            5 => 'exonere',
-            6 => 'annees_exoneration',
-            7 => 'id_project',
-            8 => 'id_loan',
-            9 => 'type_loan',
-            10 => 'ordre',
-            11 => 'montant',
-            12 => 'capital',
-            13 => 'interets',
-            14 => 'prelevements_obligatoires',
-            15 => 'retenues_source',
-            16 => 'csg',
-            17 => 'prelevements_sociaux',
-            18 => 'contributions_additionnelles',
-            19 => 'prelevements_solidarite',
-            20 => 'crds',
-            21 => 'date_echeance',
-            22 => 'date_echeance_reel',
-            23 => 'status_remb_preteur',
-            24 => 'date_echeance_emprunteur',
-            25 => 'date_echeance_emprunteur_reel'
-        );
+        $header = [
+            'id_client',
+            'type',
+            'iso_pays',
+            'taxed_at_source',
+            'exonere',
+            'annees_exoneration',
+            'id_project',
+            'id_loan',
+            'type_loan',
+            'ordre',
+            'montant',
+            'capital',
+            'interets',
+            'prelevements_obligatoires',
+            'retenues_source',
+            'csg',
+            'prelevements_sociaux',
+            'contributions_additionnelles',
+            'prelevements_solidarite',
+            'crds',
+            'date_echeance',
+            'date_echeance_reel',
+            'status_remb_preteur',
+            'date_echeance_emprunteur',
+            'date_echeance_emprunteur_reel'
+        ];
 
         $sftpPath      = $this->getContainer()->getParameter('path.sftp');
         $dayFileName   = 'echeances_' . $previousDay->format('Ymd') . '.csv';
@@ -81,13 +79,11 @@ class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
             mkdir($dayFilePath);
         }
 
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
-        /** @var \echeanciers $repayment */
-        $repayment = $entityManager->getRepository('echeanciers');
+        $entityManager       = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $repaymentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
 
         try {
-            $aResult = $repayment->getTaxState($previousDay);
+            $result= $repaymentRepository->getRepaymentScheduleIncludingTaxOnDate($previousDay);
         } catch (\Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getContainer()->get('monolog.logger.console');
@@ -100,20 +96,21 @@ class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
         /** @var \PHPExcel_Worksheet $oActiveSheet */
         $activeSheet = $document->setActiveSheetIndex(0);
 
-        foreach ($aResult as $iRowIndex => $aRow) {
-            $iColIndex = 0;
-            foreach ($aRow as $ColValue) {
-                $activeSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 1, $ColValue);
+        foreach ($result as $rowIndex => $row) {
+            $colIndex = 0;
+            foreach ($row as $colValue) {
+                $activeSheet->setCellValueByColumnAndRow($colIndex++, $rowIndex + 1, str_replace('.', ',', $colValue));
             }
         }
+
         /** @var \PHPExcel_Writer_CSV $writer */
         $writer = \PHPExcel_IOFactory::createWriter($document, 'CSV');
         $writer->setDelimiter(';')->save($dayFilePath . '/' . $dayFileName);
         $outputFile = fopen($monthFilePath . $monthFileName, 'w');
-        fwrite($outputFile, implode(';', $aHeader) . ";" . PHP_EOL);
+        fwrite($outputFile, implode(';', $header) . ";" . PHP_EOL);
 
-        foreach (glob($dayFilePath . '/echeances_*.csv') as $sFile) {
-            fwrite($outputFile, file_get_contents($sFile) . PHP_EOL);
+        foreach (glob($dayFilePath . '/echeances_*.csv') as $file) {
+            fwrite($outputFile, file_get_contents($file) . PHP_EOL);
         }
         fclose($outputFile);
     }

@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Prelevements
  *
  * @ORM\Table(name="prelevements")
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\PrelevementsRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class Prelevements
@@ -28,13 +28,6 @@ class Prelevements
      * @ORM\Column(name="id_client", type="integer", nullable=false)
      */
     private $idClient;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_transaction", type="integer", nullable=false)
-     */
-    private $idTransaction;
 
     /**
      * @var integer
@@ -174,30 +167,6 @@ class Prelevements
     public function getIdClient()
     {
         return $this->idClient;
-    }
-
-    /**
-     * Set idTransaction
-     *
-     * @param integer $idTransaction
-     *
-     * @return Prelevements
-     */
-    public function setIdTransaction($idTransaction)
-    {
-        $this->idTransaction = $idTransaction;
-
-        return $this;
-    }
-
-    /**
-     * Get idTransaction
-     *
-     * @return integer
-     */
-    public function getIdTransaction()
-    {
-        return $this->idTransaction;
     }
 
     /**

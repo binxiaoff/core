@@ -9,17 +9,39 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwareInterface
 {
+    /** @var  string */
     private $username;
+    /** @var  string  */
     private $password;
+    /** @var  string  */
     private $email;
-    private $salt;
+    /** @var  array  */
     private $roles;
+    /** @var  bool  */
     private $isActive;
+    /** @var int */
     private $clientId;
+    /** @var  string  */
     private $hash;
+    /** @var string|\DateTime  */
     private $lastLoginDate;
+    /** @var  string  */
     private $encoderName;
+    /** @var string */
+    private $salt;
 
+    /**
+     * BaseUser constructor.
+     * @param string $username
+     * @param string $password
+     * @param string $email
+     * @param string $salt
+     * @param array  $roles
+     * @param bool   $isActive
+     * @param int    $clientId
+     * @param string $hash
+     * @param null   $lastLoginDate
+     */
     public function __construct($username, $password, $email, $salt, array $roles, $isActive, $clientId, $hash, \DateTime $lastLoginDate = null)
     {
         $this->username      = $username;
@@ -91,16 +113,25 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
         $this->encoderName = 'default';
     }
 
+    /**
+     * @return bool
+     */
     public function getIsActive()
     {
         return $this->isActive;
     }
 
+    /**
+     * @return int
+     */
     public function getClientId()
     {
         return $this->clientId;
     }
 
+    /**
+     * @return string
+     */
     public function getHash()
     {
         return $this->hash;
@@ -164,7 +195,7 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
      */
     public function isEnabled()
     {
-        return true; // TODO AB is validated? to check if client has status validated to have full feature access
+        return true;
     }
 
     /**
@@ -182,5 +213,4 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     {
         return $this->lastLoginDate;
     }
-
 }

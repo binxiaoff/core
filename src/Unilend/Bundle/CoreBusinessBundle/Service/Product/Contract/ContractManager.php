@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract;
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
 
 class ContractManager
@@ -25,14 +26,14 @@ class ContractManager
     }
 
     /**
-     * @param \lenders_accounts    $lender
+     * @param Clients              $client
      * @param \underlying_contract $contract
      *
      * @return bool
      */
-    public function isLenderEligible(\lenders_accounts $lender, \underlying_contract $contract)
+    public function isLenderEligible(Clients $client, \underlying_contract $contract)
     {
-        return $this->lenderValidator->isEligible($lender, $contract);
+        return $this->lenderValidator->isEligible($client, $contract);
     }
 
     public function isAutobidSettingsEligible(\underlying_contract $contract)

@@ -464,8 +464,9 @@
                         foreach ($this->lLenders as $key => $l) {
                             if ($var == $key) {
                                 if ($i <= 26) {
-                                    $this->oLendersAccounts->get($l['id_lender'], 'id_lender_account');
-                                    $this->clients->get($this->oLendersAccounts->id_client_owner, 'id_client');
+                                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
+                                    $wallet = $this->walletRepository->find($l['id_lender']);
+                                    $this->clients->get($wallet->getIdClient()->getIdClient(), 'id_client');
                                     $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
                                     $nom    = $this->clients->nom;

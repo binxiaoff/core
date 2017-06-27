@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
+use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -18,8 +19,9 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
@@ -76,11 +78,12 @@ class MainController extends Controller
     public function homeLenderAction()
     {
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+        $entityManager         = $this->get('doctrine.orm.entity_manager');
         $authorizationChecker  = $this->get('security.authorization_checker');
         $welcomeOfferManager   = $this->get('unilend.service.welcome_offer_manager');
         $testimonialService    = $this->get('unilend.frontbundle.service.testimonial_manager');
         $user                  = $this->getUser();
-        $lenderAccount         = null;
+        $client                = null;
 
         $template                     = [];
         $template['showWelcomeOffer'] = $welcomeOfferManager->displayOfferOnHome();
@@ -94,12 +97,10 @@ class MainController extends Controller
             $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')
             && $authorizationChecker->isGranted('ROLE_LENDER')
         ) {
-            /** @var \lenders_accounts $lenderAccount */
-            $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-            $lenderAccount->get($user->getClientId(), 'id_client_owner');
+            $client               = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
         }
 
-        $template['projects'] = $projectDisplayManager->getProjectsList([], [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC], null, 3, $lenderAccount);
+        $template['projects'] = $projectDisplayManager->getProjectsList([], [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC], null, 3, $client);
 
         $translator        = $this->get('translator');
         $projectRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects');
@@ -229,7 +230,7 @@ class MainController extends Controller
      */
     public function lenderTermsOfSalesAction($type = '')
     {
-        /** @var EntityManager $entityManager */
+        /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
@@ -263,7 +264,7 @@ class MainController extends Controller
      */
     public function cmsAction(Request $request)
     {
-        /** @var EntityManager $entityManager */
+        /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
         /** @var \redirections $redirection */
         $redirection = $entityManager->getRepository('redirections');
@@ -342,11 +343,11 @@ class MainController extends Controller
     /**
      * @param \tree         $currentPage
      * @param array         $content
-     * @param EntityManager $entityManager
+     * @param EntityManagerSimulator $entityManager
      * @param string|null   $pageId
      * @return Response
      */
-    private function renderCmsNav(\tree $currentPage, array $content, EntityManager $entityManager, $pageId = null)
+    private function renderCmsNav(\tree $currentPage, array $content, EntityManagerSimulator $entityManager, $pageId = null)
     {
         /** @var \tree $pages */
         $pages = $entityManager->getRepository('tree');
@@ -459,14 +460,16 @@ class MainController extends Controller
      */
     private function renderTermsOfUse(\tree $tree, $lenderType = '')
     {
-        $entityManager = $this->get('unilend.service.entity_manager');
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \acceptations_legal_docs $acceptedTermsOfUse */
-        $acceptedTermsOfUse = $entityManager->getRepository('acceptations_legal_docs');
+        $acceptedTermsOfUse = $entityManagerSimulator->getRepository('acceptations_legal_docs');
 
         /** @var \tree_elements $treeElements */
-        $treeElements = $entityManager->getRepository('tree_elements');
+        $treeElements = $entityManagerSimulator->getRepository('tree_elements');
         /** @var \elements $elements */
-        $elements = $entityManager->getRepository('elements');
+        $elements = $entityManagerSimulator->getRepository('elements');
 
         $content  = [];
         foreach ($treeElements->select('id_tree = "' . $tree->id_tree . '" AND id_langue = "fr"') as $elt) {
@@ -482,7 +485,7 @@ class MainController extends Controller
         /** @var UserLender $user */
         $user = $this->getUser();
         /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
+        $client = $entityManagerSimulator->getRepository('clients');
 
         if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && $client->get($user->getClientId(), 'id_client')) {
             $dateAccept    = '';
@@ -492,19 +495,17 @@ class MainController extends Controller
                 $dateAccept = 'Sign&eacute; &eacute;lectroniquement le ' . date('d/m/Y', strtotime($userAccepted[0]['added']));
             }
             /** @var \settings $settings */
-            $settings = $entityManager->getRepository('settings');
+            $settings = $entityManagerSimulator->getRepository('settings');
             $settings->get('Date nouvelles CGV avec 2 mandats', 'type');
             $sNewTermsOfServiceDate = $settings->value;
 
-            /** @var \lenders_accounts $oLenderAccount */
-            $oLenderAccount = $entityManager->getRepository('lenders_accounts');
-            $oLenderAccount->get($client->id_client, 'id_client_owner');
+            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
 
             /** @var \loans $oLoans */
-            $loans      = $entityManager->getRepository('loans');
-            $loansCount = $loans->counter('id_lender = ' . $oLenderAccount->id_lender_account . ' AND added < "' . $sNewTermsOfServiceDate . '"');
+            $loans      = $entityManagerSimulator->getRepository('loans');
+            $loansCount = $loans->counter('id_lender = ' . $wallet->getId() . ' AND added < "' . $sNewTermsOfServiceDate . '"');
 
-            if (in_array($client->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
+            if ($wallet->getIdClient()->isNaturalPerson()) {
                 $this->getTOSReplacementsForPerson($client, $dateAccept, $loansCount, $content, $template);
             } else {
                 $this->getTOSReplacementsForLegalEntity($client, $dateAccept, $loansCount, $content, $template);
@@ -552,11 +553,11 @@ class MainController extends Controller
 
     private function getTOSReplacementsForPerson(\clients $client, $dateAccept, $loansCount, $content, &$template)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
 
         /** @var \clients_adresses $clientAddresses */
-        $clientAddresses = $entityManager->getRepository('clients_adresses');
+        $clientAddresses = $entityManagerSimulator->getRepository('clients_adresses');
         $clientAddresses->get($client->id_client, 'id_client');
 
         if ($clientAddresses->id_pays_fiscal == 0) {
@@ -564,7 +565,7 @@ class MainController extends Controller
         }
 
         /** @var \pays_v2 $country */
-        $country = $entityManager->getRepository('pays_v2');
+        $country = $entityManagerSimulator->getRepository('pays_v2');
         $country->get($clientAddresses->id_pays_fiscal, 'id_pays');
 
         $aReplacements = [
@@ -583,11 +584,11 @@ class MainController extends Controller
 
     private function getTOSReplacementsForLegalEntity(\clients $client, $dateAccept, $loansCount, $content, &$template)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
 
         /** @var \clients_adresses $clientAddresses */
-        $clientAddresses = $entityManager->getRepository('clients_adresses');
+        $clientAddresses = $entityManagerSimulator->getRepository('clients_adresses');
         $clientAddresses->get($client->id_client, 'id_client');
 
         if ($clientAddresses->id_pays_fiscal == 0) {
@@ -595,7 +596,7 @@ class MainController extends Controller
         }
 
         /** @var \companies $companies */
-        $company = $entityManager->getRepository('companies');
+        $company = $entityManagerSimulator->getRepository('companies');
         $company->get($client->id_client, 'id_client_owner');
 
         if ($company->id_pays == 0) {
@@ -603,7 +604,7 @@ class MainController extends Controller
         }
 
         /** @var \pays_v2 $country */
-        $country = $entityManager->getRepository('pays_v2');
+        $country = $entityManagerSimulator->getRepository('pays_v2');
         $country->get($company->id_pays, 'id_pays');
 
         $aReplacements = [
@@ -641,14 +642,14 @@ class MainController extends Controller
      */
     public function footerReviewsAction()
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \blocs $block */
-        $block = $entityManager->getRepository('blocs');
+        $block = $entityManagerSimulator->getRepository('blocs');
         /** @var \blocs_elements $blockElement */
-        $blockElement = $entityManager->getRepository('blocs_elements');
+        $blockElement = $entityManagerSimulator->getRepository('blocs_elements');
         /** @var \elements $elements */
-        $elements = $entityManager->getRepository('elements');
+        $elements = $entityManagerSimulator->getRepository('elements');
 
         $reviews = [];
         if ($block->get('carousel-revue-presse-footer', 'slug')) {
@@ -713,10 +714,10 @@ class MainController extends Controller
      */
     public function aboutUsAction()
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \tree $tree */
-        $tree = $entityManager->getRepository('tree');
+        $tree = $entityManagerSimulator->getRepository('tree');
         $tree->get(['slug' => 'qui-sommes-nous']);
         $this->setCmsSeoData($tree);
         $response = $this->render('pages/static_pages/about_us.html.twig');
@@ -727,7 +728,7 @@ class MainController extends Controller
             'image-header' => 'apropos-header-1682x400.jpg'
         ];
 
-        return $this->renderCmsNav($tree, $finalElements, $entityManager);
+        return $this->renderCmsNav($tree, $finalElements, $entityManagerSimulator);
     }
 
     /**
@@ -739,10 +740,10 @@ class MainController extends Controller
      */
     public function statisticsAction($requestedDate = null)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \tree $tree */
-        $tree = $entityManager->getRepository('tree');
+        $tree = $entityManagerSimulator->getRepository('tree');
         $tree->get(['slug' => 'statistiques']);
         /** @var StatisticsManager $statisticsManager */
         $statisticsManager = $this->get('unilend.service.statistics_manager');
@@ -778,7 +779,7 @@ class MainController extends Controller
             'image-header' => '1682x400_0005_Statistiques.jpg'
         ];
 
-        return $this->renderCmsNav($tree, $finalElements, $entityManager, 'apropos-statistiques');
+        return $this->renderCmsNav($tree, $finalElements, $entityManagerSimulator, 'apropos-statistiques');
     }
 
     /**
@@ -788,11 +789,11 @@ class MainController extends Controller
      */
     public function lenderFaqAction()
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
 
         /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
+        $settings = $entityManagerSimulator->getRepository('settings');
         $settings->get('URL FAQ preteur', 'type');
 
         return $this->redirect($settings->value);
@@ -805,11 +806,11 @@ class MainController extends Controller
      */
     public function borrowerFaqAction()
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
 
         /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
+        $settings = $entityManagerSimulator->getRepository('settings');
         $settings->get('URL FAQ emprunteur', 'type');
 
         return $this->redirect($settings->value);
@@ -823,10 +824,10 @@ class MainController extends Controller
      */
     public function siteMapAction()
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \tree $pages */
-        $pages = $entityManager->getRepository('tree');
+        $pages = $entityManagerSimulator->getRepository('tree');
         $template = [];
         $pagesBySections = [];
 
@@ -851,38 +852,35 @@ class MainController extends Controller
     public function lastTermsOfServiceAction(Request $request)
     {
         /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var UserLender $user */
         $user = $this->getUser();
         /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
+        $client = $entityManagerSimulator->getRepository('clients');
         $tosDetails = '';
 
         if ($client->get($user->getClientId())) {
             if ($request->isMethod('GET')) {
                 /** @var \blocs $block */
-                $block = $entityManager->getRepository('blocs');
+                $block = $entityManagerSimulator->getRepository('blocs');
                 $block->get('cgv', 'slug');
 
                 $elementSlug = 'tos-new';
                 /** @var \acceptations_legal_docs $acceptationsTos */
-                $acceptationsTos = $entityManager->getRepository('acceptations_legal_docs');
+                $acceptationsTos = $entityManagerSimulator->getRepository('acceptations_legal_docs');
                 /** @var \settings $settings */
-                $settings = $entityManager->getRepository('settings');
+                $settings = $entityManagerSimulator->getRepository('settings');
 
                 if ($acceptationsTos->exist($client->id_client, 'id_client')) {
                     $settings->get('Date nouvelles CGV avec 2 mandats', 'type');
-
+                    $wallet                = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
                     $newTermsOfServiceDate = $settings->value;
-
-                    /** @var \lenders_accounts $lenderAccount */
-                    $lenderAccount = $entityManager->getRepository('lenders_accounts');
-                    $lenderAccount->get($client->id_client, 'id_client_owner');
-
                     /** @var \loans $loans */
-                    $loans = $entityManager->getRepository('loans');
+                    $loans = $entityManagerSimulator->getRepository('loans');
 
-                    if (0 < $loans->counter('id_lender = ' . $lenderAccount->id_lender_account . ' AND added < "' . $newTermsOfServiceDate . '"')) {
+                    if (0 < $loans->counter('id_lender = ' . $wallet->getId() . ' AND added < "' . $newTermsOfServiceDate . '"')) {
                         $elementSlug = 'tos-update-lended';
                     } else {
                         $elementSlug = 'tos-update';
@@ -890,11 +888,11 @@ class MainController extends Controller
                 }
 
                 /** @var \elements $elements */
-                $elements = $entityManager->getRepository('elements');
+                $elements = $entityManagerSimulator->getRepository('elements');
 
                 if ($elements->get($elementSlug, 'slug')) {
                     /** @var \blocs_elements $blockElement */
-                    $blockElement = $entityManager->getRepository('blocs_elements');
+                    $blockElement = $entityManagerSimulator->getRepository('blocs_elements');
 
                     if ($blockElement->get($elements->id_element, 'id_element')) {
                         $tosDetails = $blockElement->value;
@@ -925,10 +923,10 @@ class MainController extends Controller
     {
         /** @var TestimonialManager $testimonialService */
         $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \tree $tree */
-        $tree = $entityManager->getRepository('tree');
+        $tree = $entityManagerSimulator->getRepository('tree');
         $tree->get(['slug' => 'temoignages']);
         $this->setCmsSeoData($tree);
 
@@ -940,7 +938,7 @@ class MainController extends Controller
             'image-header' => ''
         ];
 
-        return $this->renderCmsNav($tree, $finalElements, $entityManager, 'apropos-statistiques');
+        return $this->renderCmsNav($tree, $finalElements, $entityManagerSimulator, 'apropos-statistiques');
     }
 
     private function getProjectCountForCategoryTreeMap($countByCategory)

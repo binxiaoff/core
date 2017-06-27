@@ -7,8 +7,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\core\Loader;
 
 class AutolendController extends Controller
@@ -21,10 +23,11 @@ class AutolendController extends Controller
     {
         /** @var AutoBidSettingsManager $autoBidSettingsManager */
         $autoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
-        /** @var \lenders_accounts $lendersAccounts */
-        $lendersAccounts = $this->getLenderAccount();
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
+        $client                 = $this->getClient();
+        $wallet                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
-        if (false === $autoBidSettingsManager->isQualified($lendersAccounts)) {
+        if (false === $autoBidSettingsManager->isQualified($client)) {
             return $this->redirectToRoute('lender_profile');
         }
 
@@ -49,15 +52,15 @@ class AutolendController extends Controller
 
             if ($request->isXmlHttpRequest()) {
                 if (false === empty($post['setting']) && $post['setting'] === 'autolend-off') {
-                    $this->saveAutolendOff($lendersAccounts, $clientSettings, $autoBidSettingsManager);
+                    $this->saveAutolendOff($clientSettings, $autoBidSettingsManager, $request);
                 }
             } else {
                 if (isset($post['hidden-settings-mode-input']) && $post['hidden-settings-mode-input'] === 'simple') {
-                    $messages = $this->handleSimpleSettings($post, $settings, $lendersAccounts, $autoBidSettingsManager);
+                    $messages = $this->handleSimpleSettings($post, $settings, $autoBidSettingsManager, $request);
                 }
 
                 if (isset($post['hidden-settings-mode-input']) && $post['hidden-settings-mode-input'] === 'expert') {
-                    $messages = $this->handleExpertSettings($post, $settings, $lendersAccounts, $autoBidSettingsManager);
+                    $messages = $this->handleExpertSettings($post, $settings, $autoBidSettingsManager, $request);
                 }
 
                 $translator = $this->get('translator');
@@ -90,7 +93,7 @@ class AutolendController extends Controller
         }
 
         $template['projectRatesGlobal'] = $autoBidSettingsManager->getRateRange();
-        $autoBidSettings = $autobid->getSettings($lendersAccounts->id_lender_account, null, null, [\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE]);
+        $autoBidSettings = $autobid->getSettings($wallet->getId(), null, null, [\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE]);
 
         if (empty($autoBidSettings)) {
             $autoBidSettings = $this->generateFakeAutolendSettings($projectPeriods, $project, $projectRateSettings);
@@ -105,37 +108,39 @@ class AutolendController extends Controller
                 $aSetting['project_rate_max'] = $projectRateFormatted[$aSetting['id_period']][$aSetting['evaluation']]['rate_max'];
             }
 
-            $averageRateUnilend   = $project->getAvgRate($aSetting['evaluation'], $aSetting['period_min'], $aSetting['period_max'], $startingDate);
-            $medianRateForSetting = bcdiv(bcadd($aSetting['project_rate_min'], $aSetting['project_rate_max']), 2, 1);
-            $aSetting['cellAverageRateUnilend'] = ($averageRateUnilend > 0) ? $averageRateUnilend : $medianRateForSetting;
+            $averageRateUnilend                                    = $project->getAvgRate($aSetting['evaluation'], $aSetting['period_min'], $aSetting['period_max'], $startingDate);
+            $medianRateForSetting                                  = bcdiv(bcadd($aSetting['project_rate_min'], $aSetting['project_rate_max']), 2, 1);
+            $aSetting['cellAverageRateUnilend']                    = ($averageRateUnilend > 0) ? $averageRateUnilend : $medianRateForSetting;
             $template['autoBidSettings'][$aSetting['id_period']][] = $aSetting;
         }
 
         /** @var \DateTime $validateTime */
-        $validateTime = $autoBidSettingsManager->getValidationDate($lendersAccounts);
+        $validateTime = $autoBidSettingsManager->getValidationDate($client);
 
-        $template['autobid_on']      = $autoBidSettingsManager->isOn($lendersAccounts);
-        $template['never_activated'] = false === $autoBidSettingsManager->hasAutoBidActivationHistory($lendersAccounts);
-        $template['is_novice']       = $autoBidSettingsManager->isNovice($lendersAccounts);
+        $template['autobid_on']      = $autoBidSettingsManager->isOn($client);
+        $template['never_activated'] = false === $autoBidSettingsManager->hasAutoBidActivationHistory($client);
+        $template['is_novice']       = $autoBidSettingsManager->isNovice($client);
         $template['validation_date'] = strftime('%d %B %G', $validateTime->format('U'));
-        $template['autolend_amount'] = $autoBidSettingsManager->getAmount($lendersAccounts);
+        $template['autolend_amount'] = $autoBidSettingsManager->getAmount($client);
 
         return $this->render('pages/autolend.html.twig', $template);
     }
 
-    private function handleSimpleSettings($post, \settings $settings, \lenders_accounts $lenderAccount, AutoBidSettingsManager $autoBidSettingsManager)
+    private function handleSimpleSettings($post, \settings $settings, AutoBidSettingsManager $autoBidSettingsManager, Request $request)
     {
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
+        /** @var Clients $client */
+        $client = $this->getClient();
 
         $settings->get('pret min', 'type');
         $minimumBidAmount = (int) $settings->value;
         $errorMsg         = [];
         $autolendAmount   = null;
         $autolendRateMin  = null;
-        $maxBidAmount     = $autoBidSettingsManager->getMaxAmountPossible($lenderAccount);
+        $maxBidAmount     = $autoBidSettingsManager->getMaxAmountPossible($client);
 
         if (false === empty($post['autolend_amount'])) {
             $autolendAmount = $ficelle->cleanFormatedNumber($post['autolend_amount']);
@@ -166,17 +171,20 @@ class AutolendController extends Controller
             return ['error' => $errorMsg];
         }
 
-        if (false === $autoBidSettingsManager->isOn($lenderAccount)) {
-            $autoBidSettingsManager->on($lenderAccount);
+        if (false === $autoBidSettingsManager->isOn($client)) {
+            $autoBidSettingsManager->on($client);
+            $this->saveAutoBidSwitchHistory($client, \client_settings::AUTO_BID_ON, $request);
         }
 
-        $autoBidSettingsManager->saveNoviceSetting($lenderAccount->id_lender_account, $autolendRateMin, $autolendAmount);
+        $autoBidSettingsManager->saveNoviceSetting($client, $autolendRateMin, $autolendAmount);
 
         return [];
     }
 
-    private function handleExpertSettings($post, \settings $settings, \lenders_accounts $lenderAccount, AutoBidSettingsManager $autoBidSettingsManager)
+    private function handleExpertSettings($post, \settings $settings, AutoBidSettingsManager $autoBidSettingsManager, Request $request)
     {
+        /** @var Clients $client */
+        $client = $this->getClient();
         /** @var \project_period $projectPeriods */
         $projectPeriods = $this->get('unilend.service.entity_manager')->getRepository('project_period');
         /** @var \projects $project */
@@ -192,7 +200,7 @@ class AutolendController extends Controller
         $errorMsg         = [];
         $aRiskValues      = $project->getAvailableRisks();
         $amount           = null;
-        $maxBidAmount     = $autoBidSettingsManager->getMaxAmountPossible($lenderAccount);
+        $maxBidAmount     = $autoBidSettingsManager->getMaxAmountPossible($client);
 
         foreach ($projectPeriods->select('status = ' . \project_period::STATUS_ACTIVE) as $period) {
             $autoBidPeriods[] = $period['id_period'];
@@ -254,41 +262,34 @@ class AutolendController extends Controller
             return ['error' => $errorMsg];
         }
 
-        if (false === $autoBidSettingsManager->isOn($lenderAccount)) {
-            $autoBidSettingsManager->on($lenderAccount);
+        if (false === $autoBidSettingsManager->isOn($client)) {
+            $autoBidSettingsManager->on($client);
+            $this->saveAutoBidSwitchHistory($client, \client_settings::AUTO_BID_ON, $request);
         }
 
         foreach ($post['data'] as $setting) {
             $rate = $ficelle->cleanFormatedNumber($setting['interest']);
             $rate = filter_var($rate, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
 
-            $autoBidSettingsManager->saveSetting($lenderAccount->id_lender_account, $setting['evaluation'], $setting['period'], $rate, $amount);
-            $autoBidSettingsManager->activateDeactivateSetting($lenderAccount->id_lender_account, $setting['evaluation'], $setting['period'], $setting['is-active']);
+            $autoBidSettingsManager->saveSetting($client, $setting['evaluation'], $setting['period'], $rate, $amount);
+            $autoBidSettingsManager->activateDeactivateSetting($client, $setting['evaluation'], $setting['period'], $setting['is-active']);
         }
 
         return [];
     }
 
-    private function saveAutolendOff(\lenders_accounts $lenderAccount, \client_settings $clientSettings, AutoBidSettingsManager $autoBidSettingsManager)
+    private function saveAutolendOff(\client_settings $clientSettings, AutoBidSettingsManager $autoBidSettingsManager, Request $request)
     {
-        if (\client_settings::AUTO_BID_ON == $clientSettings->getSetting($lenderAccount->id_client_owner, \client_setting_type::TYPE_AUTO_BID_SWITCH)) {
-            $autoBidSettingsManager->off($lenderAccount);
+        /** @var Clients $client */
+        $client = $this->getClient();
+
+        if (\client_settings::AUTO_BID_ON == $clientSettings->getSetting($client->getIdClient(), \client_setting_type::TYPE_AUTO_BID_SWITCH)) {
+            $autoBidSettingsManager->off($client);
+            $this->saveAutoBidSwitchHistory($client, \client_settings::AUTO_BID_OFF, $request);
             return 'update_off_success';
         } else {
             return 'already-off';
         }
-    }
-
-    private function getLenderAccount()
-    {
-        /** @var UserLender $user */
-        $user     = $this->getUser();
-        $clientId = $user->getClientId();
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount  = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-        $lenderAccount->get($clientId, 'id_client_owner');
-
-        return $lenderAccount;
     }
 
     private function generateFakeAutolendSettings($projectPeriods, \projects $project, \project_rate_settings $projectRateSettings)
@@ -317,5 +318,26 @@ class AutolendController extends Controller
         }
 
         return $settings;
+    }
+
+    /**
+     * @param Clients $client
+     * @param string  $value
+     * @param Request $request
+     */
+    private function saveAutoBidSwitchHistory(Clients $client, $value, Request $request)
+    {
+        $onOff      = $value === \client_settings::AUTO_BID_ON ? 'on' : 'off';
+        $userId     = isset($_SESSION['user']['id_user']) ? $_SESSION['user']['id_user'] : null;
+        $sSerialized = serialize(array('id_user' => $userId, 'id_client' => $client->getIdClient(), 'autobid_switch' => $onOff));
+        $this->get('unilend.frontbundle.service.form_manager')->saveFormSubmission($client, ClientsHistoryActions::AUTOBID_SWITCH, $sSerialized, $request->getClientIp());
+    }
+
+    /**
+     * @return Clients
+     */
+    private function getClient()
+    {
+        return $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
     }
 }

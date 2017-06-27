@@ -2,11 +2,14 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
+use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 trait LenderChecker
 {
@@ -61,21 +64,15 @@ trait LenderChecker
     }
 
     /**
-     * @param \lenders_accounts       $lender
+     * @param Clients                 $client
      * @param \product                $product
      * @param ProductAttributeManager $productAttributeManager
      * @param EntityManager           $entityManager
      *
      * @return bool
      */
-    public function isContractEligibleForLenderType(\lenders_accounts $lender, \product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    public function isContractEligibleForLenderType(Clients $client, \product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
     {
-        /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
-        if (false === $client->get($lender->id_client_owner)) {
-            throw new \InvalidArgumentException('The client id ' . $lender->id_client_owner . ' does not exist');
-        }
-
         $attrVars = $productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::ELIGIBLE_LENDER_TYPE);
 
         if (empty($attrVars)) {
@@ -91,29 +88,44 @@ trait LenderChecker
             }
         }
 
-        return in_array($client->type, $eligibleType);
+        return in_array($client->getType(), $eligibleType);
     }
 
     /**
      * Get the amount that the lender can bid compare to the max limit loan amount.
      * For example, the max loan amount for IFP is 2000 €, and a lender has 1500 € pending bid(s), the method will return 500.
      *
-     * @param \lenders_accounts       $lender
+     *
+     * @param Clients                 $client
      * @param \projects               $project
      * @param ProductAttributeManager $productAttributeManager
-     * @param EntityManager           $entityManager
+     * @param EntityManagerSimulator  $entityManagerSimulator
+     * @param EntityManager           $entityManager;
      *
-     * @return null if no limitation, float if
+     * @return null|string
+     *
+     * @throws \Exception
      */
-    public function getAmountLenderCanStillBid(\lenders_accounts $lender, \projects $project, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    public function getAmountLenderCanStillBid(
+        Clients $client,
+        \projects $project,
+        ProductAttributeManager $productAttributeManager,
+        EntityManagerSimulator $entityManagerSimulator,
+        EntityManager $entityManager
+    )
     {
+        if (false === $client->isLender()) {
+            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
+        }
+        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+
         /** @var \bids $bid */
-        $bid = $entityManager->getRepository('bids');
+        $bid = $entityManagerSimulator->getRepository('bids');
         /** @var \product $product */
-        $product = $entityManager->getRepository('product');
+        $product = $entityManagerSimulator->getRepository('product');
         $product->get($project->id_product);
 
-        $totalAmount       = $bid->getBidsEncours($project->id_project, $lender->id_lender_account)['solde'];
+        $totalAmount       = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->getSumByWalletAndProjectAndStatus($wallet, $bid->id_project, Bids::STATUS_BID_PENDING);
         $maxAmountEligible = $this->getMaxEligibleAmount($product, $productAttributeManager);
 
         if (null === $maxAmountEligible) {
@@ -124,19 +136,26 @@ trait LenderChecker
     }
 
     /**
-     * @param \lenders_accounts       $lender
+     * @param Clients                 $client
      * @param \projects               $project
      * @param ProductAttributeManager $productAttributeManager
-     * @param EntityManager           $entityManager
+     * @param EntityManagerSimulator  $entityManagerSimulator
+     * @param EntityManager           $entityManager;
      *
      * @return bool
      */
-    public function isLenderEligibleForMaxTotalAmount(\lenders_accounts $lender, \projects $project, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    public function isLenderEligibleForMaxTotalAmount(Clients $client, \projects $project, ProductAttributeManager $productAttributeManager, EntityManagerSimulator $entityManagerSimulator, EntityManager $entityManager)
     {
-        $amountRest = $this->getAmountLenderCanStillBid($lender, $project, $productAttributeManager, $entityManager);
+        $amountRest = $this->getAmountLenderCanStillBid($client, $project, $productAttributeManager, $entityManagerSimulator, $entityManager);
         return $amountRest === null || $amountRest > 0;
     }
 
+    /**
+     * @param                         \product $product
+     * @param ProductAttributeManager $productAttributeManager
+     *
+     * @return int|null
+     */
     public function getMaxEligibleAmount(\product $product, ProductAttributeManager $productAttributeManager)
     {
         $attrVars = $productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
@@ -157,19 +176,27 @@ trait LenderChecker
         return $maxAmountEligible;
     }
 
-    public function getAutobidMaxEligibleAmount(\lenders_accounts $lender, \product $product, EntityManager $entityManager, ContractManager $contractManager)
+    /**
+     * @param Clients                  $client
+     * @param \product                 $product
+     * @param EntityManagerSimulator   $entityManagerSimulator
+     * @param ContractManager          $contractManager
+     *
+     * @return int|null
+     */
+    public function getAutobidMaxEligibleAmount(Clients $client, \product $product, EntityManagerSimulator $entityManagerSimulator, ContractManager $contractManager)
     {
         /** @var \product_underlying_contract $productContract */
-        $productContract  = $entityManager->getRepository('product_underlying_contract');
+        $productContract  = $entityManagerSimulator->getRepository('product_underlying_contract');
         $productContracts = $productContract->getUnderlyingContractsByProduct($product->id_product);
         /** @var \underlying_contract $contract */
-        $contract = $entityManager->getRepository('underlying_contract');
+        $contract = $entityManagerSimulator->getRepository('underlying_contract');
 
         $bidMaxAmount = 0;
 
         foreach ($productContracts as $underlyingContract) {
             $contract->get($underlyingContract['id_contract']);
-            if ($contractManager->isAutobidSettingsEligible($contract) && $contractManager->isLenderEligible($lender, $contract)) {
+            if ($contractManager->isAutobidSettingsEligible($contract) && $contractManager->isLenderEligible($client, $contract)) {
                 $maxAmount = $contractManager->getMaxAmount($contract);
                 if (null === $maxAmount) {
                     return null; // one of the contract has no limit, so no limit.

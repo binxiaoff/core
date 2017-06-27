@@ -2,25 +2,23 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\Checker;
 
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
 
 trait LenderChecker
 {
     /**
-     * @param \lenders_accounts        $lender
+     * @param Clients                  $client
      * @param \underlying_contract     $contract
-     * @param EntityManager            $entityManager
      * @param ContractAttributeManager $contractAttributeManager
      *
      * @return bool
+     * @throws \Exception
      */
-    public function isEligibleForLenderType(\lenders_accounts $lender, \underlying_contract $contract, EntityManager $entityManager, ContractAttributeManager $contractAttributeManager)
+    public function isEligibleForLenderType(Clients $client, \underlying_contract $contract, ContractAttributeManager $contractAttributeManager)
     {
-        /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
-        if (false === $client->get($lender->id_client_owner)) {
-            throw new \InvalidArgumentException('The client id ' . $lender->id_client_owner . ' does not exist');
+        if (false === $client->isLender()) {
+            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
 
         $attrVars = $contractAttributeManager->getContractAttributesByType($contract, \underlying_contract_attribute_type::ELIGIBLE_LENDER_TYPE);
@@ -28,6 +26,6 @@ trait LenderChecker
             return true; // No limitation found!
         }
 
-        return in_array($client->type, $attrVars);
+        return in_array($client->getType(), $attrVars);
     }
 }

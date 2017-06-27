@@ -17,7 +17,7 @@ class PartnerProductManager extends ProductManager
             $where = 'id_partner = ' . $partnerId;
         }
         /** @var \partner_product $partnerProduct */
-        $partnerProduct = $this->entityManager->getRepository('partner_product');
+        $partnerProduct = $this->entityManagerSimulator->getRepository('partner_product');
 
         return $this->filterProductByStatus($partnerProduct->select($where), $includeInactiveProduct);
     }
@@ -50,7 +50,7 @@ class PartnerProductManager extends ProductManager
     private function filterProductByStatus(array $productList, $includeInactiveProduct = false)
     {
         /** @var \product $product */
-        $product           = $this->entityManager->getRepository('product');
+        $product           = $this->entityManagerSimulator->getRepository('product');
         $availableProducts = [];
 
         foreach ($productList as $oneProduct) {

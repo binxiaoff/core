@@ -28,8 +28,6 @@
 
 class pays_v2 extends pays_v2_crud
 {
-    const ZONE_B040      = "'DE','AW','AT','BE','BQ','BG','CY','HR','CW','DK','ES','EE','FI','GR','HU','GG','JE','IM','VG','IE','IT','LV','LT','LU','MT','MS','NL','PL','PT','CZ','RO','GB','BL','SX','SE','SK','SI'";
-    const COUNTRY_FRANCE = 1;
 
     public function __construct($bdd, $params = '')
     {
@@ -71,18 +69,5 @@ class pays_v2 extends pays_v2_crud
         $sql    = 'SELECT * FROM `pays_v2` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result) > 0);
-    }
-
-    public function getZoneB040Countries()
-    {
-        $sql = 'SELECT * FROM pays_v2
-                WHERE iso in (' . self::ZONE_B040 . ')';
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
     }
 }
