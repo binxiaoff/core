@@ -114,8 +114,8 @@
                 <?php if (empty($this->checkExcludedLocation)) : ?>
                     <em>Pas de contrôle</em>
                 <?php else : ?>
-                    <?php foreach ($this->checkExcludedLocation as $localtion) : ?>
-                        <?= $localtion ?>
+                    <?php foreach ($this->checkExcludedLocation as $location) : ?>
+                        <?= $location ?>
                     <?php endforeach; ?>
                 <? endif ?>
             </td>

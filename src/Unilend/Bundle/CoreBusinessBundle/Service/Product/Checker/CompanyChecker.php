@@ -16,7 +16,7 @@ trait CompanyChecker
      * @param Product                 $product
      * @param ProductAttributeManager $productAttributeManager
      *
-     * @return bool
+     * @return bool|null
      */
     private function isEligibleForCreationDays(Companies $company, Product $product, ProductAttributeManager $productAttributeManager)
     {
@@ -56,7 +56,7 @@ trait CompanyChecker
      * @param Product                 $product
      * @param ProductAttributeManager $productAttributeManager
      *
-     * @return bool
+     * @return bool|null
      */
     private function isEligibleForNafCode(Companies $company, Product $product, ProductAttributeManager $productAttributeManager)
     {
@@ -78,7 +78,7 @@ trait CompanyChecker
      * @param Product                 $product
      * @param ProductAttributeManager $productAttributeManager
      *
-     * @return bool
+     * @return bool|null
      */
     private function isEligibleForExcludedHeadquartersLocation(Companies $company, Product $product, ProductAttributeManager $productAttributeManager)
     {
@@ -103,7 +103,7 @@ trait CompanyChecker
      * @param ProductAttributeManager $productAttributeManager
      * @param EntityManager           $entityManager
      *
-     * @return bool
+     * @return bool|null
      */
     private function isEligibleForMaxXerfiScore(Companies $company, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
     {
