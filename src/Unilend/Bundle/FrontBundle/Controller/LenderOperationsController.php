@@ -419,7 +419,7 @@ class LenderOperationsController extends Controller
                 }
                 try {
                     $loanData['activity'] = [
-                        'unread_count' => $notificationsRepository->countUnreadNotificationsForClient($lender->id_lender_account, $projectLoans['id_project'])
+                        'unread_count' => $notificationsRepository->countUnreadNotificationsForClient($wallet->getId(), $projectLoans['id_project'])
                     ];
                 } catch (\Exception $exception) {
                     unset($exception);
@@ -608,7 +608,7 @@ class LenderOperationsController extends Controller
     {
         try {
             $data = $this->getProjectInformation($projectId);
-            $code               = Response::HTTP_OK;
+            $code = Response::HTTP_OK;
         } catch (\Exception $exception) {
             $data = [];
             $code = Response::HTTP_INTERNAL_SERVER_ERROR;
@@ -633,7 +633,7 @@ class LenderOperationsController extends Controller
     {
         $entityManager   = $this->get('doctrine.orm.entity_manager');
         $translator      = $this->get('translator');
-        $numberFormatter = $this->get('number_formatter');
+        $currencyFormatter = $this->get('currency_formatter');
 
         $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
 
@@ -692,7 +692,7 @@ class LenderOperationsController extends Controller
                 'type'      => 'remboursement',
                 'title'     => $translator->trans('lender-notifications_early-repayment-title'),
                 'content'   => $translator->trans('lender-notifications_early-repayment-content', [
-                    '%amount%'     => $numberFormatter->format((float) $repayment->getAmount()),
+                    '%amount%'     => $currencyFormatter->formatCurrency($repayment->getAmount(), 'EUR'),
                     '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
                     '%company%'    => $project->getIdCompany()->getName()
                 ]),
@@ -717,7 +717,7 @@ class LenderOperationsController extends Controller
                 'type'      => 'remboursement',
                 'title'     => $translator->trans('lender-notifications_recovery-repayment-title'),
                 'content'   => $translator->trans('lender-notifications_recovery-repayment-content', [
-                    '%amount%'     => $numberFormatter->format((float) $repayment->getAmount()),
+                    '%amount%'     => $currencyFormatter->formatCurrency($repayment->getAmount(), 'EUR'),
                     '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
                     '%company%'    => $project->getIdCompany()->getName()
                 ]),
@@ -739,7 +739,7 @@ class LenderOperationsController extends Controller
 
             $title   = $translator->trans('lender-notifications_repayment-title');
             $content = $translator->trans('lender-notifications_repayment-content', [
-                '%amount%'     => $numberFormatter->format($operationRepository->getNetAmountByRepaymentScheduleId($repayment->getRepaymentSchedule())),
+                '%amount%'     => $currencyFormatter->formatCurrency($operationRepository->getNetAmountByRepaymentScheduleId($repayment->getRepaymentSchedule()), 'EUR'),
                 '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
                 '%company%'    => $project->getIdCompany()->getName()
             ]);
