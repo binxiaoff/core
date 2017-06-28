@@ -1,8 +1,9 @@
 <?php
 
-use \Unilend\Bundle\TranslationBundle\Service\TranslationManager;
-use \Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProduct;
+use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
 class ajaxController extends bootstrap
 {
@@ -269,7 +270,7 @@ class ajaxController extends bootstrap
                 // NAF code may be filled in in checkProjectRisk method
                 $company->get($project->id_company, 'id_company');
 
-                if (true === is_array($result) && \projects_status::NON_ELIGIBLE_REASON_UNKNOWN_SIREN === $result['motive']) {
+                if (true === is_array($result) && ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN === $result['motive']) {
                     echo json_encode([
                         'success' => false,
                         'error'   => 'SIREN inconu'
@@ -613,70 +614,48 @@ class ajaxController extends bootstrap
         }
     }
 
-    // supprime le bid dans la gestion du preteur et raffiche sa liste de bid mis a jour
     public function _deleteBidPreteur()
     {
         $this->autoFireView = true;
-
-        /** @var \lenders_accounts $lender */
-        $lender = $this->loadData('lenders_accounts');
         /** @var \bids $bids */
         $bids = $this->loadData('bids');
-        /** @var \transactions $transactions */
-        $transactions = $this->loadData('transactions');
-        /** @var \wallets_lines $wallets_lines */
-        $wallets_lines = $this->loadData('wallets_lines');
         /** @var \projects projects */
         $this->projects = $this->loadData('projects');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BidManager $bidManger */
+        $bidManger = $this->get('unilend.serbvice.bid_manager');
 
-        if (isset($_POST['id_lender'], $_POST['id_bid']) && $bids->get($_POST['id_bid'], 'id_bid') && $lender->get($_POST['id_lender'], 'id_lender_account')) {
+        if (isset($_POST['id_bid']) && $bids->get($_POST['id_bid'], 'id_bid')) {
             $serialize = serialize($_POST);
             $this->users_history->histo(4, 'Bid en cours delete', $_SESSION['user']['id_user'], $serialize);
 
-            $wallets_lines->get($bids->id_lender_wallet_line, 'id_wallet_line');
+            $bid = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($_POST['id_bid']);
+            $bidManger->reject($bid, false);
 
-            $transactions->delete($wallets_lines->id_transaction, 'id_transaction');
-            $wallets_lines->delete($wallets_lines->id_wallet_line, 'id_wallet_line');
-            $bids->delete($bids->id_bid, 'id_bid');
-
-            $this->lBids = $bids->select('id_lender_account = ' . $_POST['id_lender'] . ' AND status = 0', 'added DESC');
+            $this->lBids = $bids->select('id_lender_account = ' . $bid->getIdLenderAccount()->getId() . ' AND status = 0', 'added DESC');
         }
     }
 
     public function _loadMouvTransac()
     {
-        $this->transactions = $this->loadData('transactions');
-        $this->clients      = $this->loadData('clients');
-        $this->echeanciers  = $this->loadData('echeanciers');
-        $this->projects     = $this->loadData('projects');
-        $this->companies    = $this->loadData('companies');
-
-        if (isset($_POST['year'], $_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
+        if (isset($_POST['year'], $_POST['id_client'])) {
             /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
-            $translator = $this->get('translator');
+            $this->translator = $this->get('translator');
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            /** @var LenderOperationsManager $lenderOperationsManager */
+            $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
 
-            $this->lesStatuts = array(
-                \transactions_types::TYPE_LENDER_SUBSCRIPTION            => $translator->trans('preteur-profile_versement-initial'),
-                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $translator->trans('preteur-profile_alimentation-cb'),
-                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $translator->trans('preteur-profile_alimentation-virement'),
-                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL       => 'Remboursement de capital',
-                \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS     => 'Remboursement d\'intérêts',
-                \transactions_types::TYPE_DIRECT_DEBIT                   => $translator->trans('preteur-profile_alimentation-prelevement'),
-                \transactions_types::TYPE_LENDER_WITHDRAWAL              => $translator->trans('preteur-profile_retrait'),
-                \transactions_types::TYPE_LENDER_REGULATION              => 'Régularisation prêteur',
-                \transactions_types::TYPE_WELCOME_OFFER                  => 'Offre de bienvenue',
-                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION     => 'Retrait offre de bienvenue',
-                \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD   => $translator->trans('preteur-operations-vos-operations_gain-filleul'),
-                \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD     => $translator->trans('preteur-operations-vos-operations_gain-parrain'),
-                \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT => $translator->trans('preteur-operations-vos-operations_remboursement-anticipe'),
-                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT   => $translator->trans('preteur-operations-vos-operations_remboursement-anticipe-preteur'),
-                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT      => $translator->trans('preteur-operations-vos-operations_remboursement-recouvrement-preteur'),
-                \transactions_types::TYPE_LENDER_BALANCE_TRANSFER        => $translator->trans('preteur-operations-vos-operations_balance-transfer')
-            );
-
-            $this->lTrans = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = ' . \transactions::STATUS_VALID . ' AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . $_POST['year'], 'added DESC');
+            $year                   = filter_var($_POST['year'], FILTER_VALIDATE_INT);
+            $idClient               = filter_var($_POST['id_client'], FILTER_VALIDATE_INT);
+            $wallet                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($idClient, WalletType::LENDER);
+            $start                  = new \DateTime();
+            $start->setDate($year, 1, 1);
+            $end                    = new \DateTime();
+            $end->setDate($year, 12, 31);
+            $this->lenderOperations = $lenderOperationsManager->getLenderOperations($wallet, $start, $end, null, LenderOperationsManager::ALL_TYPES);
         }
-
         $this->setView('../preteurs/transactions');
     }
 
@@ -1002,6 +981,7 @@ class ajaxController extends bootstrap
             $projectCommentEntity->setIdProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project));
             $projectCommentEntity->setIdUser($this->userEntity);
             $projectCommentEntity->setContent('<p><u>Conditions suspensives de mise en ligne</u><p>' . $_POST['suspensive_conditions_comment'] . '</p>');
+            $projectCommentEntity->setPublic(true);
 
             $entityManager->persist($projectCommentEntity);
             $entityManager->flush($projectCommentEntity);

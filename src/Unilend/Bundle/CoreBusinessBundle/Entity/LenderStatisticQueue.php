@@ -5,13 +5,21 @@ namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * AccountMatching
+ * LenderStatisticQueue
  *
- * @ORM\Table(name="account_matching", indexes={@ORM\Index(name="fk_id_wallet_matching_idx", columns={"id_wallet"}), @ORM\Index(name="fk_id_lender_account_matching_idx", columns={"id_lender_account"})})
+ * @ORM\Table(name="lender_statistic_queue", uniqueConstraints={@ORM\UniqueConstraint(name="id_wallet", columns={"id_wallet"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks()
  */
-class AccountMatching
+class LenderStatisticQueue
 {
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="added", type="datetime", nullable=false)
+     */
+    private $added;
+
     /**
      * @var integer
      *
@@ -31,17 +39,31 @@ class AccountMatching
      */
     private $idWallet;
 
+
+
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\LendersAccounts
+     * Set added
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\LendersAccounts")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_lender_account", referencedColumnName="id_lender_account")
-     * })
+     * @param \DateTime $added
+     *
+     * @return LenderStatisticQueue
      */
-    private $idLenderAccount;
+    public function setAdded($added)
+    {
+        $this->added = $added;
 
+        return $this;
+    }
 
+    /**
+     * Get added
+     *
+     * @return \DateTime
+     */
+    public function getAdded()
+    {
+        return $this->added;
+    }
 
     /**
      * Get id
@@ -58,7 +80,7 @@ class AccountMatching
      *
      * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idWallet
      *
-     * @return AccountMatching
+     * @return LenderStatisticQueue
      */
     public function setIdWallet(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idWallet = null)
     {
@@ -78,26 +100,20 @@ class AccountMatching
     }
 
     /**
-     * Set idLenderAccount
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\LendersAccounts $idLenderAccount
-     *
-     * @return AccountMatching
-     */
-    public function setIdLenderAccount(\Unilend\Bundle\CoreBusinessBundle\Entity\LendersAccounts $idLenderAccount = null)
+    * @ORM\PrePersist
+    */
+    public function setAddedValue()
     {
-        $this->idLenderAccount = $idLenderAccount;
-
-        return $this;
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
     }
 
     /**
-     * Get idLenderAccount
-     *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\LendersAccounts
+     * @ORM\PreUpdate
      */
-    public function getIdLenderAccount()
+    public function setUpdatedValue()
     {
-        return $this->idLenderAccount;
+        $this->updated = new \DateTime();
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -7,6 +6,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class FeedsBankTransferCommand extends ContainerAwareCommand
 {
@@ -33,8 +33,6 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
         $counter = $entityManagerSimulator->getRepository('compteur_transferts');
         /** @var \settings $settings */
         $settings = $entityManagerSimulator->getRepository('settings');
-        /** @var \transactions $transaction */
-        $transaction = $entityManagerSimulator->getRepository('transactions');
 
         $settings->get('Virement - BIC', 'type');
         $bic = $settings->value;
@@ -67,9 +65,9 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
         $counter->create();
 
         foreach ($pendingBankTransfers as $pendingBankTransfer) {
-            $transaction->get($pendingBankTransfer->getIdTransaction(), 'id_transaction');
+            $withDrawalOperation = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWireTransferOut' => $pendingBankTransfer]);
 
-            if (\DateTime::createFromFormat('Y-m-d H:i:s', $transaction->date_transaction) < new \DateTime('today')) {
+            if ($withDrawalOperation && $withDrawalOperation->getAdded() < new \DateTime('today')) {
                 $bankAccount = $pendingBankTransfer->getBankAccount();
                 $client      = $pendingBankTransfer->getClient();
                 if ($pendingBankTransfer->getType() != Virements::TYPE_UNILEND) {
@@ -93,7 +91,8 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                     $recipientBic  = $bankAccount->getBic();
                     $recipientName = $company->getName();
                 } else {
-                    $balance = $transaction->getSolde($pendingBankTransfer->getClient()->getIdClient());
+                    $wallet  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
+                    $balance = $wallet->getAvailableBalance();
                     if ($balance < 0) {
                         $negativeBalanceError[] = ['id_client' => $pendingBankTransfer->getClient()->getIdClient(), 'balance' => $balance];
                         continue;
@@ -149,7 +148,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                 </RmtInf>
             </CdtTrfTxInf>';
 
-                $pendingBankTransfersCount++;
+                $pendingBankTransfersCount ++;
             }
         }
 

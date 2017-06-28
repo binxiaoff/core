@@ -41,6 +41,7 @@
             <argument type="service" id="security.authentication.session_strategy" />
             <argument type="service" id="security.csrf.token_manager" />
             <argument type="service" id="logger" />
+            <argument type="service" id="doctrine.orm.entity_manager" />
         </service>
 
         <service id="unilend.frontbundle.service.project_display_manager" class="Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager">
@@ -68,6 +69,7 @@
             <argument type="service" id="memcache.default" />
             <argument type="service" id="unilend.service.cip_manager" />
             <argument type="service" id="unilend.service_product.product_manager" />
+            <argument type="service" id="doctrine.orm.entity_manager" />
         </service>
 
         <service id="unilend.frontbundle.service.source_manager" class="Unilend\Bundle\FrontBundle\Service\SourceManager">
@@ -85,6 +87,7 @@
             <argument type="service" id="unilend.service.autobid_settings_manager"/>
             <argument type="service" id="translator"/>
             <argument type="service" id="router" />
+            <argument type="service" id="doctrine.orm.entity_manager" />
         </service>
 
         <service id="unilend.frontbundle.seo_manager" class="Unilend\Bundle\FrontBundle\Service\SeoManager">
@@ -115,6 +118,7 @@
         <service id="unilend.frontbundle.service.form_manager" class="Unilend\Bundle\FrontBundle\Service\FormManager">
             <argument type="service" id="form.factory" />
             <argument type="service" id="translator" />
+            <argument type="service" id="doctrine.orm.entity_manager"/>
         </service>
 
         <service id="unilend.frontbundle.gulp_rev_version_strategy" class="Unilend\Bundle\FrontBundle\Service\GulpRevVersionStrategy" public="false">

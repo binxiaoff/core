@@ -2,8 +2,13 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 /**
  * Class IRRManager
@@ -23,13 +28,21 @@ class IRRManager
     /** @var LoggerInterface */
     private $logger;
 
-    /** @var EntityManager  */
+    /** @var EntityManagerSimulator  */
+    private $entityManagerSimulator;
+
+    /** @var  EntityManager */
     private $entityManager;
 
-    public function __construct(EntityManager $entityManager, LoggerInterface $logger)
+    public function __construct(
+        EntityManagerSimulator $entityManagerSimulator,
+        EntityManager $entityManager,
+        LoggerInterface $logger
+    )
     {
-        $this->logger        = $logger;
-        $this->entityManager = $entityManager;
+        $this->logger                 = $logger;
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->entityManager          = $entityManager;
     }
 
     /**
@@ -42,17 +55,16 @@ class IRRManager
 
     public function addIRRUnilend()
     {
-        /** @var \unilend_stats $unilendStats */
-        $unilendStats = $this->entityManager->getRepository('unilend_stats');
-
-        $unilendStats->value     = $this->calculateIRRUnilend();
-        $unilendStats->type_stat = 'IRR';
-        $unilendStats->create();
+        $unilendIrr = new UnilendStats();
+        $unilendIrr->setValue($this->calculateIRRUnilend());
+        $unilendIrr->setTypeStat(UnilendStats::TYPE_STAT_IRR);
+        $this->entityManager->persist($unilendIrr);
+        $this->entityManager->flush($unilendIrr);
     }
 
 
     /**
-     * @param $aValuesIRR
+     * @param $valuesIRR
      * @return string
      * @throws \Exception
      */
@@ -61,15 +73,13 @@ class IRRManager
         $sums  = [];
         $dates = [];
 
-        foreach ($valuesIRR as $values) {
-            foreach ($values as $date => $value) {
-                $dates[] = $date;
-                $sums[]  = $value;
-            }
+        foreach ($valuesIRR as $value) {
+            $dates[] = $value['date'];
+            $sums[]  = $value['amount'];
         }
 
-        $financial   = new \PHPExcel_Calculation_Financial();
-        $xirr = $financial->XIRR($sums, $dates, self::IRR_GUESS);
+        $financial = new \PHPExcel_Calculation_Financial();
+        $xirr      = $financial->XIRR($sums, $dates, self::IRR_GUESS);
 
         if (abs($xirr) > 1 || abs($xirr) < 0.0000000001 ) {
             throw new \Exception('IRR not in range IRR : ' . $xirr);
@@ -79,14 +89,15 @@ class IRRManager
     }
 
     /**
+     * @param Wallet $wallet
      * @param $lenderId
+     *
      * @return string
      */
-    public function calculateIRRForLender($lenderId)
+    public function calculateIRRForLender(Wallet $wallet)
     {
-        /** @var \lenders_account_stats $lendersAccountStats */
-        $lendersAccountStats = $this->entityManager->getRepository('lenders_account_stats');
-        $valuesIRR           = $lendersAccountStats->getValuesForIRR($lenderId);
+        $lenderStatisticRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LenderStatistic');
+        $valuesIRR                 = $lenderStatisticRepository->getValuesForIRR($wallet->getId());
 
         return $this->calculateIRR($valuesIRR);
     }
@@ -97,23 +108,24 @@ class IRRManager
     public function calculateIRRUnilend()
     {
         set_time_limit(1000);
-        /** @var \unilend_stats $unilendStats */
-        $unilendStats = $this->entityManager->getRepository('unilend_stats');
-        $valuesIRR    = $unilendStats->getDataForUnilendIRR();
+
+        $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+        $valuesIRR              = $unilendStatsRepository->getDataForUnilendIRR();
 
         return $this->calculateIRR($valuesIRR);
     }
 
     /**
-     * @param $sDate
+     * @param \DateTime $date
+     *
      * @return bool
      */
-    public function IRRUnilendNeedsToBeRecalculated($date)
+    public function IRRUnilendNeedsToBeRecalculated(\DateTime $date)
     {
-        /** @var \lenders_account_stats $lendersAccountsStats */
-        $lendersAccountsStats = $this->entityManager->getRepository('lenders_account_stats');
+        /** @var WalletRepository $walletRepository */
+        $walletRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         /** @var \projects_status_history $projectStatusHistory */
-        $projectStatusHistory = $this->entityManager->getRepository('projects_status_history');
+        $projectStatusHistory = $this->entityManagerSimulator->getRepository('projects_status_history');
         $projectStatusTriggeringChange = [
             \projects_status::REMBOURSEMENT,
             \projects_status::PROBLEME,
@@ -125,81 +137,83 @@ class IRRManager
             \projects_status::DEFAUT
         ];
 
-        $countProjectStatusChanges    = $projectStatusHistory->countProjectStatusChangesOnDate($date, $projectStatusTriggeringChange);
-        $countLendersWithLatePayments = $lendersAccountsStats->getLendersWithLatePaymentsForIRR();
-        return count($countProjectStatusChanges) > 0 || count($countLendersWithLatePayments) > 0 ;
+        $lendersWithLatePayments   = $walletRepository->getLendersWalletsWithLatePaymentsForIRR();
+        $countProjectStatusChanges = $projectStatusHistory->countProjectStatusChangesOnDate($date->format('Y-m-d'), $projectStatusTriggeringChange);
+
+        return count($countProjectStatusChanges) > 0 || count($lendersWithLatePayments) > 0 ;
     }
 
     /**
-     * @param $lenderId
+     * @param Wallet $wallet
+     * @param int    $idLender
      */
-    public function addIRRLender($lenderId)
+    public function addIRRLender(Wallet $wallet)
     {
-        $status = \lenders_account_stats::STAT_VALID_OK;
+        $status = LenderStatistic::STAT_VALID_OK;
 
         try {
-            $lenderIRR = $this->calculateIRRForLender($lenderId);
+            $lenderIRR = $this->calculateIRRForLender($wallet);
         } catch (\Exception $irrException) {
-            $status    = \lenders_account_stats::STAT_VALID_NOK;
+            $status    = LenderStatistic::STAT_VALID_NOK;
             $lenderIRR = 0;
         }
 
-        /** @var \lenders_account_stats $lendersAccountsStats */
-        $lendersAccountsStats = $this->entityManager->getRepository('lenders_account_stats');
-        $lendersAccountsStats->id_lender_account = $lenderId;
-        $lendersAccountsStats->date              = date('Y-m-d H:i:s');
-        $lendersAccountsStats->value             = $lenderIRR;
-        $lendersAccountsStats->type_stat         = \lenders_account_stats::TYPE_STAT_IRR;
-        $lendersAccountsStats->status            = $status;
-
-        $lendersAccountsStats->create();
+        $lenderStat = new LenderStatistic();
+        $lenderStat->setIdWallet($wallet);
+        $lenderStat->setTypeStat(LenderStatistic::TYPE_STAT_IRR);
+        $lenderStat->setStatus($status);
+        $lenderStat->setValue($lenderIRR);
+        $this->entityManager->persist($lenderStat);
+        $this->entityManager->flush($lenderStat);
     }
 
+    /**
+     * @return null|UnilendStats
+     */
     public function getLastUnilendIRR()
     {
-        /** @var \unilend_stats $unilendStats */
-        $unilendStats = $this->entityManager->getRepository('unilend_stats');
-        return $unilendStats->select('type_stat = "IRR"', 'added DESC', null, '1')[0];
+        $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+        return $unilendStatsRepository->findOneBy(['typeStat' => UnilendStats::TYPE_STAT_IRR], ['added' => 'DESC']);
     }
 
     /**
      * @param string $cohortStartDate
      * @param string $cohortEndDate
+     *
      * @return string
      */
     public function getUnilendIRRByCohort($cohortStartDate, $cohortEndDate)
     {
         set_time_limit(1000);
-        /** @var \unilend_stats $unilendStats */
-        $unilendStats = $this->entityManager->getRepository('unilend_stats');
-        $valuesIRR = $unilendStats->getIRRValuesByCohort($cohortStartDate, $cohortEndDate);
+
+        $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+        $valuesIRR = $unilendStatsRepository->getIRRValuesByCohort($cohortStartDate, $cohortEndDate);
 
         return $this->calculateIRR($valuesIRR);
     }
 
     public function addIRRForAllRiskPeriodCohort()
     {
-        /** @var \unilend_stats $unilendStats */
-        $unilendStats = $this->entityManager->getRepository('unilend_stats');
+        $cohort1 = new UnilendStats();
+        $cohort1->setValue($this->getUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_1_START, self::IRR_UNILEND_RISK_PERIOD_1_END));
+        $cohort1->setTypeStat('IRR_cohort_' . self::IRR_UNILEND_RISK_PERIOD_1_START . '_' . self::IRR_UNILEND_RISK_PERIOD_1_END);
+        $this->entityManager->persist($cohort1);
 
-        $unilendStats->value     = $this->getUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_1_START, self::IRR_UNILEND_RISK_PERIOD_1_END);
-        $unilendStats->type_stat = 'IRR_cohort_' . self::IRR_UNILEND_RISK_PERIOD_1_START . '_' . self::IRR_UNILEND_RISK_PERIOD_1_END;
-        $unilendStats->create();
-        $unilendStats->unsetData();
+        $cohort2 = new UnilendStats();
+        $cohort2->setValue($this->getUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_2_START, self::IRR_UNILEND_RISK_PERIOD_2_END));
+        $cohort2->setTypeStat('IRR_cohort_' . self::IRR_UNILEND_RISK_PERIOD_2_START . '_' . self::IRR_UNILEND_RISK_PERIOD_2_END);
+        $this->entityManager->persist($cohort2);
 
-        $unilendStats->value     = $this->getUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_2_START, self::IRR_UNILEND_RISK_PERIOD_2_END);
-        $unilendStats->type_stat = 'IRR_cohort_' . self::IRR_UNILEND_RISK_PERIOD_2_START . '_' . self::IRR_UNILEND_RISK_PERIOD_2_END;
-        $unilendStats->create();
-        $unilendStats->unsetData();
+        $cohort3 = new UnilendStats();
+        $cohort3->setValue($this->getUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_3_START, self::IRR_UNILEND_RISK_PERIOD_3_END));
+        $cohort3->setTypeStat('IRR_cohort_' . self::IRR_UNILEND_RISK_PERIOD_3_START . '_' . self::IRR_UNILEND_RISK_PERIOD_3_END);
+        $this->entityManager->persist($cohort3);
 
-        $unilendStats->value     = $this->getUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_3_START, self::IRR_UNILEND_RISK_PERIOD_3_END);
-        $unilendStats->type_stat = 'IRR_cohort_' . self::IRR_UNILEND_RISK_PERIOD_3_START . '_' . self::IRR_UNILEND_RISK_PERIOD_3_END;
-        $unilendStats->create();
-        $unilendStats->unsetData();
+        $cohort4 = new UnilendStats();
+        $cohort4->setValue($this->getUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_4_START, date('Y-m-d')));
+        $cohort4->setTypeStat('IRR_cohort_' . 'IRR_cohort_' . self::IRR_UNILEND_RISK_PERIOD_4_START . '_' . date('Y-m-d'));
+        $this->entityManager->persist($cohort4);
 
-        $unilendStats->value     = $this->getUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_4_START, date('Y-m-d'));
-        $unilendStats->type_stat = 'IRR_cohort_' . self::IRR_UNILEND_RISK_PERIOD_4_START . '_' . date('Y-m-d');
-        $unilendStats->create();
-        $unilendStats->unsetData();
+        $this->entityManager->flush();
     }
 }

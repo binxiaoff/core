@@ -15,7 +15,7 @@
         <tr id="row-<?= $vigilanceStatus->getId() ?>" <?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
             <td>
                 <span style="font-weight: bold; font-size: 14px" class="vigilance-status-<?= $vigilanceStatus->getVigilanceStatus() ?>">
-                    <a target="_blank" href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lendersAccount->findOneBy(['idClientOwner' => $vigilanceStatus->getClient()->getIdClient()])->getIdLenderAccount() ?>"><?= $vigilanceStatus->getClient()->getIdClient() ?></a>
+                    <a target="_blank" href="<?= $this->lurl ?>/preteurs/edit/<?= $vigilanceStatus->getClient()->getIdClient() ?>"><?= $vigilanceStatus->getClient()->getIdClient() ?></a>
                 </span>
             </td>
             <td><?= $vigilanceStatus->getClient()->getPrenom() . ' ' . $vigilanceStatus->getClient()->getNom() ?></td>

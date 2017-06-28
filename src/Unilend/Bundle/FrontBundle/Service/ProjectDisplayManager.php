@@ -4,6 +4,7 @@ namespace Unilend\Bundle\FrontBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Cache\CacheItemPoolInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
@@ -98,14 +99,15 @@ class ProjectDisplayManager
     }
 
     /**
-     * @param array                  $projectStatus
-     * @param array                  $sort
-     * @param int|null               $start
-     * @param int|null               $limit
-     * @param \lenders_accounts|null $lenderAccount
+     * @param array        $projectStatus
+     * @param array        $sort
+     * @param int|null     $start
+     * @param int|null     $limit
+     * @param Clients|null $client
+     *
      * @return array
      */
-    public function getProjectsList(array $projectStatus = [], array $sort = [], $start = null, $limit = null, \lenders_accounts $lenderAccount = null)
+    public function getProjectsList(array $projectStatus = [], array $sort = [], $start = null, $limit = null, Clients $client = null)
     {
         /** @var \projects $projectsEntity */
         $projectsEntity = $this->entityManagerSimulator->getRepository('projects');
@@ -119,7 +121,6 @@ class ProjectDisplayManager
         }
 
         $projectsData = [];
-        $client       = $lenderAccount ? $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($lenderAccount->id_client_owner) : null;
         $products     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient($client);
         $productIds   = array_map(function (Product $product) {
             return $product->getIdProduct();
@@ -128,12 +129,12 @@ class ProjectDisplayManager
 
         foreach ($projectList as $item) {
             $project->get($item['id_project']);
-            $projectsData[$project->id_project] = $this->getBaseData($project);
+            $projectsData[$project->id_project]              = $this->getBaseData($project);
             $projectsData[$project->id_project]['bidsCount'] = $bids->counter('id_project = ' . $project->id_project);
 
-            if (false === empty($lenderAccount->id_lender_account)) {
-                $projectsData[$project->id_project]['lender']['bids']      = $this->lenderAccountDisplayManager->getBidsForProject($project->id_project, $lenderAccount);
-                $projectsData[$project->id_project]['lender']['isAdvised'] = $this->lenderAccountDisplayManager->isProjectAdvisedForLender($project, $lenderAccount);
+            if (null !== $client && $client->isLender()) {
+                $projectsData[$project->id_project]['lender']['bids']      = $this->lenderAccountDisplayManager->getBidsForProject($project->id_project, $client);
+                $projectsData[$project->id_project]['lender']['isAdvised'] = $this->lenderAccountDisplayManager->isProjectAdvisedForLender($project, $client);
             }
         }
 
@@ -468,15 +469,12 @@ class ProjectDisplayManager
         }
 
         if ($user instanceof UserLender) {
-            /** @var \lenders_accounts $lender */
-            $lender = $this->entityManagerSimulator->getRepository('lenders_accounts');
-            $lender->get($user->getClientId(), 'id_client_owner');
-
             /** @var \projects $projectData */
             $projectData = $this->entityManagerSimulator->getRepository('projects');
             $projectData->get($project->getIdProject());
 
-            $lenderEligibility = $this->lenderValidator->isEligible($lender, $projectData);
+            $client            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
+            $lenderEligibility = $this->lenderValidator->isEligible($client, $projectData);
 
             if (
                 in_array(ProductAttributeType::ELIGIBLE_LENDER_ID, $lenderEligibility['reason'])
