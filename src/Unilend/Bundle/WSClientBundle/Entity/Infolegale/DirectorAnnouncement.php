@@ -39,6 +39,14 @@ class DirectorAnnouncement
     private $category;
 
     /**
+     * @var int
+     *
+     * @JMS\SerializedName("codeEvenement")
+     * @JMS\Type("int")
+     */
+    private $eventCode;
+
+    /**
      * @var \DateTime
      *
      * @JMS\SerializedName("dateParution")
@@ -92,6 +100,14 @@ class DirectorAnnouncement
     public function getCategory()
     {
         return $this->category;
+    }
+
+    /**
+     * @return int
+     */
+    public function getEventCode()
+    {
+        return $this->eventCode;
     }
 
     /**

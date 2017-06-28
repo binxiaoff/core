@@ -45,6 +45,10 @@ class CompanyValidator
         'TC-RISK-018' => 'checkPreviousExecutivesHistory',
     ];
 
+    const INFOLEGALE_PEJORATIVE_EVENT_CODE = [
+
+    ];
+
     /**
      * @param EntityManager       $entityManager
      * @param ExternalDataManager $externalDataManager
@@ -495,6 +499,9 @@ class CompanyValidator
         $now                   = new \DateTime();
         $incidentAnnouncements = $this->externalDataManager->getExecutiveAnnouncements($executiveId);
         foreach ($incidentAnnouncements as $announcement) {
+            if (false === in_array($announcement->getEventCode(), self::INFOLEGALE_PEJORATIVE_EVENT_CODE)) {
+                continue;
+            }
             $changes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->findBy([
                 'idExecutive' => $executiveId,
                 'siren'       => $announcement->getSiren()
