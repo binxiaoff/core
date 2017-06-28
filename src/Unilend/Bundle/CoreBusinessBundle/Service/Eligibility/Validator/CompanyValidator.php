@@ -37,9 +37,11 @@ class CompanyValidator
         'TC-RISK-008' => 'checkGrossOperatingSurplus',
         'TC-RISK-009' => 'checkEliminationXerfiScore',
         'TC-RISK-011' => 'checkEulerHermesTrafficLight',
-        'TC-RISK-012' => 'checkEllispehereReport',
+        'TC-RISK-012' => 'checkEllisphereReport',
         'TC-RISK-013' => 'checkInfolegaleScore',
-        'TC-RISK-015' => 'checkEulerHermesGrade'
+        'TC-RISK-014' => 'checkCurrentExecutivesHistory',
+        'TC-RISK-015' => 'checkEulerHermesGrade',
+        'TC-RISK-018' => 'checkPreviousExecutivesHistory',
     ];
 
     /**
@@ -135,11 +137,14 @@ class CompanyValidator
             return $infolegaleScoreCheck;
         }
 
-        // TC-RISK-014
-
         $eulerHermesGradeCheck = $this->checkRule('TC-RISK-015', $siren, $project);
         if (false === empty($eulerHermesGradeCheck)) {
             return $eulerHermesGradeCheck;
+        }
+
+        $executivesHistoryCheck = $this->checkExecutivesHistory($siren);
+        if (false === empty($executivesHistoryCheck)) {
+            return $executivesHistoryCheck;
         }
 
         if (null !== $project) {
@@ -399,10 +404,10 @@ class CompanyValidator
      *
      * @return array
      */
-    private function checkEllispehereReport($siren)
+    private function checkEllisphereReport($siren)
     {
         $eligibility      = [];
-        $ellisphereReport = $this->externalDataManager->getEllispehereReport($siren);
+        $ellisphereReport = $this->externalDataManager->getEllisphereReport($siren);
 
         if (null !== $ellisphereReport->getDefaults()->getDefaultsNoted()) {
             $eligibility[] = ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_DEFAULTS;
@@ -436,6 +441,104 @@ class CompanyValidator
         }
 
         return [];
+    }
+
+    /**
+     * @param string $siren
+     *
+     * @return array
+     */
+    private function checkExecutivesHistory($siren)
+    {
+        $this->externalDataManager->refreshExecutiveChanges($siren);
+
+        $currentExecutivesHistory = $this->checkRule('TC-RISK-014', $siren);
+        if (false === empty($currentExecutivesHistory)) {
+            return $currentExecutivesHistory;
+        }
+
+        $previousExecutivesHistory = $this->checkRule('TC-RISK-018', $siren);
+        if (false === empty($previousExecutivesHistory)) {
+            return $previousExecutivesHistory;
+        }
+
+        return [];
+    }
+
+    /**
+     * @param string $siren
+     *
+     * @return array
+     */
+    private function checkCurrentExecutivesHistory($siren)
+    {
+        $activeExecutives = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->getActiveExecutives($siren);
+        foreach ($activeExecutives as $executiveId) {
+            if ($this->hasIncidentAnnouncements($executiveId, 5, 1)) {
+                return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_INCIDENT];
+            }
+        }
+
+        return [];
+    }
+
+    /**
+     * @param string $siren
+     *
+     * @return array
+     */
+    private function checkPreviousExecutivesHistory($siren)
+    {
+        $previousExecutives = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->getPreviousExecutivesLeftAfter($siren, new \DateTime('4 years ago'));
+        foreach ($previousExecutives as $executive) {
+            if ($this->hasIncidentAnnouncements($executive, 1, 0)) {
+                return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT];
+            }
+        }
+
+        return [];
+    }
+
+    /**
+     * @param int $executiveId
+     * @param int $yearsSince
+     * @param int $extended
+     *
+     * @return bool
+     */
+    private function hasIncidentAnnouncements($executiveId, $yearsSince, $extended)
+    {
+        $now                   = new \DateTime();
+        $incidentAnnouncements = $this->externalDataManager->getExecutiveAnnouncements($executiveId);
+        foreach ($incidentAnnouncements as $announcement) {
+            $changes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->findBy([
+                'idExecutive' => $executiveId,
+                'siren'       => $announcement->getSiren()
+            ]);
+            foreach ($changes as $change) {
+                $ended = null === $change->getEnded() ? $now : $change->getEnded();
+
+                if (null === $change->getNominated()) {
+                    $mockedNominatedDate = new \DateTime('5 years ago');
+                    if ($change->getEnded() > $mockedNominatedDate) {
+                        $started = $mockedNominatedDate;
+                    } else {
+                        $started = $change->getEnded();
+                    }
+                } else {
+                    $started = $change->getNominated();
+                }
+
+                if ($ended->diff($now)->y <= $yearsSince) {
+                    $ended->modify('+' . $extended . ' year');
+                    if ($started <= $announcement->getPublishedDate() && $ended >= $announcement->getPublishedDate()) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -539,6 +642,7 @@ class CompanyValidator
     private function getNAFCode($siren)
     {
         $companyData = $this->externalDataManager->getCompanyIdentity($siren);
+
         return $companyData->getNAFCode();
     }
 
