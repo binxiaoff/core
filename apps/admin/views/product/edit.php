@@ -128,17 +128,17 @@
 
         <tr>
             <th>N'a aucun projet avec produit B-LEND en cours depuis</th>
-            <td><?= isset($this->minNoIncidentBlendDays[0]) ? $this->minNoBlendDays[0] . ' jours' : '<em>Pas de contrôle</em>' ?></td>
+            <td><?= isset($this->minNoIncidentBlendDays[0]) ? $this->noBlendDays[0] . ' jours' : '<em>Pas de contrôle</em>' ?></td>
         </tr>
 
         <tr>
             <th>Aucun incident sur un projet Unilend depuis</th>
-            <td><?= isset($this->minNoIncidentUnilendDays[0]) ? $this->minNoIncidentUnilendDays[0] . ' jours' : '<em>Pas de contrôle</em>' ?></td>
+            <td><?= isset($this->minNoIncidentUnilendDays[0]) ? $this->noIncidentUnilendDays[0] . ' jours' : '<em>Pas de contrôle</em>' ?></td>
         </tr>
 
         <tr>
             <th>Aucun incident sur un projet B-LEND depuis</th>
-            <td><?= isset($this->minNoIncidentBlendDays[0]) ? $this->minNoIncidentBlendDays[0] . ' jours' : '<em>Pas de contrôle</em>' ?></td>
+            <td><?= isset($this->minNoIncidentBlendDays[0]) ? $this->noIncidentBlendDays[0] . ' jours' : '<em>Pas de contrôle</em>' ?></td>
         </tr>
 
         <tr>

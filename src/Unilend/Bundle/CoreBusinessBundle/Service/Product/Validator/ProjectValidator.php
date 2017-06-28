@@ -59,9 +59,9 @@ class ProjectValidator
             ProductAttributeType::MAX_PRE_SCORE,
             ProductAttributeType::VERIFICATION_REQUESTER_IS_ONE_OF_THE_DIRECTOR,
             ProductAttributeType::ELIGIBLE_EXCLUDED_HEADQUARTERS_LOCATION,
-            ProductAttributeType::MIN_NO_IN_PROGRESS_BLEND_PROJECT_DAYS,
-            ProductAttributeType::MIN_NO_INCIDENT_BLEND_PROJECT_DAYS,
-            ProductAttributeType::MIN_NO_INCIDENT_UNILEND_PROJECT_DAYS,
+            ProductAttributeType::NO_IN_PROGRESS_BLEND_PROJECT_DAYS,
+            ProductAttributeType::NO_INCIDENT_BLEND_PROJECT_DAYS,
+            ProductAttributeType::NO_INCIDENT_UNILEND_PROJECT_DAYS,
         ];
 
         foreach ($productAttributeTypes as $productAttributeType) {
@@ -139,13 +139,13 @@ class ProjectValidator
             case ProductAttributeType::MAX_XERFI_SCORE:
                 $checkResult = $this->isEligibleForMaxXerfiScore($project->getIdCompany(), $product, $this->productAttributeManager, $this->entityManager);
                 break;
-            case ProductAttributeType::MIN_NO_IN_PROGRESS_BLEND_PROJECT_DAYS:
+            case ProductAttributeType::NO_IN_PROGRESS_BLEND_PROJECT_DAYS:
                 $checkResult = $this->isEligibleForNoBlendProject($project->getIdCompany(), $product, $this->productAttributeManager, $this->entityManager);
                 break;
-            case ProductAttributeType::MIN_NO_INCIDENT_UNILEND_PROJECT_DAYS:
+            case ProductAttributeType::NO_INCIDENT_UNILEND_PROJECT_DAYS:
                 $checkResult = $this->isEligibleForNoUnilendProjectIncident($project->getIdCompany(), $product, $this->productAttributeManager, $this->entityManager);
                 break;
-            case ProductAttributeType::MIN_NO_INCIDENT_BLEND_PROJECT_DAYS:
+            case ProductAttributeType::NO_INCIDENT_BLEND_PROJECT_DAYS:
                 $checkResult = $this->isEligibleForNoBlendProjectIncident($project->getIdCompany(), $product, $this->productAttributeManager, $this->entityManager);
                 break;
             default;

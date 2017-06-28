@@ -64,9 +64,9 @@ class productController extends bootstrap
         $this->lenderType               = $productManager->getAttributesByType($this->product, ProductAttributeType::ELIGIBLE_CLIENT_TYPE);
         $this->checkExcludedLocation    = $productManager->getAttributesByType($this->product, ProductAttributeType::ELIGIBLE_EXCLUDED_HEADQUARTERS_LOCATION);
         $this->maxXerfiScore            = $productManager->getAttributesByType($this->product, ProductAttributeType::MAX_XERFI_SCORE);
-        $this->minNoBlendDays           = $productManager->getAttributesByType($this->product, ProductAttributeType::MIN_NO_IN_PROGRESS_BLEND_PROJECT_DAYS);
-        $this->minNoIncidentBlendDays   = $productManager->getAttributesByType($this->product, ProductAttributeType::MIN_NO_INCIDENT_BLEND_PROJECT_DAYS);
-        $this->minNoIncidentUnilendDays = $productManager->getAttributesByType($this->product, ProductAttributeType::MIN_NO_INCIDENT_UNILEND_PROJECT_DAYS);
+        $this->noBlendDays           = $productManager->getAttributesByType($this->product, ProductAttributeType::NO_IN_PROGRESS_BLEND_PROJECT_DAYS);
+        $this->noIncidentBlendDays   = $productManager->getAttributesByType($this->product, ProductAttributeType::NO_INCIDENT_BLEND_PROJECT_DAYS);
+        $this->noIncidentUnilendDays = $productManager->getAttributesByType($this->product, ProductAttributeType::NO_INCIDENT_UNILEND_PROJECT_DAYS);
         $this->checkOwner               = $productManager->getAttributesByType($this->product, ProductAttributeType::VERIFICATION_REQUESTER_IS_ONE_OF_THE_DIRECTOR);
         $this->minPreScore              = $productManager->getAttributesByType($this->product, ProductAttributeType::MIN_PRE_SCORE);
         $this->maxPreScore              = $productManager->getAttributesByType($this->product, ProductAttributeType::MAX_PRE_SCORE);

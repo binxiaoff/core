@@ -135,7 +135,7 @@ trait CompanyChecker
      */
     private function isEligibleForNoBlendProject(Companies $company, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
     {
-        $noInProgressBlendSince = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MIN_NO_IN_PROGRESS_BLEND_PROJECT_DAYS);
+        $noInProgressBlendSince = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::NO_IN_PROGRESS_BLEND_PROJECT_DAYS);
 
         if (empty($noInProgressBlendSince)) {
             return true;
@@ -179,7 +179,7 @@ trait CompanyChecker
      */
     private function isEligibleForNoUnilendProjectIncident(Companies $company, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
     {
-        $noUnilendIncidentSince = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MIN_NO_INCIDENT_UNILEND_PROJECT_DAYS);
+        $noUnilendIncidentSince = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::NO_INCIDENT_UNILEND_PROJECT_DAYS);
         if (empty($noUnilendIncidentSince)) {
             return true;
         }
@@ -215,7 +215,7 @@ trait CompanyChecker
      */
     private function isEligibleForNoBlendProjectIncident(Companies $company, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
     {
-        $noBlendIncidentSince = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MIN_NO_INCIDENT_BLEND_PROJECT_DAYS);
+        $noBlendIncidentSince = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::NO_INCIDENT_BLEND_PROJECT_DAYS);
         if (empty($noBlendIncidentSince)) {
             return true;
         }
