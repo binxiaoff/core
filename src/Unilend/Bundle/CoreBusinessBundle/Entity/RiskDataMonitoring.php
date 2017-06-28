@@ -7,17 +7,17 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * RiskDataMonitoring
  *
- * @ORM\Table(name="risk_data_monitoring", indexes={@ORM\Index(name="idx_risk_data_monitoring_id_company", columns={"id_company"})})
+ * @ORM\Table(name="risk_data_monitoring", indexes={@ORM\Index(name="idx_risk_data_monitoring_siren", columns={"siren"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\RiskDataMonitoringRepository")
  */
 class RiskDataMonitoring
 {
     /**
-     * @var integer
+     * @var string
      *
-     * @ORM\Column(name="id_client", type="integer", nullable=true)
+     * @ORM\Column(name="siren", type="string", length=14, nullable=false)
      */
-    private $idClient;
+    private $siren;
 
     /**
      * @var string
@@ -50,39 +50,27 @@ class RiskDataMonitoring
     private $id;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies
+     * Set siren
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Companies")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_company", referencedColumnName="id_company")
-     * })
-     */
-    private $idCompany;
-
-
-
-    /**
-     * Set idClient
-     *
-     * @param integer $idClient
+     * @param string $siren
      *
      * @return RiskDataMonitoring
      */
-    public function setIdClient($idClient)
+    public function setSiren($siren)
     {
-        $this->idClient = $idClient;
+        $this->siren = $siren;
 
         return $this;
     }
 
     /**
-     * Get idClient
+     * Get siren
      *
-     * @return integer
+     * @return string
      */
-    public function getIdClient()
+    public function getSiren()
     {
-        return $this->idClient;
+        return $this->siren;
     }
 
     /**
@@ -165,30 +153,6 @@ class RiskDataMonitoring
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * Set idCompany
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Companies $idCompany
-     *
-     * @return RiskDataMonitoring
-     */
-    public function setIdCompany($idCompany)
-    {
-        $this->idCompany = $idCompany;
-
-        return $this;
-    }
-
-    /**
-     * Get idCompany
-     *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Companies
-     */
-    public function getIdCompany()
-    {
-        return $this->idCompany;
     }
 
     /**

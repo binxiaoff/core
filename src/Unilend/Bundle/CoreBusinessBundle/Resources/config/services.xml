@@ -88,6 +88,7 @@
             <argument type="service" id="unilend.service_product.product_manager"/>
             <argument type="service" id="unilend.service_product.contract_attribute_manager"/>
             <argument type="service" id="unilend.service.slack_manager"/>
+            <argument type="service" id="unilend.service.risk_data_monitoring_manager" />
             <argument>%url.universign%</argument>
             <call method="setLogger">
                 <argument type="service" id="logger" on-invalid="null"/>
@@ -433,5 +434,14 @@
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.ws_client.call_history_handler"/>
         </service>
+
+
+        <service id="unilend.service.risk_data_monitoring_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoringManager">
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="unilend.service.ws_client.euler_manager" />
+            <argument type="service" id="logger" />
+            <argument type="service" id="translator" />
+        </service>
+
     </services>
 </container>

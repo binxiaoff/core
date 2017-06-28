@@ -46,7 +46,7 @@ class RiskDataMonitoringController extends Controller
             return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren is unknown to database', 404);
         }
 
-        $riskDataMonitoringManager = $this->get('unilend.service.ws_client.risk_data_monitoring_manager');
+        $riskDataMonitoringManager = $this->get('unilend.service.risk_data_monitoring_manager');
 
         if (false === $riskDataMonitoringManager->isSirenMonitored($data['siren'], CompanyRating::TYPE_EULER_HERMES_GRADE)) {
             return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren is not actively monitored', 404);
@@ -83,13 +83,13 @@ class RiskDataMonitoringController extends Controller
             return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren is unknown to database', 404);
         }
 
-        $riskDataMonitoringManager = $this->get('unilend.service.ws_client.risk_data_monitoring_manager');
+        $riskDataMonitoringManager = $this->get('unilend.service.risk_data_monitoring_manager');
 
         if (false === $riskDataMonitoringManager->isSirenMonitored($data['siren'], CompanyRating::TYPE_EULER_HERMES_GRADE)) {
             return $this->endpointFeedback(self::VALIDATION_ERROR, 'This siren is not or no longer monitored', 404);
         }
 
-        $riskDataMonitoringManager->stopMonitoringPeriod($data['siren'], CompanyRating::TYPE_EULER_HERMES_GRADE);
+        $riskDataMonitoringManager->saveEndOfMonitoringPeriodNotification($data['siren'], CompanyRating::TYPE_EULER_HERMES_GRADE);
 
         return $this->endpointFeedback(self::SUCCESS, 'End of monitoring period saved', 200);
     }
@@ -119,40 +119,40 @@ class RiskDataMonitoringController extends Controller
      */
     private function authenticateEulerHermes(Request $request)
     {
-        $authentication = [
-            'token'    => $request->headers->get('token'),
-            'password' => $request->headers->get('password')
-        ];
+        $entityManager      = $this->get('doctrine.orm.entity_manager');
+        $settingsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+
+        if ($this->getParameter('kernel.environment') === 'prod') {
+            $authorizedIpsSetting = $settingsRepository->findOneBy(['type' => 'Euler Hermes Monitoring production ips']);
+        } else {
+            $authorizedIpsSetting = $settingsRepository->findOneBy(['type' => 'Euler Hermes Monitoring testing ips']);
+        }
+
+        $authorizedIps = json_decode($authorizedIpsSetting->getValue(), true);
+        // For local endpoint testing purposes
+        $authorizedIps = array_merge($authorizedIps, ['192.168.110.12']);
+
+        if (false === in_array($request->getClientIp(), $authorizedIps)) {
+            return $this->endpointFeedback(self::AUTHENTICATION_ERROR, 'Your Ip address is not authorized', 403);
+        }
+
+        $authentication = $request->headers->get('token');
 
         if (empty($authentication)) {
             return $this->endpointFeedback(self::AUTHENTICATION_ERROR, 'authentication missing', 401);
         }
 
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        $token         = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Euler Hermes Monitoring Token'])->getValue();
-        $password      = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Euler Hermes Monitoring Password'])->getValue();
+        $token= $settingsRepository->findOneBy(['type' => 'Euler Hermes Monitoring Token'])->getValue();
 
-        if (empty($authentication['token'])) {
+
+        if (empty($authentication)) {
             return $this->endpointFeedback(self::AUTHENTICATION_ERROR, 'token missing', 401);
         }
 
-        if (empty($authentication['password'])) {
-            return $this->endpointFeedback(self::AUTHENTICATION_ERROR, 'password missing', 401);
-        }
-
-        if ($token !== $authentication['token']) {
+        if ($token !== $authentication) {
             return $this->endpointFeedback(self::AUTHENTICATION_ERROR, 'wrong token', 401);
         }
 
-        if ($password !== $authentication['password']) {
-            return $this->endpointFeedback(self::AUTHENTICATION_ERROR, 'wrong password', 401);
-        }
-
         return true;
-    }
-
-    private function validateSiren()
-    {
-
     }
 }

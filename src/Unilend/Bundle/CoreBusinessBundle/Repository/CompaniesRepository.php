@@ -10,6 +10,7 @@ class CompaniesRepository extends EntityRepository
 {
     /**
      * @param int $maxDepositAmount
+     *
      * @return array
      */
     public function getLegalEntitiesByCumulativeDepositAmount($maxDepositAmount)
@@ -25,6 +26,25 @@ class CompaniesRepository extends EntityRepository
             ->having('depositAmount >= c.capital')
             ->andHaving('depositAmount >= :max_deposit_amount')
             ->setParameter('max_deposit_amount', $maxDepositAmount);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @param string $siren
+     * @param string $ratingType
+     *
+     * @return array
+     */
+    public function getOngoingMonitoredCompaniesBySirenAndRatingType($siren, $ratingType)
+    {
+        $qb = $this->createQueryBuilder('c');
+        $qb->innerJoin('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm', Join::WITH, 'c.siren = rdm.siren')
+            ->where('c.siren = :siren')
+            ->andWhere('rdm.ratingType = :ratingType')
+            ->andWhere('rdm.end IS NULL')
+            ->setParameter('siren', $siren)
+            ->setParameter('ratingType', $ratingType);
 
         return $qb->getQuery()->getResult();
     }
