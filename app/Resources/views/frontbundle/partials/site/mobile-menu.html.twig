@@ -35,7 +35,7 @@
                     <li role="presentation"><a href="{{ path('projects_list') }}" tabindex="-1">{% trans %} header_menu-item-projects {% endtrans %}</a></li>
                 {% endif %}
                 <li role="presentation"><a href="{{ path('qui-sommes-nous') }}" tabindex="-1">{% trans %} header_menu-item-about {% endtrans %}</a></li>
-                <li role="presentation"><a href="{% if is_granted('ROLE_BORROWER') %}https://blog.unilend.fr/financement-des-pme/ {% else %}https://blog.unilend.fr/" tabindex="-1">{% trans %} header_menu-item-blog {% endtrans %}</a></li>
+                <li role="presentation"><a href="{% if is_granted('ROLE_BORROWER') %}https://blog.unilend.fr/financement-des-pme/ {% else %}https://blog.unilend.fr/{% endif %}" tabindex="-1">{% trans %} header_menu-item-blog {% endtrans %}</a></li>
             {% endif %}
         </ul>
         {% include 'partials/components/list-socialmedia.html.twig' %}
