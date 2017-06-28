@@ -46,29 +46,10 @@ class ProjectValidator
      */
     public function validate(Projects $project, Product $product)
     {
-        $productAttributeTypes = [
-            ProductAttributeType::MIN_LOAN_DURATION_IN_MONTH,
-            ProductAttributeType::MAX_LOAN_DURATION_IN_MONTH,
-            ProductAttributeType::ELIGIBLE_BORROWING_MOTIVE,
-            ProductAttributeType::ELIGIBLE_EXCLUDED_BORROWING_MOTIVE,
-            ProductAttributeType::MIN_CREATION_DAYS,
-            ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_RCS,
-            ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_NAF_CODE,
-            ProductAttributeType::MAX_XERFI_SCORE,
-            ProductAttributeType::MIN_PRE_SCORE,
-            ProductAttributeType::MAX_PRE_SCORE,
-            ProductAttributeType::VERIFICATION_REQUESTER_IS_ONE_OF_THE_DIRECTOR,
-            ProductAttributeType::ELIGIBLE_EXCLUDED_HEADQUARTERS_LOCATION,
-            ProductAttributeType::NO_IN_PROGRESS_BLEND_PROJECT_DAYS,
-            ProductAttributeType::NO_INCIDENT_BLEND_PROJECT_DAYS,
-            ProductAttributeType::NO_INCIDENT_UNILEND_PROJECT_DAYS,
-        ];
-
+        $productAttributeTypes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProductAttributeType')->findAll();
         foreach ($productAttributeTypes as $productAttributeType) {
             if (false === $this->check($project, $product, $productAttributeType)) {
-                $this->entityManager->flush();
-
-                return [$productAttributeType];
+                return [$productAttributeType->getLabel()];
             }
         }
 
@@ -84,25 +65,22 @@ class ProjectValidator
         }
 
         if (false === $hasEligibleContract) {
-            $this->entityManager->flush();
-
             return $violationsContract;
         }
-        $this->entityManager->flush();
 
         return [];
     }
 
     /**
-     * @param Projects $project
-     * @param Product  $product
-     * @param string   $productAttributeTypeLabel
+     * @param Projects             $project
+     * @param Product              $product
+     * @param ProductAttributeType $productAttributeType
      *
-     * @return bool
+     * @return bool|null
      */
-    private function check(Projects $project, Product $product, $productAttributeTypeLabel)
+    private function check(Projects $project, Product $product, ProductAttributeType $productAttributeType)
     {
-        switch ($productAttributeTypeLabel) {
+        switch ($productAttributeType->getLabel()) {
             case ProductAttributeType::MIN_LOAN_DURATION_IN_MONTH:
                 $checkResult = $this->isEligibleForMinDuration($project, $product, $this->productAttributeManager);
                 break;
@@ -130,9 +108,6 @@ class ProjectValidator
             case ProductAttributeType::MAX_PRE_SCORE:
                 $checkResult = $this->isEligibleForMaxPreScore($project, $product, $this->productAttributeManager, $this->entityManager);
                 break;
-            case ProductAttributeType::VERIFICATION_REQUESTER_IS_ONE_OF_THE_DIRECTOR:
-                $checkResult = $this->isEligibleForRequesterName($project, $product, $this->productAttributeManager, $this->infolegaleManager, $this->entityManager);
-                break;
             case ProductAttributeType::ELIGIBLE_EXCLUDED_HEADQUARTERS_LOCATION:
                 $checkResult = $this->isEligibleForExcludedHeadquartersLocation($project->getIdCompany(), $product, $this->productAttributeManager);
                 break;
@@ -152,18 +127,35 @@ class ProjectValidator
                 return true;
         }
 
-        $productAttributeType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProductAttributeType')->findOneBy(['label' => $productAttributeTypeLabel]);
+        $this->logCheck($project, $product, $productAttributeType, $checkResult);
 
-        if ($productAttributeType) {
+        return $checkResult;
+    }
+
+    /**
+     * @param Projects             $project
+     * @param Product              $product
+     * @param ProductAttributeType $productAttributeType
+     * @param bool|null            $checkResult
+     */
+    private function logCheck(Projects $project, Product $product, $productAttributeType, $checkResult)
+    {
+        $assessment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectProductAssessment')->findOneBy([
+            'idProject'              => $project,
+            'idProduct'              => $product,
+            'idProductAttributeType' => $productAttributeType
+        ], ['added' => 'DESC']);
+
+        if (null === $assessment || $checkResult !== $assessment->getStatus()) {
             $assessment = new ProjectProductAssessment();
+
             $assessment->setIdProject($project)
                 ->setIdProduct($product)
                 ->setIdProductAttributeType($productAttributeType)
                 ->setStatus($checkResult);
 
             $this->entityManager->persist($assessment);
+            $this->entityManager->flush($assessment);
         }
-
-        return $checkResult;
     }
 }

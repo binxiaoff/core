@@ -35,27 +35,27 @@ class ProjectValidator
      */
     public function validate(Projects $project, UnderlyingContract $contract)
     {
-        $contractAttributeTypes = [
-            UnderlyingContractAttributeType::MAX_LOAN_DURATION_IN_MONTH,
-            UnderlyingContractAttributeType::MIN_CREATION_DAYS,
-            UnderlyingContractAttributeType::ELIGIBLE_BORROWER_COMPANY_RCS,
-        ];
+        $contractAttributeTypes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnderlyingContractAttributeType')->findAll();
 
         foreach ($contractAttributeTypes as $contractAttributeType) {
             if (false === $this->check($project, $contract, $contractAttributeType)) {
-                $this->entityManager->flush();
-
-                return [$contractAttributeType];
+                return [$contractAttributeType->getLabel()];
             }
         }
-        $this->entityManager->flush();
 
         return [];
     }
 
-    private function check(Projects $project, UnderlyingContract $contract, $contractAttributeTypeLabel)
+    /**
+     * @param Projects                        $project
+     * @param UnderlyingContract              $contract
+     * @param UnderlyingContractAttributeType $contractAttributeType
+     *
+     * @return bool
+     */
+    private function check(Projects $project, UnderlyingContract $contract, UnderlyingContractAttributeType $contractAttributeType)
     {
-        switch ($contractAttributeTypeLabel) {
+        switch ($contractAttributeType->getLabel()) {
             case UnderlyingContractAttributeType::MAX_LOAN_DURATION_IN_MONTH:
                 $checkResult = $this->isEligibleForMaxDuration($project, $contract, $this->contractAttributeManager);
                 break;
@@ -68,18 +68,36 @@ class ProjectValidator
             default;
                 return true;
         }
-        $contractAttributeType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnderlyingContractAttributeType')->findOneBy(['label' => $contractAttributeTypeLabel]);
 
-        if ($contractAttributeType) {
+        $this->logCheck($project, $contract, $contractAttributeType, $checkResult);
+
+        return $checkResult;
+    }
+
+    /**
+     * @param Projects                        $project
+     * @param UnderlyingContract              $contract
+     * @param UnderlyingContractAttributeType $contractAttributeType
+     * @param bool|null                       $checkResult
+     */
+    private function logCheck(Projects $project, UnderlyingContract $contract, UnderlyingContractAttributeType $contractAttributeType, $checkResult)
+    {
+        $assessment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectContractAssessment')->findOneBy([
+            'idProject'               => $project,
+            'idContract'              => $contract,
+            'idContractAttributeType' => $contractAttributeType
+        ], ['added' => 'DESC']);
+
+        if (null === $assessment || $checkResult !== $assessment->getStatus()) {
             $assessment = new ProjectContractAssessment();
+
             $assessment->setIdProject($project)
-                ->setIdContract($contract)
+                ->setidContract($contract)
                 ->setIdContractAttributeType($contractAttributeType)
                 ->setStatus($checkResult);
 
             $this->entityManager->persist($assessment);
+            $this->entityManager->flush();
         }
-
-        return $checkResult;
     }
 }

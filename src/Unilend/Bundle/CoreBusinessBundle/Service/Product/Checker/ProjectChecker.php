@@ -103,48 +103,6 @@ trait ProjectChecker
      * @param Projects                $project
      * @param Product                 $product
      * @param ProductAttributeManager $productAttributeManager
-     * @param InfolegaleManager       $infolegaleManager
-     * @param EntityManager           $entityManager
-     *
-     * @return bool|null
-     */
-    private function isEligibleForRequesterName(
-        Projects $project,
-        Product $product,
-        ProductAttributeManager $productAttributeManager,
-        InfolegaleManager $infolegaleManager,
-        EntityManager $entityManager
-    )
-    {
-        $eligibleRequester = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::VERIFICATION_REQUESTER_IS_ONE_OF_THE_DIRECTOR);
-
-        if (empty($eligibleRequester)) {
-            return true;
-        }
-
-        $company         = $project->getIdCompany();
-        $companyIdentity = $infolegaleManager->getIdentity($company->getSiren());
-        $client          = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner());
-        if ($companyIdentity && $client && $client->getNom() && $client->getPrenom()) {
-            foreach ($companyIdentity->getDirectors() as $director) {
-                if (
-                    mb_strtolower(trim($client->getNom())) === mb_strtolower(trim($director->getName()))
-                    && mb_strtolower(trim($client->getPrenom())) === mb_strtolower(trim($director->getFirstName()))
-                ) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        return null;
-    }
-
-    /**
-     * @param Projects                $project
-     * @param Product                 $product
-     * @param ProductAttributeManager $productAttributeManager
      * @param EntityManager           $entityManager
      *
      * @return bool|null

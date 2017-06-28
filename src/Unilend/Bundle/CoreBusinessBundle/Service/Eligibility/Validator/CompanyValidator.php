@@ -10,6 +10,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator;
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityAssessment;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRule;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsNotes;
@@ -698,21 +699,33 @@ class CompanyValidator
         $result = $method->invoke($this, $siren);
 
         if ($project instanceof Projects) {
-            $ruleRepository    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityRule');
-            $ruleSetRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityRuleSet');
-            $rule              = $ruleRepository->findOneBy(['label' => $ruleName]);
-            $ruleSet           = $ruleSetRepository->findOneBy(['status' => ProjectEligibilityRuleSet::STATUS_ACTIVE]);
+            $rule    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityRule')->findOneBy(['label' => $ruleName]);
+            $ruleSet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityRuleSet')->findOneBy(['status' => ProjectEligibilityRuleSet::STATUS_ACTIVE]);
+            $this->logCheck($project, $rule, $ruleSet, $result);
+        }
 
+        return $result;
+    }
+
+    private function logCheck(Projects $project, ProjectEligibilityRule $rule, ProjectEligibilityRuleSet $ruleSet, $result)
+    {
+        $assessment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityAssessment')->findOneBy([
+            'idProject' => $project,
+            'idRule'    => $rule,
+            'idRuleSet' => $ruleSet
+        ], ['added' => 'DESC']);
+
+        $checkStatus = empty($result);
+        if (null === $assessment || $checkStatus !== $assessment->getStatus()) {
             $assessment = new ProjectEligibilityAssessment();
-            $assessment->setIdProject($project);
-            $assessment->setIdRule($rule);
-            $assessment->setIdRuleSet($ruleSet);
-            $assessment->setStatus(empty($result));
+
+            $assessment->setIdProject($project)
+                ->setIdRule($rule)
+                ->setIdRuleSet($ruleSet)
+                ->setStatus($checkStatus);
 
             $this->entityManager->persist($assessment);
             $this->entityManager->flush($assessment);
         }
-
-        return $result;
     }
 }
