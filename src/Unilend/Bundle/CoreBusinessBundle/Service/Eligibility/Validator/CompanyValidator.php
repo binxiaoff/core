@@ -455,7 +455,7 @@ class CompanyValidator
      *
      * @return array
      */
-    public function checkCurrentExecutivesHistory($siren)
+    private function checkCurrentExecutivesHistory($siren)
     {
         $this->externalDataManager->refreshExecutiveChanges($siren);
         $activeExecutives = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->getActiveExecutives($siren);
