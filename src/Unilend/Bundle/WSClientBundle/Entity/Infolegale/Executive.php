@@ -51,7 +51,7 @@ class Executive extends Staff
      * @JMS\SerializedName("dateNaissance")
      * @JMS\Type("DateTime<'d/m/Y'>")
      */
-    private $birthday;
+    protected $birthday;
 
     /**
      * @var string

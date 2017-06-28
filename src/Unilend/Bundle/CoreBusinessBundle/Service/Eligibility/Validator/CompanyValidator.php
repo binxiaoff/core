@@ -117,11 +117,6 @@ class CompanyValidator
             return $eliminationXerfiScoreCheck;
         }
 
-        $altaresScoreVsXerfiScoreCheck = $this->checkRule('TC-RISK-010', $siren, $project);
-        if (false === empty($altaresScoreVsXerfiScoreCheck)) {
-            return $altaresScoreVsXerfiScoreCheck;
-        }
-
         $eulerHermesTrafficLightCheck = $this->checkRule('TC-RISK-011', $siren, $project);
         if (false === empty($eulerHermesTrafficLightCheck)) {
             return $eulerHermesTrafficLightCheck;

@@ -338,10 +338,10 @@ class ProjectRequestManager
 
                 return count($products);
             } else {
-                $this->logger->warning('Cannot find eligible partner product for project ' . $project->id_project . ' id_partner is empty', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
+                $this->logger->warning('Cannot find eligible partner product for project ' . $project->id_project . ' id_partner is empty');
             }
         } catch (\Exception $exception) {
-            $this->logger->warning($exception->getMessage(), ['method' => __METHOD__, 'line' => __LINE__, 'id_project' => $project->id_project]);
+            $this->logger->error('An exception occurs when trying to assign the product to the project ' . $project->id_project . '. Errors : ' . $exception->getMessage());
         }
 
         return 0;
