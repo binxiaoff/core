@@ -154,12 +154,11 @@ class InfolegaleManager
     }
 
     /**
-     * @param $siren
      * @param $executiveId
      *
      * @return HomonymCollection|null
      */
-    public function getHomonyms($siren, $executiveId)
+    public function getHomonyms($executiveId)
     {
         if (null !== $result = $this->sendRequest(self::RESOURCE_HOMONYMS, ['execId' => $executiveId])) {
             return $this->serializer->deserialize($result->asXML(), HomonymCollection::class, 'xml');

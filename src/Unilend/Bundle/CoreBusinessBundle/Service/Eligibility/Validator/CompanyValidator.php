@@ -46,7 +46,6 @@ class CompanyValidator
     ];
 
     const INFOLEGALE_PEJORATIVE_EVENT_CODE = [
-
     ];
 
     /**
@@ -456,12 +455,12 @@ class CompanyValidator
      *
      * @return array
      */
-    private function checkCurrentExecutivesHistory($siren)
+    public function checkCurrentExecutivesHistory($siren)
     {
         $this->externalDataManager->refreshExecutiveChanges($siren);
         $activeExecutives = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->getActiveExecutives($siren);
         foreach ($activeExecutives as $executiveId) {
-            if ($this->hasIncidentAnnouncements($executiveId, 5, 1)) {
+            if ($this->hasIncidentAnnouncements($executiveId['idExecutive'], 5, 1)) {
                 return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_INCIDENT];
             }
         }
@@ -478,8 +477,8 @@ class CompanyValidator
     {
         $this->externalDataManager->refreshExecutiveChanges($siren);
         $previousExecutives = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->getPreviousExecutivesLeftAfter($siren, new \DateTime('4 years ago'));
-        foreach ($previousExecutives as $executive) {
-            if ($this->hasIncidentAnnouncements($executive, 1, 0)) {
+        foreach ($previousExecutives as $executiveId) {
+            if ($this->hasIncidentAnnouncements($executiveId['idExecutive'], 1, 0)) {
                 return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT];
             }
         }
