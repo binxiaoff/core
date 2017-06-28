@@ -67,7 +67,6 @@ class productController extends bootstrap
         $this->noBlendDays           = $productManager->getAttributesByType($this->product, ProductAttributeType::NO_IN_PROGRESS_BLEND_PROJECT_DAYS);
         $this->noIncidentBlendDays   = $productManager->getAttributesByType($this->product, ProductAttributeType::NO_INCIDENT_BLEND_PROJECT_DAYS);
         $this->noIncidentUnilendDays = $productManager->getAttributesByType($this->product, ProductAttributeType::NO_INCIDENT_UNILEND_PROJECT_DAYS);
-        $this->checkOwner            = $productManager->getAttributesByType($this->product, ProductAttributeType::VERIFICATION_REQUESTER_IS_ONE_OF_THE_DIRECTOR);
         $this->minPreScore           = $productManager->getAttributesByType($this->product, ProductAttributeType::MIN_PRE_SCORE);
         $this->maxPreScore           = $productManager->getAttributesByType($this->product, ProductAttributeType::MAX_PRE_SCORE);
     }

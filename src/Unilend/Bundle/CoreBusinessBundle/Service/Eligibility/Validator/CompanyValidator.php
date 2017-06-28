@@ -87,7 +87,10 @@ class CompanyValidator
             return $collectiveProceedingCheck;
         }
 
-        // TC-RISK-004
+        $locationCheck = $this->checkRule('TC-RISK-004', $siren, $project);
+        if (false === empty($locationCheck)) {
+            return $locationCheck;
+        }
 
         if (Companies::NAF_CODE_NO_ACTIVITY === $this->getNAFCode($siren)) {
             return $this->checkNoActivityCompany($siren, $project);
@@ -133,14 +136,19 @@ class CompanyValidator
             return $infolegaleScoreCheck;
         }
 
+        $currentExecutivesHistory = $this->checkRule('TC-RISK-014', $siren, $project);
+        if (false === empty($currentExecutivesHistory)) {
+            return $currentExecutivesHistory;
+        }
+
         $eulerHermesGradeCheck = $this->checkRule('TC-RISK-015', $siren, $project);
         if (false === empty($eulerHermesGradeCheck)) {
             return $eulerHermesGradeCheck;
         }
 
-        $executivesHistoryCheck = $this->checkExecutivesHistory($siren);
-        if (false === empty($executivesHistoryCheck)) {
-            return $executivesHistoryCheck;
+        $previousExecutivesHistory = $this->checkRule('TC-RISK-018', $siren, $project);
+        if (false === empty($previousExecutivesHistory)) {
+            return $previousExecutivesHistory;
         }
 
         if (null !== $project) {
@@ -444,30 +452,9 @@ class CompanyValidator
      *
      * @return array
      */
-    private function checkExecutivesHistory($siren)
-    {
-        $this->externalDataManager->refreshExecutiveChanges($siren);
-
-        $currentExecutivesHistory = $this->checkRule('TC-RISK-014', $siren);
-        if (false === empty($currentExecutivesHistory)) {
-            return $currentExecutivesHistory;
-        }
-
-        $previousExecutivesHistory = $this->checkRule('TC-RISK-018', $siren);
-        if (false === empty($previousExecutivesHistory)) {
-            return $previousExecutivesHistory;
-        }
-
-        return [];
-    }
-
-    /**
-     * @param string $siren
-     *
-     * @return array
-     */
     private function checkCurrentExecutivesHistory($siren)
     {
+        $this->externalDataManager->refreshExecutiveChanges($siren);
         $activeExecutives = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->getActiveExecutives($siren);
         foreach ($activeExecutives as $executiveId) {
             if ($this->hasIncidentAnnouncements($executiveId, 5, 1)) {
@@ -485,6 +472,7 @@ class CompanyValidator
      */
     private function checkPreviousExecutivesHistory($siren)
     {
+        $this->externalDataManager->refreshExecutiveChanges($siren);
         $previousExecutives = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->getPreviousExecutivesLeftAfter($siren, new \DateTime('4 years ago'));
         foreach ($previousExecutives as $executive) {
             if ($this->hasIncidentAnnouncements($executive, 1, 0)) {

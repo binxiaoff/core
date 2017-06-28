@@ -142,11 +142,6 @@
         </tr>
 
         <tr>
-            <th>Vérification du nom du déposant</th>
-            <td><?= isset($this->checkOwner[0]) ? ($this->checkOwner[0] == 1 ? 'Il doit figurer parmi les dirigeants obtenus via Infolegale.' : '<em>Pas de contrôle</em>') : '<em>Pas de contrôle</em>' ?></td>
-        </tr>
-
-        <tr>
             <th>Pre-score min</th>
             <td><?= isset($this->minPreScore[0]) ? $this->minPreScore[0] : '<em>Pas de contrôle</em>' ?></td>
         </tr>
