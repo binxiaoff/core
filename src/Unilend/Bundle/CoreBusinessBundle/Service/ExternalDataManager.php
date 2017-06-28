@@ -12,7 +12,7 @@ use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyIdentityDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyRatingDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummaryListDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Codinf\IncidentList;
-use Unilend\Bundle\WSClientBundle\Entity\Ellisphere\Report as EllispehereReport;
+use Unilend\Bundle\WSClientBundle\Entity\Ellisphere\Report as EllisphereReport;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
 use Unilend\Bundle\WSClientBundle\Entity\Infogreffe\CompanyIndebtedness;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\DirectorAnnouncement;
@@ -263,15 +263,15 @@ class ExternalDataManager
     /**
      * @param string $siren
      *
-     * @return EllispehereReport|null
+     * @return EllisphereReport|null
      */
-    public function getEllispehereReport($siren)
+    public function getEllisphereReport($siren)
     {
         return $this->ellisphereManager->getReport($siren);
     }
 
     /**
-     * @param $siren
+     * @param string $siren
      *
      * @return ScoreDetails|null
      */
@@ -326,7 +326,7 @@ class ExternalDataManager
     }
 
     /**
-     * @param string $executiveId
+     * @param int $executiveId
      *
      * @return Mandate[]
      */
@@ -336,7 +336,7 @@ class ExternalDataManager
     }
 
     /**
-     * @param $executiveId
+     * @param int $executiveId
      *
      * @return DirectorAnnouncement[]
      */
@@ -346,7 +346,7 @@ class ExternalDataManager
     }
 
     /**
-     * @param $siren
+     * @param string $siren
      */
     public function refreshExecutiveChanges($siren)
     {

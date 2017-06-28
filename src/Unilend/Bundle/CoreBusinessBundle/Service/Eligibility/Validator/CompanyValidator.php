@@ -37,7 +37,7 @@ class CompanyValidator
         'TC-RISK-008' => 'checkGrossOperatingSurplus',
         'TC-RISK-009' => 'checkEliminationXerfiScore',
         'TC-RISK-011' => 'checkEulerHermesTrafficLight',
-        'TC-RISK-012' => 'checkEllispehereReport',
+        'TC-RISK-012' => 'checkEllisphereReport',
         'TC-RISK-013' => 'checkInfolegaleScore',
         'TC-RISK-014' => 'checkCurrentExecutivesHistory',
         'TC-RISK-015' => 'checkEulerHermesGrade',
@@ -404,10 +404,10 @@ class CompanyValidator
      *
      * @return array
      */
-    private function checkEllispehereReport($siren)
+    private function checkEllisphereReport($siren)
     {
         $eligibility      = [];
-        $ellisphereReport = $this->externalDataManager->getEllispehereReport($siren);
+        $ellisphereReport = $this->externalDataManager->getEllisphereReport($siren);
 
         if (null !== $ellisphereReport->getDefaults()->getDefaultsNoted()) {
             $eligibility[] = ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_DEFAULTS;
@@ -444,7 +444,7 @@ class CompanyValidator
     }
 
     /**
-     * @param $siren
+     * @param string $siren
      *
      * @return array
      */
@@ -466,7 +466,7 @@ class CompanyValidator
     }
 
     /**
-     * @param $siren
+     * @param string $siren
      *
      * @return array
      */
@@ -483,7 +483,7 @@ class CompanyValidator
     }
 
     /**
-     * @param $siren
+     * @param string $siren
      *
      * @return array
      */
@@ -501,12 +501,12 @@ class CompanyValidator
 
     /**
      * @param int $executiveId
-     * @param int $since
+     * @param int $yearsSince
      * @param int $extended
      *
      * @return bool
      */
-    private function hasIncidentAnnouncements($executiveId, $since, $extended)
+    private function hasIncidentAnnouncements($executiveId, $yearsSince, $extended)
     {
         $now                   = new \DateTime();
         $incidentAnnouncements = $this->externalDataManager->getExecutiveAnnouncements($executiveId);
@@ -529,7 +529,7 @@ class CompanyValidator
                     $started = $change->getNominated();
                 }
 
-                if ($ended->diff($now)->y <= $since) {
+                if ($ended->diff($now)->y <= $yearsSince) {
                     $ended->modify('+' . $extended . ' year');
                     if ($started <= $announcement->getPublishedDate() && $ended >= $announcement->getPublishedDate()) {
                         return true;
@@ -642,6 +642,7 @@ class CompanyValidator
     private function getNAFCode($siren)
     {
         $companyData = $this->externalDataManager->getCompanyIdentity($siren);
+
         return $companyData->getNAFCode();
     }
 
