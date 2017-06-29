@@ -218,7 +218,7 @@ class CompanyValidator
     {
         $companyData = $this->externalDataManager->getCompanyIdentity($siren);
         if (
-            in_array(substr($companyData->getPostCode(), 0, 2), ['2A', '2B']) // Corse
+            substr($companyData->getPostCode(), 0, 2) === '20' // Corse
             || in_array(substr($companyData->getPostCode(), 0, 3), ['973', '976']) // Guyane et Mayotte
         ) {
             return [ProjectsStatus::NON_ELIGIBLE_REASON_COMPANY_LOCATION];
