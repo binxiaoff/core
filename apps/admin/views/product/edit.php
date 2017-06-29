@@ -49,7 +49,7 @@
             <td><?= isset($this->duration['max'][0]) ? $this->duration['max'][0] : '<em>Pas de contrôle</em>' ?></td>
         </tr>
         <tr>
-            <th>Motif de l'emprunt</th>
+            <th>Motif eligible de l'emprunt</th>
             <td>
                 <?php if (empty($this->borrowerMotives)) : ?>
                     <em>Pas de contrôle</em>
@@ -62,6 +62,22 @@
                 <? endif ?>
             </td>
         </tr>
+
+        <tr>
+            <th>Motif ineligible de l'emprunt</th>
+            <td>
+                <?php if (empty($this->borrowerExcludedMotives)) : ?>
+                    <em>Pas de contrôle</em>
+                <?php else : ?>
+                    <ul>
+                        <?php foreach ($this->borrowerExcludedMotives as $motive) : ?>
+                            <li><?= $motive ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                <? endif ?>
+            </td>
+        </tr>
+
         <tr>
             <th>Jours de création min</th>
             <td><?= isset($this->creationDaysMin[0]) ? $this->creationDaysMin[0] : '<em>Pas de contrôle</em>' ?></td>

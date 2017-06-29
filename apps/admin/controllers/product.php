@@ -57,6 +57,18 @@ class productController extends bootstrap
             }
         }
 
+        // excluded motivation
+        $borrowerExcludedMotives = $productManager->getAttributesByType($this->product, ProductAttributeType::ELIGIBLE_EXCLUDED_BORROWING_MOTIVE);
+        /** @var \borrowing_motive $motive */
+        $motive                = $this->loadData('borrowing_motive');
+        $this->borrowerExcludedMotives = [];
+        if (false === empty($borrowerExcludedMotives)) {
+            foreach ($borrowerExcludedMotives as $borrowerExcludedMotive) {
+                $motive->get($borrowerExcludedMotive);
+                $this->borrowerExcludedMotives[] = $motive->motive;
+            }
+        }
+
         $this->creationDaysMin       = $productManager->getAttributesByType($this->product, ProductAttributeType::MIN_CREATION_DAYS);
         $this->rcs                   = $productManager->getAttributesByType($this->product, ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_RCS);
         $this->nafcodes              = $productManager->getAttributesByType($this->product, ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_NAF_CODE);
