@@ -29,29 +29,19 @@ class RiskDataMonitoringController extends Controller
         }
 
         $data = json_decode($request->getContent(), true);
-
         if (null === $data) {
-            return $this->endpointFeedback(self::VALIDATION_ERROR, 'Data was not send in valid format. It should be a JSON object', 422);
+            return $this->endpointFeedback(self::VALIDATION_ERROR, 'Data was not send in valid format. It should be a JSON object', 400);
         }
 
         if (empty($data['siren']) && empty($data['singleInvoiceId'])) {
             return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren and singeInvoiceId are missing, there should be at least one', 401);
         }
 
-        if (false === empty($data['siren']) && 1 !== preg_match('/^[0-9]*$/', $data['siren'])) {
-            return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren format is not valid', 404);
-        }
-
-        if (null === $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['siren' => $data['siren']])) {
-            return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren is unknown to database', 404);
+        if (true !== ($response = $this->checkSiren($data['siren']))) {
+            return $response;
         }
 
         $riskDataMonitoringManager = $this->get('unilend.service.risk_data_monitoring_manager');
-
-        if (false === $riskDataMonitoringManager->isSirenMonitored($data['siren'], CompanyRating::TYPE_EULER_HERMES_GRADE)) {
-            return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren is not actively monitored', 404);
-        }
-
         $riskDataMonitoringManager->saveEulerHermesGradeMonitoringEvent($data['siren']);
 
         return $this->endpointFeedback(self::SUCCESS, 'Grade change has been saved', 201);
@@ -70,25 +60,15 @@ class RiskDataMonitoringController extends Controller
         }
 
         $data = json_decode($request->getContent(), true);
-
-        if (empty($data['siren'])) {
-            return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren is missing', 401);
+        if (null === $data) {
+            return $this->endpointFeedback(self::VALIDATION_ERROR, 'Data was not send in valid format. It should be a JSON object', 400);
         }
 
-        if (1 !== preg_match('/^[0-9]*$/', $data['siren'])) {
-            return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren format is not valid', 404);
-        }
-
-        if (null === $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['siren' => $data['siren']])) {
-            return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren is unknown to database', 404);
+        if (true !== ($response = $this->checkSiren($data['siren']))) {
+            return $response;
         }
 
         $riskDataMonitoringManager = $this->get('unilend.service.risk_data_monitoring_manager');
-
-        if (false === $riskDataMonitoringManager->isSirenMonitored($data['siren'], CompanyRating::TYPE_EULER_HERMES_GRADE)) {
-            return $this->endpointFeedback(self::VALIDATION_ERROR, 'This siren is not or no longer monitored', 404);
-        }
-
         $riskDataMonitoringManager->saveEndOfMonitoringPeriodNotification($data['siren'], CompanyRating::TYPE_EULER_HERMES_GRADE);
 
         return $this->endpointFeedback(self::SUCCESS, 'End of monitoring period saved', 200);
@@ -103,7 +83,7 @@ class RiskDataMonitoringController extends Controller
      */
     private function endpointFeedback($type, $message, $status) {
 
-        $response =  new JsonResponse(['type' => $type, 'message' => $message, $status]);
+        $response =  new JsonResponse(['type' => $type, 'message' => $message], $status);
 
         if (self::SUCCESS !== $type) {
             $response->headers->set('Content-Type', 'application/problem+json');
@@ -136,21 +116,43 @@ class RiskDataMonitoringController extends Controller
             return $this->endpointFeedback(self::AUTHENTICATION_ERROR, 'Your Ip address is not authorized', 403);
         }
 
-        $authentication = $request->headers->get('token');
-
-        if (empty($authentication)) {
-            return $this->endpointFeedback(self::AUTHENTICATION_ERROR, 'authentication missing', 401);
-        }
-
-        $token= $settingsRepository->findOneBy(['type' => 'Euler Hermes Monitoring Token'])->getValue();
-
+        $authentication = $request->headers->get('auth');
+        $tokenSetting   = $settingsRepository->findOneBy(['type' => 'Euler Hermes Monitoring Token']);
 
         if (empty($authentication)) {
             return $this->endpointFeedback(self::AUTHENTICATION_ERROR, 'token missing', 401);
         }
 
-        if ($token !== $authentication) {
+        if ($tokenSetting->getValue() !== $authentication) {
             return $this->endpointFeedback(self::AUTHENTICATION_ERROR, 'wrong token', 401);
+        }
+
+        return true;
+    }
+
+    /**
+     * @param $siren
+     *
+     * @return bool|JsonResponse
+     */
+    private function checkSiren($siren)
+    {
+        if (empty($siren)) {
+            return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren ' . $siren . ' is missing', 404);
+        }
+
+        if (1 !== preg_match('/^[0-9]*$/', $siren)) {
+            return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren format is not valid', 404);
+        }
+
+        if (null === $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['siren' => $siren])) {
+            return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren  ' . $siren . ' is unknown to database', 404);
+        }
+
+        $riskDataMonitoringManager = $this->get('unilend.service.risk_data_monitoring_manager');
+
+        if (false === $riskDataMonitoringManager->isSirenMonitored($siren, CompanyRating::TYPE_EULER_HERMES_GRADE)) {
+            return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren  ' . $siren . ' is not actively monitored', 404);
         }
 
         return true;
