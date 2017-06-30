@@ -55,16 +55,19 @@ class RiskDataMonitoringManager
 
     /**
      * @param string $siren
-     * @param string $ratingType
+     * @param string $countryCode
      *
-     * @return null|array
+     * @return null|EulerCompanyRating
      */
-    private function getMonitoredCompanies($siren, $ratingType)
+    public function getEulerHermesGradeWithMonitoring($siren, $countryCode)
     {
-        $monitoredCompanies = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')
-            ->getOngoingMonitoredCompaniesBySirenAndRatingType($siren, $ratingType);
+        $companyRating = $this->eulerHermesManager->getGrade($siren, $countryCode);
 
-        return $monitoredCompanies;
+        if ($companyRating !== null) {
+            $this->startMonitoringPeriod($siren, CompanyRating::TYPE_EULER_HERMES_GRADE);
+        }
+
+        return $companyRating;
     }
 
     /**
@@ -76,13 +79,60 @@ class RiskDataMonitoringManager
         $this->stopMonitoringPeriod($this->getMonitoringForSiren($siren, $ratingType));
 
         /** @var RiskDataMonitoring $monitoring */
-        foreach ($this->getMonitoredCompanies($siren, $ratingType) as $company) {
-            if ($this->eligibleForLongTermMonitoring($company)) {
-                $this->startMonitoringPeriod($siren, $monitoring->getRatingType());
-                //TODO CALL LONG TERM MONITORING WS
+        foreach ($this->getMonitoredCompanies($siren, $ratingType, false) as $company) {
+            if (
+                CompanyRating::TYPE_EULER_HERMES_GRADE === $ratingType
+                && $this->eligibleForEulerLongTermMonitoring($company)
+            ) {
+                if ($this->eulerHermesManager->startLongTermMonitoring($siren, 'fr')) {
+                    $this->startMonitoringPeriod($siren, $ratingType);
+                }
             }
         }
     }
+
+    /**
+     * @param string $siren
+     */
+    public function saveEulerHermesGradeMonitoringEvent($siren)
+    {
+        $monitoring         = $this->getMonitoringForSiren($siren, CompanyRating::TYPE_EULER_HERMES_GRADE);
+        $monitoredCompanies = $this->getMonitoredCompanies($siren, CompanyRating::TYPE_EULER_HERMES_GRADE);
+
+        /** @var Companies $company */
+        foreach ($monitoredCompanies as $company) {
+            if ($this->isSirenMonitored($company->getSiren(), CompanyRating::TYPE_EULER_HERMES_GRADE)) {
+                $monitoringCallLog = $this->createMonitoringEvent($monitoring);
+                $this->entityManager->persist($monitoringCallLog);
+                $this->entityManager->flush($monitoringCallLog);
+
+                try {
+                    if (null !== ($eulerGrade = $this->eulerHermesManager->getGrade($siren, 'fr'))) {
+                        $companyRatingHistory = $this->saveCompanyRating($company, $eulerGrade);
+
+                        $monitoringCallLog->setIdCompanyRatingHistory($companyRatingHistory);
+                        $this->entityManager->flush($monitoringCallLog);
+                    }
+                } catch (\Exception $exception) {
+                    $this->logger->error(
+                        'Could not get Euler grade: EulerHermesManager::getGrade(' . $monitoring->getSiren() . '). Message: ' . $exception->getMessage(),
+                        ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $monitoring->getSiren()]
+                    );
+                }
+            }
+        }
+
+        $this->entityManager->flush();
+    }
+
+    public function stopMonitoringForProject(Projects $project)
+    {
+        //get all monitorings for the same company
+        //check if they are eligible for stop
+
+
+    }
+
 
     /**
      * @param RiskDataMonitoring $monitoring
@@ -92,8 +142,25 @@ class RiskDataMonitoringManager
         if ($monitoring->isOngoing()) {
             $monitoring->setEnd(new \DateTime('NOW'));
             $this->entityManager->flush($monitoring);
+
+            $this->logger->info('End of monitoring period saved for siren ' . $monitoring->getSiren() . ' and type ' . $monitoring->getRatingType());
         }
     }
+
+    /**
+     * @param string $siren
+     * @param string $ratingType
+     * @param bool   $isOngoing
+     *
+     * @return null|array
+     */
+    private function getMonitoredCompanies($siren, $ratingType, $isOngoing = true)
+    {
+        $monitoredCompanies = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->getMonitoredCompaniesBySirenAndRatingType($siren, $ratingType, $isOngoing);
+
+        return $monitoredCompanies;
+    }
+
 
     /**
      * @param Companies $company
@@ -101,7 +168,7 @@ class RiskDataMonitoringManager
      * @return bool
      * @throws \Exception
      */
-    private function eligibleForLongTermMonitoring(Companies $company)
+    private function eligibleForEulerLongTermMonitoring(Companies $company)
     {
         $projects                   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $company]);
         $longTermMonitoringExcluded = [
@@ -133,9 +200,10 @@ class RiskDataMonitoringManager
      *
      * @return null|RiskDataMonitoring
      */
-    private function startMonitoringPeriod($siren, $ratingType)
+    public function startMonitoringPeriod($siren, $ratingType)
     {
         if ($this->isSirenMonitored($siren, $ratingType)) {
+            $this->logger->warning('Siren ' . $siren . 'is already monitored. Can not start monitoring period for type ' . $ratingType);
             return null;
         }
 
@@ -147,39 +215,9 @@ class RiskDataMonitoringManager
         $this->entityManager->persist($monitoring);
         $this->entityManager->flush($monitoring);
 
+        $this->logger->info('Monitoring of type ' . $ratingType . ' for siren '. $siren . ' has been created');
+
         return $monitoring;
-    }
-
-    /**
-     * @param string $siren
-     */
-    public function saveEulerHermesGradeMonitoringEvent($siren)
-    {
-        $monitoring = $this->getMonitoringForSiren($siren, CompanyRating::TYPE_EULER_HERMES_GRADE);
-        $monitoredCompanies = $this->getMonitoredCompanies($siren, CompanyRating::TYPE_EULER_HERMES_GRADE);
-
-        /** @var Companies $company */
-        foreach ($monitoredCompanies as $company) {
-            $monitoringCallLog = $this->createMonitoringEvent($monitoring);
-            $this->entityManager->persist($monitoringCallLog);
-            $this->entityManager->flush($monitoringCallLog);
-
-            try {
-                if (null !== ($eulerGrade = $this->eulerHermesManager->getGrade($siren, 'fr'))) {
-                    $companyRatingHistory = $this->saveCompanyRating($company, $eulerGrade);
-
-                    $monitoringCallLog->setIdCompanyRatingHistory($companyRatingHistory);
-                    $this->entityManager->flush($monitoringCallLog);
-                }
-            } catch (\Exception $exception) {
-                $this->logger->error(
-                    'Could not get Euler grade: EulerHermesManager::getGrade(' . $monitoring->getSiren() . '). Message: ' . $exception->getMessage(),
-                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $monitoring->getSiren()]
-                );
-            }
-        }
-
-        $this->entityManager->flush();
     }
 
     /**
@@ -248,16 +286,14 @@ class RiskDataMonitoringManager
         return $companyRatingHistory;
     }
 
-    public function stopMonitoringForProject(Projects $project)
-    {
-        //get all monitorings for the same company
-        //check if they are eligible for stop
-
-
-    }
-
+    /**
+     * @param string $siren
+     * @param string $ratingType
+     *
+     * @return null|RiskDataMonitoring
+     */
     private function getMonitoringForSiren($siren, $ratingType)
     {
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoring')->findOneBy(['siren' => $siren, 'ratingType' => $ratingType]);
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoring')->findOneBy(['siren' => $siren, 'ratingType' => $ratingType, 'end' => null]);
     }
 }

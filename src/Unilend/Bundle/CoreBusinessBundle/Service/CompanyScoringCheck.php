@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyRatingDetail as AltaresCompanyRating;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
@@ -29,6 +30,8 @@ class CompanyScoringCheck
     private $wsInfolegale;
     /** @var EulerHermesManager */
     private $wsEuler;
+    /** @var RiskDataMonitoringManager */
+    private $riskDataMonitoringManager;
 
     /**
      * @param EntityManager              $entityManager
@@ -39,6 +42,7 @@ class CompanyScoringCheck
      * @param AltaresManager             $wsAltares
      * @param InfolegaleManager          $wsInfolegale
      * @param EulerHermesManager         $wsEuler
+     * @param RiskDataMonitoringManager  $riskDataMonitoringManager
      */
     public function __construct(
         EntityManager $entityManager,
@@ -48,7 +52,8 @@ class CompanyScoringCheck
         LoggerInterface $logger,
         AltaresManager $wsAltares,
         InfolegaleManager $wsInfolegale,
-        EulerHermesManager $wsEuler
+        EulerHermesManager $wsEuler,
+        RiskDataMonitoringManager $riskDataMonitoringManager
     )
     {
         $this->entityManager              = $entityManager;
@@ -59,6 +64,7 @@ class CompanyScoringCheck
         $this->wsAltares                  = $wsAltares;
         $this->wsInfolegale               = $wsInfolegale;
         $this->wsEuler                    = $wsEuler;
+        $this->riskDataMonitoringManager  = $riskDataMonitoringManager;
     }
 
     /**
@@ -292,7 +298,7 @@ class CompanyScoringCheck
     public function combineEulerGradeUnilendXerfiAltaresScore(AltaresCompanyRating $altaresScore, \companies $company, &$rejectionReason, \company_rating_history $companyRatingHistory = null, \company_rating $companyRating = null)
     {
         try {
-            if (null !== ($eulerGrade = $this->wsEuler->getGrade($company->siren, 'fr'))) {
+            if (null !== ($eulerGrade = $this->riskDataMonitoringManager->getEulerHermesGradeWithMonitoring($company->siren, 'fr'))) {
                 if (null !== $companyRatingHistory && null !== $companyRating) {
                     $this->setRatingData($companyRatingHistory, $companyRating, \company_rating::TYPE_EULER_HERMES_GRADE, $eulerGrade->getGrade());
                 }

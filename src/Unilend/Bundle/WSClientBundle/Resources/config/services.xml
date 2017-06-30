@@ -58,6 +58,7 @@
             <argument type="service" id="unilend.service.ws_client.call_history_handler"/>
             <argument type="service" id="jms_serializer"/>
             <argument type="service" id="unilend.service.ws_client.resource_manager"/>
+            <argument type="service" id="memcache.default" />
         </service>
 
         <service id="unilend.service.ws_client.codinf_manager" class="Unilend\Bundle\WSClientBundle\Service\CodinfManager">

@@ -3,18 +3,21 @@
 namespace Unilend\Bundle\WSClientBundle\Service;
 
 use JMS\Serializer\Serializer;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Client;
 use Psr\Http\Message\ResponseInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyIdentity;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating;
+use Unilend\librairies\CacheKeys;
 
 class EulerHermesManager
 {
-    const RESOURCE_SEARCH_COMPANY = 'search_company_euler';
-    const RESOURCE_EULER_GRADE    = 'get_grade_euler';
-    const RESOURCE_TRAFFIC_LIGHT  = 'get_traffic_light_euler';
+    const RESOURCE_SEARCH_COMPANY         = 'search_company_euler';
+    const RESOURCE_EULER_GRADE            = 'get_grade_euler';
+    const RESOURCE_TRAFFIC_LIGHT          = 'get_traffic_light_euler';
+    const RESOURCE_EULER_GRADE_MONITORING = 'start_euler_grade_monitoring';
 
     /** @var Client */
     private $client;
@@ -36,17 +39,20 @@ class EulerHermesManager
     private $resourceManager;
     /** @var bool */
     private $useCache = true;
+    /** @var CacheItemPoolInterface */
+    private $cachePool;
 
     /**
-     * @param Client             $client
-     * @param string             $gradingApiKey
-     * @param string             $accountApiKey
-     * @param string             $accountPassword
-     * @param string             $accountEmail
-     * @param LoggerInterface    $logger
-     * @param CallHistoryManager $callHistoryManager
-     * @param Serializer         $serializer
-     * @param ResourceManager    $resourceManager
+     * @param Client                 $client
+     * @param string                 $gradingApiKey
+     * @param string                 $accountApiKey
+     * @param string                 $accountPassword
+     * @param string                 $accountEmail
+     * @param LoggerInterface        $logger
+     * @param CallHistoryManager     $callHistoryManager
+     * @param Serializer             $serializer
+     * @param ResourceManager        $resourceManager
+     * @param CacheItemPoolInterface $cachePool;
      */
     public function __construct(
         Client $client,
@@ -57,7 +63,8 @@ class EulerHermesManager
         LoggerInterface $logger,
         CallHistoryManager $callHistoryManager,
         Serializer $serializer,
-        ResourceManager $resourceManager
+        ResourceManager $resourceManager,
+        CacheItemPoolInterface $cachePool
     )
     {
         $this->client             = $client;
@@ -69,6 +76,7 @@ class EulerHermesManager
         $this->accountPassword    = $accountPassword;
         $this->accountEmail       = $accountEmail;
         $this->resourceManager    = $resourceManager;
+        $this->cachePool          = $cachePool;
     }
 
     /**
@@ -144,7 +152,7 @@ class EulerHermesManager
         $company = $this->searchCompany($siren, $countryCode);
 
         if (null !== $company && null !== $company->getSingleInvoiceId()) {
-            if (null !== $result = $this->sendRequest(self::RESOURCE_EULER_GRADE, $company->getSingleInvoiceId(), $this->gradingApiKey, $siren)) {
+            if (null !== $result = $this->sendRequest(self::RESOURCE_EULER_GRADE, $company->getSingleInvoiceId(), $this->getMonitoringApiKey(), $siren)) {
                 return $this->serializer->deserialize($result, CompanyRating::class, 'json');
             }
         }
@@ -288,5 +296,51 @@ class EulerHermesManager
             'headers' => ['apikey' => $this->accountKey],
             'json'    => ['email' => $this->accountEmail, 'password' => $this->accountPassword]
         ]);
+    }
+
+    /**
+     * @param string $siren
+     * @param string $countryCode
+     *
+     * @return bool
+     *
+     * @throws \Exception
+     */
+    public function startLongTermMonitoring($siren, $countryCode)
+    {
+        /** @var CompanyIdentity $company */
+        $company = $this->searchCompany($siren, $countryCode);
+
+        if (null !== $company && null !== $company->getSingleInvoiceId()) {
+            $wsResource = $this->resourceManager->getResource(self::RESOURCE_EULER_GRADE_MONITORING);
+            $response = $this->client->post($wsResource->getResourceName() . $company->getSingleInvoiceId(), ['headers' => ['apikey' => $this->getMonitoringApiKey()]]);
+            if (200 === $response->getStatusCode()) {
+                $this->logger->info('Euler grade long term monitoring has been activated for siren ' . $siren);
+
+                return true;
+            } else {
+                $this->logger->warning('Long term monitroing could not activated for siren ' . $siren . ' Status Code : ' . $response->getStatusCode() . ' /n Reason : ' . $response->getReasonPhrase() . ' /n Content : ' . $response->getBody()->getContents());
+            }
+        }
+
+        return false;
+    }
+
+    public function getMonitoringApiKey()
+    {
+        $cachedItem = $this->cachePool->getItem(CacheKeys::EULER_HERMES_MONITORING_API_KEY);
+
+        if (false === $cachedItem->isHit()) {
+            $response         = $this->client->post('account/key', ['headers' => ['apikey' => $this->accountKey], 'json' => ['package' => 'Monitoring']]);
+            $content          = json_decode($response->getBody()->getContents(), true);
+            $monitoringApiKey = $content['packages']['Monitoring'][0];
+
+            $cachedItem->set($monitoringApiKey)->expiresAfter(CacheKeys::DAY * 30);
+            $this->cachePool->save($cachedItem);
+
+            return $monitoringApiKey;
+        } else {
+            return $cachedItem->get();
+        }
     }
 }

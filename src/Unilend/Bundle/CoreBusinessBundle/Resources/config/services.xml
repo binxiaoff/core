@@ -337,6 +337,7 @@
             <argument type="service" id="unilend.service.ws_client.altares_manager"/>
             <argument type="service" id="unilend.service.ws_client.infolegale_manager"/>
             <argument type="service" id="unilend.service.ws_client.euler_manager"/>
+            <argument type="service" id="unilend.service.risk_data_monitoring_manager"/>
         </service>
 
         <service id="unilend.service.company_finance_check" class="Unilend\Bundle\CoreBusinessBundle\Service\CompanyFinanceCheck">

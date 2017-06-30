@@ -48,4 +48,9 @@ class CacheKeys
      */
     const IFU_WALLETS = 'ifu_wallets';
 
+    /**
+     * const for API keys
+     */
+    const EULER_HERMES_MONITORING_API_KEY = 'euler_hermes_monitoring_api_key';
+
 }

@@ -38,6 +38,7 @@ class RiskDataMonitoringRepository extends EntityRepository
                   INNER JOIN company_rating cr ON rdmcl.id_company_rating_history = cr.id_company_rating_history
                   INNER JOIN company_rating_history crh ON rdmcl.id_company_rating_history = crh.id_company_rating_history
                 WHERE p.status IN (:status)
+                AND rdm.end IS NULL
                 GROUP BY p.status, p.id_company, p.id_project
                 ORDER BY crh.added DESC, p.status ASC';
 
