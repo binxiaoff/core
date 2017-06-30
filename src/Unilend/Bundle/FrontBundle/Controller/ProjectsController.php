@@ -58,6 +58,11 @@ class ProjectsController extends Controller
      */
     public function projectsListMapListAction($page, $sortType, $sortDirection)
     {
+        // @TODO - Check in the request if there is a markerId
+        // If yes, then check on what page the project with that ID is on
+        // Then $this->getProjectsList($page, $sortType, $sortDirection), with that page number
+        // If no, then the return the below
+
         return $this->getProjectsList($page, $sortType, $sortDirection);
     }
 
