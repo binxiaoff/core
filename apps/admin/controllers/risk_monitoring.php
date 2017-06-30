@@ -18,7 +18,7 @@ class risk_monitoringController extends bootstrap
         $this->menu_admin = 'risk_monitoring';
     }
 
-    public function _events()
+    public function _default()
     {
         /** @var RiskDataMonitoringRepository $riskDataMonitoringRepository */
         $riskDataMonitoringRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoring');

@@ -112,6 +112,7 @@
                     <li><a href="<?= $this->lurl ?>/product" title="Produits">Produits</a></li>
                     <li><a href="<?= $this->lurl ?>/company" title="Produits">Sociétés</a></li>
                     <li><a href="<?= $this->lurl ?>/partner" title="Produits">Partenaires</a></li>
+                    <li><a href="<?= $this->lurl ?>/risk_monitoring" title="Monitoring données risque">Monitoring données risque</a></li>
                 </ul>
             </li>
         <?php endif; ?>
