@@ -19,6 +19,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Xerfi;
 use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyBalanceSheet;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerHermesCompanyRating;
+use Unilend\Bundle\WSClientBundle\Entity\Infolegale\DirectorAnnouncement;
 
 class CompanyValidator
 {
@@ -43,18 +44,6 @@ class CompanyValidator
         'TC-RISK-014' => 'checkCurrentExecutivesHistory',
         'TC-RISK-015' => 'checkEulerHermesGrade',
         'TC-RISK-018' => 'checkPreviousExecutivesHistory',
-    ];
-
-    const INFOLEGALE_PEJORATIVE_EVENT_CODE = [
-        2151, 3220, 3232, 5001, 5002, 5003, 5004, 5005, 5006, 5007, 5008, 5010, 5012, 5017, 5018, 5019,
-        5020, 5021, 5022, 5023, 5024, 5025, 5026, 5027, 5028, 5029, 5030, 5031, 5032, 5033, 5034, 5035,
-        5036, 5037, 5038, 5110, 5111, 5120, 5121, 5125, 5126, 5130, 5131, 5132, 5210, 5211, 5212, 5213,
-        5214, 5220, 5221, 5222, 5223, 5224, 5225, 5226, 5227, 5228, 5229, 5230, 5231, 5232, 5233, 5234,
-        5235, 5236, 5237, 5299, 5300, 5310, 5320, 5321, 5325, 5330, 5340, 5345, 5350, 5360, 5370, 5380,
-        5381, 5382, 5390, 5391, 5392, 5393, 5394, 5399, 5410, 5420, 5421, 5430, 5431, 5440, 5450, 5510,
-        5520, 5530, 5540, 5550, 5551, 5910, 5911, 6111, 6240, 6241, 6300, 6313, 6320, 6321, 6322, 6323,
-        6330, 6336, 6355, 6373, 6407, 6436, 6437, 6450, 6451, 6452, 6485, 6488, 6489, 6490, 6491, 6493,
-        6502, 6508, 6509, 6512, 6900, 6901, 6904, 7121, 7130, 8440
     ];
 
     /**
@@ -504,40 +493,70 @@ class CompanyValidator
      */
     private function hasIncidentAnnouncements($executiveId, $yearsSince, $extended)
     {
-        $now                   = new \DateTime();
-        $incidentAnnouncements = $this->externalDataManager->getExecutiveAnnouncements($executiveId);
-        foreach ($incidentAnnouncements as $announcement) {
-            if (false === in_array($announcement->getEventCode(), self::INFOLEGALE_PEJORATIVE_EVENT_CODE)) {
+        $now      = new \DateTime();
+        $executivePeriod = [];
+        $mandates = $this->externalDataManager->getExecutiveMandates($executiveId);
+        foreach ($mandates as $mandate) {
+            if (null === $mandate->getChangeDate() || $mandate->getChangeDate()->diff($now)->y >= $yearsSince) {
                 continue;
             }
-            $changes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->findBy([
-                'idExecutive' => $executiveId,
-                'siren'       => $announcement->getSiren()
-            ]);
-            foreach ($changes as $change) {
-                $ended = null === $change->getEnded() ? $now : $change->getEnded();
 
-                if (null === $change->getNominated()) {
-                    $mockedNominatedDate = new \DateTime('5 years ago');
-                    if ($change->getEnded() > $mockedNominatedDate) {
-                        $started = $mockedNominatedDate;
-                    } else {
-                        $started = $change->getEnded();
-                    }
-                } else {
-                    $started = $change->getNominated();
-                }
+            $executivePeriod[$mandate->getSiren()] = $this->getPeriodForExecutiveInACompany($executiveId, $mandate->getSiren());
+        }
 
-                if ($ended->diff($now)->y <= $yearsSince) {
-                    $ended->modify('+' . $extended . ' year');
-                    if ($started <= $announcement->getPublishedDate() && $ended >= $announcement->getPublishedDate()) {
-                        return true;
-                    }
-                }
+        $incidentAnnouncements = $this->externalDataManager->getExecutiveAnnouncements($executiveId);
+        foreach ($incidentAnnouncements as $announcement) {
+            if (
+                false === isset($executivePeriod[$announcement->getSiren()])
+                || false === in_array($announcement->getEventCode(), DirectorAnnouncement::INFOLEGALE_PEJORATIVE_EVENT_CODE)
+            ) {
+                continue;
+            }
+            $executivePeriod[$announcement->getSiren()]['ended']->modify('+' . $extended . ' year');
+            if (
+                $executivePeriod[$announcement->getSiren()]['started'] <= $announcement->getPublishedDate()
+                && $executivePeriod[$announcement->getSiren()]['ended'] >= $announcement->getPublishedDate()
+            ) {
+                return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * @param $executiveId
+     * @param $siren
+     *
+     * @return array
+     */
+    private function getPeriodForExecutiveInACompany($executiveId, $siren)
+    {
+        $now     = new \DateTime();
+        $started = $now;
+        $ended   = $now;
+        $changes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->findBy([
+            'idExecutive' => $executiveId,
+            'siren'       => $siren
+        ]);
+        foreach ($changes as $change) {
+            if (null !== $change->getEnded()) {
+                $ended = $change->getEnded();
+            }
+
+            if (null === $change->getNominated()) {
+                $mockedNominatedDate = new \DateTime('5 years ago');
+                if ($change->getEnded() > $mockedNominatedDate) {
+                    $started = $mockedNominatedDate;
+                } else {
+                    $started = $change->getEnded();
+                }
+            } else {
+                $started = $change->getNominated();
+            }
+        }
+
+        return ['started' => $started, 'ended' => $ended];
     }
 
     /**
