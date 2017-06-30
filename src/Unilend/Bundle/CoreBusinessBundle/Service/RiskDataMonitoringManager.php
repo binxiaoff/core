@@ -7,7 +7,6 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRatingHistory;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
 use Unilend\Bundle\CoreBusinessBundle\Entity\RiskDataMonitoring;
 use Unilend\Bundle\CoreBusinessBundle\Entity\RiskDataMonitoringCallLog;
@@ -19,6 +18,20 @@ use Unilend\Bundle\WSClientBundle\Service\EulerHermesManager;
 
 class RiskDataMonitoringManager
 {
+    const LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS = [
+            ProjectsStatus::ABANDONED,
+            ProjectsStatus::COMMERCIAL_REJECTION,
+            ProjectsStatus::ANALYSIS_REJECTION,
+            ProjectsStatus::COMITY_REJECTION,
+            ProjectsStatus::PRET_REFUSE,
+            ProjectsStatus::FUNDING_KO,
+            ProjectsStatus::REMBOURSE,
+            ProjectsStatus::REMBOURSEMENT_ANTICIPE,
+            ProjectsStatus::LIQUIDATION_JUDICIAIRE,
+            ProjectsStatus::REDRESSEMENT_JUDICIAIRE,
+            ProjectsStatus::PROCEDURE_SAUVEGARDE
+        ];
+
     /** @var EntityManager */
     private $entityManager;
     /** @var EulerHermesManager */
@@ -125,12 +138,31 @@ class RiskDataMonitoringManager
         $this->entityManager->flush();
     }
 
-    public function stopMonitoringForProject(Projects $project)
+    /**
+     * @param string $siren
+     */
+    public function stopMonitoringForSiren($siren)
     {
-        //get all monitorings for the same company
-        //check if they are eligible for stop
+        $riskDataMonitoringRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoring');
+        $projectRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
+        if (0 == $projectRepository->getCountProjectsBySirenAndNotInStatus($siren, self::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS)) {
+            $monitoringStopped = false;
+            /** @var RiskDataMonitoring $monitoring */
+            foreach ($riskDataMonitoringRepository->findBy(['siren' => $siren, 'end' => null]) as $monitoring) {
+                switch ($monitoring->getRatingType()) {
+                    case CompanyRating::TYPE_EULER_HERMES_GRADE:
+                        $monitoringStopped = $this->eulerHermesManager->stopMonitoring($monitoring->getSiren(), 'fr');
+                        break;
+                    default:
+                        break;
+                }
 
+                if ($monitoringStopped) {
+                    $this->stopMonitoringPeriod($monitoring);
+                }
+            }
+        }
     }
 
 
@@ -154,9 +186,9 @@ class RiskDataMonitoringManager
      *
      * @return null|array
      */
-    private function getMonitoredCompanies($siren, $ratingType, $isOngoing = true)
+    private function getMonitoredCompanies($siren, $ratingType = null, $isOngoing = true)
     {
-        $monitoredCompanies = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->getMonitoredCompaniesBySirenAndRatingType($siren, $ratingType, $isOngoing);
+        $monitoredCompanies = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->getMonitoredCompaniesBySiren($siren, $ratingType, $isOngoing);
 
         return $monitoredCompanies;
     }
@@ -170,23 +202,8 @@ class RiskDataMonitoringManager
      */
     private function eligibleForEulerLongTermMonitoring(Companies $company)
     {
-        $projects                   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $company]);
-        $longTermMonitoringExcluded = [
-            ProjectsStatus::ABANDONED,
-            ProjectsStatus::COMMERCIAL_REJECTION,
-            ProjectsStatus::ANALYSIS_REJECTION,
-            ProjectsStatus::COMITY_REJECTION,
-            ProjectsStatus::PRET_REFUSE,
-            ProjectsStatus::FUNDING_KO,
-            ProjectsStatus::REMBOURSE,
-            ProjectsStatus::REMBOURSEMENT_ANTICIPE,
-            ProjectsStatus::LIQUIDATION_JUDICIAIRE,
-            ProjectsStatus::REDRESSEMENT_JUDICIAIRE,
-            ProjectsStatus::PROCEDURE_SAUVEGARDE
-        ];
-
-        foreach ($projects as $project) {
-            if (false === in_array($project->getStatus(), $longTermMonitoringExcluded)) {
+        foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $company]) as $project) {
+            if (false === in_array($project->getStatus(), self::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS )) {
                 return true;
             }
         }
@@ -203,7 +220,7 @@ class RiskDataMonitoringManager
     public function startMonitoringPeriod($siren, $ratingType)
     {
         if ($this->isSirenMonitored($siren, $ratingType)) {
-            $this->logger->warning('Siren ' . $siren . 'is already monitored. Can not start monitoring period for type ' . $ratingType);
+            $this->logger->warning('Siren ' . $siren . ' is already monitored. Can not start monitoring period for type ' . $ratingType);
             return null;
         }
 

@@ -4,11 +4,15 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Query\Expr\Join;
 
 class RiskDataMonitoringRepository extends EntityRepository
 {
 
+    /**
+     * @param array $status
+     *
+     * @return array
+     */
     public function getMonitoringEventsByProjectStatus(array $status)
     {
         $query = '

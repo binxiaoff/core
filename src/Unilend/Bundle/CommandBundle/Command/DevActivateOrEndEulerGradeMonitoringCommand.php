@@ -3,8 +3,8 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRating;
 
@@ -14,14 +14,15 @@ class DevActivateOrEndEulerGradeMonitoringCommand extends ContainerAwareCommand
     {
         $this
             ->setName('unilend:dev_tools:euler_grade_monitoring')
-            ->addOption('action', null, InputOption::VALUE_REQUIRED, 'Start or end')
-            ->addOption('siren', null, InputOption::VALUE_REQUIRED, 'Siren for which action should be executed');
+            ->setDescription('Start or end grade monitoring for a company')
+            ->addArgument('action', InputArgument::REQUIRED, 'start or end')
+            ->addArgument('siren', InputArgument::REQUIRED, 'Siren for which action should be executed');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $action = $input->getOption('action');
-        $siren  = filter_var($input->getOption('siren'), FILTER_SANITIZE_STRING);
+        $action = $input->getArgument('action');
+        $siren  = filter_var($input->getArgument('siren'), FILTER_SANITIZE_STRING);
 
         if (false === in_array($action, ['start', 'end'])) {
             $output->writeln('Action ' . $action . ' is not valid');
@@ -50,7 +51,7 @@ class DevActivateOrEndEulerGradeMonitoringCommand extends ContainerAwareCommand
             $eulerHermesManager->startLongTermMonitoring($siren, 'fr');
             $riskDataMonitoringManager->startMonitoringPeriod($siren, CompanyRating::TYPE_EULER_HERMES_GRADE);
         } else {
-            //TODO
+            $riskDataMonitoringManager->stopMonitoringForSiren($siren);
         }
     }
 }

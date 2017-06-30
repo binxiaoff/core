@@ -14,10 +14,11 @@ use Unilend\librairies\CacheKeys;
 
 class EulerHermesManager
 {
-    const RESOURCE_SEARCH_COMPANY         = 'search_company_euler';
-    const RESOURCE_EULER_GRADE            = 'get_grade_euler';
-    const RESOURCE_TRAFFIC_LIGHT          = 'get_traffic_light_euler';
-    const RESOURCE_EULER_GRADE_MONITORING = 'start_euler_grade_monitoring';
+    const RESOURCE_SEARCH_COMPANY               = 'search_company_euler';
+    const RESOURCE_EULER_GRADE                  = 'get_grade_euler';
+    const RESOURCE_TRAFFIC_LIGHT                = 'get_traffic_light_euler';
+    const RESOURCE_EULER_GRADE_MONITORING_START = 'start_euler_grade_monitoring';
+    const RESOURCE_EULER_GRADE_MONITORING_END   = 'end_euler_grade_monitoring';
 
     /** @var Client */
     private $client;
@@ -312,21 +313,52 @@ class EulerHermesManager
         $company = $this->searchCompany($siren, $countryCode);
 
         if (null !== $company && null !== $company->getSingleInvoiceId()) {
-            $wsResource = $this->resourceManager->getResource(self::RESOURCE_EULER_GRADE_MONITORING);
-            $response = $this->client->post($wsResource->getResourceName() . $company->getSingleInvoiceId(), ['headers' => ['apikey' => $this->getMonitoringApiKey()]]);
+            $wsResource = $this->resourceManager->getResource(self::RESOURCE_EULER_GRADE_MONITORING_START);
+            $response   = $this->client->post($wsResource->getResourceName() . $company->getSingleInvoiceId(), ['headers' => ['apikey' => $this->getMonitoringApiKey()]]);
             if (200 === $response->getStatusCode()) {
                 $this->logger->info('Euler grade long term monitoring has been activated for siren ' . $siren);
 
                 return true;
             } else {
-                $this->logger->warning('Long term monitroing could not activated for siren ' . $siren . ' Status Code : ' . $response->getStatusCode() . ' /n Reason : ' . $response->getReasonPhrase() . ' /n Content : ' . $response->getBody()->getContents());
+                $this->logger->warning('Long term monitoring could not activated for siren ' . $siren . ' Status Code : ' . $response->getStatusCode() . ' / Reason : ' . $response->getReasonPhrase() . ' / Content : ' . $response->getBody()->getContents());
             }
         }
 
         return false;
     }
 
-    public function getMonitoringApiKey()
+
+    /**
+     * @param string $siren
+     * @param string $countryCode
+     *
+     * @return bool
+     *
+     * @throws \Exception
+     */
+    public function stopMonitoring($siren, $countryCode)
+    {
+        /** @var CompanyIdentity $company */
+        $company = $this->searchCompany($siren, $countryCode);
+
+        if (null !== $company && null !== $company->getSingleInvoiceId()) {
+            $wsResource = $this->resourceManager->getResource(self::RESOURCE_EULER_GRADE_MONITORING_END);
+            $response   = $this->client->post($wsResource->getResourceName() . $company->getSingleInvoiceId(), ['headers' => ['apikey' => $this->getMonitoringApiKey()]]);
+            var_dump($response, $response->getBody()->getContents());
+            if (200 === $response->getStatusCode()) {
+                $this->logger->info('Euler grade long term monitoring has been stopped for siren ' . $siren);
+
+                return true;
+            } else {
+                $this->logger->warning('Long term monitoring could not be stopped for siren ' . $siren . ' Status Code : ' . $response->getStatusCode() . ' / Reason : ' . $response->getReasonPhrase() . ' / Content : ' . $response->getBody()->getContents());
+            }
+        }
+
+        return false;
+    }
+
+
+    private function getMonitoringApiKey()
     {
         $cachedItem = $this->cachePool->getItem(CacheKeys::EULER_HERMES_MONITORING_API_KEY);
 

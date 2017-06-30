@@ -43,6 +43,8 @@ class ProjectManager
     private $contractAttributeManager;
     /** @var SlackManager */
     private $slackManager;
+    /** @var RiskDataMonitoringManager */
+    private $riskDataMonitoringManger;
     /** @var string */
     private $universignUrl;
     /** @var \dates */
@@ -63,6 +65,7 @@ class ProjectManager
         ProductManager $productManager,
         ContractAttributeManager $contractAttributeManager,
         SlackManager $slackManager,
+        RiskDataMonitoringManager $riskDataMonitoringManager,
         $universignUrl
     )
     {
@@ -76,6 +79,7 @@ class ProjectManager
         $this->productManager             = $productManager;
         $this->contractAttributeManager   = $contractAttributeManager;
         $this->slackManager               = $slackManager;
+        $this->riskDataMonitoringManger   = $riskDataMonitoringManager;
         $this->universignUrl              = $universignUrl;
 
         $this->datesManager = Loader::loadLib('dates');
@@ -936,6 +940,13 @@ class ProjectManager
                 break;
             case \projects_status::PRET_REFUSE:
                 $this->cancelProxyAndMandate($project);
+                break;
+            case ProjectsStatus::REMBOURSE:
+            case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
+            case ProjectsStatus::LIQUIDATION_JUDICIAIRE:
+            case ProjectsStatus::REDRESSEMENT_JUDICIAIRE:
+            case ProjectsStatus::PROCEDURE_SAUVEGARDE:
+                $this->riskDataMonitoringManger->stopMonitoringForSiren($project->getIdCompany()->getSiren());
                 break;
         }
     }
