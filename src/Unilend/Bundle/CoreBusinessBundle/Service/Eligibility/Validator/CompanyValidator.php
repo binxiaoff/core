@@ -493,9 +493,9 @@ class CompanyValidator
      */
     private function hasIncidentAnnouncements($executiveId, $yearsSince, $extended)
     {
-        $now      = new \DateTime();
+        $now             = new \DateTime();
         $executivePeriod = [];
-        $mandates = $this->externalDataManager->getExecutiveMandates($executiveId);
+        $mandates        = $this->externalDataManager->getExecutiveMandates($executiveId);
         foreach ($mandates as $mandate) {
             if (null === $mandate->getChangeDate() || $mandate->getChangeDate()->diff($now)->y >= $yearsSince) {
                 continue;
