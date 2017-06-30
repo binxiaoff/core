@@ -36,6 +36,8 @@ class ProjectsController extends Controller
      * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", defaults={"page": "1", "sortType": "end", "sortDirection": "desc"}, requirements={"page": "\d+"}, name="projects_list")
      * @Template("pages/projects.html.twig")
      *
+     * @Method("GET")
+     *
      * @param int    $page
      * @param string $sortType
      * @param string $sortDirection
@@ -45,6 +47,84 @@ class ProjectsController extends Controller
     public function projectsListAction($page, $sortType, $sortDirection)
     {
         return $this->getProjectsList($page, $sortType, $sortDirection);
+    }
+
+    /**
+     * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", defaults={"page": "1", "sortType": "end", "sortDirection": "desc"}, requirements={"page": "\d+"}, name="projects_list_json")
+     * @Template("partials/components/project-list/map-item-template.html.twig")
+     *
+     * @Method("POST")
+     * @return Response
+     */
+    public function projectsListMapListAction($page, $sortType, $sortDirection)
+    {
+        return $this->getProjectsList($page, $sortType, $sortDirection);
+    }
+
+    /**
+     * @Route("/projets-list-all", name="projects_list_all", condition="request.isXmlHttpRequest()")
+     * @Method("POST")
+     *
+     * @param Request $request
+     * @return Response
+     */
+    public function projectsListAllAction()
+    {
+        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+        $translator            = $this->get('translator');
+        $start                 = 0;
+        $limit                 = null;
+        $sort                  = [];
+        $client                = null;
+        $projects              = $projectDisplayManager->getProjectsList([], $sort, $start, $limit, $client);
+        $projectsMapview       = [];
+
+        foreach ($projects as $project) {
+
+            // Project in funding ?
+            if ($project['finished'] === true) {
+                $status = 'expired';
+            } else {
+                $status = 'active';
+            }
+
+            // Project rating
+            $note = str_replace('.', '-', constant('\projects::RISK_' . $project['risk']));
+            $noteSr = $translator->trans(
+                'project-list_unilend-rating-wording-label',
+                ['%risk%' => constant('\projects::RISK_' . $project['risk'])]
+            );
+
+            // Offer status
+            if (array_key_exists('lender', $project) && $project['lender']['bids']['count'] > 0) {
+                if (count($project['lender']['bids']['inprogress']) > 0) {
+                    $offerStatus = 'inprogress';
+                } elseif (count($project['lender']['bids']['inprogress']) > 0) {
+                    $offerStatus = 'accepted';
+                }
+            } else {
+                $offerStatus = '';
+            }
+
+            // Need to replace this with Project Detail path contstant
+            $path = 'https://www.local.unilend.fr/projects/detail/';
+
+
+            $item['categoryId'] = $project['company']['sectorId'];
+            $item['description'] = '<div style="font-style: italic;">' . $project['company']['city'] . ', ' . $project['company']['zip'] . '</div><div class="rating rating-' . $note . '"><span class="sr-only">' . $noteSr . '</span></span></div>';
+            $item['groupName'] = $status;
+            $item['id'] = 'marker' . $project['projectId'];
+            $lat = $project['company']['latitude'];
+            $lng = $project['company']['longitude'];
+            $item['latLng'] = [$lat, $lng];
+            $item['offerStatus'] = $offerStatus;
+            $item['status'] = $status;
+            $item['title'] = '<a href="' . $path . $project['slug'] . '" target="blank">' . $translator->trans('company-sector_sector-' . $project['company']['sectorId']) . '</a>';
+
+            array_push($projectsMapview, $item);
+        }
+
+        return new JsonResponse($projectsMapview);
     }
 
     /**

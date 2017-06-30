@@ -1,85 +1,22 @@
 <div class="project-list-map">
-    <div id="project-list-map-view" class="project-list-map-view ui-has-mapview" data-has-spinner="#spinner-project-list-map"></div>
+    <div id="project-list-map-view" class="project-list-map-view ui-has-mapview" data-mapview-ajaxurl="{{ path('projects_list_all') }}" data-mapview-ajaxpaginationurl="{{ path('projects_list_json') }}" data-has-spinner="#spinner-project-list-map"></div>
     <div id="spinner-project-list-map" class="spinner-mapview"><span class="icon fa-refresh"></span></div>
 
     <div class="project-list-map-list">
         <ul class="list-projects">
-            {% for project in projects %}
-                {% set projectRatingTranslation = "project-list_unilend-rating-wording-label"|trans({'%risk%' : project.risk|convertRisk}) %}
-                {% if project.company.latitude is not empty and project.company.longitude is not empty %}
-                    {# Set the offer status to show the icon in the marker #}
-                    {# @note MapView CSS relies on offerStatuses named 'inprogress', 'rejected' and 'accepted' #}
-                    {% set mapviewOfferStatus = '' %}
-                    {% if project.lender is defined and project.lender.bids.count > 0 %}
-                        {% if project.lender.bids.inprogress|length > 0 %}
-                            {% set mapviewOfferStatus = 'inprogress' %}
-                        {% elseif project.lender.bids.accepted|length > 0 %}
-                            {% set mapviewOfferStatus = 'accepted' %}
-                        {% endif %}
-                    {% endif %}
-
-                    {# Set the group based on active, expired, or offers inprogress, rejected or accepted #}
-                    {# @note MapView JS component & CSS relies on two groups named 'active' and 'expired' (case insensitive) #}
-                    {% set mapviewGroup = (project.finished ? 'expired' : 'active') %}
-                    {% set mapviewItem = {
-                        id: 'marker' ~ project.projectId,
-                        categoryId: project.company.sectorId,
-                        latLng: [project.company.latitude, project.company.longitude],
-                        title: project.title,
-                        description: '<div style="font-style: italic;">' ~ project.company.city ~ ', ' ~ project.company.zip ~ '</div><div class="rating rating-' ~ project.risk|convertRisk|split('.')|join('-') ~ '"><span class="sr-only">' ~ projectRatingTranslation ~ '</span></span></div>',
-                        status: (project.finished ? 'expired' : 'active'),
-                        offerStatus: mapviewOfferStatus|default(''),
-                        groupName: mapviewGroup|default('all')
-                    } %}
-                {% endif %}
-
-                <li class="project{% if project.finished %} ui-project-expired{% endif %}{% if project.lender is defined and project.lender.bids.count > 0 %} ui-current-user-involved{% endif %}"{% if mapviewItem is defined %} data-mapview-markerid="{{ mapviewItem.id }}" data-mapview-item='{{ mapviewItem|json_encode|escape('html_attr') }}'{% endif %}>
-                    <div class="project-name">
-                        <a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}">{{ project.title }}</a>
-                    </div>
-                    <div class="project-location">{{ project.company.city }}, {{ project.company.zip }}</div>
-                    <div class="project-cost">{{ project.amount|localizednumber }}&nbsp;€</div>
-                    <div class="project-rating">
-                        <span class="rating rating-{{ project.risk|convertRisk|split('.')|join('-') }}"><span class="sr-only">{{projectRatingTranslation}}</span></span>
-                    </div>
-                    <div class="project-interest">{{ project.averageRate|localizednumberwithprecision(1) }}&nbsp;%</div>
-                    <div class="project-period">
-                        {% if project.finished %}
-                            {% trans with {
-                                '%fundingDuration%' : ('project-list_funding-duration-' ~ project.fundingDuration.translation)|transchoice(project.fundingDuration.choice, project.fundingDuration.values),
-                                '%date%' : project.endDate|localizeddate('medium', 'none', app.request.locale)}
-                            %} project-list_project-finished {% endtrans %}
-                        {% elseif project.daysLeft <= 2 %}
-                            <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|date('c') }}"></span>
-                        {% else %}
-                            {% trans with {'%remainingDays%' : project.daysLeft} %} project-list_remaining-days {% endtrans %}
-                        {% endif %}
-                    </div>
-                    <div class="project-offers">
-                        <strong>{{ project.bidsCount|localizednumber }}</strong> {% transchoice project.bidsCount %}project-list_offer-label{% endtranschoice %}
-                        {% if project.lender is defined and project.lender.bids.count > 0 %}
-                            <div class="project-useroffers{% if project.lender.bids.autobid.count > 0 %} ui-has-tooltip{% endif %}"{% if project.lender.bids.autobid.count > 0 %} data-toggle="tooltip" data-html="true" title="{% transchoice project.lender.bids.autobid.count with {'%currentUserOffersAutolend%' : project.lender.bids.autobid.count} %} project-list_autolend-tooltip {% endtranschoice %} <span class='icon fa-autolend-u32 c-p1'></span>"{% endif %}>
-                                {% if project.lender.bids.accepted is not empty %}
-                                    <div class="project-single-useroffers-accepted">
-                                        {{ project.lender.bids.accepted|length|localizednumber }} {% transchoice project.lender.bids.accepted|length %} project-list_accepted-bids-label {% endtranschoice %}
-                                    </div>
-                                {% endif %}
-                                {% if project.lender.bids.inprogress is not empty %}
-                                    <div class="project-single-useroffers-inprogress">
-                                        {{ project.lender.bids.inprogress|length|localizednumber }} {% transchoice project.lender.bids.inprogress|length %} project-list_pending-bids-label {% endtranschoice %}
-                                    </div>
-                                {% endif %}
-                                {% if project.lender.bids.rejected is not empty %}
-                                    <div class="project-single-useroffers-rejected">
-                                        {{ project.lender.bids.rejected|length|localizednumber }} {% transchoice project.lender.bids.rejected|length %} project-list_rejected-bids-label {% endtranschoice %}
-                                    </div>
-                                {% endif %}
-                            </div><!-- /.project-useroffers -->
-                        {% endif %}
-                    </div>
-                    <a href="{{ path('project_detail', {'projectSlug' : project.slug}) }}" class="project-hotspot">&nbsp;</a>
-                </li>
-            {% endfor %}
+            {% include 'partials/components/project-list/map-item-template.html.twig' %}
         </ul>
+        {% if showPagination %}
+        <div class="pagination-wrap">
+            <nav class="pagination">
+                <div class="pagination-info">
+                    {% if pagination.currentIndex < pagination.totalPages %}
+                        <a href="{{ path('projects_list', {'page' : pagination.currentIndex + 1 }) }}" class="link pagination-next">
+                            {% transchoice pagination.itemsPerPage with {'%items%' : pagination.itemsPerPage } %} projects-listing_pagination-info-next-label {% endtranschoice %}
+                        </a>
+                    {% endif %}
+                </div>
+        </div>
+        {% endif %}
     </div>
 </div><!-- /.project-list-map -->
