@@ -495,13 +495,13 @@ class CompanyValidator
     {
         $now             = new \DateTime();
         $executivePeriod = [];
-        $mandates        = $this->externalDataManager->getExecutiveMandates($executiveId);
-        foreach ($mandates as $mandate) {
-            if (null === $mandate->getChangeDate() || $mandate->getChangeDate()->diff($now)->y >= $yearsSince) {
+        $changes  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->findBy(['idExecutive' => $executiveId]);
+        foreach ($changes as $change) {
+            if (null !== $change->getEnded() && $change->getEnded()->diff($now)->y >= $yearsSince) {
                 continue;
             }
 
-            $executivePeriod[$mandate->getSiren()] = $this->getPeriodForExecutiveInACompany($executiveId, $mandate->getSiren());
+            $executivePeriod[$change->getSiren()] = $this->getPeriodForExecutiveInACompany($executiveId, $change->getSiren());
         }
 
         $incidentAnnouncements = $this->externalDataManager->getExecutiveAnnouncements($executiveId);
