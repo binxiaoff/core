@@ -68,6 +68,56 @@ class ProjectsStatus
     const NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES                = 'has_infogreffe_privileges';
     const UNEXPECTED_RESPONSE                                      = 'unexpected_response_from_';
 
+    const RUNNING_REPAYMENT = [
+        ProjectsStatus::REMBOURSEMENT,
+        ProjectsStatus::PROBLEME,
+        ProjectsStatus::PROBLEME_J_X,
+        ProjectsStatus::RECOUVREMENT,
+        ProjectsStatus::PROCEDURE_SAUVEGARDE,
+        ProjectsStatus::REDRESSEMENT_JUDICIAIRE,
+        ProjectsStatus::LIQUIDATION_JUDICIAIRE
+    ];
+
+    const AFTER_REPAYMENT = [
+        ProjectsStatus::REMBOURSEMENT,
+        ProjectsStatus::REMBOURSE,
+        ProjectsStatus::REMBOURSEMENT_ANTICIPE,
+        ProjectsStatus::PROBLEME,
+        ProjectsStatus::PROBLEME_J_X,
+        ProjectsStatus::RECOUVREMENT,
+        ProjectsStatus::PROCEDURE_SAUVEGARDE,
+        ProjectsStatus::REDRESSEMENT_JUDICIAIRE,
+        ProjectsStatus::LIQUIDATION_JUDICIAIRE,
+        ProjectsStatus::DEFAUT
+    ];
+
+    const SALE_TEAM = [
+        ProjectsStatus::POSTPONED,
+        ProjectsStatus::COMMERCIAL_REVIEW,
+        ProjectsStatus::PENDING_ANALYSIS,
+        ProjectsStatus::ANALYSIS_REVIEW,
+        ProjectsStatus::COMITY_REVIEW,
+        ProjectsStatus::SUSPENSIVE_CONDITIONS,
+        ProjectsStatus::PREP_FUNDING,
+        ProjectsStatus::A_FUNDER,
+        ProjectsStatus::AUTO_BID_PLACED,
+        ProjectsStatus::EN_FUNDING,
+        ProjectsStatus::BID_TERMINATED,
+        ProjectsStatus::FUNDE
+    ];
+
+    const UPCOMING_SALE_TEAM = [
+        ProjectsStatus::INCOMPLETE_REQUEST,
+        ProjectsStatus::COMPLETE_REQUEST
+    ];
+
+    const RISK_TEAM = [
+        ProjectsStatus::PENDING_ANALYSIS,
+        ProjectsStatus::ANALYSIS_REVIEW,
+        ProjectsStatus::COMITY_REVIEW,
+        ProjectsStatus::SUSPENSIVE_CONDITIONS
+    ];
+
     /**
      * @var string
      *
