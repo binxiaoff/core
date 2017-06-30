@@ -679,7 +679,8 @@ class CompanyValidator
             $eulerHermesGrade = $this->externalDataManager->getEulerHermesGrade($siren);
 
             if (null === $eulerHermesGrade && EulerHermesCompanyRating::COLOR_WHITE === $this->externalDataManager->getEulerHermesTrafficLight($siren)) {
-                $eulerHermesGrade = EulerHermesCompanyRating::GRADE_UNKNOWN;
+                $eulerHermesGrade = new EulerHermesCompanyRating();
+                $eulerHermesGrade->setGrade(EulerHermesCompanyRating::GRADE_UNKNOWN);
             }
 
             if (false === in_array(null, [$altaresScore, $infolegaleScore, $eulerHermesGrade], true)) {
