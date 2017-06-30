@@ -246,8 +246,11 @@ class CallHistoryManager
                 $queryBuilder->field('parameter')->equals(json_encode($parameter));
             }
 
-            $queryBuilder->field('siren')->equals((string) $siren)
-                ->field('provider')->equals($provider)
+            if ($siren) {
+                $queryBuilder->field('siren')->equals((string) $siren);
+            }
+
+            $queryBuilder->field('provider')->equals($provider)
                 ->field('resource')->equals($resource)
                 ->field('added')->gte($date)
                 ->sort('added', 'desc')
