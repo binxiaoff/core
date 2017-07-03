@@ -91,7 +91,7 @@ class LenderDashboardController extends Controller
                 $irrTranslationType = ($irr >= 0 ? 'positive-' : 'negative-');
                 $hasIRR             = true;
             } else {
-                $lossRate = $lenderManager->getLossRate($wallet);
+                $lossRate = $lenderManager->getLossRate($wallet->getIdClient());
 
                 if ($lossRate > 0) {
                     $irr                = -$lossRate;

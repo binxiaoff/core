@@ -123,10 +123,19 @@ class ProjectRepaymentManager
                 ->setDebut(new \DateTime());
 
             $repaymentSchedules = $repaymentScheduleRepository->findByProject($project, $repaymentSequence, null, Echeanciers::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PAID);
-            $projectRepayment   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsRemb')->findOneBy(['idProject' => $project, 'ordre' => $repaymentSequence]);
+            $projectRepayment   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsRemb')->findOneBy([
+                'idProject' => $project,
+                'ordre'     => $repaymentSequence,
+                'status'    => ProjectsRemb::STATUS_PENDING
+            ]);
             $repaymentNb        = 0;
 
-            if (0 === count($repaymentSchedules)) {
+            if (null === $projectRepayment) {
+                $this->logger->warning(
+                    'Cannot find pending repayment for project from projects_remb ' . $project->getIdProject() . ' (order: ' . $repaymentSequence . '). The repayment may have been repaid manually.',
+                    ['method' => __METHOD__]
+                );
+            } elseif (0 === count($repaymentSchedules)) {
                 $projectRepayment->setStatus(ProjectsRemb::STATUS_ERROR);
                 $this->entityManager->flush($projectRepayment);
 
