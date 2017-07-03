@@ -9,13 +9,17 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="projects_remb_log", indexes={@ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="ordre", columns={"ordre"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class ProjectsRembLog
 {
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
      */
     private $idProject;
 
@@ -43,20 +47,6 @@ class ProjectsRembLog
     /**
      * @var integer
      *
-     * @ORM\Column(name="montant_remb_net", type="integer", nullable=false)
-     */
-    private $montantRembNet;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="etat", type="integer", nullable=false)
-     */
-    private $etat;
-
-    /**
-     * @var integer
-     *
      * @ORM\Column(name="nb_pret_remb", type="integer", nullable=false)
      */
     private $nbPretRemb;
@@ -71,7 +61,7 @@ class ProjectsRembLog
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -85,15 +75,14 @@ class ProjectsRembLog
     private $idProjectRembLog;
 
 
-
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param Projects $idProject
      *
      * @return ProjectsRembLog
      */
-    public function setIdProject($idProject)
+    public function setIdProject(Projects $idProject)
     {
         $this->idProject = $idProject;
 
@@ -103,7 +92,7 @@ class ProjectsRembLog
     /**
      * Get idProject
      *
-     * @return integer
+     * @return Projects
      */
     public function getIdProject()
     {
@@ -180,54 +169,6 @@ class ProjectsRembLog
     public function getFin()
     {
         return $this->fin;
-    }
-
-    /**
-     * Set montantRembNet
-     *
-     * @param integer $montantRembNet
-     *
-     * @return ProjectsRembLog
-     */
-    public function setMontantRembNet($montantRembNet)
-    {
-        $this->montantRembNet = $montantRembNet;
-
-        return $this;
-    }
-
-    /**
-     * Get montantRembNet
-     *
-     * @return integer
-     */
-    public function getMontantRembNet()
-    {
-        return $this->montantRembNet;
-    }
-
-    /**
-     * Set etat
-     *
-     * @param integer $etat
-     *
-     * @return ProjectsRembLog
-     */
-    public function setEtat($etat)
-    {
-        $this->etat = $etat;
-
-        return $this;
-    }
-
-    /**
-     * Get etat
-     *
-     * @return integer
-     */
-    public function getEtat()
-    {
-        return $this->etat;
     }
 
     /**
@@ -310,5 +251,23 @@ class ProjectsRembLog
     public function getIdProjectRembLog()
     {
         return $this->idProjectRembLog;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

@@ -8,6 +8,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -16,6 +17,12 @@ use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetListDetail;
 
 class ProjectRequestManager
 {
+    const EXCEPTION_CODE_INVALID_SIREN    = 100;
+    const EXCEPTION_CODE_INVALID_EMAIL    = 101;
+    const EXCEPTION_CODE_INVALID_AMOUNT   = 102;
+    const EXCEPTION_CODE_INVALID_DURATION = 103;
+    const EXCEPTION_CODE_INVALID_REASON   = 104;
+
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
     /** @var EntityManager */
@@ -94,7 +101,7 @@ class ProjectRequestManager
 
         /** @var \tax_type $taxType */
         $taxType = $this->entityManagerSimulator->getRepository('tax_type');
-        $taxType->get(\tax_type::TYPE_VAT);
+        $taxType->get(TaxType::TYPE_VAT);
         $fVATRate = $taxType->rate / 100;
 
         $fCommission    = ($oFinancial->PMT(round(bcdiv(\projects::DEFAULT_COMMISSION_RATE_REPAYMENT, 100, 4), 2) / 12, $period, - $amount) - $oFinancial->PMT(0, $period, - $amount)) * (1 + $fVATRate);
@@ -113,27 +120,32 @@ class ProjectRequestManager
     {
         /** @var \projects $project */
         $project = $this->entityManagerSimulator->getRepository('projects');
+        $anyWhiteSpaces = '/\s/';
 
         if (empty($formData['email']) || false === filter_var($formData['email'], FILTER_VALIDATE_EMAIL)) {
-            throw new \InvalidArgumentException('Invalid email');
+            throw new \InvalidArgumentException('Invalid email', self::EXCEPTION_CODE_INVALID_EMAIL);
         }
+
         if (false === empty($formData['siren'])) {
-            $formData['siren'] = str_replace(' ', '', $formData['siren']);
+            $formData['siren'] = preg_replace($anyWhiteSpaces, '', $formData['siren']);
         }
         if (empty($formData['siren']) || 1 !== preg_match('/^([0-9]{9}|[0-9]{14})$/', $formData['siren'])) {
-            throw new \InvalidArgumentException('Invalid SIREN = ' . $formData['siren']);
+            throw new \InvalidArgumentException('Invalid SIREN = ' . $formData['siren'], self::EXCEPTION_CODE_INVALID_SIREN);
         }
+
         if (false === empty($formData['amount'])) {
-            $formData['amount'] = str_replace([' ', '€'], '', $formData['amount']);
+            $formData['amount'] = preg_replace([$anyWhiteSpaces, '/€/'], '', $formData['amount']);
         }
         if (empty($formData['amount']) || false === filter_var($formData['amount'], FILTER_VALIDATE_INT)) {
-            throw new \InvalidArgumentException('Invalid amount = ' . $formData['amount']);
+            throw new \InvalidArgumentException('Invalid amount = ' . $formData['amount'], self::EXCEPTION_CODE_INVALID_AMOUNT);
         }
+
         if (empty($formData['duration']) || false === filter_var($formData['duration'], FILTER_VALIDATE_INT)) {
-            throw new \InvalidArgumentException('Invalid duration');
+            throw new \InvalidArgumentException('Invalid duration', self::EXCEPTION_CODE_INVALID_DURATION);
         }
+
         if (empty($formData['reason']) || false === filter_var($formData['reason'], FILTER_VALIDATE_INT)) {
-            throw new \InvalidArgumentException('Invalid reason');
+            throw new \InvalidArgumentException('Invalid reason', self::EXCEPTION_CODE_INVALID_REASON);
         }
 
         $email = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($formData['email']) ? $formData['email'] . '-' . time() : $formData['email'];
@@ -183,13 +195,13 @@ class ProjectRequestManager
         $project->ca_declara_client                    = 0;
         $project->resultat_exploitation_declara_client = 0;
         $project->fonds_propres_declara_client         = 0;
-        $project->status                               = \projects_status::INCOMPLETE_REQUEST;
+        $project->status                               = ProjectsStatus::INCOMPLETE_REQUEST;
         $project->id_partner                           = $this->partnerManager->getDefaultPartner()->getId();
         $project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
         $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
         $project->create();
 
-        $this->projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::INCOMPLETE_REQUEST, $project);
+        $this->projectManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::INCOMPLETE_REQUEST, $project);
 
         return $project;
     }
@@ -344,9 +356,9 @@ class ProjectRequestManager
      */
     public function addRejectionProjectStatus($motive, &$project, $userId)
     {
-        $status = substr($motive, 0, strlen(\projects_status::UNEXPECTED_RESPONSE)) === \projects_status::UNEXPECTED_RESPONSE
-            ? \projects_status::IMPOSSIBLE_AUTO_EVALUATION
-            : \projects_status::NOT_ELIGIBLE;
+        $status = substr($motive, 0, strlen(ProjectsStatus::UNEXPECTED_RESPONSE)) === ProjectsStatus::UNEXPECTED_RESPONSE
+            ? ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION
+            : ProjectsStatus::NOT_ELIGIBLE;
 
         $this->projectManager->addProjectStatus($userId, $status, $project, 0, $motive);
 
@@ -381,7 +393,7 @@ class ProjectRequestManager
                 }
 
                 if (empty($products) && $addProjectStatus) {
-                    $this->projectManager->addProjectStatus($userId, ProjectsStatus::NOT_ELIGIBLE, $project, 0, \projects_status::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
+                    $this->projectManager->addProjectStatus($userId, ProjectsStatus::NOT_ELIGIBLE, $project, 0, ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
                 }
 
                 return count($products);

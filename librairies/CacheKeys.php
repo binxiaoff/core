@@ -40,6 +40,12 @@ class CacheKeys
     /**
      * constant for statistics
      */
-    const UNILEND_STATISTICS = 'unilend_front_statistics';
+    const UNILEND_STATISTICS        = 'unilend_front_statistics';
+    const LENDER_STAT_QUEUE_UPDATED = 'lender_stat_queue_updated';
+
+    /**
+     * constant for IFU
+     */
+    const IFU_WALLETS = 'ifu_wallets';
 
 }

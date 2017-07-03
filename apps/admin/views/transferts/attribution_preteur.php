@@ -67,7 +67,7 @@
                     }
                 }
             ?>
-            <tr class="<?= ($i++ % 2 == 1 ? '' : 'odd') ?> leLender<?= $c['id_lender_account'] ?>">
+            <tr class="<?= ($i++ % 2 == 1 ? '' : 'odd') ?> leLender<?= $c['id_client'] ?>">
                 <td><?= $c['id_client'] ?></td>
                 <td><?= $c['nom_ou_societe'] ?></td>
                 <td><?= $c['prenom_ou_dirigeant'] ?></td>

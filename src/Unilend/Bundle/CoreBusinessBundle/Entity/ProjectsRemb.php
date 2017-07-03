@@ -8,14 +8,24 @@ use Doctrine\ORM\Mapping as ORM;
  * ProjectsRemb
  *
  * @ORM\Table(name="projects_remb", indexes={@ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="ordre", columns={"ordre"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRembRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class ProjectsRemb
 {
+    const STATUS_ERROR                        = -1;
+    const STATUS_PENDING                      = 0;
+    const STATUS_REPAID                       = 1;
+    const STATUS_REJECTED                     = 2;
+    const STATUS_AUTOMATIC_REPAYMENT_DISABLED = 4;
+
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
      */
     private $idProject;
 
@@ -43,7 +53,7 @@ class ProjectsRemb
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_remb_preteurs_reel", type="datetime", nullable=false)
+     * @ORM\Column(name="date_remb_preteurs_reel", type="datetime", nullable=true)
      */
     private $dateRembPreteursReel;
 
@@ -64,7 +74,7 @@ class ProjectsRemb
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -78,15 +88,14 @@ class ProjectsRemb
     private $idProjectRemb;
 
 
-
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param Projects $idProject
      *
      * @return ProjectsRemb
      */
-    public function setIdProject($idProject)
+    public function setIdProject(Projects $idProject)
     {
         $this->idProject = $idProject;
 
@@ -96,7 +105,7 @@ class ProjectsRemb
     /**
      * Get idProject
      *
-     * @return integer
+     * @return Projects
      */
     public function getIdProject()
     {
@@ -279,5 +288,23 @@ class ProjectsRemb
     public function getIdProjectRemb()
     {
         return $this->idProjectRemb;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

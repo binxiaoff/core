@@ -3,8 +3,11 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Psr\Cache\CacheItemPoolInterface;
+use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\librairies\CacheKeys;
 
 class StatisticsManager
@@ -20,7 +23,9 @@ class StatisticsManager
      */
     const START_FRONT_STATISTICS_HISTORY      = '2016-11-17';
 
-    /** @var EntityManager */
+    /** @var EntityManagerSimulator */
+    private $entityManagerSimulator;
+    /** @var  EntityManager */
     private $entityManager;
     /** @var IRRManager */
     private $IRRManager;
@@ -30,15 +35,18 @@ class StatisticsManager
     private $locationManager;
 
     public function __construct(
+        EntityManagerSimulator $entityManagerSimulator,
         EntityManager $entityManager,
         IRRManager $IRRManager,
         CacheItemPoolInterface $cachePool,
         LocationManager $locationManager
-    ) {
-        $this->entityManager   = $entityManager;
-        $this->IRRManager      = $IRRManager;
-        $this->cachePool       = $cachePool;
-        $this->locationManager = $locationManager;
+    )
+    {
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->entityManager          = $entityManager;
+        $this->IRRManager             = $IRRManager;
+        $this->cachePool              = $cachePool;
+        $this->locationManager        = $locationManager;
     }
 
     /**
@@ -63,15 +71,12 @@ class StatisticsManager
 
         $cachedItem = $this->cachePool->getItem($cacheKey);
         if (false === $cachedItem->isHit()) {
-            /** @var \unilend_stats $unilendStats */
-            $unilendStats = $this->entityManager->getRepository('unilend_stats');
-
             if ($date->format('Y-m-d') == $today->format('Y-m-d')) {
-                $statsEntry = $unilendStats->select('type_stat = "' . CacheKeys::UNILEND_STATISTICS . '"', 'added DESC', null, '1')[0];
+                $statsEntry = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->findOneBy(['typeStat' => CacheKeys::UNILEND_STATISTICS], ['added' => 'DESC']);
             } else {
-                $statsEntry = $unilendStats->select('type_stat = "' . CacheKeys::UNILEND_STATISTICS . '" AND DATE(added) = "' . $date->format('Y-m-d') . '"','added DESC', null, '1')[0];
+                $statsEntry = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->getStatisticAtDate($date, CacheKeys::UNILEND_STATISTICS);
             }
-            $statistics = json_decode($statsEntry['value'], true);
+            $statistics = json_decode($statsEntry->getValue(), true);
             $cachedItem->set($statistics)->expiresAfter(CacheKeys::DAY);
             $this->cachePool->save($cachedItem);
 
@@ -83,18 +88,18 @@ class StatisticsManager
 
     public function calculateStatistics()
     {
-        /** @var \lenders_accounts $lenders */
-        $lenders = $this->entityManager->getRepository('lenders_accounts');
         /** @var \projects $projects */
-        $projects = $this->entityManager->getRepository('projects');
+        $projects = $this->entityManagerSimulator->getRepository('projects');
         /** @var \loans $loans */
-        $loans = $this->entityManager->getRepository('loans');
+        $loans = $this->entityManagerSimulator->getRepository('loans');
         /** @var \DateTime $startDate voluntarily on last 6 Months except for average funding time which is on 4 month */
         $startDate = new \DateTime('NOW - 6 MONTHS');
 
+        $clientRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+
         $statistics = [
-            'numberOfLendersInCommunity'      => $lenders->countLenders(),
-            'numberOfActiveLenders'           => $lenders->countLenders(true),
+            'numberOfLendersInCommunity'      => $clientRepository->countLenders(),
+            'numberOfActiveLenders'           => $clientRepository->countLenders(true),
             'numberOfFinancedProjects'        => $projects->countSelectProjectsByStatus(\projects_status::$afterRepayment),
             'numberOfProjectRequests'         => self::HISTORIC_NUMBER_OF_SIREN + $projects->getNumberOfUniqueProjectRequests(self::VALUE_DATE_HISTORIC_NUMBER_OF_SIREN),
             'averageFundingTime'              => $projects->getAverageFundingTime(new \DateTime('NOW - 4 MONTHS')),
@@ -102,7 +107,7 @@ class StatisticsManager
             'averageNumberOfLenders'          => $projects->getAverageNumberOfLendersForProject(),
             'averageProjectAmount'            => $projects->getAverageAmount(),
             'averageLoanAmount'               => $loans->getAverageLoanAmount(),
-            'unilendIRR'                      => $this->IRRManager->getLastUnilendIRR()['value'],
+            'unilendIRR'                      => $this->IRRManager->getLastUnilendIRR()->getValue(),
             'lendersByType'                   => $this->getLendersByType(),
             'lendersByRegion'                 => $this->locationManager->getLendersByRegion(),
             'borrowersByRegion'               => $this->locationManager->getProjectsByRegion(),
@@ -130,7 +135,7 @@ class StatisticsManager
     private function getPercentageOfAcceptedProjects($numberOfProjectRequests)
     {
         /** @var \projects_status_history $projectStatusHistory */
-        $projectStatusHistory = $this->entityManager->getRepository('projects_status_history');
+        $projectStatusHistory = $this->entityManagerSimulator->getRepository('projects_status_history');
         /** @var array $countByStatus */
         $countByStatus = $projectStatusHistory->countProjectsHavingHadStatus([\projects_status::EN_FUNDING]);
         /** @var string $percentageOfAcceptedProjects */
@@ -141,12 +146,12 @@ class StatisticsManager
 
     private function getLendersByType()
     {
-        /** @var \lenders_accounts $lenders */
-        $lenders = $this->entityManager->getRepository('lenders_accounts');
+        /** @var ClientsRepository $clientRepository */
+        $clientRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         /** @var int $lendersPerson */
-        $lendersPerson = $lenders->countLendersByClientType([Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]);
+        $lendersPerson = $clientRepository->countLendersByClientType([Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]);
         /** @var int $lendersLegalEntity */
-        $lendersLegalEntity = $lenders->countLendersByClientType([Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER]);
+        $lendersLegalEntity = $clientRepository->countLendersByClientType([Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER]);
         /** @var int $totalLenders */
         $totalLenders = bcadd($lendersPerson, $lendersLegalEntity);
 
@@ -171,7 +176,7 @@ class StatisticsManager
     private function getPercentageOfProjectsFundedIn24Hours(\DateTime $startDate)
     {
         /** @var \projects $projects */
-        $projects                        = $this->entityManager->getRepository('projects');
+        $projects                        = $this->entityManagerSimulator->getRepository('projects');
         $countAllProjects                = $projects->countProjectsFundedSince($startDate);
         $numberOfProjectsFundedIn24Hours = $projects->countProjectsFundedIn24Hours($startDate);
         $percentageFunded24h             = $countAllProjects > 0 ? bcmul(bcdiv($numberOfProjectsFundedIn24Hours, $countAllProjects, 4), 100, 0) : 0;
@@ -182,7 +187,7 @@ class StatisticsManager
     private function getSecondsForBid()
     {
         /** @var \bids $bids */
-        $bids               = $this->entityManager->getRepository('bids');
+        $bids               = $this->entityManagerSimulator->getRepository('bids');
         $maxCountBidsPerDay = $bids->getMaxCountBidsPerDay();
         $secondsPerDay      = 24 * 60 * 60;
         $secondsForBid      = bcdiv($secondsPerDay, $maxCountBidsPerDay, 0);
@@ -195,31 +200,30 @@ class StatisticsManager
         $years = array_merge(['2013-2014'], range(2015, date('Y')));
 
         /** @var \loans $loans */
-        $loans = $this->entityManager->getRepository('loans');
+        $loans = $this->entityManagerSimulator->getRepository('loans');
         /** @var \echeanciers_emprunteur $borrowerPaymentSchedule */
-        $borrowerPaymentSchedule = $this->entityManager->getRepository('echeanciers_emprunteur');
-        /** @var \transactions $transactions */
-        $transactions = $this->entityManager->getRepository('transactions');
-        /** @var \echeanciers $lenderRepaymentSchedule */
-        $lenderRepaymentSchedule = $this->entityManager->getRepository('echeanciers');
+        $borrowerPaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
         /** @var \projects $projects */
-        $projects = $this->entityManager->getRepository('projects');
+        $projects = $this->entityManagerSimulator->getRepository('projects');
         /** @var \companies $companies */
-        $companies = $this->entityManager->getRepository('companies');
+        $companies           = $this->entityManagerSimulator->getRepository('companies');
+        $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
 
-        $borrowedCapital                          = $this->formatCohortQueryResult($loans->sumLoansByCohort(), $years);
-        $repaidCapital                            = $this->formatCohortQueryResult($borrowerPaymentSchedule->getRepaidCapitalByCohort(), $years);
-        $recoveryPaymentsHealthyProjects          = $this->formatCohortQueryResult($transactions->getBorrowerRecoveryPaymentsOnHealthyProjectsByCohort(), $years);
-        $recoveryPaymentsProblematicProjects      = $this->formatCohortQueryResult($transactions->getBorrowerRecoveryPaymentsOnProblematicProjectsByCohort(), $years);
-        $repaidInterest                           = $this->formatCohortQueryResult($lenderRepaymentSchedule->getTotalRepaidInterestByCohort(), $years);
-        $interestHealthyProjects                  = $this->formatCohortQueryResult($borrowerPaymentSchedule->getInterestPaymentsOfHealthyProjectsByCohort(), $years);
-        $futureCapitalProblematicProjects         = $this->formatCohortQueryResult($borrowerPaymentSchedule->getFutureOwedCapitalOfProblematicProjectsByCohort(), $years);
-        $futureCapitalHealthyProjects             = $this->formatCohortQueryResult($borrowerPaymentSchedule->getFutureCapitalPaymentsOfHealthyProjectsByCohort(), $years);
-        $lateCapitalRepaymentsHealthyProjects     = $this->formatCohortQueryResult($borrowerPaymentSchedule->getLateCapitalRepaymentsHealthyProjects(), $years);
-        $lateCapitalRepaymentsProblematicProjects = $this->formatCohortQueryResult($borrowerPaymentSchedule->getLateCapitalRepaymentsProblematicProjects(), $years);
-        $countFundedCompanies                     = $this->formatCohortQueryResult($companies->countCompaniesFundedByCohort(), $years);
-        $fundedProjects                           = $this->formatCohortQueryResult($projects->countFundedProjectsByCohort(), $years);
-        $problematicCompanies                     = $this->formatCohortQueryResult($companies->countCompaniesWithProblematicProjectsByCohort(), $years);
+        $borrowedCapital                             = $this->formatCohortQueryResult($loans->sumLoansByCohort(), $years);
+        $repaidCapital                               = $this->formatCohortQueryResult($operationRepository->getTotalRepaymentByCohort(OperationType::CAPITAL_REPAYMENT), $years);
+        $debtCollectionRepaymentHealthyProjects      = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionRepaymentByCohort(true), $years);
+        $debtCollectionCommissionHealthyProjects     = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionLenderCommissionByCohort(true), $years);
+        $debtCollectionRepaymentProblematicProjects  = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionRepaymentByCohort(false), $years);
+        $debtCollectionCommissionProblematicProjects = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionLenderCommissionByCohort(false), $years);
+        $repaidInterest                              = $this->formatCohortQueryResult($operationRepository->getTotalRepaymentByCohort(OperationType::GROSS_INTEREST_REPAYMENT), $years);
+        $interestHealthyProjects                     = $this->formatCohortQueryResult($borrowerPaymentSchedule->getInterestPaymentsOfHealthyProjectsByCohort(), $years);
+        $futureCapitalProblematicProjects            = $this->formatCohortQueryResult($borrowerPaymentSchedule->getFutureOwedCapitalOfProblematicProjectsByCohort(), $years);
+        $futureCapitalHealthyProjects                = $this->formatCohortQueryResult($borrowerPaymentSchedule->getFutureCapitalPaymentsOfHealthyProjectsByCohort(), $years);
+        $lateCapitalRepaymentsHealthyProjects        = $this->formatCohortQueryResult($borrowerPaymentSchedule->getLateCapitalRepaymentsHealthyProjects(), $years);
+        $lateCapitalRepaymentsProblematicProjects    = $this->formatCohortQueryResult($borrowerPaymentSchedule->getLateCapitalRepaymentsProblematicProjects(), $years);
+        $countFundedCompanies                        = $this->formatCohortQueryResult($companies->countCompaniesFundedByCohort(), $years);
+        $fundedProjects                              = $this->formatCohortQueryResult($projects->countFundedProjectsByCohort(), $years);
+        $problematicCompanies                        = $this->formatCohortQueryResult($companies->countCompaniesWithProblematicProjectsByCohort(), $years);
 
         $data = [];
 
@@ -242,7 +246,7 @@ class StatisticsManager
             $data['projects'][$year]                            = $fundedProjects[$year];
 
             $data['borrowed-capital'][$year]                    = $borrowedCapital[$year];
-            $data['repaid-capital'][$year]                      = bcadd($repaidCapital[$year], bcadd($recoveryPaymentsHealthyProjects[$year], $recoveryPaymentsProblematicProjects[$year], 2), 2);
+            $data['repaid-capital'][$year]                      = $repaidCapital[$year];
             $data['repaid-interest'][$year]                     = $repaidInterest[$year];
             $data['owed-healthy-interest'][$year]               = $interestHealthyProjects[$year];
 
@@ -250,8 +254,8 @@ class StatisticsManager
             $data['future-owed-capital-problematic'][$year]     = $futureCapitalProblematicProjects[$year];
             $data['future-owed-capital'][$year]                 = bcadd($data['future-owed-capital-healthy'][$year],$data['future-owed-capital-problematic'][$year], 2);
 
-            $data['late-owed-capital-problematic'][$year]       = bcsub($lateCapitalRepaymentsProblematicProjects[$year], $recoveryPaymentsProblematicProjects[$year], 2);
-            $data['late-owed-capital-healthy'][$year]           = bcsub($lateCapitalRepaymentsHealthyProjects[$year], $recoveryPaymentsHealthyProjects[$year], 2);
+            $data['late-owed-capital-problematic'][$year]       = bcsub($lateCapitalRepaymentsProblematicProjects[$year], bcsub($debtCollectionRepaymentProblematicProjects[$year], $debtCollectionCommissionProblematicProjects[$year], 2), 2);
+            $data['late-owed-capital-healthy'][$year]           = bcsub($lateCapitalRepaymentsHealthyProjects[$year], bcsub($debtCollectionRepaymentHealthyProjects[$year], $debtCollectionCommissionHealthyProjects[$year], 2), 2);
             $data['late-owed-capital'][$year]                   = bcadd($data['late-owed-capital-problematic'][$year], $data['late-owed-capital-healthy'][$year], 2);
 
             $data['global-owed-capital'][$year]                     = bcadd($data['late-owed-capital'][$year], $data['future-owed-capital'][$year], 2);
@@ -292,7 +296,7 @@ class StatisticsManager
 
     private function addTotalToData(&$data, $problematicCompanies, $countFundedCompanies)
     {
-        $data['IRR']['total'] = $this->IRRManager->getLastUnilendIRR()['value'];
+        $data['IRR']['total'] = $this->IRRManager->getLastUnilendIRR()->getValue();
 
         foreach($data as $type => $numbers) {
             if (false === in_array($type, ['pct', 'IRR'])){
@@ -320,7 +324,7 @@ class StatisticsManager
     private function calculateIncidenceRateOnIFPContracts()
     {
         /** @var \echeanciers $paymentSchedule */
-        $paymentSchedule = $this->entityManager->getRepository('echeanciers');
+        $paymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
 
         $problematicProjectsIfp       = $paymentSchedule->getProblematicOwedCapitalByProjects(\underlying_contract::CONTRACT_IFP, 60);
         $allProjectsIfp               = $paymentSchedule->getOwedCapitalByProjects(\underlying_contract::CONTRACT_IFP);

@@ -34,6 +34,7 @@ class clients_history extends clients_history_crud
     const TYPE_CLIENT_LENDER               = 1;
     const TYPE_CLIENT_BORROWER             = 2;
     const TYPE_CLIENT_LENDER_BORROWER      = 3;
+    const TYPE_CLIENT_PARTNER              = 4;
 
     function clients_history($bdd, $params = '')
     {
@@ -115,24 +116,18 @@ class clients_history extends clients_history_crud
     }
 
     /**
-     * @param \clients $client
-     * @param $actionStatus
-     * @return int;
+     * @param int $idClient
+     * @param int $actionStatus
+     * @param int $type
+     *
+     * @return string
      */
-    public function logClientAction(\clients $client, $actionStatus)
+    public function logClientAction($idClient, $actionStatus, $type)
     {
-        $isLender        = $client->isLender();
-        $isBorrower      = $client->isBorrower();
-        $this->id_client = $client->id_client;
+        $this->id_client = $idClient;
         $this->status    = $actionStatus;
+        $this->type      = $type;
 
-        if ($isLender && $isBorrower) {
-            $this->type = self::TYPE_CLIENT_LENDER_BORROWER;
-        } elseif ($isLender) {
-            $this->type = self::TYPE_CLIENT_LENDER;
-        } elseif ($isBorrower) {
-            $this->type = self::TYPE_CLIENT_BORROWER;
-        }
         return $this->create();
     }
 }
