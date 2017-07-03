@@ -122,7 +122,7 @@ class MailerManager
         $bid = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($notification->id_bid);
 
         if (null !== $bid) {
-            $mailTemplate = $bid->getAutobid() ? 'confirmation-bid' : 'confirmation-autobid';
+            $mailTemplate = $bid->getAutobid() ? 'confirmation-autobid' : 'confirmation-bid';
             $pageProjects = $tree->getSlug(4, substr($this->locale, 0, 2));
 
             $varMail = [
