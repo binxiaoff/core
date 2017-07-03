@@ -262,8 +262,7 @@
                                 <div class="row row-multicol-computer">
                                     <div class="form-field col-lg-6 col-md-6">
                                         <label for="esim-input-siren">{% trans %} home-borrower_simulator-siren-field-label {% endtrans %}</label>
-                                        <input type="text" id="esim-input-siren" name="esim[siren]" value="{% if app.session.has('esim') and app.session.get('esim')['siren'] is defined %}{{ app.session.get('esim')['siren'] }}{% endif %}" class="input-field"
-                                               data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="siren">
+                                        <input type="text" id="esim-input-siren" name="esim[siren]" value="{% if app.session.has('esim') and app.session.get('esim')['siren'] is defined %}{{ app.session.get('esim')['siren'] }}{% endif %}" class="input-field">
                                     </div><!-- /.form-field -->
                                     <div class="form-field col-lg-6 col-md-6">
                                         <label for="i_esim_5">{% trans %} home-borrower_simulator-email-field-label {% endtrans %}</label>
@@ -297,10 +296,10 @@
                                         <span class="spacer">&nbsp;</span>
                                     </div>
                                     <div class="col-lg-3 col-md-3">
-                                        <a href="#esim2" role="tab" data-toggle="tab" class="btn-continue btn-alternate btn-size-full">
+                                        <a href="#esim2" role="tab" data-toggle="tab" class="btn-continue btn-alternate btn-size-full"{% if activeTab == 'second' %} style="display: none;"{% endif %}>
                                             {% trans %} home-borrower_simulator-footer-continue-button {% endtrans %}
                                         </a>
-                                        <button class="btn-submit btn-alternate btn-size-full" data-spinnerbutton>
+                                        <button class="btn-submit btn-alternate btn-size-full" data-spinnerbutton{% if activeTab == 'second' %} style="display: block;"{% endif %}>
                                             {% trans %} home-borrower_simulator-footer-validate-button {% endtrans %}
                                         </button>
                                     </div>
