@@ -162,7 +162,6 @@ class EcheanciersRepository extends EntityRepository
         $query = '
             SELECT
               c.id_client,
-              "" AS id_lender_account,
               CASE c.type
                 WHEN 1 THEN 1
                 WHEN 3 THEN 1

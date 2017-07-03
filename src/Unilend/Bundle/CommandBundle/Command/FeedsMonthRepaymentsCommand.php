@@ -83,7 +83,7 @@ class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
         $repaymentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
 
         try {
-            $result= $repaymentRepository->getRepaymentScheduleIncludingTaxOnDate($previousDay);
+            $result = $repaymentRepository->getRepaymentScheduleIncludingTaxOnDate($previousDay);
         } catch (\Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getContainer()->get('monolog.logger.console');
