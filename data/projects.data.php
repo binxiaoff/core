@@ -230,9 +230,9 @@ class projects extends projects_crud
             case self::SORT_FIELD_END:
             default:
                 if ($sortDirection === self::SORT_DIRECTION_ASC) {
-                    $order = 'lestatut DESC, IF(lestatut = 2, p.date_retrait, "") ASC, IF(lestatut = 1, p.date_fin, "") DESC, p.status ASC';
+                    $order = 'lestatut DESC, IF(lestatut = 2, p.date_fin, "") ASC, IF(lestatut = 1, p.date_retrait, "") DESC, p.status ASC';
                 } else {
-                    $order = 'lestatut ASC, IF(lestatut = 2, p.date_retrait, "") DESC, IF(lestatut = 1, p.date_fin, "") ASC, p.status DESC';
+                    $order = 'lestatut ASC, IF(lestatut = 2, p.date_fin, "") DESC, IF(lestatut = 1, p.date_retrait, "") ASC, p.status DESC';
                 }
                 break;
         }
