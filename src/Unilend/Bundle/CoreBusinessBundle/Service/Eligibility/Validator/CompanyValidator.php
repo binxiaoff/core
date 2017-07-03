@@ -495,7 +495,7 @@ class CompanyValidator
     {
         $now             = new \DateTime();
         $executivePeriod = [];
-        $changes  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->findBy(['idExecutive' => $executiveId]);
+        $changes         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->findBy(['idExecutive' => $executiveId]);
         foreach ($changes as $change) {
             if (null !== $change->getEnded() && $change->getEnded()->diff($now)->y >= $yearsSince) {
                 continue;
@@ -579,16 +579,6 @@ class CompanyValidator
         $eulerHermesGrade = $this->externalDataManager->getEulerHermesGrade($siren);
         if (null === $eulerHermesGrade) {
             return [ProjectsStatus::UNEXPECTED_RESPONSE . 'euler_grade'];
-        }
-
-        $nafCode = $this->getNAFCode($siren);
-        $xerfi   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($nafCode);
-
-        if (
-            $eulerHermesGrade->getGrade() >= 9
-            || $eulerHermesGrade->getGrade() == 8 && $xerfi->getScore() > 75
-        ) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_EULER_GRADE_VS_UNILEND_XERFI];
         }
 
         $altaresScore = $this->externalDataManager->getAltaresScore($siren);
