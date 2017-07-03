@@ -87,7 +87,7 @@ class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
         } catch (\Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getContainer()->get('monolog.logger.console');
-            $logger->error('Could not get tax state on date : ' . $previousDay->format('Y-m-d') . '. Exception message: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
+            $logger->error('Could not get repayment schedule including tax on date : ' . $previousDay->format('Y-m-d') . '. Exception message: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
             return;
         }
 
