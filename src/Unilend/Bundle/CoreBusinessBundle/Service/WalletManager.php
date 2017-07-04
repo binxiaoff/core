@@ -69,6 +69,8 @@ class WalletManager
     {
         $this->entityManager->getConnection()->beginTransaction();
         try {
+            $this->entityManager->refresh($wallet);
+
             if (-1 === bccomp($wallet->getAvailableBalance(), $amount)) {
                 //throw new \DomainException('The available balance for wallet id : ' . $wallet->getId() . ' must not be lower than zero');
             }
@@ -101,6 +103,8 @@ class WalletManager
     {
         $this->entityManager->getConnection()->beginTransaction();
         try {
+            $this->entityManager->refresh($wallet);
+
             if (-1 === bccomp($wallet->getCommittedBalance(), $amount)) {
                 //throw new \DomainException('The committed balance for wallet id : ' . $wallet->getId() . ' must not be lower than zero');
             }
@@ -128,6 +132,8 @@ class WalletManager
     private function credit(Operation $operation, Wallet $creditor)
     {
         if ($creditor instanceof Wallet) {
+            $this->entityManager->refresh($creditor);
+
             $balance = bcadd($creditor->getAvailableBalance(), $operation->getAmount(), 2);
             if (WalletType::DEBT_COLLECTOR !== $creditor->getIdType()->getLabel() && $balance < 0) {
                 //throw new \DomainException('The available balance for wallet id : ' . $creditor->getId() . ' must not be lower than zero');
@@ -145,6 +151,8 @@ class WalletManager
     private function debit(Operation $operation, Wallet $debtor)
     {
         if ($debtor instanceof Wallet) {
+            $this->entityManager->refresh($debtor);
+
             switch ($operation->getType()->getLabel()) {
                 case OperationType::LENDER_LOAN :
                     $balance = bcsub($debtor->getCommittedBalance(), $operation->getAmount(), 2);
