@@ -536,14 +536,17 @@ EOF
             if ($project) {
                 $project->setRembAuto(Projects::AUTO_REPAYMENT_OFF);
                 $entityManager->flush();
+                /** @var Wallet $wallet */
                 $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
 
                 if ($wallet) {
                     $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
                     $operationManager->cancelProvisionBorrowerWallet($wallet, $amount, $reception);
 
-                    $reception->setStatusBo(Receptions::STATUS_REJECTED);
-                    $reception->setRemb(0);
+                    $reception->setStatusBo(Receptions::STATUS_REJECTED)
+                        ->setIdProject($project)
+                        ->setIdClient($wallet->getIdClient())
+                        ->setRemb(0);
                     $entityManager->flush();
 
                     $fNewAmount = $amount;

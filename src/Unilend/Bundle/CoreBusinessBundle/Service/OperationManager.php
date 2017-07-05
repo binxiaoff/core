@@ -323,16 +323,6 @@ class OperationManager
      */
     public function cancelProvisionBorrowerWallet(Wallet $wallet, $amount, Receptions $reception)
     {
-        $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_PROVISION]);
-        $operation     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy([
-            'idWireTransferIn' => $reception->getIdReception(),
-            'idWalletCreditor' => $wallet,
-            'idType'           => $operationType
-        ]);
-        if (null === $operation) {
-            return false;
-        }
-
         $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_PROVISION_CANCEL]);
         $this->newOperation($amount, $operationType, null, $wallet, null, $reception);
 

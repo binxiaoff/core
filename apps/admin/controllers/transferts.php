@@ -316,6 +316,17 @@ class transfertsController extends bootstrap
                     $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
                     $operationManager = $this->get('unilend.service.operation_manager');
+
+                    $operationType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\OperationType::BORROWER_PROVISION]);
+                    $operation     = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy([
+                        'idWireTransferIn' => $reception->getIdReception(),
+                        'idWalletCreditor' => $wallet,
+                        'idType'           => $operationType
+                    ]);
+                    if (null === $operation) {
+                        return false;
+                    }
+
                     $operationManager->cancelProvisionBorrowerWallet($wallet, $amount, $reception);
 
                     $reception->setIdClient(null)
@@ -379,6 +390,17 @@ class transfertsController extends bootstrap
                 $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
                 if ($wallet) {
                     $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
+
+                    $operationType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\OperationType::BORROWER_PROVISION]);
+                    $operation     = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy([
+                        'idWireTransferIn' => $reception->getIdReception(),
+                        'idWalletCreditor' => $wallet,
+                        'idType'           => $operationType
+                    ]);
+                    if (null === $operation) {
+                        return false;
+                    }
+
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
                     $operationManager = $this->get('unilend.service.operation_manager');
                     $operationManager->cancelProvisionBorrowerWallet($wallet, $amount, $reception);
