@@ -8,6 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\DailyStateBalanceHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
@@ -130,6 +131,8 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
         /** @var \PHPExcel_Writer_CSV $writer */
         $writer = \PHPExcel_IOFactory::createWriter($document, 'Excel2007');
         $writer->save(str_replace(__FILE__, $filePath ,__FILE__));
+
+        $this->sendFileToInternalRecipients($filePath);
     }
 
     /**
@@ -683,5 +686,25 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
         $activeSheet->setCellValueExplicit(self::UNILEND_WITHDRAW_COLUMN . $totalRow, $totalUnilendWireTransferOut, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         $activeSheet->setCellValueExplicit(self::TAX_WITHDRAW_COLUMN . $totalRow, $totalTaxWireTransferOut, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         $activeSheet->setCellValueExplicit(self::DIRECT_DEBIT_COLUMN . $totalRow, $totalDirectDebit, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+    }
+
+    /**
+     * @param string $filePath
+     */
+    private function sendFileToInternalRecipients($filePath)
+    {
+        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
+        /** @var Settings $recipientSetting */
+        $recipientSetting = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse notification etat quotidien']);
+
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-quotidien', [], false);
+        $message
+            ->setTo(explode(';', trim($recipientSetting->getValue())))
+            ->attach(\Swift_Attachment::fromPath($filePath));
+
+        /** @var \Swift_Mailer $mailer */
+        $mailer = $this->getContainer()->get('mailer');
+        $mailer->send($message);
     }
 }
