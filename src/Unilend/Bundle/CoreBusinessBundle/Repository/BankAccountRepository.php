@@ -37,11 +37,12 @@ class BankAccountRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('ba');
         $qb->where('ba.idClient = :idClient')
-           ->andWhere('ba.dateValidated IS NOT NULL')
-           ->andWhere('ba.dateArchived IS NULL')
-           ->setParameter(':idClient', $idClient);
+            ->andWhere('ba.dateValidated IS NOT NULL')
+            ->andWhere('ba.dateArchived IS NULL')
+            ->orderBy('ba.dateValidated', 'DESC')
+            ->setMaxResults(1)
+            ->setParameter(':idClient', $idClient);
 
         return $qb->getQuery()->getOneOrNullResult();
     }
-
 }
