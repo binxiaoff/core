@@ -476,7 +476,7 @@ class CompanyValidator
         $this->externalDataManager->refreshExecutiveChanges($siren);
         $previousExecutives = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->getPreviousExecutivesLeftAfter($siren, new \DateTime('4 years ago'));
         foreach ($previousExecutives as $executiveId) {
-            if ($this->hasIncidentAnnouncements($executiveId['idExecutive'], 1, 0)) {
+            if ($this->hasIncidentAnnouncements($executiveId['idExecutive'], 4, 0)) {
                 return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT];
             }
         }
@@ -512,6 +512,14 @@ class CompanyValidator
             ) {
                 continue;
             }
+
+            $eventCodes = explode(',', $announcement->getEventCode());
+            foreach ($eventCodes as $eventCode) {
+                if (false === in_array(trim($eventCode), DirectorAnnouncement::INFOLEGALE_PEJORATIVE_EVENT_CODE)) {
+                    continue 2;
+                }
+            }
+
             $executivePeriod[$announcement->getSiren()]['ended']->modify('+' . $extended . ' year');
             if (
                 $executivePeriod[$announcement->getSiren()]['started'] <= $announcement->getPublishedDate()

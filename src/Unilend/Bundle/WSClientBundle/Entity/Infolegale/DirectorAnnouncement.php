@@ -51,10 +51,10 @@ class DirectorAnnouncement
     private $category;
 
     /**
-     * @var int
+     * @var string
      *
      * @JMS\SerializedName("codeEvenement")
-     * @JMS\Type("int")
+     * @JMS\Type("string")
      */
     private $eventCode;
 
@@ -115,7 +115,7 @@ class DirectorAnnouncement
     }
 
     /**
-     * @return int
+     * @return string
      */
     public function getEventCode()
     {
