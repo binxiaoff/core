@@ -153,7 +153,7 @@ class LenderDashboardController extends Controller
             [
                 'dashboardPanels'    => $this->getDashboardPreferences(),
                 'lenderDetails'      => [
-                    'balance'                   => $balance,
+                    'balance'                   => (float)$balance,
                     'level'                     => $this->getUser()->getLevel(),
                     'hasIRR'                    => $hasIRR,
                     'irr'                       => $irr,
