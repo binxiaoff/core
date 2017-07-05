@@ -134,8 +134,6 @@ class WalletManager
      */
     private function debit(Operation $operation, Wallet $debtor)
     {
-        $this->entityManager->refresh($debtor);
-
         switch ($operation->getType()->getLabel()) {
             case OperationType::LENDER_LOAN :
 
