@@ -10,14 +10,15 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class WalletCreationManager
 {
-    /** @var EntityManager  */
+    /** @var EntityManager */
     private $entityManager;
     /** @var  LoggerInterface */
     private $logger;
 
     /**
      * WalletCreationManager constructor.
-     * @param entityManager $entityManager
+     *
+     * @param entityManager   $entityManager
      * @param LoggerInterface $logger
      */
     public function __construct(
@@ -31,11 +32,11 @@ class WalletCreationManager
 
     /**
      * @param Clients $client
-     * @param string $walletType
+     * @param string  $walletType
      */
     public function createWallet(Clients $client, $walletType)
     {
-        $walletTypeRepository  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType');
+        $walletTypeRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType');
         /** @var WalletType $walletTypeEntity */
         $walletTypeEntity = $walletTypeRepository->findOneByLabel($walletType);
 
@@ -64,9 +65,10 @@ class WalletCreationManager
     private function createBaseWallet(Clients $client, WalletType $walletType)
     {
         $wallet = new Wallet();
-        $wallet->setIdClient($client);
-        $wallet->setIdType($walletType);
-        $wallet->setAvailableBalance(0);
+        $wallet->setIdClient($client)
+            ->setIdType($walletType)
+            ->setAvailableBalance(0)
+            ->setCommittedBalance(0);
         $this->entityManager->persist($wallet);
         $this->entityManager->flush($wallet);
 
