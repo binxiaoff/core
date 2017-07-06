@@ -23,6 +23,13 @@ class DailyStateBalanceHistory
     /**
      * @var string
      *
+     * @ORM\Column(name="theoretical_balance", type="decimal", precision=12, scale=2, nullable=true)
+     */
+    private $theoreticalBalance;
+
+    /**
+     * @var string
+     *
      * @ORM\Column(name="lender_borrower_balance", type="decimal", precision=12, scale=2, nullable=false)
      */
     private $lenderBorrowerBalance;
@@ -228,5 +235,29 @@ class DailyStateBalanceHistory
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
+    }
+
+    /**
+     * Get theoreticalBalance
+     *
+     * @return string
+     */
+    public function getTheoreticalBalance()
+    {
+        return $this->theoreticalBalance;
+    }
+
+    /**
+     * Set theoreticalBalance
+     *
+     * @param string $theoreticalBalance
+     *
+     * @return DailyStateBalanceHistory
+     */
+    public function setTheoreticalBalance($theoreticalBalance)
+    {
+        $this->theoreticalBalance = $theoreticalBalance;
+
+        return $this;
     }
 }
