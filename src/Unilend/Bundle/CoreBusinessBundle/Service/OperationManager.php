@@ -132,6 +132,17 @@ class OperationManager
                 if ($item instanceof Transfer) {
                     $operation->setTransfer($item);
                 }
+                if ($item instanceof Operation) {
+                    $operation->setProject($item->getProject())
+                        ->setBackpayline($item->getBackpayline())
+                        ->setLoan($item->getLoan())
+                        ->setPaymentSchedule($item->getPaymentSchedule())
+                        ->setRepaymentSchedule($item->getRepaymentSchedule())
+                        ->setTransfer($item->getTransfer())
+                        ->setWelcomeOffer($item->getWelcomeOffer())
+                        ->setWireTransferIn($item->getWireTransferIn())
+                        ->setWireTransferOut($item->getWireTransferOut());
+                }
             }
             $this->entityManager->persist($operation);
 
@@ -384,7 +395,7 @@ class OperationManager
         }
         $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneByLabel($type);
 
-        return $this->newOperation($amount, $operationType, null, $wallet);
+        return $this->newOperation($amount, $operationType, null, $wallet, null);
     }
 
     /**
@@ -465,7 +476,8 @@ class OperationManager
      */
     public function repaymentCommission(EcheanciersEmprunteur $paymentSchedule)
     {
-        $borrowerWallet    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($paymentSchedule->getIdProject()->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+        $borrowerWallet    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($paymentSchedule->getIdProject()->getIdCompany()->getIdClientOwner(),
+            WalletType::BORROWER);
         $unilendWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);
         $unilendWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
         $amount            = round(bcdiv(bcadd($paymentSchedule->getCommission(), $paymentSchedule->getTva(), 2), 100, 4), 2);
@@ -521,7 +533,7 @@ class OperationManager
         $unilendWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
         $operationType     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_BORROWER_REGULARIZATION]);
 
-        $this->newOperation($amount, $operationType, $unilendWallet, $wallet, $origins);
+        $this->newOperation($amount, $operationType, null, $unilendWallet, $wallet, $origins);
     }
 
     /**
@@ -685,6 +697,86 @@ class OperationManager
         $unilendWallet              = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendPromotionWalletType]);
         $operationType              = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_BORROWER_COMMERCIAL_GESTURE]);
 
-        return $this->newOperation($amount, $operationType, $unilendWallet, $wallet, $origins);
+        return $this->newOperation($amount, $operationType, null, $unilendWallet, $wallet, $origins);
+    }
+
+    /**
+     * @param Operation  $operation
+     * @param float|null $amount
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public function regularization(Operation $operation, $amount = null)
+    {
+        switch ($operation->getType()->getLabel()) {
+            case OperationType::BORROWER_COMMISSION:
+                $operationTypeLabel = OperationType::BORROWER_COMMISSION_REGULARIZATION;
+                break;
+            case OperationType::CAPITAL_REPAYMENT:
+                $operationTypeLabel = OperationType::CAPITAL_REPAYMENT_REGULARIZATION;
+                break;
+            case OperationType::GROSS_INTEREST_REPAYMENT:
+                $operationTypeLabel = OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION;
+                break;
+            case OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS:
+                $operationTypeLabel = OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS_REGULARIZATION;
+                break;
+            case OperationType::TAX_FR_CRDS:
+                $operationTypeLabel = OperationType::TAX_FR_CRDS_REGULARIZATION;
+                break;
+            case OperationType::TAX_FR_CSG:
+                $operationTypeLabel = OperationType::TAX_FR_CSG_REGULARIZATION;
+                break;
+            case OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS:
+                $operationTypeLabel = OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS_REGULARIZATION;
+                break;
+            case OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS:
+                $operationTypeLabel = OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS_REGULARIZATION;
+                break;
+            case OperationType::TAX_FR_SOCIAL_DEDUCTIONS:
+                $operationTypeLabel = OperationType::TAX_FR_SOCIAL_DEDUCTIONS_REGULARIZATION;
+                break;
+            case OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE:
+                $operationTypeLabel = OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE_REGULARIZATION;
+                break;
+            default:
+                throw new \Exception('The operation type ' . $operation->getType()->getLabel() . ' is not supported');
+        }
+
+        $operationSubTypeLabel = null;
+        if ($operation->getSubType()) {
+            switch ($operation->getSubType()->getLabel()) {
+                case OperationSubType::CAPITAL_REPAYMENT_EARLY:
+                    $operationSubTypeLabel = OperationSubType::CAPITAL_REPAYMENT_EARLY_REGULARIZATION;
+                    break;
+                case OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION:
+                    $operationSubTypeLabel = OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION_REGULARIZATION;
+                    break;
+                case OperationSubType::GROSS_INTEREST_REPAYMENT_DEBT_COLLECTION:
+                    $operationSubTypeLabel = OperationSubType::GROSS_INTEREST_REPAYMENT_DEBT_COLLECTION_REGULARIZATION;
+                    break;
+                case OperationSubType::BORROWER_COMMISSION_FUNDS:
+                    $operationSubTypeLabel = OperationSubType::BORROWER_COMMISSION_FUNDS_REGULARIZATION;
+                    break;
+                case OperationSubType::BORROWER_COMMISSION_REPAYMENT:
+                    $operationSubTypeLabel = OperationSubType::BORROWER_COMMISSION_REPAYMENT_REGULARIZATION;
+                    break;
+                default:
+                    throw new \Exception('The operation type ' . $operation->getSubType()->getLabel() . ' is not supported');
+            }
+        }
+
+        if (null === $amount) {
+            $amount = $operation->getAmount();
+        }
+
+        // Switch the creditor and debtor as it is a regularization.
+        $creditor         = $operation->getWalletDebtor();
+        $debtor           = $operation->getWalletCreditor();
+        $operationType    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => $operationTypeLabel]);
+        $operationSubType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => $operationSubTypeLabel]);
+
+        return $this->newOperation($amount, $operationType, $operationSubType, $debtor, $creditor, $operation);
     }
 }
