@@ -114,6 +114,28 @@ class ProjectRepaymentManager
      */
     public function repay(Projects $project, $repaymentSequence, $idUser = null)
     {
+        $repaymentNb = 0;
+
+        $projectRepayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsRemb')->findOneBy([
+            'idProject' => $project,
+            'ordre'     => $repaymentSequence,
+            'status'    => ProjectsRemb::STATUS_PENDING
+        ]);
+
+        if (null === $projectRepayment) {
+            $this->logger->warning(
+                'Cannot find pending repayment for project from projects_remb ' . $project->getIdProject() . ' (order: ' . $repaymentSequence . '). The repayment may have been repaid manually.',
+                ['method' => __METHOD__]
+            );
+
+            return $repaymentNb;
+        }
+
+        $initialStatus = $projectRepayment->getStatus();
+
+        $projectRepayment->setStatus(ProjectsRemb::STATUS_IN_PROGRESS);
+        $this->entityManager->flush($projectRepayment);
+
         $this->entityManager->getConnection()->beginTransaction();
         try {
             $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
@@ -123,12 +145,6 @@ class ProjectRepaymentManager
                 ->setDebut(new \DateTime());
 
             $repaymentSchedules = $repaymentScheduleRepository->findByProject($project, $repaymentSequence, null, Echeanciers::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PAID);
-            $projectRepayment   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsRemb')->findOneBy([
-                'idProject' => $project,
-                'ordre'     => $repaymentSequence,
-                'status'    => ProjectsRemb::STATUS_PENDING
-            ]);
-            $repaymentNb        = 0;
 
             if (null === $projectRepayment) {
                 $this->logger->warning(
@@ -208,6 +224,10 @@ class ProjectRepaymentManager
             $this->entityManager->getConnection()->commit();
         } catch (\Exception $exception) {
             $this->entityManager->getConnection()->rollBack();
+
+            $projectRepayment->setStatus($initialStatus);
+            $this->entityManager->flush($projectRepayment);
+
             $this->logger->error(
                 'The repayment has been rollbacked for the project ' . $project->getIdProject() . ' (order: ' . $repaymentSequence . '). Error : ' . $exception->getMessage(),
                 ['method' => __METHOD__]
