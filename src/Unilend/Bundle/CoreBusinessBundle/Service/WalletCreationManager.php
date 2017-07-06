@@ -65,10 +65,10 @@ class WalletCreationManager
     private function createBaseWallet(Clients $client, WalletType $walletType)
     {
         $wallet = new Wallet();
-        $wallet->setIdClient($client)
-            ->setIdType($walletType)
-            ->setAvailableBalance(0)
-            ->setCommittedBalance(0);
+        $wallet->setIdClient($client);
+        $wallet->setIdType($walletType);
+        $wallet->setAvailableBalance(0);
+        $wallet->setCommittedBalance(0);
         $this->entityManager->persist($wallet);
         $this->entityManager->flush($wallet);
 
