@@ -42,12 +42,27 @@ class OperationType
     const UNILEND_PROMOTIONAL_OPERATION_PROVISION       = 'unilend_promotional_operation_provision';
     const UNILEND_PROVISION                             = 'unilend_provision';
     const UNILEND_WITHDRAW                              = 'unilend_withdraw';
-    const UNILEND_LENDER_REGULARIZATION                 = 'unilend_lender_regularization';
-    const UNILEND_BORROWER_REGULARIZATION               = 'unilend_borrower_regularization';
-    const UNILEND_BORROWER_COMMERCIAL_GESTURE           = 'unilend_borrower_commercial_gesture';
-    const COLLECTION_COMMISSION_PROVISION               = 'collection_commission_provision';
-    const COLLECTION_COMMISSION_BORROWER                = 'collection_commission_borrower';
-    const COLLECTION_COMMISSION_LENDER                  = 'collection_commission_lender';
+
+    const COLLECTION_COMMISSION_PROVISION = 'collection_commission_provision';
+    const COLLECTION_COMMISSION_BORROWER  = 'collection_commission_borrower';
+    const COLLECTION_COMMISSION_LENDER    = 'collection_commission_lender';
+
+    // General regularization
+    const UNILEND_BORROWER_COMMERCIAL_GESTURE = 'unilend_borrower_commercial_gesture';
+    const UNILEND_LENDER_REGULARIZATION       = 'unilend_lender_regularization';
+    const UNILEND_BORROWER_REGULARIZATION     = 'unilend_borrower_regularization';
+
+    // Specific regularization
+    const BORROWER_COMMISSION_REGULARIZATION                  = 'borrower_commission_regularization';
+    const CAPITAL_REPAYMENT_REGULARIZATION                    = 'capital_repayment_regularization';
+    const GROSS_INTEREST_REPAYMENT_REGULARIZATION             = 'gross_interest_repayment_regularization';
+    const TAX_FR_ADDITIONAL_CONTRIBUTIONS_REGULARIZATION      = 'tax_fr_additional_contributions_regularization';
+    const TAX_FR_CRDS_REGULARIZATION                          = 'tax_fr_crds_regularization';
+    const TAX_FR_CSG_REGULARIZATION                           = 'tax_fr_csg_regularization';
+    const TAX_FR_SOLIDARITY_DEDUCTIONS_REGULARIZATION         = 'tax_fr_solidarity_deductions_regularization';
+    const TAX_FR_STATUTORY_CONTRIBUTIONS_REGULARIZATION       = 'tax_fr_statutory_contributions_regularization';
+    const TAX_FR_SOCIAL_DEDUCTIONS_REGULARIZATION             = 'tax_fr_social_deductions_regularization';
+    const TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE_REGULARIZATION = 'tax_fr_income_tax_deducted_at_source_regularization';
 
     const TAX_TYPES_FR = [
         self::TAX_FR_STATUTORY_CONTRIBUTIONS,
@@ -74,7 +89,6 @@ class OperationType
      * @ORM\Column(name="label", type="string", length=191, nullable=false)
      */
     private $label;
-
 
     /**
      * Get id
