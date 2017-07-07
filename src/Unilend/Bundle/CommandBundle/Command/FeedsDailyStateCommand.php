@@ -8,6 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\DailyStateBalanceHistory;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
@@ -525,9 +526,10 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $borrowerProvision                       = empty($line[OperationType::BORROWER_PROVISION]) ? 0 : $line[OperationType::BORROWER_PROVISION];
             $borrowerProvisionCancel                 = empty($line[OperationType::BORROWER_PROVISION_CANCEL]) ? 0 : $line[OperationType::BORROWER_PROVISION_CANCEL];
             $borrowerWithdraw                        = empty($line[OperationType::BORROWER_WITHDRAW]) ? 0 : $line[OperationType::BORROWER_WITHDRAW];
-            $borrowerCommissionProject               = empty($line['borrower_commission_project']) ? 0 : $line['borrower_commission_project'];
-            $borrowerCommissionPayment               = empty($line['borrower_commission_payment']) ? 0 : $line['borrower_commission_payment'];
+            $borrowerCommissionProject               = empty($line[OperationSubType::BORROWER_COMMISSION_FUNDS]) ? 0 : $line[OperationSubType::BORROWER_COMMISSION_FUNDS];
             $borrowerCommissionProjectRegularization = empty($line[OperationType::BORROWER_COMMISSION_REGULARIZATION]) ? 0 : $line[OperationType::BORROWER_COMMISSION_REGULARIZATION];
+            $borrowerCommissionPayment               = empty($line[OperationSubType::BORROWER_COMMISSION_REPAYMENT]) ? 0 : $line[OperationSubType::BORROWER_COMMISSION_REPAYMENT];
+            $borrowerCommissionPaymentRegularization = empty($line[OperationSubType::BORROWER_COMMISSION_REPAYMENT_REGULARIZATION]) ? 0 : $line[OperationSubType::BORROWER_COMMISSION_REPAYMENT_REGULARIZATION];
             $statutoryContributions                  = empty($line[OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS]) ? 0 : $line[OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS];
             $statutoryContributionsRegularization    = empty($line[OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS_REGULARIZATION];
             $incomeTax                               = empty($line[OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE]) ? 0 : $line[OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE];
@@ -562,8 +564,9 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $totalCrds                    = bcsub($crds, $crdsRegularization, 2);
             $realBorrowerProvision        = bcsub($borrowerProvision, $borrowerProvisionCancel, 2);
             $totalPromotionProvision      = bcadd($unilendProvision, $promotionProvision, 2);
-            $projectCommission            = bcsub($borrowerCommissionProject, $borrowerCommissionProjectRegularization, 2);
-            $totalCommission              = bcadd($borrowerCommissionPayment, $projectCommission, 2);
+            $totalProjectCommission       = bcsub($borrowerCommissionProject, $borrowerCommissionProjectRegularization, 2);
+            $totalPaymentCommission       = bcsub($borrowerCommissionPayment, $borrowerCommissionPaymentRegularization, 2);
+            $totalCommission              = bcadd($totalPaymentCommission, $totalProjectCommission, 2);
             $totalIncoming                = bcadd($realBorrowerProvision, bcadd($totalPromotionProvision, bcadd($lenderProvisionCreditCard, $lenderProvisionWireTransfer, 2), 2), 2);
             $totalTax                     = bcadd($totalCrds, bcadd($totalSolidarityDeductions, bcadd($totalAdditionalContributions, bcadd($totalSocialDeductions, bcadd($totalCsg, bcadd($totalStatutoryContributions, $totalIncomeTax, 2), 2), 2), 2), 2), 2);
             $totalOutgoing                = bcadd($totalTax, bcadd($totalCommission, bcadd($borrowerWithdraw, $lenderWithdraw, 2), 2), 2);
@@ -571,8 +574,8 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $totalPromotionOffer          = bcadd($lenderRegularization, bcadd($commercialGestures, bcsub($promotionalOffers, $promotionalOffersCancel, 2), 2), 2);
             $totalCapitalRepayment        = bcsub($capitalRepayment, $capitalRepaymentRegularization, 2);
             $netInterest                  = bcsub(bcsub($grossInterest, $grossInterestRegularization, 2), $totalTax, 2);
-            $repaymentAssignment          = bcadd($borrowerCommissionPayment, bcadd($capitalRepayment, bcsub($grossInterest, $grossInterestRegularization, 2), 2), 2);
-            $fiscalDifference             = bcsub($repaymentAssignment, bcadd($borrowerCommissionPayment, bcadd($capitalRepayment, bcadd($netInterest, $totalTax, 2), 2), 2), 2);
+            $repaymentAssignment          = bcadd($totalPaymentCommission, bcadd($totalCapitalRepayment, bcsub($grossInterest, $grossInterestRegularization, 2), 2), 2);
+            $fiscalDifference             = bcsub($repaymentAssignment, bcadd($totalPaymentCommission, bcadd($capitalRepayment, bcadd($netInterest, $totalTax, 2), 2), 2), 2);
 
             $calculatedTotals['financialMovements']    = bcadd($calculatedTotals['financialMovements'], $totalFinancialMovementsLine, 2);
             $calculatedTotals['netInterest']           = bcadd($calculatedTotals['netInterest'], $netInterest, 2);
