@@ -575,7 +575,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $totalCapitalRepayment        = bcsub($capitalRepayment, $capitalRepaymentRegularization, 2);
             $netInterest                  = bcsub(bcsub($grossInterest, $grossInterestRegularization, 2), $totalTax, 2);
             $repaymentAssignment          = bcadd($totalPaymentCommission, bcadd($totalCapitalRepayment, bcsub($grossInterest, $grossInterestRegularization, 2), 2), 2);
-            $fiscalDifference             = bcsub($repaymentAssignment, bcadd($totalPaymentCommission, bcadd($capitalRepayment, bcadd($netInterest, $totalTax, 2), 2), 2), 2);
+            $fiscalDifference             = bcsub($repaymentAssignment, bcadd($totalPaymentCommission, bcadd($totalCapitalRepayment, bcadd($netInterest, $totalTax, 2), 2), 2), 2);
 
             $calculatedTotals['financialMovements']    = bcadd($calculatedTotals['financialMovements'], $totalFinancialMovementsLine, 2);
             $calculatedTotals['netInterest']           = bcadd($calculatedTotals['netInterest'], $netInterest, 2);
