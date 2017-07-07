@@ -523,7 +523,7 @@ class OperationRepository extends EntityRepository
                   SUM(o.amount) AS amount,
                   IF(o.id_sub_type IS NULL,
                      CASE ot.label
-                        WHEN "' . OperationType::LENDER_PROVISION . '"" THEN
+                        WHEN "' . OperationType::LENDER_PROVISION . '" THEN
                           IF(o.id_backpayline IS NOT NULL,
                              "lender_provision_credit_card",
                              IF(o.id_wire_transfer_in IS NOT NULL,
