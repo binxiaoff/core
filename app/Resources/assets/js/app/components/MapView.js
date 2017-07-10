@@ -1259,7 +1259,7 @@ var MapViewFilter = function (options) {
  */
 MapViewFilter.prototype.templates = {
   inputCheckbox: '<label class="mapview-filter mapview-group-{{ groupName }} mapview-filter-type-checkbox" data-mapview-group="{{ groupName }}">\
-    <input type="checkbox" name="mapview_filter[{{ name }}]" value="{{ value }}" {{ enabled }}/><span class="label">{{ label }}</span>\
+    <input type="checkbox" name="mapview_filter[{{ name }}]" value="{{ value }}" {{ enabled }}/><span class="label"><span class="mapview-marker-icon mapview-marker-icon-{{ groupName }}"></span> {{ label }}</span>\
   </label>',
   inputText: '<label class="mapview-filter mapview-group-{{ groupName }} mapview-filter-type-text" data-mapview-group="{{ groupName }}">\
     <input type="text" name="mapview_filter[{{ name }}]" class="input-field" placeholder="{{ label }}" value="{{ value }}" />\

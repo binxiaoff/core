@@ -99,12 +99,24 @@
   @include mapview-marker-icon($bg-color: $c-t3, $color: $c-t1, $style: 'hollow');
 }
 
+.mapview-marker-icon-legend {
+  @include mapview-marker-icon($bg-color: $c-t3, $color: $c-t1, $style: 'hollow');
+}
+
 // Extra icons
 .mapview-marker-icon-accepted {
   &:before {
     content: $fa-check-u16;
     font-size: 16px;
     line-height: 26px;
+  }
+  &.mapview-marker-icon-legend:before {
+    font-size: 15px;
+    line-height: 1;
+    position: relative;
+    top: -6px;
+    left: 3px;
+    color: $c-t2;
   }
 }
 
@@ -175,29 +187,15 @@
   clear: both;
   cursor: pointer;
 
-  &.mapview-group-active,
-  &.mapview-group-expired {
-    .label:before {
-      content: $fa-map-marker-u16;
-      display: inline-block;
-      margin-left: 5px;
-      margin-right: 5px;
-      font-size: $fs-base;
-      font-family: $ff-icon;
-      vertical-align: bottom;
-    }
+  .label .mapview-marker-icon {
+    margin: 0;
+    width: 22px;
+    height: 22px;
+    line-height: 22px;
   }
 
-  &.mapview-group-active {
-    .label:before {
-      color: $c-p1;
-    }
-  }
-
-  &.mapview-group-expired {
-    .label:before {
-      color: $c-t3;
-    }
+  &.mapview-group-legend {
+    padding-left: 40px;
   }
 }
 
@@ -205,30 +203,8 @@
   padding-top: 6px;
   border-bottom-right-radius: 4px;
   border-bottom-left-radius: 4px;
-  background: $c-t3;
-  color: $c-white;
-}
-
-.mapview-filter-legend-item {
-  display: block;
-  clear: both;
-  padding: 0 20px 6px 15px;
-  font-size: 14px;
-  .icon {
-    @include mapview-marker-icon($bg-color: $c-white, $color: $c-t1, $style: 'hollow');
-    margin: 0;
-    width: 22px;
-    height: 22px;
-    line-height: 22px;
-    &:before {
-      font-family: $ff-icon;
-      content: $fa-check-u16;
-      font-size: 14px;
-      position: relative;
-      top: -5px;
-      left: 3px;
-    }
-  }
+  background: $c-bg1;
+  color: darken($c-t2, 15%);
 }
 
 // Show the mapview is loading

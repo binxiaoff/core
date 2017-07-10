@@ -1,8 +1,11 @@
 <div class="project-list-map">
     <div id="project-list-map-view" class="project-list-map-view ui-has-mapview" data-mapview-ajaxurl="{{ path('projects_list_all') }}" data-mapview-ajaxpaginationurl="{{ path('projects_list_json') }}" data-has-spinner="#spinner-project-list-map">
         <div class="mapview-filter-legend">
-            <label class="mapview-filter-legend-item">
-                <span class="icon"></span> {% trans %} project-list_map-legend-my-projects {% endtrans %}
+            <label class="mapview-filter mapview-group-legend">
+                <span class="label">
+                    <span class="mapview-marker-icon mapview-marker-icon-legend mapview-marker-icon-accepted"></span>
+                    {% trans %} project-list_map-legend-my-projects {% endtrans %}</span>
+                </span>
             </label>
         </div>
     </div>
