@@ -40,14 +40,14 @@ class ProjectsRembLog
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="fin", type="datetime", nullable=false)
+     * @ORM\Column(name="fin", type="datetime", nullable=true)
      */
     private $fin;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="nb_pret_remb", type="integer", nullable=false)
+     * @ORM\Column(name="nb_pret_remb", type="integer", nullable=true)
      */
     private $nbPretRemb;
 

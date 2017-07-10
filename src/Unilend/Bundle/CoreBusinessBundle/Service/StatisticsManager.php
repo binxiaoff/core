@@ -211,11 +211,13 @@ class StatisticsManager
 
         $borrowedCapital                             = $this->formatCohortQueryResult($loans->sumLoansByCohort(), $years);
         $repaidCapital                               = $this->formatCohortQueryResult($operationRepository->getTotalRepaymentByCohort(OperationType::CAPITAL_REPAYMENT), $years);
+        $repaidCapitalRegularized                    = $this->formatCohortQueryResult($operationRepository->getTotalRepaymentByCohort(OperationType::CAPITAL_REPAYMENT_REGULARIZATION), $years);
         $debtCollectionRepaymentHealthyProjects      = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionRepaymentByCohort(true), $years);
         $debtCollectionCommissionHealthyProjects     = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionLenderCommissionByCohort(true), $years);
         $debtCollectionRepaymentProblematicProjects  = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionRepaymentByCohort(false), $years);
         $debtCollectionCommissionProblematicProjects = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionLenderCommissionByCohort(false), $years);
         $repaidInterest                              = $this->formatCohortQueryResult($operationRepository->getTotalRepaymentByCohort(OperationType::GROSS_INTEREST_REPAYMENT), $years);
+        $repaidInterestRegularized                   = $this->formatCohortQueryResult($operationRepository->getTotalRepaymentByCohort(OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION), $years);
         $interestHealthyProjects                     = $this->formatCohortQueryResult($borrowerPaymentSchedule->getInterestPaymentsOfHealthyProjectsByCohort(), $years);
         $futureCapitalProblematicProjects            = $this->formatCohortQueryResult($borrowerPaymentSchedule->getFutureOwedCapitalOfProblematicProjectsByCohort(), $years);
         $futureCapitalHealthyProjects                = $this->formatCohortQueryResult($borrowerPaymentSchedule->getFutureCapitalPaymentsOfHealthyProjectsByCohort(), $years);
@@ -246,8 +248,8 @@ class StatisticsManager
             $data['projects'][$year]                            = $fundedProjects[$year];
 
             $data['borrowed-capital'][$year]                    = $borrowedCapital[$year];
-            $data['repaid-capital'][$year]                      = $repaidCapital[$year];
-            $data['repaid-interest'][$year]                     = $repaidInterest[$year];
+            $data['repaid-capital'][$year]                      = bcsub($repaidCapital[$year], $repaidCapitalRegularized[$year], 2);
+            $data['repaid-interest'][$year]                     = bcsub($repaidInterest[$year], $repaidInterestRegularized[$year], 2);
             $data['owed-healthy-interest'][$year]               = $interestHealthyProjects[$year];
 
             $data['future-owed-capital-healthy'][$year]         = $futureCapitalHealthyProjects[$year];
