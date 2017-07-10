@@ -179,11 +179,15 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE_REGULARIZATION
         ], OperationType::TAX_TYPES_FR);
 
-        $dailyMovements   = $operationRepository->sumMovementsForDailyState($firstDay, $requestedDate, $movements);
+        $dailyMovements   = $operationRepository->sumMovementsForDailyStateByDay($firstDay, $requestedDate, $movements);
         $monthlyMovements = $operationRepository->sumMovementsForDailyStateByMonth($requestedDate, $movements);
+        $totalMonth       = $operationRepository->sumMovementsForDailyState($firstDay, $requestedDate, $movements);
+        $totalYear        = $operationRepository->sumMovementsForDailyState(new \DateTime('first day of January ' . $requestedDate->format('Y')), $requestedDate, $movements);
 
-        $this->addMovementLines($activeSheet, $dailyMovements, $specificRows['firstDay'], $specificRows['totalDay']);
-        $this->addMovementLines($activeSheet, $monthlyMovements, $specificRows['firstMonth'], $specificRows['totalMonth']);
+        $this->addMovementLines($activeSheet, $dailyMovements, $specificRows['firstDay']);
+        $this->addMovementLines($activeSheet, $monthlyMovements, $specificRows['firstMonth']);
+        $this->addMovementLines($activeSheet, $totalMonth, $specificRows['totalDay']);
+        $this->addMovementLines($activeSheet, $totalYear, $specificRows['totalMonth']);
     }
 
     /**
@@ -504,20 +508,9 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
      * @param \PHPExcel_Worksheet $activeSheet
      * @param array               $movements
      * @param int                 $row
-     * @param int                 $totalRow
      */
-    private function addMovementLines(\PHPExcel_Worksheet $activeSheet, array $movements, $row, $totalRow)
+    private function addMovementLines(\PHPExcel_Worksheet $activeSheet, array $movements, $row)
     {
-        $calculatedTotals = [
-            'financialMovements'    => 0,
-            'netInterest'           => 0,
-            'repaymentAssignment'   => 0,
-            'fiscalDifference'      => 0,
-            'realBorrowerProvision' => 0,
-            'promotionProvision'    => 0,
-            'promotionalOffer'      => 0
-        ];
-
         foreach ($movements as $date => $line) {
             $lenderProvisionCreditCard               = empty($line['lender_provision_credit_card']) ? 0 : $line['lender_provision_credit_card'];
             $lenderProvisionWireTransfer             = empty($line['lender_provision_wire_transfer_in']) ? 0 : $line['lender_provision_wire_transfer_in'];
@@ -527,7 +520,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $borrowerProvisionCancel                 = empty($line[OperationType::BORROWER_PROVISION_CANCEL]) ? 0 : $line[OperationType::BORROWER_PROVISION_CANCEL];
             $borrowerWithdraw                        = empty($line[OperationType::BORROWER_WITHDRAW]) ? 0 : $line[OperationType::BORROWER_WITHDRAW];
             $borrowerCommissionProject               = empty($line[OperationSubType::BORROWER_COMMISSION_FUNDS]) ? 0 : $line[OperationSubType::BORROWER_COMMISSION_FUNDS];
-            $borrowerCommissionProjectRegularization = empty($line[OperationType::BORROWER_COMMISSION_REGULARIZATION]) ? 0 : $line[OperationType::BORROWER_COMMISSION_REGULARIZATION];
+            $borrowerCommissionProjectRegularization = empty($line[OperationSubType::BORROWER_COMMISSION_FUNDS_REGULARIZATION]) ? 0 : $line[OperationSubType::BORROWER_COMMISSION_FUNDS_REGULARIZATION];
             $borrowerCommissionPayment               = empty($line[OperationSubType::BORROWER_COMMISSION_REPAYMENT]) ? 0 : $line[OperationSubType::BORROWER_COMMISSION_REPAYMENT];
             $borrowerCommissionPaymentRegularization = empty($line[OperationSubType::BORROWER_COMMISSION_REPAYMENT_REGULARIZATION]) ? 0 : $line[OperationSubType::BORROWER_COMMISSION_REPAYMENT_REGULARIZATION];
             $statutoryContributions                  = empty($line[OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS]) ? 0 : $line[OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS];
@@ -577,14 +570,6 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $repaymentAssignment          = bcadd($totalPaymentCommission, bcadd($totalCapitalRepayment, bcsub($grossInterest, $grossInterestRegularization, 2), 2), 2);
             $fiscalDifference             = bcsub($repaymentAssignment, bcadd($totalPaymentCommission, bcadd($totalCapitalRepayment, bcadd($netInterest, $totalTax, 2), 2), 2), 2);
 
-            $calculatedTotals['financialMovements']    = bcadd($calculatedTotals['financialMovements'], $totalFinancialMovementsLine, 2);
-            $calculatedTotals['netInterest']           = bcadd($calculatedTotals['netInterest'], $netInterest, 2);
-            $calculatedTotals['repaymentAssignment']   = bcadd($calculatedTotals['repaymentAssignment'], $repaymentAssignment, 2);
-            $calculatedTotals['fiscalDifference']      = bcadd($calculatedTotals['fiscalDifference'], $fiscalDifference, 2);
-            $calculatedTotals['realBorrowerProvision'] = bcadd($calculatedTotals['realBorrowerProvision'], $realBorrowerProvision, 2);
-            $calculatedTotals['promotionProvision']    = bcadd($calculatedTotals['promotionProvision'], $promotionProvision, 2);
-            $calculatedTotals['promotionalOffer']      = bcadd($calculatedTotals['promotionalOffer'], $totalPromotionOffer, 2);
-
             /* Financial Movements */
             $activeSheet->setCellValueExplicit(self::LENDER_PROVISION_CARD_COLUMN . $row, $lenderProvisionCreditCard, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::LENDER_PROVISION_WIRE_TRANSFER_COLUMN . $row, $lenderProvisionWireTransfer, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
@@ -614,72 +599,6 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
 
             $row++;
         }
-        $this->addTotalMovementsLine($activeSheet, $movements, $totalRow, $calculatedTotals);
-    }
-
-    /**
-     * @param \PHPExcel_Worksheet $activeSheet
-     * @param array               $movements
-     * @param int                 $row
-     * @param array               $$calculatedTotals
-     */
-    private function addTotalMovementsLine(\PHPExcel_Worksheet $activeSheet, array $movements, $row, array $calculatedTotals)
-    {
-        $borrowerCommissionProject               = array_sum(array_column($movements, OperationSubType::BORROWER_COMMISSION_FUNDS));
-        $borrowerCommissionProjectRegularization = array_sum(array_column($movements, OperationType::BORROWER_COMMISSION_REGULARIZATION));
-        $borrowerCommissionPayment               = array_sum(array_column($movements, OperationSubType::BORROWER_COMMISSION_REPAYMENT));
-        $borrowerCommissionPaymentRegularization = array_sum(array_column($movements, OperationSubType::BORROWER_COMMISSION_REPAYMENT_REGULARIZATION));
-        $statutoryContributions                  = array_sum(array_column($movements, OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS));;
-        $statutoryContributionsRegularization    = array_sum(array_column($movements, OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS_REGULARIZATION));
-        $incomeTax                               = array_sum(array_column($movements, OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE));
-        $incomeTaxRegularization                 = array_sum(array_column($movements, OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE_REGULARIZATION));
-        $csg                                     = array_sum(array_column($movements, OperationType::TAX_FR_CSG));
-        $csgRegularization                       = array_sum(array_column($movements, OperationType::TAX_FR_CSG_REGULARIZATION));
-        $socialDeductions                        = array_sum(array_column($movements, OperationType::TAX_FR_SOCIAL_DEDUCTIONS));
-        $socialDeductionsRegularization          = array_sum(array_column($movements, OperationType::TAX_FR_SOCIAL_DEDUCTIONS_REGULARIZATION));
-        $additionalContributions                 = array_sum(array_column($movements, OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS));
-        $additionalContributionsRegularization   = array_sum(array_column($movements, OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS_REGULARIZATION));
-        $solidarityDeductions                    = array_sum(array_column($movements, OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS));
-        $solidarityDeductionsRegularization      = array_sum(array_column($movements, OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS_REGULARIZATION));
-        $crds                                    = array_sum(array_column($movements, OperationType::TAX_FR_CRDS));
-        $crdsRegularization                      = array_sum(array_column($movements, OperationType::TAX_FR_CRDS_REGULARIZATION));
-        $capitalRepayment                        = array_sum(array_column($movements, OperationType::CAPITAL_REPAYMENT));
-        $capitalRepaymentRegularization          = array_sum(array_column($movements, OperationType::CAPITAL_REPAYMENT_REGULARIZATION));
-
-        $totalStatutoryContributions  = bcsub($statutoryContributions, $statutoryContributionsRegularization, 2);
-        $totalIncomeTax               = bcsub($incomeTax, $incomeTaxRegularization, 2);
-        $totalCsg                     = bcsub($csg, $csgRegularization, 2);
-        $totalSocialDeductions        = bcsub($socialDeductions, $socialDeductionsRegularization, 2);
-        $totalAdditionalContributions = bcsub($additionalContributions, $additionalContributionsRegularization, 2);
-        $totalSolidarityDeductions    = bcsub($solidarityDeductions, $solidarityDeductionsRegularization, 2);
-        $totalCrds                    = bcsub($crds, $crdsRegularization, 2);
-        $totalProjectCommission       = bcsub($borrowerCommissionProject, $borrowerCommissionProjectRegularization, 2);
-        $totalPaymentCommission       = bcsub($borrowerCommissionPayment, $borrowerCommissionPaymentRegularization, 2);
-        $totalCapitalRepayment        = bcsub($capitalRepayment, $capitalRepaymentRegularization, 2);
-
-        $activeSheet->setCellValueExplicit(self::LENDER_PROVISION_CARD_COLUMN . $row, array_sum(array_column($movements, 'lender_provision_credit_card')), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::LENDER_PROVISION_WIRE_TRANSFER_COLUMN . $row, array_sum(array_column($movements,'lender_provision_wire_transfer_in')), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::LENDER_PROVISION_DIRECT_DEBIT_COLUMN . $row, 0, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::PROMOTION_OFFER_PROVISION_COLUMN. $row, $calculatedTotals['promotionProvision'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::BORROWER_PROVISION_COLUMN . $row, $calculatedTotals['realBorrowerProvision'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::BORROWER_WITHDRAW_COLUMN . $row, array_sum(array_column($movements, OperationType::BORROWER_WITHDRAW)), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::PROJECT_COMMISSION_COLUMN . $row, $totalProjectCommission, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::REPAYMENT_COMMISSION_COLUMN . $row, $totalPaymentCommission, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::STATUTORY_CONTRIBUTIONS_COLUMN . $row, $totalStatutoryContributions, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::INCOME_TAX_COLUMN . $row, $totalIncomeTax, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::CSG_COLUMN . $row, $totalCsg, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::SOCIAL_DEDUCTIONS_COLUMN . $row, $totalSocialDeductions, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::ADDITIONAL_CONTRIBUTIONS_COLUMN . $row, $totalAdditionalContributions, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::SOLIDARITY_DEDUCTIONS_COLUMN . $row, $totalSolidarityDeductions, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::CRDS_COLUMN . $row, $totalCrds, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::LENDER_WITHDRAW_COLUMN . $row, array_sum(array_column($movements, OperationType::LENDER_WITHDRAW)), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::TOTAL_FINANCIAL_MOVEMENTS_COLUMN . $row, $calculatedTotals['financialMovements'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::PROMOTION_OFFER_DISTRIBUTION_COLUMN . $row, $calculatedTotals['promotionalOffer'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::LENDER_LOAN_COLUMN . $row, array_sum(array_column($movements, OperationType::LENDER_LOAN)), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::CAPITAL_REPAYMENT_COLUMN . $row, $totalCapitalRepayment, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::NET_INTEREST_COLUMN . $row, $calculatedTotals['netInterest'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::PAYMENT_ASSIGNMENT_COLUMN . $row, $calculatedTotals['repaymentAssignment'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::FISCAL_DIFFERENCE_COLUMN . $row, $calculatedTotals['fiscalDifference'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
     }
 
     /**
@@ -732,7 +651,6 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $activeSheet->setCellValueExplicit(self::THEORETICAL_BALANCE_COLUMN . $row, $theoreticalBalance, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::BALANCE_DIFFERENCE_COLUMN . $row, $globalDifference, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         }
-
     }
 
     /**

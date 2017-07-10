@@ -536,13 +536,14 @@ class OperationRepository extends EntityRepository
                 INNER JOIN operation_type ot ON o.id_type = ot.id
                 LEFT JOIN operation_sub_type ost ON o.id_sub_type = ost.id';
     }
+
     /**
-     * @param \DateTime $start
-     * @param \DateTime $end
-     *
-     * @return array
-     */
-    public function sumMovementsForDailyState(\DateTime $start, \DateTime $end, array $operationTypes)
+ * @param \DateTime $start
+ * @param \DateTime $end
+ *
+ * @return array
+ */
+    public function sumMovementsForDailyStateByDay(\DateTime $start, \DateTime $end, array $operationTypes)
     {
         $start->setTime(0, 0, 0);
         $end->setTime(23, 59, 59);
@@ -590,6 +591,35 @@ class OperationRepository extends EntityRepository
         $movements = [];
         foreach ($result as $row) {
             $movements[$row['month']][$row['movement']] = $row['amount'];
+        }
+
+        return $movements;
+    }
+
+    /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return array
+     */
+    public function sumMovementsForDailyState(\DateTime $start, \DateTime $end, array $operationTypes)
+    {
+        $start->setTime(0, 0, 0);
+        $end->setTime(23, 59, 59);
+
+        $query = $this->getDailyStateQuery() . ' 
+                    WHERE o.added BETWEEN :start AND :end
+                    AND ot.label IN ("' . implode('","', $operationTypes) . '")
+                    GROUP BY movement
+                    ORDER BY o.added ASC';
+
+        $result = $this->getEntityManager()->getConnection()
+            ->executeQuery($query, ['start' => $start->format('Y-m-d H:i:s'), 'end' => $end->format('Y-m-d H:i:s')])
+            ->fetchAll(\PDO::FETCH_ASSOC);
+
+        $movements = [];
+        foreach ($result as $row) {
+            $movements[$row['day']][$row['movement']] = $row['amount'];
         }
 
         return $movements;
