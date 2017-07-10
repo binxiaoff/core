@@ -79,7 +79,7 @@
                         <th><label>Motif :</label></th>
                         <td><?= $this->motifOffreBienvenue ?></td>
                         <th><label for="montant">Solde Reel disponible :</label></th>
-                        <td><?= $this->ficelle->formatNumber($this->sumDispoPourOffres / 100) ?> €</td>
+                        <td><?= $this->ficelle->formatNumber($this->sumDispoPourOffres) ?> €</td>
                     </tr>
 
                     <tr>
