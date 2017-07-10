@@ -1,4 +1,4 @@
-<a class="tab_title" id="section-email" href="#section-email">Email / CGV</a>
+<a class="tab_title" id="section-email" href="#section-email">Email</a>
 <div class="tab_content" id="tab_email">
     <div class="div-2-columns">
         <div class="div-left-pos">
@@ -77,5 +77,4 @@
         </div>
     </div>
     <br><br>
-    <?php $this->fireView('../blocs/acceptedLegalDocumentList'); ?>
 </div>

@@ -1864,8 +1864,11 @@ class dossiersController extends bootstrap
                                     $_SESSION['freeow']['message'] = "Aucun remboursement n'a été effectué aux prêteurs !";
                                 } else {
                                     $repaid = true;
-                                    $projectRepayment = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsRemb')
-                                        ->findOneBy(['idProject' => $project, 'ordre' => $paidPaymentSchedule->getOrdre()]);
+                                    $projectRepayment = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsRemb')->findOneBy([
+                                        'idProject' => $project,
+                                        'ordre'     => $paidPaymentSchedule->getOrdre(),
+                                        'status'    => ProjectsRemb::STATUS_REPAID
+                                    ]);
                                     if ($projectRepayment) {
                                         $projectRepayment->setStatus(ProjectsRemb::STATUS_AUTOMATIC_REPAYMENT_DISABLED)
                                             ->setDateRembPreteursReel(new \DateTime());

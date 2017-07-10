@@ -89,7 +89,7 @@ class WalletRepository extends EntityRepository
             'inactiveSince'       => $inactiveSince->format('Y-m-d H:i:s'),
             'minAvailableBalance' => $minAvailableBalance
         ];
-        $binds = [
+        $binds  = [
             'operationType'       => Connection::PARAM_STR_ARRAY,
             'lender'              => \PDO::PARAM_STR,
             'inactiveSince'       => \PDO::PARAM_STR,
@@ -102,10 +102,9 @@ class WalletRepository extends EntityRepository
             ->fetchAll();
     }
 
-
     /**
-     * @param array  $operationTypes
-     * @param int    $year
+     * @param array $operationTypes
+     * @param int   $year
      *
      * @return array Wallet[]
      */
@@ -144,13 +143,13 @@ class WalletRepository extends EntityRepository
             ->andWhere('p.status IN (:status)');
 
         $subQuery = $this->getEntityManager()->createQueryBuilder()
-            ->add('select','MAX(ls.added)')
+            ->add('select', 'MAX(ls.added)')
             ->add('from', 'UnilendCoreBusinessBundle:LenderStatistic ls')
             ->add('where', 'w.id = ls.idWallet');
 
         $qb->andWhere('(' . $subQuery->getDQL() . ') < e.dateEcheance')
             ->setParameter(':now', $now)
-            ->setParameter(':status',[
+            ->setParameter(':status', [
                 \projects_status::PROBLEME,
                 \projects_status::PROBLEME_J_X,
                 \projects_status::RECOUVREMENT
@@ -160,5 +159,78 @@ class WalletRepository extends EntityRepository
         $query = $qb->getQuery();
 
         return $query->getResult();
+    }
+
+    /**
+     * @param Wallet|int $wallet
+     * @param float      $amount
+     *
+     * @return int
+     */
+    public function creditAvailableBalance($wallet, $amount)
+    {
+        if ($wallet instanceof Wallet) {
+            $wallet = $wallet->getId();
+        }
+
+        $update = 'UPDATE wallet SET available_balance = available_balance + :amount WHERE id = :walletId';
+
+        return $this->getEntityManager()->getConnection()->executeUpdate($update, ['amount' => $amount, 'walletId' => $wallet]);
+    }
+
+    /**
+     * @param Wallet|int $wallet
+     * @param float      $amount
+     *
+     * @return int
+     */
+    public function debitAvailableBalance($wallet, $amount)
+    {
+        if ($wallet instanceof Wallet) {
+            $wallet = $wallet->getId();
+        }
+
+        $update = 'UPDATE wallet SET available_balance = available_balance - :amount WHERE id = :walletId';
+
+        return $this->getEntityManager()->getConnection()->executeUpdate($update, ['amount' => $amount, 'walletId' => $wallet]);
+    }
+
+    /**
+     * @param Wallet|int $wallet
+     * @param float      $amount
+     *
+     * @return int
+     */
+    public function debitCommittedBalance($wallet, $amount)
+    {
+        if ($wallet instanceof Wallet) {
+            $wallet = $wallet->getId();
+        }
+
+        $update = 'UPDATE wallet SET committed_balance = committed_balance - :amount WHERE id = :walletId';
+
+        return $this->getEntityManager()->getConnection()->executeUpdate($update, ['amount' => $amount, 'walletId' => $wallet]);
+    }
+
+    public function releaseBalance($wallet, $amount)
+    {
+        if ($wallet instanceof Wallet) {
+            $wallet = $wallet->getId();
+        }
+
+        $update = 'UPDATE wallet SET committed_balance = committed_balance - :amount, available_balance = available_balance + :amount WHERE id = :walletId';
+
+        return $this->getEntityManager()->getConnection()->executeUpdate($update, ['amount' => $amount, 'walletId' => $wallet]);
+    }
+
+    public function engageBalance($wallet, $amount)
+    {
+        if ($wallet instanceof Wallet) {
+            $wallet = $wallet->getId();
+        }
+
+        $update = 'UPDATE wallet SET available_balance = available_balance - :amount, committed_balance = committed_balance + :amount WHERE id = :walletId';
+
+        return $this->getEntityManager()->getConnection()->executeUpdate($update, ['amount' => $amount, 'walletId' => $wallet]);
     }
 }

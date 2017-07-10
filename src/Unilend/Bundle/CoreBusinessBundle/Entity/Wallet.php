@@ -23,7 +23,7 @@ class Wallet
     /**
      * @var string
      *
-     * @ORM\Column(name="committed_balance", type="decimal", precision=12, scale=2, nullable=true)
+     * @ORM\Column(name="committed_balance", type="decimal", precision=12, scale=2, nullable=false)
      */
     private $committedBalance;
 
