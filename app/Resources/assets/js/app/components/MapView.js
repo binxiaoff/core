@@ -1500,3 +1500,11 @@ $(document)
   .on('UI:update UI:visible', function (event) {
     $('.ui-mapview').uiMapView('refreshMapbox')
   })
+  // Append legend
+  .on('MapView:initialised', '#project-list-map-view', function() {
+      if ($('body').is('.ui-user-type-lender')) {
+          var $legend  = $(this).find('.mapview-filter-legend')
+          var $filters = $(this).find('.mapview-filters')
+          $filters.append($legend)
+      }
+  })

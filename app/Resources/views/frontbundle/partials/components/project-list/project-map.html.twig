@@ -1,7 +1,12 @@
 <div class="project-list-map">
-    <div id="project-list-map-view" class="project-list-map-view ui-has-mapview" data-mapview-ajaxurl="{{ path('projects_list_all') }}" data-mapview-ajaxpaginationurl="{{ path('projects_list_json') }}" data-has-spinner="#spinner-project-list-map"></div>
+    <div id="project-list-map-view" class="project-list-map-view ui-has-mapview" data-mapview-ajaxurl="{{ path('projects_list_all') }}" data-mapview-ajaxpaginationurl="{{ path('projects_list_json') }}" data-has-spinner="#spinner-project-list-map">
+        <div class="mapview-filter-legend">
+            <label class="mapview-filter-legend-item">
+                <span class="icon"></span> {% trans %} project-list_map-legend-my-projects {% endtrans %}
+            </label>
+        </div>
+    </div>
     <div id="spinner-project-list-map" class="spinner-mapview"><span class="icon fa-refresh"></span></div>
-
     <div class="project-list-map-list">
         <ul class="list-projects">
             {% include 'partials/components/project-list/map-item-template.html.twig' %}
