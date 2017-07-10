@@ -746,4 +746,79 @@ class OperationRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }
+
+    /**
+     * @param int $idRepaymentSchedule
+     *
+     * @return mixed
+     */
+    public function getDetailByRepaymentScheduleIdAndRepaymentLog($idRepaymentSchedule)
+    {
+        $query = 'SELECT
+                      o_capital.amount AS capital,
+                      o_interest.amount AS interest,
+                      (SELECT
+                        SUM(o_taxes.amount)
+                        FROM operation o_taxes
+                          INNER JOIN operation_type ot_taxes ON o_taxes.id_type = ot_taxes.id AND ot_taxes.label IN ("' . implode('","', OperationType::TAX_TYPES_FR) . '")
+                          LEFT JOIN projects_remb_log prl_taxes ON o_taxes.id_project = prl_taxes.id_project AND prl_taxes.debut <= o_taxes.added AND prl_taxes.fin >= o_taxes.added
+                        WHERE o_taxes.id_repayment_schedule = o_interest.id_repayment_schedule AND prl_taxes.id_project_remb_log = prl.id_project_remb_log) AS taxes,
+                      null as available_balance,
+                      prl.id_project_remb_log,
+                      o_capital.added
+                    FROM operation o_capital
+                      INNER JOIN operation_type ot_capital ON o_capital.id_type = ot_capital.id AND ot_capital.label = "' . OperationType::CAPITAL_REPAYMENT . '"
+                      LEFT JOIN operation o_interest ON o_capital.id_repayment_schedule = o_interest.id_repayment_schedule
+                      INNER JOIN operation_type ot_interest ON o_interest.id_type = ot_interest.id AND ot_interest.label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '"
+                      INNER JOIN echeanciers e ON o_capital.id_repayment_schedule = e.id_echeancier
+                      LEFT JOIN projects_remb_log prl ON o_capital.id_project = prl.id_project AND debut <= o_capital.added AND fin >= o_capital.added AND e.ordre = prl.ordre
+                    WHERE o_capital.id_repayment_schedule = :idRepaymentSchedule
+                    GROUP BY prl.id_project_remb_log';
+
+        $qcProfile = new QueryCacheProfile(\Unilend\librairies\CacheKeys::DAY, md5(__METHOD__ . $idRepaymentSchedule));
+        $statement = $this->getEntityManager()->getConnection()->executeCacheQuery($query, ['idRepaymentSchedule' => $idRepaymentSchedule], ['idRepaymentSchedule' => \PDO::PARAM_INT], $qcProfile);
+        $result    = $statement->fetch();
+        $statement->closeCursor();
+
+        return $result;
+    }
+
+    /**
+     * @param int $idRepaymentSchedule
+     *
+     * @return mixed
+     */
+    public function getRegularizationDetailByRepaymentScheduleId($idRepaymentSchedule)
+    {
+        $taxRegularizationOperations = [
+            OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS_REGULARIZATION,
+            OperationType::TAX_FR_CRDS_REGULARIZATION,
+            OperationType::TAX_FR_CSG_REGULARIZATION,
+            OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS_REGULARIZATION,
+            OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS_REGULARIZATION,
+            OperationType::TAX_FR_SOCIAL_DEDUCTIONS_REGULARIZATION,
+            OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE_REGULARIZATION,
+        ];
+
+        $query = 'SELECT
+                      o_capital.amount AS capital,
+                      o_interest.amount AS interest,
+                      (SELECT SUM(o_taxes.amount) FROM operation o_taxes
+                         INNER JOIN operation_type ot_taxes ON o_taxes.id_type = ot_taxes.id AND ot_taxes.label IN ("' . implode('","', $taxRegularizationOperations) . '")
+                       WHERE o_taxes.id_repayment_schedule = o_interest.id_repayment_schedule) AS taxes,
+                      o_capital.added,
+                      null as available_balance
+                    FROM operation o_capital
+                      INNER JOIN operation_type ot_capital ON o_capital.id_type = ot_capital.id AND ot_capital.label = "' . OperationType::CAPITAL_REPAYMENT . '"
+                      LEFT JOIN operation o_interest ON o_capital.id_repayment_schedule = o_interest.id_repayment_schedule
+                      INNER JOIN operation_type ot_interest ON o_interest.id_type = ot_interest.id AND ot_interest.label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '"
+                    WHERE o_capital.id_repayment_schedule = :idRepaymentSchedule';
+
+        $qcProfile = new QueryCacheProfile(\Unilend\librairies\CacheKeys::DAY, md5(__METHOD__ . $idRepaymentSchedule));
+        $statement = $this->getEntityManager()->getConnection()->executeCacheQuery($query, ['idRepaymentSchedule' => $idRepaymentSchedule], ['idRepaymentSchedule' => \PDO::PARAM_INT], $qcProfile);
+        $result    = $statement->fetch();
+        $statement->closeCursor();
+
+        return $result;
+    }
 }

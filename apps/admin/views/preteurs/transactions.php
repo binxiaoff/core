@@ -21,11 +21,9 @@
                     <td>
                         <?= number_format($operation['amount'], 2, ',', ' ') ?> €
                         <?php if (false == empty($operation['detail'])) : ?>
-                            <br><i>(
-                            <?php foreach ($operation['detail']['items'] as $detail) : ?>
+                            <br><i>(<?php foreach ($operation['detail']['items'] as $detail) : ?>
                                 <?= $detail['label'] ?> : <?= number_format($detail['value'], 2, ',', ' ') ?>
-                            <?php endforeach; ?>
-                                )</i>
+                            <?php endforeach; ?>)</i>
                         <?php endif; ?>
                     </td>
                     <td><?= number_format($operation['available_balance'], 2, ',', ' ') ?> €</td>
