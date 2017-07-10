@@ -16,14 +16,14 @@
         {# @note MapView JS component & CSS relies on two groups named 'active' and 'expired' (case insensitive) #}
         {% set mapviewGroup = (project.finished ? 'expired' : 'active') %}
         {% set mapviewItem = {
-        id: 'marker' ~ project.projectId,
-        categoryId: project.company.sectorId,
-        latLng: [project.company.latitude, project.company.longitude],
-        title: project.title,
-        description: '<div style="font-style: italic;">' ~ project.company.city ~ ', ' ~ project.company.zip ~ '</div><div class="rating rating-' ~ project.risk|convertRisk|split('.')|join('-') ~ '"><span class="sr-only">' ~ projectRatingTranslation ~ '</span></span></div>',
-        status: (project.finished ? 'expired' : 'active'),
-        offerStatus: mapviewOfferStatus|default(''),
-        groupName: mapviewGroup|default('all')
+            id: 'marker' ~ project.projectId,
+            categoryId: project.company.sectorId,
+            latLng: [project.company.latitude, project.company.longitude],
+            title: project.title,
+            description: '<div style="font-style: italic;">' ~ project.company.city ~ ', ' ~ project.company.zip ~ '</div><div class="rating rating-' ~ project.risk|convertRisk|split('.')|join('-') ~ '"><span class="sr-only">' ~ projectRatingTranslation ~ '</span></span></div>',
+            status: (project.finished ? 'expired' : 'active'),
+            offerStatus: mapviewOfferStatus|default(''),
+            groupName: mapviewGroup|default('all')
         } %}
     {% endif %}
 
@@ -40,8 +40,8 @@
         <div class="project-period">
             {% if project.finished %}
                 {% trans with {
-                '%fundingDuration%' : ('project-list_funding-duration-' ~ project.fundingDuration.translation)|transchoice(project.fundingDuration.choice, project.fundingDuration.values),
-                '%date%' : project.endDate|localizeddate('medium', 'none', app.request.locale)}
+                    '%fundingDuration%' : ('project-list_funding-duration-' ~ project.fundingDuration.translation)|transchoice(project.fundingDuration.choice, project.fundingDuration.values),
+                    '%date%' : project.endDate|localizeddate('medium', 'none', app.request.locale)}
                 %} project-list_project-finished {% endtrans %}
             {% elseif project.daysLeft <= 2 %}
                 <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|date('c') }}"></span>

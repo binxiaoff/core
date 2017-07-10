@@ -3,7 +3,6 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
-use Doctrine\ORM\EntityManager;
 use Knp\Snappy\GeneratorInterface;
 use Sonata\SeoBundle\Seo\SeoPage;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -23,7 +22,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager;
@@ -70,7 +68,6 @@ class ProjectsController extends Controller
      * @Route("/projets-list-all", name="projects_list_all", condition="request.isXmlHttpRequest()")
      * @Method("POST")
      *
-     * @param Request $request
      * @return Response
      */
     public function projectsListAllAction()
@@ -85,7 +82,6 @@ class ProjectsController extends Controller
         $projectsMapview       = [];
 
         foreach ($projects as $project) {
-
             // Project in funding ?
             if ($project['finished'] === true) {
                 $status = 'expired';

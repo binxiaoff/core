@@ -7,16 +7,17 @@
             {% include 'partials/components/project-list/map-item-template.html.twig' %}
         </ul>
         {% if showPagination %}
-        <div class="pagination-wrap">
-            <nav class="pagination">
-                <div class="pagination-info">
-                    {% if pagination.currentIndex < pagination.totalPages %}
+            <div class="pagination-wrap">
+                <nav class="pagination">
+                    <div class="pagination-info">
+                        {% if pagination.currentIndex < pagination.totalPages %}
                         <a href="{{ path('projects_list', {'page' : pagination.currentIndex + 1 }) }}" class="link pagination-next">
-                            {% transchoice pagination.itemsPerPage with {'%items%' : pagination.itemsPerPage } %} projects-listing_pagination-info-next-label {% endtranschoice %}
-                        </a>
-                    {% endif %}
-                </div>
-        </div>
+                                {% transchoice pagination.itemsPerPage with {'%items%' : pagination.itemsPerPage } %} projects-listing_pagination-info-next-label {% endtranschoice %}
+                            </a>
+                        {% endif %}
+                    </div>
+                </nav>
+            </div>
         {% endif %}
     </div>
 </div><!-- /.project-list-map -->
