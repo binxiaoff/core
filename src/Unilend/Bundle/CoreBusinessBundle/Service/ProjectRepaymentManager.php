@@ -110,11 +110,11 @@ class ProjectRepaymentManager
      * @param int|null $idUser
      *
      * @return int
-     * @throws \Exception
      */
     public function repay(Projects $project, $repaymentSequence, $idUser = null)
     {
-        $repaymentNb = 0;
+        $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $repaymentNb                 = 0;
 
         $projectRepayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsRemb')->findOneBy([
             'idProject' => $project,
@@ -124,118 +124,118 @@ class ProjectRepaymentManager
 
         if (null === $projectRepayment) {
             $this->logger->warning(
-                'Cannot find pending repayment for project from projects_remb ' . $project->getIdProject() . ' (order: ' . $repaymentSequence . '). The repayment may have been repaid manually.',
+                'Cannot find pending repayment for project from projects_remb ' . $project->getIdProject() . ' (order: ' . $repaymentSequence . ').',
                 ['method' => __METHOD__]
             );
 
             return $repaymentNb;
         }
 
-        $initialStatus = $projectRepayment->getStatus();
-
         $projectRepayment->setStatus(ProjectsRemb::STATUS_IN_PROGRESS);
         $this->entityManager->flush($projectRepayment);
 
-        $this->entityManager->getConnection()->beginTransaction();
-        try {
-            $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-            $repaymentLog                = new ProjectsRembLog();
-            $repaymentLog->setIdProject($project)
-                ->setOrdre($repaymentSequence)
-                ->setDebut(new \DateTime());
+        $repaymentLog = new ProjectsRembLog();
+        $repaymentLog->setIdProject($project)
+            ->setOrdre($repaymentSequence)
+            ->setDebut(new \DateTime());
+        $this->entityManager->persist($repaymentLog);
+        $this->entityManager->flush($repaymentLog);
 
-            $repaymentSchedules = $repaymentScheduleRepository->findByProject($project, $repaymentSequence, null, Echeanciers::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PAID);
+        $repaymentSchedules = $repaymentScheduleRepository->findByProject($project, $repaymentSequence, null, Echeanciers::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PAID);
 
-            if (null === $projectRepayment) {
-                $this->logger->warning(
-                    'Cannot find pending repayment for project from projects_remb ' . $project->getIdProject() . ' (order: ' . $repaymentSequence . '). The repayment may have been repaid manually.',
-                    ['method' => __METHOD__]
-                );
-            } elseif (0 === count($repaymentSchedules)) {
-                $projectRepayment->setStatus(ProjectsRemb::STATUS_ERROR);
-                $this->entityManager->flush($projectRepayment);
-
-                $repaymentLog->setFin(new \DateTime())
-                    ->setNbPretRemb($repaymentNb);
-                $this->entityManager->persist($repaymentLog);
-                $this->entityManager->flush($repaymentLog);
-
-                $this->logger->warning(
-                    'Cannot find pending lenders\'s repayment schedule to repay for project ' . $project->getIdProject() . ' (order: ' . $repaymentSequence . '). The repayment may have been repaid manually.',
-                    ['method' => __METHOD__]
-                );
-            } else {
-                foreach ($repaymentSchedules as $repaymentSchedule) {
-                    $this->operationManager->repayment($repaymentSchedule);
-
-                    $repaymentSchedule->setCapitalRembourse($repaymentSchedule->getCapital())
-                        ->setInteretsRembourses($repaymentSchedule->getInterets())
-                        ->setStatus(Echeanciers::STATUS_REPAID)
-                        ->setDateEcheanceReel(new \DateTime());
-                    $repaymentNb++;
-
-                    if (0 === $repaymentNb % 50) {
-                        $this->entityManager->flush();
-                    }
-                }
-                $this->entityManager->flush();
-
-                $projectRepayment->setDateRembPreteursReel(new \DateTime())
-                    ->setStatus(ProjectsRemb::STATUS_REPAID);
-                $this->entityManager->flush($projectRepayment);
-
-                $repaymentLog->setFin(new \DateTime())
-                    ->setNbPretRemb($repaymentNb);
-                $this->entityManager->persist($repaymentLog);
-                $this->entityManager->flush($repaymentLog);
-
-                $paymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy(['idProject' => $project, 'ordre' => $repaymentSequence]);
-                $this->operationManager->repaymentCommission($paymentSchedule);
-
-                /** @var \compteur_factures $invoiceCounter */
-                $invoiceCounter = $this->entityManagerSimulator->getRepository('compteur_factures');
-                /** @var \factures $invoice */
-                $invoice = $this->entityManagerSimulator->getRepository('factures');
-
-                $now                      = new \DateTime();
-                $invoice->num_facture     = 'FR-E' . $now->format('Ymd') . str_pad($invoiceCounter->compteurJournalier($project->getIdProject(), $now->format('Y-m-d')), 5, '0', STR_PAD_LEFT);
-                $invoice->date            = $now->format('Y-m-d H:i:s');
-                $invoice->id_company      = $project->getIdCompany()->getIdCompany();
-                $invoice->id_project      = $project->getIdProject();
-                $invoice->ordre           = $repaymentSequence;
-                $invoice->type_commission = Factures::TYPE_COMMISSION_REPAYMENT;
-                $invoice->commission      = $project->getCommissionRateRepayment();
-                $invoice->montant_ht      = $paymentSchedule->getCommission();
-                $invoice->tva             = $paymentSchedule->getTva();
-                $invoice->montant_ttc     = bcadd($paymentSchedule->getCommission(), $paymentSchedule->getTva(), 2);
-                $invoice->create();
-
-                $this->sendPaymentScheduleInvoiceToBorrower($paymentSchedule);
-
-                $pendingRepaymentSchedule = $repaymentScheduleRepository->findByProject($project, null, null, Echeanciers::STATUS_PENDING, null, null, 0, 1);
-
-                if (0 === count($pendingRepaymentSchedule)) {
-                    $this->projectManager->addProjectStatus($idUser, ProjectsStatus::REMBOURSE, $project);
-                    $this->emailManager->setLogger($this->logger);
-                    $this->emailManager->sendInternalNotificationEndOfRepayment($project);
-                    $this->emailManager->sendClientNotificationEndOfRepayment($project);
-                }
-            }
-            $this->entityManager->getConnection()->commit();
-        } catch (\Exception $exception) {
-            $this->entityManager->getConnection()->rollBack();
-
-            $projectRepayment->setStatus($initialStatus);
+        if (0 === count($repaymentSchedules)) {
+            $projectRepayment->setStatus(ProjectsRemb::STATUS_ERROR);
             $this->entityManager->flush($projectRepayment);
 
-            $this->logger->error(
-                'The repayment has been rollbacked for the project ' . $project->getIdProject() . ' (order: ' . $repaymentSequence . '). Error : ' . $exception->getMessage(),
+            $repaymentLog->setFin(new \DateTime())
+                ->setNbPretRemb($repaymentNb);
+            $this->entityManager->persist($repaymentLog);
+            $this->entityManager->flush($repaymentLog);
+
+            $this->logger->warning(
+                'Cannot find pending lenders\'s repayment schedule to repay for project ' . $project->getIdProject() . ' (order: ' . $repaymentSequence . '). The repayment may have been repaid manually.',
                 ['method' => __METHOD__]
             );
-            throw $exception;
+
+            return $repaymentNb;
         }
 
+        foreach ($repaymentSchedules as $repaymentSchedule) {
+            $this->entityManager->getConnection()->beginTransaction();
+            try {
+                $this->operationManager->repayment($repaymentSchedule);
+
+                $repaymentSchedule->setCapitalRembourse($repaymentSchedule->getCapital())
+                    ->setInteretsRembourses($repaymentSchedule->getInterets())
+                    ->setStatus(Echeanciers::STATUS_REPAID)
+                    ->setDateEcheanceReel(new \DateTime());
+                $repaymentNb++;
+
+                $this->entityManager->flush($repaymentSchedule);
+
+                $this->entityManager->commit();
+            } catch (\Exception $exception) {
+                $this->entityManager->rollback();
+
+                $this->logger->error(
+                    'An error occurs for the repayment # ' . $repaymentSchedule->getIdEcheancier() . ' of project # ' . $project->getIdProject() . ' (order: ' . $repaymentSequence . '). Error : ' . $exception->getMessage(),
+                    ['method' => __METHOD__]
+                );
+
+                continue;
+            }
+        }
+
+        $unpaidRepaymentSchedules = $repaymentScheduleRepository->findByProject($project, $repaymentSequence, null, Echeanciers::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PAID, null, 0, 1);
+
+        if (0 === count($unpaidRepaymentSchedules)) {
+            $paymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy(['idProject' => $project, 'ordre' => $repaymentSequence]);
+            $this->operationManager->repaymentCommission($paymentSchedule);
+
+            $projectRepayment->setDateRembPreteursReel(new \DateTime())->setStatus(ProjectsRemb::STATUS_REPAID);
+            $this->entityManager->flush($projectRepayment);
+
+            $this->createPaymentScheduleInvoice($paymentSchedule);
+            $this->sendPaymentScheduleInvoiceToBorrower($paymentSchedule);
+
+            $pendingRepaymentSchedule = $repaymentScheduleRepository->findByProject($project, null, null, Echeanciers::STATUS_PENDING, null, null, 0, 1);
+
+            if (0 === count($pendingRepaymentSchedule)) {
+                $this->projectManager->addProjectStatus($idUser, ProjectsStatus::REMBOURSE, $project);
+                $this->emailManager->setLogger($this->logger);
+                $this->emailManager->sendInternalNotificationEndOfRepayment($project);
+                $this->emailManager->sendClientNotificationEndOfRepayment($project);
+            }
+        } else {
+            $this->sendIncompleteRepaymentNotification($project, $repaymentSequence);
+        }
+
+        $repaymentLog->setFin(new \DateTime())->setNbPretRemb($repaymentNb);
+        $this->entityManager->flush($repaymentLog);
+
         return $repaymentNb;
+    }
+
+    private function createPaymentScheduleInvoice(EcheanciersEmprunteur $paymentSchedule)
+    {
+        /** @var \compteur_factures $invoiceCounter */
+        $invoiceCounter = $this->entityManagerSimulator->getRepository('compteur_factures');
+        /** @var \factures $invoice */
+        $invoice = $this->entityManagerSimulator->getRepository('factures');
+        $project = $paymentSchedule->getIdProject();
+        $now     = new \DateTime();
+
+        $invoice->num_facture     = 'FR-E' . $now->format('Ymd') . str_pad($invoiceCounter->compteurJournalier($project->getIdProject(), $now->format('Y-m-d')), 5, '0', STR_PAD_LEFT);
+        $invoice->date            = $now->format('Y-m-d H:i:s');
+        $invoice->id_company      = $project->getIdCompany()->getIdCompany();
+        $invoice->id_project      = $project->getIdProject();
+        $invoice->ordre           = $paymentSchedule->getOrdre();
+        $invoice->type_commission = Factures::TYPE_COMMISSION_REPAYMENT;
+        $invoice->commission      = $project->getCommissionRateRepayment();
+        $invoice->montant_ht      = $paymentSchedule->getCommission();
+        $invoice->tva             = $paymentSchedule->getTva();
+        $invoice->montant_ttc     = bcadd($paymentSchedule->getCommission(), $paymentSchedule->getTva(), 2);
+        $invoice->create();
     }
 
     /**
@@ -388,6 +388,27 @@ class ProjectRepaymentManager
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->messageProvider->newMessage('preteur-regularisation-remboursement', $varMail);
         $message->setTo($lender->getEmail());
+        $this->mailer->send($message);
+    }
+
+    /**
+     *
+     * @param Projects $project
+     * @param int      $repaymentSequence
+     */
+    private function sendIncompleteRepaymentNotification(Projects $project, $repaymentSequence)
+    {
+        $alertMailIT = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'DebugMailIt'])->getValue();
+
+        $varMail = [
+            'project_id'    => $project->getIdProject(),
+            'project_title' => $project->getTitle(),
+            'order'         => $repaymentSequence
+        ];
+
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->messageProvider->newMessage('incomplete-repayment-notification', $varMail);
+        $message->setTo($alertMailIT);
         $this->mailer->send($message);
     }
 }
