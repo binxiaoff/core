@@ -26,26 +26,16 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityM
  */
 class OperationManager
 {
-    /**
-     * @var EntityManagerSimulator
-     */
+    /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-    /**
-     * @var EntityManager
-     */
+    /** @var EntityManager */
     private $entityManager;
-    /**
-     * @var WalletManager
-     */
+    /** @var WalletManager */
     private $walletManager;
-    /**
-     * @var TaxManager
-     */
+    /** @var TaxManager */
     private $taxManager;
 
     /**
-     * OperationManager constructor.
-     *
      * @param EntityManager          $entityManager
      * @param EntityManagerSimulator $entityManagerSimulator
      * @param WalletManager          $walletManager
