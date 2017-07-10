@@ -622,11 +622,10 @@ class OperationManager
      * @param Wallet   $lender
      * @param Projects $project
      * @param          $amount
-     * @param          $commission
      *
      * @return bool
      */
-    public function repaymentCollection(Wallet $lender, Projects $project, $amount, $commission)
+    public function repaymentCollection(Wallet $lender, Projects $project, $amount)
     {
         $borrower = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
         if (null === $borrower) {
@@ -707,7 +706,7 @@ class OperationManager
      * @return bool
      * @throws \Exception
      */
-    public function regularization(Operation $operation, $amount = null)
+    public function regularize(Operation $operation, $amount = null)
     {
         switch ($operation->getType()->getLabel()) {
             case OperationType::BORROWER_COMMISSION:
@@ -718,6 +717,12 @@ class OperationManager
                 break;
             case OperationType::GROSS_INTEREST_REPAYMENT:
                 $operationTypeLabel = OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION;
+                break;
+            case OperationType::COLLECTION_COMMISSION_LENDER:
+                $operationTypeLabel = OperationType::COLLECTION_COMMISSION_LENDER_REGULARIZATION;
+                break;
+            case OperationType::COLLECTION_COMMISSION_BORROWER:
+                $operationTypeLabel = OperationType::COLLECTION_COMMISSION_BORROWER_REGULARIZATION;
                 break;
             case OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES:
                 $operationTypeLabel = OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_REGULARIZATION;
