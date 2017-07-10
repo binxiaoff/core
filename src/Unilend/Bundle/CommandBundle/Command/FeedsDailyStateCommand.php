@@ -181,8 +181,8 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
 
         $dailyMovements   = $operationRepository->sumMovementsForDailyStateByDay($firstDay, $requestedDate, $movements);
         $monthlyMovements = $operationRepository->sumMovementsForDailyStateByMonth($requestedDate, $movements);
-        $totalMonth       = $operationRepository->sumMovementsForDailyState($firstDay, $requestedDate, $movements);
-        $totalYear        = $operationRepository->sumMovementsForDailyState(new \DateTime('first day of January ' . $requestedDate->format('Y')), $requestedDate, $movements);
+        $totalMonth[]     = $operationRepository->sumMovementsForDailyState($firstDay, $requestedDate, $movements);
+        $totalYear[]      = $operationRepository->sumMovementsForDailyState(new \DateTime('first day of January ' . $requestedDate->format('Y')), $requestedDate, $movements);
 
         $this->addMovementLines($activeSheet, $dailyMovements, $specificRows['firstDay']);
         $this->addMovementLines($activeSheet, $monthlyMovements, $specificRows['firstMonth']);
@@ -511,7 +511,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
      */
     private function addMovementLines(\PHPExcel_Worksheet $activeSheet, array $movements, $row)
     {
-        foreach ($movements as $date => $line) {
+        foreach ($movements as $line) {
             $lenderProvisionCreditCard               = empty($line['lender_provision_credit_card']) ? 0 : $line['lender_provision_credit_card'];
             $lenderProvisionWireTransfer             = empty($line['lender_provision_wire_transfer_in']) ? 0 : $line['lender_provision_wire_transfer_in'];
             $promotionProvision                      = empty($line[OperationType::UNILEND_PROMOTIONAL_OPERATION_PROVISION]) ? 0 : $line[OperationType::UNILEND_PROMOTIONAL_OPERATION_PROVISION];

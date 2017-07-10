@@ -619,7 +619,7 @@ class OperationRepository extends EntityRepository
 
         $movements = [];
         foreach ($result as $row) {
-            $movements[$row['day']][$row['movement']] = $row['amount'];
+            $movements[$row['movement']] = $row['amount'];
         }
 
         return $movements;
