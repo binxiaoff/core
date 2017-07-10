@@ -65,36 +65,36 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                     switch ($contract->getLabel()) {
                         case \underlying_contract::CONTRACT_BDC:
                             $interestsBDC = $row['interests'];
-                            $statutoryContributionsBDC = $row[OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS];
+                            $statutoryContributionsBDC = $row[OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES];
                             break;
                         case \underlying_contract::CONTRACT_IFP:
                             $interestsIFP = $row['interests'];
-                            $statutoryContributionsIFP = $row[OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS];
+                            $statutoryContributionsIFP = $row[OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES];
                             break;
                         case \underlying_contract::CONTRACT_MINIBON:
                             $interestsMiniBon = $row['interests'];
-                            $statutoryContributionsMiniBon = $row[OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS];
+                            $statutoryContributionsMiniBon = $row[OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES];
                             break;
                     }
                 }
 
                 if ('person' == $row['client_type'] && 'fr' == $row['fiscal_residence'] && 'non_taxable' == $row['exemption_status']) {
                     $exemptedInterests = bcadd($exemptedInterests, $row['interests'], 2);
-                    $exemptedIncomeTax = bcadd($exemptedIncomeTax, $row[OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS], 2);
+                    $exemptedIncomeTax = bcadd($exemptedIncomeTax, $row[OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES], 2);
                 }
 
                 if ((('person' == $row['client_type'] && 'ww' == $row['fiscal_residence']) || 'legal_entity' == $row['client_type'])) {
                     $deductionAtSourceInterests = bcadd($deductionAtSourceInterests, $row['interests'], 2);
 
                     if ($contract->getLabel() != \underlying_contract::CONTRACT_IFP) {
-                        $deductionAtSourceTax = bcadd($deductionAtSourceTax, $row[OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE], 2);
+                        $deductionAtSourceTax = bcadd($deductionAtSourceTax, $row[OperationType::TAX_FR_RETENUES_A_LA_SOURCE], 2);
                     }
                 }
             }
             $csg                    = array_sum(array_column($data, OperationType::TAX_FR_CSG));
-            $socialDeduction        = array_sum(array_column($data, OperationType::TAX_FR_SOCIAL_DEDUCTIONS));
-            $additionalContribution = array_sum(array_column($data, OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS));
-            $solidarityDeduction    = array_sum(array_column($data, OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS));
+            $socialDeduction        = array_sum(array_column($data, OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX));
+            $additionalContribution = array_sum(array_column($data, OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES));
+            $solidarityDeduction    = array_sum(array_column($data, OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE));
             $crds                   = array_sum(array_column($data, OperationType::TAX_FR_CRDS));
             $totalInterest          = bcadd(bcadd(bcadd($interestsBDC, $interestsIFP, 2), $interestsMiniBon, 2), $exemptedInterests, 2);
             $statutoryContributions = bcadd(bcadd(bcadd($statutoryContributionsBDC, $statutoryContributionsIFP, 2), $statutoryContributionsMiniBon, 2), $exemptedIncomeTax, 2);

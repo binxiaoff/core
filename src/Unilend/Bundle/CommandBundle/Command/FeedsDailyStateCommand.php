@@ -170,13 +170,13 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             OperationType::BORROWER_COMMISSION_REGULARIZATION,
             OperationType::CAPITAL_REPAYMENT_REGULARIZATION,
             OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION,
-            OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS_REGULARIZATION,
+            OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_REGULARIZATION,
             OperationType::TAX_FR_CRDS_REGULARIZATION,
             OperationType::TAX_FR_CSG_REGULARIZATION,
-            OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS_REGULARIZATION,
-            OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS_REGULARIZATION,
-            OperationType::TAX_FR_SOCIAL_DEDUCTIONS_REGULARIZATION,
-            OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE_REGULARIZATION
+            OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_REGULARIZATION,
+            OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_REGULARIZATION,
+            OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_REGULARIZATION,
+            OperationType::TAX_FR_RETENUES_A_LA_SOURCE_REGULARIZATION
         ], OperationType::TAX_TYPES_FR);
 
         $dailyMovements   = $operationRepository->sumMovementsForDailyStateByDay($firstDay, $requestedDate, $movements);
@@ -206,11 +206,11 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
         $taxWithdrawTypes = [
             OperationType::TAX_FR_CRDS_WITHDRAW,
             OperationType::TAX_FR_CSG_WITHDRAW,
-            OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS_WITHDRAW,
-            OperationType::TAX_FR_SOCIAL_DEDUCTIONS_WITHDRAW,
-            OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS_WITHDRAW,
-            OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS_WITHDRAW,
-            OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE_WITHDRAW
+            OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_WITHDRAW,
+            OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_WITHDRAW,
+            OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_WITHDRAW,
+            OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_WITHDRAW,
+            OperationType::TAX_FR_RETENUES_A_LA_SOURCE_WITHDRAW
         ];
 
         $wireTransfersDay = [
@@ -523,18 +523,18 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $borrowerCommissionProjectRegularization = empty($line[OperationSubType::BORROWER_COMMISSION_FUNDS_REGULARIZATION]) ? 0 : $line[OperationSubType::BORROWER_COMMISSION_FUNDS_REGULARIZATION];
             $borrowerCommissionPayment               = empty($line[OperationSubType::BORROWER_COMMISSION_REPAYMENT]) ? 0 : $line[OperationSubType::BORROWER_COMMISSION_REPAYMENT];
             $borrowerCommissionPaymentRegularization = empty($line[OperationSubType::BORROWER_COMMISSION_REPAYMENT_REGULARIZATION]) ? 0 : $line[OperationSubType::BORROWER_COMMISSION_REPAYMENT_REGULARIZATION];
-            $statutoryContributions                  = empty($line[OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS]) ? 0 : $line[OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS];
-            $statutoryContributionsRegularization    = empty($line[OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS_REGULARIZATION];
-            $incomeTax                               = empty($line[OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE]) ? 0 : $line[OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE];
-            $incomeTaxRegularization                 = empty($line[OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE_REGULARIZATION];
+            $statutoryContributions                  = empty($line[OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES]) ? 0 : $line[OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES];
+            $statutoryContributionsRegularization    = empty($line[OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_REGULARIZATION];
+            $incomeTax                               = empty($line[OperationType::TAX_FR_RETENUES_A_LA_SOURCE]) ? 0 : $line[OperationType::TAX_FR_RETENUES_A_LA_SOURCE];
+            $incomeTaxRegularization                 = empty($line[OperationType::TAX_FR_RETENUES_A_LA_SOURCE_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_RETENUES_A_LA_SOURCE_REGULARIZATION];
             $csg                                     = empty($line[OperationType::TAX_FR_CSG]) ? 0 : $line[OperationType::TAX_FR_CSG];
             $csgRegularization                       = empty($line[OperationType::TAX_FR_CSG_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_CSG_REGULARIZATION];
-            $socialDeductions                        = empty($line[OperationType::TAX_FR_SOCIAL_DEDUCTIONS]) ? 0 : $line[OperationType::TAX_FR_SOCIAL_DEDUCTIONS];
-            $socialDeductionsRegularization          = empty($line[OperationType::TAX_FR_SOCIAL_DEDUCTIONS_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_SOCIAL_DEDUCTIONS_REGULARIZATION];
-            $additionalContributions                 = empty($line[OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS]) ? 0 : $line[OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS];
-            $additionalContributionsRegularization   = empty($line[OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS_REGULARIZATION];
-            $solidarityDeductions                    = empty($line[OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS]) ? 0 : $line[OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS];
-            $solidarityDeductionsRegularization      = empty($line[OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS_REGULARIZATION];
+            $socialDeductions                        = empty($line[OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX]) ? 0 : $line[OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX];
+            $socialDeductionsRegularization          = empty($line[OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_REGULARIZATION];
+            $additionalContributions                 = empty($line[OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES]) ? 0 : $line[OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES];
+            $additionalContributionsRegularization   = empty($line[OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_REGULARIZATION];
+            $solidarityDeductions                    = empty($line[OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE]) ? 0 : $line[OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE];
+            $solidarityDeductionsRegularization      = empty($line[OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_REGULARIZATION];
             $crds                                    = empty($line[OperationType::TAX_FR_CRDS]) ? 0 : $line[OperationType::TAX_FR_CRDS];
             $crdsRegularization                      = empty($line[OperationType::TAX_FR_CRDS_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_CRDS_REGULARIZATION];
             $lenderWithdraw                          = empty($line[OperationType::LENDER_WITHDRAW]) ? 0 : $line[OperationType::LENDER_WITHDRAW];
