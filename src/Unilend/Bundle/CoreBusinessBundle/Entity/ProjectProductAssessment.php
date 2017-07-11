@@ -13,6 +13,10 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ProjectProductAssessment
 {
+    const STATUS_CHECK_KO      = 0;
+    const STATUS_CHECK_OK      = 1;
+    const STATUS_CHECK_SKIPPED = null;
+
     /**
      * @var boolean
      *

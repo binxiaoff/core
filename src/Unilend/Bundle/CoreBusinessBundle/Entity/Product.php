@@ -334,7 +334,7 @@ class Product
      */
     public function getProductAttributes(ProductAttributeType $attributeType = null)
     {
-        if (null !== $attributeType) {
+        if (null !== $attributeType && null !== $this->productAttributes) {
             $criteria = Criteria::create()
                 ->where(Criteria::expr()->eq('idType', $attributeType));
 

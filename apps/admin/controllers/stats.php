@@ -1,14 +1,16 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityAssessment;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectProductAssessment;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRating;
 
 class statsController extends bootstrap
 {
@@ -130,7 +132,8 @@ class statsController extends bootstrap
             $csv = "id_client;nom;prenom;email;tel;date_inscription;etape_inscription;Source;Source 2;\n";
 
             foreach ($this->L_clients as $u) {
-                $csv .= utf8_decode($u['id_client']) . ';' . utf8_decode($u['nom']) . ';' . utf8_decode($u['prenom']) . ';' . utf8_decode($u['email']) . ';' . utf8_decode($u['telephone'] . ' ' . $u['mobile']) . ';' . utf8_decode($this->dates->formatDate($u['added'], 'd/m/Y')) . ';' . utf8_decode($u['etape_inscription_preteur']) . ';' . $u['source'] . ';' . $u['source2'] . ';' . "\n";
+                $csv .= utf8_decode($u['id_client']) . ';' . utf8_decode($u['nom']) . ';' . utf8_decode($u['prenom']) . ';' . utf8_decode($u['email']) . ';' . utf8_decode($u['telephone'] . ' ' . $u['mobile']) . ';' . utf8_decode($this->dates->formatDate($u['added'],
+                        'd/m/Y')) . ';' . utf8_decode($u['etape_inscription_preteur']) . ';' . $u['source'] . ';' . $u['source2'] . ';' . "\n";
             }
 
             print($csv);
@@ -171,7 +174,39 @@ class statsController extends bootstrap
          * Headers contain still Bank information, however as it is not mandatory information we leave the fields empty
          * when this file is modified the next time, check if the fields can not be simply deleted as well as other non mandatory fields
          */
-        $headers  = ['id_client', 'Cbene', 'Nom', 'Qualité', 'NomJFille', 'Prénom', 'DateNaissance', 'DépNaissance', 'ComNaissance', 'LieuNaissance', 'NomMari', 'Siret', 'AdISO', 'Adresse', 'Voie', 'CodeCommune', 'Commune', 'CodePostal', 'Ville / nom pays', 'IdFiscal', 'PaysISO', 'Entité', 'ToRS', 'Plib', 'Tél', 'Banque', 'IBAN', 'BIC', 'EMAIL', 'Obs', ''];
+        $headers = [
+            'id_client',
+            'Cbene',
+            'Nom',
+            'Qualité',
+            'NomJFille',
+            'Prénom',
+            'DateNaissance',
+            'DépNaissance',
+            'ComNaissance',
+            'LieuNaissance',
+            'NomMari',
+            'Siret',
+            'AdISO',
+            'Adresse',
+            'Voie',
+            'CodeCommune',
+            'Commune',
+            'CodePostal',
+            'Ville / nom pays',
+            'IdFiscal',
+            'PaysISO',
+            'Entité',
+            'ToRS',
+            'Plib',
+            'Tél',
+            'Banque',
+            'IBAN',
+            'BIC',
+            'EMAIL',
+            'Obs',
+            ''
+        ];
 
         /** @var Wallet $wallet */
         foreach ($walletsWithMovements as $wallet) {
@@ -210,7 +245,7 @@ class statsController extends bootstrap
                     $fiscalAndLocationData['deductedAtSource'] = $this->ficelle->formatNumber($taxTypes->rate) . '%';
                 } else {
                     $fiscalAndLocationData['inseeFiscal'] = $cities->getInseeCode($fiscalAndLocationData['zip'], $fiscalAndLocationData['city']);
-                    $fiscalAndLocationData['location']  = ''; //commune fiscal
+                    $fiscalAndLocationData['location']    = ''; //commune fiscal
                 }
 
                 $fiscalAndLocationData['birth_country'] = (0 == $clientEntity->getIdPaysNaissance()) ? PaysV2::COUNTRY_FRANCE : $clientEntity->getIdPaysNaissance();
@@ -229,12 +264,12 @@ class statsController extends bootstrap
                     if (empty($clientEntity->getInseeBirth())) {
                         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LocationManager $locationManager */
                         $locationManager = $this->get('unilend.service.location_manager');
-                        $cityList = $locationManager->getCities($clientEntity->getVilleNaissance(), true);
+                        $cityList        = $locationManager->getCities($clientEntity->getVilleNaissance(), true);
                         if (1 < count($cityList)) {
                             $fiscalAndLocationData['inseeBirth'] = 'Doublon ville de naissance';
                         } else {
                             $cities->get($clientEntity->getVilleNaissance(), 'ville');
-                            $fiscalAndLocationData['inseeBirth'] = empty($cities->insee) ? '00000': $cities->insee;
+                            $fiscalAndLocationData['inseeBirth'] = empty($cities->insee) ? '00000' : $cities->insee;
                         }
                         $cities->unsetData();
                     }
@@ -260,7 +295,7 @@ class statsController extends bootstrap
 
     private function addPersonLineToBeneficiaryQueryData(&$data, Wallet $wallet, $fiscalAndLocationData)
     {
-        $client      = $wallet->getIdClient();
+        $client = $wallet->getIdClient();
 
         $data[] = [
             $client->getIdClient(),
@@ -481,13 +516,13 @@ class statsController extends bootstrap
                       e.status
                     FROM echeanciers e
                       INNER JOIN wallet w ON w.id = e.id_lender
-                      LEFT JOIN operation prelevements_obligatoires ON prelevements_obligatoires.id_repayment_schedule = e.id_echeancier AND prelevements_obligatoires.id_type = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS.'\')
-                      LEFT JOIN operation retenues_source ON retenues_source.id_repayment_schedule = e.id_echeancier AND retenues_source.id_type = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE.'\')
-                      LEFT JOIN operation csg ON csg.id_repayment_schedule = e.id_echeancier AND csg.id_type = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_CSG.'\')
-                      LEFT JOIN operation prelevements_sociaux ON prelevements_sociaux.id_repayment_schedule = e.id_echeancier AND prelevements_sociaux.id_type = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_SOCIAL_DEDUCTIONS.'\')
-                      LEFT JOIN operation contributions_additionnelles ON contributions_additionnelles.id_repayment_schedule = e.id_echeancier AND contributions_additionnelles.id_type  = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS.'\')
-                      LEFT JOIN operation prelevements_solidarite ON prelevements_solidarite.id_repayment_schedule = e.id_echeancier AND prelevements_solidarite.id_type  = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS.'\')
-                      LEFT JOIN operation crds ON crds.id_repayment_schedule = e.id_echeancier AND crds.id_type  = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_CRDS.'\')
+                      LEFT JOIN operation prelevements_obligatoires ON prelevements_obligatoires.id_repayment_schedule = e.id_echeancier AND prelevements_obligatoires.id_type = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS . '\')
+                      LEFT JOIN operation retenues_source ON retenues_source.id_repayment_schedule = e.id_echeancier AND retenues_source.id_type = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE . '\')
+                      LEFT JOIN operation csg ON csg.id_repayment_schedule = e.id_echeancier AND csg.id_type = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_CSG . '\')
+                      LEFT JOIN operation prelevements_sociaux ON prelevements_sociaux.id_repayment_schedule = e.id_echeancier AND prelevements_sociaux.id_type = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_SOCIAL_DEDUCTIONS . '\')
+                      LEFT JOIN operation contributions_additionnelles ON contributions_additionnelles.id_repayment_schedule = e.id_echeancier AND contributions_additionnelles.id_type  = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS . '\')
+                      LEFT JOIN operation prelevements_solidarite ON prelevements_solidarite.id_repayment_schedule = e.id_echeancier AND prelevements_solidarite.id_type  = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS . '\')
+                      LEFT JOIN operation crds ON crds.id_repayment_schedule = e.id_echeancier AND crds.id_type  = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_CRDS . '\')
                     WHERE e.id_project = ' . $_POST['id_projet'] . '
                     GROUP BY e.id_echeancier';
 
@@ -617,7 +652,7 @@ class statsController extends bootstrap
                             $this->aBorrowers[$iKey]['firstEntrySource'] = $oClient->getFirstSourceForSiren($aBorrower['siren'], $oDateTimeStart, $oDateTimeEnd);
                             $this->aBorrowers[$iKey]['lastEntrySource']  = $oClient->getLastSourceForSiren($aBorrower['siren'], $oDateTimeStart, $oDateTimeEnd);
                             $this->aBorrowers[$iKey]['lastLabel']        = $this->aBorrowers[$iKey]['label'];
-                            $aHeaderExtended = array_keys(($this->aBorrowers[$iKey]));
+                            $aHeaderExtended                             = array_keys(($this->aBorrowers[$iKey]));
                         }
                     }
                 }
@@ -674,5 +709,114 @@ class statsController extends bootstrap
 
             exit;
         }
+    }
+
+    public function _extraction_b_lend()
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager                  = $this->get('doctrine.orm.entity_manager');
+        $assessmentRepository           = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityAssessment');
+        $companyRatingHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRatingHistory');
+        $companyRatingRepository        = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRating');
+        $extraction                     = [];
+
+        $evaluatedProjects = $assessmentRepository->getEvaluatedProjects();
+
+        foreach ($evaluatedProjects as $project) {
+            $company              = $project->getIdCompany();
+            $motivation           = $entityManager->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->find($project->getIdBorrowingMotive());
+            $status               = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $project->getStatus()]);
+            $projectNote          = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project]);
+            $companyRatingHistory = $companyRatingHistoryRepository->findOneBy(['idCompany' => $company->getIdCompany()]);
+            $scoreAltares         = $companyRatingRepository->findOneBy([
+                'idCompanyRatingHistory' => $companyRatingHistory->getIdCompanyRatingHistory(),
+                'type'                   => CompanyRating::TYPE_ALTARES_SCORE_20
+            ]);
+            $trafficLightEuler    = $companyRatingRepository->findOneBy([
+                'idCompanyRatingHistory' => $companyRatingHistory->getIdCompanyRatingHistory(),
+                'type'                   => CompanyRating::TYPE_EULER_HERMES_TRAFFIC_LIGHT
+            ]);
+            $gradeEuler           = $companyRatingRepository->findOneBy([
+                'idCompanyRatingHistory' => $companyRatingHistory->getIdCompanyRatingHistory(),
+                'type'                   => CompanyRating::TYPE_EULER_HERMES_GRADE
+            ]);
+            $scoreInfolegale      = $companyRatingRepository->findOneBy([
+                'idCompanyRatingHistory' => $companyRatingHistory->getIdCompanyRatingHistory(),
+                'type'                   => CompanyRating::TYPE_INFOLEGALE_SCORE
+            ]);
+
+            $row = [
+                'id projet'        => $project->getIdProject(),
+                'added'            => $project->getAdded()->format('d/m/Y'),
+                'company_name'     => $company->getName(),
+                'motivation'       => $motivation ? $motivation->getMotive() : '',
+                'amount'           => $project->getAmount(),
+                'duration'         => $project->getPeriod(),
+                'prescore'         => $projectNote ? ($projectNote->getPreScoring() ? $projectNote->getPreScoring() : 'PAS DE DONNEE') : 'Pas de donnée',
+                'score_altares'    => $scoreAltares ? $scoreAltares->getValue() : 'Pas de donnée',
+                'traffic_light'    => $trafficLightEuler ? $trafficLightEuler->getValue() : 'Pas de donnée',
+                'grade_euler'      => $gradeEuler ? $gradeEuler->getValue() : 'Pas de donnée',
+                'score_infolegale' => $scoreInfolegale ? $scoreInfolegale->getValue() : 'Pas de donnée',
+                'turnover'         => $project->getCaDeclaraClient(),
+                'own_funds'        => $project->getFondsPropresDeclaraClient(),
+                'operation_income' => $project->getResultatExploitationDeclaraClient(),
+                'is_rcs'           => empty($company->getRcs()) ? 'Non' : 'Oui',
+                'naf'              => $company->getCodeNaf(),
+                'status'           => $status ? $status->getLabel() : '',
+            ];
+
+            $projectEligibilityAssessment = $assessmentRepository->findOneBy([
+                'idProject' => $project,
+                'status'    => ProjectEligibilityAssessment::STATUS_CHECK_KO,
+            ], ['added' => 'DESC']);
+
+            $row['commun_check'] = $projectEligibilityAssessment ? $projectEligibilityAssessment->getIdRule()->getLabel() : 'OK';
+
+            $productBLend             = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findOneBy(['label' => Product::PRODUCT_BLEND]);
+            $projectProductAssessment = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectProductAssessment')->findOneBy([
+                'idProject' => $project,
+                'idProduct' => $productBLend,
+                'status'    => ProjectProductAssessment::STATUS_CHECK_KO,
+            ], ['added' => 'DESC']);
+
+            $row['b_lend_check'] = 'Pas de évaluation';
+            if ('OK' === $row['commun_check']) {
+                if ($projectProductAssessment) {
+                    $productAttribute = $entityManager->getRepository('UnilendCoreBusinessBundle:ProductAttribute')->findOneBy([
+                        'idProduct' => $projectProductAssessment->getIdProduct(),
+                        'idType'    => $projectProductAssessment->getIdProductAttributeType()
+                    ]);
+
+                    $row['b_lend_check'] = $projectProductAssessment->getIdProductAttributeType()->getLabel();
+                    $row['b_lend_check'] .= $productAttribute->getIdRule() ? ' (' . $productAttribute->getIdRule()->getLabel() . ')' : '';
+                }
+            }
+
+            $extraction[] = $row;
+        }
+
+        $header = [
+            'id_project',
+            'date dépôt',
+            'raison sociale',
+            'motif exprimé',
+            'montant',
+            'durée',
+            'prescore',
+            'score Altares',
+            'trafficLight Euler',
+            'grade Euler',
+            'score Infolegale',
+            'CA',
+            'FP',
+            'REX',
+            'RCS',
+            'NAF',
+            'statut projet',
+            'tronc commun',
+            'b-lend',
+        ];
+
+        $this->exportCSV($extraction, 'extraction_b_lend' . date('Ymd'), $header);
     }
 }
