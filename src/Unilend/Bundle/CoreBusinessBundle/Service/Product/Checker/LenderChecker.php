@@ -21,18 +21,19 @@ trait LenderChecker
      * @param Projects        $project
      * @param ContractManager $contractManager
      * @param EntityManager   $entityManager
+     * @param bool            $isAutoBid
      *
      * @return null|string
      *
      * @throws \Exception
      */
-    public function getAmountLenderCanStillBid(Clients $client, Projects $project, ContractManager $contractManager, EntityManager $entityManager)
+    public function getAmountLenderCanStillBid(Clients $client, Projects $project, ContractManager $contractManager, EntityManager $entityManager, $isAutoBid = false)
     {
         $wallet  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         $product = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
 
         $totalAmount       = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->getSumByWalletAndProjectAndStatus($wallet, $project->getIdProject(), Bids::STATUS_BID_PENDING);
-        $maxAmountEligible = $this->getMaxEligibleAmount($client, $product, $contractManager, false);
+        $maxAmountEligible = $this->getMaxEligibleAmount($client, $product, $contractManager, $isAutoBid);
 
         if (null === $maxAmountEligible) {
             return null;

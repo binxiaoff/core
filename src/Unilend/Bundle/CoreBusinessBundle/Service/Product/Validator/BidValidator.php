@@ -53,7 +53,7 @@ class BidValidator
         }
 
         // Return the contract level reason, but the check is done in product level, as the max amount is the total of all contracts attached to a product.
-        if (false === $this->isEligibleForMaxTotalAmount($bid, $product, $this->contractManager)) {
+        if (false === $this->isEligibleForMaxTotalAmount($bid, $this->contractManager, $this->entityManager)) {
             $violations[] = UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO;
         }
 
