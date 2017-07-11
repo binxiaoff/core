@@ -3,7 +3,9 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 
 class LendersImpositionHistoryRepository extends EntityRepository
 {
@@ -38,5 +40,28 @@ class LendersImpositionHistoryRepository extends EntityRepository
                 ['id_lender' => $lenderId],
                 ['id_lender' => \PDO::PARAM_INT]
             )->fetch(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param Wallet    $wallet
+     * @param \DateTime $date
+     *
+     * @return mixed
+     */
+    public function getFiscalIsoAtDate(Wallet $wallet, \DateTime $date)
+    {
+        $date->setTime(23, 59, 59);
+
+        $queryBuilder = $this->createQueryBuilder('lih');
+        $queryBuilder->select('p.iso')
+            ->innerJoin('UnilendCoreBusinessBundle:PaysV2', 'p', Join::WITH, 'p.idPays = lih.idPays')
+            ->where('lih.idLender = :wallet')
+            ->andWhere('lih.added <= :date')
+            ->orderBy('lih.added', 'DESC')
+            ->setMaxResults(1)
+            ->setParameter('wallet', $wallet->getId())
+            ->setParameter('date', $date->format('Y-m-d H:i:s'));
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 }

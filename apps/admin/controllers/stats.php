@@ -675,4 +675,31 @@ class statsController extends bootstrap
             exit;
         }
     }
+
+    public function _requete_crs_cac()
+    {
+        $this->autoFireView = false;
+        $this->hideDecoration();
+
+        $year     = date('Y') - 1;
+        $fileName = 'preteurs_crs_dac' . $year . '.xlsx';
+        $filePath = $this->getParameter('path.protected') . '/' . $fileName;
+
+        if (file_exists($filePath)) {
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/force-download');
+            header("Content-Disposition: attachment; filename=\"" . basename($fileName) . "\";");
+            header('Content-Transfer-Encoding: binary');
+            header('Expires: 0');
+            header('Cache-Control: must-revalidate');
+            header('Pragma: public');
+            header('Content-Length: ' . filesize($filePath));
+            ob_clean();
+            flush();
+            readfile($filePath);
+            exit;
+        } else {
+            echo "Le fichier n'a pas été généré. ";
+        }
+    }
 }

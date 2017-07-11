@@ -821,4 +821,68 @@ class OperationRepository extends EntityRepository
 
         return $result;
     }
+
+    /**
+     * @param Wallet    $creditorWallet
+     * @param array     $operationTypes
+     * @param array     $operationSubTypes
+     * @param \DateTime $end
+     *
+     * @return mixed
+     */
+    public function sumCreditOperationsByTypeUntil(Wallet $creditorWallet, $operationTypes, $operationSubTypes = null, \DateTime $end = null)
+    {
+        $qb = $this->createQueryBuilder('o');
+        $qb->select('SUM(o.amount)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('ot.label IN (:operationTypes)')
+            ->andWhere('o.idWalletCreditor = :idWallet')
+            ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
+            ->setParameter('idWallet', $creditorWallet->getId());
+
+        if (null !== $operationSubTypes) {
+            $qb->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+                ->andWhere('ost.label IN (:operationSubTypes)')
+                ->setParameter('operationSubTypes', $operationSubTypes, Connection::PARAM_STR_ARRAY);
+        }
+
+        if (null !== $end) {
+            $end->setTime(23, 59, 59);
+            $qb->andWhere('o.added >= :end')->setParameter('end', $end);
+        }
+
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /***
+     * @param Wallet    $debtorWallet
+     * @param array     $operationTypes
+     * @param array     $operationSubTypes
+     * @param \DateTime $end
+     *
+     * @return mixed
+     */
+    public function sumDebitOperationsByTypeUntil(Wallet $debtorWallet, $operationTypes, $operationSubTypes = null, \DateTime $end = null)
+    {
+        $qb = $this->createQueryBuilder('o');
+        $qb->select('SUM(o.amount)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('ot.label IN (:operationTypes)')
+            ->andWhere('o.idWalletDebtor = :idWallet')
+            ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
+            ->setParameter('idWallet', $debtorWallet->getId());
+
+        if (null !== $operationSubTypes) {
+            $qb->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+                ->andWhere('ost.label IN (:operationSubTypes)')
+                ->setParameter('operationSubTypes', $operationSubTypes, Connection::PARAM_STR_ARRAY);
+        }
+
+        if (null !== $end) {
+            $end->setTime(23, 59, 59);
+            $qb->andWhere('o.added >= :end')->setParameter('end', $end);
+        }
+
+        return $qb->getQuery()->getSingleScalarResult();
+    }
 }

@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use PDO;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
@@ -181,6 +182,7 @@ class ClientsRepository extends EntityRepository
            ->andWhere('cs.status IN (:status)')
            ->setParameter(':lender', WalletType::LENDER)
            ->setParameter('status', $status, Connection::PARAM_INT_ARRAY);
+
         return $qb->getQuery()->getResult();
     }
 
@@ -425,5 +427,33 @@ class ClientsRepository extends EntityRepository
             ->fetchAll(PDO::FETCH_ASSOC);
 
         return $result;
+    }
+
+    /**
+     * @param int $year
+     *
+     * @return array
+     */
+    public function findValidatedClientsUntilYear($year)
+    {
+        $qb  = $this->createQueryBuilder('c');
+        $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClient = csh.idClient')
+            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatus', 'cs', Join::WITH, 'csh.idClientStatus = cs.idClientStatus')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
+            ->where(
+                $qb->expr()->eq(
+                    'csh.idClientStatusHistory',
+                    '(SELECT MIN(csh1 . idClientStatusHistory) FROM UnilendCoreBusinessBundle:ClientsStatusHistory csh1 WHERE csh1.idClient = csh.idClient)'
+                )
+            )
+            ->andWhere('wt.label = :lender')
+            ->andWhere('cs.status = :status')
+            ->andWhere('csh.added <= :year')
+            ->setParameter('lender', WalletType::LENDER)
+            ->setParameter('status', ClientsStatus::VALIDATED)
+            ->setParameter('year', $year . '-12-31 23 59 59');
+
+        return $qb->getQuery()->getResult();
     }
 }

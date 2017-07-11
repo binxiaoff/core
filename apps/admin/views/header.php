@@ -82,6 +82,7 @@
                     <li><a href="<?= $this->lurl ?>/stats/tous_echeanciers_pour_projet" title="Echeanciers projet">Echeanciers projet</a></li>
                     <li><a href="<?= $this->lurl ?>/stats/autobid_statistic" title="Statistiques Autolend">Statistiques Autolend</a></li>
                     <li><a href="<?= $this->lurl ?>/stats/declarations_bdf" title="Déclarations BDF">Déclarations BDF</a></li>
+                    <li><a href="<?= $this->lurl ?>/stats/requete_crs_cac" title="CRS CAC">CRS CAC</a></li>
                 </ul>
             </li>
         <?php endif; ?>
