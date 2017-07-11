@@ -779,7 +779,7 @@ class statsController extends bootstrap
                 'status'    => ProjectProductAssessment::STATUS_CHECK_KO,
             ], ['added' => 'DESC']);
 
-            $row['b_lend_check'] = 'Pas de évaluation';
+            $row['b_lend_check'] = 'Pas d\'évaluation';
             if ('OK' === $row['commun_check']) {
                 if ($projectProductAssessment) {
                     $productAttribute = $entityManager->getRepository('UnilendCoreBusinessBundle:ProductAttribute')->findOneBy([
