@@ -156,6 +156,7 @@ class dossiersController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
+            $this->projectEntity   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
             $this->taxFormTypes    = $companyTaxFormType->select();
             $this->allTaxFormTypes = [];
 
@@ -615,7 +616,7 @@ class dossiersController extends bootstrap
                 if ($this->projects->status >= ProjectsStatus::PREP_FUNDING) {
                     if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
                         try {
-                            $this->projects->id_rate = $oProjectManager->getProjectRateRangeId($this->projects);
+                            $this->projects->id_rate = $oProjectManager->getProjectRateRangeId($this->projectEntity);
                         } catch (\Exception $exception) {
                             $_SESSION['freeow']['message'] .= $exception->getMessage();
                         }
@@ -741,7 +742,6 @@ class dossiersController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
             $attachmentManager = $this->get('unilend.service.attachment_manager');
 
-            $this->projectEntity                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
             $this->aAttachments                   = $this->projectEntity->getAttachments();
             $this->aAttachmentTypes               = $attachmentManager->getAllTypesForProjects();
             $this->attachmentTypesForCompleteness = $attachmentManager->getAllTypesForProjects(false);

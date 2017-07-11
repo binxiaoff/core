@@ -1078,23 +1078,23 @@ class ProjectManager
         ];
     }
 
-    public function getProjectRateRangeId(\projects $project)
+    public function getProjectRateRangeId(Projects $project)
     {
-        if (empty($project->period)) {
+        if (empty($project->getPeriod())) {
             throw new \Exception('project period not set.');
         }
 
-        if (empty($project->risk)) {
+        if (empty($project->getRisk())) {
             throw new \Exception('project risk not set.');
         }
 
         /** @var \project_period $projectPeriod */
         $projectPeriod = $this->entityManagerSimulator->getRepository('project_period');
 
-        if ($projectPeriod->getPeriod($project->period)) {
+        if ($projectPeriod->getPeriod($project->getPeriod())) {
             /** @var \project_rate_settings $projectRateSettings */
             $projectRateSettings = $this->entityManagerSimulator->getRepository('project_rate_settings');
-            $rateSettings        = $projectRateSettings->getSettings($project->risk, $projectPeriod->id_period);
+            $rateSettings        = $projectRateSettings->getSettings($project->getRisk(), $projectPeriod->id_period);
 
             if (empty($rateSettings)) {
                 throw new \Exception('No rate settings found for the project.');

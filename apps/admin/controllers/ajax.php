@@ -885,9 +885,6 @@ class ajaxController extends bootstrap
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
         $projectManager = $this->get('unilend.service.project_manager');
-        /** @var \projects $projectData */
-        $projectData = $this->loadData('projects');
-        $projectData->get($project->getIdProject());
 
         if ($projectRating->getNoteComite() >= 8.5 && $projectRating->getNoteComite() <= 10) {
             $riskRating = 'A';
@@ -905,8 +902,8 @@ class ajaxController extends bootstrap
             $riskRating = 'I';
         }
 
-        $projectData->risk = $riskRating;
-        $projectData->update();
+        $project->setRisk($riskRating);
+        $entityManager->flush($project);
 
         /** @var \clients $client */
         $client = $this->loadData('clients');
@@ -917,10 +914,10 @@ class ajaxController extends bootstrap
             $projectStatusHistory = $this->loadData('projects_status_history');
 
             $existingStatus  = [];
-            $companyProjects = $projectData->select('id_company = ' . $projectData->id_company);
+            $companyProjects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $project->getIdCompany()]);
 
             foreach ($companyProjects as $companyProject) {
-                $statusHistory = $projectStatusHistory->getHistoryDetails($companyProject['id_project']);
+                $statusHistory = $projectStatusHistory->getHistoryDetails($companyProject->getIdProject());
                 foreach ($statusHistory as $status) {
                     $existingStatus[] = $status['status'];
                 }
@@ -978,16 +975,17 @@ class ajaxController extends bootstrap
             $entityManager->persist($projectCommentEntity);
             $entityManager->flush($projectCommentEntity);
 
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::SUSPENSIVE_CONDITIONS, $projectData);
+            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::SUSPENSIVE_CONDITIONS, $project);
         }
 
         if (
-            false === empty($projectData->risk) && false === empty($projectData->period)
-            && false === in_array($projectData->status, [ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION])
+            false === empty($project->getRisk()) && false === empty($project->getPeriod())
+            && false === in_array($project->getStatus(), [ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION])
         ) {
             try {
-                $projectData->id_rate = $projectManager->getProjectRateRangeId($projectData);
-                $projectData->update();
+                $idRate = $projectManager->getProjectRateRangeId($project);
+                $project->setIdRate($idRate);
+                $entityManager->flush($project);
             } catch (\Exception $exception) {
                 echo json_encode(['success' => false, 'error' => $exception->getMessage()]);
                 return;
