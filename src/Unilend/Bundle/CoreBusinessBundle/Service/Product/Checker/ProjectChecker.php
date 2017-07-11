@@ -117,7 +117,7 @@ trait ProjectChecker
 
         $projectNote = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project->getIdProject()]);
 
-        if (empty($projectNote->getPreScoring())) {
+        if (null === $projectNote || empty($projectNote->getPreScoring())) {
             return null;
         }
 
