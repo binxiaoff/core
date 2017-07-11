@@ -222,7 +222,7 @@ class ProjectDisplayManager
             $projectData['maxValidRate']  = $bids->getProjectMaxRate($project);
         } else {
             $projectData['costFunded']    = $alreadyFunded;
-            $projectData['percentFunded'] = round($alreadyFunded / $project->amount * 100, 1);
+            $projectData['percentFunded'] = floor($alreadyFunded / $project->amount * 1000) / 10;
             $projectData['maxValidRate']  = $projectRateSettings['rate_max'];
         }
 

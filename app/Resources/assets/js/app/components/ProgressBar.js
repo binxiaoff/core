@@ -14,6 +14,7 @@ var Utility = require('Utility')
 var ElementAttrsObject = require('ElementAttrsObject')
 var Templating = require('Templating')
 var gsap = require('gsap')
+var __ = require('__')
 
 /*
  * ProgressBar
@@ -34,7 +35,7 @@ var ProgressBar = function (elem, options) {
     current: 0,
     total: 1,
     showLabel: false,
-    labelText: '{{percent}}%',
+    labelText: '{{percent}}&nbsp;%',
     labelPosition: 'right inside', // Which side to put the label, and whether inside or outside the progress bar
     repositionLabel: true, // Reposition the label within the bar if it displays outside the bar
     animation: true, // Use GSAP to animate the bar (otherwise rely on CSS transition, if set)
@@ -239,7 +240,7 @@ ProgressBar.prototype.getLabelText = function (labelText) {
   return Templating.replace(labelText, {
     current: self.track.current,
     total: self.track.total,
-    percent: Math.floor(self.track.percent)
+    percent: __.formatNumber(Math.floor(self.track.percent * 10) / 10)
   })
 }
 
