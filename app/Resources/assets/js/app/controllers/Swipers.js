@@ -16,6 +16,7 @@ $doc.ready(function () {
 
     // Disable on mobile devices if attr is present
     if ($elem.is('[data-swiper-disablemobile]') && Utility.isBreakpointActive('mobile')) {
+      // Convert lazy image
       var $firstSlide = $elem.find('.video-hero:first-child')
       $firstSlide.css('background-image', 'url(' + $firstSlide.data('background') + ')').removeAttr('[data-background]')
       // Stop here
