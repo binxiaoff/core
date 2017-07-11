@@ -387,7 +387,9 @@ label.custom-input-switch {
     width: 50px;
     height: 25px;
 
-    background-color: $c-t3;
+    background-color: #b4b4b4; // lighter thant $c-t3
+    background-image: url('../images/icons/switch.png');
+    background-size: 100%;
     border-radius: 25px;
     line-height: 25px;
     vertical-align: top;// middle;
@@ -405,7 +407,7 @@ label.custom-input-switch {
       height: 25px;
       margin-left: 0;
       background-color: $c-white;
-      border: solid 2px $c-t3;
+      border: solid 2px #b4b4b4; // lighter thant $c-t3
       border-radius: 25px;
 
       transition: margin-left .2s, background-color .2s, border-color .2s, border-width .2s;
