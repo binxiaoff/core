@@ -10,15 +10,17 @@ var ElementAttrsObject = require('ElementAttrsObject')
 var $doc = $(document)
 
 $doc.ready(function () {
-  // Initialise swipers
-  $('.swiper-container').each(function (i, elem) {
-    var $elem = $(elem)
+    // Initialise swipers
+    $('.swiper-container').each(function (i, elem) {
+        var $elem = $(elem)
 
-    // Disable on mobile devices if attr is present
-    if ($elem.is('[data-swiper-disablemobile]') && Utility.isBreakpointActive('mobile')) {
-        var $firstSlide = $elem.find('.video-hero:first-child')
-        $firstSlide.css('background-image', 'url(' + $firstSlide.data('background') + ')').removeAttr('[data-background]')
-    } else {
+        // Disable on mobile devices if attr is present
+        if ($elem.is('[data-swiper-disablemobile]') && Utility.isBreakpointActive('mobile')) {
+            var $firstSlide = $elem.find('.video-hero:first-child')
+            $firstSlide.css('background-image', 'url(' + $firstSlide.data('background') + ')').removeAttr('[data-background]')
+            // Stop here
+            return
+        }
         var swiperOptions = $.extend({
             direction: 'horizontal',
             loop: 'true',
@@ -97,7 +99,7 @@ $doc.ready(function () {
             $activeSlide.trigger('UI:visible')
 
             if ($elem.is('.promo-battenberg-lender, .promo-battenberg-borrower') && /xs|sm/.test(Utility.getActiveBreakpoints())) {
-                var $activeSlideCaption = $activeSlide.find('.vertical-align-content')
+                var $activeSlideCaption  = $activeSlide.find('.vertical-align-content')
                 var $nextSlideCaption = $nextSlide.find('.vertical-align-content')
                 if ($nextSlideCaption.height() < $activeSlideCaption.height()) {
                     $nextSlideCaption.height($activeSlideCaption.height())
@@ -163,18 +165,17 @@ $doc.ready(function () {
                 if (preterName) $elem.parents('.cta-video-hero').find('.ui-preter-name').text(preterName)
             })
         }
-    }
-  })
+    })
 
-  // Navigate to previous slide
-  $doc.on(Utility.clickEvent, '.swiper-nav-custom a.btn-nav-left, .swiper-nav-custom a.btn-nav-back', function (event) {
-    event.preventDefault()
-    $(this).parents('.swiper-container')[0].swiper.slidePrev()
-  })
+    // Navigate to previous slide
+    $doc.on(Utility.clickEvent, '.swiper-nav-custom a.btn-nav-left, .swiper-nav-custom a.btn-nav-back', function (event) {
+        event.preventDefault()
+        $(this).parents('.swiper-container')[0].swiper.slidePrev()
+    })
 
-  // Navigate to next slide
-  $doc.on(Utility.clickEvent, '.swiper-nav-custom a.btn-nav-right, .swiper-nav-custom a.btn-nav-next', function (event) {
-    event.preventDefault()
-    $(this).parents('.swiper-container')[0].swiper.slideNext()
-  })
+    // Navigate to next slide
+    $doc.on(Utility.clickEvent, '.swiper-nav-custom a.btn-nav-right, .swiper-nav-custom a.btn-nav-next', function (event) {
+        event.preventDefault()
+        $(this).parents('.swiper-container')[0].swiper.slideNext()
+    })
 })
