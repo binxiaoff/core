@@ -116,6 +116,8 @@ class ProjectStatusManager
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-traffic-light-error');
             case ProjectsStatus::UNEXPECTED_RESPONSE . 'euler_grade':
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-grade-error');
+            case ProjectsStatus::UNEXPECTED_RESPONSE . 'ellisphere_report':
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-ellisphere-report-error');
             case ProjectsStatus::NON_ELIGIBLE_REASON_PROCEEDING:
                 return $this->translator->trans('project-rejection-reason-bo_collective-proceeding');
             case ProjectsStatus::NON_ELIGIBLE_REASON_INACTIVE:

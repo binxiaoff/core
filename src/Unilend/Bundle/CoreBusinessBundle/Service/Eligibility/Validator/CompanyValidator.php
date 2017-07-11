@@ -414,6 +414,10 @@ class CompanyValidator
         $eligibility      = [];
         $ellisphereReport = $this->externalDataManager->getEllisphereReport($siren);
 
+        if (null === $ellisphereReport) {
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'ellisphere_report'];
+        }
+
         if (null !== $ellisphereReport->getDefaults()->getDefaultsNoted()) {
             $eligibility[] = ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_DEFAULTS;
         }
