@@ -680,9 +680,7 @@
   );
 
   &:before {
-    content: $fa-facebook-f;// '\f09a'; // facebook
     display: inline-block;
-    font-family: $ff-icon;
   }
 }
 
@@ -708,9 +706,7 @@
   );
 
   &:before {
-    content: $fa-twitter;// '\f099'; // twitter
     display: inline-block;
-    font-family: $ff-icon;
   }
 }
 
@@ -899,11 +895,6 @@
       text-decoration: none
     )
   );
-
-  &:before {
-    content: $fa-search; // '\f002';
-    font-family: $ff-icon;
-  }
 }
 
 .btn-settings {

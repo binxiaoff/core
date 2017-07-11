@@ -330,9 +330,7 @@
       );
 
       &:before {
-        content: $fa-lock-u;
         display: inline;
-        font-family: $ff-icon;
         font-size: 28px;
         line-height: 1em;
       }
