@@ -20,6 +20,9 @@
             if (! CKEDITOR.instances['comment'].getData()) {
                 alert('Vous devez obligatoirement saisir un mémo')
             } else {
+                if ($('#comment').val() === '') {
+                    $('#comment').val(CKEDITOR.instances['comment'].getData())
+                }
                 valid_rejete_etape7(4, <?= $this->projects->id_project ?>)
             }
         })

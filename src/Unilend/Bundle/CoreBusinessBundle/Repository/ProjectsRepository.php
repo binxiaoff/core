@@ -8,6 +8,8 @@ use Doctrine\ORM\Query\Expr\Join;
 use PDO;
 use Unilend\librairies\CacheKeys;
 use Doctrine\ORM\Query\ResultSetMappingBuilder;
+use Unilend\Bridge\Doctrine\DBAL\Connection;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
@@ -43,7 +45,7 @@ class ProjectsRepository extends EntityRepository
     /**
      * @param \DateTime $dateTime
      *
-     * @return Projects[];
+     * @return Projects[]
      */
     public function findPartiallyReleasedProjects(\DateTime $dateTime)
     {
@@ -275,5 +277,20 @@ class ProjectsRepository extends EntityRepository
             ->setParameter('status', $status);
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param $siren
+     *
+     * @return Projects[]
+     */
+    public function findBySiren($siren)
+    {
+        $qb = $this->createQueryBuilder('p');
+        $qb->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'p.idCompany = c.idCompany')
+            ->where('c.siren = :siren')
+            ->setParameter('siren', $siren);
+
+        return $qb->getQuery()->getResult();
     }
 }

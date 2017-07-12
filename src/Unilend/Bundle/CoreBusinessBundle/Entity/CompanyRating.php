@@ -12,7 +12,26 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class CompanyRating
 {
+    const TYPE_ALTARES_VALUE_DATE         = 'date_valeur_altares';
+    const TYPE_ALTARES_SCORE_20           = 'score_altares';
+    const TYPE_ALTARES_SECTORAL_SCORE_100 = 'score_sectoriel_altares';
+    const TYPE_INFOLEGALE_SCORE           = 'note_infolegale';
+    const TYPE_XERFI_RISK_SCORE           = 'xerfi';
+    const TYPE_UNILEND_XERFI_RISK         = 'xerfi_unilend';
     const TYPE_EULER_HERMES_GRADE         = 'grade_euler_hermes';
+    const TYPE_EULER_HERMES_TRAFFIC_LIGHT = 'traffic_light_euler_hermes';
+    const TYPE_INFOGREFFE_RETURN_CODE     = 'infogreffe_code';
+
+    const AUTOMATIC_RATING_TYPES = [
+        self::TYPE_ALTARES_VALUE_DATE,
+        self::TYPE_ALTARES_SCORE_20,
+        self::TYPE_ALTARES_SECTORAL_SCORE_100,
+        self::TYPE_INFOLEGALE_SCORE,
+        self::TYPE_XERFI_RISK_SCORE,
+        self::TYPE_UNILEND_XERFI_RISK,
+        self::TYPE_EULER_HERMES_GRADE,
+        self::TYPE_EULER_HERMES_TRAFFIC_LIGHT
+    ];
 
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRatingHistory

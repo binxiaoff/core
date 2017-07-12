@@ -17,6 +17,7 @@ class ProjectsRemb
     const STATUS_PENDING                      = 0;
     const STATUS_REPAID                       = 1;
     const STATUS_REJECTED                     = 2;
+    const STATUS_IN_PROGRESS                  = 3;
     const STATUS_AUTOMATIC_REPAYMENT_DISABLED = 4;
 
     /**

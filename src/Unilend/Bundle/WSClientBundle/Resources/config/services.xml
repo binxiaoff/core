@@ -6,6 +6,7 @@
     <services>
         <service id="unilend.service.ws_client.call_history_handler" class="Unilend\Bundle\WSClientBundle\Service\CallHistoryManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="cache"/>
             <argument type="service" id="debug.stopwatch"/>
             <argument type="service" id="unilend.service.slack_manager"/>
             <argument>%slack.monitoring_channel%</argument>

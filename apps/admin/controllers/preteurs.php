@@ -81,7 +81,7 @@ class preteursController extends bootstrap
 
             $this->lPreteurs = $this->clients->searchPreteurs($clientId, $lastName, $email, $firstName, $companyName, $nonValide);
 
-            if (false === empty($this->lPreteurs[0]['id_client'])) {
+            if (false === empty($this->lPreteurs) && 1 == count($this->lPreteurs)) {
                 header('Location:' . $this->lurl . '/preteurs/edit/' . $this->lPreteurs[0]['id_client']);
                 die;
             }

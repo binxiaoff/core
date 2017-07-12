@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="company_rating_history", indexes={@ORM\Index(name="id_company", columns={"id_company"})})
  * @ORM\Entity
- * @ORM\HasLifecycleCallbacks()
+ * @ORM\HasLifecycleCallbacks
  */
 class CompanyRatingHistory
 {
@@ -62,11 +62,13 @@ class CompanyRatingHistory
 
 
     /**
-     * @param Companies $idCompany
+     * Set idCompany
      *
-     * @return $this
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Companies $idCompany
+     *
+     * @return CompanyRatingHistory
      */
-    public function setIdCompany(Companies $idCompany)
+    public function setIdCompany(\Unilend\Bundle\CoreBusinessBundle\Entity\Companies $idCompany)
     {
         $this->idCompany = $idCompany;
 
@@ -76,7 +78,7 @@ class CompanyRatingHistory
     /**
      * Get idCompany
      *
-     * @return Companies
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Companies
      */
     public function getIdCompany()
     {

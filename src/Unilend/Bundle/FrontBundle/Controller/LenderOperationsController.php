@@ -15,11 +15,13 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
@@ -419,7 +421,7 @@ class LenderOperationsController extends Controller
                 }
                 try {
                     $loanData['activity'] = [
-                        'unread_count' => $notificationsRepository->countUnreadNotificationsForClient($lender->id_lender_account, $projectLoans['id_project'])
+                        'unread_count' => $notificationsRepository->countUnreadNotificationsForClient($wallet->getId(), $projectLoans['id_project'])
                     ];
                 } catch (\Exception $exception) {
                     unset($exception);
@@ -439,7 +441,7 @@ class LenderOperationsController extends Controller
                 'contract'    => 0,
                 'declaration' => 0
             ];
-
+                /** @var Loans $partialLoan */
                 foreach ($projectLoansDetails as $partialLoan) {
                     (1 == $partialLoan->getIdTypeContract()->getIdContract()) ? $loanData['count']['bond']++ : $loanData['count']['contract']++;
 
@@ -450,7 +452,7 @@ class LenderOperationsController extends Controller
                             $projectLoans['project_status'],
                             $user->getHash(),
                             $partialLoan->getIdLoan(),
-                            $partialLoan->getIdTypeContract()->getIdContract(),
+                            $partialLoan->getIdTypeContract(),
                             $projectsInDept,
                             $projectLoans['id_project'],
                             $loanData['count']['declaration']
@@ -491,21 +493,21 @@ class LenderOperationsController extends Controller
      * @param int $projectStatus
      * @param string $hash
      * @param int $loanId
-     * @param int $docTypeId
+     * @param UnderlyingContract $contract
      * @param array $projectsInDept
      * @param int $projectId
      * @param $nbDeclarations
      *
      * @return array
      */
-    private function getDocumentDetail($projectStatus, $hash, $loanId, $docTypeId, array $projectsInDept, $projectId, &$nbDeclarations = 0)
+    private function getDocumentDetail($projectStatus, $hash, $loanId, UnderlyingContract $contract, array $projectsInDept, $projectId, &$nbDeclarations = 0)
     {
         $documents = [];
 
         if ($projectStatus >= \projects_status::REMBOURSEMENT) {
             $documents[] = [
                 'url'   => $this->get('assets.packages')->getUrl('') . '/pdf/contrat/' . $hash . '/' . $loanId,
-                'label' => $this->get('translator')->trans('lender-operations_contract-type-' . $docTypeId),
+                'label' => $this->get('translator')->trans('contract-type-label_' . $contract->getLabel()),
                 'type'  => 'bond'
             ];
         }
@@ -608,7 +610,7 @@ class LenderOperationsController extends Controller
     {
         try {
             $data = $this->getProjectInformation($projectId);
-            $code               = Response::HTTP_OK;
+            $code = Response::HTTP_OK;
         } catch (\Exception $exception) {
             $data = [];
             $code = Response::HTTP_INTERNAL_SERVER_ERROR;
@@ -633,7 +635,7 @@ class LenderOperationsController extends Controller
     {
         $entityManager   = $this->get('doctrine.orm.entity_manager');
         $translator      = $this->get('translator');
-        $numberFormatter = $this->get('number_formatter');
+        $currencyFormatter = $this->get('currency_formatter');
 
         $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
 
@@ -692,7 +694,7 @@ class LenderOperationsController extends Controller
                 'type'      => 'remboursement',
                 'title'     => $translator->trans('lender-notifications_early-repayment-title'),
                 'content'   => $translator->trans('lender-notifications_early-repayment-content', [
-                    '%amount%'     => $numberFormatter->format((float) $repayment->getAmount()),
+                    '%amount%'     => $currencyFormatter->formatCurrency($repayment->getAmount(), 'EUR'),
                     '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
                     '%company%'    => $project->getIdCompany()->getName()
                 ]),
@@ -717,7 +719,7 @@ class LenderOperationsController extends Controller
                 'type'      => 'remboursement',
                 'title'     => $translator->trans('lender-notifications_recovery-repayment-title'),
                 'content'   => $translator->trans('lender-notifications_recovery-repayment-content', [
-                    '%amount%'     => $numberFormatter->format((float) $repayment->getAmount()),
+                    '%amount%'     => $currencyFormatter->formatCurrency($repayment->getAmount(), 'EUR'),
                     '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
                     '%company%'    => $project->getIdCompany()->getName()
                 ]),
@@ -739,7 +741,7 @@ class LenderOperationsController extends Controller
 
             $title   = $translator->trans('lender-notifications_repayment-title');
             $content = $translator->trans('lender-notifications_repayment-content', [
-                '%amount%'     => $numberFormatter->format($operationRepository->getNetAmountByRepaymentScheduleId($repayment->getRepaymentSchedule())),
+                '%amount%'     => $currencyFormatter->formatCurrency($operationRepository->getNetAmountByRepaymentScheduleId($repayment->getRepaymentSchedule()), 'EUR'),
                 '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
                 '%company%'    => $project->getIdCompany()->getName()
             ]);

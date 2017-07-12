@@ -19,13 +19,13 @@
                     <td><?= $operation['title'] ?></td>
                     <td><?= date('d/m/Y', strtotime($operation['date'])) ?></td>
                     <td>
-                        <?= number_format($operation['amount'], 2, ',', ' ') ?> €
+                        <strong><?= number_format($operation['amount'], 2, ',', ' ') ?> €</strong>
                         <?php if (false == empty($operation['detail'])) : ?>
-                            <br><i>(
-                            <?php foreach ($operation['detail']['items'] as $detail) : ?>
-                                <?= $detail['label'] ?> : <?= number_format($detail['value'], 2, ',', ' ') ?>
-                            <?php endforeach; ?>
-                                )</i>
+                            <em>
+                                <?php foreach ($operation['detail']['items'] as $index => $detail) : ?>
+                                    <br><?= $detail['label'] ?> : <?= number_format($detail['value'], 2, ',', ' ') ?>&nbsp;€
+                                <?php endforeach; ?>
+                            </em>
                         <?php endif; ?>
                     </td>
                     <td><?= number_format($operation['available_balance'], 2, ',', ' ') ?> €</td>
