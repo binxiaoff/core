@@ -64,6 +64,7 @@ EOF
                 }
             }
         }
+
         if ($bHasProjectPublished) {
             /** @var \Cache\Adapter\Memcache\MemcacheCachePool $oCachePool */
             $oCachePool = $this->getContainer()->get('memcache.default');
@@ -265,9 +266,10 @@ EOF
 
             foreach ($aLenders as $aLender) {
                 $wallet = $walletRepository->getWalletByType($aLender['id_client'], WalletType::LENDER);
+
                 if ($productManager->isClientEligible($wallet->getIdClient(), $project)) {
                     $notifications->type       = Notifications::TYPE_NEW_PROJECT;
-                    $notifications->id_lender  = $aLender['id_lender'];
+                    $notifications->id_lender  = $wallet->getId();
                     $notifications->id_project = $project->id_project;
                     $notifications->create();
 
@@ -308,6 +310,7 @@ EOF
                     }
                 }
             }
+
             $oLogger->info('Emails sent: ' . $iEmails, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
         }
     }
