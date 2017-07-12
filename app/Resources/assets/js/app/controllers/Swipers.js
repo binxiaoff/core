@@ -13,6 +13,16 @@ $doc.ready(function () {
   // Initialise swipers
   $('.swiper-container').each(function (i, elem) {
     var $elem = $(elem)
+
+    // Disable on mobile devices if attr is present
+    if ($elem.is('[data-swiper-disablemobile]') && Utility.isBreakpointActive('mobile')) {
+      // Convert lazy image
+      var $firstSlide = $elem.find('.video-hero:first-child')
+      $firstSlide.css('background-image', 'url(' + $firstSlide.data('background') + ')').removeAttr('[data-background]')
+      // Stop here
+      return
+    }
+
     var swiperOptions = $.extend({
       direction: 'horizontal',
       loop: 'true',
