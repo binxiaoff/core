@@ -102,7 +102,7 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
             }
 
             $activeSheet->setCellValue('A' . $row, $client->getIdClient());
-            $activeSheet->setCellValue('B' . $row, $client->getNaissance());
+            $activeSheet->setCellValue('B' . $row, $client->getVilleNaissance());
             $activeSheet->setCellValue('C' . $row, $firstValidation->getAdded()->format('Y-m-d'));
             $activeSheet->setCellValue('D' . $row, $currentClientStatus);
             $activeSheet->setCellValue('E' . $row, $client->isNaturalPerson() ? 'Physique' : 'Morale');
