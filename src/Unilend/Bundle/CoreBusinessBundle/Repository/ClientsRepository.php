@@ -441,17 +441,13 @@ class ClientsRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:ClientsStatus', 'cs', Join::WITH, 'csh.idClientStatus = cs.idClientStatus')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
-            ->where(
-                $qb->expr()->eq(
-                    'csh.idClientStatusHistory',
-                    '(SELECT MIN(csh1 . idClientStatusHistory) FROM UnilendCoreBusinessBundle:ClientsStatusHistory csh1 WHERE csh1.idClient = csh.idClient)'
-                )
-            )
             ->andWhere('wt.label = :lender')
             ->andWhere('cs.status = :status')
             ->andWhere('csh.added <= :year')
+            ->andWhere('c.status = :clientStatus')
             ->setParameter('lender', WalletType::LENDER)
             ->setParameter('status', ClientsStatus::VALIDATED)
+            ->setParameter('clientStatus', Clients::STATUS_ONLINE)
             ->setParameter('year', $year . '-12-31 23 59 59');
 
         return $qb->getQuery()->getResult();

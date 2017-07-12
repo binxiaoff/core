@@ -59,7 +59,6 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
         /** @var LendersImpositionHistoryRepository $lenderImpositionRepository */
         $lenderImpositionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LendersImpositionHistory');
         $clientStatusManager        = $this->getContainer()->get('unilend.service.client_status_manager');
-        $lenderManager              = $this->getContainer()->get('unilend.service.lender_manager');
 
         /** @var \PHPExcel $document */
         $document    = new \PHPExcel();
@@ -68,22 +67,20 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
 
         $activeSheet->setCellValue('A' . $row, 'id Client');
         $activeSheet->setCellValue('B' . $row, 'Commune de Naissance');
-        $activeSheet->setCellValue('C' . $row, 'Origine des Fonds');
-        $activeSheet->setCellValue('D' . $row, 'Date de la première validation');
-        $activeSheet->setCellValue('E' . $row, 'Status client');
-        $activeSheet->setCellValue('F' . $row, 'type');
-        $activeSheet->setCellValue('G' . $row, 'Raison Sociale');
-        $activeSheet->setCellValue('H' . $row, 'Nom');
-        $activeSheet->setCellValue('I' . $row, 'Nom d\'usage');
-        $activeSheet->setCellValue('J' . $row, 'Prenom');
-        $activeSheet->setCellValue('K' . $row, 'Email');
-        $activeSheet->setCellValue('L' . $row, 'Adresse fiscal');
-        $activeSheet->setCellValue('M' . $row, 'Ville');
-        $activeSheet->setCellValue('N' . $row, 'CP');
-        $activeSheet->setCellValue('O' . $row, 'ISO pays fiscal');
-        $activeSheet->setCellValue('P' . $row, 'Solde au 31/12/' . $year);
-        $activeSheet->setCellValue('Q' . $row, 'Montant investi au 31/12/' . $year);
-        $activeSheet->setCellValue('R' . $row, 'CRD au 31/12/' . $year);
+        $activeSheet->setCellValue('C' . $row, 'Date de la première validation');
+        $activeSheet->setCellValue('D' . $row, 'Statut client');
+        $activeSheet->setCellValue('E' . $row, 'Type');
+        $activeSheet->setCellValue('F' . $row, 'Raison Sociale');
+        $activeSheet->setCellValue('G' . $row, 'Nom');
+        $activeSheet->setCellValue('H' . $row, 'Nom d\'usage');
+        $activeSheet->setCellValue('I' . $row, 'Prenom');
+        $activeSheet->setCellValue('J' . $row, 'Adresse fiscal');
+        $activeSheet->setCellValue('K' . $row, 'Ville');
+        $activeSheet->setCellValue('L' . $row, 'CP');
+        $activeSheet->setCellValue('M' . $row, 'ISO pays fiscal');
+        $activeSheet->setCellValue('N' . $row, 'Solde au 31/12/' . $year);
+        $activeSheet->setCellValue('O' . $row, 'Montant investi au 31/12/' . $year);
+        $activeSheet->setCellValue('P' . $row, 'CRD au 31/12/' . $year);
         $row ++;
 
         /** @var Clients $client */
@@ -95,7 +92,6 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
             $endOfYearBalance        = null !== $endOfYearBalanceHistory ? bcadd($endOfYearBalanceHistory->getAvailableBalance(), $endOfYearBalanceHistory->getCommittedBalance(), 2) : 0;
             $remainingDuCapital      = $operationRepository->getRemainingDueCapitalAtDate($client->getIdClient(), $lastDayOfTheYear);
             $amountInvested          = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::LENDER_LOAN], null, $lastDayOfTheYear);
-            $fundsOrigin             = $lenderManager->getFundsOriginTextValue($client);
             $currentClientStatus     = $clientStatusManager->getLastClientStatus($client);
             $firstValidation         = $clientStatusHistoryRepository->getFirstClientValidation($client);
             $fiscalCountryIso        = $lenderImpositionRepository->getFiscalIsoAtDate($wallet, $lastDayOfTheYear);
@@ -107,22 +103,20 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
 
             $activeSheet->setCellValue('A' . $row, $client->getIdClient());
             $activeSheet->setCellValue('B' . $row, $client->getNaissance());
-            $activeSheet->setCellValue('C' . $row, $fundsOrigin);
-            $activeSheet->setCellValue('D' . $row, $firstValidation->getAdded()->format('Y-m-d'));
-            $activeSheet->setCellValue('E' . $row, $currentClientStatus);
-            $activeSheet->setCellValue('F' . $row, $client->isNaturalPerson() ? 'Physique' : 'Morale');
-            $activeSheet->setCellValue('G' . $row, $client->isNaturalPerson() ? '' : $company->getName());
-            $activeSheet->setCellValue('H' . $row, $client->getNom());
-            $activeSheet->setCellValue('I' . $row, $client->getNomUsage());
-            $activeSheet->setCellValue('J' . $row, $client->getPrenom());
-            $activeSheet->setCellValue('K' . $row, $client->getEmail());
-            $activeSheet->setCellValue('L' . $row, $clientAddress->getAdresseFiscal());
-            $activeSheet->setCellValue('M' . $row, $clientAddress->getVilleFiscal());
-            $activeSheet->setCellValue('N' . $row, $clientAddress->getCpFiscal());
-            $activeSheet->setCellValue('O' . $row, $fiscalCountryIso['iso']);
-            $activeSheet->setCellValueExplicit('P' . $row, $endOfYearBalance, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            $activeSheet->setCellValueExplicit('Q' . $row, $amountInvested, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            $activeSheet->setCellValueExplicit('R' . $row, $remainingDuCapital, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValue('C' . $row, $firstValidation->getAdded()->format('Y-m-d'));
+            $activeSheet->setCellValue('D' . $row, $currentClientStatus);
+            $activeSheet->setCellValue('E' . $row, $client->isNaturalPerson() ? 'Physique' : 'Morale');
+            $activeSheet->setCellValue('F' . $row, $client->isNaturalPerson() ? '' : $company->getName());
+            $activeSheet->setCellValue('G' . $row, $client->getNom());
+            $activeSheet->setCellValue('H' . $row, $client->getNomUsage());
+            $activeSheet->setCellValue('I' . $row, $client->getPrenom());
+            $activeSheet->setCellValue('J' . $row, $clientAddress->getAdresseFiscal());
+            $activeSheet->setCellValue('K' . $row, $clientAddress->getVilleFiscal());
+            $activeSheet->setCellValue('L' . $row, $clientAddress->getCpFiscal());
+            $activeSheet->setCellValue('M' . $row, $fiscalCountryIso['iso']);
+            $activeSheet->setCellValueExplicit('N' . $row, $endOfYearBalance, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicit('O' . $row, $amountInvested, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicit('P' . $row, $remainingDuCapital, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
             $row += 1;
         }
