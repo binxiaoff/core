@@ -625,15 +625,16 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
         }
 
         if (false === $isTotal && false === $isPreviousLine) {
-            $previousRow        = $row - 1;
-            $previousBalance    = $activeSheet->getCell(self::THEORETICAL_BALANCE_COLUMN . $previousRow)->getValue();
-            $totalMovements     = $activeSheet->getCell(self::TOTAL_FINANCIAL_MOVEMENTS_COLUMN . $row)->getValue();
-            $theoreticalBalance = bcadd($previousBalance, $totalMovements, 2);
-            $globalDifference   = bcsub($theoreticalBalance, $realBalance, 2);
-            $this->addTheoreticalBalanceToHistory($theoreticalBalance, $dailyBalances);
+            if (null === $dailyBalances->getTheoreticalBalance()) {
+                $previousRow        = $row - 1;
+                $previousBalance    = $activeSheet->getCell(self::THEORETICAL_BALANCE_COLUMN . $previousRow)->getValue();
+                $totalMovements     = $activeSheet->getCell(self::TOTAL_FINANCIAL_MOVEMENTS_COLUMN . $row)->getValue();
+                $theoreticalBalance = bcadd($previousBalance, $totalMovements, 2);
+                $this->addTheoreticalBalanceToHistory($theoreticalBalance, $dailyBalances);
+            }
 
-            $activeSheet->setCellValueExplicit(self::THEORETICAL_BALANCE_COLUMN . $row, $theoreticalBalance, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            $activeSheet->setCellValueExplicit(self::BALANCE_DIFFERENCE_COLUMN . $row, $globalDifference, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicit(self::THEORETICAL_BALANCE_COLUMN . $row, $dailyBalances->getTheoreticalBalance(), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicit(self::BALANCE_DIFFERENCE_COLUMN . $row, bcsub($dailyBalances->getTheoreticalBalance(), $realBalance, 2), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         }
 
         if ($isTotal) {
