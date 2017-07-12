@@ -18,13 +18,17 @@ trait ClientChecker
      */
     public function isEligibleForClientId(Clients $client = null, Product $product, ProductAttributeManager $productAttributeManager)
     {
+        if (null === $client) {
+            return true; // Impossible to check
+        }
+
         $attributes = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_CLIENT_ID);
 
         if (empty($attributes)) {
             return true; // No limitation found
         }
 
-        return $client !== null && in_array($client->getIdClient(), $attributes);
+        return in_array($client->getIdClient(), $attributes);
     }
 
     /**
@@ -36,12 +40,16 @@ trait ClientChecker
      */
     public function isEligibleForClientType(Clients $client = null, Product $product, ProductAttributeManager $productAttributeManager)
     {
+        if (null === $client) {
+            return true; // Impossible to check
+        }
+
         $attributes = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_CLIENT_TYPE);
 
         if (empty($attributes)) {
             return true; // No limitation found
         }
 
-        return $client !== null && in_array($client->getType(), $attributes);
+        return in_array($client->getType(), $attributes);
     }
 }

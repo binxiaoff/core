@@ -19,6 +19,10 @@ trait ClientChecker
      */
     public function isEligibleForClientType(Clients $client = null, UnderlyingContract $contract, ContractAttributeManager $contractAttributeManager)
     {
+        if (null === $client) {
+            return true; // Impossible to check
+        }
+
         $attrVars = $contractAttributeManager->getContractAttributesByType($contract, UnderlyingContractAttributeType::ELIGIBLE_CLIENT_TYPE);
 
         if (empty($attrVars)) {
