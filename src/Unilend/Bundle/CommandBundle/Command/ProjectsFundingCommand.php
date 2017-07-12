@@ -67,17 +67,17 @@ class ProjectsFundingCommand extends ContainerAwareCommand
                         $projectManager->buildLoans($project);
                         $projectManager->createRepaymentSchedule($project);
                         $projectManager->createPaymentSchedule($project);
+                        $projectManager->saveInterestRate($project);
 
                         $mailerManager->sendFundedAndFinishedToBorrower($project);
                         $mailerManager->sendBidAccepted($project);
                     } else {
                         $projectManager->treatFundFailed($project);
+                        $projectManager->saveInterestRate($project);
 
                         $mailerManager->sendFundFailedToBorrower($project);
                         $mailerManager->sendFundFailedToLender($project);
                     }
-
-                    $projectManager->saveInterestRate($project);
 
                     $now          = new \DateTime();
                     $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
