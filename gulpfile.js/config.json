@@ -18,7 +18,7 @@
       "vendorDest": "js/vendor",
       "extensions": ["js", "json"],
       "dependencies": [
-        "./app/Resources/assets/js/app/modernizr/modernigulpzr.js",
+        "./app/Resources/assets/js/app/modernizr/modernizr.js",
         "./app/Resources/assets/js/vendor/jquery.js",
         "./app/Resources/assets/js/vendor/swiper/swiper.jquery.js",
         "./app/Resources/assets/js/vendor/jquery.fancybox.js",
