@@ -29,12 +29,40 @@ class ProjectsStatusHistoryRepository extends EntityRepository
         }
         $qb = $this->createQueryBuilder('psh');
         $qb->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'ps.idProjectStatus = psh.idProjectStatus')
-           ->andWhere('psh.idProject = :project')
-           ->andWhere('ps.status = :status')
-           ->setParameter('project', $project)
-           ->setParameter('status', $status)
-           ->orderBy('psh.added', 'ASC')
-           ->setMaxResults(1);
+            ->andWhere('psh.idProject = :project')
+            ->andWhere('ps.status = :status')
+            ->setParameter('project', $project)
+            ->setParameter('status', $status)
+            ->orderBy('psh.added', 'ASC')
+            ->setMaxResults(1);
+        $query = $qb->getQuery();
+
+        return $query->getOneOrNullResult();
+    }
+
+    /**
+     * @param int|Projects $project
+     * @param int|array    $status
+     *
+     * @return ProjectsStatusHistory|null
+     */
+    public function findStatusLastOccurrence($project, $status)
+    {
+        if (false === is_array($status)) {
+            $status = [$status];
+        }
+        if ($project instanceof Projects) {
+            $project = $project->getIdProject();
+        }
+
+        $qb = $this->createQueryBuilder('psh');
+        $qb->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'ps.idProjectStatus = psh.idProjectStatus')
+            ->andWhere('psh.idProject = :project')
+            ->andWhere('ps.status in  (:status)')
+            ->setParameter('project', $project)
+            ->setParameter('status', $status)
+            ->orderBy('psh.added', 'DESC')
+            ->setMaxResults(1);
         $query = $qb->getQuery();
 
         return $query->getOneOrNullResult();
@@ -42,7 +70,7 @@ class ProjectsStatusHistoryRepository extends EntityRepository
 
     /**
      * @param Projects|int $project
-     * @param int $projectStatus
+     * @param int          $projectStatus
      *
      * @return array
      */
@@ -85,7 +113,7 @@ class ProjectsStatusHistoryRepository extends EntityRepository
             ->andWhere('DATE(psh.added) = :date')
             ->andWhere('ps.status IN (:status)')
             ->setParameter(':date', $dateAdded->format('Y-m-d'))
-            ->setParameter(':status', $projectStatus,Connection::PARAM_INT_ARRAY);
+            ->setParameter(':status', $projectStatus, Connection::PARAM_INT_ARRAY);
         $query = $qb->getQuery();
 
         return $query->getResult();

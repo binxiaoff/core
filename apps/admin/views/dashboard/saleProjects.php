@@ -47,7 +47,7 @@
                     <?php else : ?>
                         <td data-toggle="tooltip" class="tooltip" title="<?= (empty($project['memo_author']) ? '' : $project['memo_author'] . '<br>') . $project['memo_datetime']->format('d/m/Y - H\hi') . '<hr>' . nl2br(htmlentities($project['memo_content'], ENT_QUOTES)) ?>" style="text-align: center"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Mémo" /></td>
                     <?php endif; ?>
-                    <td style="text-align: center"><?= 10 == $project['priority'] ? '' : $project['priority'] ?></td>
+                    <td style="text-align: center"><?= -1 == $project['priority'] ? '' : $project['priority'] ?></td>
                 </tr>
                 <?php ++$i; ?>
             <?php endforeach; ?>

@@ -25,7 +25,7 @@ class ProductRepository extends EntityRepository
             ->select('IDENTITY (pa.idProduct)')
             ->from('UnilendCoreBusinessBundle:ProductAttributeType', 'pat')
             ->innerJoin('UnilendCoreBusinessBundle:ProductAttribute', 'pa', Join::WITH, $subQueryBuilder->expr()->eq('pat.idType', 'pa.idType'))
-            ->where($subQueryBuilder->expr()->in('pat.label', [ProductAttributeType::ELIGIBLE_LENDER_ID, ProductAttributeType::ELIGIBLE_LENDER_TYPE]))
+            ->where($subQueryBuilder->expr()->in('pat.label', [ProductAttributeType::ELIGIBLE_CLIENT_ID, ProductAttributeType::ELIGIBLE_CLIENT_TYPE]))
             ->groupBy('pa.idProduct');
 
         $queryBuilder = $this->createQueryBuilder('p');
@@ -59,8 +59,8 @@ class ProductRepository extends EntityRepository
                     $queryBuilder->expr()->in('p.idProduct', $lenderTypeSubQueryBuilder->getDQL()),
                     $queryBuilder->expr()->in('p.idProduct', $lenderIdSubQueryBuilder->getDQL())
                 ))
-                ->setParameter('lenderIdAttributeLabel', ProductAttributeType::ELIGIBLE_LENDER_ID)
-                ->setParameter('lenderTypeAttributeLabel', ProductAttributeType::ELIGIBLE_LENDER_TYPE);
+                ->setParameter('lenderIdAttributeLabel', ProductAttributeType::ELIGIBLE_CLIENT_ID)
+                ->setParameter('lenderTypeAttributeLabel', ProductAttributeType::ELIGIBLE_CLIENT_TYPE);
         }
 
         return $queryBuilder->getQuery()->getResult();

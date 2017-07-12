@@ -1400,27 +1400,19 @@ class projects extends projects_crud
                 IFNULL((SELECT content FROM projects_comments WHERE id_project = p.id_project ORDER BY added DESC, id_project_comment DESC LIMIT 1), "") AS memo_content,
                 IFNULL((SELECT added FROM projects_comments WHERE id_project = p.id_project ORDER BY added DESC, id_project_comment DESC LIMIT 1), "") AS memo_datetime,
                 IFNULL((SELECT CONCAT(users.firstname, " ", users.name) FROM projects_comments INNER JOIN users ON projects_comments.id_user = users.id_user WHERE id_project = p.id_project ORDER BY projects_comments.added DESC, id_project_comment DESC LIMIT 1), "") AS memo_author,
-                IFNULL(scoring.note, 10) AS priority,
-                IFNULL(infolegale.value, 0) AS infolegale
+                IFNULL(pn.pre_scoring, -1) AS priority
             ')
             ->from('projects', 'p')
             ->innerJoin('p', 'companies', 'co', 'p.id_company = co.id_company')
             ->innerJoin('co', 'clients', 'cl', 'co.id_client_owner = cl.id_client')
             ->innerJoin('p', 'projects_status', 'ps', 'p.status = ps.status')
-            ->leftJoin('p', 'company_rating', 'euler', 'p.id_company_rating_history = euler.id_company_rating_history AND euler.type = :eulerScoringType')
-            ->leftJoin('p', 'company_rating', 'altares', 'p.id_company_rating_history = altares.id_company_rating_history AND altares.type = :altaresScoringType')
-            ->leftJoin('p', 'pre_scoring', 'scoring', 'euler.value = scoring.euler_hermes AND altares.value = scoring.altares')
-            ->leftJoin('p', 'company_rating', 'infolegale', 'p.id_company_rating_history = infolegale.id_company_rating_history AND infolegale.type = :infolegaleScoringType')
             ->leftJoin('p', 'users', 'u', 'p.id_commercial = u.id_user')
             ->leftJoin('p', 'partner', 'pa', 'p.id_partner = pa.id')
+            ->leftJoin('p', 'projects_notes', 'pn', 'p.id_project = pn.id_project')
             ->where('p.status IN (:commercialStatus)')
             ->setParameter('commercialStatus', $status, Connection::PARAM_INT_ARRAY)
-            ->setParameter('eulerScoringType', \company_rating::TYPE_EULER_HERMES_GRADE)
-            ->setParameter('altaresScoringType', \company_rating::TYPE_ALTARES_SCORE_20)
-            ->setParameter('infolegaleScoringType', \company_rating::TYPE_INFOLEGALE_SCORE)
             ->addOrderBy('status', 'DESC')
-            ->addOrderBy('priority', 'ASC')
-            ->addOrderBy('infolegale', 'DESC')
+            ->addOrderBy('priority', 'DESC')
             ->addOrderBy('amount', 'DESC')
             ->addOrderBy('duration', 'DESC')
             ->addOrderBy('creation', 'ASC');

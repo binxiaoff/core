@@ -12,14 +12,22 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ProductAttributeType
 {
-    const ELIGIBLE_BORROWER_COMPANY_NAF_CODE = 'product_eligible_borrower_company_naf_code';
-    const ELIGIBLE_BORROWER_COMPANY_RCS      = 'product_eligible_borrower_company_rcs';
-    const ELIGIBLE_BORROWING_MOTIVE          = 'product_eligible_borrowing_motive';
-    const ELIGIBLE_LENDER_ID                 = 'product_eligible_lender_id';
-    const ELIGIBLE_LENDER_TYPE               = 'product_eligible_lender_type';
-    const MIN_CREATION_DAYS                  = 'product_min_creation_days';
-    const MAX_LOAN_DURATION_IN_MONTH         = 'product_max_loan_duration_in_month';
-    const MIN_LOAN_DURATION_IN_MONTH         = 'product_min_loan_duration_in_month';
+    const ELIGIBLE_BORROWER_COMPANY_NAF_CODE            = 'product_eligible_borrower_company_naf_code';
+    const ELIGIBLE_BORROWER_COMPANY_RCS                 = 'product_eligible_borrower_company_rcs';
+    const ELIGIBLE_BORROWING_MOTIVE                     = 'product_eligible_borrowing_motive';
+    const ELIGIBLE_EXCLUDED_BORROWING_MOTIVE            = 'product_eligible_excluded_borrowing_motive';
+    const ELIGIBLE_CLIENT_ID                            = 'product_eligible_lender_id';
+    const ELIGIBLE_CLIENT_TYPE                          = 'product_eligible_lender_type';
+    const ELIGIBLE_EXCLUDED_HEADQUARTERS_LOCATION       = 'product_eligible_excluded_headquarters_location';
+    const MAX_LOAN_DURATION_IN_MONTH                    = 'product_max_loan_duration_in_month';
+    const MAX_XERFI_SCORE                               = 'product_max_xerfi_score';
+    const MIN_CREATION_DAYS                             = 'product_min_creation_days';
+    const MIN_LOAN_DURATION_IN_MONTH                    = 'product_min_loan_duration_in_month';
+    const NO_IN_PROGRESS_BLEND_PROJECT_DAYS             = 'product_no_in_progress_blend_project_days';
+    const NO_INCIDENT_UNILEND_PROJECT_DAYS              = 'product_no_incident_unilend_project_days';
+    const NO_INCIDENT_BLEND_PROJECT_DAYS                = 'product_no_incident_blend_project_days';
+    const MIN_PRE_SCORE                                 = 'product_min_pre_score';
+    const MAX_PRE_SCORE                                 = 'product_max_pre_score';
 
     /**
      * @var string
@@ -50,8 +58,6 @@ class ProductAttributeType
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $idType;
-
-
 
     /**
      * Set label

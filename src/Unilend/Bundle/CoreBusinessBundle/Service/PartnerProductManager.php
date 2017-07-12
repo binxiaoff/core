@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 
 class PartnerProductManager extends ProductManager
@@ -57,8 +58,8 @@ class PartnerProductManager extends ProductManager
             $product->get($oneProduct['id_product']);
 
             if (
-                $product->status != \product::STATUS_ARCHIVED
-                && ($includeInactiveProduct || $product->status == \product::STATUS_ONLINE)
+                $product->status != Product::STATUS_ARCHIVED
+                && ($includeInactiveProduct || $product->status == Product::STATUS_ONLINE)
             ) {
                 $availableProduct    = clone $product;
                 $availableProducts[] = $availableProduct;

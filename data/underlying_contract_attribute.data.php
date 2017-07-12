@@ -27,9 +27,6 @@
 // **************************************************************************************************** //
 class underlying_contract_attribute extends underlying_contract_attribute_crud
 {
-    const ELIGIBLE_AUTOBID_FALSE_VALUE = 0;
-    const ELIGIBLE_AUTOBID_TRUE_VALUE  = 1;
-
     public function __construct($bdd, $params = '')
     {
         parent::underlying_contract_attribute($bdd, $params);

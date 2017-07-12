@@ -265,7 +265,7 @@ EOF
 
             foreach ($aLenders as $aLender) {
                 $wallet = $walletRepository->getWalletByType($aLender['id_client'], WalletType::LENDER);
-                if ($productManager->getLenderEligibility($wallet->getIdClient(), $project)) {
+                if ($productManager->isClientEligible($wallet->getIdClient(), $project)) {
                     $notifications->type       = Notifications::TYPE_NEW_PROJECT;
                     $notifications->id_lender  = $aLender['id_lender'];
                     $notifications->id_project = $project->id_project;

@@ -139,24 +139,15 @@ class CompanyBalanceSheetManager
     }
 
     /**
-     * @param \companies | Companies $company
+     * @param Companies $company
      *
      * @return \company_tax_form_type|null
      */
     public function detectTaxFormType($company)
     {
-        $taxFormType = $this->entityManager->getRepository('company_tax_form_type');
-        $companyRcs = '';
-
-        if ($company instanceof \companies) {
-            $companyRcs = $company->rcs;
-        }
-
-        if ($company instanceof Companies) {
-            $companyRcs = $company->getRcs();
-        }
-
-        if (false === empty($companyRcs)) { // We are only capable of managing the fiscal form for a "RCS"( which is 2033)
+        // We are only capable of managing the fiscal form for a "RCS"(which is 2033)
+        if (false === empty($company->getRcs())) {
+            $taxFormType = $this->entityManager->getRepository('company_tax_form_type');
             $taxFormType->get(\company_tax_form_type::FORM_2033, 'label');
 
             return $taxFormType;
@@ -293,11 +284,11 @@ class CompanyBalanceSheetManager
 
     /**
      * Set company balance sheets
-     * @param \companies             $company
+     *
+     * @param Companies              $company
      * @param BalanceSheetListDetail $balanceSheetList
-     * @param \projects              $project
      */
-    public function setCompanyBalance(\companies $company, BalanceSheetListDetail $balanceSheetList, \projects &$project = null)
+    public function setCompanyBalance(Companies $company, BalanceSheetListDetail $balanceSheetList)
     {
         $taxFormType = $this->detectTaxFormType($company);
 
@@ -315,10 +306,10 @@ class CompanyBalanceSheetManager
 
             foreach ($balanceSheetList->getBalanceSheets() as $balanceSheet) {
                 $aCompanyBalances = [];
-                $annualAccounts   = $companyAnnualAccounts->select('id_company = ' . $company->id_company . ' AND cloture_exercice_fiscal = "' . $balanceSheet->getCloseDate()->format('Y-m-d') . '"');
+                $annualAccounts   = $companyAnnualAccounts->select('id_company = ' . $company->getIdCompany() . ' AND cloture_exercice_fiscal = "' . $balanceSheet->getCloseDate()->format('Y-m-d') . '"');
 
                 if (empty($annualAccounts)) {
-                    $companyAnnualAccounts->id_company               = $company->id_company;
+                    $companyAnnualAccounts->id_company               = $company->getIdCompany();
                     $companyAnnualAccounts->id_company_tax_form_type = $taxFormType->id_type;
                     $companyAnnualAccounts->cloture_exercice_fiscal  = $balanceSheet->getCloseDate()->format('Y-m-d');
                     $companyAnnualAccounts->duree_exercice_fiscal    = $balanceSheet->getDuration();
@@ -351,15 +342,6 @@ class CompanyBalanceSheetManager
                     }
                 }
                 $this->calculateDebtsAssetsFromBalance($companyAnnualAccounts->id_bilan);
-            }
-
-            /** @var \companies_bilans $companyAccount */
-            $companyAccount = $this->entityManager->getRepository('companies_bilans');
-            $balanceId      = $companyAccount->select('id_company = ' . $company->id_company, 'cloture_exercice_fiscal DESC', 0, 1)[0]['id_bilan'];
-
-            if (null !== $project) {
-                $project->id_dernier_bilan = $balanceId;
-                $project->update();
             }
         }
     }
