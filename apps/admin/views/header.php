@@ -83,6 +83,7 @@
                     <li><a href="<?= $this->lurl ?>/stats/autobid_statistic" title="Statistiques Autolend">Statistiques Autolend</a></li>
                     <li><a href="<?= $this->lurl ?>/stats/declarations_bdf" title="Déclarations BDF">Déclarations BDF</a></li>
                     <li><a href="<?= $this->lurl ?>/stats/requete_crs_cac" title="CRS CAC">CRS CAC</a></li>
+                    <li><a href="<?= $this->lurl ?>/stats/extraction_b_lend" title="évaluation dossiers">Extraction des évaluations d'éligibilité des dossiers</a></li>
                 </ul>
             </li>
         <?php endif; ?>

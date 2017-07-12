@@ -358,8 +358,8 @@ class OperationManager
     public function withdrawTaxWallet(Wallet $wallet, $amount)
     {
         switch ($wallet->getIdType()->getLabel()) {
-            case WalletType::TAX_FR_ADDITIONAL_CONTRIBUTIONS:
-                $type = OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS_WITHDRAW;
+            case WalletType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES:
+                $type = OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_WITHDRAW;
                 break;
             case WalletType::TAX_FR_CRDS:
                 $type = OperationType::TAX_FR_CRDS_WITHDRAW;
@@ -367,17 +367,17 @@ class OperationManager
             case WalletType::TAX_FR_CSG:
                 $type = OperationType::TAX_FR_CSG_WITHDRAW;
                 break;
-            case WalletType::TAX_FR_SOLIDARITY_DEDUCTIONS:
-                $type = OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS_WITHDRAW;
+            case WalletType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE:
+                $type = OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_WITHDRAW;
                 break;
-            case WalletType::TAX_FR_STATUTORY_CONTRIBUTIONS:
-                $type = OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS_WITHDRAW;
+            case WalletType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES:
+                $type = OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_WITHDRAW;
                 break;
-            case WalletType::TAX_FR_SOCIAL_DEDUCTIONS:
-                $type = OperationType::TAX_FR_SOCIAL_DEDUCTIONS_WITHDRAW;
+            case WalletType::TAX_FR_PRELEVEMENTS_SOCIAUX:
+                $type = OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_WITHDRAW;
                 break;
-            case WalletType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE:
-                $type = OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE_WITHDRAW;
+            case WalletType::TAX_FR_RETENUES_A_LA_SOURCE:
+                $type = OperationType::TAX_FR_RETENUES_A_LA_SOURCE_WITHDRAW;
                 break;
             default:
                 throw new \InvalidArgumentException('Unsupported wallet type : ' . $wallet->getIdType()->getLabel());
@@ -422,32 +422,32 @@ class OperationManager
             $walletType    = '';
             switch ($type) {
                 case TaxType::TYPE_STATUTORY_CONTRIBUTIONS:
-                    $operationType = OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS;
-                    $walletType    = WalletType::TAX_FR_STATUTORY_CONTRIBUTIONS;
+                    $operationType = OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES;
+                    $walletType    = WalletType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES;
                     break;
                 case TaxType::TYPE_CSG:
                     $operationType = OperationType::TAX_FR_CSG;
                     $walletType    = WalletType::TAX_FR_CSG;
                     break;
                 case TaxType::TYPE_SOCIAL_DEDUCTIONS:
-                    $operationType = OperationType::TAX_FR_SOCIAL_DEDUCTIONS;
-                    $walletType    = WalletType::TAX_FR_SOCIAL_DEDUCTIONS;
+                    $operationType = OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX;
+                    $walletType    = WalletType::TAX_FR_PRELEVEMENTS_SOCIAUX;
                     break;
                 case TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS:
-                    $operationType = OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS;
-                    $walletType    = WalletType::TAX_FR_ADDITIONAL_CONTRIBUTIONS;
+                    $operationType = OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES;
+                    $walletType    = WalletType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES;
                     break;
                 case TaxType::TYPE_SOLIDARITY_DEDUCTIONS:
-                    $operationType = OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS;
-                    $walletType    = WalletType::TAX_FR_SOLIDARITY_DEDUCTIONS;
+                    $operationType = OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE;
+                    $walletType    = WalletType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE;
                     break;
                 case TaxType::TYPE_CRDS:
                     $operationType = OperationType::TAX_FR_CRDS;
                     $walletType    = WalletType::TAX_FR_CRDS;
                     break;
                 case TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE:
-                    $operationType = OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE;
-                    $walletType    = WalletType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE;
+                    $operationType = OperationType::TAX_FR_RETENUES_A_LA_SOURCE;
+                    $walletType    = WalletType::TAX_FR_RETENUES_A_LA_SOURCE;
                     break;
                 default :
                     continue;
@@ -612,11 +612,10 @@ class OperationManager
      * @param Wallet   $lender
      * @param Projects $project
      * @param          $amount
-     * @param          $commission
      *
      * @return bool
      */
-    public function repaymentCollection(Wallet $lender, Projects $project, $amount, $commission)
+    public function repaymentCollection(Wallet $lender, Projects $project, $amount)
     {
         $borrower = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
         if (null === $borrower) {
@@ -697,7 +696,7 @@ class OperationManager
      * @return bool
      * @throws \Exception
      */
-    public function regularization(Operation $operation, $amount = null)
+    public function regularize(Operation $operation, $amount = null)
     {
         switch ($operation->getType()->getLabel()) {
             case OperationType::BORROWER_COMMISSION:
@@ -709,8 +708,14 @@ class OperationManager
             case OperationType::GROSS_INTEREST_REPAYMENT:
                 $operationTypeLabel = OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION;
                 break;
-            case OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS:
-                $operationTypeLabel = OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS_REGULARIZATION;
+            case OperationType::COLLECTION_COMMISSION_LENDER:
+                $operationTypeLabel = OperationType::COLLECTION_COMMISSION_LENDER_REGULARIZATION;
+                break;
+            case OperationType::COLLECTION_COMMISSION_BORROWER:
+                $operationTypeLabel = OperationType::COLLECTION_COMMISSION_BORROWER_REGULARIZATION;
+                break;
+            case OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES:
+                $operationTypeLabel = OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_REGULARIZATION;
                 break;
             case OperationType::TAX_FR_CRDS:
                 $operationTypeLabel = OperationType::TAX_FR_CRDS_REGULARIZATION;
@@ -718,17 +723,17 @@ class OperationManager
             case OperationType::TAX_FR_CSG:
                 $operationTypeLabel = OperationType::TAX_FR_CSG_REGULARIZATION;
                 break;
-            case OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS:
-                $operationTypeLabel = OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS_REGULARIZATION;
+            case OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE:
+                $operationTypeLabel = OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_REGULARIZATION;
                 break;
-            case OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS:
-                $operationTypeLabel = OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS_REGULARIZATION;
+            case OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES:
+                $operationTypeLabel = OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_REGULARIZATION;
                 break;
-            case OperationType::TAX_FR_SOCIAL_DEDUCTIONS:
-                $operationTypeLabel = OperationType::TAX_FR_SOCIAL_DEDUCTIONS_REGULARIZATION;
+            case OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX:
+                $operationTypeLabel = OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_REGULARIZATION;
                 break;
-            case OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE:
-                $operationTypeLabel = OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE_REGULARIZATION;
+            case OperationType::TAX_FR_RETENUES_A_LA_SOURCE:
+                $operationTypeLabel = OperationType::TAX_FR_RETENUES_A_LA_SOURCE_REGULARIZATION;
                 break;
             default:
                 throw new \Exception('The operation type ' . $operation->getType()->getLabel() . ' is not supported');

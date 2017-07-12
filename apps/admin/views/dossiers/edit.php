@@ -534,7 +534,7 @@
                     <table class="form project-attributes">
                         <tr>
                             <th><label for="montant">Montant du prêt&nbsp;*</label></th>
-                            <td><input type="text" name="montant" id="montant" class="input_court"<?php if ($this->projects->status >= \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::PREP_FUNDING) : ?> disabled<?php endif; ?> value="<?= empty($this->projects->amount) ? '' : $this->ficelle->formatNumber($this->projects->amount, 0) ?>"> €</td>
+                            <td><input type="text" name="montant" id="montant" class="input_moy"<?php if ($this->projects->status >= \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::PREP_FUNDING) : ?> disabled<?php endif; ?> value="<?= empty($this->projects->amount) ? '' : $this->ficelle->formatNumber($this->projects->amount, 0) ?>"> €</td>
                         </tr>
                         <tr>
                             <th><label for="duree">Durée du prêt&nbsp;*</label></th>

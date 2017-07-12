@@ -423,13 +423,13 @@ class OperationRepository extends EntityRepository
                     ELSE "taxable"
                   END AS exemption_status,
                   SUM(o_interest.amount) AS interests,
-                  SUM(o_tax_fr_prelevements_obligatoires.amount)    AS "' . OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS . '",
+                  SUM(o_tax_fr_prelevements_obligatoires.amount)    AS "' . OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES . '",
                   SUM(o_tax_fr_csg.amount)                          AS "' . OperationType::TAX_FR_CSG . '",
-                  SUM(o_tax_fr_prelevements_sociaux.amount)         AS "' . OperationType::TAX_FR_SOCIAL_DEDUCTIONS . '",
-                  SUM(o_tax_fr_contributions_additionnelles.amount) AS "' . OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS . '",
-                  SUM(o_tax_fr_prelevements_de_solidarite.amount)   AS "' . OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS . '",
+                  SUM(o_tax_fr_prelevements_sociaux.amount)         AS "' . OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX . '",
+                  SUM(o_tax_fr_contributions_additionnelles.amount) AS "' . OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES . '",
+                  SUM(o_tax_fr_prelevements_de_solidarite.amount)   AS "' . OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE . '",
                   SUM(o_tax_fr_crds.amount)                         AS "' . OperationType::TAX_FR_CRDS . '",
-                  SUM(o_tax_fr_retenues_a_la_source.amount)         AS "' . OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE . '"
+                  SUM(o_tax_fr_retenues_a_la_source.amount)         AS "' . OperationType::TAX_FR_RETENUES_A_LA_SOURCE . '"
                 FROM operation o_interest USE INDEX (idx_operation_added)
                   INNER JOIN wallet w ON o_interest.id_wallet_creditor = w.id
                   INNER JOIN clients c ON w.id_client = c.id_client
@@ -441,7 +441,7 @@ class OperationRepository extends EntityRepository
                        AND o_tax_fr_contributions_additionnelles.id_wallet_debtor = o_interest.id_wallet_creditor
                        AND o_tax_fr_contributions_additionnelles.id_type = (SELECT id
                                                                             FROM operation_type
-                                                                            WHERE label = "' . OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS . '")
+                                                                            WHERE label = "' . OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES . '")
                   LEFT JOIN operation o_tax_fr_crds
                     ON o_tax_fr_crds.id_repayment_schedule = o_interest.id_repayment_schedule
                        AND o_tax_fr_crds.id_wallet_debtor = o_interest.id_wallet_creditor
@@ -459,25 +459,25 @@ class OperationRepository extends EntityRepository
                        AND o_tax_fr_prelevements_de_solidarite.id_wallet_debtor = o_interest.id_wallet_creditor
                        AND o_tax_fr_prelevements_de_solidarite.id_type = (SELECT id
                                                                           FROM operation_type
-                                                                          WHERE label = "' . OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS . '")
+                                                                          WHERE label = "' . OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE . '")
                   LEFT JOIN operation o_tax_fr_prelevements_obligatoires
                     ON o_tax_fr_prelevements_obligatoires.id_repayment_schedule = o_interest.id_repayment_schedule
                        AND o_tax_fr_prelevements_obligatoires.id_wallet_debtor = o_interest.id_wallet_creditor
                        AND o_tax_fr_prelevements_obligatoires.id_type = (SELECT id
                                                                          FROM operation_type
-                                                                         WHERE label = "' . OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS . '")
+                                                                         WHERE label = "' . OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES . '")
                   LEFT JOIN operation o_tax_fr_prelevements_sociaux
                     ON o_tax_fr_prelevements_sociaux.id_repayment_schedule = o_interest.id_repayment_schedule
                        AND o_tax_fr_prelevements_sociaux.id_wallet_debtor = o_interest.id_wallet_creditor
                        AND o_tax_fr_prelevements_sociaux.id_type = (SELECT id
                                                                     FROM operation_type
-                                                                    WHERE label = "' . OperationType::TAX_FR_SOCIAL_DEDUCTIONS . '")
+                                                                    WHERE label = "' . OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX . '")
                   LEFT JOIN operation o_tax_fr_retenues_a_la_source
                     ON o_tax_fr_retenues_a_la_source.id_repayment_schedule = o_interest.id_repayment_schedule
                        AND o_tax_fr_retenues_a_la_source.id_wallet_debtor = o_interest.id_wallet_creditor
                        AND o_tax_fr_retenues_a_la_source.id_type = (SELECT id
                                                                     FROM operation_type
-                                                                    WHERE label = "' . OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE . '")
+                                                                    WHERE label = "' . OperationType::TAX_FR_RETENUES_A_LA_SOURCE . '")
                 
                 WHERE o_interest.added BETWEEN :start AND :end
                       AND o_interest.id_type = (SELECT id

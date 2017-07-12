@@ -2,43 +2,63 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
+use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
 
 trait CompanyChecker
 {
-    public function isEligibleForCreationDays(\companies $company, \product $product, ProductAttributeManager $productAttributeManager)
+    /**
+     * @param Companies               $company
+     * @param Product                 $product
+     * @param ProductAttributeManager $productAttributeManager
+     *
+     * @return bool|null
+     */
+    private function isEligibleForCreationDays(Companies $company, Product $product, ProductAttributeManager $productAttributeManager)
     {
         $minDays = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MIN_CREATION_DAYS);
 
         if (empty($minDays)) {
-            return $this->isEligibleForContractCreationDays($company, $product, $productAttributeManager);
+            return true;
         }
 
-        $companyCreationDate = new \DateTime($company->date_creation);
-        if ($companyCreationDate->diff(new \DateTime())->days < $minDays[0]) {
-            return false;
+        if (empty($company->getDateCreation())) {
+            return null;
         }
 
-        return $this->isEligibleForContractCreationDays($company, $product, $productAttributeManager);
+        return $company->getDateCreation()->diff(new \DateTime())->days >= $minDays[0];
     }
 
-    public function isEligibleForRCS(\companies $company, \product $product, ProductAttributeManager $productAttributeManager)
+    /**
+     * @param Companies               $company
+     * @param Product                 $product
+     * @param ProductAttributeManager $productAttributeManager
+     *
+     * @return bool
+     */
+    private function isEligibleForRCS(Companies $company, Product $product, ProductAttributeManager $productAttributeManager)
     {
         $beRCS = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_RCS);
 
         if (empty($beRCS)) {
-            return $this->isEligibleForContractRCS($company, $product, $productAttributeManager);
+            return true;
         }
 
-        if ($beRCS[0] && empty($company->rcs)) {
-            return false;
-        }
-
-        return $this->isEligibleForContractRCS($company, $product, $productAttributeManager);
+        return (false === (bool) $beRCS[0] && true === empty($company->getRcs())) || (true === (bool) $beRCS[0] && false === empty($company->getRcs()));
     }
 
-    public function isEligibleForNafCode(\companies $company, \product $product, ProductAttributeManager $productAttributeManager)
+    /**
+     * @param Companies               $company
+     * @param Product                 $product
+     * @param ProductAttributeManager $productAttributeManager
+     *
+     * @return bool|null
+     */
+    private function isEligibleForNafCode(Companies $company, Product $product, ProductAttributeManager $productAttributeManager)
     {
         $nafCode = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_NAF_CODE);
 
@@ -46,17 +66,102 @@ trait CompanyChecker
             return true;
         }
 
-        return in_array($company->code_naf, $nafCode);
+        if (empty($company->getCodeNaf())) {
+            return null;
+        }
+
+        return in_array($company->getCodeNaf(), $nafCode);
     }
 
-    public function isEligibleForContractCreationDays(\companies $company, \product $product, ProductAttributeManager $productAttributeManager)
+    /**
+     * @param Companies               $company
+     * @param Product                 $product
+     * @param ProductAttributeManager $productAttributeManager
+     *
+     * @return bool|null
+     */
+    private function isEligibleForExcludedHeadquartersLocation(Companies $company, Product $product, ProductAttributeManager $productAttributeManager)
     {
-        $companyCreationDate = new \DateTime($company->date_creation);
-        $today               = new \DateTime();
+        $exclusiveLocations = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_EXCLUDED_HEADQUARTERS_LOCATION);
 
-        $attrVars = $productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::MIN_CREATION_DAYS);
-        foreach ($attrVars as $contractVars) {
-            if (isset($contractVars[0]) && $companyCreationDate->diff($today)->days < $contractVars[0]) {
+        if (empty($exclusiveLocations)) {
+            return true;
+        }
+
+        if (empty($company->getZip())) {
+            return null;
+        }
+
+        $departement = in_array(substr($company->getZip(), 0, 2), ['97', '98']) ? substr($company->getZip(), 0, 3) : substr($company->getZip(), 0, 2);
+
+        return false === in_array($departement, $exclusiveLocations);
+    }
+
+    /**
+     * @param Companies               $company
+     * @param Product                 $product
+     * @param ProductAttributeManager $productAttributeManager
+     * @param EntityManager           $entityManager
+     *
+     * @return bool|null
+     */
+    private function isEligibleForMaxXerfiScore(Companies $company, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    {
+        $maxXerfiScore = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MAX_XERFI_SCORE);
+
+        if (empty($maxXerfiScore)) {
+            return true;
+        }
+
+        if (empty($company->getCodeNaf())) {
+            return null;
+        }
+
+        $xerfiScore = $entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($company->getCodeNaf());
+        if ($xerfiScore) {
+            return $xerfiScore->getScore() <= $maxXerfiScore[0];
+        }
+
+        return null;
+    }
+
+    /**
+     * @param Companies               $company
+     * @param Product                 $product
+     * @param ProductAttributeManager $productAttributeManager
+     * @param EntityManager           $entityManager
+     *
+     * @return bool
+     */
+    private function isEligibleForNoBlendProject(Companies $company, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    {
+        $noInProgressBlendSince = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::NO_IN_PROGRESS_BLEND_PROJECT_DAYS);
+
+        if (empty($noInProgressBlendSince)) {
+            return true;
+        }
+
+        $projectRepository              = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $productRepository              = $entityManager->getRepository('UnilendCoreBusinessBundle:Product');
+        $projectStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
+        $projects                       = $projectRepository->findBySiren($company->getSiren());
+
+        $acceptableStatus        = [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE];
+        $partialAcceptableStatus = [ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION, ProjectsStatus::ABANDONED];
+
+        foreach ($projects as $project) {
+            $product = $productRepository->find($project->getIdProduct());
+            if (null === $product || Product::PRODUCT_BLEND !== $product->getLabel()) {
+                continue;
+            }
+            if (in_array($project->getStatus(), $acceptableStatus)) {
+                continue;
+            } elseif (in_array($project->getStatus(), $partialAcceptableStatus)) {
+                $lastStatus = $projectStatusHistoryRepository->findStatusFirstOccurrence($project, $project->getStatus());
+                if ($lastStatus && $lastStatus->getAdded()->diff(new \DateTime())->days <= $noInProgressBlendSince[0]) {
+                    return false;
+                }
+            } else {
                 return false;
             }
         }
@@ -64,11 +169,71 @@ trait CompanyChecker
         return true;
     }
 
-    public function isEligibleForContractRCS(\companies $company, \product $product, ProductAttributeManager $productAttributeManager)
+    /**
+     * @param Companies               $company
+     * @param Product                 $product
+     * @param ProductAttributeManager $productAttributeManager
+     * @param EntityManager           $entityManager
+     *
+     * @return bool
+     */
+    private function isEligibleForNoUnilendProjectIncident(Companies $company, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
     {
-        $attrVars = $productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::ELIGIBLE_BORROWER_COMPANY_RCS);
-        foreach ($attrVars as $contractVars) {
-            if (isset($contractVars[0]) && $contractVars[0] && empty($company->rcs)) {
+        $noUnilendIncidentSince = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::NO_INCIDENT_UNILEND_PROJECT_DAYS);
+        if (empty($noUnilendIncidentSince)) {
+            return true;
+        }
+
+        $projectRepository              = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $productRepository              = $entityManager->getRepository('UnilendCoreBusinessBundle:Product');
+        $projectStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
+
+        $projects = $projectRepository->findBySiren($company->getSiren());
+
+        foreach ($projects as $project) {
+            $product = $productRepository->find($project->getIdProduct());
+            if (null === $product || Product::PRODUCT_BLEND === $product->getLabel()) {
+                continue;
+            }
+            $lastIncidentStatus = $projectStatusHistoryRepository->findStatusLastOccurrence($project, [ProjectsStatus::PROBLEME, ProjectsStatus::PROBLEME_J_X, ProjectsStatus::RECOUVREMENT]);
+
+            if ($lastIncidentStatus && $lastIncidentStatus->getAdded()->diff(new \DateTime())->days <= $noUnilendIncidentSince[0]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param Companies               $company
+     * @param Product                 $product
+     * @param ProductAttributeManager $productAttributeManager
+     * @param EntityManager           $entityManager
+     *
+     * @return bool
+     */
+    private function isEligibleForNoBlendProjectIncident(Companies $company, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    {
+        $noBlendIncidentSince = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::NO_INCIDENT_BLEND_PROJECT_DAYS);
+        if (empty($noBlendIncidentSince)) {
+            return true;
+        }
+
+        $projectRepository              = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $productRepository              = $entityManager->getRepository('UnilendCoreBusinessBundle:Product');
+        $projectStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
+
+        $projects = $projectRepository->findBySiren($company->getSiren());
+
+        foreach ($projects as $project) {
+            $product = $productRepository->find($project->getIdProduct());
+            if (null === $product || Product::PRODUCT_BLEND !== $product->getLabel()) {
+                continue;
+            }
+            $lastIncidentStatus = $projectStatusHistoryRepository->findStatusLastOccurrence($project, [ProjectsStatus::PROBLEME, ProjectsStatus::PROBLEME_J_X, ProjectsStatus::RECOUVREMENT]);
+
+            if ($lastIncidentStatus && $lastIncidentStatus->getAdded()->diff(new \DateTime())->days <= $noBlendIncidentSince[0]) {
                 return false;
             }
         }

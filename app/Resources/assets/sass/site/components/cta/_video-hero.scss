@@ -264,3 +264,8 @@
     }
   }
 }
+
+// No need for preloader since only 1 slide is displayed
+[data-swiper-disablemobile] .swiper-lazy-preloader {
+  display: none;
+}

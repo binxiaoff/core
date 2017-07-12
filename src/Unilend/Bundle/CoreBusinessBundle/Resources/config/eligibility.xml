@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <service id="unilend.service.eligibility.eligibility_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\EligibilityManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.eligibility.company_validator"/>
+        </service>
+
+        <service id="unilend.service.eligibility.company_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator\CompanyValidator" public="false">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.external_data_manager"/>
+        </service>
+    </services>
+</container>

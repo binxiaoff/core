@@ -21,7 +21,7 @@ class DirectorAnnouncementCollection
     /**
      * @return DirectorAnnouncement[]
      */
-    public function getHomonyms()
+    public function getAnnouncements()
     {
         return $this->announcements;
     }

@@ -97,7 +97,8 @@ class EllisphereManager
     public function getReport($siren)
     {
         $wsResource = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WsExternalResource')->findOneBy(['label' => self::RESOURCE_ONLINE_ORDER]);
-        $result = $this->sendRequest($wsResource, ['siren' => $siren]);
+        $result     = $this->sendRequest($wsResource, ['siren' => $siren]);
+
         if ($result && isset($result->response->report)) {
             return $this->serializer->deserialize($result->response->report->asXML(), Report::class, 'xml');
         }
@@ -107,11 +108,11 @@ class EllisphereManager
 
     /**
      * @param WsExternalResource $wsResource
-     * @param                    $parameters
+     * @param array              $parameters
      *
      * @return null|\SimpleXMLElement
      */
-    private function sendRequest(WsExternalResource $wsResource, $parameters)
+    private function sendRequest(WsExternalResource $wsResource, array $parameters)
     {
         $endpoint   = $wsResource->getResourceName();
         $logContext = ['method' => __METHOD__, 'resource' => $endpoint];
@@ -122,7 +123,10 @@ class EllisphereManager
             $siren               = $parameters['siren'];
 
             if ($content = $this->getStoredResponse($wsResource, $siren)) {
-                return new \SimpleXMLElement($content);
+                $validity = $this->isValidContent($content, $logContext);
+                if ('valid' === $validity['status']) {
+                    return new \SimpleXMLElement($content);
+                }
             }
 
             $callback = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
@@ -197,7 +201,7 @@ class EllisphereManager
 
     /**
      * @param \SimpleXMLElement $element
-     * @param sting             $endpoint
+     * @param string            $endpoint
      * @param array             $parameters
      */
     private function addRequest(\SimpleXMLElement $element, $endpoint, $parameters)
@@ -263,36 +267,61 @@ class EllisphereManager
      *
      * @return array
      */
-    private function isValidResponse(ResponseInterface $response, $logContext)
+    private function isValidResponse(ResponseInterface $response, array $logContext)
     {
         if (500 <= $response->getStatusCode()) {
-            return ['status' => 'error', 'is_valid' => false, 'content' => null];
+            return [
+                'status'  => 'error',
+                'content' => null
+            ];
         }
+
         try {
             $stream = $response->getBody();
             $stream->rewind();
             $content = $stream->getContents();
-            $xml     = new \SimpleXMLElement($content);
-            $result  = $xml->xpath('result');
 
-            if ('OK' !== (string) $result[0]->attributes()) {
-                if (isset($xml->result->majorMessage, $xml->result->minorMessage)) {
-                    $error = $xml->result->majorMessage . ' ' . $xml->result->minorMessage;
-                    if (isset($xml->result->additionalInfo)) {
-                        $error .= $xml->result->additionalInfo;
-                    }
-                    $this->logger->warning('Ellisphere response status code ' . $response->getStatusCode() . '. Error: ' . $error, $logContext);
-                    return ['status' => 'warning', 'is_valid' => false, 'content' => $content];
-                }
-            }
+            return $this->isValidContent($content, $logContext);
+        } catch (Exception $exception) {
+            $this->logger->error('Error occurs while parsing Ellisphere response. Error messages : ' . $exception->getMessage(), $logContext);
 
             return [
-                'status'  => 'valid',
-                'content' => $content
+                'status'  => 'error',
+                'content' => null
             ];
-        } catch (Exception $exception) {
-            $this->logger->error('Error occurs when parse the Ellisphere response. Error messages : ' . $exception->getMessage(), $logContext);
-            return ['status' => 'error', 'is_valid' => false, 'content' => null];
         }
+    }
+
+    /**
+     * @param string $content
+     * @param array  $logContext
+     *
+     * @return array
+     */
+    private function isValidContent($content, array $logContext)
+    {
+        $xml     = new \SimpleXMLElement($content);
+        $result = $xml->xpath('result');
+
+        if ('OK' !== (string) $result[0]->attributes()) {
+            if (isset($xml->result->majorMessage, $xml->result->minorMessage)) {
+                $error = $xml->result->majorMessage . ' ' . $xml->result->minorMessage;
+                if (isset($xml->result->additionalInfo)) {
+                    $error .= $xml->result->additionalInfo;
+                }
+
+                $this->logger->warning('Ellisphere error: ' . $error, $logContext);
+
+                return [
+                    'status'  => 'warning',
+                    'content' => $content
+                ];
+            }
+        }
+
+        return [
+            'status'  => 'valid',
+            'content' => $content
+        ];
     }
 }
