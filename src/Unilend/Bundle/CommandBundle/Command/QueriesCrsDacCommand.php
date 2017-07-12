@@ -27,7 +27,7 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('queries:crd_dac')
+            ->setName('queries:crs_dac')
             ->setDescription('Extract lender information at the end of a given year')
             ->addArgument(
                 'year',
