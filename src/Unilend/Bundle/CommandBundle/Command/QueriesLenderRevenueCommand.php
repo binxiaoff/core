@@ -79,7 +79,7 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
                 $row += 1;
             }
 
-            $deductedAtSource = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE], null, $year);
+            $deductedAtSource = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::TAX_FR_RETENUES_A_LA_SOURCE], null, $year);
             if ($deductedAtSource > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
                 $activeSheet->setCellValueByColumnAndRow(2, $row, '2');
@@ -87,7 +87,7 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
                 $row += 1;
             }
 
-            $statutoryContributions = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS], null, $year);
+            $statutoryContributions = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES], null, $year);
             if ($statutoryContributions > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
                 $activeSheet->setCellValueByColumnAndRow(2, $row, '54');

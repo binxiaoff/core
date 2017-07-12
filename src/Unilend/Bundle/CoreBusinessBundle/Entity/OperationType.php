@@ -12,36 +12,36 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class OperationType
 {
-    const BORROWER_PROVISION                            = 'borrower_provision';
-    const BORROWER_PROVISION_CANCEL                     = 'borrower_provision_cancel';
-    const BORROWER_COMMISSION                           = 'borrower_commission';
-    const BORROWER_WITHDRAW                             = 'borrower_withdraw';
-    const CAPITAL_REPAYMENT                             = 'capital_repayment';
-    const GROSS_INTEREST_REPAYMENT                      = 'gross_interest_repayment';
-    const LENDER_LOAN                                   = 'lender_loan';
-    const LENDER_PROVISION                              = 'lender_provision';
-    const LENDER_PROVISION_CANCEL                       = 'lender_provision_cancel';
-    const LENDER_WITHDRAW                               = 'lender_withdraw';
-    const LENDER_TRANSFER                               = 'lender_transfer';
-    const TAX_FR_ADDITIONAL_CONTRIBUTIONS               = 'tax_fr_contributions_additionnelles';
-    const TAX_FR_ADDITIONAL_CONTRIBUTIONS_WITHDRAW      = 'tax_fr_contributions_additionnelles_withdraw';
-    const TAX_FR_CRDS                                   = 'tax_fr_crds';
-    const TAX_FR_CRDS_WITHDRAW                          = 'tax_fr_crds_withdraw';
-    const TAX_FR_CSG                                    = 'tax_fr_csg';
-    const TAX_FR_CSG_WITHDRAW                           = 'tax_fr_csg_withdraw';
-    const TAX_FR_SOLIDARITY_DEDUCTIONS                  = 'tax_fr_prelevements_de_solidarite';
-    const TAX_FR_SOLIDARITY_DEDUCTIONS_WITHDRAW         = 'tax_fr_prelevements_de_solidarite_withdraw';
-    const TAX_FR_STATUTORY_CONTRIBUTIONS                = 'tax_fr_prelevements_obligatoires';
-    const TAX_FR_STATUTORY_CONTRIBUTIONS_WITHDRAW       = 'tax_fr_prelevements_obligatoires_withdraw';
-    const TAX_FR_SOCIAL_DEDUCTIONS                      = 'tax_fr_prelevements_sociaux';
-    const TAX_FR_SOCIAL_DEDUCTIONS_WITHDRAW             = 'tax_fr_prelevements_sociaux_withdraw';
-    const TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE          = 'tax_fr_retenues_a_la_source';
-    const TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE_WITHDRAW = 'tax_fr_retenues_a_la_source_withdraw';
-    const UNILEND_PROMOTIONAL_OPERATION                 = 'unilend_promotional_operation';
-    const UNILEND_PROMOTIONAL_OPERATION_CANCEL          = 'unilend_promotional_operation_cancel';
-    const UNILEND_PROMOTIONAL_OPERATION_PROVISION       = 'unilend_promotional_operation_provision';
-    const UNILEND_PROVISION                             = 'unilend_provision';
-    const UNILEND_WITHDRAW                              = 'unilend_withdraw';
+    const BORROWER_PROVISION                           = 'borrower_provision';
+    const BORROWER_PROVISION_CANCEL                    = 'borrower_provision_cancel';
+    const BORROWER_COMMISSION                          = 'borrower_commission';
+    const BORROWER_WITHDRAW                            = 'borrower_withdraw';
+    const CAPITAL_REPAYMENT                            = 'capital_repayment';
+    const GROSS_INTEREST_REPAYMENT                     = 'gross_interest_repayment';
+    const LENDER_LOAN                                  = 'lender_loan';
+    const LENDER_PROVISION                             = 'lender_provision';
+    const LENDER_PROVISION_CANCEL                      = 'lender_provision_cancel';
+    const LENDER_WITHDRAW                              = 'lender_withdraw';
+    const LENDER_TRANSFER                              = 'lender_transfer';
+    const TAX_FR_CONTRIBUTIONS_ADDITIONNELLES          = 'tax_fr_contributions_additionnelles';
+    const TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_WITHDRAW = 'tax_fr_contributions_additionnelles_withdraw';
+    const TAX_FR_CRDS                                  = 'tax_fr_crds';
+    const TAX_FR_CRDS_WITHDRAW                         = 'tax_fr_crds_withdraw';
+    const TAX_FR_CSG                                   = 'tax_fr_csg';
+    const TAX_FR_CSG_WITHDRAW                          = 'tax_fr_csg_withdraw';
+    const TAX_FR_PRELEVEMENTS_DE_SOLIDARITE            = 'tax_fr_prelevements_de_solidarite';
+    const TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_WITHDRAW   = 'tax_fr_prelevements_de_solidarite_withdraw';
+    const TAX_FR_PRELEVEMENTS_OBLIGATOIRES             = 'tax_fr_prelevements_obligatoires';
+    const TAX_FR_PRELEVEMENTS_OBLIGATOIRES_WITHDRAW    = 'tax_fr_prelevements_obligatoires_withdraw';
+    const TAX_FR_PRELEVEMENTS_SOCIAUX                  = 'tax_fr_prelevements_sociaux';
+    const TAX_FR_PRELEVEMENTS_SOCIAUX_WITHDRAW         = 'tax_fr_prelevements_sociaux_withdraw';
+    const TAX_FR_RETENUES_A_LA_SOURCE                  = 'tax_fr_retenues_a_la_source';
+    const TAX_FR_RETENUES_A_LA_SOURCE_WITHDRAW         = 'tax_fr_retenues_a_la_source_withdraw';
+    const UNILEND_PROMOTIONAL_OPERATION                = 'unilend_promotional_operation';
+    const UNILEND_PROMOTIONAL_OPERATION_CANCEL         = 'unilend_promotional_operation_cancel';
+    const UNILEND_PROMOTIONAL_OPERATION_PROVISION      = 'unilend_promotional_operation_provision';
+    const UNILEND_PROVISION                            = 'unilend_provision';
+    const UNILEND_WITHDRAW                             = 'unilend_withdraw';
 
     const COLLECTION_COMMISSION_PROVISION = 'collection_commission_provision';
     const COLLECTION_COMMISSION_BORROWER  = 'collection_commission_borrower';
@@ -53,25 +53,29 @@ class OperationType
     const UNILEND_BORROWER_REGULARIZATION     = 'unilend_borrower_regularization';
 
     // Specific regularization
-    const BORROWER_COMMISSION_REGULARIZATION                  = 'borrower_commission_regularization';
-    const CAPITAL_REPAYMENT_REGULARIZATION                    = 'capital_repayment_regularization';
-    const GROSS_INTEREST_REPAYMENT_REGULARIZATION             = 'gross_interest_repayment_regularization';
-    const TAX_FR_ADDITIONAL_CONTRIBUTIONS_REGULARIZATION      = 'tax_fr_additional_contributions_regularization';
-    const TAX_FR_CRDS_REGULARIZATION                          = 'tax_fr_crds_regularization';
-    const TAX_FR_CSG_REGULARIZATION                           = 'tax_fr_csg_regularization';
-    const TAX_FR_SOLIDARITY_DEDUCTIONS_REGULARIZATION         = 'tax_fr_solidarity_deductions_regularization';
-    const TAX_FR_STATUTORY_CONTRIBUTIONS_REGULARIZATION       = 'tax_fr_statutory_contributions_regularization';
-    const TAX_FR_SOCIAL_DEDUCTIONS_REGULARIZATION             = 'tax_fr_social_deductions_regularization';
-    const TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE_REGULARIZATION = 'tax_fr_income_tax_deducted_at_source_regularization';
+    const BORROWER_COMMISSION_REGULARIZATION      = 'borrower_commission_regularization';
+    const CAPITAL_REPAYMENT_REGULARIZATION        = 'capital_repayment_regularization';
+    const GROSS_INTEREST_REPAYMENT_REGULARIZATION = 'gross_interest_repayment_regularization';
+
+    const COLLECTION_COMMISSION_BORROWER_REGULARIZATION = 'collection_commission_borrower_regularization';
+    const COLLECTION_COMMISSION_LENDER_REGULARIZATION   = 'collection_commission_lender_regularization';
+
+    const TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_REGULARIZATION = 'tax_fr_contributions_additionnelles_regularization';
+    const TAX_FR_CRDS_REGULARIZATION                         = 'tax_fr_crds_regularization';
+    const TAX_FR_CSG_REGULARIZATION                          = 'tax_fr_csg_regularization';
+    const TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_REGULARIZATION   = 'tax_fr_prelevements_de_solidarite_regularization';
+    const TAX_FR_PRELEVEMENTS_OBLIGATOIRES_REGULARIZATION    = 'tax_fr_prelevements_obligatoires_regularization';
+    const TAX_FR_PRELEVEMENTS_SOCIAUX_REGULARIZATION         = 'tax_fr_prelevements_sociaux_regularization';
+    const TAX_FR_RETENUES_A_LA_SOURCE_REGULARIZATION         = 'tax_fr_retenues_a_la_source_regularization';
 
     const TAX_TYPES_FR = [
-        self::TAX_FR_STATUTORY_CONTRIBUTIONS,
+        self::TAX_FR_PRELEVEMENTS_OBLIGATOIRES,
         self::TAX_FR_CSG,
-        self::TAX_FR_SOCIAL_DEDUCTIONS,
-        self::TAX_FR_ADDITIONAL_CONTRIBUTIONS,
-        self::TAX_FR_SOLIDARITY_DEDUCTIONS,
+        self::TAX_FR_PRELEVEMENTS_SOCIAUX,
+        self::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES,
+        self::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE,
         self::TAX_FR_CRDS,
-        self::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE
+        self::TAX_FR_RETENUES_A_LA_SOURCE
     ];
 
     /**
