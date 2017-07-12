@@ -170,7 +170,7 @@ class projects extends projects_crud
      */
     public function selectProjectsByStatus(array $status, $where = '', array $sort = [], $start = '', $nb = '', $useCache = true, array $products = [])
     {
-        $binds = ['fundingStatus' => \projects_status::EN_FUNDING, 'status' => $status];
+        $binds = ['fundingStatus' => ProjectsStatus::EN_FUNDING, 'status' => $status];
 
         if ($useCache) {
             $QCProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile(60, md5(__METHOD__));
@@ -217,9 +217,9 @@ class projects extends projects_crud
             case self::SORT_FIELD_RATE:
                 $select .= ',
                     CASE
-                        WHEN p.status IN (' . implode(', ', [\projects_status::FUNDE, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::PROBLEME, \projects_status::PROBLEME_J_X, \projects_status::RECOUVREMENT, \projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT]) . ') THEN (SELECT SUM(amount * rate) / SUM(amount) AS avg_rate FROM loans WHERE id_project = p.id_project)
-                        WHEN p.status IN (' . implode(', ', [\projects_status::PRET_REFUSE, \projects_status::EN_FUNDING, \projects_status::AUTO_BID_PLACED, \projects_status::A_FUNDER]) . ') THEN (SELECT SUM(amount * rate) / SUM(amount) AS avg_rate FROM bids WHERE id_project = p.id_project AND status IN (0, 1))
-                        WHEN p.status IN (' . implode(', ', [\projects_status::FUNDING_KO]) . ') THEN (SELECT SUM(amount * rate) / SUM(amount) AS avg_rate FROM bids WHERE id_project = p.id_project)
+                        WHEN p.status IN (' . implode(', ', [ProjectsStatus::FUNDE, ProjectsStatus::REMBOURSEMENT, ProjectsStatus::REMBOURSE, ProjectsStatus::PROBLEME, ProjectsStatus::PROBLEME_J_X, ProjectsStatus::RECOUVREMENT, ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE, ProjectsStatus::DEFAUT]) . ') THEN (SELECT SUM(amount * rate) / SUM(amount) AS avg_rate FROM loans WHERE id_project = p.id_project)
+                        WHEN p.status IN (' . implode(', ', [ProjectsStatus::PRET_REFUSE, ProjectsStatus::EN_FUNDING, ProjectsStatus::AUTO_BID_PLACED, ProjectsStatus::A_FUNDER]) . ') THEN (SELECT SUM(amount * rate) / SUM(amount) AS avg_rate FROM bids WHERE id_project = p.id_project AND status IN (0, 1))
+                        WHEN p.status IN (' . implode(', ', [ProjectsStatus::FUNDING_KO]) . ') THEN (SELECT SUM(amount * rate) / SUM(amount) AS avg_rate FROM bids WHERE id_project = p.id_project)
                     END AS avg_rate';
                 $order = 'avg_rate ' . $sortDirection . ', p.date_retrait DESC, p.status ASC';
                 break;
@@ -496,7 +496,7 @@ class projects extends projects_crud
         $rResult   = $this->bdd->query('
             SELECT *
             FROM projects
-            WHERE status IN (' . implode(', ', [\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE]) . ')'
+            WHERE status IN (' . implode(', ', [ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE]) . ')'
         );
 
         if ($this->bdd->num_rows($rResult) > 0) {
@@ -509,72 +509,87 @@ class projects extends projects_crud
     }
 
     /**
+     * @param bool $cache
+     *
      * @return float
      */
-    public function getAverageInterestRate()
+    public function getAverageInterestRate($cache = true)
     {
-        $cacheTime = \Unilend\librairies\CacheKeys::VERY_SHORT_TIME;
-        $cacheKey  = md5(__METHOD__);
+        if (null !== $this->interest_rate && false === empty((float) $this->interest_rate)) {
+            return $this->interest_rate;
+        }
 
-        $queryBuilder = $this->bdd->createQueryBuilder();
-        $queryBuilder->select('SUM(amount * rate) / SUM(amount) AS avg_rate');
+        $queryCacheProfile = null;
+        $queryBuilder      = $this->bdd->createQueryBuilder();
+        $queryBuilder
+            ->select('SUM(amount * rate) / SUM(amount)')
+            ->where('id_project = :projectId')
+            ->setParameter('projectId', $this->id_project);
 
         switch ($this->status) {
-            case \projects_status::FUNDE:
-            case \projects_status::REMBOURSEMENT:
-            case \projects_status::REMBOURSE:
-            case \projects_status::PROBLEME:
-            case \projects_status::PROBLEME_J_X:
-            case \projects_status::RECOUVREMENT:
-            case \projects_status::REMBOURSEMENT_ANTICIPE:
-            case \projects_status::PROCEDURE_SAUVEGARDE:
-            case \projects_status::REDRESSEMENT_JUDICIAIRE:
-            case \projects_status::LIQUIDATION_JUDICIAIRE:
-            case \projects_status::DEFAUT:
+            case ProjectsStatus::FUNDE:
+            case ProjectsStatus::REMBOURSEMENT:
+            case ProjectsStatus::REMBOURSE:
+            case ProjectsStatus::PROBLEME:
+            case ProjectsStatus::PROBLEME_J_X:
+            case ProjectsStatus::RECOUVREMENT:
+            case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
+            case ProjectsStatus::PROCEDURE_SAUVEGARDE:
+            case ProjectsStatus::REDRESSEMENT_JUDICIAIRE:
+            case ProjectsStatus::LIQUIDATION_JUDICIAIRE:
+            case ProjectsStatus::DEFAUT:
                 $queryBuilder
-                    ->from('loans')
-                    ->where('id_project = :id_project');
-                $cacheTime = \Unilend\librairies\CacheKeys::DAY * 30;
-                $cacheKey  = md5(__METHOD__ .'ended_project');
+                    ->from('loans');
                 break;
-            case \projects_status::PRET_REFUSE:
-            case \projects_status::EN_FUNDING:
-            case \projects_status::AUTO_BID_PLACED:
-            case \projects_status::BID_TERMINATED:
-            case \projects_status::A_FUNDER:
+            case ProjectsStatus::PRET_REFUSE:
+            case ProjectsStatus::EN_FUNDING:
+            case ProjectsStatus::AUTO_BID_PLACED:
+            case ProjectsStatus::BID_TERMINATED:
+            case ProjectsStatus::A_FUNDER:
                 $queryBuilder
                     ->from('bids')
-                    ->where('id_project = :id_project')
-                    ->andWhere('status in (:status)')
+                    ->andWhere('status IN (:status)')
                     ->setParameter('status', [\bids::STATUS_BID_PENDING, \bids::STATUS_BID_ACCEPTED], \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
                 break;
-            case \projects_status::FUNDING_KO:
+            case ProjectsStatus::FUNDING_KO:
                 $queryBuilder
-                    ->from('bids')
-                    ->where('id_project = :id_project');
-                $cacheTime = \Unilend\librairies\CacheKeys::DAY * 30;
-                $cacheKey  = md5(__METHOD__ .'ended_project');
+                    ->from('bids');
                 break;
             default:
-                trigger_error('Unknown project status : ' . $this->status . ' Could not calculate amounts', E_USER_WARNING);
+                trigger_error('Unknown project status: ' . $this->status . ' Could not calculate amounts', E_USER_WARNING);
                 return 0.0;
         }
 
-        $queryBuilder->setParameter('id_project', $this->id_project);
-
-        $statement = $this->bdd->executeCacheQuery(
-            $queryBuilder->getSQL(),
-            $queryBuilder->getParameters(),
-            $queryBuilder->getParameterTypes(),
-            new \Doctrine\DBAL\Cache\QueryCacheProfile($cacheTime, $cacheKey));
-        $result    = $statement->fetchAll(PDO::FETCH_COLUMN);
-        $statement->closeCursor();
-
-        if (empty($result)) {
-            return 0.0;
+        if ($this->status >= ProjectsStatus::PRET_REFUSE) {
+            trigger_error('Interest rate should be saved in DB for project ' . $this->id_project, E_USER_WARNING);
         }
 
-        return array_values($result)[0];
+        if ($cache && $this->status != ProjectsStatus::A_FUNDER) {
+            $cacheTime         = \Unilend\librairies\CacheKeys::VERY_SHORT_TIME;
+            $cacheKey          = md5(__METHOD__);
+            $queryCacheProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile($cacheTime, $cacheKey);
+        }
+
+        try {
+            $statement = $this->bdd->executeQuery(
+                $queryBuilder->getSQL(),
+                $queryBuilder->getParameters(),
+                $queryBuilder->getParameterTypes(),
+                $queryCacheProfile
+            );
+
+            if ($statement instanceof \Doctrine\DBAL\Driver\ResultStatement) {
+                $result = $statement->fetchAll(PDO::FETCH_COLUMN);
+                $statement->closeCursor();
+
+                if (is_array($result)) {
+                    return (float) $result[0];
+                }
+            }
+        } catch (\Exception $exception) {
+        }
+
+        return 0.0;
     }
 
     public function getLoansAndLendersForProject($iProjectId = null)
@@ -650,7 +665,7 @@ class projects extends projects_crud
             INNER JOIN (SELECT id_project, MIN(date_echeance_emprunteur) AS date_echeance_emprunteur FROM echeanciers_emprunteur WHERE status_emprunteur = 0 GROUP BY id_project) min_unpaid ON min_unpaid.id_project = p.id_project
             INNER JOIN echeanciers_emprunteur prev ON prev.id_project = p.id_project AND prev.date_echeance_emprunteur = min_unpaid.date_echeance_emprunteur
             INNER JOIN echeanciers_emprunteur next ON next.id_project = p.id_project AND next.ordre = prev.ordre + 1 AND next.status_emprunteur = 0
-            WHERE p.status = ' . \projects_status::PROBLEME_J_X . '
+            WHERE p.status = ' . ProjectsStatus::PROBLEME_J_X . '
                 AND DATE(next.date_echeance_emprunteur) = DATE(ADDDATE(NOW(), INTERVAL 7 DAY))'
         );
         while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
@@ -700,8 +715,8 @@ class projects extends projects_crud
                     SELECT l.id_loan, l.amount, l.rate, l.added, p.id_project, p.period
                     FROM loans l
                     INNER JOIN projects p ON p.id_project = l.id_project
-                    WHERE p.status >= ' . \projects_status::FUNDE . '
-                        AND p.status != ' . \projects_status::FUNDING_KO . $whereRisk . $whereDurationMin . $whereDurationMax . $wherePublished . '
+                    WHERE p.status >= ' . ProjectsStatus::FUNDE . '
+                        AND p.status != ' . ProjectsStatus::FUNDING_KO . $whereRisk . $whereDurationMin . $whereDurationMax . $wherePublished . '
                 ) t
                 GROUP BY t.id_project
             ) t1';
@@ -730,7 +745,7 @@ class projects extends projects_crud
                           FROM loans l
                           INNER JOIN projects p ON p.id_project = l.id_project
                           INNER JOIN projects_status ps ON ps.status = p.status
-                          WHERE l.status = 0 AND p.status > ' . \projects_status::EN_FUNDING . '
+                          WHERE l.status = 0 AND p.status > ' . ProjectsStatus::EN_FUNDING . '
                           AND p.date_fin BETWEEN "' . $oDateFrom->format('Y-m-d H:i:s') . '" AND "' . $oDateTo->format('Y-m-d H:i:s') . '"
                           GROUP BY l.id_loan
                        ) t
@@ -875,7 +890,7 @@ class projects extends projects_crud
                   loans.amount
                 FROM projects p
                    INNER JOIN loans ON p.id_project = loans.id_project
-                WHERE p.status >= ' . \projects_status::REMBOURSEMENT . '
+                WHERE p.status >= ' . ProjectsStatus::REMBOURSEMENT . '
                 ORDER BY p.date_fin DESC
                 LIMIT :limit
             ) AS last_loans';
@@ -897,7 +912,7 @@ class projects extends projects_crud
     {
         $query = 'SELECT ROUND(AVG(amount), 0)
                     FROM projects
-                    WHERE status >= ' . \projects_status::REMBOURSEMENT;
+                    WHERE status >= ' . ProjectsStatus::REMBOURSEMENT;
         $statement = $this->bdd->executeQuery($query);
 
         return $statement->fetchColumn(0);
@@ -1041,7 +1056,7 @@ class projects extends projects_crud
         $query = 'SELECT count(projects.id_project)
                     FROM projects
                     WHERE ROUND(TIMESTAMPDIFF(SECOND, date_publication, date_funded)/120) <= 24
-                    AND date_funded >= :startDate AND status >= ' . \projects_status::FUNDE;
+                    AND date_funded >= :startDate AND status >= ' . ProjectsStatus::FUNDE;
 
         $statement = $this->bdd->executeQuery($query, $bind, $type);
 
@@ -1055,7 +1070,7 @@ class projects extends projects_crud
 
         $query = 'SELECT count(projects.id_project)
                     FROM projects
-                    WHERE date_funded >= :startDate AND status >=' . \projects_status::FUNDE;
+                    WHERE date_funded >= :startDate AND status >=' . ProjectsStatus::FUNDE;
 
         $statement = $this->bdd->executeQuery($query, $bind, $type);
 
@@ -1088,12 +1103,12 @@ class projects extends projects_crud
                           END AS date_range
                         FROM projects_status_history
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                        WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
+                        WHERE  projects_status.status = '. ProjectsStatus::REMBOURSEMENT .'
                           AND projects.id_project = projects_status_history.id_project
                         ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                        FROM projects
-                    WHERE projects.status >= ' . \projects_status::REMBOURSEMENT . '
+                    WHERE projects.status >= ' . ProjectsStatus::REMBOURSEMENT . '
                     GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery($query);
@@ -1209,7 +1224,7 @@ class projects extends projects_crud
               (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC, psh.id_project_status_history DESC LIMIT 1) AS status
             FROM projects p
             WHERE p.display = ' . self::DISPLAY_PROJECT_ON . ' AND p.title LIKE :search
-            HAVING status >= ' . \projects_status::EN_FUNDING . '
+            HAVING status >= ' . ProjectsStatus::EN_FUNDING . '
             ORDER BY p.title ASC';
 
         /** @var \Doctrine\DBAL\Statement $statement */
@@ -1296,8 +1311,8 @@ class projects extends projects_crud
             ->innerJoin('p', 'projects_status', 'ps', 'p.status = ps.status')
             ->leftJoin('p', 'partner', 'pa', 'p.id_partner = pa.id')
             ->where('p.status IN (:riskStatus)')
-            ->setParameter('waitingAnalystStatus', \projects_status::PENDING_ANALYSIS)
-            ->setParameter('riskStatus', \projects_status::$riskTeam, Connection::PARAM_INT_ARRAY)
+            ->setParameter('waitingAnalystStatus', ProjectsStatus::PENDING_ANALYSIS)
+            ->setParameter('riskStatus', ProjectsStatus::$riskTeam, Connection::PARAM_INT_ARRAY)
             ->addOrderBy('status', 'ASC')
             ->addOrderBy('risk_status_duration', 'DESC');
     }
@@ -1308,7 +1323,7 @@ class projects extends projects_crud
      */
     public function getSaleUserProjects(\users $user)
     {
-        $statement = $this->getSaleProjectsQuery(\projects_status::$saleTeam)
+        $statement = $this->getSaleProjectsQuery(ProjectsStatus::$saleTeam)
             ->andWhere('p.id_commercial = :userId')
             ->setParameter('userId', $user->id_user)
             ->execute();
@@ -1325,7 +1340,7 @@ class projects extends projects_crud
      */
     public function getSaleProjectsExcludingUser(\users $user)
     {
-        $statement = $this->getSaleProjectsQuery(\projects_status::$saleTeam)
+        $statement = $this->getSaleProjectsQuery(ProjectsStatus::$saleTeam)
             ->andWhere('p.id_commercial != :userId')
             ->setParameter('userId', $user->id_user)
             ->execute();
@@ -1341,7 +1356,7 @@ class projects extends projects_crud
      */
     public function getUpcomingSaleProjects()
     {
-        $statement = $this->getSaleProjectsQuery(\projects_status::$upcomingSaleTeam)
+        $statement = $this->getSaleProjectsQuery(ProjectsStatus::$upcomingSaleTeam)
             ->andWhere('DATE_SUB(NOW(), INTERVAL 1 WEEK) < p.added')
             ->execute();
 
@@ -1367,7 +1382,7 @@ class projects extends projects_crud
             ->innerJoin('p', 'companies', 'co', 'p.id_company = co.id_company')
             ->innerJoin('p', 'projects_status', 'ps', 'p.status = ps.status')
             ->where('p.status = :status')
-            ->setParameter('status', \projects_status::IMPOSSIBLE_AUTO_EVALUATION, PDO::PARAM_INT)
+            ->setParameter('status', ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION, PDO::PARAM_INT)
             ->addOrderBy('creation', 'ASC')
             ->addOrderBy('amount', 'DESC')
             ->addOrderBy('duration', 'DESC')
