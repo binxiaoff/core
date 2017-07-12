@@ -367,6 +367,13 @@ class Projects
     private $status;
 
     /**
+     * @var float
+     *
+     * @ORM\Column(name="interest_rate", type="decimal", precision=4, scale=2)
+     */
+    private $interestRate;
+
+    /**
      * @var ProjectAttachment[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment", mappedBy="idProject")
@@ -1540,6 +1547,30 @@ class Projects
     public function getStatus()
     {
         return $this->status;
+    }
+
+    /**
+     * Set interest rate
+     *
+     * @param float $interestRate
+     *
+     * @return Projects
+     */
+    public function setInterestRate($interestRate)
+    {
+        $this->interestRate = $interestRate;
+
+        return $this;
+    }
+
+    /**
+     * Get interestRate
+     *
+     * @return float
+     */
+    public function getInterestRate()
+    {
+        return $this->interestRate;
     }
 
     /**

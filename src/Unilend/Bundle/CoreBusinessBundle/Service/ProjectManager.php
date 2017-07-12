@@ -356,16 +356,27 @@ class ProjectManager
         }
     }
 
-    private function buildLoanIFPAndMinibon($project)
+    /**
+     * @param \projects $project
+     */
+    private function buildLoanIFPAndMinibon(\projects $project)
     {
         $this->buildIFPBasedMixLoan($project, \underlying_contract::CONTRACT_MINIBON);
     }
 
-    private function buildLoanIFPAndBDC($project) {
+    /**
+     * @param \projects $project
+     */
+    private function buildLoanIFPAndBDC(\projects $project)
+    {
         $this->buildIFPBasedMixLoan($project, \underlying_contract::CONTRACT_BDC);
     }
 
-    private function buildIFPBasedMixLoan($project, $additionalContract)
+    /**
+     * @param \projects $project
+     * @param string    $additionalContract
+     */
+    private function buildIFPBasedMixLoan(\projects $project, $additionalContract)
     {
         /** @var \bids $legacyBid */
         $legacyBid = $this->entityManagerSimulator->getRepository('bids');
@@ -466,7 +477,10 @@ class ProjectManager
         }
     }
 
-    private function buildLoanIFP($project)
+    /**
+     * @param \projects $project
+     */
+    private function buildLoanIFP(\projects $project)
     {
         /** @var \bids $legacyBid */
         $legacyBid = $this->entityManagerSimulator->getRepository('bids');
@@ -591,8 +605,6 @@ class ProjectManager
         $oRepaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
         /** @var \clients_adresses $oClientAdresse */
         $oClientAdresse = $this->entityManagerSimulator->getRepository('clients_adresses');
-        /** @var \clients $oClient */
-        $oClient = $this->entityManagerSimulator->getRepository('clients');
 
         if ($oProject->status == \projects_status::FUNDE) {
             $lLoans = $oLoan->select('id_project = ' . $oProject->id_project);
@@ -1210,5 +1222,14 @@ class ProjectManager
         }
 
         return $fundsToRelease;
+    }
+
+    /**
+     * @param \projects $project
+     */
+    public function saveInterestRate(\projects $project)
+    {
+        $project->interest_rate = $project->getAverageInterestRate(false);
+        $project->update();
     }
 }

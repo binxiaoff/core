@@ -77,6 +77,8 @@ class ProjectsFundingCommand extends ContainerAwareCommand
                         $mailerManager->sendFundFailedToLender($project);
                     }
 
+                    $projectManager->saveInterestRate($project);
+
                     $now          = new \DateTime();
                     $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
                     $messsage     = $slackManager->getProjectName($project) .
