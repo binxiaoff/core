@@ -22,6 +22,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
+use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
@@ -486,7 +487,7 @@ class ProjectsController extends Controller
                 $oCachePool = $this->get('memcache.default');
                 $oCachePool->deleteItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $project->id_project);
                 $request->getSession()->set('bidResult', ['success' => true, 'message' => $translator->trans('project-detail_side-bar-bids-bid-placed-message')]);
-            } catch (\Exception $exception) {
+            } catch (BidException $exception) {
                 if ('bids-not-eligible' === $exception->getMessage()) {
                     $productManager     = $this->get('unilend.service_product.product_manager');
 
@@ -510,6 +511,8 @@ class ProjectsController extends Controller
                 } else {
                     $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-' . $exception->getMessage())]);
                 }
+            } catch (\Exception $exception) {
+                $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-bids-unknown-error')]);
             }
 
             return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
