@@ -14,7 +14,6 @@ var Utility = require('Utility')
 var ElementAttrsObject = require('ElementAttrsObject')
 var Templating = require('Templating')
 var gsap = require('gsap')
-var __ = require('__')
 
 /*
  * ProgressBar
@@ -240,7 +239,7 @@ ProgressBar.prototype.getLabelText = function (labelText) {
   return Templating.replace(labelText, {
     current: self.track.current,
     total: self.track.total,
-    percent: __.formatNumber(Math.floor(self.track.percent * 10) / 10)
+    percent: Math.floor(self.track.percent)
   })
 }
 
