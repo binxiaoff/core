@@ -76,6 +76,45 @@ class ProjectsStatus
     const UNEXPECTED_RESPONSE                                       = 'unexpected_response_from_';
 
     /**
+     * List of project status when project should be assigned to a commercial
+     * @var array
+     */
+    const SALES_TEAM = [
+        ProjectsStatus::POSTPONED,
+        ProjectsStatus::COMMERCIAL_REVIEW,
+        ProjectsStatus::PENDING_ANALYSIS,
+        ProjectsStatus::ANALYSIS_REVIEW,
+        ProjectsStatus::COMITY_REVIEW,
+        ProjectsStatus::SUSPENSIVE_CONDITIONS,
+        ProjectsStatus::PREP_FUNDING,
+        ProjectsStatus::A_FUNDER,
+        ProjectsStatus::AUTO_BID_PLACED,
+        ProjectsStatus::EN_FUNDING,
+        ProjectsStatus::BID_TERMINATED,
+        ProjectsStatus::FUNDE
+    ];
+
+    /**
+     * List of project status when project is considered as part of the risk team pipe
+     * @var array
+     */
+    CONST RISK_TEAM = [
+        ProjectsStatus::PENDING_ANALYSIS,
+        ProjectsStatus::ANALYSIS_REVIEW,
+        ProjectsStatus::COMITY_REVIEW,
+        ProjectsStatus::SUSPENSIVE_CONDITIONS
+    ];
+
+    /**
+     * List of project status when project is considered as part of the commercial team pipe
+     * @var array
+     */
+    const SALES_TEAM_UPCOMING_STATUS = [
+        ProjectsStatus::INCOMPLETE_REQUEST,
+        ProjectsStatus::COMPLETE_REQUEST
+    ];
+
+    /**
      * @var string
      *
      * @ORM\Column(name="label", type="string", length=191, nullable=false)

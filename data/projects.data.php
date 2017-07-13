@@ -1312,7 +1312,7 @@ class projects extends projects_crud
             ->leftJoin('p', 'partner', 'pa', 'p.id_partner = pa.id')
             ->where('p.status IN (:riskStatus)')
             ->setParameter('waitingAnalystStatus', ProjectsStatus::PENDING_ANALYSIS)
-            ->setParameter('riskStatus', ProjectsStatus::$riskTeam, Connection::PARAM_INT_ARRAY)
+            ->setParameter('riskStatus', ProjectsStatus::RISK_TEAM, Connection::PARAM_INT_ARRAY)
             ->addOrderBy('status', 'ASC')
             ->addOrderBy('risk_status_duration', 'DESC');
     }
@@ -1323,7 +1323,7 @@ class projects extends projects_crud
      */
     public function getSaleUserProjects(\users $user)
     {
-        $statement = $this->getSaleProjectsQuery(ProjectsStatus::$saleTeam)
+        $statement = $this->getSaleProjectsQuery(ProjectsStatus::SALES_TEAM)
             ->andWhere('p.id_commercial = :userId')
             ->setParameter('userId', $user->id_user)
             ->execute();
@@ -1340,7 +1340,7 @@ class projects extends projects_crud
      */
     public function getSaleProjectsExcludingUser(\users $user)
     {
-        $statement = $this->getSaleProjectsQuery(ProjectsStatus::$saleTeam)
+        $statement = $this->getSaleProjectsQuery(ProjectsStatus::SALES_TEAM)
             ->andWhere('p.id_commercial != :userId')
             ->setParameter('userId', $user->id_user)
             ->execute();
@@ -1356,7 +1356,7 @@ class projects extends projects_crud
      */
     public function getUpcomingSaleProjects()
     {
-        $statement = $this->getSaleProjectsQuery(ProjectsStatus::$upcomingSaleTeam)
+        $statement = $this->getSaleProjectsQuery(ProjectsStatus::SALES_TEAM_UPCOMING_STATUS)
             ->andWhere('DATE_SUB(NOW(), INTERVAL 1 WEEK) < p.added')
             ->execute();
 
