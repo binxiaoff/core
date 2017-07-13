@@ -62,7 +62,15 @@ class ProductAttribute
      */
     private $idProduct;
 
-
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRule
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRule")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_rule", referencedColumnName="id")
+     * })
+     */
+    private $idRule;
 
     /**
      * Set attributeValue
@@ -192,5 +200,29 @@ class ProductAttribute
     public function getIdProduct()
     {
         return $this->idProduct;
+    }
+
+    /**
+     * Get idRule
+     *
+     * @return ProjectEligibilityRule
+     */
+    public function getIdRule()
+    {
+        return $this->idRule;
+    }
+
+    /**
+     * Set idRule
+     *
+     * @param ProjectEligibilityRule $idRule
+     *
+     * @return ProductAttribute
+     */
+    public function setIdRule(ProjectEligibilityRule $idRule)
+    {
+        $this->idRule = $idRule;
+
+        return $this;
     }
 }

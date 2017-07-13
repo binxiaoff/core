@@ -9,13 +9,17 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="company_rating_history", indexes={@ORM\Index(name="id_company", columns={"id_company"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class CompanyRatingHistory
 {
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies
      *
-     * @ORM\Column(name="id_company", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Companies")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_company", referencedColumnName="id_company")
+     * })
      */
     private $idCompany;
 
@@ -61,11 +65,11 @@ class CompanyRatingHistory
     /**
      * Set idCompany
      *
-     * @param integer $idCompany
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Companies $idCompany
      *
      * @return CompanyRatingHistory
      */
-    public function setIdCompany($idCompany)
+    public function setIdCompany(\Unilend\Bundle\CoreBusinessBundle\Entity\Companies $idCompany)
     {
         $this->idCompany = $idCompany;
 
@@ -75,7 +79,7 @@ class CompanyRatingHistory
     /**
      * Get idCompany
      *
-     * @return integer
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Companies
      */
     public function getIdCompany()
     {
@@ -186,5 +190,23 @@ class CompanyRatingHistory
     public function getIdCompanyRatingHistory()
     {
         return $this->idCompanyRatingHistory;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

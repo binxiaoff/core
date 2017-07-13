@@ -254,7 +254,7 @@ class LenderAccountDisplayManager
      */
     public function isProjectAdvisedForLender(\projects $project, Clients $clients)
     {
-        if (false === $this->productManager->getLenderEligibility($clients, $project)) {
+        if (false === $this->productManager->isClientEligible($clients, $project)) {
             return false;
         }
 

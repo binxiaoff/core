@@ -8,12 +8,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\ContractAttributeManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -356,16 +357,27 @@ class ProjectManager
         }
     }
 
-    private function buildLoanIFPAndMinibon($project)
+    /**
+     * @param \projects $project
+     */
+    private function buildLoanIFPAndMinibon(\projects $project)
     {
         $this->buildIFPBasedMixLoan($project, \underlying_contract::CONTRACT_MINIBON);
     }
 
-    private function buildLoanIFPAndBDC($project) {
+    /**
+     * @param \projects $project
+     */
+    private function buildLoanIFPAndBDC(\projects $project)
+    {
         $this->buildIFPBasedMixLoan($project, \underlying_contract::CONTRACT_BDC);
     }
 
-    private function buildIFPBasedMixLoan($project, $additionalContract)
+    /**
+     * @param \projects $project
+     * @param string    $additionalContract
+     */
+    private function buildIFPBasedMixLoan(\projects $project, $additionalContract)
     {
         /** @var \bids $legacyBid */
         $legacyBid = $this->entityManagerSimulator->getRepository('bids');
@@ -382,7 +394,7 @@ class ProjectManager
         }
         $IFPContractId = $contract->id_contract;
 
-        $contractAttrVars = $this->contractAttributeManager->getContractAttributesByType($contract, \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
+        $contractAttrVars = $this->contractAttributeManager->getContractAttributesByType($contract, UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
         if (empty($contractAttrVars) || false === isset($contractAttrVars[0]) || false === is_numeric($contractAttrVars[0])) {
             throw new \UnexpectedValueException('The IFP contract max amount is not set');
         } else {
@@ -466,7 +478,10 @@ class ProjectManager
         }
     }
 
-    private function buildLoanIFP($project)
+    /**
+     * @param \projects $project
+     */
+    private function buildLoanIFP(\projects $project)
     {
         /** @var \bids $legacyBid */
         $legacyBid = $this->entityManagerSimulator->getRepository('bids');
@@ -483,7 +498,7 @@ class ProjectManager
         }
         $IFPContractId = $contract->id_contract;
 
-        $contractAttrVars = $this->contractAttributeManager->getContractAttributesByType($contract, \underlying_contract_attribute_type::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
+        $contractAttrVars = $this->contractAttributeManager->getContractAttributesByType($contract, UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
         if (empty($contractAttrVars) || false === isset($contractAttrVars[0]) || false === is_numeric($contractAttrVars[0])) {
             throw new \UnexpectedValueException('The IFP contract max amount is not set');
         } else {
@@ -591,8 +606,6 @@ class ProjectManager
         $oRepaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
         /** @var \clients_adresses $oClientAdresse */
         $oClientAdresse = $this->entityManagerSimulator->getRepository('clients_adresses');
-        /** @var \clients $oClient */
-        $oClient = $this->entityManagerSimulator->getRepository('clients');
 
         if ($oProject->status == \projects_status::FUNDE) {
             $lLoans = $oLoan->select('id_project = ' . $oProject->id_project);
@@ -1077,23 +1090,23 @@ class ProjectManager
         ];
     }
 
-    public function getProjectRateRangeId(\projects $project)
+    public function getProjectRateRangeId(Projects $project)
     {
-        if (empty($project->period)) {
+        if (empty($project->getPeriod())) {
             throw new \Exception('project period not set.');
         }
 
-        if (empty($project->risk)) {
+        if (empty($project->getRisk())) {
             throw new \Exception('project risk not set.');
         }
 
         /** @var \project_period $projectPeriod */
         $projectPeriod = $this->entityManagerSimulator->getRepository('project_period');
 
-        if ($projectPeriod->getPeriod($project->period)) {
+        if ($projectPeriod->getPeriod($project->getPeriod())) {
             /** @var \project_rate_settings $projectRateSettings */
             $projectRateSettings = $this->entityManagerSimulator->getRepository('project_rate_settings');
-            $rateSettings        = $projectRateSettings->getSettings($project->risk, $projectPeriod->id_period);
+            $rateSettings        = $projectRateSettings->getSettings($project->getRisk(), $projectPeriod->id_period);
 
             if (empty($rateSettings)) {
                 throw new \Exception('No rate settings found for the project.');
@@ -1210,5 +1223,14 @@ class ProjectManager
         }
 
         return $fundsToRelease;
+    }
+
+    /**
+     * @param \projects $project
+     */
+    public function saveInterestRate(\projects $project)
+    {
+        $project->interest_rate = $project->getAverageInterestRate(false);
+        $project->update();
     }
 }

@@ -71,6 +71,14 @@ class ExecutiveDetails
     private $change;
 
     /**
+     * @var \DateTime
+     *
+     * @JMS\SerializedName("dateMouvement")
+     * @JMS\Type("DateTime<'Y-m-d'>")
+     */
+    private $changeDate;
+
+    /**
      * @return string
      */
     public function getSiren()
@@ -132,5 +140,13 @@ class ExecutiveDetails
     public function getChange()
     {
         return $this->change;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getChangeDate()
+    {
+        return $this->changeDate;
     }
 }
