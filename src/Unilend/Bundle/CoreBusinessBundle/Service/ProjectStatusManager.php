@@ -88,6 +88,16 @@ class ProjectStatusManager
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-grade-vs-altares-score');
             case ProjectsStatus::NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES:
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infogreffe-privileges');
+            case ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_DEFAULTS:
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-ellisphere-defaults');
+            case ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_SOCIAL_SECURITY_PRIVILEGES:
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-ellisphere-social-security-privileges');
+            case ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_TREASURY_TAX_PRIVILEGES:
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-ellisphere-treasury-tax-privileges');
+            case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_INCIDENT:
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-current-manager-incident');
+            case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT:
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-previous-manager-incident');
             case ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity':
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-altares-identity-error');
             case ProjectsStatus::UNEXPECTED_RESPONSE . 'codinf_incident':
@@ -106,6 +116,8 @@ class ProjectStatusManager
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-traffic-light-error');
             case ProjectsStatus::UNEXPECTED_RESPONSE . 'euler_grade':
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-grade-error');
+            case ProjectsStatus::UNEXPECTED_RESPONSE . 'ellisphere_report':
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-ellisphere-report-error');
             case ProjectsStatus::NON_ELIGIBLE_REASON_PROCEEDING:
                 return $this->translator->trans('project-rejection-reason-bo_collective-proceeding');
             case ProjectsStatus::NON_ELIGIBLE_REASON_INACTIVE:
@@ -119,6 +131,10 @@ class ProjectStatusManager
                 return $this->translator->trans('project-rejection-reason-bo_negative-operating-result');
             case ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND:
                 return $this->translator->trans('project-rejection-reason-bo_product-not-found');
+            case ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_BLEND:
+                return $this->translator->trans('project-rejection-reason-bo_product-blend');
+            case ProjectsStatus::NON_ELIGIBLE_REASON_COMPANY_LOCATION:
+                return $this->translator->trans('project-rejection-reason-bo_company-location');
             default:
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-default');
         }

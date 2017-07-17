@@ -92,10 +92,10 @@ EOF
             foreach ($projectStatusChanges as $projectStatusChange) {
                 foreach ($project->getLoansAndLendersForProject($projectStatusChange->getIdProject()) as $lender) {
                     $this->addLenderToStatisticQueue($lender);
+                    $entityManager->flush();
                 }
             }
         }
-        $entityManager->flush();
 
         $cachePool  = $this->getContainer()->get('memcache.default');
         $cachedItem = $cachePool->getItem(CacheKeys::LENDER_STAT_QUEUE_UPDATED);
@@ -104,7 +104,7 @@ EOF
     }
 
     /**
-     * @param $lender
+     * @param int|Wallet $lender
      */
     private function addLenderToStatisticQueue($lender)
     {

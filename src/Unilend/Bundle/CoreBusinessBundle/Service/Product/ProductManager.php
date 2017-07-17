@@ -5,32 +5,50 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\BidValidator;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\ClientValidator;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\LenderValidator;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\ProjectValidator;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 abstract class ProductManager
 {
     /** @var EntityManagerSimulator */
     protected $entityManagerSimulator;
+
     /** @var ProjectValidator */
     protected $projectValidator;
+
     /** @var BidValidator */
     protected $bidValidator;
+
+    /** @var ClientValidator */
+    protected $clientValidator;
+
     /** @var LenderValidator */
     protected $lenderValidator;
+
     /** @var ProductAttributeManager */
     protected $productAttributeManager;
+
     /** @var ContractManager */
     protected $contractManager;
+
     /** @var  EntityManager */
     protected $entityManager;
 
     /**
      * ProductManager constructor.
+     *
      * @param EntityManagerSimulator  $entityManagerSimulator
      * @param ProjectValidator        $projectValidator
      * @param BidValidator            $bidValidator
+     * @param ClientValidator         $clientValidator
      * @param LenderValidator         $lenderValidator
      * @param ProductAttributeManager $productAttributeManager
      * @param ContractManager         $contractManager
@@ -40,6 +58,7 @@ abstract class ProductManager
         EntityManagerSimulator $entityManagerSimulator,
         ProjectValidator $projectValidator,
         BidValidator $bidValidator,
+        ClientValidator $clientValidator,
         LenderValidator $lenderValidator,
         ProductAttributeManager $productAttributeManager,
         ContractManager $contractManager,
@@ -49,6 +68,7 @@ abstract class ProductManager
         $this->entityManagerSimulator  = $entityManagerSimulator;
         $this->projectValidator        = $projectValidator;
         $this->bidValidator            = $bidValidator;
+        $this->clientValidator         = $clientValidator;
         $this->lenderValidator         = $lenderValidator;
         $this->productAttributeManager = $productAttributeManager;
         $this->contractManager         = $contractManager;
@@ -58,25 +78,82 @@ abstract class ProductManager
     abstract public function findEligibleProducts(\projects $project, $includeInactiveProduct = false);
 
     /**
-     * @param \projects $project
-     * @param \product  $product
+     * @param Projects|\projects $project
+     * @param Product|\product   $product
      *
      * @return bool
      */
-    public function isProjectEligible(\projects $project, \product $product)
+    public function isProjectEligible($project, $product)
     {
-        return $this->isProductUsable($product) && $this->projectValidator->isEligible($project, $product);
+        $product = $this->convertProduct($product);
+        $project = $this->convertProject($project);
+
+        return $this->isProductUsable($product) && 0 === count($this->checkProjectEligibility($project, $product));
+    }
+
+    public function checkProjectEligibility($project, $product)
+    {
+        $product = $this->convertProduct($product);
+        $project = $this->convertProject($project);
+
+        return $this->projectValidator->validate($project, $product);
     }
 
     /**\
-     * @param Bids     $bid
+     * @param Bids $bid
      *
      * @return bool
-     * @throws \Exception
      */
     public function isBidEligible(Bids $bid)
     {
-        return $this->bidValidator->isEligible($bid)['eligible'];
+        return 0 === count($this->checkBidEligibility($bid));
+    }
+
+    /**
+     * @param Bids $bid
+     *
+     * @return mixed
+     */
+    public function checkBidEligibility($bid)
+    {
+        return $this->bidValidator->validate($bid);
+    }
+
+    /**
+     * @param Clients|null       $client When it's null, it's an anonymous client (logout)
+     * @param Projects|\projects $project
+     *
+     * @return mixed
+     */
+    public function checkClientEligibility(Clients $client = null, $project)
+    {
+        $project = $this->convertProject($project);
+
+        return $this->clientValidator->validate($client, $project);
+    }
+
+    /**
+     * @param Clients   $client
+     * @param \projects $project
+     *
+     * @return bool
+     */
+    public function isClientEligible(Clients $client = null, \projects $project)
+    {
+        return 0 === count($this->checkClientEligibility($client, $project));
+    }
+
+    /**
+     * @param Clients            $client
+     * @param Projects|\projects $project
+     *
+     * @return mixed
+     */
+    public function checkLenderEligibility(Clients $client, $project)
+    {
+        $project = $this->convertProject($project);
+
+        return $this->lenderValidator->validate($client, $project);
     }
 
     /**
@@ -86,15 +163,16 @@ abstract class ProductManager
      */
     public function getMaxEligibleDuration(\product $product)
     {
-        $durationContractMaxAttr = $this->productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
-        $durationContractMax     = null;
-        foreach ($durationContractMaxAttr as $contractVars) {
-            if (isset($contractVars[0])) {
-                if ($durationContractMax === null) {
-                    $durationContractMax = $contractVars[0];
-                } else {
-                    $durationContractMax = min($durationContractMax, $contractVars[0]);
-                }
+        $product = $this->convertProduct($product);
+
+        $durationContractMax = null;
+
+        foreach ($product->getIdContract() as $contract) {
+            $durationContract = $this->contractManager->getMaxEligibleDuration($contract);
+            if (null === $durationContractMax) {
+                $durationContractMax = $durationContract;
+            } else {
+                $durationContractMax = min($durationContractMax, $durationContract);
             }
         }
 
@@ -111,12 +189,13 @@ abstract class ProductManager
     }
 
     /**
-     * @param \product $product
+     * @param \product|Product $product
      *
      * @return string|null
      */
-    public function getMinEligibleDuration(\product $product)
+    public function getMinEligibleDuration($product)
     {
+        $product         = $this->convertProduct($product);
         $durationMinAttr = $this->productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MIN_LOAN_DURATION_IN_MONTH);
         $durationMin     = empty($durationMinAttr) ? null : $durationMinAttr[0];
 
@@ -124,79 +203,43 @@ abstract class ProductManager
     }
 
     /**
-     * @param Clients  $client
-     * @param \product $product
+     * @param Clients          $client
+     * @param Product|\product $product
+     * @param boolean          $isAutobid
      *
      * @return int|null
      * @throws \Exception
      */
-    public function getMaxEligibleAmount(\product $product)
+    public function getMaxEligibleAmount(Clients $client, $product, $isAutobid = false)
     {
-        return $this->lenderValidator->getMaxEligibleAmount($product, $this->productAttributeManager);
-    }
+        $product = $this->convertProduct($product);
 
-    /**
-     * @param Clients  $client
-     * @param \product $product
-     *
-     * @return int|null
-     */
-    public function getAutobidMaxEligibleAmount(Clients $client, \product $product)
-    {
-        return $this->lenderValidator->getAutobidMaxEligibleAmount($client, $product, $this->entityManagerSimulator, $this->contractManager);
+        return $this->clientValidator->getMaxEligibleAmount($client, $product, $this->contractManager, $isAutobid);
     }
 
     /**
      * @param Clients   $client
-     * @param \projects $project
-     *
-     * @return mixed
-     */
-    public function getLenderEligibilityWithReasons(Clients $client, \projects $project)
-    {
-        return $this->lenderValidator->isEligible($client, $project)['reason'];
-    }
-
-    /**
-     * @param Clients   $client
-     * @param \projects $project
-     *
-     * @return mixed
-     */
-    public function getLenderEligibility(Clients $client, \projects $project)
-    {
-        return $this->lenderValidator->isEligible($client, $project)['eligible'];
-    }
-
-    /**
-     * @param Bids    $bid
-     *
-     * @return mixed
-     */
-    public function getBidEligibilityWithReasons($bid)
-    {
-        return $this->bidValidator->isEligible($bid)['reason'];
-    }
-
-    /**
-     * @param Clients $client
      * @param \projects $project
      *
      * @return null|string
      */
     public function getAmountLenderCanStillBid(Clients $client, \projects $project)
     {
-        return $this->lenderValidator->getAmountLenderCanStillBid($client, $project, $this->productAttributeManager, $this->entityManagerSimulator, $this->entityManager);
+        $project = $this->convertProject($project);
+
+        return $this->clientValidator->getAmountLenderCanStillBid($client, $project, $this->contractManager, $this->entityManager);
     }
 
     /**
-     * @param \product $product
-     * @param $attributeType
+     * @param \product|Product $product
+     * @param string           $attributeType
      *
      * @return array
      */
-    public function getAttributesByType(\product $product, $attributeType)
+    public function getAttributesByType($product, $attributeType)
     {
+        $product = $this->convertProduct($product);
+
         return $this->productAttributeManager->getProductAttributesByType($product, $attributeType);
     }
 
@@ -214,23 +257,21 @@ abstract class ProductManager
     {
         /** @var \product_underlying_contract $productContract */
         $productContract = $this->entityManagerSimulator->getRepository('product_underlying_contract');
+
         return $productContract->getUnderlyingContractsByProduct($product->id_product);
     }
 
     /**
-     * @param \product
+     * @param \product|Product $product
      *
-     * @return \underlying_contract[]
+     * @return UnderlyingContract[]
      */
-    public function getAutobidEligibleContracts(\product $product)
+    public function getAutobidEligibleContracts($product)
     {
-        /** @var \underlying_contract $contract */
-        $contract         = $this->entityManagerSimulator->getRepository('underlying_contract');
-        $contracts        = $this->getAvailableContracts($product);
+        $product          = $this->convertProduct($product);
         $autobidContracts = [];
 
-        foreach ($contracts as $underlyingContract) {
-            $contract->get($underlyingContract['id_contract']);
+        foreach ($product->getIdContract() as $contract) {
             if ($this->contractManager->isAutobidSettingsEligible($contract)) {
                 $autobidContract    = clone $contract;
                 $autobidContracts[] = $autobidContract;
@@ -241,12 +282,35 @@ abstract class ProductManager
     }
 
     /**
-     * @param \product $product
+     * @param Product $product
      *
      * @return bool
      */
-    public function isProductUsable(\product $product)
+    private function isProductUsable(Product $product)
     {
-        return false === empty($product->id_product) && in_array($product->status, [\product::STATUS_ONLINE, \product::STATUS_OFFLINE]);
+        return false === empty($product->getIdProduct()) && in_array($product->getStatus(), [Product::STATUS_ONLINE, Product::STATUS_OFFLINE]);
+    }
+
+    /**
+     * @param Product|\product $product
+     *
+     * @return null|Product
+     */
+    private function convertProduct($product)
+    {
+        if ($product instanceof \product) {
+            return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($product->id_product);
+        }
+
+        return $product;
+    }
+
+    private function convertProject($project)
+    {
+        if ($project instanceof \projects) {
+            return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+        }
+
+        return $project;
     }
 }

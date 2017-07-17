@@ -540,14 +540,14 @@ EOF
                 $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
 
                 if ($wallet) {
-                    $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
-                    $operationManager->cancelProvisionBorrowerWallet($wallet, $amount, $reception);
-
                     $reception->setStatusBo(Receptions::STATUS_REJECTED)
                         ->setIdProject($project)
                         ->setIdClient($wallet->getIdClient())
                         ->setRemb(0);
                     $entityManager->flush();
+
+                    $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
+                    $operationManager->cancelProvisionBorrowerWallet($wallet, $amount, $reception);
 
                     $fNewAmount = $amount;
 

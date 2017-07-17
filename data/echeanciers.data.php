@@ -800,7 +800,6 @@ class echeanciers extends echeanciers_crud
                 t.year                           AS year,
                 ROUND(SUM(t.capital), 2)         AS capital,
                 ROUND(SUM(t.grossInterests), 2)  AS grossInterests,
-                ROUND(SUM(t.netInterests), 2)    AS netInterests,
                 ROUND(SUM(t.repaidTaxes), 2)     AS repaidTaxes,
                 ROUND(SUM(t.upcomingTaxes), 2)   AS upcomingTaxes
             FROM (
@@ -810,7 +809,6 @@ class echeanciers extends echeanciers_crud
                   YEAR(o_capital.added)        AS year,
                   SUM(o_capital.amount)        AS capital,
                   SUM(o_interest.amount)       AS grossInterests,
-                  NULL                         AS netInterests,
                   SUM((SELECT SUM(amount)
                        FROM operation o_taxes
                         INNER JOIN operation_type ot_taxes ON o_taxes.id_type = ot_taxes.id AND ot_taxes.label IN ("' . implode('","', OperationType::TAX_TYPES_FR) . '") 
@@ -830,7 +828,6 @@ class echeanciers extends echeanciers_crud
                     YEAR(e.date_echeance)           AS year,
                     ROUND(SUM(e.capital) / 100, 2)  AS capital,
                     ROUND(SUM(e.interets) / 100, 2) AS grossInterests,
-                    NULL                            AS netInterests,
                     0                               AS repaidTaxes,
                     CASE c.type
                         -- Natural person
@@ -883,23 +880,16 @@ class echeanciers extends echeanciers_crud
         $data      = [];
 
         while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
-            if (null !== $row['grossInterests'] && null !== $row['netInterests']) {
-                $netInterest   = bcadd(bcsub($row['grossInterests'], $row['upcomingTaxes'], 2), $row['netInterests'], 2);
-                $grossInterest = bcadd(bcadd($row['netInterests'], $row['repaidTaxes'], 2), $row['grossInterests'], 2);
-            } else {
-                $netInterest   = null === $row['netInterests'] ? bcsub($row['grossInterests'], $row['upcomingTaxes'], 2) : $row['netInterests'];
-                $grossInterest = null === $row['grossInterests'] ? bcadd($row['netInterests'], $row['repaidTaxes'], 2) : $row['grossInterests'];
-            }
             $taxes = bcadd($row['repaidTaxes'], $row['upcomingTaxes'], 2);
             unset($row['repaidTaxes'], $row['upcomingTaxes']);
 
-            $row['grossInterests'] = (float) $grossInterest;
-            $row['netInterests']   = (float) $netInterest;
+            $row['netInterests']   = (float) bcsub($row['grossInterests'], $taxes, 2);
             $row['taxes']          = (float) $taxes;
             $row['capital']        = (float) $row['capital'];
             $data[$row['month']]   = $row;
         }
         $statement->closeCursor();
+
         return $data;
     }
 }
