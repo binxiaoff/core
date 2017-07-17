@@ -770,7 +770,7 @@ class statsController extends bootstrap
                 'status'    => ProjectEligibilityAssessment::STATUS_CHECK_KO,
             ], ['added' => 'DESC']);
 
-            $row['commun_check'] = $projectEligibilityAssessment ? $projectEligibilityAssessment->getIdRule()->getLabel() : 'OK';
+            $row['common_check'] = $projectEligibilityAssessment ? $projectEligibilityAssessment->getIdRule()->getLabel() : 'OK';
 
             $productBLend             = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findOneBy(['label' => Product::PRODUCT_BLEND]);
             $projectProductAssessment = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectProductAssessment')->findOneBy([
@@ -780,7 +780,7 @@ class statsController extends bootstrap
             ], ['added' => 'DESC']);
 
             $row['b_lend_check'] = 'Pas d\'évaluation';
-            if ('OK' === $row['commun_check']) {
+            if ('OK' === $row['common_check']) {
                 if ($projectProductAssessment) {
                     $productAttribute = $entityManager->getRepository('UnilendCoreBusinessBundle:ProductAttribute')->findOneBy([
                         'idProduct' => $projectProductAssessment->getIdProduct(),
@@ -789,6 +789,8 @@ class statsController extends bootstrap
 
                     $row['b_lend_check'] = $projectProductAssessment->getIdProductAttributeType()->getLabel();
                     $row['b_lend_check'] .= $productAttribute->getIdRule() ? ' (' . $productAttribute->getIdRule()->getLabel() . ')' : '';
+                } else {
+                    $row['b_lend_check'] = 'OK';
                 }
             }
 
