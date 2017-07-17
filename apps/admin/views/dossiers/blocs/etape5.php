@@ -18,6 +18,24 @@
             }
         }
     </script>
+    <?php if (false === empty($this->project_cgv->id)) : ?>
+        <div>
+            <table class="tablesorter">
+                <tbody>
+                <tr>
+                    <td>
+                        CGV envoyées le <?= \DateTime::createFromFormat('Y-m-d H:i:s', $this->project_cgv->added)->format('d/m/Y à H:i:s') ?>
+                        (<a href="<?= $this->furl . $this->project_cgv->getUrlPath() ?>" target="_blank">PDF</a>)
+                        <?php if (\Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED == $this->project_cgv->status && false === empty($this->project_cgv->updated)) : ?>
+                            <strong>signées</strong> le <?= \DateTime::createFromFormat('Y-m-d H:i:s', $this->project_cgv->updated)->format('d/m/Y à H:i:s') ?>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <br>
+    <?php endif; ?>
     <form method="post" name="dossier_etape5" id="dossier_etape5" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/file/<?= $this->params[0] ?>" target="upload_target">
         <table class="tablesorter">
             <thead>

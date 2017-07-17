@@ -229,21 +229,6 @@ function loadTradTexte(nom, section) {
     }
 }
 
-/* Activer un utilisateur sur une zone */
-function activeUserZone(id_user, id_zone, zone) {
-    xhr_object = AjaxObject();
-    var param = no_cache();
-
-    xhr_object.onreadystatechange = function () {
-        if (xhr_object.readyState == 4 && xhr_object.status == 200) {
-            var reponse = xhr_object.responseText;
-            document.getElementById(zone).src = reponse;
-        }
-    };
-    xhr_object.open('GET', add_url + '/ajax/activeUserZone/' + id_user + '/' + id_zone + '/' + param, true);
-    xhr_object.send(null);
-}
-
 function editMemo(projectId, commentId) {
     $.ajax({
         url: add_url + '/dossiers/memo',
@@ -290,6 +275,21 @@ function deleteMemo(projectId, commentId) {
             }
         })
     }
+}
+
+/* Activer un utilisateur sur une zone */
+function activeUserZone(id_user, id_zone, zone) {
+    xhr_object = AjaxObject();
+    var param = no_cache();
+
+    xhr_object.onreadystatechange = function () {
+        if (xhr_object.readyState == 4 && xhr_object.status == 200) {
+            var reponse = xhr_object.responseText;
+            document.getElementById(zone).src = reponse;
+        }
+    };
+    xhr_object.open('GET', add_url + '/ajax/activeUserZone/' + id_user + '/' + id_zone + '/' + param, true);
+    xhr_object.send(null);
 }
 
 function valid_etape1(id_project) {

@@ -15,7 +15,7 @@ classNames: 'user-preter-balance'
             <article id="balance-deposit" class="tab-pane dashboard-tab-pane active ui-toggle-group" aria-multiselectable="true">
                 <section id="balance-deposit-result" role="tabpanel" class="panel collapse in" aria-expanded="true">
                     {% if depositCode == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Backpayline::CODE_TRANSACTION_APPROVED') %}
-                        {% trans with {'%depositAmount%': depositAmount|localizednumber} %} lender-wallet_deposit-success-message {% endtrans %}
+                        {% trans with {'%depositAmount%': depositAmount|localizednumberwithprecision(2)} %} lender-wallet_deposit-success-message {% endtrans %}
                     {% else %}
                         {% trans %} lender-wallet_deposit-error-message {% endtrans %}
                     {% endif %}

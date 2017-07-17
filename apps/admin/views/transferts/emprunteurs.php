@@ -53,7 +53,7 @@
             <h1>Opérations emprunteurs</h1>
         </div>
         <div class="col-md-6">
-            <a href="<?= $this->lurl ?>/transferts/emprunteurs/csv" class="btn-primary pull-right thickbox">Export CSV</a>
+            <a href="<?= $this->lurl ?>/transferts/emprunteurs/csv" class="btn-primary pull-right">Export CSV</a>
         </div>
     </div>
     <table class="tablesorter">

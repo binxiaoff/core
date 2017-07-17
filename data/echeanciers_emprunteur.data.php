@@ -165,25 +165,6 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
         return $result;
     }
 
-    /**
-     * @param string $scheduleDate
-     * @return int
-     * @throws Exception
-     */
-    public function getCostsAndVatAmount($scheduleDate)
-    {
-        $sql = '
-            SELECT
-              IFNULL(SUM(ee.tva + ee.commission), 0)
-            FROM echeanciers_emprunteur ee
-            WHERE ee.id_echeancier_emprunteur IN (
-              SELECT bu.id_echeance_emprunteur FROM bank_unilend bu WHERE DATE(bu.added) = :schedule_date AND bu.type = 2  AND bu.status = 1 GROUP BY DATE(bu.added)
-            )
-        ';
-        return $this->bdd->executeQuery($sql,
-            ['schedule_date' => $scheduleDate],
-            ['schedule_date' => \PDO::PARAM_STR])->fetchColumn(0);
-    }
 
     public function getRepaidCapitalByCohort()
     {

@@ -154,8 +154,6 @@ class CodinfManager
             call_user_func($callable, $content, $validity['status']);
 
             if ($validity['is_valid']) {
-                $this->callHistoryManager->sendMonitoringAlert($this->resourceManager->getResource(self::RESOURCE_INCIDENT_LIST), 'up');
-
                 return $content;
             }
         } catch (\Exception $exception) {
@@ -164,7 +162,6 @@ class CodinfManager
             }
             $this->logger->error('Call to ' . $wsResource->getResourceName() . 'using params: ' . json_encode($query) . '. Error message: ' . $exception->getMessage(), $logContext);
         }
-        $this->callHistoryManager->sendMonitoringAlert($this->resourceManager->getResource(self::RESOURCE_INCIDENT_LIST), 'down');
 
         return null;
     }

@@ -28,6 +28,7 @@ class simulationController extends bootstrap
         'get_mandates_infolegale'                => 'getMandates',
         'get_homonyms_infolegale'                => 'getHomonyms',
         'get_announcements__director_infolegale' => 'getDirectorAnnouncements',
+        'get_online_order_ellisphere'            => 'getReport',
     ];
 
     public function initialize()

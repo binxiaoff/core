@@ -191,18 +191,36 @@
   }
 }
 
-// Modals
+// Adjustments to global UI elements
 
 .ui-user-type-partner {
-  [data-modal] {
-    p {
-      margin-top: 1em;
-    }
-    @include devices('sm', 'md', 'lg') {
+  @include devices('sm', 'md', 'lg') {
+    [data-modal] {
+      p {
+        margin-top: 1em;
+      }
       min-width: 420px;
     }
   }
+  @include devices('md', 'lg') {
+    .site-header .site-user .site-user-profile {
+      margin-top: -14px;
+    }
+  }
 }
+
+.ui-site-header-fixed {
+  @include devices('md', 'lg') {
+    .ui-user-type-partner {
+      .site-header .site-user .site-user-profile {
+        padding-top: 10px;
+        margin-top: 0;
+      }
+    }
+  }
+}
+
+// Modals
 
 #prospect-cancel-motif {
   max-width: 290px;

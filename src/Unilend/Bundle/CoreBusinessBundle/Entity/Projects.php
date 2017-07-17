@@ -16,6 +16,10 @@ class Projects
 {
     //todo: move to the debt collection entity
     const DEBT_COLLECTION_CONDITION_CHANGEMENT_DATE = '2016-04-19';
+
+    const AUTO_REPAYMENT_ON  = 0;
+    const AUTO_REPAYMENT_OFF = 1;
+
     /**
      * @var string
      *
@@ -361,6 +365,13 @@ class Projects
      * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
+
+    /**
+     * @var float
+     *
+     * @ORM\Column(name="interest_rate", type="decimal", precision=4, scale=2)
+     */
+    private $interestRate;
 
     /**
      * @var ProjectAttachment[]
@@ -1536,6 +1547,30 @@ class Projects
     public function getStatus()
     {
         return $this->status;
+    }
+
+    /**
+     * Set interest rate
+     *
+     * @param float $interestRate
+     *
+     * @return Projects
+     */
+    public function setInterestRate($interestRate)
+    {
+        $this->interestRate = $interestRate;
+
+        return $this;
+    }
+
+    /**
+     * Get interestRate
+     *
+     * @return float
+     */
+    public function getInterestRate()
+    {
+        return $this->interestRate;
     }
 
     /**

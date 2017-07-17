@@ -2,7 +2,54 @@ imports:
     - { resource: config.yml }
 
 monolog:
+    channels: [console, migration, mongodb]
     handlers:
+        error:
+            type: fingers_crossed
+            action_level: error
+            handler: error_handler
+            channels: ['!translation']
+        error_handler:
+            type: group
+            members: [error_file]
+#            members: [file_error, slack_error]
+        error_file:
+            type: rotating_file
+            level: info
+            path: "%kernel.logs_dir%/error.%kernel.environment%.log"
+            max_files: 90
+            date_format: 'Y-m-d'
+            file_permission: 0664
+#        slack_error:
+#            type: slack
+#            level: error
+#            token: xoxb-54621264262-6EXEn7g59rpWe7vDxzHht5z5
+#            channel: '#it-releases'
+#            bot_name: 'Symfony Bot'
+
+        console_filter:
+            type: filter
+            handler: console_handler
+            max_level: warning
+            channels: console
+        console_handler:
+            type: group
+            members: [console_file, console_console]
+        console_file:
+            type: rotating_file
+            path: "%kernel.logs_dir%/console.%kernel.environment%.log"
+            level: info
+            max_files: 90
+            file_permission: 0664
+            date_format: 'Y-m-d'
+        console_console:
+            type: console
+
+        site_filter:
+            type: filter
+            handler: site_handler
+            max_level: warning
+            channels: ['!console', '!translation', '!mongodb']
         site_handler:
             type: rotating_file
             level: info
@@ -10,3 +57,32 @@ monolog:
             max_files: 90
             file_permission: 0664
             date_format: 'Y-m-d'
+
+        translation_handler:
+            type: rotating_file
+            level: warning
+            path: "%kernel.logs_dir%/translation.%kernel.environment%.log"
+            max_files: 90
+            file_permission: 0664
+            date_format: 'Y-m-d'
+            channels: translation
+
+        mongodb:
+            type: fingers_crossed
+            action_level: warning
+            handler: mongodb_handler
+            channels: mongodb
+        mongodb_handler:
+            type: rotating_file
+            level: debug
+            path: "%kernel.logs_dir%/mongodb.%kernel.environment%.log"
+            max_files: 90
+            file_permission: 0664
+            date_format: 'Y-m-d'
+
+        migration_handler:
+            type : stream
+            level: info
+            channels: migration
+            path: "%kernel.logs_dir%/migration_transactions.log"
+            file_permission: 0664

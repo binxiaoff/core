@@ -1,14 +1,14 @@
 <?php
 namespace Unilend\Bundle\CommandBundle\Command;
 
+use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-use Unilend\core\Loader;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class GenerateLoanContractCommand extends ContainerAwareCommand
 {
@@ -34,19 +34,21 @@ EOF
         require_once $sRootDir . '/../apps/default/bootstrap.php';
         require_once $sRootDir . '/../apps/default/controllers/pdf.php';
 
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var EntityManager $entityManager */
-        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
+        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
         /** @var LoggerInterface $logger */
         $logger = $this->getContainer()->get('monolog.logger.console');
 
         /** @var \loans $loan */
-        $loan = $entityManager->getRepository('loans');
+        $loan = $entityManagerSimulator->getRepository('loans');
         /** @var \projects $project */
-        $project = $entityManager->getRepository('projects');
+        $project = $entityManagerSimulator->getRepository('projects');
         /** load for class constants */
-        $entityManager->getRepository('projects_status');
+        $entityManagerSimulator->getRepository('projects_status');
 
-        $status = array(
+        $status = [
             \projects_status::REMBOURSEMENT,
             \projects_status::REMBOURSE,
             \projects_status::PROBLEME,
@@ -57,7 +59,7 @@ EOF
             \projects_status::PROCEDURE_SAUVEGARDE,
             \projects_status::REDRESSEMENT_JUDICIAIRE,
             \projects_status::LIQUIDATION_JUDICIAIRE
-        );
+        ];
 
         $projects = $project->selectProjectsByStatus($status, '', [], '', '', false);
 
@@ -69,40 +71,35 @@ EOF
 
             if (count($loans) > 0) {
                 /** @var \companies $borrowerCompany */
-                $borrowerCompany = $entityManager->getRepository('companies');
-                /** @var \clients $client */
-                $client = $entityManager->getRepository('clients');
+                $borrowerCompany = $entityManagerSimulator->getRepository('companies');
                 /** @var \clients_adresses $clientAddress */
-                $clientAddress = $entityManager->getRepository('clients_adresses');
-                /** @var \lenders_accounts $lender */
-                $lender = $entityManager->getRepository('lenders_accounts');
+                $clientAddress = $entityManagerSimulator->getRepository('clients_adresses');
                 /** @var \companies $lenderCompany */
-                $lenderCompany = $entityManager->getRepository('companies');
+                $lenderCompany = $entityManagerSimulator->getRepository('companies');
 
                 foreach ($loans as $loanArray) {
                     $loan->get($loanArray['id_loan'], 'id_loan');
                     $project->get($loan->id_project, 'id_project');
-                    $lender->get($loan->id_lender, 'id_lender_account');
-                    $client->get($lender->id_client_owner, 'id_client');
                     $borrowerCompany->get($project->id_company, 'id_company');
+                    $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($loan->id_lender);
 
-                    if (in_array($client->type, array(Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER))) {
-                        $clientAddress->get($client->id_client, 'id_client');
+                    if ($wallet->getIdClient()->isNaturalPerson()) {
+                        $clientAddress->get($wallet->getIdClient()->getIdClient(), 'id_client');
 
-                        if ($clientAddress->id_pays > 1) {
+                        if ($clientAddress->id_pays > PaysV2::COUNTRY_FRANCE) {
                             $lenderCode = '99';
                         } else {
                             $lenderCode = substr(trim($clientAddress->cp), 0, 2);
                         }
                     } else {
-                        $lenderCompany->get($lender->id_company_owner, 'id_company');
+                        $lenderCompany->get($wallet->getIdClient()->getIdClient(), 'id_client_owner');
                         $lenderCode = substr(trim($lenderCompany->zip), 0, 2);
                     }
 
                     $basePath     = $sRootDir . '/../protected/pdf/cerfa/2062/';
                     $borrowerPath = $basePath . substr($loan->added, 0, 4) . '/' . substr(trim($borrowerCompany->zip), 0, 2) . '/emprunteurs/' . $project->slug . '/';
                     $lenderPath   = $basePath . substr($loan->added, 0, 4) . '/' . $lenderCode . '/preteurs/' . $project->slug . '/';
-                    $fileName     = $borrowerCompany->siren . '-' . $lender->id_client_owner . '-' . $loan->id_loan . '.pdf';
+                    $fileName     = $borrowerCompany->siren . '-' . $wallet->getIdClient()->getIdClient() . '-' . $loan->id_loan . '.pdf';
 
                     if (false === is_dir($borrowerPath)) {
                         mkdir($borrowerPath, 0775, true);
@@ -114,7 +111,7 @@ EOF
 
                     $_SERVER['REQUEST_URI'] = '';
 
-                    $command    = new \Command('pdf', 'declarationContratPret_html', array(), 'fr');
+                    $command    = new \Command('pdf', 'declarationContratPret_html', [], 'fr');
                     $controller = new \pdfController($command, 'default');
                     $controller->setContainer($this->getContainer());
                     $controller->initialize();
@@ -128,7 +125,7 @@ EOF
                         $output->writeln('Could not generate the loan contract PDF (loan ' . $loan->id_loan . ' - project ' . $loan->id_project . ') - Message: ' . $exception->getMessage() . ' - File: ' . $exception->getFile() . ' - Line: ' . $exception->getLine());
                         $logger->error(
                             'Could not generate the loan contract PDF (loan ' . $loan->id_loan . ' - project ' . $loan->id_project . ') - Message: ' . $exception->getMessage() . ' - File: ' . $exception->getFile() . ' - Line: ' . $exception->getLine(),
-                            array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $loan->id_project, 'id_loan' => $loan->id_loan)
+                            ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $loan->id_project, 'id_loan' => $loan->id_loan]
                         );
                         continue;
                     }
@@ -139,7 +136,7 @@ EOF
                     $output->writeln('Loan contract PDF generated (loan ' . $loan->id_loan . ')');
                     $logger->info(
                         'Loan contract PDF generated (loan ' . $loan->id_loan . ')',
-                        array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $loan->id_project, 'id_loan' => $loan->id_loan)
+                        ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $loan->id_project, 'id_loan' => $loan->id_loan]
                     );
                 }
             }

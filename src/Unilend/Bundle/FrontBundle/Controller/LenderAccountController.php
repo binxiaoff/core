@@ -4,7 +4,8 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
+
 
 class LenderAccountController extends Controller
 {
@@ -16,25 +17,18 @@ class LenderAccountController extends Controller
     {
         $template = [
             'route'              => $route,
-            'isAutobidQualified' => $this->get('unilend.service.autobid_settings_manager')->isQualified($this->getLenderAccount()),
+            'isAutobidQualified' => $this->get('unilend.service.autobid_settings_manager')->isQualified($this->getClient()),
             'isValidatedClient'  => $this->getUser()->getClientStatus() >= \clients_status::VALIDATED
         ];
 
         return $this->render('frontbundle/lender_account/partials/lender_account_nav.html.twig', $template);
     }
 
-    /**
-     * @return \lenders_accounts
-     */
-    private function getLenderAccount()
+    private function getClient()
     {
-        /** @var UserLender $user */
-        $user     = $this->getUser();
-        $clientId = $user->getClientId();
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-        $lenderAccount->get($clientId, 'id_client_owner');
+        /** @var ClientsRepository $clientRepository */
+        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
 
-        return $lenderAccount;
+        return $clientRepository->find($this->getUser()->getClientId());
     }
 }

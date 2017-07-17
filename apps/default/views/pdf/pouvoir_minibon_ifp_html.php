@@ -264,10 +264,10 @@
         <?php
         $var = 0;
         $nb  = intval((count($this->lLenders) / 26));
-        for ($a = 0; $a <= $nb; $a++) {
-            if ($var == count($this->lLenders)) {
+        for ($a = 0; $a <= $nb; $a++) :
+            if ($var == count($this->lLenders)) :
                 break;
-            }
+            endif;
             ?>
             <div class="pageBreakBefore" style="padding-top: 30px;">
                 <?php if ($var == 0): ?>
@@ -288,11 +288,12 @@
                         <?php endif; ?>
                         <?php
                         $i = 0;
-                        foreach ($this->lLenders as $key => $l) {
-                            if ($var == $key) {
-                                if ($i <= 26) {
-                                    $this->oLendersAccounts->get($l['id_lender'], 'id_lender_account');
-                                    $this->clients->get($this->oLendersAccounts->id_client_owner, 'id_client');
+                        foreach ($this->lLenders as $key => $l) :
+                            if ($var == $key) :
+                                if ($i <= 26) :
+                                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
+                                    $wallet = $this->walletRepository->find($l['id_lender']);
+                                    $this->clients->get($wallet->getIdClient()->getIdClient(), 'id_client');
                                     $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
                                     $nom    = $this->clients->nom;
@@ -318,15 +319,15 @@
                                     <?php
                                     $var++;
                                     $i++;
-                                }
-                            }
-                        }
+                                endif;
+                            endif;
+                        endforeach;
                         ?>
                     </table>
                 </div>
             </div>
             <?php
-        }
+        endfor;
         ?>
     </div>
 </div>

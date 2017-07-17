@@ -51,6 +51,13 @@ class WsExternalResource
     private $isAvailable;
 
     /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="updated", type="datetime")
+     */
+    private $updated;
+
+    /**
      * @var integer
      *
      * @ORM\Column(name="validity_days", type="smallint", nullable=true)
@@ -162,6 +169,26 @@ class WsExternalResource
     public function setIsAvailable($isAvailable)
     {
         $this->isAvailable = $isAvailable;
+
+        return $this;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getUpdated()
+    {
+        return $this->updated;
+    }
+
+    /**
+     * @param \DateTime $updated
+     *
+     * @return WsExternalResource
+     */
+    public function setUpdated($updated)
+    {
+        $this->updated = $updated;
 
         return $this;
     }

@@ -52,8 +52,6 @@ class bootstrap extends Controller
     protected $bids;
     /** @var \loans */
     protected $loans;
-    /** @var \lenders_accounts */
-    protected $lenders_accounts;
     /** @var \echeanciers */
     protected $echeanciers;
 

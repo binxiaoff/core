@@ -1,57 +1,57 @@
 <?php
+
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\DBAL\Statement;
+use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class SalesforceManager
 {
     /** @var LoggerInterface */
-    private $oLogger;
+    private $logger;
 
-    /** @var array with character to replace */
-    private $aSearchCharacter;
+    /** @var EntityManagerSimulator */
+    private $entityManagerSimulator;
 
-    /** @var array with character of replacement */
-    private $aReplaceCharacter;
-
-    /** @var EntityManager */
-    private $oEntityManager;
+    /** @var  EntityManager */
+    private $entityManager;
 
     /** @var string */
-    private $sExtractionDir;
+    private $extractionDir;
 
     /** @var string */
     private $configDir;
 
     /**
      * SalesForceManager constructor.
-     * @param EntityManager $oEntityManager
-     * @param $sExtractionDir
-     * @param $configDir
-     * @param LoggerInterface $oLogger
+     *
+     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param EntityManager          $entityManager
+     * @param                        $extractionDir
+     * @param                        $configDir
+     * @param LoggerInterface        $logger
      */
-    public function __construct(EntityManager $oEntityManager, $sExtractionDir, $configDir, LoggerInterface $oLogger)
+    public function __construct(EntityManagerSimulator $entityManagerSimulator, EntityManager $entityManager, $extractionDir, $configDir, LoggerInterface $logger)
     {
-        $this->oEntityManager = $oEntityManager;
-        $this->sExtractionDir = $sExtractionDir;
-        $this->configDir = $configDir;
-        $this->oLogger = $oLogger;
-        $this->aSearchCharacter = array("\r\n", "\n", "\t", "'", ';', '"');
-        $this->aReplaceCharacter = array('/', '/', '', '', '', '');
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->entityManager          = $entityManager;
+        $this->extractionDir          = $extractionDir;
+        $this->configDir              = $configDir;
+        $this->logger                 = $logger;
     }
 
     public function extractCompanies()
     {
         try {
-            $oStatement = $this->oEntityManager->getRepository('companies')->getCompaniesSalesForce();
-            if ($oStatement) {
-                $this->createFileFromQuery($oStatement, 'companies.csv');
+            $statement = $this->entityManagerSimulator->getRepository('companies')->getCompaniesSalesForce();
+            if ($statement) {
+                $this->createFileFromQuery($statement, 'companies.csv');
             }
-        } catch (\Exception $oException) {
-            $this->oLogger->error(
-                'Error on company Salesforces query: ' . $oException->getMessage(),
+        } catch (\Exception $exception) {
+            $this->logger->error(
+                'Error on company Salesforces query: ' . $exception->getMessage(),
                 array(__FILE__ . ' on line ' . __LINE__)
             );
         }
@@ -60,13 +60,13 @@ class SalesforceManager
     public function extractBorrowers()
     {
         try {
-            $oStatement = $this->oEntityManager->getRepository('clients')->getBorrowersSalesForce();
-            if ($oStatement) {
-                $this->createFileFromQuery($oStatement, 'emprunteurs.csv');
+            $statement = $this->entityManagerSimulator->getRepository('clients')->getBorrowersSalesForce();
+            if ($statement) {
+                $this->createFileFromQuery($statement, 'emprunteurs.csv');
             }
-        } catch (\Exception $oException) {
-            $this->oLogger->error(
-                'Error on borrower Salesforces query: ' . $oException->getMessage(),
+        } catch (\Exception $exception) {
+            $this->logger->error(
+                'Error on borrower Salesforces query: ' . $exception->getMessage(),
                 array(__FILE__ . ' on line ' . __LINE__)
             );
         }
@@ -75,13 +75,13 @@ class SalesforceManager
     public function extractProjects()
     {
         try {
-            $oStatement = $this->oEntityManager->getRepository('projects')->getProjectsSalesForce();
-            if ($oStatement) {
-                $this->createFileFromQuery($oStatement, 'projects.csv');
+            $statement = $this->entityManagerSimulator->getRepository('projects')->getProjectsSalesForce();
+            if ($statement) {
+                $this->createFileFromQuery($statement, 'projects.csv');
             }
-        } catch (\Exception $oException) {
-            $this->oLogger->error(
-                'Error on project Salesforces query: ' . $oException->getMessage(),
+        } catch (\Exception $exception) {
+            $this->logger->error(
+                'Error on project Salesforces query: ' . $exception->getMessage(),
                 array(__FILE__ . ' on line ' . __LINE__)
             );
         }
@@ -90,13 +90,13 @@ class SalesforceManager
     public function extractLenders()
     {
         try {
-            $oStatement = $this->oEntityManager->getRepository('lenders_accounts')->getLendersSalesForce();
-            if ($oStatement) {
-                $this->createFileFromQuery($oStatement, 'preteurs.csv');
+            $statement = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getLendersSalesForce();
+            if ($statement) {
+                $this->createFileFromQuery($statement, 'preteurs.csv');
             }
-        } catch (\Exception $oException) {
-            $this->oLogger->error(
-                'Error on lender Salesforces query: ' . $oException->getMessage(),
+        } catch (\Exception $exception) {
+            $this->logger->error(
+                'Error on lender Salesforces query: ' . $exception->getMessage(),
                 array(__FILE__ . ' on line ' . __LINE__)
             );
         }
@@ -106,44 +106,44 @@ class SalesforceManager
     /**
      * Query sql for prospects and treatment specific because prospect haven't same number columns
      */
-    public function extractProspects()
+    private function extractProspects()
     {
         try {
-            /** @var Statement $oStatement */
-            $oStatement = $this->oEntityManager->getRepository('prospects')->getProspectsSalesForce();
-            if ($oStatement) {
-                $iTimeStartCsv = microtime(true);
-                $rCsvFile = fopen($this->sExtractionDir . '/' . 'preteurs.csv', 'a');
-                $sNom = $sPrenom = $sEmail = '';
-                while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
-                    $aRow = array_map(array($this, 'cleanValue'), $aRow);
-                    if ($aRow['nom'] != $sNom && $aRow['prenom'] != $sPrenom && $aRow['email'] != $sEmail) {
+            /** @var Statement $statement */
+            $statement = $this->entityManagerSimulator->getRepository('prospects')->getProspectsSalesForce();
+            if ($statement) {
+                $timeStartCsv = microtime(true);
+                $csvFile      = fopen($this->extractionDir . '/' . 'preteurs.csv', 'a');
+                $name         = $firstName = $email = '';
+                while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
+                    $row = array_map(array($this, 'cleanValue'), $row);
+                    if ($row['nom'] != $name && $row['prenom'] != $firstName && $row['email'] != $email) {
                         //Array adding in file preteur.csv
-                        $aCsvProspect = array(
-                            'P' . $aRow['id_prospect'],// We add the letter P to avoid error in the dataloader on duplicate key with lenders.
+                        $csvProspect = array(
+                            'P' . $row['id_prospect'],// We add the letter P to avoid error in the dataloader on duplicate key with lenders.
                             '',
-                            $aRow['id_langue'],
-                            $aRow['source'],
-                            $aRow['source2'],
-                            $aRow['source3'],
+                            $row['id_langue'],
+                            $row['source'],
+                            $row['source2'],
+                            $row['source3'],
                             '',
-                            $aRow['nom'],
+                            $row['nom'],
                             '',
-                            $aRow['prenom'],
-                            '',
-                            '',
+                            $row['prenom'],
                             '',
                             '',
                             '',
                             '',
                             '',
-                            $aRow['email'],
+                            '',
+                            '',
+                            $row['email'],
                             '',
                             'Prospect',
                             'Prospect',
                             '',
-                            $aRow['added'],
-                            $aRow['updated'],
+                            $row['added'],
+                            $row['updated'],
                             '',
                             '',
                             '',
@@ -158,60 +158,61 @@ class SalesforceManager
                             '',
                             '0012400000K0Bxw'
                         );
-                        fputs($rCsvFile, '"' . implode('","', $aCsvProspect) . '"' . "\r\n");
+                        fputs($csvFile, '"' . implode('","', $csvProspect) . '"' . "\r\n");
                     }
-                    $sNom = $aRow['nom'];
-                    $sPrenom = $aRow['prenom'];
-                    $sEmail = $aRow['email'];
+                    $name      = $row['nom'];
+                    $firstName = $row['prenom'];
+                    $email     = $row['email'];
                 }
-                $oStatement->closeCursor();
-                fclose($rCsvFile);
-                $iTimeEndCsv = microtime(true) - $iTimeStartCsv;
-                $this->oLogger->info(
-                    'Prospects Salesforce CSV generated in ' . round($iTimeEndCsv, 2) . ' seconds',
+                $statement->closeCursor();
+                fclose($csvFile);
+                $timeEndCsv = microtime(true) - $timeStartCsv;
+                $this->logger->info(
+                    'Prospects Salesforce CSV generated in ' . round($timeEndCsv, 2) . ' seconds',
                     array(__FILE__ . ' on line ' . __LINE__)
                 );
             }
-        } catch (\Exception $oException) {
-            $this->oLogger->error(
-                'Error on prospects Salesforce query: ' . $oException->getMessage(),
+        } catch (\Exception $exception) {
+            $this->logger->error(
+                'Error on prospects Salesforce query: ' . $exception->getMessage(),
                 array(__FILE__ . ' on line ' . __LINE__)
             );
         }
     }
 
     /**
-     * @param Statement $oStatement resource of query sql
-     * @param string $sNameFile name of csv file to write
+     * @param Statement $statement resource of query sql
+     * @param string    $fileName  name of csv file to write
+     *
      * @return mixed
      */
-    private function createFileFromQuery($oStatement, $sNameFile)
+    private function createFileFromQuery($statement, $fileName)
     {
         if (true === $this->createExtractDir()) {
-            $iTimeStartCsv = microtime(true);
-            $sNameFile .= (1 !== preg_match('/(\.csv)$/i', $sNameFile)) ? '.csv' : '';
-            $rCsvFile = fopen($this->sExtractionDir . '/' . $sNameFile, 'w');
-            $iCountLine = 0;
-            while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
-                $aRow = array_map(array($this, 'cleanValue'), $aRow);
-                switch ($sNameFile) {
+            $timeStartCsv = microtime(true);
+            $fileName     .= (1 !== preg_match('/(\.csv)$/i', $fileName)) ? '.csv' : '';
+            $csvFile      = fopen($this->extractionDir . '/' . $fileName, 'w');
+            $countLine    = 0;
+            while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
+                $row = array_map(array($this, 'cleanValue'), $row);
+                switch ($fileName) {
                     case 'preteurs.csv':
-                        $aRow['Valide'] = ('Valide' == $aRow['StatusCompletude']) ? 'Oui' : 'Non';
+                        $row['Valide'] = ('Valide' == $row['StatusCompletude']) ? 'Oui' : 'Non';
                         break;
                 }
-                if (0 === $iCountLine) {
-                    fputs($rCsvFile, '"' . implode('","', array_keys($aRow)) . '"' . "\r\n");
+                if (0 === $countLine) {
+                    fputs($csvFile, '"' . implode('","', array_keys($row)) . '"' . "\r\n");
                 }
 
-                fputs($rCsvFile, '"' . implode('","', $aRow) . '"' . "\r\n");
-                $iCountLine++;
+                fputs($csvFile, '"' . implode('","', $row) . '"' . "\r\n");
+                $countLine++;
             }
-            $oStatement->closeCursor();
-            fclose($rCsvFile);
+            $statement->closeCursor();
+            fclose($csvFile);
 
-            $iTimeEndCsv = microtime(true) - $iTimeStartCsv;
-            $this->oLogger->info(
-                $sNameFile . ' CSV generated in ' . round($iTimeEndCsv, 2) . ' seconds',
+            $timeEndCsv = microtime(true) - $timeStartCsv;
+            $this->logger->info(
+                $fileName . ' CSV generated in ' . round($timeEndCsv, 2) . ' seconds',
                 array(__FILE__ . ' on line ' . __LINE__)
             );
             return true;
@@ -220,12 +221,15 @@ class SalesforceManager
         return false;
     }
 
+    /**
+     * @return bool
+     */
     private function createExtractDir()
     {
-        if (false === is_dir($this->sExtractionDir)) {
-            if (false === mkdir($this->sExtractionDir, 0775, true)) {
-                $this->oLogger->error(
-                    'Error on creating directory ' . $this->sExtractionDir,
+        if (false === is_dir($this->extractionDir)) {
+            if (false === mkdir($this->extractionDir, 0775, true)) {
+                $this->logger->error(
+                    'Error on creating directory ' . $this->extractionDir,
                     array(__FILE__ . ' on line ' . __LINE__)
                 );
                 return false;
@@ -234,10 +238,17 @@ class SalesforceManager
         return true;
     }
 
-    private function cleanValue($sValue)
+    /**
+     * @param $value
+     *
+     * @return mixed|string
+     */
+    private function cleanValue($value)
     {
-        $sValue = html_entity_decode($sValue, ENT_QUOTES, 'UTF-8');
-        $sValue = str_replace($this->aSearchCharacter, $this->aReplaceCharacter, $sValue);
-        return $sValue;
+        $searchCharacter  = array("\r\n", "\n", "\t", "'", ';', '"');
+        $replaceCharacter = array('/', '/', '', '', '', '');
+        $value            = html_entity_decode($value, ENT_QUOTES, 'UTF-8');
+        $value            = str_replace($searchCharacter, $replaceCharacter, $value);
+        return $value;
     }
 }

@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="clients_gestion_mails_notif", indexes={@ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_notif", columns={"id_notif"}), @ORM\Index(name="id_transaction", columns={"id_transaction"}), @ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="date_notif", columns={"date_notif"}), @ORM\Index(name="status_check_quotidienne", columns={"status_check_quotidienne"}), @ORM\Index(name="status_check_hebdomadaire", columns={"status_check_hebdomadaire"}), @ORM\Index(name="status_check_mensuelle", columns={"status_check_mensuelle"}), @ORM\Index(name="idx_clients_gestion_mails_notif_id_notification", columns={"id_notification"}), @ORM\Index(name="immediatement", columns={"immediatement"}), @ORM\Index(name="quotidienne", columns={"quotidienne"}), @ORM\Index(name="hebdomadaire", columns={"hebdomadaire"}), @ORM\Index(name="mensuelle", columns={"mensuelle"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks()
  */
 class ClientsGestionMailsNotif
 {
@@ -29,7 +30,7 @@ class ClientsGestionMailsNotif
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
+     * @ORM\Column(name="id_project", type="integer", nullable=true)
      */
     private $idProject;
 
@@ -50,63 +51,63 @@ class ClientsGestionMailsNotif
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_transaction", type="integer", nullable=false)
+     * @ORM\Column(name="id_transaction", type="integer", nullable=true)
      */
     private $idTransaction;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_loan", type="integer", nullable=false)
+     * @ORM\Column(name="id_loan", type="integer", nullable=true)
      */
     private $idLoan;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="immediatement", type="integer", nullable=false)
+     * @ORM\Column(name="immediatement", type="integer", nullable=true)
      */
     private $immediatement;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="quotidienne", type="integer", nullable=false)
+     * @ORM\Column(name="quotidienne", type="integer", nullable=true)
      */
     private $quotidienne;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="status_check_quotidienne", type="integer", nullable=false)
+     * @ORM\Column(name="status_check_quotidienne", type="integer", nullable=true)
      */
     private $statusCheckQuotidienne;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="hebdomadaire", type="integer", nullable=false)
+     * @ORM\Column(name="hebdomadaire", type="integer", nullable=true)
      */
     private $hebdomadaire;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="status_check_hebdomadaire", type="integer", nullable=false)
+     * @ORM\Column(name="status_check_hebdomadaire", type="integer", nullable=true)
      */
     private $statusCheckHebdomadaire;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="mensuelle", type="integer", nullable=false)
+     * @ORM\Column(name="mensuelle", type="integer", nullable=true)
      */
     private $mensuelle;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="status_check_mensuelle", type="integer", nullable=false)
+     * @ORM\Column(name="status_check_mensuelle", type="integer", nullable=true)
      */
     private $statusCheckMensuelle;
 
@@ -120,7 +121,7 @@ class ClientsGestionMailsNotif
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -133,7 +134,15 @@ class ClientsGestionMailsNotif
      */
     private $idClientsGestionMailsNotif;
 
-
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_wallet_balance_history", referencedColumnName="id")
+     * })
+     */
+    private $idWalletBalanceHistory;
 
     /**
      * Set idClient
@@ -186,7 +195,7 @@ class ClientsGestionMailsNotif
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param integer|null $idProject
      *
      * @return ClientsGestionMailsNotif
      */
@@ -200,7 +209,7 @@ class ClientsGestionMailsNotif
     /**
      * Get idProject
      *
-     * @return integer
+     * @return integer|null
      */
     public function getIdProject()
     {
@@ -258,7 +267,7 @@ class ClientsGestionMailsNotif
     /**
      * Set idTransaction
      *
-     * @param integer $idTransaction
+     * @param integer|null $idTransaction
      *
      * @return ClientsGestionMailsNotif
      */
@@ -272,7 +281,7 @@ class ClientsGestionMailsNotif
     /**
      * Get idTransaction
      *
-     * @return integer
+     * @return integer|null
      */
     public function getIdTransaction()
     {
@@ -282,7 +291,7 @@ class ClientsGestionMailsNotif
     /**
      * Set idLoan
      *
-     * @param integer $idLoan
+     * @param integer|null $idLoan
      *
      * @return ClientsGestionMailsNotif
      */
@@ -296,7 +305,7 @@ class ClientsGestionMailsNotif
     /**
      * Get idLoan
      *
-     * @return integer
+     * @return integer|null
      */
     public function getIdLoan()
     {
@@ -306,7 +315,7 @@ class ClientsGestionMailsNotif
     /**
      * Set immediatement
      *
-     * @param integer $immediatement
+     * @param integer|null $immediatement
      *
      * @return ClientsGestionMailsNotif
      */
@@ -320,7 +329,7 @@ class ClientsGestionMailsNotif
     /**
      * Get immediatement
      *
-     * @return integer
+     * @return integer|null
      */
     public function getImmediatement()
     {
@@ -330,7 +339,7 @@ class ClientsGestionMailsNotif
     /**
      * Set quotidienne
      *
-     * @param integer $quotidienne
+     * @param integer|null $quotidienne
      *
      * @return ClientsGestionMailsNotif
      */
@@ -344,7 +353,7 @@ class ClientsGestionMailsNotif
     /**
      * Get quotidienne
      *
-     * @return integer
+     * @return integer|null
      */
     public function getQuotidienne()
     {
@@ -354,7 +363,7 @@ class ClientsGestionMailsNotif
     /**
      * Set statusCheckQuotidienne
      *
-     * @param integer $statusCheckQuotidienne
+     * @param integer|null $statusCheckQuotidienne
      *
      * @return ClientsGestionMailsNotif
      */
@@ -368,7 +377,7 @@ class ClientsGestionMailsNotif
     /**
      * Get statusCheckQuotidienne
      *
-     * @return integer
+     * @return integer|null
      */
     public function getStatusCheckQuotidienne()
     {
@@ -378,7 +387,7 @@ class ClientsGestionMailsNotif
     /**
      * Set hebdomadaire
      *
-     * @param integer $hebdomadaire
+     * @param integer|null $hebdomadaire
      *
      * @return ClientsGestionMailsNotif
      */
@@ -392,7 +401,7 @@ class ClientsGestionMailsNotif
     /**
      * Get hebdomadaire
      *
-     * @return integer
+     * @return integer|null
      */
     public function getHebdomadaire()
     {
@@ -402,7 +411,7 @@ class ClientsGestionMailsNotif
     /**
      * Set statusCheckHebdomadaire
      *
-     * @param integer $statusCheckHebdomadaire
+     * @param integer|null $statusCheckHebdomadaire
      *
      * @return ClientsGestionMailsNotif
      */
@@ -416,7 +425,7 @@ class ClientsGestionMailsNotif
     /**
      * Get statusCheckHebdomadaire
      *
-     * @return integer
+     * @return integer|null
      */
     public function getStatusCheckHebdomadaire()
     {
@@ -426,7 +435,7 @@ class ClientsGestionMailsNotif
     /**
      * Set mensuelle
      *
-     * @param integer $mensuelle
+     * @param integer|null $mensuelle
      *
      * @return ClientsGestionMailsNotif
      */
@@ -440,7 +449,7 @@ class ClientsGestionMailsNotif
     /**
      * Get mensuelle
      *
-     * @return integer
+     * @return integer|null
      */
     public function getMensuelle()
     {
@@ -450,7 +459,7 @@ class ClientsGestionMailsNotif
     /**
      * Set statusCheckMensuelle
      *
-     * @param integer $statusCheckMensuelle
+     * @param integer|null $statusCheckMensuelle
      *
      * @return ClientsGestionMailsNotif
      */
@@ -464,7 +473,7 @@ class ClientsGestionMailsNotif
     /**
      * Get statusCheckMensuelle
      *
-     * @return integer
+     * @return integer|null
      */
     public function getStatusCheckMensuelle()
     {
@@ -512,7 +521,7 @@ class ClientsGestionMailsNotif
     /**
      * Get updated
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
     public function getUpdated()
     {
@@ -527,5 +536,47 @@ class ClientsGestionMailsNotif
     public function getIdClientsGestionMailsNotif()
     {
         return $this->idClientsGestionMailsNotif;
+    }
+
+    /**
+     * Set idWalletBalanceHistory
+     *
+     * @param WalletBalanceHistory $idWalletBalanceHistory
+     *
+     * @return ClientsGestionMailsNotif
+     */
+    public function setIdWalletBalanceHistory(WalletBalanceHistory $idWalletBalanceHistory)
+    {
+        $this->idWalletBalanceHistory = $idWalletBalanceHistory;
+
+        return $this;
+    }
+
+    /**
+     * Get idWalletBalanceHistory
+     *
+     * @return WalletBalanceHistory
+     */
+    public function getIdWalletBalanceHistory()
+    {
+        return $this->idWalletBalanceHistory;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

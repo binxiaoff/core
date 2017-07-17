@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Operation
  *
- * @ORM\Table(name="operation", indexes={@ORM\Index(name="fk_operation_id_type_idx", columns={"id_type"}), @ORM\Index(name="fk_id_project_idx", columns={"id_project"}), @ORM\Index(name="fk_id_loan_idx", columns={"id_loan"}), @ORM\Index(name="fk_id_payment_schedule_idx", columns={"id_payment_schedule"}), @ORM\Index(name="fk_id_repayment_schedule_idx", columns={"id_repayment_schedule"}), @ORM\Index(name="fk_id_backpayline_idx", columns={"id_backpayline"}), @ORM\Index(name="fk_id_welcome_offer_idx", columns={"id_welcome_offer"}), @ORM\Index(name="fk_id_wire_transfer_out_idx", columns={"id_wire_transfer_out"}), @ORM\Index(name="fk_id_wire_transfer_in_idx", columns={"id_wire_transfer_in"}), @ORM\Index(name="fk_id_transfer_idx", columns={"id_transfer"}), @ORM\Index(name="idx_id_wallet_debitor_type", columns={"id_wallet_debtor", "id_type"}), @ORM\Index(name="idx_id_wallet_creditor_type", columns={"id_wallet_creditor", "id_type"})})
+ * @ORM\Table(name="operation", indexes={@ORM\Index(name="fk_operation_id_type_idx", columns={"id_type"}), @ORM\Index(name="fk_id_project_idx", columns={"id_project"}), @ORM\Index(name="fk_id_loan_idx", columns={"id_loan"}), @ORM\Index(name="fk_id_payment_schedule_idx", columns={"id_payment_schedule"}), @ORM\Index(name="fk_id_repayment_schedule_idx", columns={"id_repayment_schedule"}), @ORM\Index(name="fk_id_backpayline_idx", columns={"id_backpayline"}), @ORM\Index(name="fk_id_welcome_offer_idx", columns={"id_welcome_offer"}), @ORM\Index(name="fk_id_wire_transfer_out_idx", columns={"id_wire_transfer_out"}), @ORM\Index(name="fk_id_wire_transfer_in_idx", columns={"id_wire_transfer_in"}), @ORM\Index(name="fk_id_transfer_idx", columns={"id_transfer"}), @ORM\Index(name="idx_id_wallet_debitor_type", columns={"id_wallet_debtor", "id_type"}), @ORM\Index(name="idx_id_wallet_creditor_type", columns={"id_wallet_creditor", "id_type"}), @ORM\Index(name="idx_operation_id_sub_type", columns={"id_sub_type"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\OperationRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -85,6 +85,16 @@ class Operation
      * })
      */
     private $idType;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_sub_type", referencedColumnName="id")
+     * })
+     */
+    private $idSubType;
 
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
@@ -483,11 +493,11 @@ class Operation
     /**
      * Set idType
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\OperationType $idType
+     * @param OperationType $idType
      *
      * @return Operation
      */
-    public function setType(\Unilend\Bundle\CoreBusinessBundle\Entity\OperationType $idType = null)
+    public function setType(OperationType $idType = null)
     {
         $this->idType = $idType;
 
@@ -497,11 +507,35 @@ class Operation
     /**
      * Get idType
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\OperationType
+     * @return OperationType
      */
     public function getType()
     {
         return $this->idType;
+    }
+
+    /**
+     * Set idSubType
+     *
+     * @param OperationSubType $idSubType
+     *
+     * @return Operation
+     */
+    public function setSubType(OperationSubType $idSubType = null)
+    {
+        $this->idSubType = $idSubType;
+
+        return $this;
+    }
+
+    /**
+     * Get idSubType
+     *
+     * @return OperationSubType
+     */
+    public function getSubType()
+    {
+        return $this->idSubType;
     }
 
     /**

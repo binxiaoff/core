@@ -183,11 +183,6 @@ class EulerHermesManager
             $content = $stream->getContents();
             call_user_func($callable, $content, $validity['status']);
 
-            if ('error' !== $validity['status']) {
-                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
-            } else {
-                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down', 'Status code: ' . $response->getStatusCode());
-            }
             if ($validity['is_valid']) {
                 return $content;
             } else {
@@ -201,7 +196,6 @@ class EulerHermesManager
                 'Exception at line: ' . __LINE__ . '. Message: ' . $exception->getMessage(),
                 ['class' => __CLASS__, 'resource' => $wsResource->getLabel(), 'uri' => $uri]
             );
-            $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down', $exception->getMessage());
 
             return null;
         }

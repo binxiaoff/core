@@ -46,17 +46,18 @@ class lender_evaluation_log extends lender_evaluation_log_crud
     }
 
     /**
-     * @param lenders_accounts $lender
+     * @param int $idLender
+     *
      * @return bool
      */
-    public function hasLenderLog(\lenders_accounts $lender)
+    public function hasLenderLog($idLender)
     {
         $queryBuilder = $this->bdd->createQueryBuilder();
         $queryBuilder->select('COUNT(*)')
             ->from('lender_evaluation_log', 'log')
             ->innerJoin('log', 'lender_evaluation', 'eval', 'log.id_lender_evaluation = eval.id_lender_evaluation')
             ->where('eval.id_lender = :id_lender')
-            ->setParameter('id_lender', $lender->id_lender_account);
+            ->setParameter('id_lender', $idLender);
 
         return $queryBuilder->execute()->fetchColumn() > 0;
     }

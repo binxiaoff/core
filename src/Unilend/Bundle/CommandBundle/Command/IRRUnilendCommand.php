@@ -5,7 +5,6 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Service\IRRManager;
 
 class IRRUnilendCommand extends ContainerAwareCommand
@@ -25,7 +24,7 @@ class IRRUnilendCommand extends ContainerAwareCommand
         $logger = $this->getContainer()->get('monolog.logger.console');
         $iRRManager->setLogger($logger);
 
-        $yesterday = date('Y-m-d', strtotime('-1 day'));
+        $yesterday = new \DateTime('Yesterday');
 
         if ($iRRManager->IRRUnilendNeedsToBeRecalculated($yesterday)) {
             try {

@@ -1,0 +1,159 @@
+{% extends 'pdf/layout.html.twig' %}
+
+{% block cssFiles %}
+    {{ parent() }}
+    <style>
+        .th.item-operation {
+            width: 40%
+        }
+        .item-amount {
+            text-align: right;
+        }
+        .table {
+            margin-bottom: 2em;
+        }
+        .table tr .th {
+            display: table-cell;
+            background-color: #eceaed;
+            color: #302a32;
+            font-size: 10px!important;
+            padding-top: 1em;
+            padding-bottom: 1em;
+            line-height: 1em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .table tr td {
+            font-size: 0.725em!important;
+            padding-top: 0.5em;
+            padding-bottom: 0.5em;
+        }
+        .table tr.details {
+            color: #9f9d9f;
+        }
+        .table tr td.tf {
+            padding-top: 1em;
+            padding-bottom: 1em;
+            font-weight: bold;
+            border-top: 1px solid #eceaed;
+            border-bottom: 1px solid #eceaed;
+        }
+        .footer .small {
+            font-size: 0.675em;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-6 col-lg-6">
+            <p>
+                <b>Unilend – Société Française pour le financement des PME</b><br/>
+                6 Rue du général Clergerie<br/>
+                75116 Paris
+            </p>
+        </div>
+        <div class="col-md-6 col-lg-6">
+            <p class="text-align-right">
+                <b>{% trans with {'%date%' : 'now'|date('d/m/Y')} %}borrower-operation_pdf-location-date{% endtrans %}</b><br/>
+                <b>{{ company.name }}</b><br/>
+                {{ company.adresse1 }} <br/>
+                {{ company.zip }} {{ company.city }}
+            </p>
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 col-lg-8">
+            <p>
+                <b style="font-size: 1rem; line-height: 1.5rem;">{% trans with { '%idClient%' : client.idClient } %}borrower-operation_pdf-subject-line{% endtrans %}</b><br/>
+                {% trans %} borrower-operation_pdf-owner-line{% endtrans %} {{ company.name }} <br/>
+                <b>{% trans %} borrower-operation_pdf-company-representative {% endtrans %}{{ client.civilite }} {{ client.prenom }} {{ client.nom }}</b><br/>
+            </p>
+        </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <table class="table">
+        <tbody>
+        <tr>
+            <td class="th item-operation">
+                <span class="label" title="{{ 'borrower-operation_operation'|trans|e('html_attr') }}">{% trans %} borrower-operation_operation {% endtrans %}</span>
+            </td>
+            <td class="th item-project">
+                <span class="label" title="{{ 'borrower-operation_project'|trans|e('html_attr') }}">{% trans %} borrower-operation_project {% endtrans %}</span>
+            </td>
+            <td class="th item-date">
+                <span class="label" title="{{ 'borrower-operation_operation-date'|trans|e('html_attr') }}">{% trans %} borrower-operation_operation-date {% endtrans %}</span>
+            </td>
+            <td class="th item-amount">
+                <span class="label" title="{{ 'borrower-operation_amount'|trans|e('html_attr') }}">{% trans %} borrower-operation_amount {% endtrans %}</span>
+            </td>
+        </tr>
+        {% for i, op in operations %}
+
+            {% if (loop.index is odd) %}
+                {% set backgroundClass = 'bg-bg3' %}
+            {% else %}
+                {% set backgroundClass = '' %}
+            {% endif %}
+
+            {% if (op.amount > 0) %}
+                {% set colorClass = 'c-success' %}
+            {% else %}
+                {% set colorClass = 'c-error' %}
+            {% endif %}
+
+            <tr id="operation-{{ i }}" class="transaction-{{ op.label }} {{ backgroundClass }}">
+                <td class="item-operation">
+                    {{ ('borrower-operation_' ~ op.label)|trans }}
+                    {% if op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationType::BORROWER_WITHDRAW') and op.third_party_company is defined and op.third_party_company is not empty %}
+                        - {{ op.third_party_company.name }}
+                    {% endif %}
+                </td>
+                <td class="item-project">{{ op.idProject }}</td>
+                <td class="item-date">{{ op.date|localizeddate('short', 'none') }}</td>
+                <td class="item-amount {{ colorClass }}">{{ op.amount|localizedcurrency('EUR') }}</td>
+            </tr>
+            {% if op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationSubType::BORROWER_COMMISSION_REPAYMENT') %}
+                <tr class="details {{ backgroundClass }}">
+                    <td colspan="2"></td>
+                    <td>{% trans %}borrower-operation_commission-excl-tax{% endtrans %}</td>
+                    <td class="text-align-right">{{ op.netCommission|localizedcurrency('EUR') }}</td>
+                </tr>
+                <tr class="details {{ backgroundClass }}">
+                    <td colspan="2"></td>
+                    <td>{% trans %}borrower-operation_vat{% endtrans %}</td>
+                    <td class="text-align-right">{{ op.vat|localizedcurrency('EUR') }}</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+        <tr class="tfooter">
+            <td class="tf tf-label" colspan="2">
+                {% trans %}lender-operations_pdf-balance{% endtrans %}
+            </td>
+            <td class="tf tf-date">
+                {{ 'now'|date('d/m/y') }}
+            </td>
+            <td class="tf tf-amount text-align-right">
+                {{ available_balance|localizedcurrency('eur') }}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p class="small">
+            {% trans %} lender-operations_pdf-unilend-description {% endtrans %}
+        </p>
+        <p class="small">
+            {% trans %} lender-operations_pdf-spfmei-description {% endtrans %}
+        </p>
+    </div>
+{% endblock %}

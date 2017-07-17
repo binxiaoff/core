@@ -51,8 +51,9 @@
                     <?php
                         $this->projects->get($loan['id_project'], 'id_project');
                         $this->loan->get($loan['id_loan']);
-                        $this->lenders_accounts->get($loan['id_lender'], 'id_lender_account');
-                        $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
+                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
+                        $wallet = $this->walletRepository->find($this->loan->id_lender);
+                        $this->clients->get($wallet->getIdClient()->getIdClient(), 'id_client');
                         $lesEcheances = $this->echeanciers->select('id_loan = ' . $loan['id_loan']);
                     ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
@@ -68,9 +69,9 @@
                         </td>
                         <td>
                             <?php if (false === empty($loan['id_transfer'])) :
-                                /** @var \lenders_accounts $formerOwner */
+                                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $formerOwner */
                                 $formerOwner = $this->loanManager->getFormerOwner($this->loan); ?>
-                                <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->id_lender_account ?>"><?= $formerOwner->id_client_owner ?></a>
+                                <a href="<?= $this->lurl . '/preteurs/edit/' . $formerOwner->getIdClient() ?>"><?= $formerOwner->getIdClient() ?></a>
                             <?php endif; ?>
                         </td>
                         <td align="center">

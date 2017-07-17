@@ -183,7 +183,7 @@
             </div>
             <div class="col-md-2">
                 <div class="form-group">
-                    <label for="status">Status</label>
+                    <label for="status">Statut</label>
                     <select name="status" id="status" class="form-control">
                         <option value=""></option>
                         <?php foreach ($this->lProjects_status as $s) : ?>

@@ -1,18 +1,21 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Service;
 
+use Doctrine\ORM\EntityManager;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\librairies\CacheKeys;
 
 class LenderAccountDisplayManager
 {
-    /** @var EntityManager */
-    private $entityManager;
+    /** @var EntityManagerSimulator */
+    private $entityManagerSimulator;
     /** @var  LocationManager */
     private $locationManager;
     /** @var TranslatorInterface  */
@@ -25,28 +28,54 @@ class LenderAccountDisplayManager
     private $cipIndicators = false;
     /** @var  ProductManager */
     private $productManager;
+    /** @var EntityManager */
+    private $entityManager;
 
+    /**
+     * LenderAccountDisplayManager constructor.
+     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param LocationManager        $locationManager
+     * @param TranslatorInterface    $translator
+     * @param CacheItemPoolInterface $cachePool
+     * @param CIPManager             $cipManager
+     * @param ProductManager         $productManager
+     * @param EntityManager          $entityManager
+     */
     public function __construct(
-        EntityManager $entityManager,
+        EntityManagerSimulator $entityManagerSimulator,
         LocationManager $locationManager,
         TranslatorInterface $translator,
         CacheItemPoolInterface $cachePool,
         CIPManager $cipManager,
-        ProductManager $productManager
+        ProductManager $productManager,
+        EntityManager $entityManager
     ) {
-        $this->entityManager   = $entityManager;
-        $this->locationManager = $locationManager;
-        $this->translator      = $translator;
-        $this->cachePool       = $cachePool;
-        $this->cipManager      = $cipManager;
-        $this->productManager  = $productManager;
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->locationManager        = $locationManager;
+        $this->translator             = $translator;
+        $this->cachePool              = $cachePool;
+        $this->cipManager             = $cipManager;
+        $this->productManager         = $productManager;
+        $this->entityManager          = $entityManager;
     }
 
-    public function getBidsForProject($projectId, \lenders_accounts $lenderAccount)
+    /**
+     * @param int     $projectId
+     * @param Clients $client
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function getBidsForProject($projectId, Clients $client)
     {
+        if (false === $client->isLender()) {
+            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
+        }
+        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+
         /** @var \bids $bids */
-        $bids       = $this->entityManager->getRepository('bids');
-        $lenderBids = $bids->select('id_lender_account = ' . $lenderAccount->id_lender_account . ' AND id_project = ' . $projectId);
+        $bids       = $this->entityManagerSimulator->getRepository('bids');
+        $lenderBids = $bids->select('id_lender_account = ' . $wallet->getId() . ' AND id_project = ' . $projectId);
 
         return [
             'inprogress' => array_filter($lenderBids, function ($bid) {
@@ -76,26 +105,45 @@ class LenderAccountDisplayManager
         ];
     }
 
-    public function getLoansForProject($projectId, \lenders_accounts $lenderAccount)
+    /**
+     * @param int     $projectId
+     * @param Clients $client
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function getLoansForProject($projectId, Clients $client)
     {
+        if (false === $client->isLender()) {
+            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
+        }
+        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+
         /** @var \loans $loans */
-        $loans = $this->entityManager->getRepository('loans');
+        $loans = $this->entityManagerSimulator->getRepository('loans');
 
         return [
-            'myLoanOnProject'   => $loans->getBidsValid($projectId, $lenderAccount->id_lender_account),
-            'myAverageLoanRate' => round($loans->getAvgLoansPreteur($projectId, $lenderAccount->id_lender_account), 2)
+            'myLoanOnProject'   => $loans->getBidsValid($projectId, $wallet->getId()),
+            'myAverageLoanRate' => round($loans->getAvgLoansPreteur($projectId, $wallet->getId()), 2)
         ];
     }
 
     /**
      * get a ready to use formatted array of lender loans allocation by company sector
-     * @param $lenderId
+     * @param Clients $client
+     *
      * @return array
+     * @throws \Exception
      */
-    public function getLenderLoansAllocationByCompanySector($lenderId)
+    public function getLenderLoansAllocationByCompanySector(Clients $client)
     {
+        if (false === $client->isLender()) {
+            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
+        }
+        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+
         $dataForTreeMap = [];
-        $data           = $this->getLoansAllocationByCompanySector($lenderId);
+        $data           = $this->getLoansAllocationByCompanySector($wallet->getId());
 
         foreach ($data as $row) {
             $dataForTreeMap[] = [
@@ -113,14 +161,21 @@ class LenderAccountDisplayManager
 
     /**
      * get a ready to use formatted array of lender loans allocation by company region
-     * @param $lenderId
+     * @param Clients $client
+     *
      * @return array
+     * @throws \Exception
      */
-    public function getLenderLoansAllocationByRegion($lenderId)
+    public function getLenderLoansAllocationByRegion(Clients $client)
     {
+        if (false === $client->isLender()) {
+            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
+        }
+        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+
         $regions        = $this->locationManager->getFrenchRegions();
         $dataForTreeMap = [];
-        $data           = $this->getLoansAllocationByCompanyRegion($lenderId);
+        $data           = $this->getLoansAllocationByCompanyRegion($wallet->getId());
 
         foreach ($data as $row) {
             if (0 == $row['insee_region_code']) {
@@ -142,17 +197,18 @@ class LenderAccountDisplayManager
     /**
      * get lender loans allocation by company region
      * @param int $lenderId
+     *
      * @return array
+     * @throws \Exception
      */
     private function getLoansAllocationByCompanyRegion($lenderId)
     {
         $cachedItem = $this->cachePool->getItem(__FUNCTION__ . $lenderId);
 
         if (false === $cachedItem->isHit()) {
-            /** @var \lenders_accounts $lendersAccounts */
-            $lendersAccounts = $this->entityManager->getRepository('lenders_accounts');
+            $loanRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
             try {
-                $projectsCountByRegion = $lendersAccounts->countProjectsForLenderByRegion($lenderId);
+                $projectsCountByRegion = $loanRepository->countProjectsForLenderByRegion($lenderId);
                 $cachedItem->set($projectsCountByRegion)->expiresAfter(CacheKeys::DAY);
                 $this->cachePool->save($cachedItem);
             } catch (\Exception $exception) {
@@ -167,6 +223,7 @@ class LenderAccountDisplayManager
     /**
      * get lender loans allocation by company sector
      * @param int $lenderId
+     *
      * @return array
      */
     private function getLoansAllocationByCompanySector($lenderId)
@@ -175,7 +232,7 @@ class LenderAccountDisplayManager
 
         if (false === $cachedItem->isHit()) {
             /** @var \projects $projects */
-            $projects = $this->entityManager->getRepository('projects');
+            $projects = $this->entityManagerSimulator->getRepository('projects');
             try {
                 $projectsCountByCategory = $projects->getLoanDetailsAllocation($lenderId);
                 $cachedItem->set($projectsCountByCategory)->expiresAfter(CacheKeys::DAY);
@@ -191,18 +248,18 @@ class LenderAccountDisplayManager
 
     /**
      * @param \projects $project
-     * @param \lenders_accounts $lender
+     * @param Clients $clients
      *
      * @return bool
      */
-    public function isProjectAdvisedForLender(\projects $project, \lenders_accounts $lender)
+    public function isProjectAdvisedForLender(\projects $project, Clients $clients)
     {
-        if (false === $this->productManager->getLenderEligibility($lender, $project)) {
+        if (false === $this->productManager->isClientEligible($clients, $project)) {
             return false;
         }
 
         if (false === $this->cipIndicators) {
-            $this->cipIndicators = $this->cipManager->getIndicators($lender);
+            $this->cipIndicators = $this->cipManager->getIndicators($clients);
         }
 
         if (null === $this->cipIndicators) {

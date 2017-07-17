@@ -47,13 +47,6 @@ class Virements
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_transaction", type="integer", nullable=false)
-     */
-    private $idTransaction = 0;
-
-    /**
-     * @var integer
-     *
      * @ORM\Column(name="montant", type="integer", nullable=false)
      */
     private $montant;
@@ -206,30 +199,6 @@ class Virements
     public function getProject()
     {
         return $this->idProject;
-    }
-
-    /**
-     * Set idTransaction
-     *
-     * @param integer $idTransaction
-     *
-     * @return Virements
-     */
-    public function setIdTransaction($idTransaction)
-    {
-        $this->idTransaction = $idTransaction;
-
-        return $this;
-    }
-
-    /**
-     * Get idTransaction
-     *
-     * @return integer
-     */
-    public function getIdTransaction()
-    {
-        return $this->idTransaction;
     }
 
     /**

@@ -3,7 +3,10 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\ORM\Query\Expr\Join;
+use PDO;
+use Unilend\librairies\CacheKeys;
 use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -15,9 +18,34 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 class ProjectsRepository extends EntityRepository
 {
     /**
+     * @param int $lenderId
+     *
+     * @return int
+     */
+    public function countCompaniesLenderInvestedIn($lenderId)
+    {
+        $query = '
+            SELECT COUNT(DISTINCT p.id_company)
+            FROM projects p
+            INNER JOIN loans l ON p.id_project = l.id_project
+            WHERE p.status >= :status AND l.id_lender = :lenderId';
+
+        $statement = $this->getEntityManager()->getConnection()->executeCacheQuery(
+            $query,
+            ['lenderId' => $lenderId, 'status' => \projects_status::REMBOURSEMENT],
+            ['lenderId' => PDO::PARAM_INT, 'status' => PDO::PARAM_INT],
+            new QueryCacheProfile(CacheKeys::SHORT_TIME, md5(__METHOD__))
+        );
+        $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return (int) current($result[0]);
+    }
+
+    /**
      * @param \DateTime $dateTime
      *
-     * @return Projects[];
+     * @return Projects[]
      */
     public function findPartiallyReleasedProjects(\DateTime $dateTime)
     {
@@ -106,9 +134,7 @@ class ProjectsRepository extends EntityRepository
             ->setParameter('projectStatus', ProjectsStatus::INCOMPLETE_REQUEST)
             ->setParameter('excludedStatus', [ProjectsStatus::ABANDONED, ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION])
             ->setParameter('noAutoEvaluationStatus', ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION)
-            ->orderBy('p.added', 'DESC')
-            ->getQuery()
-            ->getResult();
+            ->orderBy('p.added', 'DESC');
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -126,9 +152,7 @@ class ProjectsRepository extends EntityRepository
             ->andWhere($queryBuilder->expr()->in('p.status', ':projectStatus'))
             ->setParameter('userCompanies', $companies)
             ->setParameter('projectStatus', [ProjectsStatus::ABANDONED])
-            ->orderBy('p.added', 'DESC')
-            ->getQuery()
-            ->getResult();
+            ->orderBy('p.added', 'DESC');
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -146,9 +170,7 @@ class ProjectsRepository extends EntityRepository
             ->andWhere($queryBuilder->expr()->in('p.status', ':projectStatus'))
             ->setParameter('userCompanies', $companies)
             ->setParameter('projectStatus', [ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION])
-            ->orderBy('p.added', 'DESC')
-            ->getQuery()
-            ->getResult();
+            ->orderBy('p.added', 'DESC');
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -219,5 +241,37 @@ class ProjectsRepository extends EntityRepository
         }
 
         return $statistics;
+    }
+
+    /**
+     * @param int       $status
+     * @param \DateTime $from
+     *
+     * @return Projects[]
+     */
+    public function getProjectsByStatusFromDate($status, \DateTime $from)
+    {
+        $queryBuilder = $this->createQueryBuilder('p')
+            ->where('p.status = :status')
+            ->setParameter('status', $status)
+            ->andWhere('p.added >= :from')
+            ->setParameter('from', $from);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param $siren
+     *
+     * @return Projects[]
+     */
+    public function findBySiren($siren)
+    {
+        $qb = $this->createQueryBuilder('p');
+        $qb->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'p.idCompany = c.idCompany')
+            ->where('c.siren = :siren')
+            ->setParameter('siren', $siren);
+
+        return $qb->getQuery()->getResult();
     }
 }

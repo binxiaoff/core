@@ -31,7 +31,8 @@ class SearchService
         RouterInterface $router,
         $deskUser,
         $deskPassword
-    ) {
+    )
+    {
         $this->entityManager = $entityManager;
         $this->translator    = $translator;
         $this->router        = $router;

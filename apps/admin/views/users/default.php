@@ -13,7 +13,7 @@
             <h1>Utilisateurs</h1>
         </div>
         <div class="col-md-6">
-            <a href="<?= $this->lurl ?>/users/add" class="btn-primary pull-right thickbox">Ajouter un utilisateu</a>
+            <a href="<?= $this->lurl ?>/users/add" class="btn-primary pull-right thickbox">Ajouter un utilisateur</a>
         </div>
     </div>
     <?php foreach ($this->users as $userStatus => $users) : ?>

@@ -30,19 +30,19 @@ class client_atypical_operationController extends bootstrap
 
     public function _detections()
     {
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em                                    = $this->get('doctrine.orm.entity_manager');
-        $this->atypicalOperation['pending']    = $em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager                         = $this->get('doctrine.orm.entity_manager');
+        $this->atypicalOperation['pending']    = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')
             ->findBy(
                 ['detectionStatus' => ClientAtypicalOperation::STATUS_PENDING],
                 ['added' => 'DESC', 'client' => 'DESC']
             );
-        $this->atypicalOperation['waitingACK'] = $em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')
+        $this->atypicalOperation['waitingACK'] = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')
             ->findBy(
                 ['detectionStatus' => ClientAtypicalOperation::STATUS_WAITING_ACK],
                 ['updated' => 'DESC', 'client' => 'DESC']
             );
-        $this->atypicalOperation['treated']    = $em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')
+        $this->atypicalOperation['treated']    = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')
             ->findBy(
                 ['detectionStatus' => ClientAtypicalOperation::STATUS_TREATED],
                 ['updated' => 'DESC', 'client' => 'DESC'],
@@ -51,9 +51,8 @@ class client_atypical_operationController extends bootstrap
 
         $this->showActions                  = true;
         $this->showUpdated                  = false;
-        $this->userEntity                   = $em->getRepository('UnilendCoreBusinessBundle:Users');
-        $this->lendersAccount               = $em->getRepository('UnilendCoreBusinessBundle:LendersAccounts');
-        $this->clientVigilanceStatusHistory = $em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory');
+        $this->userEntity                   = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+        $this->clientVigilanceStatusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory');
     }
 
     public function _process_detection_box()
@@ -61,19 +60,19 @@ class client_atypical_operationController extends bootstrap
         $this->hideDecoration();
         $this->action = $this->params[0];
 
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em = $this->get('doctrine.orm.entity_manager');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
         switch ($this->action) {
             case 'add':
                 $this->title               = 'Ajouter une opération atypique';
-                $this->vigilanceRules      = $em->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->findAll();
+                $this->vigilanceRules      = $entityManager->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->findAll();
                 $this->processDetectionUrl = $this->lurl . '/client_atypical_operation/process_detection/' . $this->action . '/' . $this->params[1];
-                $this->client              = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[1]);
+                $this->client              = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[1]);
                 break;
             case 'doubt':
                 $this->title          = 'Levée du doute';
-                $this->vigilanceRules = $em->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->findAll();
+                $this->vigilanceRules = $entityManager->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->findAll();
                 $this->getAtypicalOperationDetails($this->params[1]);
                 break;
             case 'ack':
@@ -94,10 +93,10 @@ class client_atypical_operationController extends bootstrap
 
     private function getAtypicalOperationDetails($atypicalOperationId)
     {
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em                     = $this->get('doctrine.orm.entity_manager');
-        $atypicalOperation      = $em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->find($atypicalOperationId);
-        $currentVigilanceStatus = $em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager                     = $this->get('doctrine.orm.entity_manager');
+        $atypicalOperation      = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->find($atypicalOperationId);
+        $currentVigilanceStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')
             ->findOneBy(
                 ['client' => $atypicalOperation->getClient()],
                 ['added' => 'DESC']
@@ -123,15 +122,15 @@ class client_atypical_operationController extends bootstrap
                 $this->addAtypicalOperation();
                 break;
             case 'doubt':
-                /** @var \Doctrine\ORM\EntityManager $em */
-                $em                = $this->get('doctrine.orm.entity_manager');
-                $atypicalOperation = $em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->find($this->params[1]);
+                /** @var \Doctrine\ORM\EntityManager $entityManager */
+                $entityManager                = $this->get('doctrine.orm.entity_manager');
+                $atypicalOperation = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->find($this->params[1]);
                 $this->liftingOfDoubt($atypicalOperation);
                 break;
             case 'ack':
-                /** @var \Doctrine\ORM\EntityManager $em */
-                $em                = $this->get('doctrine.orm.entity_manager');
-                $atypicalOperation = $em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->find($this->params[1]);
+                /** @var \Doctrine\ORM\EntityManager $entityManager */
+                $entityManager                = $this->get('doctrine.orm.entity_manager');
+                $atypicalOperation = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->find($this->params[1]);
                 $this->askAcknowledgment($atypicalOperation);
                 break;
             default:
@@ -161,9 +160,9 @@ class client_atypical_operationController extends bootstrap
         }
 
         $fileName .= (new \DateTime())->format('dMY_His');
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em                = $this->get('doctrine.orm.entity_manager');
-        $atypicalOperation = $em->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager                = $this->get('doctrine.orm.entity_manager');
+        $atypicalOperation = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')
             ->findBy(
                 ['detectionStatus' => $status],
                 ['added' => 'ASC', 'client' => 'ASC']
@@ -173,8 +172,8 @@ class client_atypical_operationController extends bootstrap
 
     private function addAtypicalOperation()
     {
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em = $this->get('doctrine.orm.entity_manager');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var ClientVigilanceStatusManager $clientVigilanceStatusManager */
         $clientVigilanceStatusManager = $this->get('unilend.service.client_vigilance_status_manager');
 
@@ -191,23 +190,23 @@ class client_atypical_operationController extends bootstrap
             true === isset($_POST['user_comment'])
         ) {
             try {
-                $vigilanceStatusHistory = $em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findOneBy(['client' => $_POST['clientId']], ['id' => 'DESC']);
+                $vigilanceStatusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findOneBy(['client' => $_POST['clientId']], ['id' => 'DESC']);
 
                 if (false === empty($_POST['vigilance_rule'])) {
-                    $rule = $em->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->find($_POST['vigilance_rule']);
+                    $rule = $entityManager->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->find($_POST['vigilance_rule']);
                 } else {
-                    $rule = $em->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->findOneBy(['label' => 'other']);
+                    $rule = $entityManager->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->findOneBy(['label' => 'other']);
                 }
                 /** @var Clients $client */
-                $client                  = $em->getRepository('UnilendCoreBusinessBundle:Clients')->find($_POST['clientId']);
+                $client                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($_POST['clientId']);
                 $clientAtypicalOperation = new ClientAtypicalOperation();
                 $clientAtypicalOperation->setClient($client)
                     ->setDetectionStatus($status)
                     ->setRule($rule)
                     ->setIdUser($_SESSION['user']['id_user'])
                     ->setUserComment($_POST['user_comment']);
-                $em->persist($clientAtypicalOperation);
-                $em->flush($clientAtypicalOperation);
+                $entityManager->persist($clientAtypicalOperation);
+                $entityManager->flush($clientAtypicalOperation);
 
                 if (false === empty($vigilanceStatusHistory) && $vigilanceStatusHistory->getVigilanceStatus() <= $_POST['vigilance_status']) {
                     $clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory(
@@ -241,11 +240,11 @@ class client_atypical_operationController extends bootstrap
      */
     private function liftingOfDoubt(ClientAtypicalOperation $atypicalOperation)
     {
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em = $this->get('doctrine.orm.entity_manager');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var ClientVigilanceStatusManager $clientVigilanceStatusManager */
         $clientVigilanceStatusManager = $this->get('unilend.service.client_vigilance_status_manager');
-        $clientVigilanceStatus        = $em->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')
+        $clientVigilanceStatus        = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')
             ->findOneBy(
                 ['client' => $atypicalOperation->getClient()],
                 ['added' => 'DESC']
@@ -272,9 +271,9 @@ class client_atypical_operationController extends bootstrap
                 $result = 'OK';
             } else {
                 if (false === empty($_POST['vigilance_rule'])) {
-                    $rule = $em->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->find($_POST['vigilance_rule']);
+                    $rule = $entityManager->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->find($_POST['vigilance_rule']);
                 } else {
-                    $rule = $em->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->findOneBy(['label' => 'other']);
+                    $rule = $entityManager->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->findOneBy(['label' => 'other']);
                 }
                 $atypicalOperation
                     ->setDetectionStatus(ClientAtypicalOperation::STATUS_TREATED)
@@ -295,7 +294,7 @@ class client_atypical_operationController extends bootstrap
         } else {
             $result = 'KO';
         }
-        $em->flush($atypicalOperation);
+        $entityManager->flush($atypicalOperation);
         echo json_encode(['message' => $result]);
     }
 
@@ -304,13 +303,13 @@ class client_atypical_operationController extends bootstrap
      */
     private function askAcknowledgment(ClientAtypicalOperation $atypicalOperation)
     {
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em = $this->get('doctrine.orm.entity_manager');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
         if (false === empty($_POST['user_comment'])) {
             $atypicalOperation->setDetectionStatus(ClientAtypicalOperation::STATUS_WAITING_ACK)
                 ->setIdUser($_SESSION['user']['id_user'])
                 ->setUserComment($_POST['user_comment']);
-            $em->flush($atypicalOperation);
+            $entityManager->flush($atypicalOperation);
             echo json_encode(['message' => 'OK']);
         } else {
             echo json_encode(['message' => 'KO']);

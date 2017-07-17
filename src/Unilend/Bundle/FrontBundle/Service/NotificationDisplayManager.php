@@ -2,7 +2,11 @@
 
 namespace Unilend\Bundle\FrontBundle\Service;
 
+use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
 use Symfony\Component\Translation\TranslatorInterface;
@@ -19,68 +23,88 @@ class NotificationDisplayManager
     private $translator;
     /** @var RouterInterface */
     private $router;
+    /** @var  EntityManager */
+    private $entityManager;
 
-
-    public function __construct(EntityManagerSimulator $entityManagerSimulator, AutoBidSettingsManager $autoBidSettingsManager, TranslatorInterface $translator, RouterInterface $router)
-    {
+/**
+     * NotificationDisplayManager constructor.
+     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param AutoBidSettingsManager $autoBidSettingsManager
+     * @param TranslatorInterface    $translator
+     * @param RouterInterface        $router
+     * @param EntityManager          $entityManager
+     */    public function __construct(EntityManagerSimulator $entityManagerSimulator, AutoBidSettingsManager $autoBidSettingsManager, TranslatorInterface $translator, RouterInterface $router,
+    EntityManager $entityManager
+    ){
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->autoBidSettingsManager = $autoBidSettingsManager;
         $this->translator             = $translator;
         $this->router                 = $router;
+        $this->entityManager          = $entityManager;
     }
 
     /**
-     * @param \lenders_accounts $lender
-     * @return array
-     */
-    public function getLastLenderNotifications(\lenders_accounts $lender)
-    {
-        return $this->getLenderNotifications($lender, 1, 20);
-    }
-
-    /**
-     * @param \lenders_accounts $lender
-     * @param int               $offset
-     * @param int               $length
+     * @param Clients $client
      *
      * @return array
+     * @throws \Exception
      */
-    public function getLenderNotifications(\lenders_accounts $lender, $offset, $length)
+    public function getLastLenderNotifications(Clients $client)
     {
-        return $this->getLenderNotificationsDetail($lender->id_client_owner, null, $offset, $length);
+        if (false === $client->isLender()) {
+            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
+        }
+
+        return $this->getLenderNotifications($client, 1, 20);
     }
 
     /**
-     * @param int      $clientId
-     * @param int      $projectId
+     * @param Clients $client
+     * @param int     $offset
+     * @param int     $length
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function getLenderNotifications(Clients $client, $offset, $length)
+    {
+        return $this->getLenderNotificationsDetail($client, null, $offset, $length);
+    }
+
+    /**
+     * @param Clients      $client
+     * @param Projects     $project
      * @param null|int $offset
      * @param null|int $length
      *
      * @return array
      */
-    public function getLenderNotificationsByProject($clientId, $projectId, $offset = null, $length = null)
+    public function getLenderNotificationsByProject(Clients $client, Projects $project, $offset = null, $length = null)
     {
-        return $this->getLenderNotificationsDetail($clientId, $projectId, $offset, $length);
+        return $this->getLenderNotificationsDetail($client, $project->getIdProject(), $offset, $length);
     }
 
     /**
-     * @param int      $clientId
-     * @param null|int $projectId
-     * @param null|int $offset
-     * @param null|int $length
+     * @param Clients       $client
+     * @param integer|null  $projectId
+     * @param int           $offset
+     * @param int           $length
      *
      * @return array
+     * @throws \Exception
      */
-    private function getLenderNotificationsDetail($clientId, $projectId = null, $offset = null, $length = null)
+    private function getLenderNotificationsDetail(Clients $client, $projectId = null, $offset = null, $length = null)
     {
+        if (false === $client->isLender()) {
+            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
+        }
+        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         /** @var \accepted_bids $acceptedBid */
         $acceptedBid = $this->entityManagerSimulator->getRepository('accepted_bids');
         /** @var \autobid $autobid */
         $autobid = $this->entityManagerSimulator->getRepository('autobid');
         /** @var \bids $bid */
         $bid = $this->entityManagerSimulator->getRepository('bids');
-        /** @var \clients $client */
-        $client = $this->entityManagerSimulator->getRepository('clients');
         /** @var \companies $company */
         $company = $this->entityManagerSimulator->getRepository('companies');
         /** @var \notifications $notifications */
@@ -89,13 +113,10 @@ class NotificationDisplayManager
         $project = $this->entityManagerSimulator->getRepository('projects');
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
-        /** @var \lenders_accounts $lender */
-        $lender = $this->entityManagerSimulator->getRepository('lenders_accounts');
-        $lender->get($clientId, 'id_client_owner');
 
         $result = [];
 
-        $where        = (true === empty($projectId)) ? 'id_lender = ' . $lender->id_lender_account : 'id_lender = ' . $lender->id_lender_account . ' AND id_project = ' . $projectId;
+        $where        = (null === $projectId) ? 'id_lender = ' . $wallet->getId() : 'id_lender = ' . $wallet->getId() . ' AND id_project = ' . $projectId;
         $start        = (true === empty($offset)) ? '' : $offset - 1;
         $numberOfRows = (true === empty($length)) ? '' : $length;
 
@@ -320,13 +341,11 @@ class NotificationDisplayManager
                     ]);
                     break;
                 case Notifications::TYPE_AUTOBID_FIRST_ACTIVATION:
-                    $client->get($lender->id_client_owner);
-
                     $type    = 'offer-accepted';
                     $image   = 'circle-accepted';
                     $title   = $this->translator->trans('lender-notifications_autolend-first-activation-title');
                     $content = $this->translator->trans('lender-notifications_autolend-first-activation-content', [
-                        '%activationDate%' => $this->autoBidSettingsManager->getActivationTime($client)->format('G\hi'),
+                        '%activationDate%' => $this->autoBidSettingsManager->getActivationTime($wallet->getIdClient())->format('G\hi'),
                         '%settingsUrl%'    => $this->router->generate('autolend')
                     ]);
                     break;

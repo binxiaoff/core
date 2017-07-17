@@ -8,7 +8,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\RecoveryManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\core\Loader;
 
@@ -225,19 +224,6 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
     }
 
     /**
-     * @param float $recoveryTaxIncluded
-     * @param float $recoveryTaxExcluded
-     * @return string
-     */
-    private function getTotalRecoveredAmount($recoveryTaxIncluded, $recoveryTaxExcluded)
-    {
-        /** @var RecoveryManager $recoveryManager */
-        $recoveryManager = $this->getContainer()->get('unilend.service.recovery_manager');
-
-        return bcadd($recoveryTaxIncluded, $recoveryManager->getAmountWithRecoveryTax($recoveryTaxExcluded), 2);
-    }
-
-    /**
      * @param array $data
      * @return array
      */
@@ -250,7 +236,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
             /** @var \DateTime $date */
             $date   = \DateTime::createFromFormat('Y-m-d H:i:s', $data['recovery_date']);
             $amount = bcadd($repayment->getUnpaidAmountAtDate($data['id_project'], $date), $repayment->getTotalComingCapitalByProject($data['id_project'], $date), 2);
-            $amount = bcsub($amount, $this->getTotalRecoveredAmount($data['recovery_tax_included'], $data['recovery_tax_excluded']), 2);
+            $amount = bcsub($amount, $data['debt_collection_repayment'], 2);
             $return = ['unpaid_amount' => $amount, 'owed_capital' => $amount];
         } elseif (false === empty($data['judgement_date']) && true === in_array($data['status'], [\projects_status::LIQUIDATION_JUDICIAIRE])) {
             /** @var \DateTime $date */

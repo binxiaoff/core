@@ -16,7 +16,7 @@
             <a href="<?= $this->lurl ?>/stats/requete_infosben_csv" class="btn-primary pull-right">Recuperation du CSV</a>
         </div>
     </div>
-    <?php  if (count($this->aLenders) > 0) : ?>
+    <?php if (count($this->walletsWithMovements) > 0) : ?>
         <table class="tablesorter">
             <thead>
                 <tr>
@@ -32,19 +32,13 @@
             </thead>
             <tbody>
                 <?php $i = 0; ?>
-                <?php foreach ($this->aLenders as $aLender) : ?>
-                    <?php
-                        $sPrenom = substr($this->ficelle->stripAccents(trim($aLender['prenom'])), 0, 1);
-                        $sNom    = $this->ficelle->stripAccents(trim($aLender['nom']));
-                        $motif   = mb_strtoupper($aLender['id_client'] . $sPrenom . $sNom, 'UTF-8');
-                        $motif   = substr($motif, 0, 10);
-                    ?>
+                <?php foreach ($this->walletsWithMovements as $wallet) : ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                         <td>1</td>
-                        <td><?= $motif ?></td>
+                        <td><?= $wallet->getWireTransferPattern() ?></td>
                         <td>14378</td>
                         <td></td>
-                        <td><?= $aLender['id_client'] ?></td>
+                        <td><?= $wallet->getIdClient()->getIdClient() ?></td>
                         <td>4</td>
                         <td>6</td>
                         <td>P</td>
@@ -53,6 +47,8 @@
                 <?php endforeach; ?>
             </tbody>
         </table>
+    <?php else : ?>
+        <p>Il n'y a aucun client concerné pour le moment.</p>
     <?php endif; ?>
     <?php if ($this->nb_lignes != '') : ?>
         <table>
@@ -69,7 +65,5 @@
                 </td>
             </tr>
         </table>
-    <?php else : ?>
-        <p>Il n'y a aucun dossier pour le moment.</p>
     <?php endif; ?>
 </div>

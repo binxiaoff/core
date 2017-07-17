@@ -25,7 +25,7 @@ class partnerController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager  = $this->get('doctrine.orm.entity_manager');
-        $this->partners = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->findall();
+        $this->partners = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->findAll();
     }
 
     public function _third_party()

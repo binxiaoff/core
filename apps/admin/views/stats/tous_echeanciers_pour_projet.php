@@ -19,7 +19,6 @@
                 <tr>
                     <th>&nbsp;</th>
                     <td>
-                        <div style="color:red"><?= $this->retour ?></div>
                     </td>
                 </tr>
                 <tr>

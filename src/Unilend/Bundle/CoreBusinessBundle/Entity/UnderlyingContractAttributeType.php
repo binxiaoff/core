@@ -12,6 +12,14 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class UnderlyingContractAttributeType
 {
+    const ELIGIBLE_CLIENT_TYPE                 = 'contract_eligible_lender_type';
+    const TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO = 'contract_total_loan_amount_limitation_in_euro';
+    const TOTAL_QUANTITY_LIMITATION            = 'contract_total_loan_quantity_limitation';
+    const MAX_LOAN_DURATION_IN_MONTH           = 'contract_max_loan_duration_in_month';
+    const ELIGIBLE_AUTOBID                     = 'contract_eligible_autobid';
+    const MIN_CREATION_DAYS                    = 'contract_min_creation_days';
+    const ELIGIBLE_BORROWER_COMPANY_RCS        = 'contract_eligible_borrower_company_rcs';
+
     /**
      * @var string
      *

@@ -8,33 +8,27 @@ use Doctrine\ORM\Mapping as ORM;
  * Echeanciers
  *
  * @ORM\Table(name="echeanciers", indexes={@ORM\Index(name="id_lender", columns={"id_lender"}), @ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="id_loan", columns={"id_loan"}), @ORM\Index(name="date_echeance_reel", columns={"date_echeance_reel"}), @ORM\Index(name="date_echeance_emprunteur_reel", columns={"date_echeance_emprunteur_reel"}), @ORM\Index(name="ordre", columns={"ordre"}), @ORM\Index(name="status", columns={"status"}), @ORM\Index(name="status_emprunteur", columns={"status_emprunteur"}), @ORM\Index(name="date_echeance_emprunteur", columns={"date_echeance_emprunteur"}), @ORM\Index(name="status_ra", columns={"status_ra"}), @ORM\Index(name="added", columns={"added"}), @ORM\Index(name="date_echeance", columns={"date_echeance"}), @ORM\Index(name="status_email_remb", columns={"status_email_remb"}), @ORM\Index(name="id_project_ordre", columns={"id_project", "ordre"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\EcheanciersRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class Echeanciers
 {
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_lender", type="integer", nullable=false)
-     */
-    private $idLender;
+    const STATUS_PENDING                  = 0;
+    const STATUS_REPAID                   = 1;
+    const STATUS_PARTIALLY_REPAID         = 2;
+    const IS_NOT_EARLY_REPAID             = 0;
+    const IS_EARLY_REPAID                 = 1;
+    const STATUS_REPAYMENT_EMAIL_NOT_SENT = 0;
+    const STATUS_REPAYMENT_EMAIL_SENT     = 1;
 
     /**
      * @var integer
+     *
+     * @deprecated This column will be deleted. Use $idLoan instead
      *
      * @ORM\Column(name="id_project", type="integer", nullable=false)
      */
     private $idProject;
-
-    /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Loans
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Loans")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_loan", referencedColumnName="id_loan")
-     * })
-     */
-    private $idLoan;
 
     /**
      * @var integer
@@ -144,7 +138,7 @@ class Echeanciers
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -157,34 +151,32 @@ class Echeanciers
      */
     private $idEcheancier;
 
-
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Loans
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Loans")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_loan", referencedColumnName="id_loan")
+     * })
+     */
+    private $idLoan;
 
     /**
-     * Set idLender
+     * @deprecated This column will be deleted. Use $idLoan instead
      *
-     * @param integer $idLender
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
      *
-     * @return Echeanciers
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id")
+     * })
      */
-    public function setIdLender($idLender)
-    {
-        $this->idLender = $idLender;
-
-        return $this;
-    }
-
-    /**
-     * Get idLender
-     *
-     * @return integer
-     */
-    public function getIdLender()
-    {
-        return $this->idLender;
-    }
+    private $idLender;
 
     /**
      * Set idProject
+     *
+     * @deprecated idProject will be deleted. Use idLoan instead
      *
      * @param integer $idProject
      *
@@ -200,35 +192,13 @@ class Echeanciers
     /**
      * Get idProject
      *
+     * @deprecated idProject will be deleted. Use idLoan instead
+     *
      * @return integer
      */
     public function getIdProject()
     {
         return $this->idProject;
-    }
-
-    /**
-     * Set idLoan
-     *
-     * @param Loans $idLoan
-     *
-     * @return Echeanciers
-     */
-    public function setIdLoan($idLoan)
-    {
-        $this->idLoan = $idLoan;
-
-        return $this;
-    }
-
-    /**
-     * Get idLoan
-     *
-     * @return Loans
-     */
-    public function getIdLoan()
-    {
-        return $this->idLoan;
     }
 
     /**
@@ -450,7 +420,7 @@ class Echeanciers
     /**
      * Set statusEmailRemb
      *
-     * @param integer $statusEmailRemb
+     * @param boolean $statusEmailRemb
      *
      * @return Echeanciers
      */
@@ -464,7 +434,7 @@ class Echeanciers
     /**
      * Get statusEmailRemb
      *
-     * @return integer
+     * @return boolean
      */
     public function getStatusEmailRemb()
     {
@@ -623,5 +593,73 @@ class Echeanciers
     public function getIdEcheancier()
     {
         return $this->idEcheancier;
+    }
+
+    /**
+     * Set idLoan
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Loans $idLoan
+     *
+     * @return Echeanciers
+     */
+    public function setIdLoan(Loans $idLoan)
+    {
+        $this->idLoan = $idLoan;
+
+        return $this;
+    }
+
+    /**
+     * Get idLoan
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Loans
+     */
+    public function getIdLoan()
+    {
+        return $this->idLoan;
+    }
+
+    /**
+     * Set idLender
+     * @deprecated idLender will be deleted. Use idLoan instead
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender
+     *
+     * @return Echeanciers
+     */
+    public function setIdLender(Wallet $idLender)
+    {
+        $this->idLender = $idLender;
+
+        return $this;
+    }
+
+    /**
+     * Get idLender
+     * @deprecated idLender will be deleted. Use idLoan instead
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     */
+    public function getIdLender()
+    {
+        return $this->idLender;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

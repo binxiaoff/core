@@ -67,8 +67,6 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         $logger = $this->getContainer()->get('monolog.logger.console');
         /** @var \clients_adresses $clientAddress */
         $clientAddress = $entityManagerSimulator->getRepository('clients_adresses');
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $entityManagerSimulator->getRepository('lenders_accounts');
         /** @var \users_history $userHistory */
         $userHistory = $entityManagerSimulator->getRepository('users_history');
         /** @var \clients_status_history $clientStatusHistory */
@@ -109,10 +107,9 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
             $response = $welcomeOfferManager->createWelcomeOffer($client);
             $logger->info('Client ID: ' . $client->id_client . ' Welcome offer creation result: ' . json_encode($response), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $client->id_client]);
         }
-        $lenderAccount->get($client->id_client, 'id_client_owner');
         $clientAddress->get($client->id_client, 'id_client');
         $clientStatusManager->addClientStatus($client, Users::USER_ID_CRON, ClientsStatus::VALIDATED, 'Validation automatique basée sur Green Point');
-        $serialize = serialize(array('id_client' => $client->id_client, 'attachment_data' => $attachment));
+        $serialize = serialize(['id_client' => $client->id_client, 'attachment_data' => $attachment]);
         $userHistory->histo(\users_history::FORM_ID_LENDER, 'validation auto preteur', '0', $serialize);
 
         if ($clientStatusHistory->counter('id_client = ' . $client->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . ClientsStatus::MODIFICATION . ')') > 0) {
@@ -120,6 +117,8 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         } else {
             $mailerManager->sendClientValidationEmail($client, 'preteur-confirmation-activation');
         }
-        $taxManager->addTaxToApply($client, $lenderAccount, $clientAddress, Users::USER_ID_CRON);
+
+        $clientEntity = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        $taxManager->addTaxToApply($clientEntity, $clientAddress, Users::USER_ID_CRON);
     }
 }
