@@ -299,14 +299,14 @@ class BidManager
      */
     public function bidByAutoBidSettings(Autobid $autoBid, Projects $project, $rate, $sendNotification = true)
     {
-        if (bccomp($autoBid->getRateMin(), $rate, 1) <= 0) {
-            if (
-                WalletType::LENDER === $autoBid->getIdLender()->getIdType()->getLabel()
-                && $this->oAutoBidSettingsManager->isOn($autoBid->getIdLender()->getIdClient())
-                && $this->oAutoBidSettingsManager->isQualified($autoBid->getIdLender()->getIdClient())
-            ) {
-                return $this->bid($autoBid->getIdLender(), $project, $autoBid->getAmount(), $rate, $autoBid, $sendNotification);
-            }
+        if (
+            bccomp($autoBid->getRateMin(), $rate, 1) <= 0
+            && WalletType::LENDER === $autoBid->getIdLender()->getIdType()->getLabel()
+            && bccomp($autoBid->getIdLender()->getAvailableBalance(), $autoBid->getAmount()) >= 0
+            && $this->oAutoBidSettingsManager->isOn($autoBid->getIdLender()->getIdClient())
+            && $this->oAutoBidSettingsManager->isQualified($autoBid->getIdLender()->getIdClient())
+        ) {
+            return $this->bid($autoBid->getIdLender(), $project, $autoBid->getAmount(), $rate, $autoBid, $sendNotification);
         }
 
         return false;
