@@ -722,6 +722,11 @@ class statsController extends bootstrap
 
         $evaluatedProjects = $assessmentRepository->getEvaluatedProjects();
 
+        $productBLend    = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findOneBy(['label' => Product::PRODUCT_BLEND]);
+        $productIfp      = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findOneBy(['label' => 'amortization_ifp_fr']);
+        $productProfLib  = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findOneBy(['label' => 'amortization_ifp_liberal_profession_fr']);
+        $productTakeover = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findOneBy(['label' => 'amortization_ifp_takeover_fr']);
+
         foreach ($evaluatedProjects as $project) {
             $company              = $project->getIdCompany();
             $motivation           = $entityManager->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->find($project->getIdBorrowingMotive());
@@ -772,25 +777,55 @@ class statsController extends bootstrap
 
             $row['common_check'] = $projectEligibilityAssessment ? $projectEligibilityAssessment->getIdRule()->getLabel() : 'OK';
 
-            $productBLend             = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findOneBy(['label' => Product::PRODUCT_BLEND]);
-            $projectProductAssessment = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectProductAssessment')->findOneBy([
-                'idProject' => $project,
-                'idProduct' => $productBLend,
-                'status'    => ProjectProductAssessment::STATUS_CHECK_KO,
-            ], ['added' => 'DESC']);
-
-            $row['b_lend_check'] = 'Pas d\'évaluation';
+            $row['b_lend_check']           = 'Pas d\'évaluation';
+            $row['ifp_product_check']      = 'Pas d\'évaluation';
+            $row['prof_lib_product_check'] = 'Pas d\'évaluation';
+            $row['takeover_product_check'] = 'Pas d\'évaluation';
             if ('OK' === $row['common_check']) {
-                if ($projectProductAssessment) {
+                $productAssessment   = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectProductAssessment')->findOneBy([
+                    'idProject' => $project,
+                    'idProduct' => $productBLend,
+                    'status'    => ProjectProductAssessment::STATUS_CHECK_KO,
+                ], ['added' => 'DESC']);
+                $row['b_lend_check'] = 'OK';
+                if ($productAssessment) {
                     $productAttribute = $entityManager->getRepository('UnilendCoreBusinessBundle:ProductAttribute')->findOneBy([
-                        'idProduct' => $projectProductAssessment->getIdProduct(),
-                        'idType'    => $projectProductAssessment->getIdProductAttributeType()
+                        'idProduct' => $productAssessment->getIdProduct(),
+                        'idType'    => $productAssessment->getIdProductAttributeType()
                     ]);
 
-                    $row['b_lend_check'] = $projectProductAssessment->getIdProductAttributeType()->getLabel();
+                    $row['b_lend_check'] = $productAssessment->getIdProductAttributeType()->getLabel();
                     $row['b_lend_check'] .= $productAttribute->getIdRule() ? ' (' . $productAttribute->getIdRule()->getLabel() . ')' : '';
-                } else {
-                    $row['b_lend_check'] = 'OK';
+                }
+
+                $productAssessment        = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectProductAssessment')->findOneBy([
+                    'idProject' => $project,
+                    'idProduct' => $productIfp,
+                    'status'    => ProjectProductAssessment::STATUS_CHECK_KO,
+                ], ['added' => 'DESC']);
+                $row['ifp_product_check'] = 'OK';
+                if ($productAssessment) {
+                    $row['ifp_product_check'] = $productAssessment->getIdProductAttributeType()->getLabel();
+                }
+
+                $productAssessment             = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectProductAssessment')->findOneBy([
+                    'idProject' => $project,
+                    'idProduct' => $productProfLib,
+                    'status'    => ProjectProductAssessment::STATUS_CHECK_KO,
+                ], ['added' => 'DESC']);
+                $row['prof_lib_product_check'] = 'OK';
+                if ($productAssessment) {
+                    $row['prof_lib_product_check'] = $productAssessment->getIdProductAttributeType()->getLabel();
+                }
+
+                $productAssessment             = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectProductAssessment')->findOneBy([
+                    'idProject' => $project,
+                    'idProduct' => $productTakeover,
+                    'status'    => ProjectProductAssessment::STATUS_CHECK_KO,
+                ], ['added' => 'DESC']);
+                $row['takeover_product_check'] = 'OK';
+                if ($productAssessment) {
+                    $row['takeover_product_check'] = $productAssessment->getIdProductAttributeType()->getLabel();
                 }
             }
 
@@ -817,6 +852,9 @@ class statsController extends bootstrap
             'statut projet',
             'tronc commun',
             'b-lend',
+            'produit ifp maison',
+            'prof lib',
+            'reprise et transmission'
         ];
 
         $this->exportCSV($extraction, 'extraction_b_lend' . date('Ymd'), $header);
