@@ -149,15 +149,54 @@ class WsMonitoringManager
 
         $wsCallHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WsCallHistory');
         foreach ($wsCallHistoryRepository->getDailyStatistics() as $dailyStats) {
-            $data['day']['status'][$dailyStats['callStatus']][] = ['date' => $dailyStats['added']->format('Y-m-d H:i:s'), 'volume' => (int)$dailyStats['volume']];
+            $data['day']['status'][$dailyStats['callStatus']][$dailyStats['added']->format('YmdH')] = ['date' => $dailyStats['added']->format('Y-m-d H:00'), 'volume' => (int)$dailyStats['volume']];
         }
+        foreach ($data['day']['status'] as $status => $rows) {
+            $data['day']['status'][$status] += $this->getPaddingData(new \DateTime('1 day ago'), new \DateInterval('PT1H'), 'hours');
+        }
+
         foreach ($wsCallHistoryRepository->getWeeklyStatistics() as $weeklyStats) {
-            $data['week']['status'][$weeklyStats['callStatus']][] = ['date' => $weeklyStats['added']->format('Y-m-d H:i:s'), 'volume' => (int)$weeklyStats['volume']];
+            $data['week']['status'][$weeklyStats['callStatus']][$weeklyStats['added']->format('Ymd')] = ['date' => $weeklyStats['added']->format('Y-m-d'), 'volume' => (int)$weeklyStats['volume']];
         }
+        foreach ($data['week']['status'] as $status => $rows) {
+            $data['week']['status'][$status] += $this->getPaddingData(new \DateTime('1 week ago'), new \DateInterval('P1D'), 'days');
+        }
+
         foreach ($wsCallHistoryRepository->getMonthlyStatistics() as $monthlyStats) {
-            $data['month']['status'][$monthlyStats['callStatus']][] = ['date' => $monthlyStats['added']->format('Y-m-d H:i:s'), 'volume' => (int)$monthlyStats['volume']];
+            $data['month']['status'][$monthlyStats['callStatus']][$monthlyStats['added']->format('Ymd')] = ['date' => $monthlyStats['added']->format('Y-m-d'), 'volume' => (int)$monthlyStats['volume']];
+        }
+        foreach ($data['month']['status'] as $status => $rows) {
+            $data['month']['status'][$status] += $this->getPaddingData(new \DateTime('1 month ago'), new \DateInterval('P1D'), 'days');
+        }
+        foreach ($data as $period => $rows) {
+            foreach ($rows['status'] as $status => $cont) {
+                ksort($cont);
+                $rows['status'][$status] = array_values($cont);
+            }
+            $data[$period] = $rows;
         }
 
         return $data;
+    }
+
+    /**
+     * @param \DateTime     $startDate
+     * @param \DateInterval $interval
+     * @param string        $period
+     * @return array
+     */
+    private function getPaddingData(\DateTime $startDate, \DateInterval $interval, $period)
+    {
+        $paddingData   = [];
+        $now           = new \DateTime();
+        while ($startDate <= $now) {
+            $paddingData[$startDate->format($period === 'hours' ? 'YmdH' : 'Ymd')] = [
+                'date'   => $startDate->format($period === 'hours' ? 'Y-m-d H:00' : 'Y-m-d'),
+                'volume' => 0
+            ];
+            $startDate->add($interval);
+        }
+
+        return $paddingData;
     }
 }

@@ -88,8 +88,7 @@
                 for (var i = 0; i < ser.length; i++) {
                     var time = Date.parse(ser[i].date)
                     var vol  = ser[i].volume
-                    var item = [time, vol]
-                    items[i] = item
+                    items[i] = [time, vol]
                 }
                 return items
             }
