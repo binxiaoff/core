@@ -129,4 +129,35 @@ class WsMonitoringManager
     {
         return strftime('%d-%b %R', $dateTime->getTimestamp());
     }
+
+    /**
+     * @return array
+     */
+    public function getDataForChart()
+    {
+        $dataStatus    = [
+            'status' => [
+                'valid'   => [],
+                'warning' => [],
+                'error'   => []
+            ],
+
+        ];
+        $data['day']   = $dataStatus;
+        $data['week']  = $dataStatus;
+        $data['month'] = $dataStatus;
+
+        $wsCallHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WsCallHistory');
+        foreach ($wsCallHistoryRepository->getDailyStatistics() as $dailyStats) {
+            $data['day']['status'][$dailyStats['callStatus']][] = ['date' => $dailyStats['added']->format('Y-m-d H:i:s'), 'volume' => (int)$dailyStats['volume']];
+        }
+        foreach ($wsCallHistoryRepository->getWeeklyStatistics() as $weeklyStats) {
+            $data['week']['status'][$weeklyStats['callStatus']][] = ['date' => $weeklyStats['added']->format('Y-m-d H:i:s'), 'volume' => (int)$weeklyStats['volume']];
+        }
+        foreach ($wsCallHistoryRepository->getMonthlyStatistics() as $monthlyStats) {
+            $data['month']['status'][$monthlyStats['callStatus']][] = ['date' => $monthlyStats['added']->format('Y-m-d H:i:s'), 'volume' => (int)$monthlyStats['volume']];
+        }
+
+        return $data;
+    }
 }

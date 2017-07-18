@@ -819,4 +819,12 @@ class statsController extends bootstrap
 
         $this->exportCSV($extraction, 'extraction_b_lend' . date('Ymd'), $header);
     }
+
+    public function _logs_webservices()
+    {
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WsMonitoringManager $wsMonitoringManager */
+        $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
+        $data = $wsMonitoringManager->getDataForChart();
+        $this->chartData = json_encode($data);
+    }
 }
