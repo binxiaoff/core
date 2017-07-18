@@ -136,12 +136,9 @@ class WsMonitoringManager
     public function getDataForChart()
     {
         $dataStatus    = [
-            'status' => [
-                'valid'   => [],
-                'warning' => [],
-                'error'   => []
-            ],
-
+            'valid'   => [],
+            'warning' => [],
+            'error'   => []
         ];
         $data['day']   = $dataStatus;
         $data['week']  = $dataStatus;
@@ -149,29 +146,29 @@ class WsMonitoringManager
 
         $wsCallHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WsCallHistory');
         foreach ($wsCallHistoryRepository->getDailyStatistics() as $dailyStats) {
-            $data['day']['status'][$dailyStats['callStatus']][$dailyStats['added']->format('YmdH')] = ['date' => $dailyStats['added']->format('Y-m-d H:00'), 'volume' => (int)$dailyStats['volume']];
+            $data['day'][$dailyStats['callStatus']][$dailyStats['added']->format('YmdH')] = ['date' => $dailyStats['added']->format('Y-m-d H:00'), 'volume' => (int)$dailyStats['volume']];
         }
-        foreach ($data['day']['status'] as $status => $rows) {
-            $data['day']['status'][$status] += $this->getPaddingData(new \DateTime('1 day ago'), new \DateInterval('PT1H'), 'hours');
+        foreach ($data['day'] as $status => $rows) {
+            $data['day'][$status] += $this->getPaddingData(new \DateTime('1 day ago'), new \DateInterval('PT1H'), 'hours');
         }
 
         foreach ($wsCallHistoryRepository->getWeeklyStatistics() as $weeklyStats) {
-            $data['week']['status'][$weeklyStats['callStatus']][$weeklyStats['added']->format('Ymd')] = ['date' => $weeklyStats['added']->format('Y-m-d'), 'volume' => (int)$weeklyStats['volume']];
+            $data['week'][$weeklyStats['callStatus']][$weeklyStats['added']->format('Ymd')] = ['date' => $weeklyStats['added']->format('Y-m-d'), 'volume' => (int)$weeklyStats['volume']];
         }
-        foreach ($data['week']['status'] as $status => $rows) {
-            $data['week']['status'][$status] += $this->getPaddingData(new \DateTime('1 week ago'), new \DateInterval('P1D'), 'days');
+        foreach ($data['week'] as $status => $rows) {
+            $data['week'][$status] += $this->getPaddingData(new \DateTime('1 week ago'), new \DateInterval('P1D'), 'days');
         }
 
         foreach ($wsCallHistoryRepository->getMonthlyStatistics() as $monthlyStats) {
-            $data['month']['status'][$monthlyStats['callStatus']][$monthlyStats['added']->format('Ymd')] = ['date' => $monthlyStats['added']->format('Y-m-d'), 'volume' => (int)$monthlyStats['volume']];
+            $data['month'][$monthlyStats['callStatus']][$monthlyStats['added']->format('Ymd')] = ['date' => $monthlyStats['added']->format('Y-m-d'), 'volume' => (int)$monthlyStats['volume']];
         }
-        foreach ($data['month']['status'] as $status => $rows) {
-            $data['month']['status'][$status] += $this->getPaddingData(new \DateTime('1 month ago'), new \DateInterval('P1D'), 'days');
+        foreach ($data['month'] as $status => $rows) {
+            $data['month'][$status] += $this->getPaddingData(new \DateTime('1 month ago'), new \DateInterval('P1D'), 'days');
         }
         foreach ($data as $period => $rows) {
-            foreach ($rows['status'] as $status => $cont) {
+            foreach ($rows as $status => $cont) {
                 ksort($cont);
-                $rows['status'][$status] = array_values($cont);
+                $rows[$status] = array_values($cont);
             }
             $data[$period] = $rows;
         }
