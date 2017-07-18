@@ -23,16 +23,15 @@
      }
     .event-change {
         width: 195px;
-        vertical-align: middle!important;
+        vertical-align: middle !important;
     }
     .event-action {
         width: 56px;
+        text-align: right;
+        vertical-align: middle !important;
     }
     .event-company a {
         text-decoration: underline;
-    }
-    .event-action {
-        text-align: right;
     }
     .event-action .btn-default {
         padding: 0;
