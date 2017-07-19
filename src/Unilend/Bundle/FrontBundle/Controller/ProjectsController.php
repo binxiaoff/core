@@ -10,6 +10,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -77,6 +78,7 @@ class ProjectsController extends Controller
     {
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         $translator            = $this->get('translator');
+        $router                = $this->get('router');
         $start                 = 0;
         $limit                 = null;
         $sort                  = [];
@@ -103,14 +105,11 @@ class ProjectsController extends Controller
                 $offerStatus = '';
             }
 
-            // Need to replace this with Project Detail path contstant
-            $path = 'https://www.local.unilend.fr/projects/detail/';
-
             $item['id'] = 'marker' . $project['projectId'];
             $item['categoryId'] = $project['company']['sectorId'];
             $item['latLng'] = [$project['company']['latitude'], $project['company']['longitude']];
             $item['title'] = $translator->trans('company-sector_sector-' . $project['company']['sectorId']);
-            $item['url'] = $path.$project['slug'];
+            $item['url'] = $router->generate('project_detail', ['projectSlug' => $project['slug']]);
             $item['city'] = $project['company']['city'];
             $item['zip'] = $project['company']['zip'];
             $item['rating'] = str_replace('.', '-', constant('\projects::RISK_' . $project['risk']));

@@ -392,7 +392,6 @@ MapView.prototype.getAjaxData = function (ajaxUrl) {
     success: function (markerData) {
       // Complete the mapview initialisation
       self.completeInit(markerData)
-      console.log(markerData)
     },
     error: function(jqXHR) {
       // Handle server errors
