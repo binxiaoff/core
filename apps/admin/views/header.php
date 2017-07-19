@@ -140,6 +140,16 @@
                 </ul>
             </li>
         <?php endif; ?>
+        <?php if (in_array('sfpmei', $this->lZonesHeader)) : ?>
+            <li>
+                <a href="<?= $this->lurl ?>/sfpmei" title="SFPMEI"<?= ($this->menu_admin == 'sfpmei' ? ' class="active"' : '') ?>>SFPMEI</a>
+                <ul class="sous_menu">
+                    <li><a href="<?= $this->lurl ?>/sfpmei/" title="Prêteurs">Prêteurs</a></li>
+                    <li><a href="<?= $this->lurl ?>/sfpmei/" title="Emprunteurs">Emprunteurs</a></li>
+                    <li><a href="<?= $this->lurl ?>/sfpmei/" title="Projets">Projets</a></li>
+                </ul>
+            </li>
+        <?php endif; ?>
     </ul>
 </div>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>

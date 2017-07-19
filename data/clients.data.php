@@ -221,18 +221,19 @@ class clients extends clients_crud
             $conditions[] = 'co.siren LIKE "%' . $siren . '%"';
         }
 
-        $result   = [];
-        $query    = '
+        $result = [];
+        $query  = '
             SELECT 
                 c.*,
                 co.*
             FROM clients c
             INNER JOIN companies co ON c.id_client = co.id_client_owner
             WHERE ' . implode(' ' . $searchType . ' ', $conditions) . '
-                AND (c.type IS NULL OR c.type NOT IN (' . implode(',', [ClientEntity::TYPE_PERSON, ClientEntity::TYPE_PERSON_FOREIGNER, ClientEntity::TYPE_LEGAL_ENTITY, ClientEntity::TYPE_LEGAL_ENTITY_FOREIGNER]) .'))
+                AND (c.type IS NULL OR c.type NOT IN (' . implode(',', [ClientEntity::TYPE_PERSON, ClientEntity::TYPE_PERSON_FOREIGNER, ClientEntity::TYPE_LEGAL_ENTITY, ClientEntity::TYPE_LEGAL_ENTITY_FOREIGNER]) . '))
             GROUP BY c.id_client
             ORDER BY c.id_client DESC
            LIMIT 100';
+
         $resultat = $this->bdd->query($query);
 
         while ($record = $this->bdd->fetch_assoc($resultat)) {
@@ -272,7 +273,7 @@ class clients extends clients_crud
         } // inscription non terminée
         elseif ($noValide == '2') {
             $and .= ' AND c.status = 0 AND c.status_inscription_preteur = 0';
-        } else {
+        } elseif ($noValide !== 3) {
             $and .= ' AND YEAR(NOW()) - YEAR(c.naissance) >= 18 AND c.status_inscription_preteur = 1';
         }
 
