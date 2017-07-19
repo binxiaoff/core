@@ -18,6 +18,12 @@ class OperationSubType
     const BORROWER_COMMISSION_FUNDS                = 'borrower_commission_funds';
     const BORROWER_COMMISSION_REPAYMENT            = 'borrower_commission_repayment';
 
+    const CAPITAL_REPAYMENT_EARLY_REGULARIZATION                  = 'capital_repayment_early_regularization';
+    const CAPITAL_REPAYMENT_DEBT_COLLECTION_REGULARIZATION        = 'capital_repayment_debt_collection_regularization';
+    const GROSS_INTEREST_REPAYMENT_DEBT_COLLECTION_REGULARIZATION = 'gross_interest_repayment_debt_collection_regularization';
+    const BORROWER_COMMISSION_FUNDS_REGULARIZATION                = 'borrower_commission_funds_regularization';
+    const BORROWER_COMMISSION_REPAYMENT_REGULARIZATION            = 'borrower_commission_repayment_regularization';
+
     /**
      * @var string
      *

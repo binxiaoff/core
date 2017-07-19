@@ -9,6 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\core\Loader;
 use Psr\Log\LoggerInterface;
@@ -158,7 +159,7 @@ class BidManager
             if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning('Amount is less than the min amount for a bid', ['project_id' => $iProjectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate]);
             }
-            throw new \Exception('bids-invalid-amount');
+            throw new BidException('bids-invalid-amount');
         }
 
         $projectRates = $this->getProjectRateRange($legacyProject);
@@ -170,7 +171,7 @@ class BidManager
                     ['project_id' => $iProjectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate]
                 );
             }
-            throw new \Exception('bids-invalid-rate');
+            throw new BidException('bids-invalid-rate');
         }
 
         if (false === in_array($project->getStatus(), array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING))) {
@@ -180,7 +181,7 @@ class BidManager
                     ['project_id' => $iProjectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate, 'project_status' => $project->getStatus()]
                 );
             }
-            throw new \Exception('bids-invalid-project-status');
+            throw new BidException('bids-invalid-project-status');
         }
 
         $oCurrentDate = new \DateTime();
@@ -195,28 +196,28 @@ class BidManager
                     'Project end date is passed for bidding',
                     ['project_id' => $iProjectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate, 'project_ended' => $oEndDate->format('c'), 'now' => $oCurrentDate->format('c')]);
             }
-            throw new \Exception('bids-invalid-project-status');
+            throw new BidException('bids-invalid-project-status');
         }
 
         if (WalletType::LENDER !== $wallet->getIdType()->getLabel()) {
             if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning('Wallet is no Lender', ['project_id' => $iProjectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate]);
             }
-            throw new \Exception('bids-invalid-lender');
+            throw new BidException('bids-invalid-lender');
         }
 
         if (false === $this->oLenderManager->canBid($wallet->getIdClient())) {
             if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning('lender cannot bid', ['project_id' => $iProjectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate]);
             }
-            throw new \Exception('bids-lender-cannot-bid');
+            throw new BidException('bids-lender-cannot-bid');
         }
 
         if (false === $this->productManager->isBidEligible($bid)) {
             if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning('The Bid is not eligible for the project', ['project_id' => $iProjectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate]);
             }
-            throw new \Exception('bids-not-eligible');
+            throw new BidException('bids-not-eligible');
         }
 
         $iClientId = $wallet->getIdClient()->getIdClient();
@@ -226,11 +227,11 @@ class BidManager
             if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->warning('lender\'s balance not enough for a bid', ['project_id' => $iProjectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate, 'balance' => $iBalance]);
             }
-            throw new \Exception('bids-low-balance');
+            throw new BidException('bids-low-balance');
         }
 
         if ($this->cipManager->isCIPValidationNeeded($legacyBid) && false === $this->cipManager->hasValidEvaluation($wallet->getIdClient())) {
-            throw new \Exception('bids-cip-validation-needed');
+            throw new BidException('bids-cip-validation-needed');
         }
 
         $iBidNb = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $iProjectId]);

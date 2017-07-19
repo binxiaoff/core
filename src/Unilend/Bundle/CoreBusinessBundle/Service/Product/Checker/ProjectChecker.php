@@ -2,21 +2,23 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
+use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
+use Unilend\Bundle\WSClientBundle\Service\InfolegaleManager;
 
 trait ProjectChecker
 {
-    use CompanyChecker;
-
     /**
-     * @param \projects               $project
-     * @param \product                $product
+     * @param Projects                $project
+     * @param Product                 $product
      * @param ProductAttributeManager $productAttributeManager
      *
-     * @return bool
+     * @return bool|null Return true when the check is OK, false when the check is failed, null when the check cannot be done (lack of data for example).
      */
-    public function isEligibleForMinDuration(\projects $project, \product $product, ProductAttributeManager $productAttributeManager)
+    private function isEligibleForMinDuration(Projects $project, Product $product, ProductAttributeManager $productAttributeManager)
     {
         $minDuration = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MIN_LOAN_DURATION_IN_MONTH);
 
@@ -24,60 +26,126 @@ trait ProjectChecker
             return true;
         }
 
-        return $project->period >= $minDuration[0];
+        if (empty($project->getPeriod())) {
+            return null;
+        }
+
+        return $project->getPeriod() >= $minDuration[0];
     }
 
     /**
-     * @param \projects               $project
-     * @param \product                $product
+     * @param Projects                $project
+     * @param Product                 $product
      * @param ProductAttributeManager $productAttributeManager
      *
-     * @return bool
+     * @return bool|null Return true when the check is OK, false when the check is failed, null when the check cannot be done (lack of data for example).
      */
-    public function isEligibleForMaxDuration(\projects $project, \product $product, ProductAttributeManager $productAttributeManager)
+    private function isEligibleForMaxDuration(Projects $project, Product $product, ProductAttributeManager $productAttributeManager)
     {
         $maxDuration = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MAX_LOAN_DURATION_IN_MONTH);
 
         if (empty($maxDuration)) {
-            return $this->isEligibleForMaxContractDuration($project, $product, $productAttributeManager);
+            return true;
         }
 
-        return ($project->period <= $maxDuration[0]) && $this->isEligibleForMaxContractDuration($project, $product, $productAttributeManager);
+        if (empty($project->getPeriod())) {
+            return null;
+        }
+
+        return $project->getPeriod() <= $maxDuration[0];
     }
 
     /**
-     * @param \projects               $project
-     * @param \product                $product
+     * @param Projects                $project
+     * @param Product                 $product
      * @param ProductAttributeManager $productAttributeManager
      *
-     * @return bool
+     * @return bool|null Return true when the check is OK, false when the check is failed, null when the check cannot be done (lack of data for example).
      */
-    public function isEligibleForMotive(\projects $project, \product $product, ProductAttributeManager $productAttributeManager)
+    private function isEligibleForMotive(Projects $project, Product $product, ProductAttributeManager $productAttributeManager)
     {
         $eligibleMotives = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_BORROWING_MOTIVE);
+
         if (empty($eligibleMotives)) {
             return true;
         }
 
-        return in_array($project->id_borrowing_motive, $eligibleMotives);
+        if (empty($project->getIdBorrowingMotive())) {
+            return null;
+        }
+
+        return in_array($project->getIdBorrowingMotive(), $eligibleMotives);
     }
 
     /**
-     * @param \projects               $project
-     * @param \product                $product
+     * @param Projects                $project
+     * @param Product                 $product
      * @param ProductAttributeManager $productAttributeManager
      *
-     * @return bool
+     * @return bool|null Return true when the check is OK, false when the check is failed, null when the check cannot be done (lack of data for example).
      */
-    private function isEligibleForMaxContractDuration(\projects $project, \product $product, ProductAttributeManager $productAttributeManager)
+    private function isEligibleForExcludedMotive(Projects $project, Product $product, ProductAttributeManager $productAttributeManager)
     {
-        $attrVars = $productAttributeManager->getProductContractAttributesByType($product, \underlying_contract_attribute_type::MAX_LOAN_DURATION_IN_MONTH);
-        foreach ($attrVars as $contractVars) {
-            if (isset($contractVars[0]) && $contractVars[0] < $project->period) {
-                return false;
-            }
+        $eligibleExcludedMotives = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_EXCLUDED_BORROWING_MOTIVE);
+
+        if (empty($eligibleExcludedMotives)) {
+            return true;
         }
 
-        return true;
+        if (empty($project->getIdBorrowingMotive())) {
+            return null;
+        }
+
+        return false === in_array($project->getIdBorrowingMotive(), $eligibleExcludedMotives);
+    }
+
+    /**
+     * @param Projects                $project
+     * @param Product                 $product
+     * @param ProductAttributeManager $productAttributeManager
+     * @param EntityManager           $entityManager
+     *
+     * @return bool|null
+     */
+    private function isEligibleForMinPreScore(Projects $project, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    {
+        $minPreScore = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MIN_PRE_SCORE);
+
+        if (empty($minPreScore)) {
+            return true;
+        }
+
+        $projectNote = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project->getIdProject()]);
+
+        if (null === $projectNote || empty($projectNote->getPreScoring())) {
+            return null;
+        }
+
+        return $projectNote->getPreScoring() >= $minPreScore[0];
+    }
+
+    /**
+     * @param Projects                $project
+     * @param Product                 $product
+     * @param ProductAttributeManager $productAttributeManager
+     * @param EntityManager           $entityManager
+     *
+     * @return bool|null
+     */
+    private function isEligibleForMaxPreScore(Projects $project, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    {
+        $maxPreScore = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::MAX_PRE_SCORE);
+
+        if (empty($minPreScore)) {
+            return true;
+        }
+
+        $projectNote = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project->getIdProject()]);
+
+        if (empty($projectNote->getPreScoring())) {
+            return null;
+        }
+
+        return $projectNote->getPreScoring() <= $maxPreScore[0];
     }
 }

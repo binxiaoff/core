@@ -108,11 +108,13 @@ class LoansRepository extends EntityRepository
                               INNER JOIN wallet w ON loans.id_lender = w.id
                               INNER JOIN projects ON loans.id_project = projects.id_project
                               INNER JOIN companies ON projects.id_company = companies.id_company
-                          WHERE wallet.id = :lenderId ) AS client_base
+                          WHERE w.id = :lenderId ) AS client_base
                     GROUP BY insee_region_code';
 
         $statement    = $this->getEntityManager()->getConnection()->executeQuery($query, $bind, $type);
         $regionsCount = $statement->fetchAll(\PDO::FETCH_ASSOC);
+
+
 
         return $regionsCount;
     }

@@ -105,6 +105,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
                       wbh.id_autobid,
                       IF(wbh.id_loan IS NOT NULL, wbh.id_loan, IF(o.id_loan IS NOT NULL, o.id_loan, IF(e.id_loan IS NOT NULL, e.id_loan, ""))) AS id_loan,
                       o.id_repayment_schedule,
+                      p.id_project,
                       p.title,
                       ost.label as sub_type_label
                     FROM wallet_balance_history wbh
@@ -117,7 +118,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
                       LEFT JOIN projects p ON IF(o.id_project IS NULL, wbh.id_project, o.id_project) = p.id_project
                     WHERE wbh.id_wallet = :idWallet
                     AND wbh.added BETWEEN :startDate AND :endDate
-                    GROUP BY IF(id_repayment_schedule IS NULL, wbh.id, o.id_repayment_schedule)
+                    GROUP BY wbh.id
                     ORDER BY wbh.id DESC, id_bid DESC, id_loan DESC, id_repayment_schedule DESC';
 
         /** @var QueryCacheProfile $qcProfile */

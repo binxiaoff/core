@@ -60,6 +60,7 @@ class LenderDashboardController extends Controller
         $client = $entityManagerSimulator->getRepository('clients');
 
         $repaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $operationRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
 
         $client->get($this->getUser()->getClientId());
         $wallet          = $walletRepository->getWalletByType($client->id_client, WalletType::LENDER);
@@ -91,7 +92,7 @@ class LenderDashboardController extends Controller
                 $irrTranslationType = ($irr >= 0 ? 'positive-' : 'negative-');
                 $hasIRR             = true;
             } else {
-                $lossRate = $lenderManager->getLossRate($wallet);
+                $lossRate = $lenderManager->getLossRate($wallet->getIdClient());
 
                 if ($lossRate > 0) {
                     $irr                = -$lossRate;
@@ -148,12 +149,14 @@ class LenderDashboardController extends Controller
         $quarterAxisData        = $this->getQuarterAxis($lenderRepaymentsData);
         $yearAxisData           = $this->getYearAxis($repaymentDateRange);
 
+        $depositedAmount = bcsub($operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::LENDER_PROVISION]), $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::LENDER_WITHDRAW]), 2);
+
         return $this->render(
             '/pages/lender_dashboard/lender_dashboard.html.twig',
             [
                 'dashboardPanels'    => $this->getDashboardPreferences(),
                 'lenderDetails'      => [
-                    'balance'                   => $balance,
+                    'balance'                   => (float)$balance,
                     'level'                     => $this->getUser()->getLevel(),
                     'hasIRR'                    => $hasIRR,
                     'irr'                       => $irr,
@@ -170,7 +173,7 @@ class LenderDashboardController extends Controller
                     'loaned_amount'     => round($loan->sumPrets($wallet->getId()), 2),
                     'blocked_amount'    => round($ongoingBidsSum, 2),
                     'expected_earnings' => round($repaidGrossInterests + $upcomingGrossInterests - $problematicProjects['interests'], 2),
-                    'deposited_amount'  => $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumCreditOperationsByTypeAndYear($wallet, [OperationType::LENDER_PROVISION])
+                    'deposited_amount'  => $depositedAmount
                 ],
                 'capitalDetails'     => [
                     'repaid_capital'        => round($lenderRepayment->getRepaidCapital(['id_lender' => $wallet->getId()]), 2),

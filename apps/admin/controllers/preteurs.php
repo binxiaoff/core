@@ -81,7 +81,7 @@ class preteursController extends bootstrap
 
             $this->lPreteurs = $this->clients->searchPreteurs($clientId, $lastName, $email, $firstName, $companyName, $nonValide);
 
-            if (false === empty($this->lPreteurs[0]['id_client'])) {
+            if (false === empty($this->lPreteurs) && 1 == count($this->lPreteurs)) {
                 header('Location:' . $this->lurl . '/preteurs/edit/' . $this->lPreteurs[0]['id_client']);
                 die;
             }
@@ -172,7 +172,7 @@ class preteursController extends bootstrap
             }
 
             $this->sumRembMontant = $this->echeanciers->getRepaidAmount(['id_lender' => $wallet->getId()]);
-            $this->avgPreteur     = $bids->getAvgPreteur($wallet->getId(), 'amount', implode([Bids::STATUS_BID_ACCEPTED, Bids::STATUS_BID_REJECTED]));
+            $this->avgPreteur     = $bids->getAvgPreteur($wallet->getId(), 'amount', implode(', ', [Bids::STATUS_BID_ACCEPTED, Bids::STATUS_BID_REJECTED]));
             $this->sumBidsEncours = $bids->sumBidsEncours($wallet->getId());
             $this->lBids          = $bids->select('id_lender_account = ' . $wallet->getId() . ' AND status = ' . Bids::STATUS_BID_PENDING, 'added DESC');
             $this->NbBids         = count($this->lBids);
