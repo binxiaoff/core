@@ -330,7 +330,7 @@ MapView.prototype.init = function (markerData) {
 }
 
 /*
- * Completes Initialisation after Ajax-loaded marker data
+ * Completes Initialisation as a callback function (necessary for ajax-loaded data)
  *
  * @method completeInit
  * @returns {Void}
@@ -371,7 +371,7 @@ MapView.prototype.completeInit = function (markerData) {
 }
 
 /*
- * Load marker data through ajax
+ * Ajax-load marker data
  *
  * @method getAjaxData
  * @returns {Void}
@@ -1298,12 +1298,10 @@ MapView.prototype.destroy = function () {
 }
 
 /*
- * Ajax load the next page of map items or the page containing the markerId
+ * Ajax load the next page of mapview items
  *
- Add a comment to this line
- * @method selectMapviewItemLoad
+ * @method paginationAjax
  * @param {String} page
- * @param {String} markerId
  * @returns {Void}
  */
 MapView.prototype.paginationAjax = function (page) {
