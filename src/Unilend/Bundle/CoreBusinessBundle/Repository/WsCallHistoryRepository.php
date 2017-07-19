@@ -136,7 +136,11 @@ class WsCallHistoryRepository extends EntityRepository
                 throw new \InvalidArgumentException('Period not supported');
         }
         $queryBuilder = $this->createQueryBuilder('wch')
-            ->select('wch.added, wch.callStatus, COUNT(wch.idCallHistory) AS volume, ' . $time . ' AS date')
+            ->addSelect('wch.added')
+            ->addSelect('wch.callStatus')
+            ->addSelect('COUNT(wch.idCallHistory) AS totalVolume')
+            ->addSelect('SUM(CASE WHEN wch.siren != \'790766034\' THEN 1 ELSE 0 END) AS clientVolume')
+            ->addSelect($time . ' AS date')
             ->where('wch.added BETWEEN :startDate AND :endDate')
             ->groupBy('wch.callStatus, date')
             ->setParameter('startDate', $startDate)

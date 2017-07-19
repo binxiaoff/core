@@ -39,286 +39,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/4.2.7/highcharts.js"></script>
     <script>
         $(function () {
-            var _chartData
-            <?php // echo 'var _chartData = ' . $this->chartData ?>
-            var _chartData = {
-                "day": {
-                    "valid": [
-                        {
-                        "date": "2017-07-18 08:00", 
-                        "volume": 0,
-                        "volumeC": 0
-                    }, {"date": "2017-07-18 09:00",
-                        "volume": 0,
-                        "volumeC": 0
-                    }, {"date": "2017-07-18 10:00", "volume": 0}, {
-                        "date": "2017-07-18 11:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18 12:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 13:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18 14:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 15:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18 16:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 17:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18 18:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 19:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18 20:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 21:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18 22:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 23:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-19 00:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-19 01:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-19 02:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-19 03:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-19 04:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-19 05:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-19 06:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-19 07:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-19 08:00", "volume": 0, "volumeC": 1}],
-                    "warning": [{"date": "2017-07-18 08:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 09:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18 10:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 11:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18 12:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 13:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18 14:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 15:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18 16:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 17:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18 18:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 19:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18 20:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 21:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18 22:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 23:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-19 00:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-19 01:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-19 02:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-19 03:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-19 04:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-19 05:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-19 06:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-19 07:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-19 08:00", "volume": 0, "volumeC": 1}],
-                    "error": [{"date": "2017-07-18 08:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 09:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18 10:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 11:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18 12:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 13:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18 14:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 15:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18 16:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 17:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18 18:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 19:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18 20:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 21:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18 22:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-18 23:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-19 00:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-19 01:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-19 02:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-19 03:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-19 04:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-19 05:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-19 06:00", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-19 07:00",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-19 08:00", "volume": 0, "volumeC": 1}]
-                },
-                "week": {
-                    "valid": [{"date": "2017-07-12", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-13",
-                        "volume": 2, "volumeC": 1
-                    }, {"date": "2017-07-14", "volume": 0, "volumeC": 1}, {"date": "2017-07-15", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-16",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-17", "volume": 0, "volumeC": 1}, {"date": "2017-07-18", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-19",
-                        "volume": 0, "volumeC": 1
-                    }],
-                    "warning": [{"date": "2017-07-12", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-13",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-14", "volume": 0, "volumeC": 1}, {"date": "2017-07-15", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-16",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-17", "volume": 0, "volumeC": 1}, {"date": "2017-07-18", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-19",
-                        "volume": 0, "volumeC": 1
-                    }],
-                    "error": [{"date": "2017-07-12", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-13",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-14", "volume": 0, "volumeC": 1}, {"date": "2017-07-15", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-16",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-17", "volume": 0, "volumeC": 1}, {"date": "2017-07-18", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-19",
-                        "volume": 0, "volumeC": 1
-                    }]
-                },
-                "month": {
-                    "valid": [{"date": "2017-06-19", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-06-20",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-06-21", "volume": 0, "volumeC": 1}, {"date": "2017-06-22", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-06-23",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-06-24", "volume": 0, "volumeC": 1}, {"date": "2017-06-25", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-06-26",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-06-27", "volume": 0, "volumeC": 1}, {"date": "2017-06-28", "volume": 1, "volumeC": 0}, {
-                        "date": "2017-06-29",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-06-30", "volume": 0, "volumeC": 1}, {"date": "2017-07-01", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-02",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-03", "volume": 0, "volumeC": 1}, {"date": "2017-07-04", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-05",
-                        "volume": 10, "volumeC": 1
-                    }, {"date": "2017-07-06", "volume": 0, "volumeC": 1}, {"date": "2017-07-07", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-08",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-09", "volume": 0, "volumeC": 1}, {"date": "2017-07-10", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-11",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-12", "volume": 0, "volumeC": 1}, {"date": "2017-07-13", "volume": 2, "volumeC": 1}, {
-                        "date": "2017-07-14",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-15", "volume": 0, "volumeC": 1}, {"date": "2017-07-16", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-17",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18", "volume": 0, "volumeC": 1}, {"date": "2017-07-19", "volume": 0, "volumeC": 1}],
-                    "warning": [{"date": "2017-06-19", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-06-20",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-06-21", "volume": 0, "volumeC": 1}, {"date": "2017-06-22", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-06-23",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-06-24", "volume": 0, "volumeC": 1}, {"date": "2017-06-25", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-06-26",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-06-27", "volume": 0, "volumeC": 1}, {"date": "2017-06-28", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-06-29",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-06-30", "volume": 0, "volumeC": 1}, {"date": "2017-07-01", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-02",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-03", "volume": 0, "volumeC": 1}, {"date": "2017-07-04", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-05",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-06", "volume": 0, "volumeC": 1}, {"date": "2017-07-07", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-08",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-09", "volume": 0, "volumeC": 1}, {"date": "2017-07-10", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-11",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-12", "volume": 0, "volumeC": 1}, {"date": "2017-07-13", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-14",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-15", "volume": 0, "volumeC": 1}, {"date": "2017-07-16", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-17",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18", "volume": 0, "volumeC": 1}, {"date": "2017-07-19", "volume": 0, "volumeC": 1}],
-                    "error": [{"date": "2017-06-19", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-06-20",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-06-21", "volume": 0, "volumeC": 1}, {"date": "2017-06-22", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-06-23",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-06-24", "volume": 0, "volumeC": 1}, {"date": "2017-06-25", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-06-26",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-06-27", "volume": 0, "volumeC": 1}, {"date": "2017-06-28", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-06-29",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-06-30", "volume": 0, "volumeC": 1}, {"date": "2017-07-01", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-02",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-03", "volume": 0, "volumeC": 1}, {"date": "2017-07-04", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-05",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-06", "volume": 0, "volumeC": 1}, {"date": "2017-07-07", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-08",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-09", "volume": 0, "volumeC": 1}, {"date": "2017-07-10", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-11",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-12", "volume": 0, "volumeC": 1}, {"date": "2017-07-13", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-14",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-15", "volume": 0, "volumeC": 1}, {"date": "2017-07-16", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-17",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18", "volume": 0, "volumeC": 1}, {"date": "2017-07-19", "volume": 0, "volumeC": 1}],
-                    "": [{"date": "2017-06-19", "volume": 20, "volumeC": 10}, {
-                        "date": "2017-06-20",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-06-21", "volume": 0, "volumeC": 1}, {"date": "2017-06-22", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-06-23",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-06-24", "volume": 0, "volumeC": 1}, {"date": "2017-06-25", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-06-26",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-06-27", "volume": 0, "volumeC": 1}, {"date": "2017-06-28", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-06-29",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-06-30", "volume": 0, "volumeC": 1}, {"date": "2017-07-01", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-02",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-03", "volume": 0, "volumeC": 1}, {"date": "2017-07-04", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-05",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-06", "volume": 0, "volumeC": 1}, {"date": "2017-07-07", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-08",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-09", "volume": 0, "volumeC": 1}, {"date": "2017-07-10", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-11",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-12", "volume": 0, "volumeC": 1}, {"date": "2017-07-13", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-14",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-15", "volume": 0, "volumeC": 1}, {"date": "2017-07-16", "volume": 0, "volumeC": 1}, {
-                        "date": "2017-07-17",
-                        "volume": 0, "volumeC": 1
-                    }, {"date": "2017-07-18", "volume": 0, "volumeC": 1}, {"date": "2017-07-19", "volume": 0, "volumeC": 1}]
-                }
-            }
             var _chart = new Highcharts.chart('highcharts-container', {
                 chart: {
                     type: 'column'
@@ -370,6 +90,8 @@
                 }
             });
 
+            <?php echo 'var _chartData = ' . $this->chartData ?>;
+
             var _chartPopulateSeries = function (period, status, custom) {
                 var ser = _chartData[period][status]
                 var items = new Array();
@@ -377,11 +99,10 @@
                 var offset = d.getTimezoneOffset();
                 for (var i = 0; i < ser.length; i++) {
                     var time = Date.parse(ser[i].date) - offset * 60 * 1000
-                    // console.log(Highcharts.dateFormat("%H:%M", time))
                     if (custom === 'all') {
-                        var vol = ser[i].volume
+                        var vol = ser[i].totalVolume
                     } else {
-                        var vol = ser[i].volumeC
+                        var vol = ser[i].clientVolume
                     }
                     items[i] = [time, vol]
                 }
@@ -454,7 +175,7 @@
                     var status = $(this).val()
                     var customOpposite
                     if (custom === 'all') {
-                        customOpposite = 'local-only'
+                        customOpposite = 'without-monitoring'
                     } else {
                         customOpposite = 'all'
                     }
@@ -503,10 +224,10 @@
             </div>
             <div class="controls-custom" style="display: block;">
                 <label style="margin-right: 10px;">
-                    <input type="radio" name="custom" value="all" checked> All
+                    <input type="radio" name="custom" value="all" checked> All logs
                 </label>
                 <label>
-                    <input type="radio" name="custom" value="local-only"> Local only
+                    <input type="radio" name="custom" value="without-monitoring"> Without monitoring logs
                 </label>
             </div>
         </div>
