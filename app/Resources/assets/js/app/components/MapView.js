@@ -167,7 +167,7 @@ var MapView = function (elem, options) {
         // console.log('MapViewMarker', mouseEvent.layer, mouseEvent.layer.__parent)
 
         // Select the mapviewItem element
-        self.selectMapviewItem(mouseEvent.layer.options.mapviewItemId)
+        // self.selectMapviewItem(mouseEvent.layer.options.mapviewItemId)
       }
     },
 
@@ -392,6 +392,7 @@ MapView.prototype.getAjaxData = function (ajaxUrl) {
     success: function (markerData) {
       // Complete the mapview initialisation
       self.completeInit(markerData)
+      console.log(markerData)
     },
     error: function(jqXHR) {
       // Handle server errors
@@ -1106,8 +1107,14 @@ var MapViewMarker = function (mapView, options) {
 
     // Generate the popup's content based on the templates
     self.popup.setContent(Templating.replace(self.templates.popupContent, [{
-      title: options.popupTitle || options.title || '',
-      content: options.popupContent || options.description || ''
+      title: options.title,
+      url: options.url,
+      city: options.city,
+      zip: options.zip,
+      rating: options.rating,
+      amount: options.amount,
+      offers: options.offers,
+      interest: options.interest,
     }, __]))
 
     // Bind popup to the marker (popup shows when clicked)
@@ -1121,7 +1128,7 @@ var MapViewMarker = function (mapView, options) {
  * MapViewMarker prototype properties and methods
  */
 MapViewMarker.prototype.templates = {
-  popupContent: '<div class="mapview-marker-popup" data-parent="{{ id }}"><div class="mapview-marker-popup-title">{{ title }}</div><div class="mapview-marker-popup-content">{{ content }}</div></div>'
+  popupContent: '<div class="mapview-marker-popup" data-parent="{{ id }}"><div class="mapview-marker-popup-title"><a href="{{ url }}">{{ title }}</a></div><div class="mapview-marker-popup-content"><div class="left"><div class="ellipsis">{{ city }},</div> {{ zip }}<br><span class="rating rating-{{ rating }}"></span></div><div class="right">{{ amount }}<br>{{ interest }}<br>{{ offers }}</div></div>'
 }
 
 /*
@@ -1292,59 +1299,15 @@ MapView.prototype.destroy = function () {
 }
 
 /*
- * Select the map item or load it if it is not in the list
- *
- * @method selectMapviewItem
- * @param {String} markerId
- * @returns {Void}
- */
-MapView.prototype.selectMapviewItem = function (markerId) {
-  var self = this
-  var $mapviewItem = $('[data-mapview-markerid="' + markerId + '"]')
-
-  // Not found
-  if ($mapviewItem.length === 0) {
-    var currentPage = self.$elem.parent().find('.pagination-next').attr('href').match(/\d+/)
-    // @debug
-    // console.log('Current page: ' + currentPage)
-    self.selectMapviewItemLoad(currentPage, markerId)
-  } else {
-    self.selectMapviewItemUi($mapviewItem)
-  }
-}
-
-/*
- * Select (highlight) the mapviewItem on the project map list using a markerId
- *
- * @method selectMapviewItemUi
- * @param {element} $mapviewItem
- * @returns {Void}
- */
-MapView.prototype.selectMapviewItemUi = function ($mapviewItem) {
-  // UI
-  $('[data-mapview-item].ui-project-list-map-item-selected').not($mapviewItem).removeClass('ui-project-list-map-item-selected')
-  $mapviewItem.addClass('ui-project-list-map-item-selected')
-
-  // Scroll to the element within the list
-  $mapviewItem.parents().each(function (i, parent) {
-    var $parent = $(parent)
-    // Only scroll the first parent with `overflow: auto`
-    if ($parent.css('overflow') === 'auto') {
-      $parent.uiScrollTo($mapviewItem)
-      return false
-    }
-  })
-}
-
-/*
  * Ajax load the next page of map items or the page containing the markerId
  *
+ Add a comment to this line
  * @method selectMapviewItemLoad
  * @param {String} page
  * @param {String} markerId
  * @returns {Void}
  */
-MapView.prototype.selectMapviewItemLoad = function (page, markerId) {
+MapView.prototype.paginationAjax = function (page) {
   var self = this
 
   if (!page) {
@@ -1359,10 +1322,7 @@ MapView.prototype.selectMapviewItemLoad = function (page, markerId) {
   $.ajax({
     url: ajaxUrl,
     method: 'POST',
-    data: {
-      markerId: markerId
-    },
-    beforeSend: function() {
+    beforeSend: function () {
       // Using a custom spinner so remove the default one
       $('body').removeClass('ui-is-loading');
       self.$elem.trigger('Spinner:showLoading')
@@ -1374,34 +1334,23 @@ MapView.prototype.selectMapviewItemLoad = function (page, markerId) {
       var $list = self.$elem.parent().find('.list-projects')
       var $lastItemIndex = $list.children().length
       $list.append(response)
-
-      // If click is on a pin inside the map
-      if (markerId) {
-        var $mapviewItem = $('[data-mapview-markerid="' + markerId + '"]')
-        self.selectMapviewItemUi($mapviewItem)
-      // Else click is on the pagination next link
-      } else {
-        var $firstResponseItem = $list.find('li:nth-child(' + ($lastItemIndex + 1) + ')')
-        $list.parent().uiScrollTo($firstResponseItem)
-      }
+      $list.parent().uiScrollTo($list.find('li:nth-child(' + $lastItemIndex + ')'))
 
       // Update the next page link
       var $next = $list.parent().find('.pagination-next')
       var next = parseInt($next.attr('href').split(/[/ ]+/).pop()) + 1
-      var href = self.settings.ajaxPaginationUrl + '/' +  + next.toString()
+      var href = self.settings.ajaxPaginationUrl + '/' + next.toString()
       // @debug
       // console.log(href)
       $next.attr('href', href)
     },
-    error: function(jqXHR) {
+    error: function (jqXHR) {
       // Handle server errors
       self.$elem.trigger('Spinner:hideLoading')
       console.log('Server error: ' + jqXHR.status)
     }
   });
 }
-
-
 
 /*
  * Refreshes the mapbox to recalculate its bounds and things (for responsive)
@@ -1420,7 +1369,7 @@ MapView.prototype.refreshMapbox = function (options) {
  */
 $.fn.uiMapView = function (op) {
   // Fire a command to the MapView object, e.g. $('[data-mapview]').uiMapView('addMarker', {..})
-  if (typeof op === 'string' && /^(panTo|zoom|populateMarkers|addMarker|removeMarker|showMarker|refreshMapbox|refreshFilters|showGroup|hideGroup|selectMapviewItemLoad|debug)$/.test(op)) {
+  if (typeof op === 'string' && /^(panTo|zoom|populateMarkers|addMarker|removeMarker|showMarker|refreshMapbox|refreshFilters|showGroup|hideGroup|paginationAjax|debug)$/.test(op)) {
     // Get further additional arguments to apply to the matched command method
     var args = Array.prototype.slice.call(arguments)
     args.shift()
@@ -1480,9 +1429,6 @@ $(document)
       // Show the marker in the mapview
       if (markerItemData) {
         $map.uiMapView('showMarker', markerItemData.id, 13, true)
-
-        // UI
-        MapView.prototype.selectMapviewItem(markerItemData.id)
       }
     }
   })
@@ -1493,7 +1439,7 @@ $(document)
 
     var currentPage = $(this).attr('href').match(/\d+/)[0]
     var $map = $(document).find('[data-mapview], .ui-mapview, .ui-has-mapview').first()
-    $map.uiMapView('selectMapviewItemLoad', currentPage)
+    $map.uiMapView('paginationAjax', currentPage)
   })
 
   // Refresh the MapView's map when the window has been updated or when made visible

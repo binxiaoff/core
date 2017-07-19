@@ -34,10 +34,29 @@
 }
 
 .mapview-marker-popup-content {
+  @include clearfix;
   color: $c-t3;
   font-style: italic;
   font-size: $fs-base * .8;
   line-height: 1.3em;
+  min-width: 200px;
+  .ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .left, .right {
+    width: 47.5%;
+    float: left;
+    text-align: left;
+  }
+  .right {
+    float: right;
+    text-align: right;
+  }
+  .rating {
+    margin-top: 4px;
+  }
 }
 
 // Mapview marker icons

@@ -1,3 +1,9 @@
+<style>
+    .mapview-marker-popup-content span {
+        display: block;
+    }
+</style>
+
 {% for project in projects %}
     {% set projectRatingTranslation = "project-list_unilend-rating-wording-label"|trans({'%risk%' : project.risk|convertRisk}) %}
     {% if project.company.latitude is not empty and project.company.longitude is not empty %}
@@ -20,8 +26,14 @@
             categoryId: project.company.sectorId,
             latLng: [project.company.latitude, project.company.longitude],
             title: project.title,
-            description: '<div style="font-style: italic;">' ~ project.company.city ~ ', ' ~ project.company.zip ~ '</div><div class="rating rating-' ~ project.risk|convertRisk|split('.')|join('-') ~ '"><span class="sr-only">' ~ projectRatingTranslation ~ '</span></span></div>',
+            url: path('project_detail', {'projectSlug' : project.slug }),
+            city: project.company.city,
+            zip: project.company.zip,
+            rating: project.risk|convertRisk|split('.')|join('-'),
+            amount: project.amount|localizednumber ~ ' €',
+            interest: project.averageRate|localizednumberwithprecision(1) ~ ' %',
             status: (project.finished ? 'expired' : 'active'),
+            offers: project.bidsCount ~ ' ' ~ "project-list_offer-label"|transchoice(project.bidsCount),
             offerStatus: mapviewOfferStatus|default(''),
             groupName: mapviewGroup|default('all')
         } %}

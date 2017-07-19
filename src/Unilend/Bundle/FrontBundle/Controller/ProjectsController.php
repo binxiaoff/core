@@ -92,13 +92,6 @@ class ProjectsController extends Controller
                 $status = 'active';
             }
 
-            // Project rating
-            $note = str_replace('.', '-', constant('\projects::RISK_' . $project['risk']));
-            $noteSr = $translator->trans(
-                'project-list_unilend-rating-wording-label',
-                ['%risk%' => constant('\projects::RISK_' . $project['risk'])]
-            );
-
             // Offer status
             if (array_key_exists('lender', $project) && $project['lender']['bids']['count'] > 0) {
                 if (count($project['lender']['bids']['inprogress']) > 0) {
@@ -113,17 +106,20 @@ class ProjectsController extends Controller
             // Need to replace this with Project Detail path contstant
             $path = 'https://www.local.unilend.fr/projects/detail/';
 
-
-            $item['categoryId'] = $project['company']['sectorId'];
-            $item['description'] = '<div style="font-style: italic;">' . $project['company']['city'] . ', ' . $project['company']['zip'] . '</div><div class="rating rating-' . $note . '"><span class="sr-only">' . $noteSr . '</span></span></div>';
-            $item['groupName'] = $status;
             $item['id'] = 'marker' . $project['projectId'];
-            $lat = $project['company']['latitude'];
-            $lng = $project['company']['longitude'];
-            $item['latLng'] = [$lat, $lng];
-            $item['offerStatus'] = $offerStatus;
+            $item['categoryId'] = $project['company']['sectorId'];
+            $item['latLng'] = [$project['company']['latitude'], $project['company']['longitude']];
+            $item['title'] = $translator->trans('company-sector_sector-' . $project['company']['sectorId']);
+            $item['url'] = $path.$project['slug'];
+            $item['city'] = $project['company']['city'];
+            $item['zip'] = $project['company']['zip'];
+            $item['rating'] = str_replace('.', '-', constant('\projects::RISK_' . $project['risk']));
+            $item['amount'] = $project['amount'] . ' €';
+            $item['interest'] = $project['averageRate'] . ' %';
             $item['status'] = $status;
-            $item['title'] = '<a href="' . $path . $project['slug'] . '" target="blank">' . $translator->trans('company-sector_sector-' . $project['company']['sectorId']) . '</a>';
+            $item['offers'] = $project['bidsCount'] . ' ' . $translator->transchoice('project-list_offer-label', $project['bidsCount']);
+            $item['offerStatus'] = $offerStatus;
+            $item['groupName'] = $status;
 
             array_push($projectsMapview, $item);
         }
