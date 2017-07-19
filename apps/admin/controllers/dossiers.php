@@ -1841,8 +1841,7 @@ class dossiersController extends bootstrap
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
                 $projectManager = $this->get('unilend.service.project_manager');
 
-                $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
-                $repaid = false;
+                $project              = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
                 $paidPaymentSchedules = $paymentScheduleRepository->findBy(
                     ['idProject' => $project, 'statusEmprunteur' => EcheanciersEmprunteur::STATUS_PAID],
                     ['ordre' => 'ASC']
@@ -1856,26 +1855,20 @@ class dossiersController extends bootstrap
                         $repaymentNb        = 0;
 
                         if (0 < count($repaymentSchedules)) {
-                            $entityManager->getConnection()->beginTransaction();
                             try {
-                                $repaymentNb = $projectRepaymentManager->repay($project, $paidPaymentSchedule->getOrdre(), $_SESSION['user']['id_user']);
+                                $repaymentNb              = $projectRepaymentManager->repay($project, $paidPaymentSchedule->getOrdre(), $_SESSION['user']['id_user']);
+                                $unpaidRepaymentSchedules = $repaymentScheduleRepository->findByProject($project, $paidPaymentSchedule->getOrdre(), null, Echeanciers::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PAID, null, 0, 1);
+                                $repaidRepaymentSchedules = $repaymentScheduleRepository->findByProject($project, $paidPaymentSchedule->getOrdre(), null, Echeanciers::STATUS_REPAID, EcheanciersEmprunteur::STATUS_PAID);
+
                                 if (0 === $repaymentNb) {
                                     $_SESSION['freeow']['title']   = 'Remboursement prêteur';
                                     $_SESSION['freeow']['message'] = "Aucun remboursement n'a été effectué aux prêteurs !";
                                 } else {
-                                    $repaid = true;
-                                    $projectRepayment = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsRemb')->findOneBy([
-                                        'idProject' => $project,
-                                        'ordre'     => $paidPaymentSchedule->getOrdre(),
-                                        'status'    => ProjectsRemb::STATUS_REPAID
-                                    ]);
-                                    if ($projectRepayment) {
-                                        $projectRepayment->setStatus(ProjectsRemb::STATUS_AUTOMATIC_REPAYMENT_DISABLED)
-                                            ->setDateRembPreteursReel(new \DateTime());
-                                        $entityManager->flush($projectRepayment);
-                                    }
                                     $emailNB = 0;
-                                    foreach ($repaymentSchedules as $repaymentSchedule) {
+                                    foreach ($repaidRepaymentSchedules as $repaymentSchedule) {
+                                        if (Echeanciers::STATUS_REPAYMENT_EMAIL_SENT === $repaymentSchedule->getStatusEmailRemb()) {
+                                            continue;
+                                        }
                                         $netRepayment         = $operationRepository->getNetAmountByRepaymentScheduleId($repaymentSchedule);
                                         $wallet               = $repaymentSchedule->getIdLoan()->getIdLender();
                                         $repaymentOperation   = $operationRepository->findOneBy(['idRepaymentSchedule' => $repaymentSchedule]);
@@ -1917,13 +1910,16 @@ class dossiersController extends bootstrap
 
                                     $_SESSION['freeow']['title']   = 'Remboursement prêteur';
                                     $_SESSION['freeow']['message'] = 'Les prêteurs ont bien été remboursés !';
+
+                                    if (0 < count($unpaidRepaymentSchedules)) {
+                                        $_SESSION['freeow']['title']   = 'Remboursement prêteur';
+                                        $_SESSION['freeow']['message'] = "Certaines remboursements n'ont pas été effectués aux prêteurs ! Veuillez réessayer ultérieurement.";
+                                    }
                                 }
 
-                                $entityManager->getConnection()->commit();
                             } catch (\Exception $exception) {
                                 $_SESSION['freeow']['title']   = 'Remboursement prêteur';
-                                $_SESSION['freeow']['message'] = 'Une erreur survenu ! Remboursement prêteur est rollbacké !';
-                                $entityManager->getConnection()->rollBack();
+                                $_SESSION['freeow']['message'] = 'Une erreur survenu ! Veuillez réessayer ultérieurement.';
                                 $logger = $this->get('logger');
                                 $logger->error('Errors occur during the repayment command. Error message : ' . $exception->getMessage(), [$exception->getTrace()]);
                             }
@@ -1942,11 +1938,6 @@ class dossiersController extends bootstrap
                             break;
                         }
                     }
-                }
-
-                if (false === $repaid) {
-                    $_SESSION['freeow']['title']   = 'Remboursement prêteur';
-                    $_SESSION['freeow']['message'] = "Aucun remboursement n'a été effectué aux prêteurs !";
                 }
 
                 header('Location: ' . $this->lurl . '/dossiers/detail_remb/' . $this->params[0]);
