@@ -8,22 +8,20 @@
 
         <form method="post" action="<?= $this->lurl ?>/sfpmei/preteurs" role="search">
             <div class="form-group row">
-                <label for="id" class="col-md-2 col-form-label">ID</label>
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <label for="id">ID</label>
                     <input id="id" name="id" type="text" class="form-control">
                 </div>
-                <label for="email" class="col-md-2 col-form-label">Email</label>
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <label for="email">Email</label>
                     <input id="email" name="email" type="text" class="form-control">
                 </div>
-            </div>
-            <div class="form-group row">
-                <label for="lastname" class="col-md-2 col-form-label">Nom</label>
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <label for="lastname">Nom</label>
                     <input id="lastname" name="lastname" type="text" class="form-control">
                 </div>
-                <label for="company" class="col-md-2 col-form-label">Raison sociale</label>
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <label for="company">Raison sociale</label>
                     <input id="company" name="company" type="text" class="form-control">
                 </div>
             </div>
@@ -105,7 +103,7 @@
 </div>
 
 <script>
-    $(function() {
+    $(function () {
         $('.tablesorter').tablesorter({headers: {7: {sorter: false}}});
 
         <?php if (count($this->lenders) > $this->pagination) : ?>

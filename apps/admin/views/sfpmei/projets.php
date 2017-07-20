@@ -65,7 +65,7 @@
                             <td><?= $project['siren'] ?></td>
                             <td><?= $project['name'] ?></td>
                             <td><?= $this->dates->formatDate($project['added'], 'd/m/Y') ?></td>
-                            <td><?= $this->ficelle->formatNumber($project['amount'], 0) ?> €</td>
+                            <td><?= empty($project['amount']) ? '' : $this->ficelle->formatNumber($project['amount'], 0) . ' €' ?></td>
                             <td><?= (in_array($project['period'], [0, 1000000]) ? '' : $project['period'] . ' mois') ?></td>
                             <td><?= $project['label'] ?></td>
                             <td align="center">
@@ -99,7 +99,7 @@
 </div>
 
 <script>
-    $(function() {
+    $(function () {
         jQuery.tablesorter.addParser({
             id: 'amount',
             type: 'numeric',

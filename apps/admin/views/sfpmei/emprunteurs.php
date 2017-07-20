@@ -8,22 +8,20 @@
 
         <form method="post" action="<?= $this->lurl ?>/sfpmei/emprunteurs" role="search">
             <div class="form-group row">
-                <label for="siren" class="col-md-2 col-form-label">SIREN</label>
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <label for="siren">SIREN</label>
                     <input id="siren" name="siren" type="text" class="form-control">
                 </div>
-                <label for="company" class="col-md-2 col-form-label">Raison sociale</label>
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <label for="company">Raison sociale</label>
                     <input id="company" name="company" type="text" class="form-control">
                 </div>
-            </div>
-            <div class="form-group row">
-                <label for="lastname" class="col-md-2 col-form-label">Nom dirigeant</label>
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <label for="lastname">Nom dirigeant</label>
                     <input id="lastname" name="lastname" type="text" class="form-control">
                 </div>
-                <label for="email" class="col-md-2 col-form-label">Email</label>
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <label for="email">Email</label>
                     <input id="email" name="email" type="text" class="form-control">
                 </div>
             </div>
@@ -71,7 +69,7 @@
                             <td><?= $borrower['name'] ?></td>
                             <td><?= $borrower['prenom'] ?> <?= $borrower['nom'] ?></td>
                             <td><?= $borrower['email'] ?></td>
-                            <td><?= $this->ficelle->formatNumber($borrower['total_amount'], 0) ?> €</td>
+                            <td><?= empty($borrower['total_amount']) ? '' : $this->ficelle->formatNumber($borrower['total_amount'], 0) . ' €' ?></td>
                             <td align="center">
                                 <a href="<?= $this->lurl ?>/emprunteur/<?= $borrower['id_client'] ?>">
                                     <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Voir la fiche de l'emprunteur">
@@ -103,7 +101,7 @@
 </div>
 
 <script>
-    $(function() {
+    $(function () {
         jQuery.tablesorter.addParser({
             id: 'amount',
             type: 'numeric',

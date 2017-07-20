@@ -144,9 +144,9 @@
             <li>
                 <a href="<?= $this->lurl ?>/sfpmei" title="SFPMEI"<?= ($this->menu_admin == 'sfpmei' ? ' class="active"' : '') ?>>SFPMEI</a>
                 <ul class="sous_menu">
-                    <li><a href="<?= $this->lurl ?>/sfpmei/" title="Prêteurs">Prêteurs</a></li>
-                    <li><a href="<?= $this->lurl ?>/sfpmei/" title="Emprunteurs">Emprunteurs</a></li>
-                    <li><a href="<?= $this->lurl ?>/sfpmei/" title="Projets">Projets</a></li>
+                    <li><a href="<?= $this->lurl ?>/sfpmei/preteurs" title="Prêteurs">Prêteurs</a></li>
+                    <li><a href="<?= $this->lurl ?>/sfpmei/emprunteurs" title="Emprunteurs">Emprunteurs</a></li>
+                    <li><a href="<?= $this->lurl ?>/sfpmei/projets" title="Projets">Projets</a></li>
                 </ul>
             </li>
         <?php endif; ?>

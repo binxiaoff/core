@@ -107,7 +107,7 @@ class LenderManager
         $loanTransfer                = $this->entityManagerSimulator->getRepository('loan_transfer');
         $transfersWithLenderInvolved = $transfer->select('id_client_origin = ' . $client->getIdClient() . ' OR id_client_receiver = ' . $client->getIdClient());
         foreach ($transfersWithLenderInvolved as $transfer) {
-            if ($loanTransfer->exist($transfer['id_transfer'], 'id_transfer')){
+            if ($loanTransfer->exist($transfer['id_transfer'], 'id_transfer')) {
                return true;
             }
         }
