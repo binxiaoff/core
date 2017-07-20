@@ -141,17 +141,18 @@ class LenderDashboardController extends Controller
         /** @var LenderAccountDisplayManager $lenderDisplayManager */
         $lenderDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
 
-        $repaymentDateRange   = $lenderRepayment->getFirstAndLastRepaymentDates($wallet->getId());
-        $lenderRepaymentsData = [];
-        $currentMonth         = (new \DateTime($repaymentDateRange['first_repayment_date']))->modify('first day of this month');
-        $lastRepaymentMonth   = new \DateTime($repaymentDateRange['last_repayment_date']);
-        while ($currentMonth <= $lastRepaymentMonth) {
-            $lenderRepaymentsData[$currentMonth->format('Y-m')]                 = $repaymentScheduleRepository->getLenderRepaymentByMonth($wallet, $currentMonth)[0];
-            $lenderRepaymentsData[$currentMonth->format('Y-m')]['capital']      = (float) $lenderRepaymentsData[$currentMonth->format('Y-m')]['capital'];
-            $lenderRepaymentsData[$currentMonth->format('Y-m')]['netInterests'] = (float) $lenderRepaymentsData[$currentMonth->format('Y-m')]['netInterests'];
-            $lenderRepaymentsData[$currentMonth->format('Y-m')]['taxes']        = (float) $lenderRepaymentsData[$currentMonth->format('Y-m')]['taxes'];
-            $currentMonth->modify('+1 month');
+        $repaymentDateRange      = $lenderRepayment->getFirstAndLastRepaymentDates($wallet->getId());
+        $lenderRepaymentsDetails = $repaymentScheduleRepository->getLenderRepaymentsDetails($wallet);
+        $lenderRepaymentsData    = [];
+        foreach ($lenderRepaymentsDetails as $lenderRepaymentDetail) {
+            $lenderRepaymentsData[$lenderRepaymentDetail['month']]                 = $lenderRepaymentDetail;
+            $lenderRepaymentsData[$lenderRepaymentDetail['month']]['capital']      = (float) $lenderRepaymentDetail['capital'];
+            $lenderRepaymentsData[$lenderRepaymentDetail['month']]['netInterests'] = (float) $lenderRepaymentDetail['netInterests'];
+            $lenderRepaymentsData[$lenderRepaymentDetail['month']]['taxes']        = (float) $lenderRepaymentDetail['taxes'];
+
         }
+        $lenderRepaymentsData += $this->getPaddingData($repaymentDateRange);
+        sort($lenderRepaymentsData);
         $repaymentDataPerPeriod = $this->getQuarterAndYearSum($lenderRepaymentsData);
         $monthAxisData          = $this->getMonthAxis($repaymentDateRange);
         $quarterAxisData        = $this->getQuarterAxis($lenderRepaymentsData);
