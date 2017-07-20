@@ -74,15 +74,14 @@ class ProjectsController extends Controller
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         $translator            = $this->get('translator');
         $router                = $this->get('router');
-        $start                 = 0;
-        $limit                 = null;
-        $sort                  = [];
-        $client                = null;
-        $projects              = $projectDisplayManager->getProjectsList([], $sort, $start, $limit, $client);
+        $projects              = $projectDisplayManager->getProjectsList();
         $projectsMapview       = [];
+        $offerStatus           = '';
+
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
 
         foreach ($projects as $project) {
-            // Project in funding ?
             if ($project['finished'] === true) {
                 $status = 'expired';
             } else {
@@ -96,26 +95,23 @@ class ProjectsController extends Controller
                 } elseif (count($project['lender']['bids']['inprogress']) > 0) {
                     $offerStatus = 'accepted';
                 }
-            } else {
-                $offerStatus = '';
             }
 
-            $item['id'] = 'marker' . $project['projectId'];
-            $item['categoryId'] = $project['company']['sectorId'];
-            $item['latLng'] = [$project['company']['latitude'], $project['company']['longitude']];
-            $item['title'] = $translator->trans('company-sector_sector-' . $project['company']['sectorId']);
-            $item['url'] = $router->generate('project_detail', ['projectSlug' => $project['slug']]);
-            $item['city'] = $project['company']['city'];
-            $item['zip'] = $project['company']['zip'];
-            $item['rating'] = str_replace('.', '-', constant('\projects::RISK_' . $project['risk']));
-            $item['amount'] = $project['amount'] . ' €';
-            $item['interest'] = $project['averageRate'] . ' %';
-            $item['status'] = $status;
-            $item['offers'] = $project['bidsCount'] . ' ' . $translator->transchoice('project-list_offer-label', $project['bidsCount']);
+            $item['id']          = 'marker' . $project['projectId'];
+            $item['categoryId']  = $project['company']['sectorId'];
+            $item['latLng']      = [$project['company']['latitude'], $project['company']['longitude']];
+            $item['title']       = $translator->trans('company-sector_sector-' . $project['company']['sectorId']);
+            $item['url']         = $router->generate('project_detail', ['projectSlug' => $project['slug']]);
+            $item['city']        = $project['company']['city'];
+            $item['zip']         = $project['company']['zip'];
+            $item['rating']      = str_replace('.', '-', constant('\projects::RISK_' . $project['risk']));
+            $item['amount']      = $ficelle->formatNumber($project['amount'], 0) . '&nbsp;€';
+            $item['interest']    = $ficelle->formatNumber($project['averageRate'], 1) . '&nbsp;%';
+            $item['status']      = $status;
+            $item['offers']      = $translator->transchoice('project-list_project-map-tooltip-offers-count', $project['bidsCount'], ['%count%' => $ficelle->formatNumber($project['bidsCount'], 0)]);
             $item['offerStatus'] = $offerStatus;
-            $item['groupName'] = $status;
-
-            array_push($projectsMapview, $item);
+            $item['groupName']   = $status;
+            $projectsMapview[]   = $item;
         }
 
         return new JsonResponse($projectsMapview);
