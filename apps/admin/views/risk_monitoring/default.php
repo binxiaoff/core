@@ -10,30 +10,35 @@
         margin: 0;
     }
     .block-content {
-        height: 300px;
+        height: 450px;
         border-bottom: 1px solid #ddd;
         overflow-y: scroll;
         overflow-x: hidden;
     }
-    .event-date {
-        width: 69px;
+    .table-events {
+        color: #4a4a4a;
     }
-    .event-company {
-         width: 205px;
-     }
-    .event-change {
-        width: 195px;
-        vertical-align: middle !important;
+    .table-events tbody > tr > td {
+        vertical-align: middle!important;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
-    .event-action {
-        width: 56px;
+    .e-date, .e-id, .e-action {
+         width: 8%;
+    }
+    .e-siren {
+        width: 12%;
+    }
+    .e-change {
+        width: 32%;
+    }
+    .e-statut, .e-raison {
+        width: 16%;
+    }
+    .e-action {
         text-align: right;
-        vertical-align: middle !important;
     }
-    .event-company a {
-        text-decoration: underline;
-    }
-    .event-action .btn-default {
+    .e-action .btn-default {
         padding: 0;
         width: 22px;
     }
@@ -41,29 +46,83 @@
         list-style: none;
         padding: 0; margin: 0;
     }
-    .details li {
-        display: inline-block;
-        margin-right: 10px;
+    .details td {
         color: #777;
     }
-    .details li .label {
+    .details td.label {
         color: #bdbdbd;
         font-size: 10px;
         text-transform: uppercase;
     }
-    .details li .label:after {
+    .details td.label:after {
         content: ': '
     }
-    .text-success {
+    .details td.label, .details td.value {
+        padding-right: 10px;
+    }
+
+    .positive .details td.value {
         color: #00a453;
+    }
+    .negative .details td.value {
+        color: #a30a09;
     }
     .text-warning {
         color: #d19405;
     }
-    .text-error {
-        color: #a30a09;
+    .e-change > span {
+        display: block;
     }
 </style>
+
+<script>
+    $(function(){
+        var $events = $('.table-events')
+
+        $.tablesorter.addParser({
+            id: 'PositiveOrNegativeChange',
+            is: function(s) {
+                return false;
+            },
+            format: function(s, table, cell, cellIndex) {
+                return $(cell).attr('data-change');
+            },
+            type: 'numeric'
+        });
+        $events.tablesorter({
+            headers: {
+                6: {sorter: false},
+                5: {sorter: 'PositiveOrNegativeChange'}
+            }
+        });
+        $('.table-events-header th').click(function() {
+            if ($(this).is('.header')) {
+                var $th = $(this),
+                    thIndex = $th.index(),
+                    sortDirection = 1, // headerSortUp
+                    sorting
+
+                if (!$th.is('.sort-active')) {
+                    $th.siblings().removeClass('sort-active')
+                    $th.addClass('sort-active headerSortUp')
+                }
+
+                if ($th.is('.sort-active')) {
+                    if ($th.is('.headerSortDown')) {
+                        $th.removeClass('headerSortDown').addClass('headerSortUp')
+                        sortDirection = 1
+                    } else {
+                        $th.removeClass('headerSortUp').addClass('headerSortDown')
+                        sortDirection = 0
+                    }
+                }
+
+                sorting = [[thIndex,sortDirection]]
+                $events.trigger("sorton",[sorting]);
+            }
+        })
+    })
+</script>
 
 <div id="contenu">
 
@@ -74,678 +133,544 @@
     </div>
 
     <section id="monitoring-events">
-        <div class="row">
-            <div class="col-md-6">
-                <h3>En traitement Commercial</h3>
-                <article class="block">
-                    <div class="block-header">
-                        <table class="table">
-                            <thead>
+        <article class="block">
+            <div class="block-header">
+                <table class="table table-events-header tablesorter">
+                    <thead>
+                    <tr>
+                        <th class="e-date header">Date</th>
+                        <th class="e-id header">ID</th>
+                        <th class="e-siren header">Siren</th>
+                        <th class="e-raison header">Raison Sociale</th>
+                        <th class="e-statut header">Statut</th>
+                        <th class="e-change header">Changement</th>
+                        <th class="e-action">&nbsp;</th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+            <div class="block-content">
+                <table class="table table-striped table-events tablesorter">
+                    <thead style="display: none">
+                    <tr>
+                        <th class="e-date">Date</th>
+                        <th class="e-id">ID</th>
+                        <th class="e-siren">Siren</th>
+                        <th class="e-raison">Raison Sociale</th>
+                        <th class="e-statut">Statut</th>
+                        <th class="e-change">Changement</th>
+                        <th class="e-action">&nbsp;</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td class="e-date">2/07/17</td>
+                        <td class="e-id">
+                            214723
+                        </td>
+                        <td class="e-siren">
+                            2349212942
+                        </td>
+                        <td class="e-raison">
+                            Pascal et Beatrix
+                        </td>
+                        <td class="e-statut">
+                            Remboursement
+                        </td>
+                        <td class="e-change negative" data-change="0">
+                            <table class="details">
                                 <tr>
-                                    <th class="event-date">Date</th>
-                                    <th class="event-company">Raison Sociale</th>
-                                    <th class="event-change">Changement</th>
-                                    <th class="event-action">Projet</th>
+                                    <td class="label">Altares</td>
+                                    <td class="value">↓10/20</td>
+                                    <td class="label">Précédent</td>
+                                    <td class="value">14/20</td>
                                 </tr>
-                            </thead>
-                        </table>
-                    </div>
-                    <div class="block-content">
-                        <table class="table table-striped table-events">
-                            <tbody>
-                                <tr class="event">
-                                    <td class="event-date">4/07/17</td>
-                                    <td class="event-company">
-                                        <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                        <ul class="details">
-                                            <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                            <li><span class="label">id</span><span class="value">2349238</span></li>
-                                        </ul>
-                                    </td>
-                                    <td class="event-change"><span class="text-warning">Warning, this is getting risky</span></td>
-                                    <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
+                            </table>
+                        </td>
+                        <td class="e-action">
+                            <a href="/dossiers/edit/82282" class="btn-default"><span>></span></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="e-date">4/07/17</td>
+                        <td class="e-id">
+                            114723
+                        </td>
+                        <td class="e-siren">
+                            2349212942
+                        </td>
+                        <td class="e-raison">
+                            Pascal et Beatrix
+                        </td>
+                        <td class="e-statut">
+                            Remboursement
+                        </td>
+                        <td class="e-change positive" data-change="1">
+                            <table class="details">
+                                <tr>
+                                    <td class="label">Altares</td>
+                                    <td class="value">↑15/20</td>
+                                    <td class="label">Précédent</td>
+                                    <td class="value">12/20</td>
                                 </tr>
-                                <tr class="event">
-                                    <td class="event-date">11/07/17</td>
-                                    <td class="event-company">
-                                        <a href="https://admin.local.unilend.fr/dossiers">Beatrix et Pascal</a>
-                                        <ul class="details">
-                                            <li><span class="label">siren</span><span class="value">2349238942</span></li>
-                                            <li><span class="label">id</span><span class="value">2349233</span></li>
-                                        </ul>
-                                    </td>
-                                    <td class="event-change"><span class="text-success">Some positive change</span></td>
-                                    <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
+                            </table>
+                        </td>
+                        <td class="e-action">
+                            <a href="/dossiers/edit/82282" class="btn-default"><span>></span></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="e-date">2/07/17</td>
+                        <td class="e-id">
+                            134723
+                        </td>
+                        <td class="e-siren">
+                            2349212942
+                        </td>
+                        <td class="e-raison">
+                            Pascal et Beatrix
+                        </td>
+                        <td class="e-statut">
+                            Traitement Risque
+                        </td>
+                        <td class="e-change positive" data-change="1">
+                            <table class="details">
+                                <tr>
+                                    <td class="label">Altares</td>
+                                    <td class="value">↑15/20</td>
+                                    <td class="label">Précédent</td>
+                                    <td class="value">12/20</td>
                                 </tr>
-                                <tr class="event">
-                                    <td class="event-date">12/07/17</td>
-                                    <td class="event-company">
-                                        <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                        <ul class="details">
-                                            <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                            <li><span class="label">id</span><span class="value">2349233</span></li>
-                                        </ul>
-                                    </td>
-                                    <td class="event-change"><span class="text-error">Oh boy, too late now</span></td>
-                                    <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
+                            </table>
+                        </td>
+                        <td class="e-action">
+                            <a href="/dossiers/edit/82282" class="btn-default"><span>></span></a>
+                        </td>
+                    </tr>
+                    <tr>
+                            <td class="e-date">12/07/17</td>
+                            <td class="e-id">
+                                234923
+                            </td>
+                            <td class="e-siren">
+                                2349238942
+                            </td>
+                            <td class="e-raison">
+                                TF1 Production
+                            </td>
+                            <td class="e-statut">
+                                Remboursement
+                            </td>
+                            <td class="e-change negative" data-change="0">
+                                <table class="details">
+                                    <tr>
+                                        <td class="label">Altares</td>
+                                        <td class="value">↓10/20</td>
+                                        <td class="label">Précédent</td>
+                                        <td class="value">14/20</td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td class="e-action">
+                                <a href="/dossiers/edit/82282" class="btn-default"><span>></span></a>
+                            </td>
+                        </tr>
+                    <tr>
+                        <td class="e-date">12/04/17</td>
+                        <td class="e-id">
+                            2312923
+                        </td>
+                        <td class="e-siren">
+                            9849238942
+                        </td>
+                        <td class="e-raison">
+                            TF1 Production
+                        </td>
+                        <td class="e-statut">
+                            Traitement Commercial
+                        </td>
+                        <td class="e-change negative" data-change="0">
+                            <table class="details">
+                                <tr>
+                                    <td class="label">Altares</td>
+                                    <td class="value">↓10/20</td>
+                                    <td class="label">Précédent</td>
+                                    <td class="value">14/20</td>
                                 </tr>
-                                <tr class="event">
-                                    <td class="event-date">4/07/17</td>
-                                    <td class="event-company">
-                                        <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                        <ul class="details">
-                                            <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                            <li><span class="label">id</span><span class="value">2349238</span></li>
-                                        </ul>
-                                    </td>
-                                    <td class="event-change"><span class="text-warning">Warning, this is getting risky</span></td>
-                                    <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
+                            </table>
+                        </td>
+                        <td class="e-action">
+                            <a href="/dossiers/edit/82282" class="btn-default"><span>></span></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="e-date">12/04/17</td>
+                        <td class="e-id">
+                            4312923
+                        </td>
+                        <td class="e-siren">
+                            9849238942
+                        </td>
+                        <td class="e-raison">
+                            TF1 Production
+                        </td>
+                        <td class="e-statut">
+                            Traitement Risque
+                        </td>
+                        <td class="e-change negative" data-change="0">
+                            <table class="details">
+                                <tr>
+                                    <td class="label">Altares</td>
+                                    <td class="value">↓10/20</td>
+                                    <td class="label">Précédent</td>
+                                    <td class="value">14/20</td>
                                 </tr>
-                                <tr class="event">
-                                    <td class="event-date">11/07/17</td>
-                                    <td class="event-company">
-                                        <a href="https://admin.local.unilend.fr/dossiers">Beatrix et Pascal</a>
-                                        <ul class="details">
-                                            <li><span class="label">siren</span><span class="value">2349238942</span></li>
-                                            <li><span class="label">id</span><span class="value">2349233</span></li>
-                                        </ul>
-                                    </td>
-                                    <td class="event-change"><span class="text-success">Some positive change</span></td>
-                                    <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
+                            </table>
+                        </td>
+                        <td class="e-action">
+                            <a href="/dossiers/edit/82282" class="btn-default"><span>></span></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="e-date">2/07/17</td>
+                        <td class="e-id">
+                            214723
+                        </td>
+                        <td class="e-siren">
+                            2349212942
+                        </td>
+                        <td class="e-raison">
+                            Pascal et Beatrix
+                        </td>
+                        <td class="e-statut">
+                            Remboursement
+                        </td>
+                        <td class="e-change negative" data-change="0">
+                            <table class="details">
+                                <tr>
+                                    <td class="label">Altares</td>
+                                    <td class="value">↓10/20</td>
+                                    <td class="label">Précédent</td>
+                                    <td class="value">14/20</td>
                                 </tr>
-                                <tr class="event">
-                                    <td class="event-date">12/07/17</td>
-                                    <td class="event-company">
-                                        <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                        <ul class="details">
-                                            <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                            <li><span class="label">id</span><span class="value">2349233</span></li>
-                                        </ul>
-                                    </td>
-                                    <td class="event-change"><span class="text-error">Oh boy, too late now</span></td>
-                                    <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
+                            </table>
+                        </td>
+                        <td class="e-action">
+                            <a href="/dossiers/edit/82282" class="btn-default"><span>></span></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="e-date">4/07/17</td>
+                        <td class="e-id">
+                            114723
+                        </td>
+                        <td class="e-siren">
+                            2349212942
+                        </td>
+                        <td class="e-raison">
+                            Pascal et Beatrix
+                        </td>
+                        <td class="e-statut">
+                            Remboursement
+                        </td>
+                        <td class="e-change positive" data-change="1">
+                            <table class="details">
+                                <tr>
+                                    <td class="label">Altares</td>
+                                    <td class="value">↑15/20</td>
+                                    <td class="label">Précédent</td>
+                                    <td class="value">12/20</td>
                                 </tr>
-                                <tr class="event">
-                                    <td class="event-date">4/07/17</td>
-                                    <td class="event-company">
-                                        <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                        <ul class="details">
-                                            <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                            <li><span class="label">id</span><span class="value">2349238</span></li>
-                                        </ul>
-                                    </td>
-                                    <td class="event-change"><span class="text-warning">Warning, this is getting risky</span></td>
-                                    <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
+                            </table>
+                        </td>
+                        <td class="e-action">
+                            <a href="/dossiers/edit/82282" class="btn-default"><span>></span></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="e-date">2/07/17</td>
+                        <td class="e-id">
+                            134723
+                        </td>
+                        <td class="e-siren">
+                            2349212942
+                        </td>
+                        <td class="e-raison">
+                            Pascal et Beatrix
+                        </td>
+                        <td class="e-statut">
+                            Traitement Risque
+                        </td>
+                        <td class="e-change positive" data-change="1">
+                            <table class="details">
+                                <tr>
+                                    <td class="label">Altares</td>
+                                    <td class="value">↑15/20</td>
+                                    <td class="label">Précédent</td>
+                                    <td class="value">12/20</td>
                                 </tr>
-                                <tr class="event">
-                                    <td class="event-date">11/07/17</td>
-                                    <td class="event-company">
-                                        <a href="https://admin.local.unilend.fr/dossiers">Beatrix et Pascal</a>
-                                        <ul class="details">
-                                            <li><span class="label">siren</span><span class="value">2349238942</span></li>
-                                            <li><span class="label">id</span><span class="value">2349233</span></li>
-                                        </ul>
-                                    </td>
-                                    <td class="event-change"><span class="text-success">Some positive change</span></td>
-                                    <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
+                            </table>
+                        </td>
+                        <td class="e-action">
+                            <a href="/dossiers/edit/82282" class="btn-default"><span>></span></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="e-date">12/07/17</td>
+                        <td class="e-id">
+                            234923
+                        </td>
+                        <td class="e-siren">
+                            2349238942
+                        </td>
+                        <td class="e-raison">
+                            TF1 Production
+                        </td>
+                        <td class="e-statut">
+                            Remboursement
+                        </td>
+                        <td class="e-change negative" data-change="0">
+                            <table class="details">
+                                <tr>
+                                    <td class="label">Altares</td>
+                                    <td class="value">↓10/20</td>
+                                    <td class="label">Précédent</td>
+                                    <td class="value">14/20</td>
                                 </tr>
-                                <tr class="event">
-                                    <td class="event-date">12/07/17</td>
-                                    <td class="event-company">
-                                        <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                        <ul class="details">
-                                            <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                            <li><span class="label">id</span><span class="value">2349233</span></li>
-                                        </ul>
-                                    </td>
-                                    <td class="event-change"><span class="text-error">Oh boy, too late now</span></td>
-                                    <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
+                            </table>
+                        </td>
+                        <td class="e-action">
+                            <a href="/dossiers/edit/82282" class="btn-default"><span>></span></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="e-date">12/04/17</td>
+                        <td class="e-id">
+                            2312923
+                        </td>
+                        <td class="e-siren">
+                            9849238942
+                        </td>
+                        <td class="e-raison">
+                            TF1 Production
+                        </td>
+                        <td class="e-statut">
+                            Traitement Commercial
+                        </td>
+                        <td class="e-change negative" data-change="0">
+                            <table class="details">
+                                <tr>
+                                    <td class="label">Altares</td>
+                                    <td class="value">↓10/20</td>
+                                    <td class="label">Précédent</td>
+                                    <td class="value">14/20</td>
                                 </tr>
-                                <tr class="event">
-                                    <td class="event-date">4/07/17</td>
-                                    <td class="event-company">
-                                        <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                        <ul class="details">
-                                            <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                            <li><span class="label">id</span><span class="value">2349238</span></li>
-                                        </ul>
-                                    </td>
-                                    <td class="event-change"><span class="text-warning">Warning, this is getting risky</span></td>
-                                    <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
+                            </table>
+                        </td>
+                        <td class="e-action">
+                            <a href="/dossiers/edit/82282" class="btn-default"><span>></span></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="e-date">12/04/17</td>
+                        <td class="e-id">
+                            4312923
+                        </td>
+                        <td class="e-siren">
+                            9849238942
+                        </td>
+                        <td class="e-raison">
+                            TF1 Production
+                        </td>
+                        <td class="e-statut">
+                            Traitement Risque
+                        </td>
+                        <td class="e-change negative" data-change="0">
+                            <table class="details">
+                                <tr>
+                                    <td class="label">Altares</td>
+                                    <td class="value">↓10/20</td>
+                                    <td class="label">Précédent</td>
+                                    <td class="value">14/20</td>
                                 </tr>
-                                <tr class="event">
-                                    <td class="event-date">11/07/17</td>
-                                    <td class="event-company">
-                                        <a href="https://admin.local.unilend.fr/dossiers">Beatrix et Pascal</a>
-                                        <ul class="details">
-                                            <li><span class="label">siren</span><span class="value">2349238942</span></li>
-                                            <li><span class="label">id</span><span class="value">2349233</span></li>
-                                        </ul>
-                                    </td>
-                                    <td class="event-change"><span class="text-success">Some positive change</span></td>
-                                    <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
+                            </table>
+                        </td>
+                        <td class="e-action">
+                            <a href="/dossiers/edit/82282" class="btn-default"><span>></span></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="e-date">2/07/17</td>
+                        <td class="e-id">
+                            214723
+                        </td>
+                        <td class="e-siren">
+                            2349212942
+                        </td>
+                        <td class="e-raison">
+                            Pascal et Beatrix
+                        </td>
+                        <td class="e-statut">
+                            Remboursement
+                        </td>
+                        <td class="e-change negative" data-change="0">
+                            <table class="details">
+                                <tr>
+                                    <td class="label">Altares</td>
+                                    <td class="value">↓10/20</td>
+                                    <td class="label">Précédent</td>
+                                    <td class="value">14/20</td>
                                 </tr>
-                                <tr class="event">
-                                    <td class="event-date">12/07/17</td>
-                                    <td class="event-company">
-                                        <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                        <ul class="details">
-                                            <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                            <li><span class="label">id</span><span class="value">2349233</span></li>
-                                        </ul>
-                                    </td>
-                                    <td class="event-change"><span class="text-error">Oh boy, too late now</span></td>
-                                    <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
+                            </table>
+                        </td>
+                        <td class="e-action">
+                            <a href="/dossiers/edit/82282" class="btn-default"><span>></span></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="e-date">4/07/17</td>
+                        <td class="e-id">
+                            114723
+                        </td>
+                        <td class="e-siren">
+                            2349212942
+                        </td>
+                        <td class="e-raison">
+                            Pascal et Beatrix
+                        </td>
+                        <td class="e-statut">
+                            Remboursement
+                        </td>
+                        <td class="e-change positive" data-change="1">
+                            <table class="details">
+                                <tr>
+                                    <td class="label">Altares</td>
+                                    <td class="value">↑15/20</td>
+                                    <td class="label">Précédent</td>
+                                    <td class="value">12/20</td>
                                 </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </article>
+                            </table>
+                        </td>
+                        <td class="e-action">
+                            <a href="/dossiers/edit/82282" class="btn-default"><span>></span></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="e-date">2/07/17</td>
+                        <td class="e-id">
+                            134723
+                        </td>
+                        <td class="e-siren">
+                            2349212942
+                        </td>
+                        <td class="e-raison">
+                            Pascal et Beatrix
+                        </td>
+                        <td class="e-statut">
+                            Traitement Risque
+                        </td>
+                        <td class="e-change positive" data-change="1">
+                            <table class="details">
+                                <tr>
+                                    <td class="label">Altares</td>
+                                    <td class="value">↑15/20</td>
+                                    <td class="label">Précédent</td>
+                                    <td class="value">12/20</td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td class="e-action">
+                            <a href="/dossiers/edit/82282" class="btn-default"><span>></span></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="e-date">12/07/17</td>
+                        <td class="e-id">
+                            234923
+                        </td>
+                        <td class="e-siren">
+                            2349238942
+                        </td>
+                        <td class="e-raison">
+                            TF1 Production
+                        </td>
+                        <td class="e-statut">
+                            Remboursement
+                        </td>
+                        <td class="e-change negative" data-change="0">
+                            <table class="details">
+                                <tr>
+                                    <td class="label">Altares</td>
+                                    <td class="value">↓10/20</td>
+                                    <td class="label">Précédent</td>
+                                    <td class="value">14/20</td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td class="e-action">
+                            <a href="/dossiers/edit/82282" class="btn-default"><span>></span></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="e-date">12/04/17</td>
+                        <td class="e-id">
+                            2312923
+                        </td>
+                        <td class="e-siren">
+                            9849238942
+                        </td>
+                        <td class="e-raison">
+                            TF1 Production
+                        </td>
+                        <td class="e-statut">
+                            Traitement Commercial
+                        </td>
+                        <td class="e-change negative" data-change="0">
+                            <table class="details">
+                                <tr>
+                                    <td class="label">Altares</td>
+                                    <td class="value">↓10/20</td>
+                                    <td class="label">Précédent</td>
+                                    <td class="value">14/20</td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td class="e-action">
+                            <a href="/dossiers/edit/82282" class="btn-default"><span>></span></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="e-date">12/04/17</td>
+                        <td class="e-id">
+                            4312923
+                        </td>
+                        <td class="e-siren">
+                            9849238942
+                        </td>
+                        <td class="e-raison">
+                            TF1 Production
+                        </td>
+                        <td class="e-statut">
+                            Traitement Risque
+                        </td>
+                        <td class="e-change negative" data-change="0">
+                            <table class="details">
+                                <tr>
+                                    <td class="label">Altares</td>
+                                    <td class="value">↓10/20</td>
+                                    <td class="label">Précédent</td>
+                                    <td class="value">14/20</td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td class="e-action">
+                            <a href="/dossiers/edit/82282" class="btn-default"><span>></span></a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
-            <div class="col-md-6">
-                <h3>En attente de traitement Commercial</h3>
-                <article class="block">
-                    <div class="block-header">
-                        <table class="table">
-                            <thead>
-                            <tr>
-                                <th class="event-date">Date</th>
-                                <th class="event-company">Raison Sociale</th>
-                                <th class="event-change">Changement</th>
-                                <th class="event-action">Projet</th>
-                            </tr>
-                            </thead>
-                        </table>
-                    </div>
-                    <div class="block-content">
-                        <table class="table table-striped table-events">
-                            <tbody>
-                            <tr class="event">
-                                <td class="event-date">4/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349238</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-warning">Warning, this is getting risky</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">11/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Beatrix et Pascal</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2349238942</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-success">Some positive change</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">12/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-error">Oh boy, too late now</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">4/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349238</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-warning">Warning, this is getting risky</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">11/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Beatrix et Pascal</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2349238942</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-success">Some positive change</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">12/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-error">Oh boy, too late now</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">4/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349238</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-warning">Warning, this is getting risky</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">11/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Beatrix et Pascal</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2349238942</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-success">Some positive change</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">12/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-error">Oh boy, too late now</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">4/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349238</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-warning">Warning, this is getting risky</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">11/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Beatrix et Pascal</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2349238942</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-success">Some positive change</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">12/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-error">Oh boy, too late now</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </article>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-6">
-                <h3>En traitement Risque</h3>
-                <article class="block">
-                    <div class="block-header">
-                        <table class="table">
-                            <thead>
-                            <tr>
-                                <th class="event-date">Date</th>
-                                <th class="event-company">Raison Sociale</th>
-                                <th class="event-change">Changement</th>
-                                <th class="event-action">Projet</th>
-                            </tr>
-                            </thead>
-                        </table>
-                    </div>
-                    <div class="block-content">
-                        <table class="table table-striped table-events">
-                            <tbody>
-                            <tr class="event">
-                                <td class="event-date">4/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349238</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-warning">Warning, this is getting risky</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">11/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Beatrix et Pascal</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2349238942</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-success">Some positive change</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">12/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-error">Oh boy, too late now</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">4/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349238</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-warning">Warning, this is getting risky</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">11/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Beatrix et Pascal</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2349238942</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-success">Some positive change</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">12/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-error">Oh boy, too late now</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">4/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349238</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-warning">Warning, this is getting risky</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">11/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Beatrix et Pascal</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2349238942</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-success">Some positive change</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">12/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-error">Oh boy, too late now</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">4/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349238</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-warning">Warning, this is getting risky</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">11/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Beatrix et Pascal</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2349238942</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-success">Some positive change</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">12/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-error">Oh boy, too late now</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </article>
-            </div>
-            <div class="col-md-6">
-                <h3>En remboursement</h3>
-                <article class="block">
-                    <div class="block-header">
-                        <table class="table">
-                            <thead>
-                            <tr>
-                                <th class="event-date">Date</th>
-                                <th class="event-company">Raison Sociale</th>
-                                <th class="event-change">Changement</th>
-                                <th class="event-action">Projet</th>
-                            </tr>
-                            </thead>
-                        </table>
-                    </div>
-                    <div class="block-content">
-                        <table class="table table-striped table-events">
-                            <tbody>
-                            <tr class="event">
-                                <td class="event-date">4/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349238</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-warning">Warning, this is getting risky</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">11/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Beatrix et Pascal</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2349238942</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-success">Some positive change</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">12/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-error">Oh boy, too late now</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">4/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349238</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-warning">Warning, this is getting risky</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">11/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Beatrix et Pascal</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2349238942</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-success">Some positive change</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">12/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-error">Oh boy, too late now</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">4/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349238</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-warning">Warning, this is getting risky</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">11/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Beatrix et Pascal</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2349238942</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-success">Some positive change</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">12/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-error">Oh boy, too late now</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">4/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349238</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-warning">Warning, this is getting risky</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">11/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Beatrix et Pascal</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2349238942</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-success">Some positive change</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            <tr class="event">
-                                <td class="event-date">12/07/17</td>
-                                <td class="event-company">
-                                    <a href="https://admin.local.unilend.fr/dossiers">Pascal et Beatrix</a>
-                                    <ul class="details">
-                                        <li><span class="label">siren</span><span class="value">2832983928</span></li>
-                                        <li><span class="label">id</span><span class="value">2349233</span></li>
-                                    </ul>
-                                </td>
-                                <td class="event-change"><span class="text-error">Oh boy, too late now</span></td>
-                                <td class="event-action"><a href="/dossiers/edit/82282" class="btn-default"><span>></span></a></td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </article>
-            </div>
-        </div>
+        </article>
     </section>
 </div>
 
