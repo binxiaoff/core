@@ -258,7 +258,7 @@ class EcheanciersRepository extends EntityRepository
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
                 WHERE ot.label = \''.OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_REGULARIZATION.'\' AND id_repayment_schedule = e.id_echeancier
-              ), 0) as contributions_additionnelles,
+              ), 0) as prelevements_de_solidarite,
               IFNULL((
                SELECT SUM(amount)
                FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
@@ -267,7 +267,7 @@ class EcheanciersRepository extends EntityRepository
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
                 WHERE ot.label = \''.OperationType::TAX_FR_CRDS_REGULARIZATION.'\' AND id_repayment_schedule = e.id_echeancier
-              ), 0) as contributions_additionnelles,
+              ), 0) as crds,
               e.date_echeance,
               e.date_echeance_reel,
               e.status,
