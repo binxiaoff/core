@@ -60,18 +60,11 @@
     .details td.label, .details td.value {
         padding-right: 10px;
     }
-
-    .positive .details td.value {
+    .positive .details td.value:nth-child(2) {
         color: #00a453;
     }
-    .negative .details td.value {
+    .negative .details td.value:nth-child(2) {
         color: #a30a09;
-    }
-    .text-warning {
-        color: #d19405;
-    }
-    .e-change > span {
-        display: block;
     }
 </style>
 
