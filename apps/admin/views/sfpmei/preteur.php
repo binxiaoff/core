@@ -4,7 +4,7 @@
             <div class="col-md-12">
                 <div class="pull-right"><?= $this->lenderStatusMessage ?></div>
                 <h1>Fiche prêteur</h1>
-                <h2><?= $this->clients->prenom ?> <?= $this->clients->nom ?> (<?= $this->clients->id_client ?>)</h2>
+                <h2><?= $this->isPhysicalPerson ? $this->clients->prenom . ' ' . $this->clients->nom : $this->companies->name ?> (<?= $this->clients->id_client ?>)</h2>
             </div>
         </div>
     </div>
@@ -15,11 +15,17 @@
                 <li><a href="#validation">Validation</a></li>
                 <li><a href="<?= $this->lurl ?>/sfpmei/preteur/<?= $this->clients->id_client ?>/mouvements">Mouvements</a></li>
                 <li><a href="<?= $this->lurl ?>/sfpmei/preteur/<?= $this->clients->id_client ?>/portefeuille">Portefeuille</a></li>
+                <li><a href="#historique">Historique</a></li>
             </ul>
             <div id="contact" class="container-fluid">
                 <?php $this->fireView('preteur/contact'); ?>
             </div>
-            <div id="validation" class="container-fluid"></div>
+            <div id="validation" class="container-fluid">
+                <?php $this->fireView('preteur/validation'); ?>
+            </div>
+            <div id="historique" class="container-fluid">
+                <?php $this->fireView('preteur/historique'); ?>
+            </div>
         </div>
     </div>
 </div>
@@ -32,7 +38,11 @@
 
 <script>
     $(function () {
-        $('#lender-tabs').tabs();
+        $('#lender-tabs').tabs({
+            beforeLoad: function (event, ui) {
+                ui.panel.html('<div class="row text-center"><img src="<?= $this->surl ?>/images/admin/ajax-loader.gif" alt="Chargement en cours ..."></div>');
+            }
+        });
 
         $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
 
@@ -60,7 +70,6 @@
             format: function (s) {
                 var match = s.match(/([0-9]{2})\/([0-9]{2})\/([0-9]{4})/)
                 if (match !== null && match.length >= 3) {
-                    console.log(match[3] + match[2] + match[1])
                     return match[3] + match[2] + match[1];
                 }
                 return '';

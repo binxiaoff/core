@@ -41,7 +41,7 @@
             <?php if (count($this->projects) > 0) : ?>
                 <div class="row">
                     <div class="col-md-12">
-                        <h1><?= count($this->projects) ?> projet<?= count($this->projects) > 1 ? 's' : '' ?> trouvé<?= count($this->projects) > 1 ? 's' : '' ?></h1>
+                        <h2><?= count($this->projects) ?> projet<?= count($this->projects) > 1 ? 's' : '' ?> trouvé<?= count($this->projects) > 1 ? 's' : '' ?></h2>
                     </div>
                 </div>
                 <table class="tablesorter table table-hover table-striped">
@@ -92,7 +92,7 @@
                     </div>
                 <?php endif; ?>
             <?php else : ?>
-                <h1>Aucun résultat trouvé pour cette recherche</h1>
+                <strong>Aucun résultat trouvé pour cette recherche</strong>
             <?php endif; ?>
         </div>
     <?php endif; ?>

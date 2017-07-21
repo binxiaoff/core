@@ -235,12 +235,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                     <th></th>
                     <td></td>
                 </tr>
-                <tr>
-                    <th></th>
-                    <td><input type="submit" value="Valider ce pays et appliquer aux échéanciers" class="btn-primary" id="valider_pays" name="valider_pays"></td>
-                    <th></th>
-                    <td></td>
-                </tr>
             <?php endif; ?>
             <tr>
                 <td colspan="4">

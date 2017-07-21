@@ -3,37 +3,85 @@
         <table class="table table-bordered table-striped">
             <thead>
             <tr>
+                <th colspan="2">Identité</th>
+            </tr>
+            </thead>
+            <tbody>
+                <?php if ($this->isPhysicalPerson) : ?>
+                    <?php $this->fireView('preteur/contact_identite_physique'); ?>
+                <?php else : ?>
+                    <?php $this->fireView('preteur/contact_identite_morale'); ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-6">
+        <table class="table table-bordered table-striped">
+            <tbody>
+            <tr>
+                <th>Date d'inscription</th>
+                <td><?= $this->dates->formatDate($this->clients->added, 'd/m/Y') ?></td>
+            </tr>
+            <tr>
+                <th>Source</th>
+                <td><?= empty($this->clients->source) ? '-' : $this->clients->source ?></td>
+            </tr>
+            <tr>
+                <th>Évaluation CIP</th>
+                <td>
+                    <?php if ($this->cipEnabled) : ?>
+                        Oui (<a href="<?= $this->furl ?>/pdf/conseil-cip/<?= $this->clients->hash ?>" target="_blank"> Télécharger le PDF des conseils </a>)
+                    <?php else : ?>
+                        Non
+                    <?php endif; ?>
+                </td>
+            </tr>
+            <tr>
+                <th>Exonération fiscale</th>
+                <td><?= empty($this->exemptionYears) ? '-' : implode('<br>', $this->exemptionYears) ?>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
                 <th colspan="2">Coordonnées</th>
             </tr>
             </thead>
             <tbody>
             <tr>
-                <th>Prénom</th>
-                <td><?= $this->clients->prenom ?></td>
-            </tr>
-            <tr>
-                <th>Nom</th>
-                <td><?= $this->clients->nom ?></td>
-            </tr>
-            <tr>
                 <th>Email</th>
                 <td><?= $this->clients->email ?></td>
             </tr>
             <tr>
+                <th>Téléphone</th>
+                <td><?= empty($this->clients->telephone) ? '-' : $this->clients->telephone ?></td>
+            </tr>
+            <tr>
+                <th>Mobile</th>
+                <td><?= empty($this->clients->mobile) ? '-' : $this->clients->mobile ?></td>
+            </tr>
+            <tr>
                 <th>Adresse fiscale</th>
                 <td>
-                    <?php if ($this->clients->type == 1) : ?>
-                        <?= $this->clients_adresses->adresse_fiscal ?><br>
-                        <?= $this->clients_adresses->cp_fiscal ?> <?= $this->clients_adresses->ville_fiscal ?>
-                    <?php else : ?>
-                        <?= $this->companies->adresse1 ?><br>
-                        <?= $this->companies->zip ?> <?= $this->companies->city ?>
-                    <?php endif; ?>
+                    <?= $this->fiscalAddress['address'] ?><br>
+                    <?= $this->fiscalAddress['postCode'] ?> <?= $this->fiscalAddress['city'] ?><br>
+                    <?= $this->fiscalAddress['country'] ?>
                 </td>
             </tr>
             <tr>
-                <th>Téléphone / Mobile</th>
-                <td><?= empty($this->clients->telephone) ? '-' : $this->clients->telephone ?> / <?= empty($this->clients->mobile) ? '-' : $this->clients->mobile ?></td>
+                <th>Adresse de correspondance</th>
+                <td>
+                    <?= $this->correspondenceAddress['address'] ?><br>
+                    <?= $this->correspondenceAddress['postCode'] ?> <?= $this->correspondenceAddress['city'] ?><br>
+                    <?= $this->correspondenceAddress['country'] ?>
+                </td>
             </tr>
             </tbody>
         </table>
@@ -42,18 +90,27 @@
         <table class="table table-bordered table-striped">
             <thead>
             <tr>
-                <th colspan="2">Inscription</th>
+                <th colspan="2">Informations bancaires</th>
             </tr>
             </thead>
             <tbody>
             <tr>
-                <th>Date de création</th>
-                <td><?= $this->dates->formatDate($this->clients->added, 'd/m/Y') ?></td>
+                <th>IBAN</th>
+                <td><?= $this->currentBankAccount->getIban() ?></td>
             </tr>
             <tr>
-                <th>Source</th>
-                <td><?= $this->clients->source ?></td>
+                <th>BIC</th>
+                <td><?= $this->currentBankAccount->getBic() ?></td>
             </tr>
+            <?php if (isset($this->fundsOriginList)) : ?>
+                <tr>
+                    <th>Origine des fonds</th>
+                    <td>
+                        <?= $this->fundsOriginList[$this->clients->funds_origin - 1] ?>
+                        <?= empty($this->clients->funds_origin_detail) ? '' : '<br>' . $this->clients->funds_origin_detail ?>
+                    </td>
+                </tr>
+            <?php endif; ?>
             </tbody>
         </table>
     </div>

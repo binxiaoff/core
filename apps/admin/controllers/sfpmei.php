@@ -1,10 +1,12 @@
 <?php
 
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 
@@ -174,13 +176,13 @@ class sfpmeiController extends bootstrap
      */
     public function _preteur()
     {
-        $this->bids        = $this->loadData('bids');
-        $this->clients     = $this->loadData('clients');
-        $this->echeanciers = $this->loadData('echeanciers');
-        $this->loans       = $this->loadData('loans');
-        $this->projects    = $this->loadData('projects');
-        /** @var underlying_contract contract */
-        $this->contract = $this->loadData('underlying_contract');
+        $this->bids            = $this->loadData('bids');
+        $this->clients         = $this->loadData('clients');
+        $this->clients_mandats = $this->loadData('clients_mandats');
+        $this->echeanciers     = $this->loadData('echeanciers');
+        $this->loans           = $this->loadData('loans');
+        $this->projects        = $this->loadData('projects');
+        $this->contract        = $this->loadData('underlying_contract');
         /** @var TranslatorInterface translator */
         $this->translator = $this->get('translator');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
@@ -267,15 +269,27 @@ class sfpmeiController extends bootstrap
                 $writer->save('php://output');
                 break;
             default:
-                /** @var \clients_adresses clients_adresses */
                 $this->clients_adresses = $this->loadData('clients_adresses');
                 $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
+                $this->clients_status = $this->loadData('clients_status');
+                $this->clients_status->getLastStatut($this->clients->id_client);
+
+                $this->clients_status_history = $this->loadData('clients_status_history');
+                $this->statusHistory          = $this->clients_status_history->select('id_client = ' . $this->clients->id_client, 'added DESC');
+
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Operation $firstProvision */
-                $provisionType  = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneByLabel(OperationType::LENDER_PROVISION);
-                $firstProvision = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWalletCreditor' => $this->wallet, 'idType' => $provisionType], ['id' => 'ASC']);
+                $provisionType    = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneByLabel(OperationType::LENDER_PROVISION);
+                $firstProvision   = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWalletCreditor' => $this->wallet, 'idType' => $provisionType], ['id' => 'ASC']);
+                $paysV2Repository = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2');
+
+                /** @var \lender_tax_exemption $lenderTaxExemption */
+                $lenderTaxExemption = $this->loadData('lender_tax_exemption');
 
                 $this->lenderStatusMessage            = $this->getLenderStatusMessage();
+                $this->cipEnabled                     = $this->get('unilend.service.cip_manager')->hasValidEvaluation($this->wallet->getIdClient());
+                $this->birthCountry                   = empty($this->clients->id_pays_naissance) ? '' : $paysV2Repository->find($this->clients->id_pays_naissance)->getFr();
+                $this->exemptionYears                 = array_column($lenderTaxExemption->getLenderExemptionHistory($this->wallet->getId()), 'year');
                 $this->availableBalance               = $this->wallet->getAvailableBalance();
                 $this->firstDepositAmount             = null === $firstProvision ? 0 : $firstProvision->getAmount();
                 $this->totalDepositsAmount            = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumCreditOperationsByTypeAndYear($this->wallet, [OperationType::LENDER_PROVISION]);;
@@ -290,6 +304,52 @@ class sfpmeiController extends bootstrap
                 $this->totalRunningBidsCount          = count($this->runningBids);
                 $this->averageBidAmount               = $this->bids->getAvgPreteur($this->wallet->getId(), 'amount', implode(', ', [Bids::STATUS_BID_ACCEPTED, Bids::STATUS_BID_REJECTED]));
                 $this->averageLoanRate                = $this->loans->getAvgPrets($this->wallet->getId());
+                $this->currentBankAccount             = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($this->clients->id_client);
+                $this->isPhysicalPerson               = in_array($this->clients->type, [\Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON, \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON_FOREIGNER]);
+                $this->attachments                    = $this->wallet->getIdClient()->getAttachments();
+                $this->attachmentTypes                = $this->get('unilend.service.attachment_manager')->getAllTypesForLender();
+                $this->transfers                      = $entityManager->getRepository('UnilendCoreBusinessBundle:Transfer')->findTransferByClient($this->wallet->getIdClient());
+                $this->taxationCountryHistory         = $this->getTaxationHistory($this->wallet->getId());
+                $this->taxExemptionHistory            = $this->getTaxExemptionHistory($this->users_history->getTaxExemptionHistoryAction($this->clients->id_client));
+                $this->clientStatus                   = $this->clients_status->status;
+                $this->termsOfSalesAcceptation        = $entityManager->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client], ['added' => 'DESC']);
+                $this->treeRepository                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Tree');
+
+                if (null === $this->currentBankAccount) {
+                    $this->currentBankAccount = new BankAccount();
+                }
+
+                if ($this->isPhysicalPerson) {
+                    $this->fiscalAddress = [
+                        'address'  => $this->clients_adresses->adresse_fiscal,
+                        'postCode' => $this->clients_adresses->cp_fiscal,
+                        'city'     => $this->clients_adresses->ville_fiscal,
+                        'country'  => $paysV2Repository->find($this->clients_adresses->id_pays_fiscal) ? $paysV2Repository->find($this->clients_adresses->id_pays_fiscal)->getFr() : ''
+                    ];
+
+                    $this->settings->get('Liste deroulante origine des fonds', 'status = 1 AND type');
+                    $this->fundsOriginList = $this->settings->value;
+                    $this->fundsOriginList = explode(';', $this->fundsOriginList);
+                } else {
+                    $this->companies = $this->loadData('companies');
+                    $this->companies->get($this->clients->id_client, 'id_client_owner');
+
+                    $this->fiscalAddress = [
+                        'address'  => $this->companies->adresse1,
+                        'postCode' => $this->companies->zip,
+                        'city'     => $this->companies->city,
+                        'country'  => $paysV2Repository->find($this->companies->id_pays) ? $paysV2Repository->find($this->companies->id_pays)->getFr() : ''
+                    ];
+                }
+
+                $this->correspondenceAddress = [
+                    'address'  => $this->clients_adresses->adresse1,
+                    'postCode' => $this->clients_adresses->cp,
+                    'city'     => $this->clients_adresses->ville,
+                    'country'  => $paysV2Repository->find($this->clients_adresses->id_pays) ? $paysV2Repository->find($this->clients_adresses->id_pays)->getFr() : ''
+                ];
+
+                $this->setVigilanceStatusData();
                 break;
         }
     }
@@ -337,6 +397,101 @@ class sfpmeiController extends bootstrap
         }
 
         return $clientStatusMessage;
+    }
+
+    private function setVigilanceStatusData()
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager                = $this->get('doctrine.orm.entity_manager');
+        $this->vigilanceStatusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findBy(['client' => $this->clients->id_client], ['id' => 'DESC']);
+
+        if (empty($this->vigilanceStatusHistory)) {
+            $this->vigilanceStatus = [
+                'status'  => VigilanceRule::VIGILANCE_STATUS_LOW,
+                'message' => 'Vigilance standard'
+            ];
+            $this->userEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+            return;
+        }
+
+        $this->clientAtypicalOperations = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->findBy(['client' => $this->clients->id_client], ['added' => 'DESC']);
+
+        switch ($this->vigilanceStatusHistory[0]->getVigilanceStatus()) {
+            case VigilanceRule::VIGILANCE_STATUS_LOW:
+                $this->vigilanceStatus = [
+                    'status'  => VigilanceRule::VIGILANCE_STATUS_LOW,
+                    'message' => 'Vigilance standard. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                ];
+                break;
+            case VigilanceRule::VIGILANCE_STATUS_MEDIUM:
+                $this->vigilanceStatus = [
+                    'status'  => VigilanceRule::VIGILANCE_STATUS_MEDIUM,
+                    'message' => 'Vigilance intermédiaire. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                ];
+                break;
+            case VigilanceRule::VIGILANCE_STATUS_HIGH:
+                $this->vigilanceStatus = [
+                    'status'  => VigilanceRule::VIGILANCE_STATUS_HIGH,
+                    'message' => 'Vigilance Renforcée. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                ];
+                break;
+            case VigilanceRule::VIGILANCE_STATUS_REFUSE:
+                $this->vigilanceStatus = [
+                    'status'  => VigilanceRule::VIGILANCE_STATUS_REFUSE,
+                    'message' => 'Vigilance Refus. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                ];
+                break;
+            default:
+                trigger_error('Unknown vigilance status :' . $this->vigilanceStatusHistory[0]->getVigilanceStatus(), E_USER_NOTICE);
+        }
+
+        $this->userEntity                   = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+        $this->clientVigilanceStatusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory');
+    }
+
+    /**
+     * @param int $lenderId
+     *
+     * @return array
+     */
+    private function getTaxationHistory($lenderId)
+    {
+        /** @var \lenders_imposition_history $lendersImpositionHistory */
+        $lendersImpositionHistory = $this->loadData('lenders_imposition_history');
+        try {
+            $taxationHistory = $lendersImpositionHistory->getTaxationHistory($lenderId);
+        } catch (Exception $exception) {
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->error('Could not get lender taxation history (id_lender = ' . $lenderId . ') Exception message : ' . $exception->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lenderId));
+            $taxationHistory = ['error' => 'Impossible de charger l\'historique de changement d\'adresse fiscale'];
+        }
+
+        return $taxationHistory;
+    }
+
+    /**
+     * @param array $history
+     *
+     * @return array
+     */
+    private function getTaxExemptionHistory(array $history)
+    {
+        /** @var \users $user */
+        $data = [];
+        $user = $this->loadData('users');
+
+        if (false === empty($history)) {
+            foreach ($history as $row) {
+                $data[] = [
+                    'modifications' => unserialize($row['serialize'])['modifications'],
+                    'user'          => $user->getName($row['id_user']),
+                    'date'          => $row['added']
+                ];
+            }
+        }
+
+        return $data;
     }
 
     /**

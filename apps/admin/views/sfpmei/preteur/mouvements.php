@@ -1,12 +1,12 @@
 <div class="row">
     <div class="col-md-12">
-        <h2>
+        <h3>
             Mouvements effectués entre le
             <input id="operations-start" type="text" value="<?= $this->startDate->format('d/m/Y') ?>" placeholder="Début" class="datepicker text-center" style="width: 100px">
             et le
             <input id="operations-end" type="text" value="<?= $this->endDate->format('d/m/Y') ?>" placeholder="Fin" class="datepicker text-center" style="width: 100px">
             <button id="operations-filter" class="btn-primary btn-sm">Filtrer</button>
-        </h2>
+        </h3>
     </div>
 </div>
 <div id="operations-container" class="row">
