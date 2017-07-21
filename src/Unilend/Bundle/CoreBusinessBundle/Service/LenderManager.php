@@ -3,7 +3,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
@@ -139,11 +139,12 @@ class LenderManager
      */
     public function isValidated(Clients $client)
     {
-        /** @var \clients_status $lastClientStatus */
-        $lastClientStatus = $this->entityManagerSimulator->getRepository('clients_status');
-        $lastClientStatus->getLastStatut($client->getIdClient());
+        $clientStatusRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
+        /** @var ClientsStatus $clientStatusEntity */
+        $clientStatusEntity = $clientStatusRepository->getLastClientStatus($client);
+        $lastStatus         = (empty($clientStatusEntity)) ? null : $clientStatusEntity->getStatus();
 
-        return $lastClientStatus->status == \clients_status::VALIDATED;
+        return $lastStatus == ClientsStatus::VALIDATED;
     }
 
     /**

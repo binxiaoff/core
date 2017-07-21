@@ -24,6 +24,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
@@ -37,7 +38,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
-use Unilend\Bundle\FrontBundle\Service\ContentManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
 use Unilend\core\Loader;
@@ -894,12 +894,12 @@ class LenderSubscriptionController extends Controller
             }
 
             if ($authorizationChecker->isGranted('ROLE_LENDER')) {
-                /** @var Clients $clientEntity */
-                $clientEntity = $clientRepository->find($this->getUser()->getClientId());
-                /** @var ClientStatusManager $clientStatusManager */
-                $clientStatusManager = $this->get('unilend.service.client_status_manager');
-                $lastStatus = $clientStatusManager->getLastClientStatus($clientEntity);
-                if (false === empty($lastStatus) && $lastStatus >= \clients_status::MODIFICATION){
+                $clientEntity           = $clientRepository->find($this->getUser()->getClientId());
+                $clientStatusRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
+                /** @var ClientsStatus $lastStatus */
+                $lastStatus = $clientStatusRepository->getLastClientStatus($clientEntity);
+
+                if (false === empty($lastStatus) && $lastStatus->getStatus() >= ClientsStatus::MODIFICATION) {
                     return $this->redirectToRoute('lender_dashboard');
                 }
             } else {
