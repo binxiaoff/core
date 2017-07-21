@@ -2,9 +2,11 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
-
 use Doctrine\ORM\EntityRepository;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
 class LenderStatisticRepository extends EntityRepository
 {
@@ -36,7 +38,7 @@ class LenderStatisticRepository extends EntityRepository
               INNER JOIN loans l ON e.id_loan = l.id_loan
             WHERE
               l.id_lender = :idWallet
-              AND e.status = ' . \echeanciers::STATUS_REPAID . '
+              AND e.status = ' . Echeanciers::STATUS_REPAID . '
 
         UNION ALL
 
@@ -48,8 +50,8 @@ class LenderStatisticRepository extends EntityRepository
               INNER JOIN loans l ON e.id_loan = l.id_loan
             WHERE
                 l.id_lender = :idWallet
-                AND e.status = ' . \echeanciers::STATUS_PENDING . '
-                AND p.status = ' . \projects_status::REMBOURSEMENT . '
+                AND e.status = ' . Echeanciers::STATUS_PENDING . '
+                AND p.status = ' . ProjectsStatus::REMBOURSEMENT . '
 
         UNION ALL
 
@@ -61,8 +63,8 @@ class LenderStatisticRepository extends EntityRepository
               INNER JOIN loans l ON e.id_loan = l.id_loan
             WHERE
                 l.id_lender = :idWallet
-                AND e.status = ' . \echeanciers::STATUS_PENDING . '
-                AND p.status IN (' . implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X]) . ')
+                AND e.status = ' . Echeanciers::STATUS_PENDING . '
+                AND p.status IN (' . implode(',', [ProjectsStatus::PROBLEME, ProjectsStatus::PROBLEME_J_X]) . ')
 
         UNION ALL
 
@@ -75,7 +77,7 @@ class LenderStatisticRepository extends EntityRepository
                         FROM projects_status_history psh2
                         INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
                         WHERE
-                            ps2.status = ' . \projects_status::PROBLEME . '
+                            ps2.status = ' . ProjectsStatus::PROBLEME . '
                             AND psh2.id_project = e.id_project
                         ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                         LIMIT 1
@@ -87,8 +89,8 @@ class LenderStatisticRepository extends EntityRepository
               INNER JOIN loans l ON e.id_loan = l.id_loan
             WHERE
                 l.id_lender = :idWallet
-                AND e.status = ' . \echeanciers::STATUS_PENDING . '
-                AND p.status = ' . \projects_status::RECOUVREMENT . '
+                AND e.status = ' . Echeanciers::STATUS_PENDING . '
+                AND p.status = ' . ProjectsStatus::RECOUVREMENT . '
 
         UNION ALL
 
@@ -100,38 +102,55 @@ class LenderStatisticRepository extends EntityRepository
               INNER JOIN loans l ON e.id_loan = l.id_loan
             WHERE
                 l.id_lender = :idWallet
-                AND e.status = ' . \echeanciers::STATUS_PENDING . '
+                AND e.status = ' . Echeanciers::STATUS_PENDING . '
                 AND p.status IN (' . implode(',', [
-                \projects_status::PROCEDURE_SAUVEGARDE,
-                \projects_status::REDRESSEMENT_JUDICIAIRE,
-                \projects_status::LIQUIDATION_JUDICIAIRE,
-                \projects_status::DEFAUT
+                ProjectsStatus::PROCEDURE_SAUVEGARDE,
+                ProjectsStatus::REDRESSEMENT_JUDICIAIRE,
+                ProjectsStatus::LIQUIDATION_JUDICIAIRE,
+                ProjectsStatus::DEFAUT
             ]) . ')
 
         UNION ALL
         
-            (SELECT
-                o_capital.added AS date,
-                ROUND(
-                    IF(
-                      o_recovery.id IS NOT NULL,
-                           (o_capital.amount - o_recovery.amount),
-                           o_capital.amount)*100) AS amount
-            FROM operation o_capital
-                INNER JOIN operation o_recovery ON o_capital.id_project = o_recovery.id_project AND o_capital.id_wallet_creditor = o_recovery.id_wallet_debtor AND o_recovery.id_type = (SELECT id from operation_type WHERE label = "' . OperationType::COLLECTION_COMMISSION_LENDER . '") AND DATE(o_capital.added) = DATE(o_recovery.added)
-            WHERE
-                o_capital.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::CAPITAL_REPAYMENT . '")
+            SELECT
+              o_collection_capital.added AS date,
+              ROUND(
+                  (
+                    SUM(o_collection_capital.amount) - IFNULL((
+                    SELECT SUM(o_collection_capital_regul.amount)
+                    FROM operation o_collection_capital_regul
+                      INNER JOIN operation_sub_type ost ON o_collection_capital_regul.id_sub_type = ost.id
+                    WHERE ost.label = \'' . OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION_REGULARIZATION . '\' AND o_collection_capital_regul.id_wallet_debtor = o_collection_capital.id_wallet_creditor AND DATE(o_collection_capital_regul.added) = DATE(o_collection_capital.added)
+                  ),0) - IFNULL((
+                    SELECT SUM(com.amount)
+                    FROM operation com
+                      INNER JOIN operation_type ot ON com.id_type = ot.id
+                    WHERE ot.label = \'' . OperationType::COLLECTION_COMMISSION_LENDER . '\' AND com.id_wallet_debtor = o_collection_capital.id_wallet_creditor AND DATE(com.added) = DATE(o_collection_capital.added)
+                  ),0) +  IFNULL((
+                   SELECT SUM(com_regul.amount)
+                   FROM operation com_regul
+                     INNER JOIN operation_type ot ON com_regul.id_type = ot.id
+                   WHERE ot.label = \'' . OperationType::COLLECTION_COMMISSION_LENDER_REGULARIZATION . '\' AND com_regul.id_wallet_creditor = o_collection_capital.id_wallet_creditor AND DATE(com_regul.added) = DATE(o_collection_capital.added)
+                  ),0)
+                  ) * 100
+              ) AS amount
+            FROM operation o_collection_capital
+              INNER JOIN operation_sub_type ost ON o_collection_capital.id_sub_type = ost.id
+            WHERE ost.label = \'' . OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION . '\'
               AND (
-                o_capital.id_wallet_creditor IN (SELECT
-                                        DISTINCT(wallet.id)
-                                      FROM loans l
-                                        LEFT JOIN loan_transfer lt ON l.id_transfer = lt.id_loan_transfer
-                                        LEFT JOIN transfer ON lt.id_transfer = transfer.id_transfer
-                                        INNER JOIN wallet ON transfer.id_client_origin = wallet.id_client
-                                      WHERE l.id_lender = :idWallet)
-                OR o_capital.id_wallet_creditor = :idWallet)
-            GROUP BY IF(o_capital.id_repayment_schedule IS NOT NULL, o_capital.id_repayment_schedule, o_capital.id)
-        )';
+                o_collection_capital.id_wallet_creditor IN (
+                  SELECT
+                    DISTINCT (wallet.id)
+                  FROM loans l
+                    LEFT JOIN loan_transfer lt ON l.id_transfer = lt.id_loan_transfer
+                    LEFT JOIN transfer ON lt.id_transfer = transfer.id_transfer
+                    INNER JOIN wallet ON transfer.id_client_origin = wallet.id_client
+                  WHERE l.id_lender = :idWallet
+                )
+                OR o_collection_capital.id_wallet_creditor = :idWallet
+              )
+            GROUP BY DATE(o_collection_capital.added);
+        ';
 
         $values = $this->getEntityManager()->getConnection()->executeQuery($query, ['idWallet' => $idWallet])->fetchAll(\PDO::FETCH_ASSOC);
 
