@@ -113,21 +113,39 @@ class OperationRepository extends EntityRepository
     {
         $end->setTime(23, 59, 59);
 
+        $queryProjects = '
+                        SELECT DISTINCT (p.id_project) FROM projects p
+                        INNER JOIN projects_status_history psh ON p.id_project = psh.id_project
+                        INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                        WHERE ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
+                        AND psh.added <= :end
+                        AND p.status != ' . ProjectsStatus::DEFAUT;
+
         $query = '
-            SELECT
-              SUM(o_loan.amount) - SUM(o_repayment.amount)
-            FROM wallet_balance_history wbh
-              INNER JOIN wallet w ON wbh.id_wallet = w.id
-              LEFT JOIN operation o_loan ON wbh.id_operation = o_loan.id AND o_loan.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::LENDER_LOAN . '")
-              LEFT JOIN operation o_repayment ON wbh.id_operation = o_repayment.id AND o_repayment.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::CAPITAL_REPAYMENT . '")
-            WHERE wbh.added <= :end
-              AND wbh.id_project IN (SELECT DISTINCT (p.id_project) FROM projects p
-                                       INNER JOIN projects_status_history psh ON p.id_project = psh.id_project
-                                       INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                                     WHERE ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
-                                       AND psh.added <= :end
-                                       AND p.status != ' . ProjectsStatus::DEFAUT . ')
-              AND w.id_client = :idClient';
+            SELECT IFNULL(SUM(o_loan.amount), 0) - (
+              SELECT IFNULL(SUM(o_repayment.amount), 0)
+              FROM operation o_repayment
+              INNER JOIN operation_type ot ON ot.id = o_repayment.id_type
+              WHERE o_repayment.added <= :end
+              AND ot.label = \'' . OperationType::CAPITAL_REPAYMENT . '\'
+              AND o_repayment.id_wallet_creditor = o_loan.id_wallet_debtor
+              AND o_repayment.id_project IN (' . $queryProjects . ')
+            ) - (
+              SELECT IFNULL(SUM(o_repayment_regul.amount), 0)
+              FROM operation o_repayment_regul
+              INNER JOIN operation_type ot ON ot.id = o_repayment_regul.id_type
+              WHERE o_repayment_regul.added <= :end
+              AND ot.label = \'' . OperationType::CAPITAL_REPAYMENT_REGULARIZATION . '\'
+              AND o_repayment_regul.id_wallet_debtor = o_loan.id_wallet_debtor
+              AND o_repayment_regul.id_project IN (' . $queryProjects . ')
+            )
+            FROM operation o_loan
+            INNER JOIN wallet w ON w.id = o_loan.id_wallet_debtor
+            INNER JOIN operation_type ot ON ot.id = o_loan.id_type
+            WHERE o_loan.added <= :end
+            AND ot.label = \'' . OperationType::LENDER_LOAN . '\'
+            AND o_loan.id_project  IN (' . $queryProjects . ')
+            AND w.id_client = :idClient';
 
         $statement = $this->getEntityManager()->getConnection()->executeQuery($query, ['end' => $end->format('Y-m-d H:i:s'), 'idClient' => $idClient]);
 
