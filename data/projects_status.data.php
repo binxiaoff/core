@@ -67,45 +67,6 @@ class projects_status extends projects_status_crud
         ProjectsStatus::DEFAUT
     ];
 
-    /**
-     * List of project status when project should be assigned to a commercial
-     * @var array
-     */
-    public static $saleTeam = [
-        ProjectsStatus::POSTPONED,
-        ProjectsStatus::COMMERCIAL_REVIEW,
-        ProjectsStatus::PENDING_ANALYSIS,
-        ProjectsStatus::ANALYSIS_REVIEW,
-        ProjectsStatus::COMITY_REVIEW,
-        ProjectsStatus::SUSPENSIVE_CONDITIONS,
-        ProjectsStatus::PREP_FUNDING,
-        ProjectsStatus::A_FUNDER,
-        ProjectsStatus::AUTO_BID_PLACED,
-        ProjectsStatus::EN_FUNDING,
-        ProjectsStatus::BID_TERMINATED,
-        ProjectsStatus::FUNDE
-    ];
-
-    /**
-     * List of project status when project is considered as part of the commercial team pipe
-     * @var array
-     */
-    public static $upcomingSaleTeam = [
-        ProjectsStatus::INCOMPLETE_REQUEST,
-        ProjectsStatus::COMPLETE_REQUEST
-    ];
-
-    /**
-     * List of project status when project is considered as part of the risk team pipe
-     * @var array
-     */
-    public static $riskTeam = [
-        ProjectsStatus::PENDING_ANALYSIS,
-        ProjectsStatus::ANALYSIS_REVIEW,
-        ProjectsStatus::COMITY_REVIEW,
-        ProjectsStatus::SUSPENSIVE_CONDITIONS
-    ];
-
     public function __construct($bdd, $params = '')
     {
         parent::projects_status($bdd, $params);
