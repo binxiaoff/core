@@ -60,21 +60,6 @@ class ClientValidator
             $violations[] = ProductAttributeType::ELIGIBLE_CLIENT_TYPE;
         }
 
-        $hasEligibleContract = false;
-        $violationsContract  = [];
-        foreach ($product->getIdContract() as $contract) {
-            $contractCheckResult = $this->contractManager->checkClientEligibility($client, $contract);
-            if (0 < count($contractCheckResult)) {
-                $violationsContract = array_merge($violationsContract, $contractCheckResult);
-            } else {
-                $hasEligibleContract = true;
-            }
-        }
-
-        if (false === $hasEligibleContract) {
-            $violations = array_merge($violations, $violationsContract);
-        }
-
         return $violations;
     }
 }
