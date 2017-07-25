@@ -98,33 +98,6 @@ class ProjectsStatus
         ProjectsStatus::DEFAUT
     ];
 
-    const SALE_TEAM = [
-        ProjectsStatus::POSTPONED,
-        ProjectsStatus::COMMERCIAL_REVIEW,
-        ProjectsStatus::PENDING_ANALYSIS,
-        ProjectsStatus::ANALYSIS_REVIEW,
-        ProjectsStatus::COMITY_REVIEW,
-        ProjectsStatus::SUSPENSIVE_CONDITIONS,
-        ProjectsStatus::PREP_FUNDING,
-        ProjectsStatus::A_FUNDER,
-        ProjectsStatus::AUTO_BID_PLACED,
-        ProjectsStatus::EN_FUNDING,
-        ProjectsStatus::BID_TERMINATED,
-        ProjectsStatus::FUNDE
-    ];
-
-    const UPCOMING_SALE_TEAM = [
-        ProjectsStatus::INCOMPLETE_REQUEST,
-        ProjectsStatus::COMPLETE_REQUEST
-    ];
-
-    const RISK_TEAM = [
-        ProjectsStatus::PENDING_ANALYSIS,
-        ProjectsStatus::ANALYSIS_REVIEW,
-        ProjectsStatus::COMITY_REVIEW,
-        ProjectsStatus::SUSPENSIVE_CONDITIONS
-    ];
-
     /**
      * List of project status when project should be assigned to a commercial
      * @var array
