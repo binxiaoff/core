@@ -45,11 +45,14 @@ class DevActivateOrEndEulerGradeMonitoringCommand extends ContainerAwareCommand
         }
 
         $riskDataMonitoringManager = $this->getContainer()->get('unilend.service.risk_data_monitoring_manager');
-        $eulerHermesManager = $this->getContainer()->get('unilend.service.ws_client.euler_manager');
+        $eulerHermesManager        = $this->getContainer()->get('unilend.service.ws_client.euler_manager');
 
         if ('start' === $action) {
-            $eulerHermesManager->startLongTermMonitoring($siren, 'fr');
-            $riskDataMonitoringManager->startMonitoringPeriod($siren, CompanyRating::TYPE_EULER_HERMES_GRADE);
+            if ($eulerHermesManager->startLongTermMonitoring($siren, 'fr')) {
+                $riskDataMonitoringManager->startMonitoringPeriod($siren, CompanyRating::TYPE_EULER_HERMES_GRADE);
+            } else {
+                $output->writeln('Start LT monitoring failed for  ' . $siren);
+            }
         } else {
             $riskDataMonitoringManager->stopMonitoringForSiren($siren);
         }

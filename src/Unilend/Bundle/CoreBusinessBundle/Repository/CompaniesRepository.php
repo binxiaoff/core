@@ -31,9 +31,9 @@ class CompaniesRepository extends EntityRepository
     }
 
     /**
-     * @param string $siren
-     * @param string $ratingType
-     * @param bool   $ongoing
+     * @param string      $siren
+     * @param string|null $ratingType
+     * @param bool        $ongoing
      *
      * @return array
      */
