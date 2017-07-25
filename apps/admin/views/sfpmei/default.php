@@ -5,6 +5,8 @@
             <li><a href="<?= $this->lurl ?>/sfpmei/preteurs">Prêteurs</a></li>
             <li><a href="<?= $this->lurl ?>/sfpmei/emprunteurs">Emprunteurs</a></li>
             <li><a href="<?= $this->lurl ?>/sfpmei/projets">Projets</a></li>
+            <li><a href="<?= $this->lurl ?>/sfpmei/transferts/preteurs">Transferts de fonds prêteurs</a></li>
+            <li><a href="<?= $this->lurl ?>/sfpmei/transferts/emprunteurs">Transferts de fonds emprunteurs</a></li>
         </ul>
     </div>
 </div>

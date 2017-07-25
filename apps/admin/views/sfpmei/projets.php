@@ -69,7 +69,7 @@
                             <td><?= (in_array($project['period'], [0, 1000000]) ? '' : $project['period'] . ' mois') ?></td>
                             <td><?= $project['label'] ?></td>
                             <td align="center">
-                                <a href="<?= $this->lurl ?>/projet/<?= $project['id_project'] ?>">
+                                <a href="<?= $this->lurl ?>/sfpmei/projet/<?= $project['id_project'] ?>">
                                     <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Voir la fiche du projet">
                                 </a>
                             </td>

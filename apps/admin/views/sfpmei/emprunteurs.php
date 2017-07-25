@@ -71,7 +71,7 @@
                             <td><?= $borrower['email'] ?></td>
                             <td><?= empty($borrower['total_amount']) ? '' : $this->ficelle->formatNumber($borrower['total_amount'], 0) . ' €' ?></td>
                             <td align="center">
-                                <a href="<?= $this->lurl ?>/emprunteur/<?= $borrower['id_client'] ?>">
+                                <a href="<?= $this->lurl ?>/sfpmei/emprunteur/<?= $borrower['id_client'] ?>">
                                     <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Voir la fiche de l'emprunteur">
                                 </a>
                             </td>

@@ -9,6 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 
 class sfpmeiController extends bootstrap
 {
@@ -39,27 +40,27 @@ class sfpmeiController extends bootstrap
     {
         if (false === empty($_POST)) {
             if (empty($_POST['id']) && empty($_POST['email']) && empty($_POST['lastname']) && empty($_POST['company'])) {
-                $_SESSION['error_search'][]  = 'Veuillez remplir au moins un champ';
+                $_SESSION['error_search'][] = 'Veuillez remplir au moins un champ';
             }
 
             $clientId = empty($_POST['id']) ? '' : filter_var($_POST['id'], FILTER_SANITIZE_NUMBER_INT);
             if (false === $clientId) {
-                $_SESSION['error_search'][]  = 'L\'ID du client doit être un nombre';
+                $_SESSION['error_search'][] = 'L\'ID du client doit être un nombre';
             }
 
             $email = empty($_POST['email']) ? '' : filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
             if (false === $email) {
-                $_SESSION['error_search'][]  = 'Le format de l\'email n\'est pas valide';
+                $_SESSION['error_search'][] = 'Le format de l\'email n\'est pas valide';
             }
 
             $lastName = empty($_POST['lastname']) ? '' : filter_var($_POST['lastname'], FILTER_SANITIZE_STRING);
             if (false === $lastName) {
-                $_SESSION['error_search'][]  = 'Le format du nom n\'est pas valide';
+                $_SESSION['error_search'][] = 'Le format du nom n\'est pas valide';
             }
 
             $companyName = empty($_POST['company']) ? '' : filter_var($_POST['company'], FILTER_SANITIZE_STRING);
             if (false === $companyName) {
-                $_SESSION['error_search'][]  = 'Le format de la raison sociale n\'est pas valide';
+                $_SESSION['error_search'][] = 'Le format de la raison sociale n\'est pas valide';
             }
 
             if (false === empty($_SESSION['error_search'])) {
@@ -85,27 +86,27 @@ class sfpmeiController extends bootstrap
     {
         if (false === empty($_POST)) {
             if (empty($_POST['siren']) && empty($_POST['company']) && empty($_POST['lastname']) && empty($_POST['email'])) {
-                $_SESSION['error_search'][]  = 'Veuillez remplir au moins un champ';
+                $_SESSION['error_search'][] = 'Veuillez remplir au moins un champ';
             }
 
             $siren = empty($_POST['siren']) ? '' : filter_var(str_replace(' ', '', $_POST['siren']), FILTER_SANITIZE_STRING);
             if (false === $siren) {
-                $_SESSION['error_search'][]  = 'L\'ID du client doit être un nombre';
+                $_SESSION['error_search'][] = 'L\'ID du client doit être un nombre';
             }
 
             $companyName = empty($_POST['company']) ? '' : filter_var($_POST['company'], FILTER_SANITIZE_STRING);
             if (false === $companyName) {
-                $_SESSION['error_search'][]  = 'Le format de la raison sociale n\'est pas valide';
+                $_SESSION['error_search'][] = 'Le format de la raison sociale n\'est pas valide';
             }
 
             $lastName = empty($_POST['lastname']) ? '' : filter_var($_POST['lastname'], FILTER_SANITIZE_STRING);
             if (false === $lastName) {
-                $_SESSION['error_search'][]  = 'Le format du nom n\'est pas valide';
+                $_SESSION['error_search'][] = 'Le format du nom n\'est pas valide';
             }
 
             $email = empty($_POST['email']) ? '' : filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
             if (false === $email) {
-                $_SESSION['error_search'][]  = 'Le format de l\'email n\'est pas valide';
+                $_SESSION['error_search'][] = 'Le format de l\'email n\'est pas valide';
             }
 
             if (false === empty($_SESSION['error_search'])) {
@@ -135,22 +136,22 @@ class sfpmeiController extends bootstrap
     {
         if (false === empty($_POST)) {
             if (empty($_POST['id']) && empty($_POST['siren']) && empty($_POST['company'])) {
-                $_SESSION['error_search'][]  = 'Veuillez remplir au moins un champ';
+                $_SESSION['error_search'][] = 'Veuillez remplir au moins un champ';
             }
 
             $projectId = empty($_POST['id']) ? '' : filter_var($_POST['id'], FILTER_SANITIZE_NUMBER_INT);
             if (false === $projectId) {
-                $_SESSION['error_search'][]  = 'L\'ID du client doit être un nombre';
+                $_SESSION['error_search'][] = 'L\'ID du client doit être un nombre';
             }
 
             $siren = empty($_POST['siren']) ? '' : filter_var(str_replace(' ', '', $_POST['siren']), FILTER_SANITIZE_STRING);
             if (false === $siren) {
-                $_SESSION['error_search'][]  = 'L\'ID du client doit être un nombre';
+                $_SESSION['error_search'][] = 'L\'ID du client doit être un nombre';
             }
 
             $companyName = empty($_POST['company']) ? '' : filter_var($_POST['company'], FILTER_SANITIZE_STRING);
             if (false === $companyName) {
-                $_SESSION['error_search'][]  = 'Le format de la raison sociale n\'est pas valide';
+                $_SESSION['error_search'][] = 'Le format de la raison sociale n\'est pas valide';
             }
 
             if (false === empty($_SESSION['error_search'])) {
@@ -205,8 +206,8 @@ class sfpmeiController extends bootstrap
                 $this->hideDecoration();
                 $this->setView('preteur/mouvements');
 
-                $this->startDate        = new \DateTime('first day of january this year');
-                $this->endDate          = new \DateTime('now');
+                $this->startDate = new \DateTime('first day of january this year');
+                $this->endDate   = new \DateTime('now');
 
                 if (isset($this->params[2]) && 'ajax' === $this->params[2]) {
                     $this->setView('preteur/mouvements_table');
@@ -286,13 +287,13 @@ class sfpmeiController extends bootstrap
                 /** @var \lender_tax_exemption $lenderTaxExemption */
                 $lenderTaxExemption = $this->loadData('lender_tax_exemption');
 
-                $this->lenderStatusMessage            = $this->getLenderStatusMessage();
-                $this->cipEnabled                     = $this->get('unilend.service.cip_manager')->hasValidEvaluation($this->wallet->getIdClient());
-                $this->birthCountry                   = empty($this->clients->id_pays_naissance) ? '' : $paysV2Repository->find($this->clients->id_pays_naissance)->getFr();
-                $this->exemptionYears                 = array_column($lenderTaxExemption->getLenderExemptionHistory($this->wallet->getId()), 'year');
-                $this->availableBalance               = $this->wallet->getAvailableBalance();
-                $this->firstDepositAmount             = null === $firstProvision ? 0 : $firstProvision->getAmount();
-                $this->totalDepositsAmount            = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumCreditOperationsByTypeAndYear($this->wallet, [OperationType::LENDER_PROVISION]);;
+                $this->lenderStatusMessage = $this->getLenderStatusMessage();
+                $this->cipEnabled          = $this->get('unilend.service.cip_manager')->hasValidEvaluation($this->wallet->getIdClient());
+                $this->birthCountry        = empty($this->clients->id_pays_naissance) ? '' : $paysV2Repository->find($this->clients->id_pays_naissance)->getFr();
+                $this->exemptionYears      = array_column($lenderTaxExemption->getLenderExemptionHistory($this->wallet->getId()), 'year');
+                $this->availableBalance    = $this->wallet->getAvailableBalance();
+                $this->firstDepositAmount  = null === $firstProvision ? 0 : $firstProvision->getAmount();
+                $this->totalDepositsAmount = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumCreditOperationsByTypeAndYear($this->wallet, [OperationType::LENDER_PROVISION]);;
                 $this->totalWithdrawsAmount           = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumDebitOperationsByTypeAndYear($this->wallet, [OperationType::LENDER_WITHDRAW]);
                 $this->totalRepaymentsAmount          = $this->echeanciers->getRepaidAmount(['id_lender' => $this->wallet->getId()]);
                 $this->totalGrowthInterestsAmount     = $this->echeanciers->getRepaidInterests(['id_lender' => $this->wallet->getId()]);
@@ -354,6 +355,447 @@ class sfpmeiController extends bootstrap
         }
     }
 
+    public function _emprunteur()
+    {
+        $this->clients = $this->loadData('clients');
+        /** @var clients_adresses $clientAddress */
+        $clientAddress          = $this->loadData('clients_adresses');
+        $this->companies        = $this->loadData('companies');
+        $this->projects         = $this->loadData('projects');
+        $this->projects_status  = $this->loadData('projects_status');
+        $this->clients_mandats  = $this->loadData('clients_mandats');
+        $this->projects_pouvoir = $this->loadData('projects_pouvoir');
+        /** @var \company_sector $companySector */
+        $companySector = $this->loadData('company_sector');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2 $paysV2Repository */
+        $paysV2Repository = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2');
+
+        /** @var \Symfony\Component\Translation\TranslatorInterface translator */
+        $this->translator = $this->get('translator');
+        $this->sectors    = $companySector->select();
+
+        if (
+            false === empty($this->params[0]) &&
+            $this->clients->get($this->params[0], 'id_client') &&
+            $this->clients->isBorrower()
+        ) {
+            $action = isset($this->params[1]) ? $this->params[1] : 'default';
+
+            switch ($action) {
+                case 'factures':
+                    $this->hideDecoration();
+                    $this->setView('emprunteur/factures');
+
+                    if (false === empty($this->params[2])) {
+                        $this->factures($this->params[2]);
+                    }
+                    break;
+                default :
+                    $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
+                    $clientAddress->get($this->clients->id_client, 'id_client');
+                    $this->clientAddress = '';
+
+                    if (false === empty($clientAddress->adresse1)) {
+                        $this->clientAddress .= $clientAddress->adresse1;
+                    }
+                    if (false === empty($clientAddress->cp)) {
+                        $this->clientAddress .= '<br>' . $clientAddress->cp;
+                    }
+                    if (false === empty($clientAddress->ville)) {
+                        $this->clientAddress .= ' ' . $clientAddress->adresse1;
+                    }
+                    if (false === empty($clientAddress->id_pays)) {
+                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2 $country */
+                        $country             = $paysV2Repository->find($this->clientAddress->id_pays);
+                        $this->clientAddress .= empty($country) ? '' : '<br>' . $country->getFr();
+                    }
+                    $this->companies->get($this->clients->id_client, 'id_client_owner');
+
+                    $this->projects = $this->projects->select('id_company = "' . $this->companies->id_company . '"');
+
+                    if ($this->clients->telephone != '') {
+                        $this->clients->telephone = trim(chunk_split($this->clients->telephone, 2, ' '));
+                    }
+
+                    $this->currentBankAccount   = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
+                    $this->bankAccountDocuments = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findBy([
+                        'idClient' => $client,
+                        'idType'   => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::RIB
+                    ]);
+                    $this->aMoneyOrders         = $this->clients_mandats->getMoneyOrderHistory($this->companies->id_company);
+                    break;
+            }
+        } else {
+            header('Location: ' . $this->lurl . '/sfpmei/emprunteurs');
+            die;
+        }
+    }
+
+    public function _transferts()
+    {
+        $this->statusOperations = array(
+            0 => 'Reçu',
+            1 => 'Manu',
+            2 => 'Auto',
+            3 => 'Rejeté',
+            4 => 'Rejet'
+        );
+
+        if (empty($this->params[0])) {
+            header('Location: ' . $this->lurl . '/sfpmei/default');
+            die;
+        }
+        $this->type = $this->params[0];
+        switch ($this->params[0]) {
+            case 'preteurs':
+                $method = 'getLenderAttributions';
+                $this->setView('transferts/preteurs');
+                break;
+            case 'emprunteurs':
+                $method = 'getBorrowerAttributions';
+                $this->setView('transferts/preteurs');
+                break;
+            default:
+                header('Location: ' . $this->lurl . '/sfpmei/default');
+                die;
+        }
+        $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->{$method}();
+
+        if (isset($this->params[1]) && 'csv' === $this->params[1]) {
+            $this->hideDecoration();
+            $this->autoFireView = false;
+
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment;filename=export.csv');
+            header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+            header('Expires: 0');
+
+            PHPExcel_Settings::setCacheStorageMethod(
+                PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
+                array('memoryCacheSize' => '2048MB', 'cacheTime' => 1200)
+            );
+
+            /** @var \PHPExcel_Writer_CSV $writer */
+            $writer = PHPExcel_IOFactory::createWriter($this->operationsCsv(), 'CSV');
+            $writer->setDelimiter(';');
+            $writer->save('php://output');
+        }
+    }
+
+    public function _projet()
+    {
+        $this->projects                = $this->loadData('projects');
+        $this->projects_status         = $this->loadData('projects_status');
+        $this->projects_status_history = $this->loadData('projects_status_history');
+        $this->projects_notes          = $this->loadData('projects_notes');
+        $this->project_cgv             = $this->loadData('project_cgv');
+        $this->companies               = $this->loadData('companies');
+        $this->targetCompany           = $this->loadData('companies');
+        $this->companies_actif_passif  = $this->loadData('companies_actif_passif');
+        $this->companies_bilans        = $this->loadData('companies_bilans');
+        $this->clients                 = $this->loadData('clients');
+        $this->clients_adresses        = $this->loadData('clients_adresses');
+        $this->projects_pouvoir        = $this->loadData('projects_pouvoir');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
+        $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var TranslatorInterface translator */
+        $this->translator = $this->get('translator');
+
+        if (
+            isset($this->params[0]) &&
+            $this->projects->get($this->params[0], 'id_project')
+        ) {
+            $this->projectEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
+
+            $this->companies->get($this->projects->id_company, 'id_company');
+            $this->clients->get($this->companies->id_client_owner, 'id_client');
+            $this->clients_adresses->get($this->companies->id_client_owner, 'id_client');
+            $this->projects_notes->get($this->projects->id_project, 'id_project');
+            $this->project_cgv->get($this->projects->id_project, 'id_project');
+
+            $this->projects_status->get($this->projects->status, 'status');
+            $this->projects_status_history->loadLastProjectHistory($this->projects->id_project);
+
+            $this->aAnnualAccountsDates = array();
+
+            if (empty($this->projects->id_dernier_bilan)) {
+                $this->lbilans = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC', 0, 3);
+            } else {
+                $this->lbilans = $this->companies_bilans->select('id_company = ' . $this->companies->id_company . ' AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $this->projects->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
+            }
+
+            if (empty($this->lbilans)) {
+                $this->lCompanies_actif_passif = array();
+                $this->aBalanceSheets          = array();
+            } else {
+                $aAnnualAccountsIds            = array_column($this->lbilans, 'id_bilan');
+                $sAnnualAccountsIds            = implode(', ', $aAnnualAccountsIds);
+                $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC');
+                $this->aBalanceSheets          = $companyBalanceSheetManager->getBalanceSheetsByAnnualAccount($aAnnualAccountsIds);
+                foreach ($aAnnualAccountsIds as $balanceId) {
+                    $this->companies_bilans->get($balanceId);
+                    $this->incomeStatements[$balanceId] = $companyBalanceSheetManager->getIncomeStatement($this->companies_bilans, true);
+                }
+                if (count($this->lCompanies_actif_passif) < count($this->lbilans)) {
+                    $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC');
+                }
+
+                foreach ($this->lbilans as $aAnnualAccounts) {
+                    $oEndDate   = new \DateTime($aAnnualAccounts['cloture_exercice_fiscal']);
+                    $oStartDate = new \DateTime($aAnnualAccounts['cloture_exercice_fiscal']);
+                    $oStartDate->sub(new \DateInterval('P' . $aAnnualAccounts['duree_exercice_fiscal'] . 'M'))->add(new \DateInterval('P1D'));
+                    $this->aAnnualAccountsDates[$aAnnualAccounts['id_bilan']] = array(
+                        'start' => $oStartDate,
+                        'end'   => $oEndDate
+                    );
+                }
+            }
+
+            /** @var \project_need $projectNeed */
+            $projectNeed      = $this->loadData('project_need');
+            $needs            = $projectNeed->getTree();
+            $this->needs      = $needs;
+            $this->isTakeover = $this->isTakeover();
+            $this->xerfi      = $this->loadData('xerfi');
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
+            $attachmentManager = $this->get('unilend.service.attachment_manager');
+
+            $this->aAttachments                   = $this->projectEntity->getAttachments();
+            $this->aAttachmentTypes               = $attachmentManager->getAllTypesForProjects();
+            $this->attachmentTypesForCompleteness = $attachmentManager->getAllTypesForProjects(false);
+            $this->lastBalanceSheet               = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneBy([
+                'idClient' => $this->projectEntity->getIdCompany()->getIdClientOwner(),
+                'idType'   => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DERNIERE_LIASSE_FISCAL
+            ]);
+
+            if ($this->isTakeover) {
+                $this->loadTargetCompany();
+            }
+            $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Tree');
+        } else {
+            header('Location: ' . $this->lurl . '/sfpmei');
+            die;
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    private function isTakeover()
+    {
+        if (false === empty($this->needs)) {
+            $needs = $this->needs;
+        } else {
+            /** @var \project_need $projectNeed */
+            $projectNeed = $this->loadData('project_need');
+            $needs       = $projectNeed->getTree();
+        }
+
+        return in_array(
+            $this->projects->id_project_need,
+            array_column($needs[\project_need::PARENT_TYPE_TRANSACTION]['children'], 'id_project_need')
+        );
+    }
+
+    /**
+     * @param \companies  $company
+     * @param int|null    $companyRatingHistoryId
+     * @param \xerfi|null $xerfi
+     * @return array
+     */
+    private function loadRatings(\companies &$company, $companyRatingHistoryId = null, \xerfi &$xerfi = null)
+    {
+        $return = [];
+
+        if (null === $companyRatingHistoryId) {
+            /** @var \company_rating_history $companyRatingHistory */
+            $companyRatingHistory = $this->loadData('company_rating_history');
+            $companyRatingHistory = $companyRatingHistory->select('id_company = ' . $company->id_company, 'added DESC', 0, 1);
+
+            if (isset($companyRatingHistory[0]['id_company_rating_history'])) {
+                $companyRatingHistoryId = $companyRatingHistory[0]['id_company_rating_history'];
+            }
+        }
+
+        if (null === $xerfi) {
+            /** @var \xerfi $xerfi */
+            $xerfi = $this->loadData('xerfi');
+        }
+
+        if (false === empty($company->code_naf)) {
+            $xerfi->get($company->code_naf, 'naf');
+        }
+
+        if (false === empty($companyRatingHistoryId)) {
+            $return['id_company_rating_history'] = $companyRatingHistoryId;
+
+            /** @var \company_rating $companyRating */
+            $companyRating = $this->loadData('company_rating');
+            $ratings       = $companyRating->getHistoryRatingsByType($companyRatingHistoryId, true);
+
+            if (
+                (false === isset($ratings['xerfi']) || false === isset($ratings['xerfi_unilend']))
+                && false === empty($company->code_naf)
+            ) {
+                if (empty($xerfi->naf)) {
+                    $xerfiScore   = 'N/A';
+                    $xerfiUnilend = 'PAS DE DONNEES';
+                } elseif ('' === $xerfi->score) {
+                    $xerfiScore   = 'N/A';
+                    $xerfiUnilend = $xerfi->unilend_rating;
+                } else {
+                    $xerfiScore   = $xerfi->score;
+                    $xerfiUnilend = $xerfi->unilend_rating;
+                }
+
+                if (false === isset($ratings['xerfi'])) {
+                    $companyRating->id_company_rating_history = $companyRatingHistoryId;
+                    $companyRating->type                      = 'xerfi';
+                    $companyRating->value                     = $xerfiScore;
+                    $companyRating->create();
+                }
+
+                if (false === isset($ratings['xerfi_unilend'])) {
+                    $companyRating->id_company_rating_history = $companyRatingHistoryId;
+                    $companyRating->type                      = 'xerfi_unilend';
+                    $companyRating->value                     = $xerfiUnilend;
+                    $companyRating->create();
+                }
+
+                $ratings = $companyRating->getHistoryRatingsByType($companyRatingHistoryId, true);
+            }
+
+            foreach ($ratings as $ratingType => $rating) {
+                switch ($rating['action']) {
+                    case \company_rating_history::ACTION_WS:
+                        $action = 'Webservice';
+                        $user   = '';
+                        break;
+                    case \company_rating_history::ACTION_XERFI:
+                        $action = 'Automatique';
+                        $user   = '';
+                        break;
+                    case \company_rating_history::ACTION_USER:
+                    default:
+                        $action = 'Manuel';
+                        $user   = $rating['user'];
+                        break;
+                }
+
+                $return[$ratingType] = [
+                    'value'  => $rating['value'],
+                    'date'   => $rating['added']->format('d/m/Y H:i'),
+                    'action' => $action,
+                    'user'   => $user
+                ];
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+     * @return bool
+     */
+    private function loadTargetCompany()
+    {
+        if (empty($this->projects->id_target_company) || false === $this->targetCompany->get($this->projects->id_target_company)) {
+            return false;
+        }
+
+        $this->targetRatings = $this->loadRatings($this->targetCompany);
+
+        return true;
+    }
+
+    /**
+     * @return PHPExcel
+     */
+    private function operationsCsv()
+    {
+        $document    = new PHPExcel();
+        $activeSheet = $document->setActiveSheetIndex(0);
+        $activeSheet->setCellValueByColumnAndRow(0, 1, 'ID');
+        $activeSheet->setCellValueByColumnAndRow(1, 1, 'Motif');
+        $activeSheet->setCellValueByColumnAndRow(2, 1, 'Montant');
+        $activeSheet->setCellValueByColumnAndRow(3, 1, 'Attribution');
+        $activeSheet->setCellValueByColumnAndRow(5, 1, 'Date');
+
+        foreach ($this->receptions as $index => $reception) {
+            $colIndex = 0;
+            $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getIdReception());
+            $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getMotif());
+            $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, str_replace('.', ',', bcdiv($reception->getMontant(), 100, 2)));
+
+            if (1 == $reception->getStatusBo() && $reception->getIdUser()) {
+                $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getIdUser()->getFirstname() . ' ' . $reception->getIdUser()->getName() . ' - ' . $reception->getAssignmentDate()->format('d/m/Y à H:i:s'));
+            } else {
+                $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $this->statusOperations[$reception->getStatusBo()]);
+            }
+
+            if (null === $reception->getIdProject()) {
+                $activeSheet->setCellValueByColumnAndRow(4, 1, 'ID client');
+                $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getIdClient()->getIdClient());
+            } else {
+                $activeSheet->setCellValueByColumnAndRow(4, 1, 'ID projet');
+                $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getIdProject()->getIdProject());
+            }
+
+            $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getAdded()->format('d/m/Y'));
+        }
+        return $document;
+    }
+
+    /**
+     * @param int $projectId
+     */
+    private function factures($projectId)
+    {
+        $this->hideDecoration();
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $clientRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $invoiceRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Factures');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $project */
+        $project = $projectRepository->find($projectId);
+
+        $this->projectInvoices = [];
+
+        if (false === empty($project)) {
+            $invoiceList = $invoiceRepository->findBy(['idProject' => $project->getIdProject()], ['date' => 'DESC']);
+
+            /** @var Clients $client */
+            $client = $clientRepository->find($project->getIdCompany()->getIdClientOwner());
+
+            foreach ($invoiceList as $invoice) {
+                $projectInvoice['num_facture']     = $invoice->getNumFacture();
+                $projectInvoice['date']            = $invoice->getDate()->format('d/m/Y');
+                $projectInvoice['montant_ht']      = $invoice->getMontantHt();
+                $projectInvoice['montant_ttc']     = $invoice->getMontantTtc();
+                $projectInvoice['type_commission'] = $invoice->getTypeCommission();
+
+                switch ($invoice->getTypeCommission()) {
+                    case \Unilend\Bundle\CoreBusinessBundle\Entity\Factures::TYPE_COMMISSION_FUNDS:
+                        $projectInvoice['url'] = $this->furl . '/pdf/facture_EF/' . $client->getHash() . '/' . $invoice->getIdProject()->getIdProject();
+                        break;
+                    case \Unilend\Bundle\CoreBusinessBundle\Entity\Factures::TYPE_COMMISSION_REPAYMENT:
+                        $projectInvoice['url'] = $this->furl . '/pdf/facture_ER/' . $client->getHash() . '/' . $invoice->getIdProject()->getIdProject() . '/' . $invoice->getOrdre();
+                        break;
+                    default :
+                        trigger_error('Commission type for invoice unknown', E_USER_NOTICE);
+                        break;
+                }
+                $this->projectInvoices[] = $projectInvoice;
+            }
+        }
+    }
+
     /**
      * @return string
      */
@@ -367,7 +809,7 @@ class sfpmeiController extends bootstrap
 
         switch ($currentStatus) {
             case \clients_status::TO_BE_CHECKED:
-                $clientStatusMessage = '<div class="attention">Attention : compte non validé - créé le '. date('d/m/Y', $creationTime) . '</div>';
+                $clientStatusMessage = '<div class="attention">Attention : compte non validé - créé le ' . date('d/m/Y', $creationTime) . '</div>';
                 break;
             case \clients_status::COMPLETENESS:
             case \clients_status::COMPLETENESS_REMINDER:
@@ -410,7 +852,7 @@ class sfpmeiController extends bootstrap
                 'status'  => VigilanceRule::VIGILANCE_STATUS_LOW,
                 'message' => 'Vigilance standard'
             ];
-            $this->userEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+            $this->userEntity      = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
             return;
         }
 
