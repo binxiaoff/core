@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * DetailedDailyStateBalanceHistory
  *
  * @ORM\Table(name="detailed_daily_state_balance_history", indexes={@ORM\Index(name="idx_date", columns={"date"})})
+ * @ORM\HasLifecycleCallbacks()
  * @ORM\Entity
  */
 class DetailedDailyStateBalanceHistory
