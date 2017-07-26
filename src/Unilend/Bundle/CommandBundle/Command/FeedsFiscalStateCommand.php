@@ -1,7 +1,7 @@
 <?php
+
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Doctrine\ORM\EntityManager;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -11,7 +11,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\core\Loader;
 
@@ -32,16 +31,17 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
-        /** @var EntityManagerSimulator $entityManangerSimulator */
-        $entityManangerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
-        /** @var \tax_type $taxType */
-        $taxType = $entityManangerSimulator->getRepository('tax_type');
+        $numberFormatter = $this->getContainer()->get('number_formatter');
+        $entityManager   = $this->getContainer()->get('doctrine.orm.entity_manager');
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
-        $taxRate             = $taxType->getTaxRateByCountry('fr', [TaxType::TYPE_VAT]);
+        /** @var TaxType[] $frenchTaxes */
+        $frenchTaxes = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->findBy(['country' => 'fr']);
+        $taxRate     = [];
+        foreach ($frenchTaxes as $tax) {
+            $taxRate[$tax->getIdTaxType()] = $numberFormatter->format($tax->getRate());
+        }
         $firstDayOfLastMonth = new \DateTime('first day of last month');
         $lastDayOfLastMonth  = new \DateTime('last day of last month');
         $data                = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getInterestAndTaxForFiscalState($firstDayOfLastMonth, $lastDayOfLastMonth);
@@ -64,15 +64,15 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                 if ('person' == $row['client_type'] && 'fr' == $row['fiscal_residence'] && 'taxable' == $row['exemption_status']) {
                     switch ($contract->getLabel()) {
                         case \underlying_contract::CONTRACT_BDC:
-                            $interestsBDC = $row['interests'];
+                            $interestsBDC              = $row['interests'];
                             $statutoryContributionsBDC = $row[OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES];
                             break;
                         case \underlying_contract::CONTRACT_IFP:
-                            $interestsIFP = $row['interests'];
+                            $interestsIFP              = $row['interests'];
                             $statutoryContributionsIFP = $row[OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES];
                             break;
                         case \underlying_contract::CONTRACT_MINIBON:
-                            $interestsMiniBon = $row['interests'];
+                            $interestsMiniBon              = $row['interests'];
                             $statutoryContributionsMiniBon = $row[OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES];
                             break;
                     }
@@ -134,19 +134,19 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                         <th style="background-color:#E6F4DA;">Soumis au pr&eacute;l&egrave;vements (bons de caisse)</th> <!-- Somme des interets bruts pour : Personne physique, résident français, non exonéré, type loan : 1-->
                         <td class="right">' . $ficelle->formatNumber($interestsBDC) . '</td>
                         <td class="right">' . $ficelle->formatNumber($statutoryContributionsBDC) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $ficelle->formatNumber($taxRate[TaxType::TYPE_STATUTORY_CONTRIBUTIONS]) . '%</td>
+                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_STATUTORY_CONTRIBUTIONS] . '%</td>
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">Soumis au pr&eacute;l&egrave;vements (pr&ecirc;t IFP)</th> <!-- Somme des interets bruts pour : Personne physique, résident français, non exonéré, type loan : 2-->
                         <td class="right">' . $ficelle->formatNumber($interestsIFP) . '</td>
                         <td class="right">' . $ficelle->formatNumber($statutoryContributionsIFP) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $ficelle->formatNumber($taxRate[TaxType::TYPE_STATUTORY_CONTRIBUTIONS]) . '%</td>
+                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_STATUTORY_CONTRIBUTIONS] . '%</td>
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">Soumis au pr&eacute;l&egrave;vements (minibons)</th> <!-- Somme des interets bruts pour : Personne physique, résident français, non exonéré, type loan : minibons-->
                         <td class="right">' . $ficelle->formatNumber($interestsMiniBon) . '</td>
                         <td class="right">' . $ficelle->formatNumber($statutoryContributionsMiniBon) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $ficelle->formatNumber($taxRate[TaxType::TYPE_STATUTORY_CONTRIBUTIONS]) . '%</td>
+                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_STATUTORY_CONTRIBUTIONS] . '%</td>
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">Dispens&eacute;</th> <!-- Somme des interets bruts pour : Personne physique, résident français, exonéré, type loan : 1-->
@@ -158,7 +158,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                         <th style="background-color:#E6F4DA;">Total</th>
                         <td class="right">' . $ficelle->formatNumber($totalInterest) . '</td>
                         <td class="right">' . $ficelle->formatNumber($statutoryContributions) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $ficelle->formatNumber($taxRate[TaxType::TYPE_STATUTORY_CONTRIBUTIONS]) . '%</td>
+                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_STATUTORY_CONTRIBUTIONS] . '%</td>
                     </tr>
                     <tr>
                         <th style="background-color:#ECAEAE;" colspan="4">Retenue &agrave; la source (bons de caisse et minibons)</th>
@@ -173,7 +173,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                         <th style="background-color:#E6F4DA;">Soumis &agrave; la retenue &agrave; la source</th> <!-- Somme des interets bruts pour : Personne morale résident français ou personne physique non résdent français, type loan : 2-->
                         <td class="right">' . $ficelle->formatNumber($deductionAtSourceInterests) . '</td>
                         <td class="right">' . $ficelle->formatNumber($deductionAtSourceTax) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $ficelle->formatNumber($taxRate[TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE]) . '%</td>
+                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE] . '%</td>
                     </tr>
                     <tr>
                         <th style="background-color:#ECAEAE;" colspan="4">Pr&eacute;l&egrave;vements sociaux</th>
@@ -182,31 +182,31 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                         <th style="background-color:#E6F4DA;">CSG</th>
                         <td class="right">' . $ficelle->formatNumber($totalInterest) . '</td>
                         <td class="right">' . $ficelle->formatNumber($csg) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $ficelle->formatNumber($taxRate[TaxType::TYPE_CSG]) . '%</td>
+                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_CSG] . '%</td>
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">Pr&eacute;l&egrave;vement social</th>
                         <td class="right">' . $ficelle->formatNumber($totalInterest) . '</td>
                         <td class="right">' . $ficelle->formatNumber($socialDeduction) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $ficelle->formatNumber($taxRate[TaxType::TYPE_SOCIAL_DEDUCTIONS]) . '%</td>
+                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_SOCIAL_DEDUCTIONS] . '%</td>
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">Contribution additionnelle</th>
                         <td class="right">' . $ficelle->formatNumber($totalInterest) . '</td>
                         <td class="right">' . $ficelle->formatNumber($additionalContribution) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $ficelle->formatNumber($taxRate[TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS]) . '%</td>
+                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS] . '%</td>
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">Pr&eacute;l&egrave;vements de solidarit&eacute;</th>
                         <td class="right">' . $ficelle->formatNumber($totalInterest) . '</td>
                         <td class="right">' . $ficelle->formatNumber($solidarityDeduction) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $ficelle->formatNumber($taxRate[TaxType::TYPE_SOLIDARITY_DEDUCTIONS]) . '%</td>
+                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_SOLIDARITY_DEDUCTIONS] . '%</td>
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">CRDS</th>
                         <td class="right">' . $ficelle->formatNumber($totalInterest) . '</td>
                         <td class="right">' . $ficelle->formatNumber($crds) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $ficelle->formatNumber($taxRate[TaxType::TYPE_CRDS]) . '%</td>
+                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_CRDS] . '%</td>
                     </tr>
                 </table>';
 
@@ -215,8 +215,8 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
 
             /** @var Settings $recipientSetting */
             $recipientSetting = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneByType('Adresse notification etat fiscal');
-            $url     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-            $varMail = ['$surl' => $url, '$url' => $url];
+            $url              = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
+            $varMail          = ['$surl' => $url, '$url' => $url];
 
             /** @var TemplateMessage $message */
             $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-fiscal', $varMail, false);
