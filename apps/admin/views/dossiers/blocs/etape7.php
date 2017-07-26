@@ -117,10 +117,18 @@
                     <input id="min_rate" type="hidden" value="<?= isset($this->rate_min) ? $this->rate_min : '' ?>">
                     <input id="max_rate" type="hidden" value="<?= isset($this->rate_max) ? $this->rate_max : '' ?>">
                     <input type="button" onclick="valid_rejete_etape7(3, <?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
-                    <a href="<?= $this->lurl ?>/dossiers/comity_to_analysis/<?= $this->projects->id_project ?>" class="btn btn_link thickbox">Retour à l'analyse</a>
+                    <a role="button" data-memo="#comity-to-analysis-memo" data-memo-onsubmit="/dossiers/comity_to_analysis/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn_link">Retour à l'analyse</a>
                     <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/7/<?= $this->projects->id_project ?>" class="btn btn_link thickbox" style="background:#CC0000;border-color:#CC0000;">Rejeter</a>
-                    <a href="<?= $this->lurl ?>/dossiers/suspensive_conditions/<?= $this->projects->id_project ?>" class="btn btn_link thickbox" style="background:#009933;border-color:#009933;">Conditions suspensives de mise en ligne</a>
+                    <a role="button" data-memo="#suspensive-conditions-memo" data-memo-onsubmit="suspensive" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn_link" style="background:#009933;border-color:#009933;">Conditions suspensives de mise en ligne</a>
                     <input type="button" onclick="valid_rejete_etape7(1, <?= $this->projects->id_project ?>)" class="btn" style="background:#009933;border-color:#009933;" value="Valider">
+                </div>
+                <div id="comity-to-analysis-memo" style="display: none">
+                    <h3>Retour à l'analyse</h3>
+                </div>
+                <div id="suspensive-conditions-memo" style="display: none">
+                    <h3>Valider avec conditions suspensives de mise en ligne</h3>
+                    <p>Notez ici les conditions suspensives de mise en ligne. Ces conditions devront être vérifiées manuellement avant passage du projet en statut "Prép Funding".</p>
+                    <p>La note de crédit doit également être complétée et sauvegardée avant.</p>
                 </div>
             <?php endif; ?>
         </div>
