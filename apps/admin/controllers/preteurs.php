@@ -1248,7 +1248,7 @@ class preteursController extends bootstrap
         $creationTime        = strtotime($this->clients->added);
         $clientStatusMessage = '';
 
-        if (empty($currentStatus)) {
+        if (null === $currentStatus) {
             return $clientStatusMessage;
         }
         switch ($currentStatus->getStatus()) {

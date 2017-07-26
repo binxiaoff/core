@@ -879,7 +879,7 @@ class transfertsController extends bootstrap
             }
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus $lastStatusEntity */
             $lastStatusEntity = $clientStatusRepository->getLastClientStatus($newOwner->id_client);
-            $lastStatus = (empty($lastStatusEntity)) ? null : $lastStatusEntity->getStatus();
+            $lastStatus       = (null === $lastStatusEntity) ? null : $lastStatusEntity->getStatus();
 
             if ($lastStatus != \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus::VALIDATED) {
                 $this->addErrorMessageAndRedirect('Le compte de l\'héritier n\'est pas validé');
