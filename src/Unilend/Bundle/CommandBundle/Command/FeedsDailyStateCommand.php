@@ -548,27 +548,27 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $grossInterest                           = empty($line[OperationType::GROSS_INTEREST_REPAYMENT]) ? 0 : $line[OperationType::GROSS_INTEREST_REPAYMENT];
             $grossInterestRegularization             = empty($line[OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION]) ? 0 : $line[OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION];
 
-            $totalStatutoryContributions  = round(bcsub($statutoryContributions, $statutoryContributionsRegularization, 3), 2);
-            $totalIncomeTax               = round(bcsub($incomeTax, $incomeTaxRegularization, 3), 2);
-            $totalCsg                     = round(bcsub($csg, $csgRegularization, 3), 2);
-            $totalSocialDeductions        = round(bcsub($socialDeductions, $socialDeductionsRegularization, 3), 2);
-            $totalAdditionalContributions = round(bcsub($additionalContributions, $additionalContributionsRegularization, 3), 2);
-            $totalSolidarityDeductions    = round(bcsub($solidarityDeductions, $solidarityDeductionsRegularization, 3), 2);
-            $totalCrds                    = round(bcsub($crds, $crdsRegularization, 3), 2);
-            $realBorrowerProvision        = round(bcsub($borrowerProvision, $borrowerProvisionCancel, 3), 2);
-            $totalPromotionProvision      = round(bcadd($unilendProvision, $promotionProvision, 3), 2);
-            $totalProjectCommission       = round(bcsub($borrowerCommissionProject, $borrowerCommissionProjectRegularization, 3), 2);
-            $totalPaymentCommission       = round(bcsub($borrowerCommissionPayment, $borrowerCommissionPaymentRegularization, 3), 2);
-            $totalCommission              = round(bcadd($totalPaymentCommission, $totalProjectCommission, 3), 2);
-            $totalIncoming                = round(bcadd($realBorrowerProvision, bcadd($totalPromotionProvision, bcadd($lenderProvisionCreditCard, $lenderProvisionWireTransfer, 3), 3), 3), 2);
-            $totalTax                     = round(bcadd($totalCrds, bcadd($totalSolidarityDeductions, bcadd($totalAdditionalContributions, bcadd($totalSocialDeductions, bcadd($totalCsg, bcadd($totalStatutoryContributions, $totalIncomeTax, 3), 3), 3), 3), 3), 3), 2);
-            $totalOutgoing                = round(bcadd($totalTax, bcadd($totalCommission, bcadd($borrowerWithdraw, $lenderWithdraw, 3), 3), 3), 2);
-            $totalFinancialMovementsLine  = round(bcsub($totalIncoming, $totalOutgoing, 3), 2);
-            $totalPromotionOffer          = round(bcadd($lenderRegularization, bcadd($commercialGestures, bcsub($promotionalOffers, $promotionalOffersCancel, 3), 3), 3), 2);
-            $totalCapitalRepayment        = round(bcsub($capitalRepayment, $capitalRepaymentRegularization, 3), 2);
-            $netInterest                  = round(bcsub(bcsub($grossInterest, $grossInterestRegularization, 3), $totalTax, 3), 2);
-            $repaymentAssignment          = round(bcadd($totalPaymentCommission, bcadd($totalCapitalRepayment, bcsub($grossInterest, $grossInterestRegularization, 3), 3), 3), 2);
-            $fiscalDifference             = round(bcsub($repaymentAssignment, bcadd($totalPaymentCommission, bcadd($totalCapitalRepayment, bcadd($netInterest, $totalTax, 3), 3), 3), 3), 2);
+            $totalStatutoryContributions  = round(bcsub($statutoryContributions, $statutoryContributionsRegularization, 4), 2);
+            $totalIncomeTax               = round(bcsub($incomeTax, $incomeTaxRegularization, 4), 2);
+            $totalCsg                     = round(bcsub($csg, $csgRegularization, 4), 2);
+            $totalSocialDeductions        = round(bcsub($socialDeductions, $socialDeductionsRegularization, 4), 2);
+            $totalAdditionalContributions = round(bcsub($additionalContributions, $additionalContributionsRegularization, 4), 2);
+            $totalSolidarityDeductions    = round(bcsub($solidarityDeductions, $solidarityDeductionsRegularization, 4), 2);
+            $totalCrds                    = round(bcsub($crds, $crdsRegularization, 4), 2);
+            $realBorrowerProvision        = round(bcsub($borrowerProvision, $borrowerProvisionCancel, 4), 2);
+            $totalPromotionProvision      = round(bcadd($unilendProvision, $promotionProvision, 4), 2);
+            $totalProjectCommission       = round(bcsub($borrowerCommissionProject, $borrowerCommissionProjectRegularization, 4), 2);
+            $totalPaymentCommission       = round(bcsub($borrowerCommissionPayment, $borrowerCommissionPaymentRegularization, 4), 2);
+            $totalCommission              = round(bcadd($totalPaymentCommission, $totalProjectCommission, 4), 2);
+            $totalIncoming                = round(bcadd($realBorrowerProvision, bcadd($totalPromotionProvision, bcadd($lenderProvisionCreditCard, $lenderProvisionWireTransfer, 4), 4), 4), 2);
+            $totalTax                     = round(bcadd($totalCrds, bcadd($totalSolidarityDeductions, bcadd($totalAdditionalContributions, bcadd($totalSocialDeductions, bcadd($totalCsg, bcadd($totalStatutoryContributions, $totalIncomeTax, 4), 4), 4), 4), 4), 4), 2);
+            $totalOutgoing                = round(bcadd($totalTax, bcadd($totalCommission, bcadd($borrowerWithdraw, $lenderWithdraw, 4), 4), 4), 2);
+            $totalFinancialMovementsLine  = round(bcsub($totalIncoming, $totalOutgoing, 4), 2);
+            $totalPromotionOffer          = round(bcadd($lenderRegularization, bcadd($commercialGestures, bcsub($promotionalOffers, $promotionalOffersCancel, 4), 4), 4), 2);
+            $totalCapitalRepayment        = round(bcsub($capitalRepayment, $capitalRepaymentRegularization, 4), 2);
+            $netInterest                  = round(bcsub(bcsub($grossInterest, $grossInterestRegularization, 4), $totalTax, 4), 2);
+            $repaymentAssignment          = round(bcadd($totalPaymentCommission, bcadd($totalCapitalRepayment, bcsub($grossInterest, $grossInterestRegularization, 4), 4), 4), 2);
+            $fiscalDifference             = round(bcsub($repaymentAssignment, bcadd($totalPaymentCommission, bcadd($totalCapitalRepayment, bcadd($netInterest, $totalTax, 4), 4), 4), 4), 2);
 
             /* Financial Movements */
             $activeSheet->setCellValueExplicit(self::LENDER_PROVISION_CARD_COLUMN . $row, $lenderProvisionCreditCard, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
@@ -611,7 +611,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
     {
         $isPreviousLine = in_array($row, [$specificRows['previousMonth'], $specificRows['previousYear']]);
         $isTotal        = in_array($row, [$specificRows['totalDay'], $specificRows['totalMonth']]);
-        $realBalance    = round(bcadd($dailyBalances->getLenderBorrowerBalance(), $dailyBalances->getUnilendPromotionalBalance(), 3), 2);
+        $realBalance    = round(bcadd($dailyBalances->getLenderBorrowerBalance(), $dailyBalances->getUnilendPromotionalBalance(), 4), 2);
 
         $activeSheet->setCellValueExplicit(self::BALANCE_COLUMN . $row, $realBalance, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         $activeSheet->setCellValueExplicit(self::UNILEND_PROMOTIONAL_BALANCE_COLUMN . $row, $dailyBalances->getUnilendPromotionalBalance(), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
@@ -619,7 +619,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
         $activeSheet->setCellValueExplicit(self::TAX_BALANCE_COLUMN  . $row, $dailyBalances->getTaxBalance(), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
         if ($isPreviousLine) {
-            $globalDifference = round(bcsub($dailyBalances->getTheoreticalBalance(), $realBalance, 3), 2);
+            $globalDifference = round(bcsub($dailyBalances->getTheoreticalBalance(), $realBalance, 4), 2);
             $activeSheet->setCellValueExplicit(self::THEORETICAL_BALANCE_COLUMN . $row, $dailyBalances->getTheoreticalBalance(), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::BALANCE_DIFFERENCE_COLUMN . $row, $globalDifference, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         }
@@ -629,12 +629,12 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
                 $previousRow        = $row - 1;
                 $previousBalance    = $activeSheet->getCell(self::THEORETICAL_BALANCE_COLUMN . $previousRow)->getValue();
                 $totalMovements     = $activeSheet->getCell(self::TOTAL_FINANCIAL_MOVEMENTS_COLUMN . $row)->getValue();
-                $theoreticalBalance = round(bcadd($previousBalance, $totalMovements, 3), 2);
+                $theoreticalBalance = round(bcadd($previousBalance, $totalMovements, 4), 2);
                 $this->addTheoreticalBalanceToHistory($theoreticalBalance, $dailyBalances);
             }
 
             $activeSheet->setCellValueExplicit(self::THEORETICAL_BALANCE_COLUMN . $row, $dailyBalances->getTheoreticalBalance(), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            $activeSheet->setCellValueExplicit(self::BALANCE_DIFFERENCE_COLUMN . $row, round(bcsub($dailyBalances->getTheoreticalBalance(), $realBalance, 3), 2), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicit(self::BALANCE_DIFFERENCE_COLUMN . $row, round(bcsub($dailyBalances->getTheoreticalBalance(), $realBalance, 4), 2), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         }
 
         if ($isTotal) {
@@ -685,10 +685,10 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $taxWireTransferOut     = empty($wireTransfers['taxes'][$date]) ? 0 : $taxWireTransferOut = is_array($wireTransfers['taxes'][$date]) ? array_sum($wireTransfers['taxes'][$date]) : $wireTransfers['taxes'][$date];
             $directDebit            = empty($wireTransfers['directDebit'][$date]) ? 0 : $wireTransfers['directDebit'][$date];
 
-            $totalWireTransferOut        = round(bcadd($totalWireTransferOut, $wireTransferOut, 3), 2);
-            $totalUnilendWireTransferOut = round(bcadd($totalUnilendWireTransferOut, $unilendWireTransferOut, 3), 2);
-            $totalTaxWireTransferOut     = round(bcadd($totalTaxWireTransferOut, $taxWireTransferOut, 3), 2);
-            $totalDirectDebit            = round(bcadd($totalDirectDebit, $directDebit, 3), 2);
+            $totalWireTransferOut        = round(bcadd($totalWireTransferOut, $wireTransferOut, 4), 2);
+            $totalUnilendWireTransferOut = round(bcadd($totalUnilendWireTransferOut, $unilendWireTransferOut, 4), 2);
+            $totalTaxWireTransferOut     = round(bcadd($totalTaxWireTransferOut, $taxWireTransferOut, 4), 2);
+            $totalDirectDebit            = round(bcadd($totalDirectDebit, $directDebit, 4), 2);
 
             $activeSheet->setCellValueExplicit(self::WIRE_TRANSFER_OUT_COLUMN . $row, $wireTransferOut, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::UNILEND_WITHDRAW_COLUMN . $row, $unilendWireTransferOut, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
