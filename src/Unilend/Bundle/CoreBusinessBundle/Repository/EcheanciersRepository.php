@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
+use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
@@ -10,17 +11,21 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
 use Unilend\Bundle\FrontBundle\Controller\LenderDashboardController;
+use Unilend\librairies\CacheKeys;
 
 class EcheanciersRepository extends EntityRepository
 {
     public function getLostCapitalForLender($idLender)
     {
         $projectStatusCollectiveProceeding = [
-            \projects_status::PROCEDURE_SAUVEGARDE,
-            \projects_status::REDRESSEMENT_JUDICIAIRE,
-            \projects_status::LIQUIDATION_JUDICIAIRE,
-            \projects_status::DEFAUT
+            ProjectsStatus::PROCEDURE_SAUVEGARDE,
+            ProjectsStatus::REDRESSEMENT_JUDICIAIRE,
+            ProjectsStatus::LIQUIDATION_JUDICIAIRE,
+            ProjectsStatus::DEFAUT
         ];
 
         $qb = $this->createQueryBuilder('e');
@@ -28,7 +33,7 @@ class EcheanciersRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'e.idProject = p.idProject')
             ->where('e.idLender = :idLender')
             ->andWhere('e.status = ' . \echeanciers::STATUS_PENDING)
-            ->andWhere('p.status IN (:projectStatus) OR (p.status = ' . \projects_status::RECOUVREMENT . ' AND DATEDIFF(NOW(), e.dateEcheance) > 180)')
+            ->andWhere('p.status IN (:projectStatus) OR (p.status = ' . ProjectsStatus::RECOUVREMENT . ' AND DATEDIFF(NOW(), e.dateEcheance) > 180)')
             ->setParameter('idLender', $idLender)
             ->setParameter('projectStatus', $projectStatusCollectiveProceeding, Connection::PARAM_INT_ARRAY);
 
@@ -288,5 +293,170 @@ class EcheanciersRepository extends EntityRepository
             ['startDate' => $date->format('Y-m-d 00:00:00'), 'endDate' => $date->format('Y-m-d 23:59:59')],
             ['startDate' => \PDO::PARAM_STR, 'endDate' => \PDO::PARAM_STR]
         )->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Returns capital, interests and tax sum amounts grouped by month, quarter and year for a lender
+     * takes into account regular past payments at their real date
+     * recovery payments including commission
+     * future payments of healthy (according to stats definition) only projects
+     *
+     * @param Wallet|int $lender
+     *
+     * @return array
+     */
+    public function getLenderRepaymentsDetails($lender)
+    {
+        if ($lender instanceof Wallet) {
+            $lender = $lender->getId();
+        }
+
+        $query = '
+            SELECT
+                t.month                                                               AS month,
+                t.quarter                                                             AS quarter,
+                t.year                                                                AS year,
+                ROUND(SUM(t.capital), 2)                                              AS capital,
+                ROUND(SUM(t.grossInterests), 2)                                       AS grossInterests,
+                ROUND(SUM(t.grossInterests - t.repaidTaxes - t.upcomingTaxes), 2)     AS netInterests,
+                ROUND(SUM(t.repaidTaxes + t.upcomingTaxes), 2)                        AS taxes
+            FROM (
+                 SELECT
+                  LEFT(dates.added, 7) AS month,
+                  QUARTER(dates.added) AS quarter,
+                  YEAR(dates.added)    AS year,
+                  (
+                    SELECT SUM(amount)
+                    FROM operation o
+                      INNER JOIN operation_type ot ON ot.id = o.id_type
+                    WHERE ot.label = \'' . OperationType::CAPITAL_REPAYMENT . '\' AND o.id_wallet_creditor = :lender AND LEFT(o.added, 7) = month
+                  ) - (
+                    IFNULL((SELECT SUM(amount)
+                            FROM operation o
+                              INNER JOIN operation_type ot ON ot.id = o.id_type
+                            WHERE ot.label = \'' . OperationType::CAPITAL_REPAYMENT_REGULARIZATION . '\' AND o.id_wallet_debtor = :lender AND LEFT(o.added, 7) = month)
+                    , 0))              AS capital,
+                  (
+                    SELECT SUM(amount)
+                    FROM operation o
+                      INNER JOIN operation_type ot ON ot.id = o.id_type
+                    WHERE ot.label = \'' . OperationType::GROSS_INTEREST_REPAYMENT . '\' AND o.id_wallet_creditor = :lender AND LEFT(o.added, 7) = month
+                  ) - (
+                    IFNULL((SELECT SUM(amount)
+                            FROM operation o
+                              INNER JOIN operation_type ot ON ot.id = o.id_type
+                            WHERE ot.label = \'' . OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION . '\' AND o.id_wallet_debtor = :lender AND LEFT(o.added, 7) = month)
+                    , 0)) AS grossInterests,
+                  (
+                    SELECT SUM(amount)
+                    FROM operation o
+                      INNER JOIN operation_type ot ON ot.id = o.id_type
+                    WHERE ot.label IN
+                          (:frenchTax)
+                          AND o.id_wallet_debtor = :lender AND LEFT(o.added, 7) = month
+                  ) - (
+                    IFNULL((SELECT SUM(amount)
+                            FROM operation o
+                              INNER JOIN operation_type ot ON ot.id = o.id_type
+                            WHERE ot.label IN
+                                  (:frenchTaxRegularizaton)
+                                  AND o.id_wallet_creditor = :lender AND LEFT(o.added, 7) = month)
+                    , 0)) AS repaidTaxes,
+                  0 AS upcomingTaxes
+                FROM (
+                       SELECT added
+                       FROM operation o
+                         INNER JOIN operation_type ot ON o.id_type = ot.id
+                       WHERE (o.id_wallet_creditor = :lender OR o.id_wallet_debtor = :lender)
+                             AND ot.label IN (:repaymentTypes)
+                       GROUP BY LEFT(added, 7)
+                     ) dates
+
+                UNION ALL
+
+                (SELECT
+                    LEFT(e.date_echeance, 7)        AS month,
+                    QUARTER(e.date_echeance)        AS quarter,
+                    YEAR(e.date_echeance)           AS year,
+                    ROUND(SUM(e.capital) / 100, 2)  AS capital,
+                    ROUND(SUM(e.interets) / 100, 2) AS grossInterests,
+                    0                               AS repaidTaxes,
+                    CASE c.type
+                        -- Natural person
+                        WHEN ' . Clients::TYPE_PERSON . ' OR ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN
+                            CASE lih.resident_etranger
+                                -- FR fiscal resident
+                                WHEN 0 THEN 
+                                    IF (
+                                        lte.id_lender IS NULL,
+                                        SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT SUM(tt.rate / 100) FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_taxable_lender)) / 100, 2)),
+                                        SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT SUM(tt.rate / 100) FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_exempted_lender)) / 100, 2))
+                                    )
+                                -- Foreigner fiscal resident
+                                WHEN 1 THEN
+                                    SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT tt.rate / 100 FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_foreigner_lender)) / 100, 2))
+                            END
+                        -- Legal entity
+                        WHEN ' . Clients::TYPE_LEGAL_ENTITY . ' OR ' . Clients::TYPE_LEGAL_ENTITY_FOREIGNER . ' THEN
+                            SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT tt.rate / 100 FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_legal_entity_lender)) / 100, 2))
+                    END AS upcomingTaxes
+                FROM echeanciers e
+                INNER JOIN wallet w ON e.id_lender = w.id
+                LEFT JOIN clients c ON w.id_client = c.id_client
+                LEFT JOIN lender_tax_exemption lte ON lte.id_lender = e.id_lender AND lte.year = YEAR(e.date_echeance)
+                LEFT JOIN lenders_imposition_history lih ON lih.id_lenders_imposition_history = (SELECT MAX(id_lenders_imposition_history) FROM lenders_imposition_history WHERE id_lender = e.id_lender)
+                LEFT JOIN projects p ON e.id_project = p.id_project
+                WHERE e.id_lender = :lender
+                    AND e.status = 0
+                    AND e.date_echeance >= NOW()
+                    AND IF(
+                        (p.status IN (' . implode(',', [ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE, ProjectsStatus::DEFAUT]) . ')
+                        OR (p.status >= ' . ProjectsStatus::PROBLEME . '
+                        AND DATEDIFF(NOW(), (
+                        SELECT psh2.added
+                        FROM projects_status_history psh2
+                        INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                        WHERE ps2.status = ' . ProjectsStatus::PROBLEME . '
+                        AND psh2.id_project = e.id_project
+                        ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
+                        LIMIT 1
+                    )) > 180)), TRUE, FALSE) = FALSE
+                GROUP BY month)
+            ) AS t
+            GROUP BY t.month';
+
+        $oQCProfile    = new QueryCacheProfile(CacheKeys::DAY, md5(__METHOD__));
+        $statement     = $this->getEntityManager()->getConnection()->executeQuery(
+            $query,
+            [
+                'lender'                       => $lender,
+                'frenchTax'                    => OperationType::TAX_TYPES_FR,
+                'frenchTaxRegularizaton'       => OperationType::TAX_TYPES_FR_REGULARIZATION,
+                'repaymentTypes'               => [
+                    OperationType::CAPITAL_REPAYMENT,
+                    OperationType::CAPITAL_REPAYMENT_REGULARIZATION,
+                    OperationType::GROSS_INTEREST_REPAYMENT,
+                    OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION
+                ],
+                'tax_type_exempted_lender'     => TaxManager::TAX_TYPE_EXEMPTED_LENDER,
+                'tax_type_taxable_lender'      => TaxManager::TAX_TYPE_TAXABLE_LENDER,
+                'tax_type_foreigner_lender'    => TaxManager::TAX_TYPE_FOREIGNER_LENDER,
+                'tax_type_legal_entity_lender' => TaxManager::TAX_TYPE_LEGAL_ENTITY_LENDER
+            ],
+            [
+                'repaymentTypes'               => Connection::PARAM_INT_ARRAY,
+                'frenchTax'                    => Connection::PARAM_INT_ARRAY,
+                'frenchTaxRegularizaton'       => Connection::PARAM_INT_ARRAY,
+                'tax_type_exempted_lender'     => Connection::PARAM_INT_ARRAY,
+                'tax_type_taxable_lender'      => Connection::PARAM_INT_ARRAY,
+                'tax_type_foreigner_lender'    => Connection::PARAM_INT_ARRAY,
+                'tax_type_legal_entity_lender' => Connection::PARAM_INT_ARRAY
+            ],
+            $oQCProfile
+        );
+        $repaymentData = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return $repaymentData;
     }
 }

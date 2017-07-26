@@ -140,8 +140,16 @@ class LenderDashboardController extends Controller
         /** @var LenderAccountDisplayManager $lenderDisplayManager */
         $lenderDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
 
-        $repaymentDateRange     = $lenderRepayment->getFirstAndLastRepaymentDates($wallet->getId());
-        $lenderRepaymentsData   = $lenderRepayment->getDataForRepaymentWidget($wallet->getId()) + $this->getPaddingData($repaymentDateRange);
+        $repaymentDateRange      = $lenderRepayment->getFirstAndLastRepaymentDates($wallet->getId());
+        $lenderRepaymentsDetails = $repaymentScheduleRepository->getLenderRepaymentsDetails($wallet);
+        $lenderRepaymentsData    = [];
+        foreach ($lenderRepaymentsDetails as $lenderRepaymentDetail) {
+            $lenderRepaymentsData[$lenderRepaymentDetail['month']]                 = $lenderRepaymentDetail;
+            $lenderRepaymentsData[$lenderRepaymentDetail['month']]['capital']      = (float) $lenderRepaymentDetail['capital'];
+            $lenderRepaymentsData[$lenderRepaymentDetail['month']]['netInterests'] = (float) $lenderRepaymentDetail['netInterests'];
+            $lenderRepaymentsData[$lenderRepaymentDetail['month']]['taxes']        = (float) $lenderRepaymentDetail['taxes'];
+        }
+        $lenderRepaymentsData += $this->getPaddingData($repaymentDateRange);
         ksort($lenderRepaymentsData);
         $repaymentDataPerPeriod = $this->getQuarterAndYearSum($lenderRepaymentsData);
         $monthAxisData          = $this->getMonthAxis($repaymentDateRange);
