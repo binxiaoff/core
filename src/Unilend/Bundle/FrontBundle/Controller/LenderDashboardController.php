@@ -149,10 +149,9 @@ class LenderDashboardController extends Controller
             $lenderRepaymentsData[$lenderRepaymentDetail['month']]['capital']      = (float) $lenderRepaymentDetail['capital'];
             $lenderRepaymentsData[$lenderRepaymentDetail['month']]['netInterests'] = (float) $lenderRepaymentDetail['netInterests'];
             $lenderRepaymentsData[$lenderRepaymentDetail['month']]['taxes']        = (float) $lenderRepaymentDetail['taxes'];
-
         }
         $lenderRepaymentsData += $this->getPaddingData($repaymentDateRange);
-        sort($lenderRepaymentsData);
+        ksort($lenderRepaymentsData);
         $repaymentDataPerPeriod = $this->getQuarterAndYearSum($lenderRepaymentsData);
         $monthAxisData          = $this->getMonthAxis($repaymentDateRange);
         $quarterAxisData        = $this->getQuarterAxis($lenderRepaymentsData);

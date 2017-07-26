@@ -264,13 +264,13 @@ class EcheanciersRepository extends EntityRepository
 
         $query = '
             SELECT
-                t.month                          AS month,
-                t.quarter                        AS quarter,
-                t.year                           AS year,
-                ROUND(SUM(t.capital), 2)         AS capital,
-                ROUND(SUM(t.grossInterests), 2)  AS grossInterests,
+                t.month                                                               AS month,
+                t.quarter                                                             AS quarter,
+                t.year                                                                AS year,
+                ROUND(SUM(t.capital), 2)                                              AS capital,
+                ROUND(SUM(t.grossInterests), 2)                                       AS grossInterests,
                 ROUND(SUM(t.grossInterests - t.repaidTaxes - t.upcomingTaxes), 2)     AS netInterests,
-                ROUND(SUM(t.repaidTaxes + t.upcomingTaxes), 2)   AS taxes
+                ROUND(SUM(t.repaidTaxes + t.upcomingTaxes), 2)                        AS taxes
             FROM (
                  SELECT
                   LEFT(dates.added, 7) AS month,
@@ -297,7 +297,7 @@ class EcheanciersRepository extends EntityRepository
                             FROM operation o
                               INNER JOIN operation_type ot ON ot.id = o.id_type
                             WHERE ot.label = \'' . OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION . '\' AND o.id_wallet_debtor = :lender AND LEFT(o.added, 7) = month)
-                    , 0))              AS grossInterests,
+                    , 0)) AS grossInterests,
                   (
                     SELECT SUM(amount)
                     FROM operation o
@@ -312,8 +312,8 @@ class EcheanciersRepository extends EntityRepository
                             WHERE ot.label IN
                                   (:frenchTaxRegularizaton)
                                   AND o.id_wallet_creditor = :lender AND LEFT(o.added, 7) = month)
-                    , 0))              AS repaidTaxes,
-                  0                    AS upcomingTaxes
+                    , 0)) AS repaidTaxes,
+                  0 AS upcomingTaxes
                 FROM (
                        SELECT added
                        FROM operation o
@@ -350,7 +350,7 @@ class EcheanciersRepository extends EntityRepository
                         -- Legal entity
                         WHEN ' . Clients::TYPE_LEGAL_ENTITY . ' OR ' . Clients::TYPE_LEGAL_ENTITY_FOREIGNER . ' THEN
                             SUM(ROUND((e.interets - e.interets_rembourses) * (SELECT tt.rate / 100 FROM tax_type tt WHERE tt.id_tax_type IN (:tax_type_legal_entity_lender)) / 100, 2))
-                    END                           AS upcomingTaxes
+                    END AS upcomingTaxes
                 FROM echeanciers e
                 INNER JOIN wallet w ON e.id_lender = w.id
                 LEFT JOIN clients c ON w.id_client = c.id_client
@@ -407,6 +407,7 @@ class EcheanciersRepository extends EntityRepository
         );
         $repaymentData = $statement->fetchAll(\PDO::FETCH_ASSOC);
         $statement->closeCursor();
+
         return $repaymentData;
     }
 }
