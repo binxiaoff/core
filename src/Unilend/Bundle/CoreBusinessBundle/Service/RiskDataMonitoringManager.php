@@ -123,6 +123,7 @@ class RiskDataMonitoringManager
                 $this->entityManager->flush($monitoringCallLog);
 
                 try {
+                    $this->eulerHermesManager->setUseCache(false);
                     if (null !== ($eulerGrade = $this->eulerHermesManager->getGrade($siren, 'fr'))) {
                         $companyRatingHistory = $this->saveCompanyRating($company, $eulerGrade);
 
@@ -137,7 +138,7 @@ class RiskDataMonitoringManager
                 }
             }
         }
-
+        $this->eulerHermesManager->setUseCache(true);
         $this->entityManager->flush();
     }
 
