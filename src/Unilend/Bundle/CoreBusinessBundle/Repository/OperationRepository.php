@@ -249,7 +249,7 @@ class OperationRepository extends EntityRepository
     public function sumRegularizedCapitalRepaymentsInEeaExceptFrance(Wallet $wallet, $year)
     {
         $query = 'SELECT
-                     SUM(IF(tlih.id_pays IN (:eeaCountries),o_capital.amount, 0)) AS capital
+                     SUM(IF(tlih.id_pays IN (:eeaCountries), o_capital.amount, 0)) AS capital
                   FROM operation o_capital
                      LEFT JOIN (SELECT
                                   o.id_wallet_debtor,
