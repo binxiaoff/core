@@ -129,4 +129,88 @@ class WsMonitoringManager
     {
         return strftime('%d-%b %R', $dateTime->getTimestamp());
     }
+
+    /**
+     * @return array
+     */
+    public function getDataForChart()
+    {
+        $dataStatus    = [
+            'valid'   => [],
+            'warning' => [],
+            'error'   => []
+        ];
+        $data['day']   = $dataStatus;
+        $data['week']  = $dataStatus;
+        $data['month'] = $dataStatus;
+
+        $wsCallHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WsCallHistory');
+        foreach ($wsCallHistoryRepository->getDailyStatistics() as $dailyStats) {
+            $data['day'][$dailyStats['callStatus']][$dailyStats['added']->format('YmdH')] = [
+                'date'         => $dailyStats['added']->format('Y-m-d H:00'),
+                'totalVolume'  => (int) $dailyStats['totalVolume'],
+                'clientVolume' => (int) $dailyStats['clientVolume']
+            ];
+        }
+
+        foreach ($data['day'] as $status => $rows) {
+            $data['day'][$status] += $this->getPaddingData(new \DateTime('1 day ago'), new \DateInterval('PT1H'), 'hours');
+        }
+
+        foreach ($wsCallHistoryRepository->getWeeklyStatistics() as $weeklyStats) {
+            $data['week'][$weeklyStats['callStatus']][$weeklyStats['added']->format('Ymd')] = [
+                'date'         => $weeklyStats['added']->format('Y-m-d'),
+                'totalVolume'  => (int) $weeklyStats['totalVolume'],
+                'clientVolume' => (int) $weeklyStats['clientVolume']
+            ];
+        }
+
+        foreach ($data['week'] as $status => $rows) {
+            $data['week'][$status] += $this->getPaddingData(new \DateTime('1 week ago'), new \DateInterval('P1D'), 'days');
+        }
+
+        foreach ($wsCallHistoryRepository->getMonthlyStatistics() as $monthlyStats) {
+            $data['month'][$monthlyStats['callStatus']][$monthlyStats['added']->format('Ymd')] = [
+                'date'         => $monthlyStats['added']->format('Y-m-d'),
+                'totalVolume'  => (int) $monthlyStats['totalVolume'],
+                'clientVolume' => (int) $monthlyStats['clientVolume']
+            ];
+        }
+
+        foreach ($data['month'] as $status => $rows) {
+            $data['month'][$status] += $this->getPaddingData(new \DateTime('1 month ago'), new \DateInterval('P1D'), 'days');
+        }
+
+        foreach ($data as $period => $rows) {
+            foreach ($rows as $status => $cont) {
+                ksort($cont);
+                $rows[$status] = array_values($cont);
+            }
+            $data[$period] = $rows;
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param \DateTime     $startDate
+     * @param \DateInterval $interval
+     * @param string        $period
+     * @return array
+     */
+    private function getPaddingData(\DateTime $startDate, \DateInterval $interval, $period)
+    {
+        $paddingData = [];
+        $now         = new \DateTime();
+        while ($startDate <= $now) {
+            $paddingData[$startDate->format($period === 'hours' ? 'YmdH' : 'Ymd')] = [
+                'date'         => $startDate->format($period === 'hours' ? 'Y-m-d H:00' : 'Y-m-d'),
+                'totalVolume'  => 0,
+                'clientVolume' => 0
+            ];
+            $startDate->add($interval);
+        }
+
+        return $paddingData;
+    }
 }

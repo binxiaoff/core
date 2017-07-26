@@ -886,4 +886,12 @@ class statsController extends bootstrap
             echo "Le fichier n'a pas été généré. ";
         }
     }
+
+    public function _logs_webservices()
+    {
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WsMonitoringManager $wsMonitoringManager */
+        $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
+        $data                = $wsMonitoringManager->getDataForChart();
+        $this->chartData     = json_encode($data);
+    }
 }
