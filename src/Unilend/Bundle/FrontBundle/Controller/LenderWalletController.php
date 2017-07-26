@@ -174,7 +174,7 @@ class LenderWalletController extends Controller
             /** @var ClientsStatus $lastStatus */
             $lastStatus = $clientStatusRepository->getLastClientStatus($client);
 
-            if (false === empty($lastStatus) && $lastStatus->getStatus() < ClientsStatus::VALIDATED) {
+            if (null !== $lastStatus && $lastStatus->getStatus() < ClientsStatus::VALIDATED) {
                 $this->redirectToRoute('lender_wallet_withdrawal');
             }
             $amount = $post['amount'];

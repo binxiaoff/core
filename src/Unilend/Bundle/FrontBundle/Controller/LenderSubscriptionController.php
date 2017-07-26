@@ -899,7 +899,7 @@ class LenderSubscriptionController extends Controller
                 /** @var ClientsStatus $lastStatus */
                 $lastStatus = $clientStatusRepository->getLastClientStatus($clientEntity);
 
-                if (false === empty($lastStatus) && $lastStatus->getStatus() >= ClientsStatus::MODIFICATION) {
+                if (null !== $lastStatus && $lastStatus->getStatus() >= ClientsStatus::MODIFICATION) {
                     return $this->redirectToRoute('lender_dashboard');
                 }
             } else {

@@ -142,9 +142,9 @@ class LenderManager
         $clientStatusRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
         /** @var ClientsStatus $clientStatusEntity */
         $clientStatusEntity = $clientStatusRepository->getLastClientStatus($client);
-        $lastStatus         = (empty($clientStatusEntity)) ? null : $clientStatusEntity->getStatus();
+        $lastStatus         = (null === $clientStatusEntity) ? null : $clientStatusEntity->getStatus();
 
-        return $lastStatus == ClientsStatus::VALIDATED;
+        return ClientsStatus::VALIDATED == $lastStatus;
     }
 
     /**

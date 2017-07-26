@@ -130,7 +130,7 @@ class UserProvider implements UserProviderInterface
                 $initials,
                 $clientEntity->getPrenom(),
                 $clientEntity->getNom(),
-                (empty($clientStatusEntity)) ? null : $clientStatusEntity->getStatus(),
+                (null === $clientStatusEntity) ? null : $clientStatusEntity->getStatus(),
                 $hasAcceptedCurrentTerms,
                 $notifications,
                 $clientEntity->getEtapeInscriptionPreteur(),
