@@ -167,10 +167,10 @@ class MonitoringController extends Controller
         }
 
         try {
-            $wsMonitoringManager     = $this->get('unilend.service.ws_monitoring_manager');
-            $siren                   = '790766034';
-            $altaresManager          = $this->get('unilend.service.ws_client.ellisphere_manager')->setUseCache(false);
-            $altaresManager->searchBySiren($siren);
+            $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
+            $siren               = '790766034';
+            $ellisphereManager   = $this->get('unilend.service.ws_client.ellisphere_manager')->setUseCache(false);
+            $ellisphereManager->searchBySiren($siren);
 
             $response = $wsMonitoringManager->sendNotifications($wsMonitoringManager->getRateByCallStatus(EllisphereManager::RESOURCE_SEARCH), self::PINGDOM_FREQUENCY);
         } catch (\Exception $exception) {
