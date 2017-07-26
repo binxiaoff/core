@@ -21,8 +21,8 @@ class ClientsStatusHistoryRepository extends EntityRepository
             $idClient = $idClient->getIdClient();
         }
 
-        $cb = $this->createQueryBuilder('csh');
-        $cb->innerJoin('UnilendCoreBusinessBundle:ClientsStatus', 'cs', Join::WITH, 'csh.idClientStatus = cs.idClientStatus')
+        $queryBuilder = $this->createQueryBuilder('csh');
+        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatus', 'cs', Join::WITH, 'csh.idClientStatus = cs.idClientStatus')
             ->where('csh.idClient = :idClient')
             ->andWhere('cs.status = :status')
             ->orderBy('csh.added', 'DESC')
@@ -30,7 +30,7 @@ class ClientsStatusHistoryRepository extends EntityRepository
             ->setMaxResults(1)
             ->setParameter('idClient', $idClient)
             ->setParameter('status', ClientsStatus::VALIDATED);
-        $query  = $cb->getQuery();
+        $query  = $queryBuilder->getQuery();
         $result = $query->getOneOrNullResult();
 
         return $result;

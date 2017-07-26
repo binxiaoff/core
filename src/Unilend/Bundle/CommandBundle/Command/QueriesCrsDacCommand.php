@@ -41,10 +41,20 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $year            = $input->getArgument('year');
-        $lastDayOfTheYear = new \DateTime('Last day of december ' . $year);
-        $filePath        = $this->getContainer()->getParameter('path.protected') . '/' . 'preteurs_crs_dac' . $year . '.xlsx';
+        $year = $input->getArgument('year');
 
+        if (preg_match("/^[0-9]{4}$/", $year)) {
+            $lastDayOfTheYear = new \DateTime('Last day of december ' . $year);
+            if (null === $lastDayOfTheYear) {
+                $output->writeln('<error>Wrong date format ("Y" expected)</error>');
+                return;
+            }
+        } else {
+            $output->writeln('<error>Wrong date format ("Y" expected)</error>');
+            return;
+        }
+
+        $filePath      = $this->getContainer()->getParameter('path.protected') . '/' . 'preteurs_crs_dac' . $year . '.xlsx';
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
         /** @var ClientsRepository $clientRepository */
         $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
@@ -58,7 +68,6 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
         $clientStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory');
         /** @var LendersImpositionHistoryRepository $lenderImpositionRepository */
         $lenderImpositionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LendersImpositionHistory');
-        $clientStatusManager        = $this->getContainer()->get('unilend.service.client_status_manager');
 
         /** @var \PHPExcel $document */
         $document    = new \PHPExcel();
@@ -81,7 +90,7 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
         $activeSheet->setCellValue('N' . $row, 'Solde au 31/12/' . $year);
         $activeSheet->setCellValue('O' . $row, 'Montant investi au 31/12/' . $year);
         $activeSheet->setCellValue('P' . $row, 'CRD au 31/12/' . $year);
-        $row ++;
+        $row++;
 
         /** @var Clients $client */
         foreach ($clientRepository->findValidatedClientsUntilYear($year) as $client) {
@@ -92,7 +101,7 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
             $endOfYearBalance        = null !== $endOfYearBalanceHistory ? bcadd($endOfYearBalanceHistory->getAvailableBalance(), $endOfYearBalanceHistory->getCommittedBalance(), 2) : 0;
             $remainingDuCapital      = $operationRepository->getRemainingDueCapitalAtDate($client->getIdClient(), $lastDayOfTheYear);
             $amountInvested          = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::LENDER_LOAN], null, $lastDayOfTheYear);
-            $currentClientStatus     = $clientStatusManager->getLastClientStatus($client);
+            $currentClientStatus     = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->getLastClientStatus($client);
             $firstValidation         = $clientStatusHistoryRepository->getFirstClientValidation($client);
             $fiscalCountryIso        = $lenderImpositionRepository->getFiscalIsoAtDate($wallet, $lastDayOfTheYear);
 
@@ -104,7 +113,7 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
             $activeSheet->setCellValue('A' . $row, $client->getIdClient());
             $activeSheet->setCellValue('B' . $row, $client->getVilleNaissance());
             $activeSheet->setCellValue('C' . $row, $firstValidation->getAdded()->format('Y-m-d'));
-            $activeSheet->setCellValue('D' . $row, $currentClientStatus);
+            $activeSheet->setCellValue('D' . $row, $currentClientStatus->getStatus());
             $activeSheet->setCellValue('E' . $row, $client->isNaturalPerson() ? 'Physique' : 'Morale');
             $activeSheet->setCellValue('F' . $row, $client->isNaturalPerson() ? '' : $company->getName());
             $activeSheet->setCellValue('G' . $row, $client->getNom());
@@ -118,7 +127,7 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
             $activeSheet->setCellValueExplicit('O' . $row, $amountInvested, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit('P' . $row, $remainingDuCapital, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
-            $row += 1;
+            $row+=1;
         }
 
         $activeSheet->getStyle('P' . 2 . ':' . 'R' . $row)

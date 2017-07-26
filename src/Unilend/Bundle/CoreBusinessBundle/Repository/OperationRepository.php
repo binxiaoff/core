@@ -871,10 +871,10 @@ class OperationRepository extends EntityRepository
     }
 
     /**
-     * @param Wallet    $creditorWallet
-     * @param array     $operationTypes
-     * @param array     $operationSubTypes
-     * @param \DateTime $end
+     * @param Wallet         $creditorWallet
+     * @param array          $operationTypes
+     * @param array|null     $operationSubTypes
+     * @param \DateTime|null $end
      *
      * @return mixed
      */
@@ -896,17 +896,17 @@ class OperationRepository extends EntityRepository
 
         if (null !== $end) {
             $end->setTime(23, 59, 59);
-            $qb->andWhere('o.added >= :end')->setParameter('end', $end);
+            $qb->andWhere('o.added <= :end')->setParameter('end', $end);
         }
 
         return $qb->getQuery()->getSingleScalarResult();
     }
 
     /***
-     * @param Wallet    $debtorWallet
-     * @param array     $operationTypes
-     * @param array     $operationSubTypes
-     * @param \DateTime $end
+     * @param Wallet         $debtorWallet
+     * @param array          $operationTypes
+     * @param array|null     $operationSubTypes
+     * @param \DateTime|null $end
      *
      * @return mixed
      */
@@ -928,7 +928,7 @@ class OperationRepository extends EntityRepository
 
         if (null !== $end) {
             $end->setTime(23, 59, 59);
-            $qb->andWhere('o.added >= :end')->setParameter('end', $end);
+            $qb->andWhere('o.added <= :end')->setParameter('end', $end);
         }
 
         return $qb->getQuery()->getSingleScalarResult();

@@ -448,7 +448,7 @@ class ClientsRepository extends EntityRepository
             ->setParameter('lender', WalletType::LENDER)
             ->setParameter('status', ClientsStatus::VALIDATED)
             ->setParameter('clientStatus', Clients::STATUS_ONLINE)
-            ->setParameter('year', $year . '-12-31 23 59 59');
+            ->setParameter('year', $year . '-12-31 23:59:59');
 
         return $qb->getQuery()->getResult();
     }
