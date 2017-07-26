@@ -17,6 +17,7 @@ class SlackEndpointController extends Controller
      * @Route("/slack-command-api-endpoint", name="slack_command_api_endpoint")
      *
      * @param Request $request
+     *
      * @return JsonResponse
      */
     public function commandAction(Request $request)
@@ -51,6 +52,7 @@ class SlackEndpointController extends Controller
     /**
      * @param string  $siren
      * @param Request $request
+     *
      * @return JsonResponse
      */
     private function sirenCheckerCommand($siren, Request $request)
@@ -77,12 +79,8 @@ class SlackEndpointController extends Controller
             ]);
         }
 
-        /** @var \companies $company */
-        $company        = $this->get('unilend.service.entity_manager')->getRepository('companies');
-        $company->siren = $siren;
-
-        $projectRequestManager = $this->get('unilend.service.project_request_manager');
-        $rejectionReason       = $projectRequestManager->checkRisk($company);
+        $riskCheck       = $this->get('unilend.service.eligibility.eligibility_manager')->checkSirenEligibility($siren);
+        $companyIdentity = $this->get('unilend.service.ws_client.altares_manager')->getCompanyIdentity($siren);
 
         $eligibility = 'Éligible';
         $color       = 'good';
@@ -92,18 +90,18 @@ class SlackEndpointController extends Controller
             'short' => true
         ]];
 
-        if (false === empty($company->name)) {
+        if (null !== $companyIdentity && false === empty($companyIdentity->getCorporateName())) {
             $fields[] = [
                 'title' => 'Nom société',
-                'value' => $company->name,
+                'value' => $companyIdentity->getCorporateName(),
                 'short' => true
             ];
         }
 
-        if (null !== $rejectionReason) {
+        if (is_array($riskCheck) && false === empty($riskCheck)) {
             $eligibility     = 'Non éligible';
             $color           = 'danger';
-            $rejectionReason = $this->get('unilend.service.project_status_manager')->getRejectionReasonTranslation($rejectionReason);
+            $rejectionReason = $this->get('unilend.service.project_status_manager')->getRejectionReasonTranslation($riskCheck[0]);
             $fields[]        = [
                 'title' => 'Motif de rejet',
                 'value' => $rejectionReason,

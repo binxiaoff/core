@@ -11,6 +11,8 @@ class usersController extends bootstrap
         $this->catchAll   = true;
         $this->menu_admin = 'admin';
 
+        $this->users->checkAccess('admin');
+
         $this->users_zones       = $this->loadData('users_zones');
         $this->users_types       = $this->loadData('users_types');
         $this->users_types_zones = $this->loadData('users_types_zones');
@@ -18,8 +20,6 @@ class usersController extends bootstrap
 
     public function _default()
     {
-        $this->users->checkAccess('admin');
-
         if (isset($_POST['form_add_users'])) {
             if (false === isset($_POST['email'])) {
                 $_SESSION['freeow']['title']   = 'Ajout d\'un utilisateur';
@@ -84,23 +84,21 @@ class usersController extends bootstrap
             $this->users->email     = $_POST['email'];
             $this->users->slack     = $_POST['slack'];
 
-            if ($this->users->checkAccess('admin')) {
-                /** @var \users_zones $usersZones */
-                $usersZones = $this->loadData('users_zones');
+            /** @var \users_zones $usersZones */
+            $usersZones = $this->loadData('users_zones');
 
-                $this->users->status       = ($this->users->status == 2 ? 2 : isset($_POST['status']) ? $_POST['status'] : $this->users->status);
-                $this->users->id_user_type = $_POST['id_user_type'];
-                $this->users->update();
+            $this->users->status       = ($this->users->status == 2 ? 2 : isset($_POST['status']) ? $_POST['status'] : $this->users->status);
+            $this->users->id_user_type = $_POST['id_user_type'];
+            $this->users->update();
 
-                $this->users_zones->delete($this->users->id_user, 'id_user');
-                $lZones = $this->users_types_zones->select('id_user_type = ' . $this->users->id_user_type . ' ');
+            $this->users_zones->delete($this->users->id_user, 'id_user');
+            $lZones = $this->users_types_zones->select('id_user_type = ' . $this->users->id_user_type . ' ');
 
-                foreach ($lZones as $zone) {
-                    $usersZones->unsetData();
-                    $usersZones->id_user = $this->users->id_user;
-                    $usersZones->id_zone = $zone['id_zone'];
-                    $usersZones->create();
-                }
+            foreach ($lZones as $zone) {
+                $usersZones->unsetData();
+                $usersZones->id_user = $this->users->id_user;
+                $usersZones->id_zone = $zone['id_zone'];
+                $usersZones->create();
             }
 
             $_SESSION['freeow']['title']   = 'Modification d\'un utilisateur';
@@ -147,7 +145,6 @@ class usersController extends bootstrap
 
     public function _edit()
     {
-        $this->users->checkAccess('admin');
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
@@ -165,7 +162,6 @@ class usersController extends bootstrap
 
     public function _add()
     {
-        $this->users->checkAccess('admin');
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
@@ -246,7 +242,7 @@ class usersController extends bootstrap
 
     public function _generate_new_password()
     {
-        if ($this->users->checkAccess('admin') && isset($this->params[0]) && $this->users->get($this->params[0], 'id_user')) {
+        if (isset($this->params[0]) && $this->users->get($this->params[0], 'id_user')) {
             $newPassword = $this->ficelle->generatePassword(10);
             $this->users->changePassword($newPassword, $this->users, true);
 

@@ -26,6 +26,19 @@ $(document).ready(function()
     });
 });
 
+// Prevent double-click
+$(document).on('click', '[data-prevent-doubleclick]', function(e) {
+    if ($(this).data('prevent-doubleclick') === 'preventClick') {
+        e.preventDefault()
+        console.log('preventing')
+    } else {
+        $(this).data('prevent-doubleclick', 'preventClick')
+        window.setTimeout(function(){
+            $(this).data('prevent-doubleclick', false)
+        }, 1000)
+    }
+})
+
 /* Changer l'onglet de la langue */
 function changeOngletLangue(lng)
 {

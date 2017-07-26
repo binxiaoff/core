@@ -76,7 +76,6 @@ class LenderDashboardController extends Controller
             $ongoingProjects[$iKey]['avgrate'] = $project->getAverageInterestRate();
         }
 
-        $ongoingBidsSum         = $bid->sumBidsEncours($wallet->getId());
         $problematicProjects    = $lenderRepayment->getProblematicProjects($wallet->getId());
         $upcomingGrossInterests = $lenderRepayment->getOwedInterests(['id_lender' => $wallet->getId()]);
         $repaidGrossInterests   = $lenderRepayment->getRepaidInterests(['id_lender' => $wallet->getId()]);
@@ -171,7 +170,7 @@ class LenderDashboardController extends Controller
                 ],
                 'amountDetails'      => [
                     'loaned_amount'     => round($loan->sumPrets($wallet->getId()), 2),
-                    'blocked_amount'    => round($ongoingBidsSum, 2),
+                    'blocked_amount'    => round($wallet->getCommittedBalance(), 2),
                     'expected_earnings' => round($repaidGrossInterests + $upcomingGrossInterests - $problematicProjects['interests'], 2),
                     'deposited_amount'  => $depositedAmount
                 ],

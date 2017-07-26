@@ -156,6 +156,7 @@ class dossiersController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
+            $this->projectEntity   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
             $this->taxFormTypes    = $companyTaxFormType->select();
             $this->allTaxFormTypes = [];
 
@@ -615,7 +616,7 @@ class dossiersController extends bootstrap
                 if ($this->projects->status >= ProjectsStatus::PREP_FUNDING) {
                     if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
                         try {
-                            $this->projects->id_rate = $oProjectManager->getProjectRateRangeId($this->projects);
+                            $this->projects->id_rate = $oProjectManager->getProjectRateRangeId($this->projectEntity);
                         } catch (\Exception $exception) {
                             $_SESSION['freeow']['message'] .= $exception->getMessage();
                         }
@@ -741,7 +742,6 @@ class dossiersController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
             $attachmentManager = $this->get('unilend.service.attachment_manager');
 
-            $this->projectEntity                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
             $this->aAttachments                   = $this->projectEntity->getAttachments();
             $this->aAttachmentTypes               = $attachmentManager->getAllTypesForProjects();
             $this->attachmentTypesForCompleteness = $attachmentManager->getAllTypesForProjects(false);
@@ -1841,8 +1841,7 @@ class dossiersController extends bootstrap
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
                 $projectManager = $this->get('unilend.service.project_manager');
 
-                $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
-                $repaid = false;
+                $project              = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
                 $paidPaymentSchedules = $paymentScheduleRepository->findBy(
                     ['idProject' => $project, 'statusEmprunteur' => EcheanciersEmprunteur::STATUS_PAID],
                     ['ordre' => 'ASC']
@@ -1856,26 +1855,20 @@ class dossiersController extends bootstrap
                         $repaymentNb        = 0;
 
                         if (0 < count($repaymentSchedules)) {
-                            $entityManager->getConnection()->beginTransaction();
                             try {
-                                $repaymentNb = $projectRepaymentManager->repay($project, $paidPaymentSchedule->getOrdre(), $_SESSION['user']['id_user']);
+                                $repaymentNb              = $projectRepaymentManager->repay($project, $paidPaymentSchedule->getOrdre(), $_SESSION['user']['id_user']);
+                                $unpaidRepaymentSchedules = $repaymentScheduleRepository->findByProject($project, $paidPaymentSchedule->getOrdre(), null, Echeanciers::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PAID, null, 0, 1);
+                                $repaidRepaymentSchedules = $repaymentScheduleRepository->findByProject($project, $paidPaymentSchedule->getOrdre(), null, Echeanciers::STATUS_REPAID, EcheanciersEmprunteur::STATUS_PAID);
+
                                 if (0 === $repaymentNb) {
                                     $_SESSION['freeow']['title']   = 'Remboursement prêteur';
                                     $_SESSION['freeow']['message'] = "Aucun remboursement n'a été effectué aux prêteurs !";
                                 } else {
-                                    $repaid = true;
-                                    $projectRepayment = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsRemb')->findOneBy([
-                                        'idProject' => $project,
-                                        'ordre'     => $paidPaymentSchedule->getOrdre(),
-                                        'status'    => ProjectsRemb::STATUS_REPAID
-                                    ]);
-                                    if ($projectRepayment) {
-                                        $projectRepayment->setStatus(ProjectsRemb::STATUS_AUTOMATIC_REPAYMENT_DISABLED)
-                                            ->setDateRembPreteursReel(new \DateTime());
-                                        $entityManager->flush($projectRepayment);
-                                    }
                                     $emailNB = 0;
-                                    foreach ($repaymentSchedules as $repaymentSchedule) {
+                                    foreach ($repaidRepaymentSchedules as $repaymentSchedule) {
+                                        if (Echeanciers::STATUS_REPAYMENT_EMAIL_SENT === $repaymentSchedule->getStatusEmailRemb()) {
+                                            continue;
+                                        }
                                         $netRepayment         = $operationRepository->getNetAmountByRepaymentScheduleId($repaymentSchedule);
                                         $wallet               = $repaymentSchedule->getIdLoan()->getIdLender();
                                         $repaymentOperation   = $operationRepository->findOneBy(['idRepaymentSchedule' => $repaymentSchedule]);
@@ -1917,13 +1910,16 @@ class dossiersController extends bootstrap
 
                                     $_SESSION['freeow']['title']   = 'Remboursement prêteur';
                                     $_SESSION['freeow']['message'] = 'Les prêteurs ont bien été remboursés !';
+
+                                    if (0 < count($unpaidRepaymentSchedules)) {
+                                        $_SESSION['freeow']['title']   = 'Remboursement prêteur';
+                                        $_SESSION['freeow']['message'] = "Certaines remboursements n'ont pas été effectués aux prêteurs ! Veuillez réessayer ultérieurement.";
+                                    }
                                 }
 
-                                $entityManager->getConnection()->commit();
                             } catch (\Exception $exception) {
                                 $_SESSION['freeow']['title']   = 'Remboursement prêteur';
-                                $_SESSION['freeow']['message'] = 'Une erreur survenu ! Remboursement prêteur est rollbacké !';
-                                $entityManager->getConnection()->rollBack();
+                                $_SESSION['freeow']['message'] = 'Une erreur survenu ! Veuillez réessayer ultérieurement.';
                                 $logger = $this->get('logger');
                                 $logger->error('Errors occur during the repayment command. Error message : ' . $exception->getMessage(), [$exception->getTrace()]);
                             }
@@ -1942,11 +1938,6 @@ class dossiersController extends bootstrap
                             break;
                         }
                     }
-                }
-
-                if (false === $repaid) {
-                    $_SESSION['freeow']['title']   = 'Remboursement prêteur';
-                    $_SESSION['freeow']['message'] = "Aucun remboursement n'a été effectué aux prêteurs !";
                 }
 
                 header('Location: ' . $this->lurl . '/dossiers/detail_remb/' . $this->params[0]);
@@ -3031,16 +3022,16 @@ class dossiersController extends bootstrap
 
     private function checkTargetCompanyRisk()
     {
-        /** @var \companies $company */
-        $company = $this->loadData('companies');
-        $company->get($this->projects->id_target_company);
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->projects->id_target_company);
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
-        $riskCheck             = $projectRequestManager->checkCompanyRisk($company, $_SESSION['user']['id_user']);
+        $eligibility           = $projectRequestManager->checkCompanyRisk($company, $_SESSION['user']['id_user']);
 
-        if (null !== $riskCheck) {
-            $projectRequestManager->addRejectionProjectStatus($riskCheck, $this->projects, $_SESSION['user']['id_user']);
+        if (is_array($eligibility) && false === empty($eligibility)) {
+            $projectRequestManager->addRejectionProjectStatus($eligibility[0], $this->projects, $_SESSION['user']['id_user']);
         }
     }
 

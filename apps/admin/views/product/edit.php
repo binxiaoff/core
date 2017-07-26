@@ -9,13 +9,13 @@
             <th>Statut</th>
             <?php
             switch ( $this->product->status) {
-                case \product::STATUS_OFFLINE:
+                case \Unilend\Bundle\CoreBusinessBundle\Entity\Product::STATUS_OFFLINE:
                     $status = 'Desactivé FO (indisponible FO mais disponible BO)';
                     break;
-                case \product::STATUS_ONLINE:
+                case \Unilend\Bundle\CoreBusinessBundle\Entity\Product::STATUS_ONLINE:
                     $status = 'Activé';
                     break;
-                case \product::STATUS_ARCHIVED:
+                case \Unilend\Bundle\CoreBusinessBundle\Entity\Product::STATUS_ARCHIVED:
                     $status = 'Archivé (indisponible FO et BO)';
                     break;
             }
@@ -49,7 +49,7 @@
             <td><?= isset($this->duration['max'][0]) ? $this->duration['max'][0] : '<em>Pas de contrôle</em>' ?></td>
         </tr>
         <tr>
-            <th>Motif de l'emprunt</th>
+            <th>Motif eligible de l'emprunt</th>
             <td>
                 <?php if (empty($this->borrowerMotives)) : ?>
                     <em>Pas de contrôle</em>
@@ -62,6 +62,22 @@
                 <? endif ?>
             </td>
         </tr>
+
+        <tr>
+            <th>Motif ineligible de l'emprunt</th>
+            <td>
+                <?php if (empty($this->borrowerExcludedMotives)) : ?>
+                    <em>Pas de contrôle</em>
+                <?php else : ?>
+                    <ul>
+                        <?php foreach ($this->borrowerExcludedMotives as $motive) : ?>
+                            <li><?= $motive ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                <? endif ?>
+            </td>
+        </tr>
+
         <tr>
             <th>Jours de création min</th>
             <td><?= isset($this->creationDaysMin[0]) ? $this->creationDaysMin[0] : '<em>Pas de contrôle</em>' ?></td>
@@ -106,6 +122,49 @@
                     <?php endforeach; ?>
                 <? endif ?>
             </td>
+        </tr>
+
+        <tr>
+            <th>Le siège social est hors les codes postale suivants</th>
+            <td>
+                <?php if (empty($this->checkExcludedLocation)) : ?>
+                    <em>Pas de contrôle</em>
+                <?php else : ?>
+                    <?php foreach ($this->checkExcludedLocation as $location) : ?>
+                        <?= $location ?>
+                    <?php endforeach; ?>
+                <? endif ?>
+            </td>
+        </tr>
+
+        <tr>
+            <th>Score Xerfi max</th>
+            <td><?= isset($this->maxXerfiScore[0]) ? $this->maxXerfiScore[0] : '<em>Pas de contrôle</em>' ?></td>
+        </tr>
+
+        <tr>
+            <th>N'a aucun projet avec produit B-LEND en cours depuis</th>
+            <td><?= isset($this->minNoIncidentBlendDays[0]) ? $this->noBlendDays[0] . ' jours' : '<em>Pas de contrôle</em>' ?></td>
+        </tr>
+
+        <tr>
+            <th>Aucun incident sur un projet Unilend depuis</th>
+            <td><?= isset($this->minNoIncidentUnilendDays[0]) ? $this->noIncidentUnilendDays[0] . ' jours' : '<em>Pas de contrôle</em>' ?></td>
+        </tr>
+
+        <tr>
+            <th>Aucun incident sur un projet B-LEND depuis</th>
+            <td><?= isset($this->minNoIncidentBlendDays[0]) ? $this->noIncidentBlendDays[0] . ' jours' : '<em>Pas de contrôle</em>' ?></td>
+        </tr>
+
+        <tr>
+            <th>Pre-score min</th>
+            <td><?= isset($this->minPreScore[0]) ? $this->minPreScore[0] : '<em>Pas de contrôle</em>' ?></td>
+        </tr>
+
+        <tr>
+            <th>Pre-score max</th>
+            <td><?= isset($this->maxPreScore[0]) ? $this->maxPreScore[0] : '<em>Pas de contrôle</em>' ?></td>
         </tr>
     </table>
 </div>

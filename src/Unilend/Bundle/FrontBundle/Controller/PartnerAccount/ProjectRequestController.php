@@ -262,6 +262,9 @@ class ProjectRequestController extends Controller
                 case ProjectsStatus::NON_ELIGIBLE_REASON_INACTIVE:
                     $translation = 'partner-project-request_not-eligible-reason-unknown-or-inactive-siren';
                     break;
+                case ProjectsStatus::NON_ELIGIBLE_REASON_COMPANY_LOCATION:
+                    $translation = 'partner-project-request_not-eligible-reason-company-location';
+                    break;
                 case ProjectsStatus::NON_ELIGIBLE_REASON_PROCEEDING:
                     $translation = 'partner-project-request_not-eligible-reason-collective-proceeding';
                     break;
@@ -277,6 +280,11 @@ class ProjectRequestController extends Controller
                 case ProjectsStatus::NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE:
                 case ProjectsStatus::NON_ELIGIBLE_REASON_EULER_GRADE_VS_UNILEND_XERFI:
                 case ProjectsStatus::NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_DEFAULTS:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_SOCIAL_SECURITY_PRIVILEGES:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_TREASURY_TAX_PRIVILEGES:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_INCIDENT:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT:
                     $translation = 'partner-project-request_not-eligible-reason-scoring';
                     break;
                 case ProjectsStatus::NON_ELIGIBLE_REASON_LOW_TURNOVER:
@@ -286,6 +294,7 @@ class ProjectRequestController extends Controller
                     $translation = 'partner-project-request_not-eligible-reason-financial-data';
                     break;
                 case ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_BLEND:
                 default:
                     $translation = 'partner-project-request_not-eligible-reason-no-product';
                     break;

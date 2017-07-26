@@ -1,6 +1,8 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsNotes;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
@@ -732,20 +734,12 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        /** @var \projects $project */
-        $project = $this->loadData('projects');
-        /** @var \projects_notes $projectRating */
-        $projectRating = $this->loadData('projects_notes');
-        /** @var \companies $company */
-        $company = $this->loadData('companies');
-        /** @var \clients $client */
-        $client = $this->loadData('clients');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (
             false === isset($_POST['id_project'], $_POST['status'])
-            || false === $project->get($_POST['id_project'], 'id_project')
-            || false === $company->get($project->id_company, 'id_company')
-            || false === $client->get($company->id_client_owner, 'id_client')
+            || null === ($project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']))
             || $_POST['status'] == 1 && (
                 empty($_POST['structure']) || $_POST['structure'] > 10
                 || empty($_POST['rentabilite']) || $_POST['rentabilite'] > 10
@@ -763,37 +757,39 @@ class ajaxController extends bootstrap
             return;
         }
 
-        $update = $projectRating->get($_POST['id_project'], 'id_project');
+        $projectRating = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project]);
 
-        $projectRating->structure                   = round(str_replace(',', '.', $_POST['structure']), 1);
-        $projectRating->rentabilite                 = round(str_replace(',', '.', $_POST['rentabilite']), 1);
-        $projectRating->tresorerie                  = round(str_replace(',', '.', $_POST['tresorerie']), 1);
-        $projectRating->performance_fianciere       = round(str_replace(',', '.', $_POST['performance_fianciere']), 1);
-        $projectRating->individuel                  = round(str_replace(',', '.', $_POST['individuel']), 1);
-        $projectRating->global                      = round(str_replace(',', '.', $_POST['global']), 1);
-        $projectRating->marche_opere                = round(str_replace(',', '.', $_POST['marche_opere']), 1);
-        $projectRating->dirigeance                  = round(str_replace(',', '.', $_POST['dirigeance']), 1);
-        $projectRating->indicateur_risque_dynamique = round(str_replace(',', '.', $_POST['indicateur_risque_dynamique']), 1);
-        $projectRating->note                        = round($projectRating->performance_fianciere * 0.2 + $projectRating->marche_opere * 0.2 + $projectRating->dirigeance * 0.2 + $projectRating->indicateur_risque_dynamique * 0.4, 1);
-        $projectRating->avis                        = $_POST['avis'];
+        if (null === $projectRating) {
+            $projectRating = new ProjectsNotes();
+            $projectRating->setIdProject($project);
 
-        $projectRating->structure_comite                   = empty($projectRating->structure_comite) ? $projectRating->structure : $projectRating->structure_comite;
-        $projectRating->rentabilite_comite                 = empty($projectRating->rentabilite_comite) ? $projectRating->rentabilite : $projectRating->rentabilite_comite;
-        $projectRating->tresorerie_comite                  = empty($projectRating->tresorerie_comite) ? $projectRating->tresorerie : $projectRating->tresorerie_comite;
-        $projectRating->performance_fianciere_comite       = empty($projectRating->performance_fianciere_comite) ? $projectRating->performance_fianciere : $projectRating->performance_fianciere_comite;
-        $projectRating->individuel_comite                  = empty($projectRating->individuel_comite) ? $projectRating->individuel : $projectRating->individuel_comite;
-        $projectRating->global_comite                      = empty($projectRating->global_comite) ? $projectRating->global : $projectRating->global_comite;
-        $projectRating->marche_opere_comite                = empty($projectRating->marche_opere_comite) ? $projectRating->marche_opere : $projectRating->marche_opere_comite;
-        $projectRating->dirigeance_comite                  = empty($projectRating->dirigeance_comite) ? $projectRating->dirigeance : $projectRating->dirigeance_comite;
-        $projectRating->indicateur_risque_dynamique_comite = empty($projectRating->indicateur_risque_dynamique_comite) ? $projectRating->indicateur_risque_dynamique : $projectRating->indicateur_risque_dynamique_comite;
-        $projectRating->note_comite                        = empty($projectRating->note_comite) ? $projectRating->note : $projectRating->note_comite;
-
-        if ($update == true) {
-            $projectRating->update();
-        } else {
-            $projectRating->id_project = $project->id_project;
-            $projectRating->create();
+            $entityManager->persist($projectRating);
         }
+
+        $projectRating->setStructure(round(str_replace(',', '.', $_POST['structure']), 1));
+        $projectRating->setRentabilite(round(str_replace(',', '.', $_POST['rentabilite']), 1));
+        $projectRating->setTresorerie(round(str_replace(',', '.', $_POST['tresorerie']), 1));
+        $projectRating->setPerformanceFianciere(round(str_replace(',', '.', $_POST['performance_fianciere']), 1));
+        $projectRating->setIndividuel(round(str_replace(',', '.', $_POST['individuel']), 1));
+        $projectRating->setGlobal(round(str_replace(',', '.', $_POST['global']), 1));
+        $projectRating->setMarcheOpere(round(str_replace(',', '.', $_POST['marche_opere']), 1));
+        $projectRating->setDirigeance(round(str_replace(',', '.', $_POST['dirigeance']), 1));
+        $projectRating->setIndicateurRisqueDynamique(round(str_replace(',', '.', $_POST['indicateur_risque_dynamique']), 1));
+        $projectRating->setNote(round($projectRating->getPerformanceFianciere() * 0.2 + $projectRating->getMarcheOpere() * 0.2 + $projectRating->getDirigeance() * 0.2 + $projectRating->getIndicateurRisqueDynamique() * 0.4, 1));
+        $projectRating->setAvis($_POST['avis']);
+
+        $projectRating->setStructureComite(empty($projectRating->getStructureComite()) ? $projectRating->getStructure() : $projectRating->getStructureComite());
+        $projectRating->setRentabiliteComite(empty($projectRating->getRentabiliteComite()) ? $projectRating->getRentabilite() : $projectRating->getRentabiliteComite());
+        $projectRating->setTresorerieComite(empty($projectRating->getTresorerieComite()) ? $projectRating->getTresorerie() : $projectRating->getTresorerieComite());
+        $projectRating->setPerformanceFianciereComite(empty($projectRating->getPerformanceFianciereComite()) ? $projectRating->getPerformanceFianciere() : $projectRating->getPerformanceFianciereComite());
+        $projectRating->setIndividuelComite(empty($projectRating->getIndividuelComite()) ? $projectRating->getIndividuel() : $projectRating->getIndividuelComite());
+        $projectRating->setGlobalComite(empty($projectRating->getGlobalComite()) ? $projectRating->getGlobal() : $projectRating->getGlobalComite());
+        $projectRating->setMarcheOpereComite(empty($projectRating->getMarcheOpereComite()) ? $projectRating->getMarcheOpere() : $projectRating->getMarcheOpereComite());
+        $projectRating->setDirigeanceComite(empty($projectRating->getDirigeanceComite()) ? $projectRating->getDirigeance() : $projectRating->getDirigeanceComite());
+        $projectRating->setIndicateurRisqueDynamiqueComite(empty($projectRating->getIndicateurRisqueDynamiqueComite()) ? $projectRating->getIndicateurRisqueDynamique() : $projectRating->getIndicateurRisqueDynamiqueComite());
+        $projectRating->setNoteComite(empty($projectRating->getNoteComite()) ? $projectRating->getNote() : $projectRating->getNoteComite());
+
+        $entityManager->flush($projectRating);
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
         $projectManager = $this->get('unilend.service.project_manager');
@@ -805,7 +801,7 @@ class ajaxController extends bootstrap
 
             /** @var \projects_status_history $projectStatusHistory */
             $projectStatusHistory = $this->loadData('projects_status_history');
-            $projectStatusHistory->loadLastProjectHistory($project->id_project);
+            $projectStatusHistory->loadLastProjectHistory($project->getIdProject());
 
             /** @var \projects_status_history_details $historyDetails */
             $historyDetails                            = $this->loadData('projects_status_history_details');
@@ -813,7 +809,9 @@ class ajaxController extends bootstrap
             $historyDetails->analyst_rejection_reason  = $_POST['rejection_reason'];
             $historyDetails->create();
 
-            if (false === empty($client->email)) {
+            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+
+            if ($client instanceof Clients && false === empty($client->getEmail())) {
                 /** @var \settings $settings */
                 $settings = $this->loadData('settings');
                 $settings->get('Facebook', 'type');
@@ -825,7 +823,7 @@ class ajaxController extends bootstrap
                 $keywords = array(
                     'surl'                   => $this->surl,
                     'url'                    => $this->furl,
-                    'prenom_e'               => $client->prenom,
+                    'prenom_e'               => $client->getPrenom(),
                     'link_compte_emprunteur' => $this->furl,
                     'lien_fb'                => $facebookLink,
                     'lien_tw'                => $twitterLink
@@ -833,7 +831,7 @@ class ajaxController extends bootstrap
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
-                $message->setTo($client->email);
+                $message->setTo($client->getEmail());
                 $mailer = $this->get('mailer');
                 $mailer->send($message);
             }
@@ -846,20 +844,12 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        /** @var \projects $project */
-        $project = $this->loadData('projects');
-        /** @var \projects_notes $projectRating */
-        $projectRating = $this->loadData('projects_notes');
-        /** @var \companies $company */
-        $company = $this->loadData('companies');
-        /** @var \clients $client */
-        $client = $this->loadData('clients');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (
             false === isset($_POST['id_project'], $_POST['status'])
-            || false === $project->get($_POST['id_project'], 'id_project')
-            || false === $company->get($project->id_company, 'id_company')
-            || false === $client->get($company->id_client_owner, 'id_client')
+            || null === ($project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']))
             || in_array($_POST['status'], [1, 4]) && (
                 empty($_POST['structure_comite']) || $_POST['structure_comite'] > 10
                 || empty($_POST['rentabilite_comite']) || $_POST['rentabilite_comite'] > 10
@@ -877,58 +867,57 @@ class ajaxController extends bootstrap
             return;
         }
 
-        $update = $projectRating->get($_POST['id_project'], 'id_project');
+        $projectRating = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project]);
 
-        $projectRating->structure_comite                   = round(str_replace(',', '.', $_POST['structure_comite']), 1);
-        $projectRating->rentabilite_comite                 = round(str_replace(',', '.', $_POST['rentabilite_comite']), 1);
-        $projectRating->tresorerie_comite                  = round(str_replace(',', '.', $_POST['tresorerie_comite']), 1);
-        $projectRating->performance_fianciere_comite       = round(str_replace(',', '.', $_POST['performance_fianciere_comite']), 1);
-        $projectRating->individuel_comite                  = round(str_replace(',', '.', $_POST['individuel_comite']), 1);
-        $projectRating->global_comite                      = round(str_replace(',', '.', $_POST['global_comite']), 1);
-        $projectRating->marche_opere_comite                = round(str_replace(',', '.', $_POST['marche_opere_comite']), 1);
-        $projectRating->dirigeance_comite                  = round(str_replace(',', '.', $_POST['dirigeance_comite']), 1);
-        $projectRating->indicateur_risque_dynamique_comite = round(str_replace(',', '.', $_POST['indicateur_risque_dynamique_comite']), 1);
-        $projectRating->note_comite                        = round($projectRating->performance_fianciere_comite * 0.2 + $projectRating->marche_opere_comite * 0.2 + $projectRating->dirigeance_comite * 0.2 + $projectRating->indicateur_risque_dynamique_comite * 0.4, 1);
-        $projectRating->avis_comite                        = $_POST['avis_comite'];
+        $projectRating->setStructureComite(round(str_replace(',', '.', $_POST['structure_comite']), 1));
+        $projectRating->setRentabiliteComite(round(str_replace(',', '.', $_POST['rentabilite_comite']), 1));
+        $projectRating->setTresorerieComite(round(str_replace(',', '.', $_POST['tresorerie_comite']), 1));
+        $projectRating->setPerformanceFianciereComite(round(str_replace(',', '.', $_POST['performance_fianciere_comite']), 1));
+        $projectRating->setIndividuelComite(round(str_replace(',', '.', $_POST['individuel_comite']), 1));
+        $projectRating->setGlobalComite(round(str_replace(',', '.', $_POST['global_comite']), 1));
+        $projectRating->setMarcheOpereComite(round(str_replace(',', '.', $_POST['marche_opere_comite']), 1));
+        $projectRating->setDirigeanceComite(round(str_replace(',', '.', $_POST['dirigeance_comite']), 1));
+        $projectRating->setIndicateurRisqueDynamiqueComite(round(str_replace(',', '.', $_POST['indicateur_risque_dynamique_comite']), 1));
+        $projectRating->setNoteComite(round($projectRating->getPerformanceFianciereComite() * 0.2 + $projectRating->getMarcheOpereComite() * 0.2 + $projectRating->getDirigeanceComite() * 0.2 + $projectRating->getIndicateurRisqueDynamiqueComite() * 0.4, 1));
+        $projectRating->setAvisComite($_POST['avis_comite']);
 
-        if ($update == true) {
-            $projectRating->update();
-        } else {
-            $projectRating->id_project = $project->id_project;
-            $projectRating->create();
-        }
+        $entityManager->flush($projectRating);
 
-        if ($projectRating->note_comite >= 8.5 && $projectRating->note_comite <= 10) {
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+        $projectManager = $this->get('unilend.service.project_manager');
+
+        if ($projectRating->getNoteComite() >= 8.5 && $projectRating->getNoteComite() <= 10) {
             $riskRating = 'A';
-        } elseif ($projectRating->note_comite >= 7.5 && $projectRating->note_comite < 8.5) {
+        } elseif ($projectRating->getNoteComite() >= 7.5 && $projectRating->getNoteComite() < 8.5) {
             $riskRating = 'B';
-        } elseif ($projectRating->note_comite >= 6.5 && $projectRating->note_comite < 7.5) {
+        } elseif ($projectRating->getNoteComite() >= 6.5 && $projectRating->getNoteComite() < 7.5) {
             $riskRating = 'C';
-        } elseif ($projectRating->note_comite >= 5.5 && $projectRating->note_comite < 6.5) {
+        } elseif ($projectRating->getNoteComite() >= 5.5 && $projectRating->getNoteComite() < 6.5) {
             $riskRating = 'D';
-        } elseif ($projectRating->note_comite >= 4 && $projectRating->note_comite < 5.5) {
+        } elseif ($projectRating->getNoteComite() >= 4 && $projectRating->getNoteComite() < 5.5) {
             $riskRating = 'E';
-        } elseif ($projectRating->note_comite >= 2 && $projectRating->note_comite < 4) {
+        } elseif ($projectRating->getNoteComite() >= 2 && $projectRating->getNoteComite() < 4) {
             $riskRating = 'G';
         } else {
             $riskRating = 'I';
         }
 
-        $project->risk = $riskRating;
-        $project->update();
+        $project->setRisk($riskRating);
+        $entityManager->flush($project);
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
-        $projectManager = $this->get('unilend.service.project_manager');
+        /** @var \clients $client */
+        $client = $this->loadData('clients');
+        $client->get($project->getIdCompany()->getIdClientOwner());
 
         if ($_POST['status'] == 1) {
             /** @var \projects_status_history $projectStatusHistory */
             $projectStatusHistory = $this->loadData('projects_status_history');
 
             $existingStatus  = [];
-            $companyProjects = $project->select('id_company = ' . $project->id_company);
+            $companyProjects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $project->getIdCompany()]);
 
             foreach ($companyProjects as $companyProject) {
-                $statusHistory = $projectStatusHistory->getHistoryDetails($companyProject['id_project']);
+                $statusHistory = $projectStatusHistory->getHistoryDetails($companyProject->getIdProject());
                 foreach ($statusHistory as $status) {
                     $existingStatus[] = $status['status'];
                 }
@@ -977,10 +966,8 @@ class ajaxController extends bootstrap
                 $mailer->send($message);
             }
         } elseif ($_POST['status'] == 4) {
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager        = $this->get('doctrine.orm.entity_manager');
             $projectCommentEntity = new \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments();
-            $projectCommentEntity->setIdProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project));
+            $projectCommentEntity->setIdProject($project);
             $projectCommentEntity->setIdUser($this->userEntity);
             $projectCommentEntity->setContent('<p><u>Conditions suspensives de mise en ligne</u><p>' . $_POST['suspensive_conditions_comment'] . '</p>');
             $projectCommentEntity->setPublic(true);
@@ -988,18 +975,17 @@ class ajaxController extends bootstrap
             $entityManager->persist($projectCommentEntity);
             $entityManager->flush($projectCommentEntity);
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
-            $projectManager = $this->get('unilend.service.project_manager');
             $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::SUSPENSIVE_CONDITIONS, $project);
         }
 
         if (
-            false === empty($project->risk) && false === empty($project->period)
-            && false === in_array($project->status, [ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION])
+            false === empty($project->getRisk()) && false === empty($project->getPeriod())
+            && false === in_array($project->getStatus(), [ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION])
         ) {
             try {
-                $project->id_rate = $projectManager->getProjectRateRangeId($project);
-                $project->update();
+                $idRate = $projectManager->getProjectRateRangeId($project);
+                $project->setIdRate($idRate);
+                $entityManager->flush($project);
             } catch (\Exception $exception) {
                 echo json_encode(['success' => false, 'error' => $exception->getMessage()]);
                 return;

@@ -222,12 +222,12 @@ class EcheanciersRepository extends EntityRepository
               INNER JOIN wallet w ON w.id = e.id_lender
               INNER JOIN clients c ON c.id_client = w.id_client
               LEFT JOIN lender_tax_exemption lte ON lte.id_lender = e.id_lender AND lte.year = YEAR(e.date_echeance_reel)
-              LEFT JOIN operation prelevements_obligatoires ON prelevements_obligatoires.id_repayment_schedule = e.id_echeancier AND prelevements_obligatoires.id_type = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS . '\')
-              LEFT JOIN operation retenues_source ON retenues_source.id_repayment_schedule = e.id_echeancier AND retenues_source.id_type = (SELECT id FROM operation_type WHERE label = \''. OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE .'\')
+              LEFT JOIN operation prelevements_obligatoires ON prelevements_obligatoires.id_repayment_schedule = e.id_echeancier AND prelevements_obligatoires.id_type = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES . '\')
+              LEFT JOIN operation retenues_source ON retenues_source.id_repayment_schedule = e.id_echeancier AND retenues_source.id_type = (SELECT id FROM operation_type WHERE label = \''. OperationType::TAX_FR_RETENUES_A_LA_SOURCE .'\')
               LEFT JOIN operation csg ON csg.id_repayment_schedule = e.id_echeancier AND csg.id_type = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_CSG . '\')
-              LEFT JOIN operation prelevements_sociaux ON prelevements_sociaux.id_repayment_schedule = e.id_echeancier AND prelevements_sociaux.id_type = (SELECT id FROM operation_type WHERE label = \'' .  OperationType::TAX_FR_SOCIAL_DEDUCTIONS . '\')
-              LEFT JOIN operation contributions_additionnelles ON contributions_additionnelles.id_repayment_schedule = e.id_echeancier AND contributions_additionnelles.id_type  = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS . '\')
-              LEFT JOIN operation prelevements_solidarite ON prelevements_solidarite.id_repayment_schedule = e.id_echeancier AND prelevements_solidarite.id_type  = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS . '\')
+              LEFT JOIN operation prelevements_sociaux ON prelevements_sociaux.id_repayment_schedule = e.id_echeancier AND prelevements_sociaux.id_type = (SELECT id FROM operation_type WHERE label = \'' .  OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX . '\')
+              LEFT JOIN operation contributions_additionnelles ON contributions_additionnelles.id_repayment_schedule = e.id_echeancier AND contributions_additionnelles.id_type  = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES . '\')
+              LEFT JOIN operation prelevements_solidarite ON prelevements_solidarite.id_repayment_schedule = e.id_echeancier AND prelevements_solidarite.id_type  = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE . '\')
               LEFT JOIN operation crds ON crds.id_repayment_schedule = e.id_echeancier AND crds.id_type  = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_CRDS . '\')
             WHERE e.date_echeance_reel BETWEEN :startDate AND :endDate
                 AND e.status IN (' . Echeanciers::STATUS_REPAID . ', ' . Echeanciers::STATUS_PARTIALLY_REPAID . ')

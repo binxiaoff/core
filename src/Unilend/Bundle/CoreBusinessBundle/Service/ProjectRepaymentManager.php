@@ -107,11 +107,11 @@ class ProjectRepaymentManager
      *
      * @param Projects $project
      * @param int      $repaymentSequence
-     * @param int|null $idUser
+     * @param int $idUser
      *
      * @return int
      */
-    public function repay(Projects $project, $repaymentSequence, $idUser = null)
+    public function repay(Projects $project, $repaymentSequence, $idUser)
     {
         $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
         $repaymentNb                 = 0;
@@ -192,7 +192,11 @@ class ProjectRepaymentManager
             $paymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy(['idProject' => $project, 'ordre' => $repaymentSequence]);
             $this->operationManager->repaymentCommission($paymentSchedule);
 
-            $projectRepayment->setDateRembPreteursReel(new \DateTime())->setStatus(ProjectsRemb::STATUS_REPAID);
+            $repaidStatus = ProjectsRemb::STATUS_REPAID;
+            if ($idUser > 0) {
+                $repaidStatus = ProjectsRemb::STATUS_AUTOMATIC_REPAYMENT_DISABLED;
+            }
+            $projectRepayment->setDateRembPreteursReel(new \DateTime())->setStatus($repaidStatus);
             $this->entityManager->flush($projectRepayment);
 
             $this->createPaymentScheduleInvoice($paymentSchedule);
