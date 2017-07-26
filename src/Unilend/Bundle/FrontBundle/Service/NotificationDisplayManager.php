@@ -163,6 +163,19 @@ class NotificationDisplayManager
                         '%company%'    => $company->name
                     ]);
                     break;
+                case Notifications::TYPE_REPAYMENT_REGULARIZATION:
+                    $project->get($notification['id_project'], 'id_project');
+                    $company->get($project->id_company, 'id_company');
+
+                    $type    = 'remboursement';
+                    $image   = 'remboursement';
+                    $title   = $this->translator->trans('lender-notifications_repayment-regularization-title');
+                    $content = $this->translator->trans('lender-notifications_repayment-regularization-content', [
+                        '%amount%'     => $ficelle->formatNumber($notification['amount'] / 100, 2),
+                        '%projectUrl%' => $this->router->generate('project_detail', ['projectSlug' => $project->slug]),
+                        '%company%'    => $company->name
+                    ]);
+                    break;
                 case Notifications::TYPE_BID_PLACED:
                     $bid->get($notification['id_bid'], 'id_bid');
                     $project->get($notification['id_project'], 'id_project');

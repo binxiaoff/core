@@ -321,39 +321,61 @@ class OperationRepository extends EntityRepository
     /**
      * @param Echeanciers|int $idRepaymentSchedule
      *
-     * @return null|float
+     * @return float
      */
     public function getTaxAmountByRepaymentScheduleId($idRepaymentSchedule)
     {
+        $qbRegularization = $this->createQueryBuilder('o_r');
+        $qbRegularization->select('IFNULL(SUM(o_r.amount), 0)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot_r', Join::WITH, 'o_r.idType = ot_r.id')
+            ->where('ot_r.label IN (:taxRegularizationTypes)')
+            ->andWhere('o_r.idRepaymentSchedule = :idRepaymentSchedule');
+        $regularization = $qbRegularization->getDQL();
+
         $qb = $this->createQueryBuilder('o');
-        $qb->select('SUM(o.amount)')
+        $qb->select('IFNULL(SUM(o.amount), 0) as amount')
+            ->addSelect('(' . $regularization . ') as regularized_amount')
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
             ->where('ot.label IN (:taxTypes)')
             ->andWhere('o.idRepaymentSchedule = :idRepaymentSchedule')
             ->setParameter('taxTypes', OperationType::TAX_TYPES_FR, Connection::PARAM_STR_ARRAY)
+            ->setParameter('taxRegularizationTypes', OperationType::TAX_TYPES_FR_REGULARIZATION, Connection::PARAM_STR_ARRAY)
             ->setParameter('idRepaymentSchedule', $idRepaymentSchedule)
             ->setCacheable(true);
 
-        return $qb->getQuery()->getSingleScalarResult();
+        $result = $qb->getQuery()->getArrayResult();
+
+        return bcsub($result[0]['amount'], $result[0]['regularized_amount'], 2);
     }
 
     /**
      * @param Echeanciers|int $idRepaymentSchedule
      *
-     * @return null|float
+     * @return float
      */
     public function getGrossAmountByRepaymentScheduleId($idRepaymentSchedule)
     {
+        $qbRegularization = $this->createQueryBuilder('o_r');
+        $qbRegularization->select('IFNULL(SUM(o_r.amount), 0)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot_r', Join::WITH, 'o_r.idType = ot_r.id')
+            ->where('ot_r.label IN (:repaymentRegularizationTypes)')
+            ->andWhere('o_r.idRepaymentSchedule = :idRepaymentSchedule');
+        $regularization = $qbRegularization->getDQL();
+
         $qb = $this->createQueryBuilder('o');
-        $qb->select('SUM(o.amount)')
+        $qb->select('IFNULL(SUM(o.amount), 0) as amount')
+            ->addSelect('(' . $regularization . ') as regularized_amount')
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
             ->where('ot.label IN (:repaymentTypes)')
             ->andWhere('o.idRepaymentSchedule = :idRepaymentSchedule')
             ->setParameter('repaymentTypes', [OperationType::CAPITAL_REPAYMENT, OperationType::GROSS_INTEREST_REPAYMENT], Connection::PARAM_STR_ARRAY)
+            ->setParameter('repaymentRegularizationTypes', [OperationType::CAPITAL_REPAYMENT_REGULARIZATION, OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION], Connection::PARAM_STR_ARRAY)
             ->setParameter('idRepaymentSchedule', $idRepaymentSchedule)
             ->setCacheable(true);
 
-        return $qb->getQuery()->getSingleScalarResult();
+        $result = $qb->getQuery()->getArrayResult();
+
+        return bcsub($result[0]['amount'], $result[0]['regularized_amount'], 2);
     }
 
     /**
