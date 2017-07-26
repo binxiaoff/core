@@ -212,6 +212,12 @@ class WalletRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->executeUpdate($update, ['amount' => $amount, 'walletId' => $wallet]);
     }
 
+    /**
+     * @param Wallet|int $wallet
+     * @param float      $amount
+     *
+     * @return int
+     */
     public function releaseBalance($wallet, $amount)
     {
         if ($wallet instanceof Wallet) {
@@ -223,6 +229,12 @@ class WalletRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->executeUpdate($update, ['amount' => $amount, 'walletId' => $wallet]);
     }
 
+    /**
+     * @param Wallet|int $wallet
+     * @param float      $amount
+     *
+     * @return int
+     */
     public function engageBalance($wallet, $amount)
     {
         if ($wallet instanceof Wallet) {
