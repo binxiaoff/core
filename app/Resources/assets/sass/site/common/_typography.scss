@@ -143,9 +143,7 @@ a {
 .link-1,
 .link-2 {
   &:before {
-    content: $fa-angle-right; // '\f105'; //
     display: inline-block;
-    font-family: $ff-icon;
     padding-right: 5px;
     text-decoration: none !important;
   }

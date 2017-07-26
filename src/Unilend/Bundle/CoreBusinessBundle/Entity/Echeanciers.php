@@ -420,7 +420,7 @@ class Echeanciers
     /**
      * Set statusEmailRemb
      *
-     * @param boolean $statusEmailRemb
+     * @param int $statusEmailRemb
      *
      * @return Echeanciers
      */
@@ -434,7 +434,7 @@ class Echeanciers
     /**
      * Get statusEmailRemb
      *
-     * @return boolean
+     * @return int
      */
     public function getStatusEmailRemb()
     {

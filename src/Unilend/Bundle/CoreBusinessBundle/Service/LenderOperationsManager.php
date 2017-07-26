@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
@@ -15,20 +14,20 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class LenderOperationsManager
 {
-    const OP_REPAYMENT                = 'repayment';
-    const OP_REPAYMENT_REGULARIZATION = 'repayment_regularization';
-    const OP_RECOVERY_REPAYMENT       = 'recovery-repayment';
-    const OP_EARLY_REPAYMENT          = 'early-repayment';
-    const OP_BID                      = 'bid';
-    const OP_REFUSED_BID              = 'refused-bid';
-    const OP_AUTOBID                  = 'autobid';
-    const OP_REFUSED_AUTOBID          = 'refused-autobid';
-    const OP_REFUSED_LOAN             = 'refused-loan';
+    const OP_REPAYMENT                         = 'repayment';
+    const OP_REPAYMENT_REGULARIZATION          = 'repayment_regularization';
+    const OP_RECOVERY_REPAYMENT                = 'recovery-repayment';
+    const OP_RECOVERY_REPAYMENT_REGULARIZATION = 'recovery-repayment-regularization';
+    const OP_EARLY_REPAYMENT                   = 'early-repayment';
+    const OP_BID                               = 'bid';
+    const OP_REFUSED_BID                       = 'refused-bid';
+    const OP_AUTOBID                           = 'autobid';
+    const OP_REFUSED_AUTOBID                   = 'refused-autobid';
+    const OP_REFUSED_LOAN                      = 'refused-loan';
 
     const PROVISION_TYPES = [
         OperationType::LENDER_PROVISION,
@@ -53,6 +52,7 @@ class LenderOperationsManager
         self::OP_REPAYMENT,
         self::OP_EARLY_REPAYMENT,
         self::OP_RECOVERY_REPAYMENT,
+        self::OP_RECOVERY_REPAYMENT_REGULARIZATION,
         OperationType::COLLECTION_COMMISSION_LENDER,
         self::OP_REPAYMENT_REGULARIZATION
     ];
@@ -68,7 +68,9 @@ class LenderOperationsManager
         self::OP_REPAYMENT,
         self::OP_EARLY_REPAYMENT,
         self::OP_RECOVERY_REPAYMENT,
+        self::OP_RECOVERY_REPAYMENT_REGULARIZATION,
         OperationType::COLLECTION_COMMISSION_LENDER,
+        OperationType::COLLECTION_COMMISSION_LENDER_REGULARIZATION,
         self::OP_REPAYMENT_REGULARIZATION,
         self::OP_BID,
         self::OP_REFUSED_BID,
@@ -85,9 +87,9 @@ class LenderOperationsManager
     const FILTER_OFFERS             = 5;
     const FILTER_REPAYMENT          = 6;
 
-    /** @var  EntityManager */
+    /** @var EntityManager */
     private $entityManager;
-    /** @var  TranslatorInterface */
+    /** @var TranslatorInterface */
     private $translator;
 
     /**
@@ -123,29 +125,21 @@ class LenderOperationsManager
         $operationRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $walletHistory                  = $walletBalanceHistoryRepository->getLenderOperationHistory($wallet, $start, $end);
         $lenderOperations               = [];
+        $previousHistoryLineIndex       = null;
 
         foreach ($walletHistory as $index => $historyLine) {
             if (in_array(self::OP_REPAYMENT, $operations) && false === empty($historyLine['id_repayment_schedule'])) {
                 if (false == in_array($historyLine['label'], [OperationType::CAPITAL_REPAYMENT_REGULARIZATION, OperationType::CAPITAL_REPAYMENT])) {
                     continue;
                 } else {
-                    if (
-                        29101 == $historyLine['id_project']
-                        && $historyLine['operationDate'] > '2017-07-06 00:00:00'
-                        && $historyLine['operationDate'] < '2017-07-06 23:59:59'
-                    ) {
-                        if (OperationType::CAPITAL_REPAYMENT_REGULARIZATION == $historyLine['label']) {
-                            $repaymentDetail = $operationRepository->getRegularizationDetailByRepaymentScheduleId($historyLine['id_repayment_schedule']);
-                            $historyLine     = $this->formatRepaymentOperation($wallet, $repaymentDetail, $historyLine, self::OP_REPAYMENT_REGULARIZATION);
-                        } else {
-                            $repaymentDetailsWithLog = $operationRepository->getDetailByRepaymentScheduleIdAndRepaymentLog($historyLine['id_repayment_schedule']);
-                            //$lineIndex               = array_search($historyLine['added'], array_column($repaymentDetailsWithLog, 'added'));
-                            $historyLine             = $this->formatRepaymentOperation($wallet, $repaymentDetailsWithLog, $historyLine, self::OP_REPAYMENT);
-                        }
+                    if (OperationType::CAPITAL_REPAYMENT_REGULARIZATION == $historyLine['label']) {
+                        $repaymentDetail = $operationRepository->getRegularizationDetailByRepaymentScheduleId($historyLine['id_repayment_schedule']);
+                        $historyLine     = $this->formatRepaymentOperation($wallet, $repaymentDetail, $historyLine, self::OP_REPAYMENT_REGULARIZATION);
                     } else {
-                        $repaymentDetail = $operationRepository->getDetailByRepaymentScheduleId($historyLine['id_repayment_schedule']);
-                        $historyLine     = $this->formatRepaymentOperation($wallet, $repaymentDetail, $historyLine, self::OP_REPAYMENT);
+                        $repaymentDetailsWithLog = $operationRepository->getDetailByRepaymentScheduleIdAndRepaymentLog($historyLine['id_repayment_schedule']);
+                        $historyLine             = $this->formatRepaymentOperation($wallet, $repaymentDetailsWithLog, $historyLine, self::OP_REPAYMENT);
                     }
+
                 }
             }
 
@@ -157,14 +151,16 @@ class LenderOperationsManager
                 $historyLine['label'] = self::OP_RECOVERY_REPAYMENT;
             }
 
+            if (OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION_REGULARIZATION === $historyLine['sub_type_label']) {
+                $historyLine['label'] = self::OP_RECOVERY_REPAYMENT_REGULARIZATION;
+            }
+
             if (self::OP_REFUSED_BID === $historyLine['label']) {
-                if (empty($historyLine['amount']) && empty($historyLine['id_bid'] && empty($historyLine['id_loan']))) {
-                    /** @var WalletBalanceHistory $walletBalanceHistory */
+                if (empty($historyLine['amount']) && empty($historyLine['id_bid']) && empty($historyLine['id_loan'])) {
                     $walletBalanceHistory  = $walletBalanceHistoryRepository->getPreviousLineForWallet($wallet, $historyLine['id']);
                     $amount                = bcsub($walletBalanceHistory->getAvailableBalance(), $historyLine['amount'], 2);
                     $historyLine['amount'] = $amount;
                 }
-                $historyLine['amount'] = abs($historyLine['amount']);
 
                 if (false === empty($historyLine['id_loan'])) {
                     $historyLine['label']  = self::OP_REFUSED_LOAN;
@@ -172,7 +168,18 @@ class LenderOperationsManager
                     $historyLine['amount'] = bcdiv($loan->getAmount(), 100, 2);
                 }
             }
-            $lenderOperations[] = $historyLine;
+
+            // When a bid is partially rejected, as long as we update bid amount, we loose its intial amount. This is a (dirty) workaround to find out initial amount
+            if (
+                $previousHistoryLineIndex !== null
+                && in_array($lenderOperations[$previousHistoryLineIndex]['label'], [self::OP_BID, self::OP_AUTOBID, self::OP_REFUSED_BID, self::OP_REFUSED_AUTOBID])
+                && $lenderOperations[$previousHistoryLineIndex]['available_balance'] - $historyLine['available_balance'] != $lenderOperations[$previousHistoryLineIndex]['amount']
+            ) {
+                $lenderOperations[$previousHistoryLineIndex]['amount'] = $walletHistory[$previousHistoryLineIndex]['available_balance'] - $historyLine['available_balance'];
+            }
+
+            $lenderOperations[$index] = $historyLine;
+            $previousHistoryLineIndex = $index;
         }
 
         if (null !== $idProject || null !== $operations) {
@@ -198,7 +205,7 @@ class LenderOperationsManager
             $historyLine['label']  = $type;
             $amount                = bcsub(bcadd($repaymentDetail['capital'], $repaymentDetail['interest'], 2), $repaymentDetail['taxes'], 2);
             $historyLine['amount'] = self::OP_REPAYMENT === $type ? $amount : -$amount;
-            if (self::OP_REPAYMENT === $type ) {
+            if (self::OP_REPAYMENT === $type) {
                 $calculatedAvailableBalance = bcadd($historyLine['available_balance'], bcsub($repaymentDetail['interest'], $repaymentDetail['taxes'], 2), 2);
             } else {
                 $calculatedAvailableBalance = bcsub($historyLine['available_balance'], bcsub($repaymentDetail['interest'], $repaymentDetail['taxes'], 2), 2);
@@ -206,7 +213,7 @@ class LenderOperationsManager
 
             $historyLine['available_balance'] = null === $repaymentDetail['available_balance'] ? $calculatedAvailableBalance : $repaymentDetail['available_balance'];
 
-            $historyLine['detail']            = [
+            $historyLine['detail'] = [
                 'label' => $this->translator->trans('lender-operations_operations-table-repayment-collapse-details'),
                 'items' => [
                     [
@@ -390,8 +397,8 @@ class LenderOperationsManager
                         case OperationType::COLLECTION_COMMISSION_LENDER:
                             $column = 8;
                             break;
-                        case OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS_REGULARIZATION:
-                            $column = $taxColumns[OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS];
+                        case OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_REGULARIZATION:
+                            $column = $taxColumns[OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES];
                             break;
                         case OperationType::TAX_FR_CRDS_REGULARIZATION:
                             $column = $taxColumns[OperationType::TAX_FR_CRDS];
@@ -399,17 +406,17 @@ class LenderOperationsManager
                         case OperationType::TAX_FR_CSG_REGULARIZATION:
                             $column = $taxColumns[OperationType::TAX_FR_CSG];
                             break;
-                        case OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS_REGULARIZATION:
-                            $column = $taxColumns[OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS];
+                        case OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_REGULARIZATION:
+                            $column = $taxColumns[OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE];
                             break;
-                        case OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS_REGULARIZATION:
-                            $column = $taxColumns[OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS];
+                        case OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_REGULARIZATION:
+                            $column = $taxColumns[OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES];
                             break;
-                        case OperationType::TAX_FR_SOCIAL_DEDUCTIONS_REGULARIZATION:
-                            $column = $taxColumns[OperationType::TAX_FR_SOCIAL_DEDUCTIONS];
+                        case OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_REGULARIZATION:
+                            $column = $taxColumns[OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX];
                             break;
-                        case OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE_REGULARIZATION:
-                            $column = $taxColumns[OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE];
+                        case OperationType::TAX_FR_RETENUES_A_LA_SOURCE_REGULARIZATION:
+                            $column = $taxColumns[OperationType::TAX_FR_RETENUES_A_LA_SOURCE];
                             break;
                         default:
                             break;
@@ -420,12 +427,12 @@ class LenderOperationsManager
             }
 
             if (OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION === $operation['sub_type_label']) {
-                $activeSheet->setCellValueExplicitByColumnAndRow(6, $row, $operation['amount'],\PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $activeSheet->setCellValueExplicitByColumnAndRow(6, $row, $operation['amount'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
                 $activeSheet->getCellByColumnAndRow(6, $row)->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
             }
 
             if (OperationType::COLLECTION_COMMISSION_LENDER === $operation['label']) {
-                $activeSheet->setCellValueExplicitByColumnAndRow(8, $row, $operation['amount'],\PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $activeSheet->setCellValueExplicitByColumnAndRow(8, $row, $operation['amount'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
                 $activeSheet->getCellByColumnAndRow(8, $row)->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
             }
 

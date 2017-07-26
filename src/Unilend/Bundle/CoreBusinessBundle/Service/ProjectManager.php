@@ -114,18 +114,30 @@ class ProjectManager
         $offset = 0;
         $limit  = 100;
 
-        while ($bids = $bidData->getLastProjectBidsByLender($project->id_project, $limit, $offset)) {
+        while ($bids = $bidData->getFirstProjectBidsByLender($project->id_project, $limit, $offset)) {
             foreach ($bids as $bid) {
                 $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($bid['id_lender_account']);
-                if (
-                    null !== $wallet
-                    && WalletType::LENDER === $wallet->getIdType()->getLabel()
-                ) {
+
+                if (null !== $wallet && WalletType::LENDER === $wallet->getIdType()->getLabel()) {
+                    if ($bid['min_status'] == \bids::STATUS_BID_PENDING) {
+                        $notificationType = Notifications::TYPE_BID_PLACED;
+                        $mailType         = \clients_gestion_type_notif::TYPE_BID_PLACED;
+                        $mailFunction     = 'sendBidConfirmation';
+                    } else {
+                        $notificationType = Notifications::TYPE_BID_REJECTED;
+                        $mailType         = \clients_gestion_type_notif::TYPE_BID_REJECTED;
+                        $mailFunction     = 'sendBidRejected';
+                    }
+
+                    if ($bid['id_autobid'] > 0) {
+                        $mailType = \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID;
+                    }
+
                     $this->notificationManager->create(
-                        $bid['status'] == \bids::STATUS_BID_PENDING ? Notifications::TYPE_BID_PLACED : Notifications::TYPE_BID_REJECTED,
-                        $bid['id_autobid'] > 0 ? \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : ($bid['status'] == \bids::STATUS_BID_PENDING ? \clients_gestion_type_notif::TYPE_BID_PLACED : \clients_gestion_type_notif::TYPE_BID_REJECTED),
+                        $notificationType,
+                        $mailType,
                         $wallet->getIdClient()->getIdClient(),
-                        $bid['status'] == \bids::STATUS_BID_PENDING ? 'sendBidConfirmation' : 'sendBidRejected',
+                        $mailFunction,
                         $project->id_project,
                         $bid['amount'] / 100,
                         $bid['id_bid']
@@ -357,16 +369,27 @@ class ProjectManager
         }
     }
 
-    private function buildLoanIFPAndMinibon($project)
+    /**
+     * @param \projects $project
+     */
+    private function buildLoanIFPAndMinibon(\projects $project)
     {
         $this->buildIFPBasedMixLoan($project, \underlying_contract::CONTRACT_MINIBON);
     }
 
-    private function buildLoanIFPAndBDC($project) {
+    /**
+     * @param \projects $project
+     */
+    private function buildLoanIFPAndBDC(\projects $project)
+    {
         $this->buildIFPBasedMixLoan($project, \underlying_contract::CONTRACT_BDC);
     }
 
-    private function buildIFPBasedMixLoan($project, $additionalContract)
+    /**
+     * @param \projects $project
+     * @param string    $additionalContract
+     */
+    private function buildIFPBasedMixLoan(\projects $project, $additionalContract)
     {
         /** @var \bids $legacyBid */
         $legacyBid = $this->entityManagerSimulator->getRepository('bids');
@@ -467,7 +490,10 @@ class ProjectManager
         }
     }
 
-    private function buildLoanIFP($project)
+    /**
+     * @param \projects $project
+     */
+    private function buildLoanIFP(\projects $project)
     {
         /** @var \bids $legacyBid */
         $legacyBid = $this->entityManagerSimulator->getRepository('bids');
@@ -592,8 +618,6 @@ class ProjectManager
         $oRepaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
         /** @var \clients_adresses $oClientAdresse */
         $oClientAdresse = $this->entityManagerSimulator->getRepository('clients_adresses');
-        /** @var \clients $oClient */
-        $oClient = $this->entityManagerSimulator->getRepository('clients');
 
         if ($oProject->status == \projects_status::FUNDE) {
             $lLoans = $oLoan->select('id_project = ' . $oProject->id_project);
@@ -1211,5 +1235,14 @@ class ProjectManager
         }
 
         return $fundsToRelease;
+    }
+
+    /**
+     * @param \projects $project
+     */
+    public function saveInterestRate(\projects $project)
+    {
+        $project->interest_rate = $project->getAverageInterestRate(false);
+        $project->update();
     }
 }

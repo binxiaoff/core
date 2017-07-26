@@ -312,16 +312,17 @@ class bids extends bids_crud
      * @param int $projectId
      * @param int $limit
      * @param int $offset
+     *
      * @return array
      */
-    public function getLastProjectBidsByLender($projectId, $limit = 100, $offset = 0)
+    public function getFirstProjectBidsByLender($projectId, $limit = 100, $offset = 0)
     {
-        $bids = array();
+        $bids = [];
 
         // This only works with MySQL as long as non-agregated columns could not be use on other DB systems
         $query = $this->bdd->query('
-            SELECT *
-            FROM (SELECT * FROM bids WHERE id_project = ' . $projectId . ' ORDER BY id_lender_account ASC, id_bid DESC) bids
+            SELECT bids.*, MIN(status) AS min_status
+            FROM (SELECT * FROM bids WHERE id_project = ' . $projectId . ' ORDER BY id_lender_account ASC, added ASC, id_bid ASC) bids
             GROUP BY id_lender_account
             LIMIT ' . $limit . ' OFFSET ' . $offset
         );
