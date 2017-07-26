@@ -67,11 +67,7 @@
     "fonts": {
       "src": "fonts",
       "dest": "fonts",
-      "extensions": ["woff2", "woff", "eot", "ttf", "svg", "css", "scss"],
-      "compass": {
-        "css": "./css",
-        "sass": "./"
-      }
+      "extensions": ["woff2", "woff", "eot", "ttf", "svg"]
     },
 
     "modernizr": {

@@ -30,6 +30,7 @@ class Notifications
     const TYPE_AUTOBID_BALANCE_LOW            = 16;
     const TYPE_AUTOBID_BALANCE_INSUFFICIENT   = 17;
     const TYPE_AUTOBID_FIRST_ACTIVATION       = 18;
+    const TYPE_REPAYMENT_REGULARIZATION       = 19;
 
     const STATUS_READ   = 1;
     const STATUS_UNREAD = 0;

@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -37,7 +38,8 @@ class FeedsBPICommand extends ContainerAwareCommand
         /** @var \bids $bids */
         $bids = $entityManager->getRepository('bids');
         /** @var \loans $loans */
-        $loans = $entityManager->getRepository('loans');
+        $loans  = $entityManager->getRepository('loans');
+        $logger = $this->getContainer()->get('monolog.logger.console');
 
         $hostUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
         $userPath = $this->getContainer()->getParameter('path.user');
@@ -58,9 +60,9 @@ class FeedsBPICommand extends ContainerAwareCommand
             \projects_status::DEFAUT
         ];
 
-        $partner      = strtolower($input->getArgument('partner'));
-        $products     = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient();
-        $productIds   = array_map(function (Product $product) {
+        $partner    = strtolower($input->getArgument('partner'));
+        $products   = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient();
+        $productIds = array_map(function (Product $product) {
             return $product->getIdProduct();
         }, $products);
 
@@ -69,6 +71,17 @@ class FeedsBPICommand extends ContainerAwareCommand
         foreach ($projectList as $item) {
             $project->get($item['id_project']);
             $company->get($project->id_company);
+
+            $projectPublicationDate = \DateTime::createFromFormat('Y-m-d H:i:s', $project->date_publication);
+            $projectWithdrawalDate  = \DateTime::createFromFormat('Y-m-d H:i:s', $project->date_retrait);
+
+            if ((empty($projectPublicationDate) || empty($projectWithdrawalDate)) && 'bpi' === $partner) {
+                $logger->warning(
+                    'The project ' . $project->id_project . ' will not be added into xml file. No publishing/withdrawal date was set',
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]
+                );
+                continue;
+            }
 
             if ($project->status == \projects_status::EN_FUNDING) {
                 $totalBids = $bids->sum('id_project = ' . $project->id_project . ' AND status = ' . \bids::STATUS_BID_PENDING, 'amount') / 100;
@@ -102,8 +115,8 @@ class FeedsBPICommand extends ContainerAwareCommand
                 'url'                              => $hostUrl . $router->generate('project_detail',
                         ['projectSlug' => $project->slug]) . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent',
                 'url_photo'                        => $hostUrl . '/images/dyn/projets/169/' . $project->photo_projet,
-                'date_debut_collecte'              => $project->date_publication,
-                'date_fin_collecte'                => $project->date_retrait,
+                'date_debut_collecte'              => $projectPublicationDate->format('Y-m-d'),
+                'date_fin_collecte'                => $projectWithdrawalDate->format('Y-m-d'),
                 'montant_recherche'                => $project->amount,
                 'montant_collecte'                 => number_format($totalBids, 0, ',', ''),
                 'nb_contributeurs'                 => $loans->getNbPreteurs($project->id_project),

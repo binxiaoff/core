@@ -321,39 +321,61 @@ class OperationRepository extends EntityRepository
     /**
      * @param Echeanciers|int $idRepaymentSchedule
      *
-     * @return null|float
+     * @return float
      */
     public function getTaxAmountByRepaymentScheduleId($idRepaymentSchedule)
     {
+        $qbRegularization = $this->createQueryBuilder('o_r');
+        $qbRegularization->select('IFNULL(SUM(o_r.amount), 0)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot_r', Join::WITH, 'o_r.idType = ot_r.id')
+            ->where('ot_r.label IN (:taxRegularizationTypes)')
+            ->andWhere('o_r.idRepaymentSchedule = :idRepaymentSchedule');
+        $regularization = $qbRegularization->getDQL();
+
         $qb = $this->createQueryBuilder('o');
-        $qb->select('SUM(o.amount)')
+        $qb->select('IFNULL(SUM(o.amount), 0) as amount')
+            ->addSelect('(' . $regularization . ') as regularized_amount')
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
             ->where('ot.label IN (:taxTypes)')
             ->andWhere('o.idRepaymentSchedule = :idRepaymentSchedule')
             ->setParameter('taxTypes', OperationType::TAX_TYPES_FR, Connection::PARAM_STR_ARRAY)
+            ->setParameter('taxRegularizationTypes', OperationType::TAX_TYPES_FR_REGULARIZATION, Connection::PARAM_STR_ARRAY)
             ->setParameter('idRepaymentSchedule', $idRepaymentSchedule)
             ->setCacheable(true);
 
-        return $qb->getQuery()->getSingleScalarResult();
+        $result = $qb->getQuery()->getArrayResult();
+
+        return bcsub($result[0]['amount'], $result[0]['regularized_amount'], 2);
     }
 
     /**
      * @param Echeanciers|int $idRepaymentSchedule
      *
-     * @return null|float
+     * @return float
      */
     public function getGrossAmountByRepaymentScheduleId($idRepaymentSchedule)
     {
+        $qbRegularization = $this->createQueryBuilder('o_r');
+        $qbRegularization->select('IFNULL(SUM(o_r.amount), 0)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot_r', Join::WITH, 'o_r.idType = ot_r.id')
+            ->where('ot_r.label IN (:repaymentRegularizationTypes)')
+            ->andWhere('o_r.idRepaymentSchedule = :idRepaymentSchedule');
+        $regularization = $qbRegularization->getDQL();
+
         $qb = $this->createQueryBuilder('o');
-        $qb->select('SUM(o.amount)')
+        $qb->select('IFNULL(SUM(o.amount), 0) as amount')
+            ->addSelect('(' . $regularization . ') as regularized_amount')
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
             ->where('ot.label IN (:repaymentTypes)')
             ->andWhere('o.idRepaymentSchedule = :idRepaymentSchedule')
             ->setParameter('repaymentTypes', [OperationType::CAPITAL_REPAYMENT, OperationType::GROSS_INTEREST_REPAYMENT], Connection::PARAM_STR_ARRAY)
+            ->setParameter('repaymentRegularizationTypes', [OperationType::CAPITAL_REPAYMENT_REGULARIZATION, OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION], Connection::PARAM_STR_ARRAY)
             ->setParameter('idRepaymentSchedule', $idRepaymentSchedule)
             ->setCacheable(true);
 
-        return $qb->getQuery()->getSingleScalarResult();
+        $result = $qb->getQuery()->getArrayResult();
+
+        return bcsub($result[0]['amount'], $result[0]['regularized_amount'], 2);
     }
 
     /**
@@ -423,20 +445,26 @@ class OperationRepository extends EntityRepository
                     WHEN e.id_lender THEN "non_taxable"
                     ELSE "taxable"
                   END AS exemption_status,
-                  SUM(o_interest.amount) AS interests,
-                  SUM(o_tax_fr_prelevements_obligatoires.amount)    AS "' . OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES . '",
-                  SUM(o_tax_fr_csg.amount)                          AS "' . OperationType::TAX_FR_CSG . '",
-                  SUM(o_tax_fr_prelevements_sociaux.amount)         AS "' . OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX . '",
-                  SUM(o_tax_fr_contributions_additionnelles.amount) AS "' . OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES . '",
-                  SUM(o_tax_fr_prelevements_de_solidarite.amount)   AS "' . OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE . '",
-                  SUM(o_tax_fr_crds.amount)                         AS "' . OperationType::TAX_FR_CRDS . '",
-                  SUM(o_tax_fr_retenues_a_la_source.amount)         AS "' . OperationType::TAX_FR_RETENUES_A_LA_SOURCE . '"
+                  SUM(o_interest.amount) - IFNULL(SUM(o_interest_regularization.amount), 0) AS interests,
+                  SUM(o_tax_fr_prelevements_obligatoires.amount) - IFNULL(SUM(o_tax_fr_prelevements_obligatoires_regularization.amount), 0)       AS "' . OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES . '",
+                  SUM(o_tax_fr_csg.amount) - IFNULL(SUM(o_tax_fr_csg_regularization.amount), 0)                                                   AS "' . OperationType::TAX_FR_CSG . '",
+                  SUM(o_tax_fr_prelevements_sociaux.amount) - IFNULL(SUM(o_tax_fr_prelevements_sociaux_regularization.amount), 0)                 AS "' . OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX . '",
+                  SUM(o_tax_fr_contributions_additionnelles.amount) - IFNULL(SUM(o_tax_fr_contributions_additionnelles_regularization.amount), 0) AS "' . OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES . '",
+                  SUM(o_tax_fr_prelevements_de_solidarite.amount) - IFNULL(SUM(o_tax_fr_prelevements_de_solidarite_regularization.amount), 0)     AS "' . OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE . '",
+                  SUM(o_tax_fr_crds.amount) - IFNULL(SUM(o_tax_fr_crds_regularization.amount), 0)                                                 AS "' . OperationType::TAX_FR_CRDS . '",
+                  SUM(o_tax_fr_retenues_a_la_source.amount) - IFNULL(SUM(o_tax_fr_retenues_a_la_source_regularization.amount), 0)                 AS "' . OperationType::TAX_FR_RETENUES_A_LA_SOURCE . '"
                 FROM operation o_interest USE INDEX (idx_operation_added)
                   INNER JOIN wallet w ON o_interest.id_wallet_creditor = w.id
                   INNER JOIN clients c ON w.id_client = c.id_client
                   INNER JOIN echeanciers e ON o_interest.id_repayment_schedule = e.id_echeancier
                   INNER JOIN loans l ON l.id_loan = e.id_loan AND l.status = 0
                   LEFT JOIN lender_tax_exemption lte ON lte.id_lender = w.id AND lte.year = YEAR(o_interest.added)
+                  LEFT JOIN operation o_interest_regularization
+                    ON o_interest_regularization.id_repayment_schedule = o_interest.id_repayment_schedule
+                        AND o_interest_regularization.id_wallet_debtor = o_interest.id_wallet_creditor
+                        AND o_interest_regularization.id_type = (SELECT id
+                                                                 FROM operation_type
+                                                                 WHERE label = "' . OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION . '")
                   LEFT JOIN operation o_tax_fr_contributions_additionnelles
                     ON o_tax_fr_contributions_additionnelles.id_repayment_schedule = o_interest.id_repayment_schedule
                        AND o_tax_fr_contributions_additionnelles.id_wallet_debtor = o_interest.id_wallet_creditor
@@ -479,7 +507,48 @@ class OperationRepository extends EntityRepository
                        AND o_tax_fr_retenues_a_la_source.id_type = (SELECT id
                                                                     FROM operation_type
                                                                     WHERE label = "' . OperationType::TAX_FR_RETENUES_A_LA_SOURCE . '")
-                
+                  LEFT JOIN operation o_tax_fr_contributions_additionnelles_regularization
+                    ON o_tax_fr_contributions_additionnelles_regularization.id_repayment_schedule = o_interest.id_repayment_schedule
+                       AND o_tax_fr_contributions_additionnelles_regularization.id_wallet_creditor = o_interest.id_wallet_creditor
+                       AND o_tax_fr_contributions_additionnelles_regularization.id_type = (SELECT id
+                                                                                           FROM operation_type
+                                                                                           WHERE label = "' . OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_REGULARIZATION . '")
+                  LEFT JOIN operation o_tax_fr_crds_regularization
+                    ON o_tax_fr_crds_regularization.id_repayment_schedule = o_interest.id_repayment_schedule
+                        AND o_tax_fr_crds_regularization.id_wallet_creditor = o_interest.id_wallet_creditor
+                        AND o_tax_fr_crds_regularization.id_type = (SELECT id
+                                                                    FROM operation_type
+                                                                    WHERE label = "' . OperationType::TAX_FR_CRDS_REGULARIZATION . '")
+                  LEFT JOIN operation o_tax_fr_csg_regularization
+                    ON o_tax_fr_csg_regularization.id_repayment_schedule = o_interest.id_repayment_schedule
+                        AND o_tax_fr_csg_regularization.id_wallet_creditor = o_interest.id_wallet_creditor
+                        AND o_tax_fr_csg_regularization.id_type = (SELECT id
+                                                                   FROM operation_type
+                                                                   WHERE label = "' . OperationType::TAX_FR_CSG_REGULARIZATION . '")
+                  LEFT JOIN operation o_tax_fr_prelevements_de_solidarite_regularization
+                    ON o_tax_fr_prelevements_de_solidarite_regularization.id_repayment_schedule = o_interest.id_repayment_schedule
+                        AND o_tax_fr_prelevements_de_solidarite_regularization.id_wallet_creditor = o_interest.id_wallet_creditor
+                        AND o_tax_fr_prelevements_de_solidarite_regularization.id_type = (SELECT id
+                                                                                          FROM operation_type
+                                                                                          WHERE label = "' . OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_REGULARIZATION . '")
+                  LEFT JOIN operation o_tax_fr_prelevements_obligatoires_regularization
+                    ON o_tax_fr_prelevements_obligatoires_regularization.id_repayment_schedule = o_interest.id_repayment_schedule
+                        AND o_tax_fr_prelevements_obligatoires_regularization.id_wallet_creditor = o_interest.id_wallet_creditor
+                        AND o_tax_fr_prelevements_obligatoires_regularization.id_type = (SELECT id
+                                                                                         FROM operation_type
+                                                                                         WHERE label = "' . OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_REGULARIZATION . '")
+                  LEFT JOIN operation o_tax_fr_prelevements_sociaux_regularization
+                    ON o_tax_fr_prelevements_sociaux_regularization.id_repayment_schedule = o_interest.id_repayment_schedule
+                        AND o_tax_fr_prelevements_sociaux_regularization.id_wallet_creditor = o_interest.id_wallet_creditor
+                        AND o_tax_fr_prelevements_sociaux_regularization.id_type = (SELECT id
+                                                                                    FROM operation_type
+                                                                                    WHERE label = "' . OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_REGULARIZATION . '")
+                  LEFT JOIN operation o_tax_fr_retenues_a_la_source_regularization
+                    ON o_tax_fr_retenues_a_la_source_regularization.id_repayment_schedule = o_interest.id_repayment_schedule
+                        AND o_tax_fr_retenues_a_la_source_regularization.id_wallet_creditor = o_interest.id_wallet_creditor
+                        AND o_tax_fr_retenues_a_la_source_regularization.id_type = (SELECT id
+                                                                                    FROM operation_type
+                                                                                    WHERE label = "' . OperationType::TAX_FR_RETENUES_A_LA_SOURCE_REGULARIZATION . '")
                 WHERE o_interest.added BETWEEN :start AND :end
                       AND o_interest.id_type = (SELECT id
                                                 FROM operation_type
@@ -821,5 +890,69 @@ class OperationRepository extends EntityRepository
         $statement->closeCursor();
 
         return $result;
+    }
+
+    /**
+     * @param Wallet         $creditorWallet
+     * @param array          $operationTypes
+     * @param array|null     $operationSubTypes
+     * @param \DateTime|null $end
+     *
+     * @return mixed
+     */
+    public function sumCreditOperationsByTypeUntil(Wallet $creditorWallet, $operationTypes, $operationSubTypes = null, \DateTime $end = null)
+    {
+        $qb = $this->createQueryBuilder('o');
+        $qb->select('SUM(o.amount)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('ot.label IN (:operationTypes)')
+            ->andWhere('o.idWalletCreditor = :idWallet')
+            ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
+            ->setParameter('idWallet', $creditorWallet->getId());
+
+        if (null !== $operationSubTypes) {
+            $qb->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+                ->andWhere('ost.label IN (:operationSubTypes)')
+                ->setParameter('operationSubTypes', $operationSubTypes, Connection::PARAM_STR_ARRAY);
+        }
+
+        if (null !== $end) {
+            $end->setTime(23, 59, 59);
+            $qb->andWhere('o.added <= :end')->setParameter('end', $end);
+        }
+
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /***
+     * @param Wallet         $debtorWallet
+     * @param array          $operationTypes
+     * @param array|null     $operationSubTypes
+     * @param \DateTime|null $end
+     *
+     * @return mixed
+     */
+    public function sumDebitOperationsByTypeUntil(Wallet $debtorWallet, $operationTypes, $operationSubTypes = null, \DateTime $end = null)
+    {
+        $qb = $this->createQueryBuilder('o');
+        $qb->select('SUM(o.amount)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('ot.label IN (:operationTypes)')
+            ->andWhere('o.idWalletDebtor = :idWallet')
+            ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
+            ->setParameter('idWallet', $debtorWallet->getId());
+
+        if (null !== $operationSubTypes) {
+            $qb->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+                ->andWhere('ost.label IN (:operationSubTypes)')
+                ->setParameter('operationSubTypes', $operationSubTypes, Connection::PARAM_STR_ARRAY);
+        }
+
+        if (null !== $end) {
+            $end->setTime(23, 59, 59);
+            $qb->andWhere('o.added <= :end')->setParameter('end', $end);
+        }
+
+        return $qb->getQuery()->getSingleScalarResult();
     }
 }

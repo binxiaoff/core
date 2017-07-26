@@ -53,19 +53,11 @@ class ProjectValidator
             }
         }
 
-        $hasEligibleContract = false;
-        $violationsContract  = [];
         foreach ($product->getIdContract() as $contract) {
             $contractCheckResult = $this->contractManager->checkProjectEligibility($project, $contract);
             if (0 < count($contractCheckResult)) {
-                $violationsContract = array_merge($violationsContract, $contractCheckResult);
-            } else {
-                $hasEligibleContract = true;
+                return [$contractCheckResult];
             }
-        }
-
-        if (false === $hasEligibleContract) {
-            return $violationsContract;
         }
 
         return [];
