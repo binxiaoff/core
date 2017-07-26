@@ -208,65 +208,65 @@ class EcheanciersRepository extends EntityRepository
               IFNULL((
                SELECT SUM(amount)
                FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
-               WHERE ot.label = \''.OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES.'\'  AND id_repayment_schedule = e.id_echeancier
+               WHERE ot.label = \'' . OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES . '\'  AND id_repayment_schedule = e.id_echeancier
               ), 0) - IFNULL((
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
-                WHERE ot.label = \''.OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_REGULARIZATION.'\' AND id_repayment_schedule = e.id_echeancier
-              ), 0) as prelevements_oblogatoires,
+                WHERE ot.label = \'' . OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_REGULARIZATION . '\' AND id_repayment_schedule = e.id_echeancier
+              ), 0) as prelevements_obligatoires,
               IFNULL((
                SELECT SUM(amount)
                FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
-               WHERE ot.label = \''.OperationType::TAX_FR_RETENUES_A_LA_SOURCE.'\'  AND id_repayment_schedule = e.id_echeancier
+               WHERE ot.label = \'' . OperationType::TAX_FR_RETENUES_A_LA_SOURCE . '\'  AND id_repayment_schedule = e.id_echeancier
               ), 0) - IFNULL((
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
-                WHERE ot.label = \''.OperationType::TAX_FR_RETENUES_A_LA_SOURCE_REGULARIZATION.'\' AND id_repayment_schedule = e.id_echeancier
+                WHERE ot.label = \'' . OperationType::TAX_FR_RETENUES_A_LA_SOURCE_REGULARIZATION . '\' AND id_repayment_schedule = e.id_echeancier
               ), 0) as retenues_source,
               IFNULL((
                SELECT SUM(amount)
                FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
-               WHERE ot.label = \''.OperationType::TAX_FR_CSG.'\'  AND id_repayment_schedule = e.id_echeancier
+               WHERE ot.label = \'' . OperationType::TAX_FR_CSG . '\'  AND id_repayment_schedule = e.id_echeancier
               ), 0) - IFNULL((
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
-                WHERE ot.label = \''.OperationType::TAX_FR_CSG_REGULARIZATION.'\' AND id_repayment_schedule = e.id_echeancier
+                WHERE ot.label = \'' . OperationType::TAX_FR_CSG_REGULARIZATION . '\' AND id_repayment_schedule = e.id_echeancier
               ), 0) as csg,
               IFNULL((
                SELECT SUM(amount)
                FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
-               WHERE ot.label = \''.OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX.'\'  AND id_repayment_schedule = e.id_echeancier
+               WHERE ot.label = \'' . OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX . '\'  AND id_repayment_schedule = e.id_echeancier
               ), 0) - IFNULL((
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
-                WHERE ot.label = \''.OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_REGULARIZATION.'\' AND id_repayment_schedule = e.id_echeancier
+                WHERE ot.label = \'' . OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_REGULARIZATION . '\' AND id_repayment_schedule = e.id_echeancier
               ), 0) as prelevements_sociaux,
               IFNULL((
                SELECT SUM(amount)
                FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
-               WHERE ot.label = \''.OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES.'\'  AND id_repayment_schedule = e.id_echeancier
+               WHERE ot.label = \'' . OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES . '\'  AND id_repayment_schedule = e.id_echeancier
               ), 0) - IFNULL((
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
-                WHERE ot.label = \''.OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_REGULARIZATION.'\' AND id_repayment_schedule = e.id_echeancier
+                WHERE ot.label = \'' . OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_REGULARIZATION . '\' AND id_repayment_schedule = e.id_echeancier
               ), 0) as contributions_additionnelles,
               IFNULL((
                SELECT SUM(amount)
                FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
-               WHERE ot.label = \''.OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE.'\'  AND id_repayment_schedule = e.id_echeancier
+               WHERE ot.label = \'' . OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE . '\'  AND id_repayment_schedule = e.id_echeancier
               ), 0) - IFNULL((
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
-                WHERE ot.label = \''.OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_REGULARIZATION.'\' AND id_repayment_schedule = e.id_echeancier
+                WHERE ot.label = \'' . OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_REGULARIZATION . '\' AND id_repayment_schedule = e.id_echeancier
               ), 0) as prelevements_de_solidarite,
               IFNULL((
                SELECT SUM(amount)
                FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
-               WHERE ot.label = \''.OperationType::TAX_FR_CRDS.'\'  AND id_repayment_schedule = e.id_echeancier
+               WHERE ot.label = \'' . OperationType::TAX_FR_CRDS . '\'  AND id_repayment_schedule = e.id_echeancier
               ), 0) - IFNULL((
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
-                WHERE ot.label = \''.OperationType::TAX_FR_CRDS_REGULARIZATION.'\' AND id_repayment_schedule = e.id_echeancier
+                WHERE ot.label = \'' . OperationType::TAX_FR_CRDS_REGULARIZATION . '\' AND id_repayment_schedule = e.id_echeancier
               ), 0) as crds,
               e.date_echeance,
               e.date_echeance_reel,
