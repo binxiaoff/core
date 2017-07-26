@@ -152,6 +152,7 @@ class WsMonitoringManager
                 'clientVolume' => (int) $dailyStats['clientVolume']
             ];
         }
+
         foreach ($data['day'] as $status => $rows) {
             $data['day'][$status] += $this->getPaddingData(new \DateTime('1 day ago'), new \DateInterval('PT1H'), 'hours');
         }
@@ -163,6 +164,7 @@ class WsMonitoringManager
                 'clientVolume' => (int) $weeklyStats['clientVolume']
             ];
         }
+
         foreach ($data['week'] as $status => $rows) {
             $data['week'][$status] += $this->getPaddingData(new \DateTime('1 week ago'), new \DateInterval('P1D'), 'days');
         }
@@ -174,9 +176,11 @@ class WsMonitoringManager
                 'clientVolume' => (int) $monthlyStats['clientVolume']
             ];
         }
+
         foreach ($data['month'] as $status => $rows) {
             $data['month'][$status] += $this->getPaddingData(new \DateTime('1 month ago'), new \DateInterval('P1D'), 'days');
         }
+
         foreach ($data as $period => $rows) {
             foreach ($rows as $status => $cont) {
                 ksort($cont);

@@ -891,7 +891,7 @@ class statsController extends bootstrap
     {
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WsMonitoringManager $wsMonitoringManager */
         $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
-        $data = $wsMonitoringManager->getDataForChart();
-        $this->chartData = json_encode($data);
+        $data                = $wsMonitoringManager->getDataForChart();
+        $this->chartData     = json_encode($data);
     }
 }

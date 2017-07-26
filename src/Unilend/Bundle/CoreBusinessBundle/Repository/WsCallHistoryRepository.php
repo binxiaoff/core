@@ -121,6 +121,7 @@ class WsCallHistoryRepository extends EntityRepository
      * @param string    $period
      * @param \DateTime $startDate
      * @param \DateTime $endDate
+     *
      * @return array
      */
     private function getCallStatisticsByPeriod($period, \DateTime $startDate, \DateTime $endDate)
