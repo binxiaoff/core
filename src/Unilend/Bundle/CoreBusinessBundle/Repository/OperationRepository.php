@@ -227,7 +227,7 @@ class OperationRepository extends EntityRepository
     public function sumCapitalRepaymentsInEeaExceptFrance(Wallet $wallet, $year)
     {
         $query = 'SELECT
-                     SUM(IF(tlih.id_pays IN (:eeaCountries),o_capital.amount, 0)) AS capital
+                     SUM(IF(tlih.id_pays IN (:eeaCountries), o_capital.amount, 0)) AS capital
                   FROM operation o_capital
                      LEFT JOIN (SELECT
                                   o.id_wallet_creditor,
@@ -243,6 +243,46 @@ class OperationRepository extends EntityRepository
                     WHERE o_capital.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::CAPITAL_REPAYMENT . '")
                     AND LEFT(o_capital.added, 4) = :year
                     AND o_capital.id_wallet_creditor = :idWallet';
+
+        $bind  = [
+            'year'         => $year,
+            'idWallet'     => $wallet->getId(),
+            'eeaCountries' => PaysV2::EUROPEAN_ECONOMIC_AREA
+        ];
+        $types = [
+            'year'         => \PDO::PARAM_INT,
+            'idWallet'     => \PDO::PARAM_INT,
+            'eeaCountries' => Connection::PARAM_INT_ARRAY
+        ];
+
+        return $this->getEntityManager()->getConnection()->executeQuery($query, $bind, $types)->fetchColumn();
+    }
+
+    /**
+     * @param Wallet $wallet
+     * @param int    $year
+     *
+     * @return bool|string
+     */
+    public function sumRegularizedCapitalRepaymentsInEeaExceptFrance(Wallet $wallet, $year)
+    {
+        $query = 'SELECT
+                     SUM(IF(tlih.id_pays IN (:eeaCountries), o_capital.amount, 0)) AS capital
+                  FROM operation o_capital
+                     LEFT JOIN (SELECT
+                                  o.id_wallet_debtor,
+                                  o.id,
+                                  (SELECT lih.id_pays
+                                   FROM lenders_imposition_history lih
+                                   WHERE id_lender = o.id_wallet_debtor AND DATE(lih.added) <= DATE(o.added)
+                                   ORDER BY lih.added DESC
+                                   LIMIT 1) AS id_pays
+                                FROM operation o
+                                  INNER JOIN operation_type ot ON o.id_type = ot.id
+                                WHERE ot.label = "' . OperationType::CAPITAL_REPAYMENT_REGULARIZATION . '" AND o.id_wallet_debtor = :idWallet) AS tlih ON o_capital.id = tlih.id
+                    WHERE o_capital.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::CAPITAL_REPAYMENT_REGULARIZATION . '")
+                    AND LEFT(o_capital.added, 4) = :year
+                    AND o_capital.id_wallet_debtor = :idWallet';
 
         $bind  = [
             'year'         => $year,
@@ -313,6 +353,55 @@ class OperationRepository extends EntityRepository
      *
      * @return bool|string
      */
+    public function sumRegularizedNetInterestRepaymentsNotInEeaExceptFrance(Wallet $wallet, $year)
+    {
+        $query = 'SELECT
+                      SUM(IF(tlih.id_pays IN (:eeaCountries), o_interest.amount, 0)) AS interest
+                    FROM operation o_interest
+                     LEFT JOIN (SELECT 
+                                  SUM(amount) AS amount,
+                                  id_repayment_schedule
+                                 FROM operation
+                                  WHERE operation.id_wallet_debtor = :idWallet
+                                  AND operation.id_type IN (SELECT id FROM operation_type WHERE label IN (:taxOperations))
+                                  GROUP BY id_repayment_schedule) AS o_taxes ON o_interest.id_repayment_schedule = o_taxes.id_repayment_schedule
+                     LEFT JOIN (SELECT
+                                  o.id_wallet_debtor,
+                                  o.id,
+                                  (SELECT lih.id_pays
+                                   FROM lenders_imposition_history lih
+                                   WHERE id_lender = o.id_wallet_debtor AND DATE(lih.added) <= DATE(o.added)
+                                   ORDER BY lih.added DESC
+                                   LIMIT 1) AS id_pays
+                                FROM operation o
+                                  INNER JOIN operation_type ot ON o.id_type = ot.id
+                                WHERE ot.label = "' . OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION . '" AND o.id_wallet_debtor = :idWallet) AS tlih ON o_interest.id = tlih.id
+                    WHERE o_interest.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION . '")
+                    AND LEFT(o_interest.added, 4) = :year
+                         AND o_interest.id_wallet_debtor = :idWallet';
+
+        $bind  = [
+            'year'          => $year,
+            'idWallet'      => $wallet->getId(),
+            'taxOperations' => OperationType::TAX_TYPES_FR,
+            'eeaCountries'  => PaysV2::EUROPEAN_ECONOMIC_AREA
+        ];
+        $types = [
+            'year'          => \PDO::PARAM_INT,
+            'idWallet'      => \PDO::PARAM_INT,
+            'taxOperations' => Connection::PARAM_STR_ARRAY,
+            'eeaCountries'  => Connection::PARAM_INT_ARRAY
+        ];
+
+        return $this->getEntityManager()->getConnection()->executeQuery($query, $bind, $types)->fetchColumn();
+    }
+
+    /**
+     * @param Wallet $wallet
+     * @param int    $year
+     *
+     * @return bool|string
+     */
     public function getGrossInterestPaymentsInFrance(Wallet $wallet, $year)
     {
         $query = 'SELECT
@@ -332,6 +421,35 @@ class OperationRepository extends EntityRepository
                     WHERE o_interest.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '")
                       AND LEFT(o_interest.added, 4) = :year 
                       AND o_interest.id_wallet_creditor =  :idWallet';
+
+        return $this->getEntityManager()->getConnection()->executeQuery($query, ['year' => $year, 'idWallet' => $wallet->getId()])->fetchColumn();
+    }
+
+    /**
+     * @param Wallet $wallet
+     * @param int    $year
+     *
+     * @return bool|string
+     */
+    public function getRegularizedGrossInterestPaymentsInFrance(Wallet $wallet, $year)
+    {
+        $query = 'SELECT
+                      SUM(IF(tlih.id_pays = 1 OR tlih.id_pays IS NULL OR tlih.id_pays = "", o_interest.amount, 0)) AS sum66
+                    FROM operation o_interest
+                      LEFT JOIN (SELECT
+                                   o.id_wallet_debtor,
+                                   o.id,
+                                   (SELECT lih.id_pays
+                                    FROM lenders_imposition_history lih
+                                      WHERE id_lender = o.id_wallet_debtor AND added <= o.added
+                                    ORDER BY added DESC
+                                    LIMIT 1) AS id_pays
+                                 FROM operation o
+                                   INNER JOIN operation_type ot ON o.id_type = ot.id
+                                 WHERE ot.label = "' . OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION . '" AND o.id_wallet_debtor = :idWallet) AS tlih ON o_interest.id = tlih.id
+                    WHERE o_interest.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION . '")
+                      AND LEFT(o_interest.added, 4) = :year 
+                      AND o_interest.id_wallet_debtor =  :idWallet';
 
         return $this->getEntityManager()->getConnection()->executeQuery($query, ['year' => $year, 'idWallet' => $wallet->getId()])->fetchColumn();
     }
