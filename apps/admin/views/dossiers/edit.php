@@ -947,7 +947,7 @@
                                     case \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::ANALYSIS_REVIEW:
                                     case \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::COMITY_REVIEW: ?>
                                         <div style="text-align: right">
-                                            <a role="button" data-memo="#abandon-project-memo" data-memo-onsubmit="abandon" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
+                                            <a role="button" data-memo="#abandon-project-memo" data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
                                         </div>
                                         <?php break;
                                     case \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::SUSPENSIVE_CONDITIONS: ?>
@@ -958,7 +958,7 @@
                                         <?php break;
                                     case \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::PREP_FUNDING: ?>
                                         <div style="text-align: right">
-                                            <a role="button" data-memo="#abandon-project-memo" data-memo-onsubmit="abandon" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
+                                            <a role="button" data-memo="#abandon-project-memo" data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
                                             <?php if (empty($blockingPublishingError)) : ?>
                                                 <a href="<?= $this->lurl ?>/dossiers/publish/<?= $this->projects->id_project ?>" class="btn btn-small btn_link thickbox">Programmer la mise en ligne</a>
                                             <?php endif; ?>
