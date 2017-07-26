@@ -103,13 +103,14 @@ class autobid extends autobid_crud
             WHERE ' . $duration . ' BETWEEN pp.min AND pp.max
                 AND a.status = ' . self::STATUS_ACTIVE . '
                 AND pp.status = ' . \project_period::STATUS_ACTIVE . '
-                AND prs.status = ' . project_rate_settings::STATUS_ACTIVE . '
+                AND prs.status = ' . \project_rate_settings::STATUS_ACTIVE . '
                 AND a.evaluation = "' . $evaluation . '"
                 AND prs.evaluation = "' . $evaluation . '"
                 AND a.rate_min <= prs.rate_max
                 AND w.available_balance >= a.amount';
 
         $result = $this->bdd->query($query);
+
         return $this->bdd->result($result);
     }
 
