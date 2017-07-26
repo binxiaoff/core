@@ -437,14 +437,12 @@ class OperationRepository extends EntityRepository
                   INNER JOIN echeanciers e ON o_interest.id_repayment_schedule = e.id_echeancier
                   INNER JOIN loans l ON l.id_loan = e.id_loan AND l.status = 0
                   LEFT JOIN lender_tax_exemption lte ON lte.id_lender = w.id AND lte.year = YEAR(o_interest.added)
-                  
                   LEFT JOIN operation o_interest_regularization
                     ON o_interest_regularization.id_repayment_schedule = o_interest.id_repayment_schedule
                         AND o_interest_regularization.id_wallet_debtor = o_interest.id_wallet_creditor
                         AND o_interest_regularization.id_type = (SELECT id
-                                                FROM operation_type
-                                                WHERE label = "' . OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION . '")
-                  
+                                                                 FROM operation_type
+                                                                 WHERE label = "' . OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION . '")
                   LEFT JOIN operation o_tax_fr_contributions_additionnelles
                     ON o_tax_fr_contributions_additionnelles.id_repayment_schedule = o_interest.id_repayment_schedule
                        AND o_tax_fr_contributions_additionnelles.id_wallet_debtor = o_interest.id_wallet_creditor
@@ -491,44 +489,44 @@ class OperationRepository extends EntityRepository
                     ON o_tax_fr_contributions_additionnelles_regularization.id_repayment_schedule = o_interest.id_repayment_schedule
                        AND o_tax_fr_contributions_additionnelles_regularization.id_wallet_creditor = o_interest.id_wallet_creditor
                        AND o_tax_fr_contributions_additionnelles_regularization.id_type = (SELECT id
-                                                                                FROM operation_type
-                                                                                WHERE label = "' . OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_REGULARIZATION . '")
+                                                                                           FROM operation_type
+                                                                                           WHERE label = "' . OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_REGULARIZATION . '")
                   LEFT JOIN operation o_tax_fr_crds_regularization
                     ON o_tax_fr_crds_regularization.id_repayment_schedule = o_interest.id_repayment_schedule
                         AND o_tax_fr_crds_regularization.id_wallet_creditor = o_interest.id_wallet_creditor
                         AND o_tax_fr_crds_regularization.id_type = (SELECT id
-                                                        FROM operation_type
-                                                        WHERE label = "' . OperationType::TAX_FR_CRDS_REGULARIZATION . '")
+                                                                    FROM operation_type
+                                                                    WHERE label = "' . OperationType::TAX_FR_CRDS_REGULARIZATION . '")
                   LEFT JOIN operation o_tax_fr_csg_regularization
                     ON o_tax_fr_csg_regularization.id_repayment_schedule = o_interest.id_repayment_schedule
                         AND o_tax_fr_csg_regularization.id_wallet_creditor = o_interest.id_wallet_creditor
                         AND o_tax_fr_csg_regularization.id_type = (SELECT id
-                                                       FROM operation_type
-                                                       WHERE label = "' . OperationType::TAX_FR_CSG_REGULARIZATION . '")
+                                                                   FROM operation_type
+                                                                   WHERE label = "' . OperationType::TAX_FR_CSG_REGULARIZATION . '")
                   LEFT JOIN operation o_tax_fr_prelevements_de_solidarite_regularization
                     ON o_tax_fr_prelevements_de_solidarite_regularization.id_repayment_schedule = o_interest.id_repayment_schedule
                         AND o_tax_fr_prelevements_de_solidarite_regularization.id_wallet_creditor = o_interest.id_wallet_creditor
                         AND o_tax_fr_prelevements_de_solidarite_regularization.id_type = (SELECT id
-                                                                              FROM operation_type
-                                                                              WHERE label = "' . OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_REGULARIZATION . '")
+                                                                                          FROM operation_type
+                                                                                          WHERE label = "' . OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_REGULARIZATION . '")
                   LEFT JOIN operation o_tax_fr_prelevements_obligatoires_regularization
                     ON o_tax_fr_prelevements_obligatoires_regularization.id_repayment_schedule = o_interest.id_repayment_schedule
                         AND o_tax_fr_prelevements_obligatoires_regularization.id_wallet_creditor = o_interest.id_wallet_creditor
                         AND o_tax_fr_prelevements_obligatoires_regularization.id_type = (SELECT id
-                                                                             FROM operation_type
-                                                                             WHERE label = "' . OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_REGULARIZATION . '")
+                                                                                         FROM operation_type
+                                                                                         WHERE label = "' . OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_REGULARIZATION . '")
                   LEFT JOIN operation o_tax_fr_prelevements_sociaux_regularization
                     ON o_tax_fr_prelevements_sociaux_regularization.id_repayment_schedule = o_interest.id_repayment_schedule
                         AND o_tax_fr_prelevements_sociaux_regularization.id_wallet_creditor = o_interest.id_wallet_creditor
                         AND o_tax_fr_prelevements_sociaux_regularization.id_type = (SELECT id
-                                                                        FROM operation_type
-                                                                        WHERE label = "' . OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_REGULARIZATION . '")
+                                                                                    FROM operation_type
+                                                                                    WHERE label = "' . OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_REGULARIZATION . '")
                   LEFT JOIN operation o_tax_fr_retenues_a_la_source_regularization
                     ON o_tax_fr_retenues_a_la_source_regularization.id_repayment_schedule = o_interest.id_repayment_schedule
                         AND o_tax_fr_retenues_a_la_source_regularization.id_wallet_creditor = o_interest.id_wallet_creditor
                         AND o_tax_fr_retenues_a_la_source_regularization.id_type = (SELECT id
-                                                                        FROM operation_type
-                                                                        WHERE label = "' . OperationType::TAX_FR_RETENUES_A_LA_SOURCE_REGULARIZATION . '")
+                                                                                    FROM operation_type
+                                                                                    WHERE label = "' . OperationType::TAX_FR_RETENUES_A_LA_SOURCE_REGULARIZATION . '")
                 WHERE o_interest.added BETWEEN :start AND :end
                       AND o_interest.id_type = (SELECT id
                                                 FROM operation_type
