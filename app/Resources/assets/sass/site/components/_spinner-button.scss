@@ -23,7 +23,7 @@
     vertical-align: middle;
   }
   // Safari spinner button fix
-  // Since dom changes such as addClass are not taking effect on Safari as the page is about to reload,
+  // Since dom changes such as addClass are not taking effect on Safari when the page is about to reload,
   // we need to attach the ui to the :active state of the spinner button instead
   .ua-safari & {
     &:before {
