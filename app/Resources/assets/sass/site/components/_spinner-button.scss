@@ -22,4 +22,36 @@
     text-align: center;
     vertical-align: middle;
   }
+  // Safari spinner button fix
+  // Since dom changes such as addClass are not taking effect on Safari as the page is about to reload,
+  // we need to attach the ui to the :active state of the spinner button instead
+  .ua-safari & {
+    &:before {
+      @include ui-spinner;
+      content: $fa-refresh;
+      width: 30px;
+      height: 30px;
+      margin: -15px 0 0 -15px;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      background: $c-p1;
+      border-radius: 30px;
+      line-height: 30px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    &:active {
+      &:before {
+        @include ui-spinner-loading;
+        color: $c-white;
+      }
+      // Make sure we don't see 2 spinners running
+      > .ui-is-spinner {
+        display: none!important;
+      }
+    }
+  }
 }
+
+
