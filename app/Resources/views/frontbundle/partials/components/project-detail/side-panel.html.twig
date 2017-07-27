@@ -163,62 +163,6 @@
                 </div><!-- /.form-notice -->
                 {{ include('partials/components/project-detail/login-form.html.twig') }}
             {% endif %}
-
-            <form action="{{ path('place_bid', {'projectId' : project.projectId}) }}" method="post" class="project-single-form project-single-form-invest" data-bid-confirmation data-formvalidation data-formvalidation-shownotifications="false" data-has-spinner="#bid-confirmation-submit">
-                <div class="row row-multi-col-sm">
-                    <div class="form-field col-sm-4">
-                        <div class="row">
-                            <div class="col-label">
-                                <label for="bid-interest">{% trans %} project-detail_side-bar-bids-rate-label {% endtrans %}</label>
-                            </div>
-                            <div class="col-input">
-                                <select id="bid-interest" name="invest[interest]" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-bid-rate>
-                                    <option value="">{% trans %} project-detail_side-bar-bids-rate-placeholder {% endtrans %}</option>
-                                    {% if project.percentFunded < 100 %}
-                                        {% set max = project.maxValidRate|round(1) %}
-                                    {% else %}
-                                        {% set max = (project.maxValidRate - 0.1)|round(1) %}
-                                    {% endif %}
-                                    {#
-                                        0.0999 is a trick for fixing an issue wit floats
-                                         If max value is 5.1 and project.minRate is 5, there is a warning "range(): step exceeds the specified range"
-                                    #}
-                                    {% for rate in range(max, project.minRate, 0.0999) %}
-                                        <option value="{{ rate|round(1) }}"{% if app.session.flashBag.has('cipBid') and app.session.flashBag.peek('cipBid')[0].rate == rate %} selected="selected"{% endif %}>{{ rate|localizednumberwithprecision(1) }} %</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                    </div><!-- /.form-field -->
-                    <div class="form-field col-sm-4">
-                        <div class="row">
-                            <div class="col-label">
-                                <label for="bid-amount">{% trans %} project-detail_side-bar-bids-amount-label {% endtrans %}</label>
-                            </div>
-                            <div class="col-input">
-                                <div class="input-group set-right">
-                                    <input id="bid-amount" type="text" name="invest[amount]" value="{% if app.session.flashBag.has('cipBid') %}{{ app.session.flashBag.get('cipBid')[0].amount }}{% endif %}" class="input-field" autocomplete="off" data-has-spinner="#repayment-estimation-spinner" data-formvalidation-input data-formvalidation-type="number" data-formvalidation-required="true" data-bid-amount>
-                                    <div class="btn-group">
-                                        <span class="icon fa-euro"></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div><!-- /.form-field -->
-                </div>
-
-                <div class="btn-toolbar">
-                    <button id="bid-confirmation-submit" type="submit" class="btn-primary btn-size-full" data-spinnerbutton data-spinnerbutton-targetstartevents="submit">{% trans %} project-detail_side-bar-bids-submit-button {% endtrans %}</button>
-                    <input type="hidden" name="invest[bidToken]" value="{{ bidToken }}">
-                    <input type="hidden" id="bid-duration" value="{{ project.duration }}">
-                </div><!-- /.btn-toolbar -->
-
-                <div class="repayment-estimation-container">
-                    <p class="field-help"><span id="repayment-estimation"></span></p>
-                    <span id="repayment-estimation-spinner" class="ui-is-spinner"></span>
-                </div>
-            </form><!-- /.project-single-form-invest -->
-
         </div><!-- /.project-single-info -->
     </div><!-- /.project-single-info-position -->
 </aside><!-- /.project-single-info-wrap -->
