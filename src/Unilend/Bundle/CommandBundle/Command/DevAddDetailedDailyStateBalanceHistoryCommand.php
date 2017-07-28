@@ -46,7 +46,8 @@ class DevAddDetailedDailyStateBalanceHistoryCommand extends ContainerAwareComman
         /** @var \DateTime $month */
         foreach (new \DatePeriod($firstDayOfThisYear, $monthInterval, $end->sub($monthInterval)) as $month) {
             if (null === $entityManager->getRepository('UnilendCoreBusinessBundle:DetailedDailyStateBalanceHistory')->findOneBy(['date' => $month->format('Y-m-t')])) {
-                $this->saveBalance($month);
+                $lastDayOfTheMonth = \DateTIme::createFromFormat('Y-m-d', $month->format('Y-m-t'));
+                $this->saveBalance($lastDayOfTheMonth);
             }
         }
     }

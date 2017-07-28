@@ -625,7 +625,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $activeSheet->setCellValueExplicit(self::UNILEND_PROMOTIONAL_BALANCE_COLUMN . $row, $dailyBalances->getUnilendPromotionalBalance(), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         $activeSheet->setCellValueExplicit(self::LENDER_BALANCE_COLUMN . $row, $dailyBalances->getLenderBalance(), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         $activeSheet->setCellValueExplicit(self::BORROWER_BALANCE_COLUMN . $row, $dailyBalances->getBorrowerBalance(), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::DEBT_COLLECTOR_BALANCE_COLUMN . $row, $dailyBalances->getBorrowerBalance(), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicit(self::DEBT_COLLECTOR_BALANCE_COLUMN . $row, $dailyBalances->getDebtCollectorBalance(), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         $activeSheet->setCellValueExplicit(self::UNILEND_BALANCE_COLUMN . $row, $dailyBalances->getUnilendBalance(), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         $activeSheet->setCellValueExplicit(self::TAX_BALANCE_COLUMN  . $row, $dailyBalances->getTaxBalance(), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
