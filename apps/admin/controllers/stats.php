@@ -897,8 +897,9 @@ class statsController extends bootstrap
         foreach ($files as $file) {
             if ('reporting_mensuel_sfpmei' == substr($file, 0, 24)) {
                 $fileDate = \DateTime::createFromFormat('Ymd', substr($file, -13, 8));
-                $this->reportingList[$fileDate->format('Y')][$fileDate->format('m')] = [
-                    'month' => strftime('%B', $fileDate->getTimestamp()),
+                $this->reportingList[] = [
+                    'sortDate' => $fileDate->format('Ym'),
+                    'displayDate' => strftime('%B %Y', $fileDate->getTimestamp()),
                     'link' => '/stats/reporting_sfpmei/file/' . $file,
                     'name' => $file
                 ];
