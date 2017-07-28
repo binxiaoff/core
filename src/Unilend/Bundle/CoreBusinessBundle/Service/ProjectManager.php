@@ -578,7 +578,7 @@ class ProjectManager
 
         foreach ($bids as $bid) {
             if ($bid) {
-                $this->bidManager->reject($bid, true);
+                $this->bidManager->reject($bid, false);
                 $treatedBidNb ++;
                 if ($this->logger instanceof LoggerInterface) {
                     $this->logger->info($treatedBidNb . '/' . $iBidNbTotal . 'bids treated (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
