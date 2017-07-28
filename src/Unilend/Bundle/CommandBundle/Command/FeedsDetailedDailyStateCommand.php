@@ -138,9 +138,9 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $writer = \PHPExcel_IOFactory::createWriter($document, 'Excel2007');
         $writer->save(str_replace(__FILE__, $filePath ,__FILE__));
 
-//        if (false === $input->getOption('no-email')) {
-//            $this->sendFileToInternalRecipients($filePath);
-//        }
+        if (false === $input->getOption('no-email')) {
+            $this->sendFileToInternalRecipients($filePath);
+        }
     }
 
     /**
@@ -617,9 +617,11 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
      */
     private function addBalanceLine(\PHPExcel_Worksheet $activeSheet, DetailedDailyStateBalanceHistory $dailyBalances, $row, array $specificRows)
     {
-        $isPreviousLine = in_array($row, [$specificRows['previousMonth'], $specificRows['previousYear']]);
-        $isTotal        = in_array($row, [$specificRows['totalDay'], $specificRows['totalMonth']]);
-        $realBalance    = round(bcadd(bcadd(bcadd($dailyBalances->getLenderBalance(), $dailyBalances->getBorrowerBalance(), 4), bcadd($dailyBalances->getUnilendPromotionalBalance(), $dailyBalances->getUnilendBalance(), 4)), $dailyBalances->getDebtCollectorBalance(), 4), 2);
+        $isPreviousLine        = in_array($row, [$specificRows['previousMonth'], $specificRows['previousYear']]);
+        $isTotal               = in_array($row, [$specificRows['totalDay'], $specificRows['totalMonth']]);
+        $lenderBorrowerBalance = bcadd($dailyBalances->getLenderBalance(), $dailyBalances->getBorrowerBalance(), 4);
+        $unilendBalance        = bcadd($dailyBalances->getUnilendPromotionalBalance(), $dailyBalances->getUnilendBalance(), 4);
+        $realBalance           = round(bcadd($unilendBalance, bcadd($lenderBorrowerBalance, $dailyBalances->getDebtCollectorBalance(), 4), 4), 2);
 
         $activeSheet->setCellValueExplicit(self::BALANCE_COLUMN . $row, $realBalance, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         $activeSheet->setCellValueExplicit(self::UNILEND_PROMOTIONAL_BALANCE_COLUMN . $row, $dailyBalances->getUnilendPromotionalBalance(), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
@@ -725,6 +727,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-quotidien', [], false);
         $message
+            ->setSubject('Etat Quotidien avec soldes détaillés')
             ->setTo(explode(';', trim($recipientSetting->getValue())))
             ->attach(\Swift_Attachment::fromPath($filePath));
 
