@@ -19,6 +19,11 @@ use Unilend\librairies\CacheKeys;
 
 class EcheanciersRepository extends EntityRepository
 {
+    /**
+     * @param int $idLender
+     *
+     * @return mixed
+     */
     public function getLostCapitalForLender($idLender)
     {
         $projectStatusCollectiveProceeding = [
@@ -458,5 +463,48 @@ class EcheanciersRepository extends EntityRepository
         $statement->closeCursor();
 
         return $repaymentData;
+    }
+
+    /**
+     * @param \DateTime $end
+     *
+     * @return array
+     */
+    public function getLateRepaymentIndicators(\DateTime $end)
+    {
+        $end->setTime(23, 59, 59);
+
+        $query = 'SELECT
+                        COUNT(DISTINCT e.id_project) AS projectCount,
+                        ROUND(SUM(e.montant) / 100, 2) AS lateAmount
+                  FROM (
+                       SELECT
+                         MAX(id_project_status_history) AS first_status_history,
+                         added,
+                         id_project
+                       FROM projects_status_history psh
+                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                       WHERE ps.status >= :repaymentStatus
+                       GROUP BY id_project) AS t
+                    INNER JOIN echeanciers e ON e.id_project = t.id_project
+                    INNER JOIN projects_status_history psh2 ON t.first_status_history = psh2.id_project_status_history
+                    INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                  WHERE t.added <= :end
+                    AND ps2.status IN (:status)
+                    AND e.status = :pending
+                    AND e.date_echeance <= :end
+                  GROUP BY e.id_project';
+
+        return $this->getEntityManager()->getConnection()->executeQuery($query, [
+            'end'             => $end->format('Y-m-d h:i:s'),
+            'repaymentStatus' => ProjectsStatus::REMBOURSEMENT,
+            'status'          => [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME, ProjectsStatus::PROBLEME_J_X],
+            'pending'         => Echeanciers::STATUS_PENDING
+        ], [
+            'end'             => \PDO::PARAM_STR,
+            'repaymentStatus' => \PDO::PARAM_INT,
+            'status'          => Connection::PARAM_INT_ARRAY,
+            'pending'         => \PDO::PARAM_INT
+        ])->fetchAll(\PDO::FETCH_ASSOC)[0];
     }
 }

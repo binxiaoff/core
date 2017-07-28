@@ -870,18 +870,7 @@ class statsController extends bootstrap
         $filePath = $this->getParameter('path.protected') . '/' . $fileName;
 
         if (file_exists($filePath)) {
-            header('Content-Description: File Transfer');
-            header('Content-Type: application/force-download');
-            header("Content-Disposition: attachment; filename=\"" . basename($fileName) . "\";");
-            header('Content-Transfer-Encoding: binary');
-            header('Expires: 0');
-            header('Cache-Control: must-revalidate');
-            header('Pragma: public');
-            header('Content-Length: ' . filesize($filePath));
-            ob_clean();
-            flush();
-            readfile($filePath);
-            exit;
+            $this->download($filePath);
         } else {
             echo "Le fichier n'a pas été généré. ";
         }
@@ -893,5 +882,28 @@ class statsController extends bootstrap
         $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
         $data                = $wsMonitoringManager->getDataForChart();
         $this->chartData     = json_encode($data);
+    }
+
+    public function _reporting_sfpmei()
+    {
+        $directoryPath       = $this->getParameter('path.protected') . '/';
+        $this->reportingList = [];
+
+        if (isset($this->params[0], $this->params[1]) && 'file' === $this->params[0] && is_string($this->params[1])) {
+            $this->download($directoryPath . $this->params[1]);
+        }
+
+        $files = scandir($directoryPath);
+        foreach ($files as $file) {
+            if ('reporting_mensuel_sfpmei' == substr($file, 0, 24)) {
+                $fileDate = \DateTime::createFromFormat('Ymd', substr($file, -13, 8));
+                $this->reportingList[$fileDate->format('Y')][$fileDate->format('m')] = [
+                    'month' => strftime('%B', $fileDate->getTimestamp()),
+                    'link' => '/stats/reporting_sfpmei/file/' . $file,
+                    'name' => $file
+                ];
+                ksort($this->reportingList, SORT_NUMERIC);
+            }
+        }
     }
 }

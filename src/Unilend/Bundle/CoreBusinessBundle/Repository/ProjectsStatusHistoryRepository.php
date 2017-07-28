@@ -118,4 +118,28 @@ class ProjectsStatusHistoryRepository extends EntityRepository
 
         return $query->getResult();
     }
+
+    /**
+     * @param DateTime $start
+     * @param DateTime $end
+     * @param array    $projectStatus
+     *
+     * @return mixed
+     */
+    public function getCountProjectsByStatusBetweenDates(\DateTime $start, \DateTime $end, array $projectStatus)
+    {
+        $start->setTime(0, 0, 0);
+        $end->setTime(23, 59, 59);
+
+        $queryBuilder = $this->createQueryBuilder('psh');
+        $queryBuilder->select('COUNT(DISTINCT psh.idProject)')
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'psh.idProjectStatus = ps.idProjectStatus')
+            ->where('ps.status IN (:status)')
+            ->andWhere('psh.added BETWEEN :start AND :end')
+            ->setParameter('status', $projectStatus)
+            ->setParameter('start', $start->format('Y-m-d H:i:s'))
+            ->setParameter('end', $end->format('Y-m-d H:is'));
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
 }

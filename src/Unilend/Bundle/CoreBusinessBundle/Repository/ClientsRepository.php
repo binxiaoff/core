@@ -430,6 +430,66 @@ class ClientsRepository extends EntityRepository
     }
 
     /**
+     * @param array $clientType
+     * @param bool  $onlyActive
+     *
+     * @return int
+     */
+    public function countLendersByClientTypeBetweenDates(array $clientType, \DateTime $start, \DateTime $end, $onlyActive = false)
+    {
+        $start->setTime(0, 0, 0);
+        $end->setTime(23, 59, 59);
+
+        $qb = $this->createQueryBuilder('c');
+        $qb->select('COUNT(DISTINCT(c.idClient))')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
+            ->andWhere('wt.label = :lender')
+            ->andWhere('c.status = :statusOnline')
+            ->andWhere('c.type IN (:types)')
+            ->andWhere('c.added BETWEEN :start AND :end')
+            ->setParameter('lender', WalletType::LENDER)
+            ->setParameter('statusOnline', Clients::STATUS_ONLINE)
+            ->setParameter('types', $clientType, Connection::PARAM_INT_ARRAY)
+            ->setParameter('start', $start->format('Y-m-d H:i:s'))
+            ->setParameter('end', $end->format('Y-m-d H:i:s'));
+
+        if ($onlyActive) {
+            $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idClientStatus = 6');
+        }
+
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * if true only lenders activated at least once (active lenders)
+     * if false all online lender (Community)
+     * @param bool $onlyActive
+     *
+     * @return int
+     */
+    public function countLendersBetweenDates(\DateTime $start, \DateTime $end, $onlyActive = false)
+    {
+        $qb = $this->createQueryBuilder('c');
+        $qb->select('COUNT(DISTINCT(c.idClient))')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
+            ->andWhere('wt.label = :lender')
+            ->andWhere('c.status = :statusOnline')
+            ->andWhere('c.added BETWEEN :start AND :end')
+            ->setParameter('lender', WalletType::LENDER)
+            ->setParameter('statusOnline', Clients::STATUS_ONLINE)
+            ->setParameter('start', $start->format('Y-m-d H:i:s'))
+            ->setParameter('end', $end->format('Y-m-d H:i:s'));
+
+        if ($onlyActive) {
+            $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idClientStatus = 6');
+        }
+
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
      * @param int $year
      *
      * @return array

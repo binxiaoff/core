@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 
 class BackpaylineRepository extends EntityRepository
 {
@@ -43,5 +44,27 @@ class BackpaylineRepository extends EntityRepository
         return $this->getEntityManager()
             ->getConnection()
             ->executeQuery($query, $binds)->fetchAll();
+    }
+
+    /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return mixed
+     */
+    public function getCountFailedTransactionsBetweenDates(\DateTime $start, \DateTime $end)
+    {
+        $start->setTime(0, 0, 0);
+        $end->setTime(23, 59, 59);
+
+        $queryBuilder = $this->createQueryBuilder('bp');
+        $queryBuilder->select('COUNT(bp.idBackpayline)')
+            ->where('bp.code NOT IN (:codes)')
+            ->andWhere('bp.added BETWEEN :start AND :end')
+            ->setParameter('codes', [Backpayline::CODE_TRANSACTION_APPROVED, Backpayline::CODE_TRANSACTION_CANCELLED])
+            ->setParameter('start', $start->format('Y-m-d H:i:s'))
+            ->setParameter('end', $end->format('Y-m-d H:i:s'));
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }
