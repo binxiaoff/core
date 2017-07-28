@@ -110,7 +110,7 @@ class RiskDataMonitoringController extends Controller
 
         $authorizedIps = json_decode($authorizedIpsSetting->getValue(), true);
         // For local endpoint testing purposes
-        $authorizedIps = array_merge($authorizedIps, ['192.168.110.12']);
+        $authorizedIps = array_merge($authorizedIps, ['192.168.110.12', '192.168.1.196']);
 
         if (false === in_array($request->getClientIp(), $authorizedIps)) {
             return $this->endpointFeedback(self::AUTHENTICATION_ERROR, 'Your Ip address is not authorized', 403);
