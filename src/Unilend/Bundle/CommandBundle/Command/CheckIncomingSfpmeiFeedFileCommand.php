@@ -1,10 +1,10 @@
 <?php
+
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class CheckIncomingSfpmeiFeedFileCommand extends ContainerAwareCommand
 {
@@ -38,12 +38,9 @@ EOF
     {
         $sUrl       = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
         $sStaticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
-        /** @var EntityManager $oEntityManager */
-        $oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
-        /** @var \settings $oSettings */
-        $oSettings = $oEntityManager->getRepository('settings');
-        $oSettings->get('Adresse notification aucun virement', 'type');
-        $sTo = $oSettings->value;
+        /** @var \settings $settings */
+        $settings = $settings = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('settings');
+        $settings->get('Adresse notification aucun virement', 'type');
 
         $varMail = array(
             '$surl' => $sStaticUrl,
@@ -52,9 +49,16 @@ EOF
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-aucun-virement', $varMail, false);
-        $message->setTo($sTo);
-        $mailer = $this->getContainer()->get('mailer');
-        $result = $mailer->send($message);
-        echo $result;
+        try {
+            $message->setTo($settings->value);
+            $mailer = $this->getContainer()->get('mailer');
+            $result = $mailer->send($message);
+            echo $result;
+        } catch (\Exception $exception) {
+            $this->getContainer()->get('monolog.logger.console')->warning(
+                'Could not send email : notification-aucun-virement - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'email address' => $settings->value, 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 }
