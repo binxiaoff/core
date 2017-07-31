@@ -1,3 +1,9 @@
+<style>
+    #response .attention {
+        width: 100%!important;
+    }
+</style>
+
 <div id="popup" style="min-width:500px;">
     <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"/></a>
     <h1>Attribution d'une opération</h1>
