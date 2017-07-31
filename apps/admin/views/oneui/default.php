@@ -926,7 +926,7 @@
     <article id="messages">
         <h4 class="push-30">Messages</h4>
         <div class="row">
-            <div class="col-md-8">
+            <div class="col-xs-12">
                 <div class="block">
                     <div class="block-header bg-gray-lighter">
                         <ul class="block-options">
@@ -948,9 +948,6 @@
                         </div>
                     </div>
                     <div class="block-content">
-                        <div class="push text-right">
-                            <button class="btn btn-default" type="button"><span class="fa fa-times text-danger push-5-r"></span>Delete</button>
-                        </div>
                         <div class="pull-r-l">
                             <table class="js-table-checkable table table-hover table-vcenter">
                                 <tbody>
@@ -1035,34 +1032,6 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="block block-bordered remove-margin-b">
-                    <div class="block-header bg-gray-lighter">
-                        <h3 class="block-title">
-                            <span class="push-5-l">Memos</span>
-                        </h3>
-                    </div>
-                    <div class="js-chat-talk overflow-y-auto block-content block-content-full">
-                        <div class="font-s12 text-muted text-center push-20-t push-15"><em>Yesterday</em></div>
-                        <div class="block block-rounded block-transparent">
-                            <div class="block-content block-content-full block-content-mini bg-gray-lighter">Hi there!</div>
-                        </div>
-                        <div class="font-s12 text-muted text-center push-20-t push-15"><em>Today</em></div>
-                        <div class="block block-rounded block-transparent">
-                            <div class="block-content block-content-full block-content-mini bg-gray-lighter">Hi there!</div>
-                        </div>
-                        <div class="font-s12 text-muted text-center push-20-t push-15"><em>Today</em></div>
-                        <div class="block block-rounded block-transparent">
-                            <div class="block-content block-content-full block-content-mini bg-gray-lighter">Hi there!</div>
-                        </div>
-                    </div>
-                    <div class="js-chat-form block-content block-content-full block-content-mini border-t">
-                        <form action="base_ui_chat.html" method="post">
-                            <input class="js-chat-input form-control" type="text" data-target-chat-id="7" placeholder="Type a message and hit enter..">
-                        </form>
-                    </div>
-                </div>
-            </div>
         </div>
     </article>
     <article id="tree-view">
@@ -1081,31 +1050,6 @@
                 <div class="block">
                     <div class="block-content block-content-full">
                         <div class="js-tree-badges treeview"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </article>
-    <article id="charts">
-        <h4 class="push-30">Charts</h4>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="block block-bordered block-opt-refresh-icon8">
-                    <div class="block-header">
-                        <h3 class="block-title">Earnings in $</h3>
-                    </div>
-                    <div class="block-content block-content-full bg-gray-lighter text-center">
-                        <div style="height: 320px;"><canvas class="js-dash-chartjs-earnings"></canvas></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="block block-bordered block-opt-refresh-icon8">
-                    <div class="block-header">
-                        <h3 class="block-title">Sales</h3>
-                    </div>
-                    <div class="block-content block-content-full bg-gray-lighter text-center">
-                        <div style="height: 320px;"><canvas class="js-dash-chartjs-sales"></canvas></div>
                     </div>
                 </div>
             </div>
