@@ -74,7 +74,7 @@
             </fieldset>
             <div class="text-right">
                 <input type="hidden" name="id_reception" value ="<?= $this->receptions->id_reception ?>"/>
-                <input type="submit" value="Valider" title="Valider" name="send_projet" id="send_projet" class="btn"/>
+                <button type="submit" class="btn-primary">Valider</button>
             </div>
         </form>
     </div>
