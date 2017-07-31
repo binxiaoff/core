@@ -365,7 +365,7 @@
         <service id="unilend.service.risk_data_monitoring_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoringManager">
             <argument type="service" id="doctrine.orm.entity_manager" />
             <argument type="service" id="unilend.service.ws_client.euler_manager" />
-            <argument type="service" id="logger" />
+            <argument type="service" id="monolog.logger.wsclient" />
             <argument type="service" id="translator" />
         </service>
 

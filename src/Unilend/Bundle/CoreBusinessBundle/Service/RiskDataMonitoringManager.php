@@ -179,7 +179,7 @@ class RiskDataMonitoringManager
             $monitoring->setEnd(new \DateTime('NOW'));
             $this->entityManager->flush($monitoring);
 
-            $this->logger->info('End of monitoring period saved for siren ' . $monitoring->getSiren() . ' and type ' . $monitoring->getRatingType());
+            $this->logger->info('End of monitoring period saved for siren ' . $monitoring->getSiren() . ' and type ' . $monitoring->getRatingType(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $monitoring->getSiren()]);
         }
     }
 

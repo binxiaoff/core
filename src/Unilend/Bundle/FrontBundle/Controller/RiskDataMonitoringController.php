@@ -89,6 +89,8 @@ class RiskDataMonitoringController extends Controller
             $response->headers->set('Content-Type', 'application/problem+json');
         }
 
+        $this->get('monolog.logger.wsclient')->info('Call from Euler Hermes. Result : ' . $type . ', message : ' . $message, ['class' => __CLASS__, 'function' => __FUNCTION__]);
+
         return $response;
     }
 
