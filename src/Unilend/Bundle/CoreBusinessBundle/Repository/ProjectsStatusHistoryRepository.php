@@ -122,24 +122,28 @@ class ProjectsStatusHistoryRepository extends EntityRepository
     /**
      * @param DateTime $start
      * @param DateTime $end
-     * @param array    $projectStatus
-     *
-     * @return mixed
      */
-    public function getCountProjectsByStatusBetweenDates(\DateTime $start, \DateTime $end, array $projectStatus)
+    public function getCountProjectsInRiskReviewBetweenDates(\DateTime $start, \DateTime $end)
     {
         $start->setTime(0, 0, 0);
         $end->setTime(23, 59, 59);
 
-        $queryBuilder = $this->createQueryBuilder('psh');
-        $queryBuilder->select('COUNT(DISTINCT psh.idProject)')
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'psh.idProjectStatus = ps.idProjectStatus')
-            ->where('ps.status IN (:status)')
-            ->andWhere('psh.added BETWEEN :start AND :end')
-            ->setParameter('status', $projectStatus)
-            ->setParameter('start', $start->format('Y-m-d H:i:s'))
-            ->setParameter('end', $end->format('Y-m-d H:is'));
+        $query = 'SELECT COUNT(p.id_project) FROM projects p
+                      INNER JOIN projects_status_history psh ON psh.id_project = p.id_project
+                      INNER JOIN (SELECT
+                                    MAX(id_project_status_history) AS max_id_project_status_history
+                                  FROM projects_status_history psh_max
+                                    INNER JOIN projects_status ps_max ON psh_max.id_project_status = ps_max.id_project_status
+                                  WHERE ps_max.status >= ' . ProjectsStatus::COMITY_REVIEW . ' AND ps_max.status <=  ' . ProjectsStatus::A_FUNDER . '
+                                  GROUP BY id_project) t ON t.max_id_project_status_history = psh.id_project_status_history
+                      INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                    WHERE psh.added BETWEEN :start AND :end';
 
-        return $queryBuilder->getQuery()->getSingleScalarResult();
+        $result = $this->getEntityManager()->getConnection()->executeQuery($query, [
+                'start' => $start->format('Y-m-d H:i:s'),
+                'end'   => $end->format('Y-m-d H:i:s')
+            ])->fetchColumn();
+
+        return $result;
     }
 }

@@ -90,11 +90,7 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
             'avgInterestRate' => $projectRepository->getIndicatorBetweenDates('AVG(p.interest_rate) AS avgInterestRate', $startDate, $endDate, ProjectsStatus::REMBOURSEMENT)['avgInterestRate']
         ];
         $newlyPresentedProjects               = $projectRepository->getIndicatorBetweenDates('COUNT(p.id_project) AS newProjects', $startDate, $endDate, ProjectsStatus::EN_FUNDING)['newProjects'];
-        $newlyRiskAnalysisProjects            = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->getCountProjectsByStatusBetweenDates($startDate, $endDate, [
-            ProjectsStatus::ANALYSIS_REVIEW,
-            ProjectsStatus::COMITY_REVIEW,
-            ProjectsStatus::SUSPENSIVE_CONDITIONS
-        ]);
+        $newlyRiskAnalysisProjects            = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->getCountProjectsInRiskReviewBetweenDates($startDate, $endDate);
         $projectsInDebtCollection             = $projectRepository->findProjectsHavingHadStatusBetweenDates([ProjectsStatus::RECOUVREMENT], new \DateTime('January 2013'), $endDate);
         $remainingDueCapitalInDebtCollection  = $operationRepository->getRemainingDueCapitalForProjects($endDate, array_column($projectsInDebtCollection, 'id_project'));
         $projectsInCollectiveProceeding       = $projectRepository->findProjectsHavingHadStatusBetweenDates([
@@ -107,7 +103,7 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
             ProjectsStatus::REMBOURSE,
             ProjectsStatus::REMBOURSEMENT_ANTICIPE
         ], $startDate, $endDate);
-        $projectsInRepayment                  = $projectRepository->findProjectsInRepaymentBetweenDates(new \DateTime('January 2013'), $endDate);
+        $projectsInRepayment                  = $projectRepository->findProjectsInRepaymentAtDate($endDate);
         $remainingDueCapitalRunningRepayments = $operationRepository->getRemainingDueCapitalForProjects($endDate, array_column($projectsInRepayment, 'id_project'));
         $repaymentTypes                       = array_merge([
             OperationType::CAPITAL_REPAYMENT,

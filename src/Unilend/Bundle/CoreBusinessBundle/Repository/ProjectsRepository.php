@@ -343,41 +343,27 @@ class ProjectsRepository extends EntityRepository
     }
 
     /**
-     * @param \DateTime $start
      * @param \DateTime $end
      *
      * @return array
      */
-    public function findProjectsInRepaymentBetweenDates(\DateTime $start, \DateTime $end)
+    public function findProjectsInRepaymentAtDate(\DateTime $end)
     {
-        $start->setTime(0, 0, 0);
         $end->setTime(23, 59, 59);
 
-        $query = 'SELECT 
-                    * 
-                  FROM (SELECT MAX(id_project_status_history) AS last_status_history, added, id_project 
-                        FROM projects_status_history psh_max
-                          INNER JOIN projects_status ps_max  ON psh_max.id_project_status = ps_max.id_project_status
-                        WHERE ps_max.status IN (:runningRepayment) 
-                        GROUP BY id_project) AS t
-                  INNER JOIN projects p ON p.id_project = t.id_project
-                  INNER JOIN projects_status_history psh ON t.last_status_history = psh.id_project_status_history
-                  INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                  WHERE t.added BETWEEN :start AND :end
-                  AND ps.status NOT IN (:finishedRepayment)
-                  GROUP BY p.id_project';
+        $query = 'SELECT * FROM projects p
+                    INNER JOIN projects_status_history psh ON psh.id_project = p.id_project
+                    INNER JOIN (SELECT
+                              MAX(id_project_status_history) AS max_id_project_status_history
+                            FROM projects_status_history psh_max
+                              INNER JOIN projects_status ps_max ON psh_max.id_project_status = ps_max.id_project_status
+                            WHERE ps_max.status >= ' .  ProjectsStatus::REMBOURSEMENT . '
+                            GROUP BY id_project) t ON t.max_id_project_status_history = psh.id_project_status_history
+                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                  WHERE psh.added <= :end
+                    AND ps.status NOT IN (' . implode(',', [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::DEFAUT]) . ')';
 
-        $result = $this->getEntityManager()->getConnection()->executeQuery($query, [
-                'runningRepayment'  => ProjectsStatus::RUNNING_REPAYMENT,
-                'finishedRepayment' => [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::DEFAUT],
-                'start'             => $start->format('Y-m-d H:i:s'),
-                'end'               => $end->format('Y-m-d H:i:s')
-            ], [
-                'runningRepayment'  => Connection::PARAM_INT_ARRAY,
-                'finishedRepayment' => Connection::PARAM_INT_ARRAY,
-                'start'             => PDO::PARAM_STR,
-                'end'               => PDO::PARAM_STR
-            ])->fetchAll();
+        $result = $this->getEntityManager()->getConnection()->executeQuery($query, ['end' => $end->format('Y-m-d H:i:s')])->fetchAll();
 
         return $result;
     }
