@@ -104,7 +104,7 @@ Memo.prototype.submit = function() {
                 projectId: self.track.projectId,
                 commentId: self.track.commentId,
                 content: comment,
-                public: self.$elem.find('[name="public_memo"]:checked').val()
+                public: self.$elem.find('[name="public"]:checked').val()
             },
             success: function(response) {
                 $('#table_memo').html(response)
