@@ -61,6 +61,27 @@ Memo.prototype.open = function (comment, commentId) {
         })
     }
 
+    var $publicCheckboxes = self.$elem.find('.controls input[name="public"]')
+
+    // By default, memos are private
+    var public = false
+
+    // If comment has ID, it is comming from the table with memos and has an attribute
+    // that shows whether the comment is public or private
+    if (commentId) {
+        public = $('[data-comment-id=' + commentId + ']').data('public')
+    }
+    // Check the right box
+    $publicCheckboxes.each(function(){
+        if (public) {
+            if ($(this).val() == 1)
+                $(this).attr('checked', true).prop('checked', true)
+        } else {
+            if ($(this).val() == 0)
+                $(this).attr('checked', true).prop('checked', true)
+        }
+    })
+
     self.$elem.slideDown(300, function() {
         CKEDITOR.replace(self.textarea, {
             height: 170,
