@@ -121,7 +121,7 @@ class PaylineManager
         $backPayline->setAmount($amountInCent);
         $this->entityManager->persist($backPayline);
         $this->entityManager->flush($backPayline);
-        /** @var \paylineSDK $payline */
+
         $payline                  = new \paylineSDK($this->merchantId, $this->accessKey, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, $this->isProduction);
         $payline->returnURL       = $redirectUrl;
         $payline->cancelURL       = $cancelUrl;
@@ -170,7 +170,6 @@ class PaylineManager
      */
     public function handlePaylineReturn($token, $version)
     {
-        /** @var \paylineSDK $payline */
         $payline = new \paylineSDK($this->merchantId, $this->accessKey, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, $this->isProduction);
 
         $this->logger->debug('Calling Payline::getWebPaymentDetails: return token=' . $token . ' version: ' . $version);

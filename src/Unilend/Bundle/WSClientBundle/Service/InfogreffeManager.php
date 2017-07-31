@@ -4,7 +4,6 @@ namespace Unilend\Bundle\WSClientBundle\Service;
 
 use JMS\Serializer\Serializer;
 use Psr\Log\LoggerInterface;
-use SoapClient;
 use Unilend\Bundle\WSClientBundle\Entity\Infogreffe\CompanyIndebtedness;
 
 class InfogreffeManager
@@ -26,12 +25,14 @@ class InfogreffeManager
     private $login;
     /** @var string */
     private $password;
+    /** @var string */
+    private $wsdl;
+    /** @var string */
+    private $url;
     /** @var LoggerInterface */
     private $logger;
     /** @var CallHistoryManager */
     private $callHistoryManager;
-    /** @var \SoapClient */
-    private $client;
     /** @var Serializer */
     private $serializer;
     /** @var ResourceManager */
@@ -44,27 +45,30 @@ class InfogreffeManager
     /**
      * @param string             $login
      * @param string             $password
+     * @param string             $wsdl
+     * @param string             $url
      * @param LoggerInterface    $logger
      * @param CallHistoryManager $callHistoryManager
-     * @param SoapClient         $client
      * @param Serializer         $serializer
      * @param ResourceManager    $resourceManager
      */
     public function __construct(
         $login,
         $password,
+        $wsdl,
+        $url,
         LoggerInterface $logger,
         CallHistoryManager $callHistoryManager,
-        SoapClient $client,
         Serializer $serializer,
         ResourceManager $resourceManager
     )
     {
         $this->login              = $login;
         $this->password           = $password;
+        $this->wsdl               = $wsdl;
+        $this->url                = $url;
         $this->logger             = $logger;
         $this->callHistoryManager = $callHistoryManager;
-        $this->client             = $client;
         $this->serializer         = $serializer;
         $this->resourceManager    = $resourceManager;
     }
@@ -119,27 +123,45 @@ class InfogreffeManager
 
         try {
             $request = $this->getXmlRequest($siren);
-            ini_set('default_socket_timeout', self::CALL_TIMEOUT);
 
-            $this->client->__soapCall(
-                $wsResource->getResourceName(),
-                [$request->asXML()]
-            );
-        } catch (\SoapFault $exception) {
-            // Infogreffe WS response does not seem to be valid. Workaround by Mesbah: ignore error and call SoapClient::__getLastResponse()
-            if ('SOAP-ERROR: Encoding: Violation of encoding rules' === $exception->getMessage()) {
-                // https://github.com/laravel/framework/issues/6618
-                set_error_handler('var_dump', 0); // Never called because of empty mask.
-                @trigger_error('');
-                restore_error_handler();
-            } else {
-                call_user_func($callBack, $this->client->__getLastResponse(), 'error');
-                $this->logger->error('Calling Infogreffe: ' . $exception->getMessage() . ' Code: ' . $exception->getCode(), $logContext);
+            $soapRequestString = '<?xml version="1.0" encoding="utf-8"?>
+                <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+                  <soap:Body>
+                    <m:' . $wsResource->getResourceName() . ' xmlns="' . $this->wsdl . '">
+                        ' . $request->asXML() . '
+                    </m:getProduitsWebServicesXML>
+                  </soap:Body>
+                </soap:Envelope>';
 
-                return null;
-            }
+            $headers = [
+                'Content-type: text/xml;charset="utf-8"',
+                'Accept: text/xml',
+                'Cache-Control: no-cache',
+                'Pragma: no-cache',
+                'SOAPAction: ' . $this->url,
+                'Content-length: ' . strlen($soapRequestString),
+            ];
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 1);
+            curl_setopt($ch, CURLOPT_URL, $this->url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_USERPWD, $this->login . ':' . $this->password); // username and password - declared at the top of the doc
+            curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+            curl_setopt($ch, CURLOPT_TIMEOUT, self::CALL_TIMEOUT);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $soapRequestString); // the SOAP request
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+            $response = curl_exec($ch);
+            curl_close($ch);
+        } catch (\Exception $exception) {
+            $this->logger->error('Calling Infogreffe: ' . $exception->getMessage() . ' Code: ' . $exception->getCode(), $logContext);
+
+            return null;
         }
-        $response = $this->client->__getLastResponse();
+
         $result   = $this->extractResponse($response, $logContext);
         $validity = $this->isValidResponse($result, $logContext);
         call_user_func($callBack, $response, $validity['status']);

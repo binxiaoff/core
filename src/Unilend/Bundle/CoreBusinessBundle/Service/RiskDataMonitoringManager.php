@@ -89,7 +89,10 @@ class RiskDataMonitoringManager
      */
     public function saveEndOfMonitoringPeriodNotification($siren, $ratingType)
     {
-        $this->stopMonitoringPeriod($this->getMonitoringForSiren($siren, $ratingType));
+        $currentMonitoring = $this->getMonitoringForSiren($siren, $ratingType);
+        if (null !== $currentMonitoring) {
+            $this->stopMonitoringPeriod($currentMonitoring);
+        }
 
         /** @var RiskDataMonitoring $monitoring */
         foreach ($this->getMonitoredCompanies($siren, $ratingType, false) as $company) {
@@ -120,6 +123,7 @@ class RiskDataMonitoringManager
                 $this->entityManager->flush($monitoringCallLog);
 
                 try {
+                    $this->eulerHermesManager->setUseCache(false);
                     if (null !== ($eulerGrade = $this->eulerHermesManager->getGrade($siren, 'fr'))) {
                         $companyRatingHistory = $this->saveCompanyRating($company, $eulerGrade);
 
@@ -134,7 +138,7 @@ class RiskDataMonitoringManager
                 }
             }
         }
-
+        $this->eulerHermesManager->setUseCache(true);
         $this->entityManager->flush();
     }
 
@@ -147,7 +151,6 @@ class RiskDataMonitoringManager
         $projectRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
         if (0 == $projectRepository->getCountProjectsBySirenAndNotInStatus($siren, self::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS)) {
-            $monitoringStopped = false;
             /** @var RiskDataMonitoring $monitoring */
             foreach ($riskDataMonitoringRepository->findBy(['siren' => $siren, 'end' => null]) as $monitoring) {
                 switch ($monitoring->getRatingType()) {
@@ -155,6 +158,7 @@ class RiskDataMonitoringManager
                         $monitoringStopped = $this->eulerHermesManager->stopMonitoring($monitoring->getSiren(), 'fr');
                         break;
                     default:
+                        $monitoringStopped = false;
                         break;
                 }
 
@@ -175,7 +179,7 @@ class RiskDataMonitoringManager
             $monitoring->setEnd(new \DateTime('NOW'));
             $this->entityManager->flush($monitoring);
 
-            $this->logger->info('End of monitoring period saved for siren ' . $monitoring->getSiren() . ' and type ' . $monitoring->getRatingType());
+            $this->logger->info('End of monitoring period saved for siren ' . $monitoring->getSiren() . ' and type ' . $monitoring->getRatingType(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $monitoring->getSiren()]);
         }
     }
 
@@ -220,7 +224,7 @@ class RiskDataMonitoringManager
     public function startMonitoringPeriod($siren, $ratingType)
     {
         if ($this->isSirenMonitored($siren, $ratingType)) {
-            $this->logger->warning('Siren ' . $siren . ' is already monitored. Can not start monitoring period for type ' . $ratingType);
+            $this->logger->warning('Siren ' . $siren . ' is already monitored. Can not start monitoring period for type ' . $ratingType, ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]);
             return null;
         }
 
@@ -232,7 +236,7 @@ class RiskDataMonitoringManager
         $this->entityManager->persist($monitoring);
         $this->entityManager->flush($monitoring);
 
-        $this->logger->info('Monitoring of type ' . $ratingType . ' for siren '. $siren . ' has been created');
+        $this->logger->info('Monitoring of type ' . $ratingType . ' for siren '. $siren . ' has been created', ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]);
 
         return $monitoring;
     }
@@ -259,7 +263,7 @@ class RiskDataMonitoringManager
         $companyProjects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')
             ->findBy(['idCompany' => $companyRating->getIdCompanyRatingHistory()->getIdCompany()]);
 
-        $memoContent = '<p><b>Evènement monitoring</b> : ' . $this->translator->trans('company-rating_' . $companyRating->getType()) . ' : ' . $companyRating->getValue() . '</p>';
+        $memoContent = '<p><b>Evénement monitoring</b> : ' . $this->translator->trans('company-rating_' . $companyRating->getType()) . ' : ' . $companyRating->getValue() . '</p>';
 
         foreach ($companyProjects as $project) {
             $projectCommentEntity = new ProjectsComments();

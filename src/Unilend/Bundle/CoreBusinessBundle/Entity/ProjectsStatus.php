@@ -98,7 +98,11 @@ class ProjectsStatus
         ProjectsStatus::DEFAUT
     ];
 
-    const SALE_TEAM = [
+    /**
+     * List of project status when project should be assigned to a commercial
+     * @var array
+     */
+    const SALES_TEAM = [
         ProjectsStatus::POSTPONED,
         ProjectsStatus::COMMERCIAL_REVIEW,
         ProjectsStatus::PENDING_ANALYSIS,
@@ -113,16 +117,24 @@ class ProjectsStatus
         ProjectsStatus::FUNDE
     ];
 
-    const UPCOMING_SALE_TEAM = [
-        ProjectsStatus::INCOMPLETE_REQUEST,
-        ProjectsStatus::COMPLETE_REQUEST
-    ];
-
-    const RISK_TEAM = [
+    /**
+     * List of project status when project is considered as part of the risk team pipe
+     * @var array
+     */
+    CONST RISK_TEAM = [
         ProjectsStatus::PENDING_ANALYSIS,
         ProjectsStatus::ANALYSIS_REVIEW,
         ProjectsStatus::COMITY_REVIEW,
         ProjectsStatus::SUSPENSIVE_CONDITIONS
+    ];
+
+    /**
+     * List of project status when project is considered as part of the commercial team pipe
+     * @var array
+     */
+    const SALES_TEAM_UPCOMING_STATUS = [
+        ProjectsStatus::INCOMPLETE_REQUEST,
+        ProjectsStatus::COMPLETE_REQUEST
     ];
 
     /**

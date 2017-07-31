@@ -18,6 +18,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Doctrine\DBAL\Connection;
+use Unilend\librairies\CacheKeys;
 
 class OperationRepository extends EntityRepository
 {
@@ -775,7 +776,7 @@ class OperationRepository extends EntityRepository
                     WHERE o_capital.id_repayment_schedule = :idRepaymentSchedule
                     GROUP BY prl.id_project_remb_log';
 
-        $qcProfile = new QueryCacheProfile(\Unilend\librairies\CacheKeys::DAY, md5(__METHOD__ . $idRepaymentSchedule));
+        $qcProfile = new QueryCacheProfile(CacheKeys::DAY, md5(__METHOD__ . $idRepaymentSchedule));
         $statement = $this->getEntityManager()->getConnection()->executeCacheQuery($query, ['idRepaymentSchedule' => $idRepaymentSchedule], ['idRepaymentSchedule' => \PDO::PARAM_INT], $qcProfile);
         $result    = $statement->fetch();
         $statement->closeCursor();
@@ -791,13 +792,13 @@ class OperationRepository extends EntityRepository
     public function getRegularizationDetailByRepaymentScheduleId($idRepaymentSchedule)
     {
         $taxRegularizationOperations = [
-            OperationType::TAX_FR_ADDITIONAL_CONTRIBUTIONS_REGULARIZATION,
+            OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_REGULARIZATION,
             OperationType::TAX_FR_CRDS_REGULARIZATION,
             OperationType::TAX_FR_CSG_REGULARIZATION,
-            OperationType::TAX_FR_SOLIDARITY_DEDUCTIONS_REGULARIZATION,
-            OperationType::TAX_FR_STATUTORY_CONTRIBUTIONS_REGULARIZATION,
-            OperationType::TAX_FR_SOCIAL_DEDUCTIONS_REGULARIZATION,
-            OperationType::TAX_FR_INCOME_TAX_DEDUCTED_AT_SOURCE_REGULARIZATION,
+            OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_REGULARIZATION,
+            OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_REGULARIZATION,
+            OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_REGULARIZATION,
+            OperationType::TAX_FR_RETENUES_A_LA_SOURCE_REGULARIZATION,
         ];
 
         $query = 'SELECT
