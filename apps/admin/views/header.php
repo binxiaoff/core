@@ -1,3 +1,331 @@
+<?php
+
+/*** NAVIGATION ***/
+
+// Menu items
+$menuItems = Array(
+    0 => Array(
+        'title' => 'Dashboard',
+        'handle' => 'dashboard',
+        'children' => ''
+    ),
+    1 => Array(
+        'title' => 'Edition',
+        'handle' => 'edition',
+        'children' => Array(
+            0 => Array(
+                'title' => 'Arborescence',
+                'handle' => 'tree',
+            ),
+            1 => Array(
+                'title' => 'Blocs',
+                'handle' => 'blocs'
+            ),
+            2 => Array(
+                'title' => 'Menus',
+                'handle' => 'menus'
+            ),
+            3 => Array(
+                'title' => 'Templates',
+                'handle' => 'templates'
+            ),
+            4 => Array(
+                'title' => 'Traductions',
+                'handle' => 'traductions'
+            ),
+            5 => Array(
+                'title' => 'Mails',
+                'handle' => 'mails'
+            )
+        )
+    ),
+    2 => Array(
+        'title' => 'Configuration',
+        'handle' => 'configuration',
+        'children' => Array(
+            0 => Array(
+                'title' => 'Paramètres',
+                'handle' => 'settings',
+            ),
+            1 => Array(
+                'title' => 'Historique des Mails',
+                'handle' => '/mails/emailhistory'
+            ),
+            2 => Array(
+                'title' => 'Campagnes',
+                'handle' => 'partenaires'
+            ),
+            3 => Array(
+                'title' => 'Types de campagnes',
+                'handle' => 'partenaires/types'
+            ),
+            4 => Array(
+                'title' => 'Medias de campagnes',
+                'handle' => 'partenaires/medias'
+            ),
+            5 => Array(
+                'title' => 'Grille de taux',
+                'handle' => 'project_rate_settings'
+            ),
+        )
+    ),
+    3 => Array(
+        'title' => 'Statistiques',
+        'handle' => 'stats',
+        'children' => Array(
+            0 => Array(
+                'title' => 'Requêtes',
+                'handle' => 'queries',
+            ),
+            1 => Array(
+                'title' => 'Etape d\'inscription',
+                'handle' => 'stats/etape_inscription'
+            ),
+            2 => Array(
+                'title' => 'Sources emprunteurs',
+                'handle' => 'stats/requete_source_emprunteurs'
+            ),
+            3 => Array(
+                'title' => 'Revenus',
+                'handle' => 'stats/requete_revenus_download'
+            ),
+            4 => Array(
+                'title' => 'Bénéficiaires',
+                'handle' => 'stats/requete_beneficiaires_csv'
+            ),
+            5 => Array(
+                'title' => 'Infosben',
+                'handle' => '/stats/requete_infosben'
+            ),
+            6 => Array(
+                'title' => 'Toutes les enchères',
+                'handle' => '/stats/requete_encheres'
+            ),
+            7 => Array(
+                'title' => 'Echeanciers projet',
+                'handle' => 'stats/tous_echeanciers_pour_projet'
+            ),
+            8 => Array(
+                'title' => 'Statistiques Autolend',
+                'handle' => 'stats/autobid_statistic'
+            ),
+            9 => Array(
+                'title' => 'Déclarations BDF',
+                'handle' => 'stats/declarations_bdf'
+            ),
+            10 => Array(
+                'title' => 'CRS CAC',
+                'handle' => 'stats/requete_crs_cac'
+            ),
+            11 => Array(
+                'title' => 'Extraction des évaluations d\'éligibilité des dossiers',
+                'handle' => 'évaluation dossiers'
+            ),
+            12 => Array(
+                'title' => 'Logs webservices',
+                'handle' => 'stats/logs_webservices'
+            )
+        )
+    ),
+    4 => Array(
+        'title' => 'Prêteurs',
+        'handle' => 'preteurs',
+        'children' => Array(
+            0 => Array(
+                'title' => 'Recherche prêteurs',
+                'handle' => 'preteurs/search',
+            ),
+            1 => Array(
+                'title' => 'Activation prêteurs',
+                'handle' => 'preteurs/activation '
+            ),
+            2 => Array(
+                'title' => 'Offre de bienvenue',
+                'handle' => 'preteurs/offres_de_bienvenue'
+            ),
+            3 => Array(
+                'title' => 'Matching ville fiscale',
+                'handle' => 'preteurs/control_fiscal_city'
+            ),
+            4 => Array(
+                'title' => 'Matching ville de naissance',
+                'handle' => 'preteurs/control_birth_city'
+            ),
+            5 => Array(
+                'title' => 'Notifications',
+                'handle' => 'preteurs/notifications'
+            ),
+        )
+    ),
+    5 => Array(
+        'title' => 'Emprunteurs',
+        'handle' => 'emprunteurs',
+        'children' => Array(
+            0 => Array(
+                'title' => 'Dossiers',
+                'handle' => 'dossiers',
+            ),
+            1 => Array(
+                'title' => 'Emprunteurs',
+                'handle' => 'emprunteurs/gestion'
+            ),
+            2 => Array(
+                'title' => 'Prescripteurs',
+                'handle' => 'prescripteurs/gestion'
+            ),
+            3 => Array(
+                'title' => 'Dossiers en funding',
+                'handle' => 'dossiers/funding '
+            ),
+            4 => Array(
+                'title' => 'Remboursements',
+                'handle' => 'dossiers/remboursements'
+            ),
+            5 => Array(
+                'title' => 'Erreurs remboursements',
+                'handle' => 'dossiers/no_remb'
+            ),
+            6 => Array(
+                'title' => 'Suivi statuts projets',
+                'handle' => 'dossiers/status'
+            ),
+            7 => Array(
+                'title' => 'Erreurs remboursements',
+                'handle' => 'dossiers/no_remb'
+            ),
+            8 => Array(
+                'title' => 'Produits',
+                'handle' => 'product'
+            ),
+            9 => Array(
+                'title' => 'Sociétés',
+                'handle' => 'company'
+            ),
+            10 => Array(
+                'title' => 'Partenaires',
+                'handle' => 'partner'
+            )
+        )
+    ),
+    6 => Array(
+        'title' => 'Dépôt de fonds',
+        'handle' => 'transferts',
+        'children' => Array(
+            0 => Array(
+                'title' => 'Prêteurs',
+                'handle' => 'transferts/preteurs',
+            ),
+            1 => Array(
+                'title' => 'Emprunteurs',
+                'handle' => 'transferts/emprunteurs'
+            ),
+            2 => Array(
+                'title' => 'Non attribués',
+                'handle' => 'transferts/non_attribues'
+            ),
+            3 => Array(
+                'title' => 'Rattrapage offre de bienvenue',
+                'handle' => 'transferts/rattrapage_offre_bienvenue'
+            ),
+            4 => Array(
+                'title' => 'Déblocage des fonds',
+                'handle' => 'transferts/deblocage'
+            ),
+            5 => Array(
+                'title' => 'Succession (Transfert de solde et prêts)',
+                'handle' => 'transferts/succession'
+            ),
+            6 => Array(
+                'title' => 'Opérations atypiques',
+                'handle' => 'client_atypical_operation'
+            ),
+            7 => Array(
+                'title' => 'Transfert des fonds',
+                'handle' => 'transferts/virement_emprunteur'
+            )
+        )
+    ),
+    7 => Array(
+        'title' => 'Administration',
+        'handle' => 'admin',
+        'children' => Array(
+            0 => Array(
+                'title' => 'Utilisateurs',
+                'handle' => 'users',
+            ),
+            1 => Array(
+                'title' => 'Droits d\'accès',
+                'handle' => 'zones'
+            ),
+            2 => Array(
+                'title' => 'Logs connexions',
+                'handle' => 'users/logs'
+            )
+        )
+    )
+);
+
+// Generate menu function
+function generateMenu($menuItems, $theme, $currentPage, $zoneHeader)
+{
+    $menuHtml = '';
+    foreach ($menuItems as $item) {
+
+        $itemHandle = $item['handle'];
+        $itemTitle = $item['title'];
+
+        // Item visibility
+        if (in_array($itemHandle, $zoneHeader)) {
+
+            // Check user and adjust title for Dashboard item
+            if ($itemTitle === 'Dashboard') {
+                if (in_array($_SESSION['user']['id_user_type'], [\users_types::TYPE_RISK, \users_types::TYPE_COMMERCIAL]) || in_array($_SESSION['user']['id_user'], [23, 26])) {
+                    $itemTitle = 'Mon flux';
+                }
+            }
+
+            // Check theme and adjust menu html
+            if ($theme !== 'oneui') {
+                $active = '';
+                if ($currentPage === $itemHandle) {
+                    $active = ' class="active"';
+                }
+                $menuHtml .= '<li><a href="' . $itemHandle . '"' . $active . '>' . $itemTitle . '</a>';
+                if (!empty($item['children'])) {
+                    $menuHtml .= '<ul class="sous_menu">';
+                    foreach ($item['children'] as $subItem) {
+                        $menuHtml .= '<li><a href="' . $subItem['handle'] . '">' . $subItem['title'] . '</a><li>';
+                    }
+                    $menuHtml .= '</ul>';
+                }
+                $menuHtml .= '</li>';
+            } else {
+                $active = '';
+                if ($currentPage === $itemHandle) {
+                    $active = ' active';
+                }
+
+                if (empty($item['children'])) {
+                    $menuHtml .= '<li class="' . $active . '"><a href="' . $itemHandle . '">' . $item['title'] . '</a></li>';
+                } else {
+                    $menuHtml .= '<li class="dropdown' . $active . '"><a href="' . $itemHandle . '" data-toggle="dropdown" data-hover="dropdown" data-delay="200" data-close-others="false" aria-expanded="false">' . $item['title'] . '</a>';
+                    $menuHtml .= '<ul class="dropdown-menu">';
+                    foreach ($item['children'] as $subItem) {
+                        $menuHtml .= '<li><a href="' . $subItem['handle'] . '">' . $subItem['title'] . '</a><li>';
+                    }
+                    $menuHtml .= '</ul>';
+                    $menuHtml .= '</li>';
+                }
+            }
+
+        }
+    }
+    // print the menu
+    echo $menuHtml;
+}
+?>
+
+<?php if ($this->Command->getControllerName() !== 'oneui') : ?>
 <div id="header">
     <div class="row">
         <div class="col-md-6">
@@ -32,116 +360,30 @@
 </div>
 <div id="navigation">
     <ul id="menu_deroulant">
-        <?php if (in_array('dashboard', $this->lZonesHeader)) : ?>
-            <li>
-                <?php if (in_array($_SESSION['user']['id_user_type'], [\users_types::TYPE_RISK, \users_types::TYPE_COMMERCIAL]) || in_array($_SESSION['user']['id_user'], [23, 26])) : ?>
-                    <a href="<?= $this->lurl ?>" title="Mon flux"<?= ($this->menu_admin == 'dashboard' ? ' class="active"' : '') ?>>Mon flux</a>
-                <?php else : ?>
-                    <a href="<?= $this->lurl ?>" title="Dashboard"<?= ($this->menu_admin == 'dashboard' ? ' class="active"' : '') ?>>Dashboard</a>
-                <?php endif; ?>
-            </li>
-        <?php endif; ?>
-        <?php if (in_array('edition', $this->lZonesHeader)) : ?>
-            <li>
-                <a href="<?= $this->lurl ?>/tree" title="Edition"<?= ($this->menu_admin == 'edition' ? ' class="active"' : '') ?>>Edition</a>
-                <ul class="sous_menu">
-                    <li><a href="<?= $this->lurl ?>/tree" title="Arborescence">Arborescence</a></li>
-                    <li><a href="<?= $this->lurl ?>/blocs" title="Blocs">Blocs</a></li>
-                    <li><a href="<?= $this->lurl ?>/menus" title="Menus">Menus</a></li>
-                    <li><a href="<?= $this->lurl ?>/templates" title="Templates">Templates</a></li>
-                    <li><a href="<?= $this->lurl ?>/traductions" title="Traductions"<?= ($this->menu_admin == 'traductions' ? ' class="active"' : '') ?>>Traductions</a></li>
-                    <li><a href="<?= $this->lurl ?>/mails" title="Mails">Mails</a></li>
-                </ul>
-            </li>
-        <?php endif; ?>
-        <?php if (in_array('configuration', $this->lZonesHeader)) : ?>
-            <li>
-                <a href="<?= $this->lurl ?>/settings" title="Configuration"<?= ($this->menu_admin == 'configuration' ? ' class="active"' : '') ?>>Configuration</a>
-                <ul class="sous_menu">
-                    <li><a href="<?= $this->lurl ?>/settings" title="Paramètres">Paramètres</a></li>
-                    <li><a href="<?= $this->lurl ?>/mails/emailhistory" title="Historique des Mails">Historique des Mails</a></li>
-                    <li><a href="<?= $this->lurl ?>/partenaires" title="Campagnes">Campagnes</a></li>
-                    <li><a href="<?= $this->lurl ?>/partenaires/types" title="Types de campagnes">Types de campagnes</a></li>
-                    <li><a href="<?= $this->lurl ?>/partenaires/medias" title="Medias de campagnes">Medias de campagnes</a></li>
-                    <li><a href="<?= $this->lurl ?>/project_rate_settings" title="Grille de taux">Grille de taux</a></li>
-                </ul>
-            </li>
-        <?php endif; ?>
-        <?php if (in_array('stats', $this->lZonesHeader)) : ?>
-            <li>
-                <a href="<?= $this->lurl ?>/queries" title="Statistiques"<?= ($this->menu_admin == 'stats' ? ' class="active"' : '') ?>>Statistiques</a>
-                <ul class="sous_menu">
-                    <li><a href="<?= $this->lurl ?>/queries" title="Requêtes">Requêtes</a></li>
-                    <li><a href="<?= $this->lurl ?>/stats/etape_inscription" title="Etape d'inscription">Etape d'inscription</a></li>
-                    <li><a href="<?= $this->lurl ?>/stats/requete_source_emprunteurs" title="Requete source emprunteurs">Sources emprunteurs</a></li>
-                    <li><a href="<?= $this->lurl ?>/stats/requete_revenus_download" title="Revenus">Revenus</a></li>
-                    <li><a href="<?= $this->lurl ?>/stats/requete_beneficiaires_csv" title="Bénéficiaires">Bénéficiaires</a></li>
-                    <li><a href="<?= $this->lurl ?>/stats/requete_infosben" title="Infosben">Infosben</a></li>
-                    <li><a href="<?= $this->lurl ?>/stats/requete_encheres" title="Toutes les enchères">Toutes les enchères</a></li>
-                    <li><a href="<?= $this->lurl ?>/stats/tous_echeanciers_pour_projet" title="Echeanciers projet">Echeanciers projet</a></li>
-                    <li><a href="<?= $this->lurl ?>/stats/autobid_statistic" title="Statistiques Autolend">Statistiques Autolend</a></li>
-                    <li><a href="<?= $this->lurl ?>/stats/declarations_bdf" title="Déclarations BDF">Déclarations BDF</a></li>
-                    <li><a href="<?= $this->lurl ?>/stats/requete_crs_cac" title="CRS CAC">CRS CAC</a></li>
-                    <li><a href="<?= $this->lurl ?>/stats/extraction_b_lend" title="évaluation dossiers">Extraction des évaluations d'éligibilité des dossiers</a></li>
-                    <li><a href="<?= $this->lurl ?>/stats/logs_webservices" title="Logs webservices">Logs webservices</a></li>
-                </ul>
-            </li>
-        <?php endif; ?>
-        <?php if (in_array('preteurs', $this->lZonesHeader)) : ?>
-            <li>
-                <a href="<?= $this->lurl ?>/preteurs" title="preteurs"<?= ($this->menu_admin == 'preteurs' ? ' class="active"' : '') ?>>Prêteurs</a>
-                <ul class="sous_menu">
-                    <li><a href="<?= $this->lurl ?>/preteurs/search" title="Recherche prêteurs">Recherche prêteurs</a></li>
-                    <li><a href="<?= $this->lurl ?>/preteurs/activation" title="Activation prêteurs">Activation prêteurs</a></li>
-                    <li><a href="<?= $this->lurl ?>/preteurs/offres_de_bienvenue" title="Offre de bienvenue">Offre de bienvenue</a></li>
-                    <li><a href="<?= $this->lurl ?>/preteurs/control_fiscal_city" title="Matching ville fiscale">Matching ville fiscale</a></li>
-                    <li><a href="<?= $this->lurl ?>/preteurs/control_birth_city" title="Matching ville de naissance">Matching ville de naissance</a></li>
-                    <li><a href="<?= $this->lurl ?>/preteurs/notifications" title="Envoyer des notifications sur les projets">Notifications</a></li>
-                </ul>
-            </li>
-        <?php endif; ?>
-        <?php if (in_array('emprunteurs', $this->lZonesHeader)) : ?>
-            <li>
-                <span<?= ($this->menu_admin == 'emprunteurs' ? ' class="active"' : '') ?>>Emprunteurs</span>
-                <ul class="sous_menu">
-                    <li><a href="<?= $this->lurl ?>/dossiers" title="Dossiers">Dossiers</a></li>
-                    <li><a href="<?= $this->lurl ?>/emprunteurs/gestion" title="Emprunteurs">Emprunteurs</a></li>
-                    <li><a href="<?= $this->lurl ?>/prescripteurs/gestion" title="Prescripteur">Prescripteurs</a></li>
-                    <li><a href="<?= $this->lurl ?>/dossiers/funding" title="Dossiers en funding">Dossiers en funding</a></li>
-                    <li><a href="<?= $this->lurl ?>/dossiers/remboursements" title="Remboursements">Remboursements</a></li>
-                    <li><a href="<?= $this->lurl ?>/dossiers/no_remb" title="Erreurs remboursements">Erreurs remboursements</a></li>
-                    <li><a href="<?= $this->lurl ?>/dossiers/status" title="Suivi statuts projets">Suivi statuts projets</a></li>
-                    <li><a href="<?= $this->lurl ?>/product" title="Produits">Produits</a></li>
-                    <li><a href="<?= $this->lurl ?>/company" title="Produits">Sociétés</a></li>
-                    <li><a href="<?= $this->lurl ?>/partner" title="Produits">Partenaires</a></li>
-                </ul>
-            </li>
-        <?php endif; ?>
-        <?php if (in_array('transferts', $this->lZonesHeader)) : ?>
-            <li>
-                <span<?= ($this->menu_admin == 'transferts' ? ' class="active"' : '') ?>>Dépôt de fonds</span>
-                <ul class="sous_menu">
-                    <li><a href="<?= $this->lurl ?>/transferts/preteurs" title="Prêteurs">Prêteurs</a></li>
-                    <li><a href="<?= $this->lurl ?>/transferts/emprunteurs" title="Emprunteurs">Emprunteurs</a></li>
-                    <li><a href="<?= $this->lurl ?>/transferts/non_attribues" title="Non attribués">Non attribués</a></li>
-                    <li><a href="<?= $this->lurl ?>/transferts/rattrapage_offre_bienvenue" title="Rattrapage offre de bienvenue">Rattrapage offre de bienvenue</a></li>
-                    <li><a href="<?= $this->lurl ?>/transferts/deblocage" title="Déblocage">Déblocage des fonds</a></li>
-                    <li><a href="<?= $this->lurl ?>/transferts/succession" title="Succession">Succession (Transfert de solde et prêts)</a></li>
-                    <li><a href="<?= $this->lurl ?>/client_atypical_operation" title="Lutte Anti-Balanchiment">Opérations atypiques</a></li>
-                    <li><a href="<?= $this->lurl ?>/transferts/virement_emprunteur" title="Transfert des fonds">Transfert des fonds</a></li>
-                </ul>
-            </li>
-        <?php endif; ?>
-        <?php if (in_array('admin', $this->lZonesHeader)) : ?>
-            <li>
-                <span<?= ($this->menu_admin == 'admin' ? ' class="active"' : '') ?>>Administration</span>
-                <ul class="sous_menu">
-                    <li><a href="<?= $this->lurl ?>/users" title="Utilisateurs">Utilisateurs</a></li>
-                    <li><a href="<?= $this->lurl ?>/zones" title="Droits d'accès">Droits d'accès</a></li>
-                    <li><a href="<?= $this->lurl ?>/users/logs" title="Logs connexions">Logs connexions</a></li>
-                </ul>
-            </li>
-        <?php endif; ?>
+        <?php generateMenu($menuItems, 'oldbo', $this->menu_admin, $this->lZonesHeader) ?>
     </ul>
 </div>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
+<?php else : ?>
+<div id="page-container" class="header-navbar-fixed">
+    <header id="header-navbar">
+        <div class="content-mini content-mini-full content-boxed">
+            <div class="nav-header pull-right">
+                <div class="collapse navbar-collapse remove-padding" id="sub-header-nav">
+                    <ul class="nav nav-pills nav-sub-header">
+                        <?php generateMenu($menuItems, 'oneui', $this->menu_admin, $this->lZonesHeader) ?>
+                    </ul>
+                </div>
+            </div>
+            <ul class="nav-header pull-left">
+                <li class="header-content">
+                    <a class="logo" href="/">
+                        <img src="oneui/img/logo-and-type-unilend-209x44-purple@2x.png" width="209" height="44" alt="Unilend">
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </header>
+    <main id="main-container">
+        <div class="content content-boxed">
+<?php endif; ?>
