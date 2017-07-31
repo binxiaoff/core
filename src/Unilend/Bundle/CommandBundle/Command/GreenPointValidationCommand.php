@@ -53,7 +53,7 @@ EOF
             AttachmentType::RIB,
         ];
         /** @var Clients[] $clients */
-        $clients                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getLendersInStatus($statusToCheck);
+        $clients = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getLendersInStatus($statusToCheck);
 
         if (false === empty($clients)) {
             /** @var greenPoint $oGreenPoint */
