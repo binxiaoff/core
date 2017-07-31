@@ -214,9 +214,16 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
             $details .= '<ul>';
             $varMail = ['details' => $details];
             $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('solde-negatif-notification', $varMail);
-            $message->setTo($email);
-            $mailer = $this->getContainer()->get('mailer');
-            $mailer->send($message);
+            try{
+                $message->setTo($email);
+                $mailer = $this->getContainer()->get('mailer');
+                $mailer->send($message);
+            } catch (\Exception $exception) {
+                $this->getContainer()->get('monolog.logger.console')->warning(
+                    'Could not send email : solde-negatif-notification - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'email address' => $email, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
         }
 
         if (false === empty($pendingBankTransfers)) {

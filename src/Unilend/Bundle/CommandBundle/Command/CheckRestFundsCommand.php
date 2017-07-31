@@ -31,8 +31,15 @@ class CheckRestFundsCommand extends ContainerAwareCommand
             $settings  = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse controle interne']);
             $variables = ['projects' => $projectsTexts];
             $message   = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-project-rest-funds', $variables);
-            $message->setTo($settings->getValue());
-            $this->getContainer()->get('mailer')->send($message);
+            try{
+                $message->setTo($settings->getValue());
+                $this->getContainer()->get('mailer')->send($message);
+            } catch (\Exception $exception) {
+                $this->getContainer()->get('monolog.logger.console')->warning(
+                    'Could not send email : notification-project-rest-funds - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'email address' => $settings->getValue(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
         }
     }
 }

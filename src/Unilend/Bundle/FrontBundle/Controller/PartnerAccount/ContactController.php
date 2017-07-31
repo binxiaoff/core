@@ -63,25 +63,32 @@ class ContactController extends Controller
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact-partenaire', $keywords, false);
-                $message->setTo(trim($settingsRepository->findOneBy(['type' => 'Adresse emprunteur'])->getValue()));
+                try {
+                    $message->setTo(trim($settingsRepository->findOneBy(['type' => 'Adresse emprunteur'])->getValue()));
 
-                if ($file instanceof UploadedFile) {
-                    $uploadDestination = $this->getParameter('path.protected') . 'contact/';
-                    $file              = $file->move($uploadDestination, $file->getClientOriginalName());
-                    $filePath          = $file->getPathname();
-                    $message->attach(\Swift_Attachment::fromPath($filePath));
+                    if ($file instanceof UploadedFile) {
+                        $uploadDestination = $this->getParameter('path.protected') . 'contact/';
+                        $file              = $file->move($uploadDestination, $file->getClientOriginalName());
+                        $filePath          = $file->getPathname();
+                        $message->attach(\Swift_Attachment::fromPath($filePath));
+                    }
+
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
+
+                    if (false === empty($filePath)) {
+                        @unlink($filePath);
+                    }
+                    $this->addFlash('success', $translator->trans('partner-contact_success-message'));
+
+                    return $this->redirectToRoute('partner_contact');
+                } catch (\Exception $exception) {
+                    $this->get('logger')->error(
+                        'Could not send email : notification-demande-de-contact-partenaire - Exception: ' . $exception->getMessage(),
+                        ['id_mail_template' => $message->getTemplateId(), 'email address' => $formData['email'], 'email_details' => $keywords, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    );
+                    $this->addFlash('error', $translator->trans('common-validator_email-address-invalid'));
                 }
-
-                $mailer = $this->get('mailer');
-                $mailer->send($message);
-
-                if (false === empty($filePath)) {
-                    @unlink($filePath);
-                }
-
-                $this->addFlash('success', $translator->trans('partner-contact_success-message'));
-
-                return $this->redirectToRoute('partner_contact');
             }
         }
 

@@ -101,17 +101,18 @@ class TemplateMessage extends \Swift_Message
         return $this;
     }
 
+    /**
+     * @param mixed $addresses
+     * @param null  $name
+     *
+     * @return $this
+     *
+     * @throws \Swift_RfcComplianceException
+     */
     public function setTo($addresses, $name = null)
     {
         $addresses = self::normalizeEmail($addresses);
-        try {
-            parent::setTo($addresses, $name);
-        } catch (\Swift_RfcComplianceException $exception) {
-            if ($this->logger instanceof LoggerInterface) {
-                $trace = debug_backtrace();
-                $this->logger->error($exception->getMessage(), ['address' => $addresses, 'template' => $this->templateId, 'file' => $trace[0]['file'], 'line' => $trace[0]['line']]);
-            }
-        }
+        parent::setTo($addresses, $name);
 
         return $this;
     }
