@@ -898,12 +898,51 @@ class preteursController extends bootstrap
             }
         }
 
+        unset($_SESSION['forms']['rattrapage_offre_bienvenue']);
+
+        if (isset($_POST['spy_search'])) {
+            if (false === empty($_POST['dateStart']) && false === empty($_POST['dateEnd'])) {
+                $dateTimeStart                                                   = \DateTime::createFromFormat('d/m/Y', $_POST['dateStart']);
+                $dateTimeEnd                                                     = \DateTime::createFromFormat('d/m/Y', $_POST['dateEnd']);
+                $startDateSQL                                                    = $dateTimeStart->format('Y-m-d');
+                $endDateSQL                                                      = $dateTimeEnd->format('Y-m-d');
+                $_SESSION['forms']['rattrapage_offre_bienvenue']['startDateSQL'] = $startDateSQL;
+                $_SESSION['forms']['rattrapage_offre_bienvenue']['endDateSQL']   = $endDateSQL;
+
+                $this->clientsWithoutWelcomeOffer = $this->clients->getClientsWithNoWelcomeOffer(null, $startDateSQL, $endDateSQL);
+            } elseif (false === empty($_POST['id'])) {
+                $this->clientsWithoutWelcomeOffer                     = $this->clients->getClientsWithNoWelcomeOffer($_POST['id']);
+                $_SESSION['forms']['rattrapage_offre_bienvenue']['id'] = $_POST['id'];
+            } else {
+                $_SESSION['freeow']['title']   = 'Recherche non aboutie. Indiquez soit la liste des ID clients soit un interval de date';
+                $_SESSION['freeow']['message'] = 'Il faut une date de d&eacutebut et de fin ou ID(s)!';
+            }
+        }
+
+        if (isset($_POST['affect_welcome_offer']) && isset($this->params[0])&& is_numeric($this->params[0])) {
+            if($this->clients->get($this->params[0])) {
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
+                $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
+                $response            = $welcomeOfferManager->createWelcomeOffer($this->clients);
+
+                switch ($response['code']) {
+                    case 0:
+                        $_SESSION['freeow']['title'] = 'Offre de bienvenue cr&eacute;dit&eacute;';
+                        break;
+                    default:
+                        $_SESSION['freeow']['title'] = 'Offre de bienvenue non cr&eacute;dit&eacute;';
+                        break;
+                }
+                $_SESSION['freeow']['message'] = $response['message'];
+            }
+        }
+
         $this->sumOffres                  = $offres_bienvenues_details->sum('type = 0 AND id_offre_bienvenue = ' . $offres_bienvenues->id_offre_bienvenue . ' AND status != 2', 'montant');
-        $this->lOffres                    = $offres_bienvenues_details->select('type = 0 AND id_offre_bienvenue = ' . $offres_bienvenues->id_offre_bienvenue . ' AND status != 2', 'added DESC');
         $unilendPromotionWalletType       = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
         $unilendPromotionWallet           = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendPromotionWalletType]);
         $this->sumDispoPourOffres         = $unilendPromotionWallet->getAvailableBalance();
     }
+
     public function _email_history()
     {
         /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $oMailQueueManager */
@@ -1664,5 +1703,97 @@ class preteursController extends bootstrap
             'message' => 'Echec lors de l\'ajout de la notification',
             'status'  => 'ko'
         ]);
+    }
+
+    public function _csv_rattrapage_offre_bienvenue()
+    {
+        $this->autoFireView = false;
+        $this->hideDecoration();
+        /** @var \clients $clients */
+        $clients                    = $this->loadData('clients');
+        $clientsWithoutWelcomeOffer = [];
+
+        if (isset($_SESSION['forms']['rattrapage_offre_bienvenue']['startDateSQL']) && isset($_SESSION['forms']['rattrapage_offre_bienvenue']['endDateSQL'])) {
+            $clientsWithoutWelcomeOffer = $clients->getClientsWithNoWelcomeOffer(
+                null,
+                $_SESSION['forms']['rattrapage_offre_bienvenue']['startDateSQL'],
+                $_SESSION['forms']['rattrapage_offre_bienvenue']['endDateSQL']
+            );
+        }
+
+        if (isset($_SESSION['forms']['rattrapage_offre_bienvenue']['id'])) {
+            $clientsWithoutWelcomeOffer = $clients->getClientsWithNoWelcomeOffer($_SESSION['forms']['rattrapage_offre_bienvenue']['id']);
+        }
+
+        $fileName      = 'ratrappage_offre_bienvenue';
+        $columnHeaders = ['ID Client', 'Nom ou Raison Sociale', 'Prénom', 'Email', 'Date de création', 'Date de validation'];
+        $data          = [];
+
+        foreach ($clientsWithoutWelcomeOffer as $key => $client) {
+            $validationDate = \DateTime::createFromFormat('Y-m-d H:i:s', $client['date_validation']);
+            $creationDate = \DateTime::createFromFormat('Y-m-d', $client['date_creation']);
+            $data[] = [
+                $client['id_client'],
+                empty($client['company']) ? $client['nom'] : $client['company'],
+                empty($client['company']) ? $client['prenom'] : '',
+                $client['email'],
+                $creationDate->format('d-m-Y'),
+                (false !== $validationDate) ? $validationDate->format('d-m-Y') : ''
+            ];
+        }
+        $this->exportCSV($columnHeaders, $data, $fileName);
+    }
+
+    /**
+     * @param array  $columnHeaders
+     * @param array  $data
+     * @param string $fileName
+     */
+    private function exportCSV(array $columnHeaders, array $data, $fileName)
+    {
+        PHPExcel_Settings::setCacheStorageMethod(
+            PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
+            ['memoryCacheSize' => '2048MB', 'cacheTime' => 1200]
+        );
+
+        $document    = new PHPExcel();
+        $activeSheet = $document->setActiveSheetIndex(0);
+
+        if (count($columnHeaders) > 0) {
+            foreach ($columnHeaders as $index => $columnName) {
+                $activeSheet->setCellValueByColumnAndRow($index, 1, $columnName);
+            }
+        }
+
+        foreach ($data as $rowIndex => $row) {
+            $colIndex = 0;
+            foreach ($row as $cellValue) {
+                $activeSheet->setCellValueByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
+            }
+        }
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment;filename=' . $fileName . '.csv');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Expires: 0');
+
+        /** @var \PHPExcel_Writer_CSV $oWriter */
+        $oWriter = PHPExcel_IOFactory::createWriter($document, 'CSV');
+        $oWriter->setUseBOM(true);
+        $oWriter->setDelimiter(';');
+        $oWriter->save('php://output');
+    }
+
+    public function _affect_welcome_offer()
+    {
+        $this->hideDecoration();
+
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager      = $this->get('doctrine.orm.entity_manager');
+        $this->welcomeOffer = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy(['status' => 0, 'idOffreBienvenue' => 1]);
+        $this->client       = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
+        if (false === $this->client->isNaturalPerson()) {
+            $this->company      = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->client->getIdClient()]);
+        }
     }
 }

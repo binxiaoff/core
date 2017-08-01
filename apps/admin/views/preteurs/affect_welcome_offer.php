@@ -2,12 +2,12 @@
     <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"/></a>
     <div class="row">
         <p>
-            Affecter <?= $this->oWelcomeOffer->montant / 100 ?> € <br/>
-            à <?= (false === empty($this->oCompany->name)) ? $this->oCompany->name : '' . ' ' . $this->oClient->prenom . ' ' . $this->oClient->nom . '<br/> (ID Client : ' . $this->oClient->id_client . ')' ?>
+            Affecter <?= $this->welcomeOffer->getMontant() / 100 ?> € <br/>
+            à <?= (false === $this->client->isNaturalPerson()) ? $this->company->getName() : '' . ' ' . $this->client->getPrenom() . ' ' . $this->client->getNom() . '<br/> (ID Client : ' . $this->client->getIdClient() . ')' ?>
         </p>
     </div>
     <div id="affect_welcome_offer">
-        <form action="<?= $this->lurl ?>/transferts/rattrapage_offre_bienvenue/<?= $this->oClient->id_client ?>/<?= $this->oWelcomeOffer->id_offre_bienvenue ?>"
+        <form action="<?= $this->lurl ?>/preteurs/offres_de_bienvenue/<?= $this->client->getIdClient() ?>/<?= $this->welcomeOffer->getIdOffreBienvenue() ?>"
               method="post" name="affect_welcome_offer" id="affect_welcome_offer">
             <table border="1" style="margin:auto;">
                 <tr>
