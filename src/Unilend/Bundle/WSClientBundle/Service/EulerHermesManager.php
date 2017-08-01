@@ -142,18 +142,25 @@ class EulerHermesManager
     /**
      * @param string $siren
      * @param string $countryCode
+     * @param bool   $withMonitoring
      *
      * @return null|CompanyRating
      *
      * @throws \Exception
      */
-    public function getGrade($siren, $countryCode)
+    public function getGrade($siren, $countryCode, $withMonitoring = false)
     {
         /** @var CompanyIdentity $company */
         $company = $this->searchCompany($siren, $countryCode);
 
+        if ($withMonitoring) {
+            $apiKey = $this->getMonitoringApiKey();
+        } else {
+            $apiKey = $this->gradingApiKey;
+        }
+
         if (null !== $company && null !== $company->getSingleInvoiceId()) {
-            if (null !== $result = $this->sendRequest(self::RESOURCE_EULER_GRADE, $company->getSingleInvoiceId(), $this->getMonitoringApiKey(), $siren)) {
+            if (null !== $result = $this->sendRequest(self::RESOURCE_EULER_GRADE, $company->getSingleInvoiceId(), $apiKey, $siren)) {
                 return $this->serializer->deserialize($result, CompanyRating::class, 'json');
             }
         }
