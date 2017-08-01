@@ -317,4 +317,16 @@ class RiskDataMonitoringManager
     {
         return $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoring')->findOneBy(['siren' => $siren, 'ratingType' => $ratingType, 'end' => null]);
     }
+
+    /**
+     * @param string $siren
+     *
+     * @return bool
+     */
+    public function hasMonitoringEvent($siren)
+    {
+        $callLogs = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringCallLog')->findCallLogsForSiren($siren);
+
+        return count($callLogs) > 0;
+    }
 }
