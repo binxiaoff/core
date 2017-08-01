@@ -363,10 +363,6 @@ class preteursController extends bootstrap
             /** @var BankAccount $currentBankAccount */
             $this->currentBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
 
-            if (null === $this->currentBankAccount) {
-                $this->currentBankAccount = new BankAccount();
-            }
-
             if ($this->clients->telephone != '') {
                 trim(chunk_split($this->clients->telephone, 2, ' '));
             }
