@@ -90,7 +90,6 @@ class IRRManager
 
     /**
      * @param Wallet $wallet
-     * @param $lenderId
      *
      * @return string
      */
@@ -145,7 +144,6 @@ class IRRManager
 
     /**
      * @param Wallet $wallet
-     * @param int    $idLender
      */
     public function addIRRLender(Wallet $wallet)
     {

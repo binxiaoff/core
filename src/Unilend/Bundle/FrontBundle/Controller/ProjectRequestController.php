@@ -1386,12 +1386,17 @@ class ProjectRequestController extends Controller
 
         $sRecipient = $client->getEmail();
         $sRecipient = $this->removeEmailSuffix(trim($sRecipient));
-
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($mailTemplate->type, $keywords);
-        $message->setTo($sRecipient);
-        $mailer = $this->get('mailer');
-        $mailer->send($message);
+        $message    = $this->get('unilend.swiftmailer.message_provider')->newMessage($mailTemplate->type, $keywords);
+        try {
+            $message->setTo($sRecipient);
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->get('logger')->warning(
+                'Could not send email : ' . $mailTemplate->type . ' - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     /**
@@ -1419,9 +1424,16 @@ class ProjectRequestController extends Controller
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($mailTemplate->type, $aReplacements, false);
-            $message->setTo(trim($user->email));
-            $mailer = $this->get('mailer');
-            $mailer->send($message);
+            try {
+                $message->setTo(trim($user->email));
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
+            } catch (\Exception $exception) {
+                $this->get('logger')->warning(
+                    'Could not send email : ' . $mailTemplate->type . ' - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'email address' => trim($user->email), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
         }
     }
 

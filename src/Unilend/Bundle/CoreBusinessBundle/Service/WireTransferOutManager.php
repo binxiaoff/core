@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -46,6 +47,9 @@ class WireTransferOutManager
     /** @var string */
     private $adminUrl;
 
+    /** @var  LoggerInterface */
+    private $logger;
+
     /**
      * WireTransferOutManager constructor.
      *
@@ -59,6 +63,7 @@ class WireTransferOutManager
      * @param OperationManager        $operationManager
      * @param string                  $frontUrl
      * @param string                  $adminUrl
+     * @param LoggerInterface         $logger
      */
     public function __construct(
         EntityManager $entityManager,
@@ -70,7 +75,8 @@ class WireTransferOutManager
         Packages $assetsPackages,
         OperationManager $operationManager,
         $frontUrl,
-        $adminUrl
+        $adminUrl,
+        LoggerInterface $logger
     ) {
         $this->entityManager     = $entityManager;
         $this->projectManager    = $projectManager;
@@ -82,6 +88,7 @@ class WireTransferOutManager
         $this->operationManager  = $operationManager;
         $this->frontUrl          = $frontUrl;
         $this->adminUrl          = $adminUrl;
+        $this->logger            = $logger;
     }
 
     /**
@@ -220,8 +227,15 @@ class WireTransferOutManager
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                 $message = $this->messageProvider->newMessage('wire-transfer-out-borrower-notification', $varMail);
-                $message->setTo($wireTransferOut->getClient()->getEmail());
-                $this->mailer->send($message);
+                try {
+                    $message->setTo($wireTransferOut->getClient()->getEmail());
+                    $this->mailer->send($message);
+                } catch (\Exception $exception) {
+                    $this->logger->warning(
+                        'Could not send email : wire-transfer-out-borrower-notification - Exception: ' . $exception->getMessage(),
+                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $wireTransferOut->getClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    );
+                }
             }
         }
     }
@@ -243,9 +257,15 @@ class WireTransferOutManager
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->messageProvider->newMessage('wire-transfer-out-to-validate-staff-notification', $varMail);
-            $message->setTo($settings->getValue());
-            $this->mailer->send($message);
-
+            try {
+                $message->setTo($settings->getValue());
+                $this->mailer->send($message);
+            } catch (\Exception $exception) {
+                $this->logger->warning(
+                    'Could not send email : wire-transfer-out-borrower-notification - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'email_address' => $settings->getValue(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
         }
     }
 }

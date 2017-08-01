@@ -759,6 +759,37 @@ class LenderOperationsController extends Controller
             ];
         }
 
+        $capitalRepaymentRegularizationType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::CAPITAL_REPAYMENT_REGULARIZATION]);
+        /** @var Operation[] $regularizedRepayments */
+        $regularizedRepayments = $operationRepository->findBy([
+            'idProject'      => $project,
+            'idWalletDebtor' => $wallet,
+            'idType'         => $capitalRepaymentRegularizationType,
+            'idSubType'      => null
+        ]);
+
+        foreach ($regularizedRepayments as $repayment) {
+
+            $title   = $translator->trans('lender-notifications_repayment-regularization-title');
+            $content = $translator->trans('lender-notifications_repayment-regularization-content', [
+                '%amount%'     => $currencyFormatter->formatCurrency($operationRepository->getNetAmountByRepaymentScheduleId($repayment->getRepaymentSchedule()), 'EUR'),
+                '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
+                '%company%'    => $project->getIdCompany()->getName()
+            ]);
+
+            $data[] = [
+                'id'        => count($data),
+                'projectId' => $projectId,
+                'image'     => 'remboursement',
+                'type'      => 'remboursement',
+                'title'     => $title,
+                'content'   => $content,
+                'datetime'  => $repayment->getAdded(),
+                'iso-8601'  => $repayment->getAdded()->format('c'),
+                'status'    => 'read'
+            ];
+        }
+
         if (false === empty($data)) {
             usort($data, [$this, 'sortArrayByDate']);
         }

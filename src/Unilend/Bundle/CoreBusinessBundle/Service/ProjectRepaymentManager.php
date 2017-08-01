@@ -278,8 +278,15 @@ class ProjectRepaymentManager
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->messageProvider->newMessage('facture-emprunteur-remboursement', $varMail);
-        $message->setTo($borrower->getEmail());
-        $this->mailer->send($message);
+        try {
+            $message->setTo($borrower->getEmail());
+            $this->mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->logger->warning(
+                'Could not send email: facture-emprunteur-remboursement - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $borrower->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     /**
@@ -323,8 +330,15 @@ class ProjectRepaymentManager
             $mailTemplate = 'preteur-dernier-remboursement';
         }
         $message = $this->messageProvider->newMessage($mailTemplate, $varMail);
-        $message->setTo($lender->getEmail());
-        $this->mailer->send($message);
+        try {
+            $message->setTo($lender->getEmail());
+            $this->mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->logger->warning(
+                'Could not send email: ' . $mailTemplate . ' - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $lender->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     /**
@@ -356,8 +370,15 @@ class ProjectRepaymentManager
         ];
 
         $message = $this->messageProvider->newMessage('preteur-dossier-recouvre', $varMail);
-        $message->setTo($lender->getEmail());
-        $this->mailer->send($message);
+        try {
+            $message->setTo($lender->getEmail());
+            $this->mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->logger->warning(
+                'Could not send email: preteur-dossier-recouvre - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $lender->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     /**
@@ -391,8 +412,15 @@ class ProjectRepaymentManager
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->messageProvider->newMessage('preteur-regularisation-remboursement', $varMail);
-        $message->setTo($lender->getEmail());
-        $this->mailer->send($message);
+        try {
+            $message->setTo($lender->getEmail());
+            $this->mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->logger->warning(
+                'Could not send email: preteur-regularisation-remboursement - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $lender->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     /**
@@ -412,7 +440,14 @@ class ProjectRepaymentManager
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->messageProvider->newMessage('incomplete-repayment-notification', $varMail);
-        $message->setTo($alertMailIT);
-        $this->mailer->send($message);
+        try {
+            $message->setTo($alertMailIT);
+            $this->mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->logger->warning(
+                'Could not send email : incomplete-repayment-notification - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'email_address' => $alertMailIT, 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 }

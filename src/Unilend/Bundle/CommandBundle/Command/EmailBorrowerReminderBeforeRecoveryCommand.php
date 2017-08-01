@@ -84,6 +84,7 @@ class EmailBorrowerReminderBeforeRecoveryCommand extends ContainerAwareCommand
                 'lien_tw'          => $twitterLink,
                 'annee'            => date('Y')
             );
+            $logger = $this->getContainer()->get('monolog.logger.console');
 
             foreach ($projects as $aProject) {
                 $project->get($aProject['id_project']);
@@ -103,12 +104,17 @@ class EmailBorrowerReminderBeforeRecoveryCommand extends ContainerAwareCommand
                         'CRD'                                => $ficelle->formatNumber(bcmul($lenderRepaymentSchedule->getOwedCapital(array('id_project' => $project->id_project)), 100)),
                         'date_prochaine_echeance_emprunteur' => \DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance_emprunteur'])->format('d/m/Y') // @todo Intl
                     );
-
-                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage($mailTemplate->type, $replacements);
-                $message->setTo(trim($client->email));
-                $mailer = $this->getContainer()->get('mailer');
-                $mailer->send($message);
+                $message       = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage($mailTemplate->type, $replacements);
+                try {
+                    $message->setTo(trim($client->email));
+                    $mailer = $this->getContainer()->get('mailer');
+                    $mailer->send($message);
+                } catch (\Exception $exception) {
+                    $logger->warning(
+                        'Could not send email: ' . $mailTemplate->type . ' - Exception: ' . $exception->getMessage(),
+                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    );
+                }
             }
         }
     }

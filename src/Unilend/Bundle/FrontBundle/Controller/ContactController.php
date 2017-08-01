@@ -173,9 +173,19 @@ class ContactController extends Controller
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('demande-de-contact', $varMail);
-            $message->setTo($post['email']);
-            $mailer = $this->get('mailer');
-            $mailer->send($message);
+            try {
+                $message->setTo($post['email']);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
+            } catch (\Exception $exception) {
+                $this->get('logger')->warning(
+                    'Could not send email : demande-de-contact - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'email address' => $post['email'], 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+                $this->addFlash('contactErrors', $translator->trans('common-validator_email-address-invalid'));
+
+                return;
+            }
 
             switch ($post['role']) {
                 case 1:
@@ -225,10 +235,17 @@ class ContactController extends Controller
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact', $variablesInternalMail, false);
-            $message->setTo($destinataire);
-            $message->setReplyTo([$post['email'] => $post['firstname'] . ' ' . $post['lastname']]);
-            $mailer = $this->get('mailer');
-            $mailer->send($message);
+            try {
+                $message->setTo($destinataire);
+                $message->setReplyTo([$post['email'] => $post['firstname'] . ' ' . $post['lastname']]);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
+            } catch (\Exception $exception) {
+                $this->get('logger')->error(
+                    'Could not send email : notification-demande-de-contact - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'email address' => $destinataire, 'email_details' => $variablesInternalMail, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
 
             $this->addFlash('contactSuccess', $translator->trans('contact_confirmation'));
         }
