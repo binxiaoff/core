@@ -422,7 +422,7 @@ class AutoBidSettingsManager
     }
 
     /**
-     * @param Wallet $wallet
+     * @param Clients $client
      *
      * @return bool
      * @throws \Exception

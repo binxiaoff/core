@@ -621,7 +621,7 @@ function valid_rejete_etape7(status, id_project) {
             indicateur_risque_dynamique   = parseFloat($('#indicateur_risque_dynamique_comite').val().replace(',', '.')),
             avis_comite                   = ckedAvis_comite.getData(),
             rejection_reason              = $('#rejection_reason option:selected').val(),
-            suspensive_conditions_comment = $('#comment').length ? $('#comment').val() : '',
+            suspensive_conditions_comment = $('#suspensive-conditions-memo-textarea').length ? $('#suspensive-conditions-memo-textarea').val() : '',
             form_ok = true;
 
         if (isNaN(structure) != false || isNaN(rentabilite) != false || isNaN(tresorerie) != false || isNaN(performance_fianciere) != false || isNaN(individuel) != false || isNaN(global) != false || isNaN(marche_opere) != false || isNaN(dirigeance) != false || isNaN(indicateur_risque_dynamique) != false) {

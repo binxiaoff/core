@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Unilend\Bundle\WSClientBundle\Service\AltaresManager;
 use Unilend\Bundle\WSClientBundle\Service\CodinfManager;
+use Unilend\Bundle\WSClientBundle\Service\EllisphereManager;
 use Unilend\Bundle\WSClientBundle\Service\EulerHermesManager;
 use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
 use Unilend\Bundle\WSClientBundle\Service\InfolegaleManager;
@@ -148,6 +149,32 @@ class MonitoringController extends Controller
             $response = $wsMonitoringManager->sendNotifications($wsMonitoringManager->getRateByCallStatus(InfolegaleManager::RESOURCE_COMPANY_SCORE), self::PINGDOM_FREQUENCY);
         } catch (\Exception $exception) {
             $this->get('logger')->error('Infolegale monitoring error: ' . $exception->getMessage());
+            $response = $exception->getMessage();
+        }
+
+        return (new Response())->setContent($response);
+    }
+
+    /**
+     * @Route("/monitoring/ellisphere", name="monitoring_ellisphere")
+     *
+     * @return Response
+     */
+    public function ellisphereAction()
+    {
+        if (false === in_array($_SERVER['REMOTE_ADDR'], $this->getPingdomIps())) {
+            throw new NotFoundHttpException('Unknown page');
+        }
+
+        try {
+            $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
+            $siren               = '790766034';
+            $ellisphereManager   = $this->get('unilend.service.ws_client.ellisphere_manager')->setUseCache(false);
+            $ellisphereManager->searchBySiren($siren);
+
+            $response = $wsMonitoringManager->sendNotifications($wsMonitoringManager->getRateByCallStatus(EllisphereManager::RESOURCE_SEARCH), self::PINGDOM_FREQUENCY);
+        } catch (\Exception $exception) {
+            $this->get('logger')->error('Ellisphere monitoring error: ' . $exception->getMessage());
             $response = $exception->getMessage();
         }
 

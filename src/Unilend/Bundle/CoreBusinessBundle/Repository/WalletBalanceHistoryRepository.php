@@ -51,75 +51,76 @@ class WalletBalanceHistoryRepository extends EntityRepository
         $start->setTime(00, 00, 00);
         $end->setTime(23, 59,59);
 
-        $query = 'SELECT
-                      wbh.id AS id,
-                      wbh.available_balance,
-                      wbh.committed_balance,
-                      ROUND(
-                          IF(
-                              wbh.id_operation IS NOT NULL,
-                              IF(
-                                  o.id_wallet_creditor = wbh.id_wallet,
-                                  o.amount,
-                                  IF(ot.label = "' . OperationType::LENDER_LOAN . '", o.amount, o.amount*-1)
-                              ),
-                              IF(
-                                  wbh.id_autobid IS NULL,
-                                  IF(
-                                      1 = (SELECT COUNT(*) FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_bid = wbh.id_bid),
-                                      b.amount/-100,
-                                      IF(EXISTS(SELECT * FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_bid = wbh.id_bid AND wbh.added < wbh_bid.added), b.amount/-100, b.amount/-100)
-                                  ),
-                                  IF(
-                                      1 = (SELECT COUNT(*) FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_autobid = wbh.id_autobid AND wbh_bid.id_project = wbh.id_project),
-                                      b.amount/-100,
-                                      IF(EXISTS(SELECT * FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_autobid = wbh.id_autobid AND wbh_bid.id_project = wbh.id_project AND wbh.added < wbh_bid.added), b.amount/-100, b.amount/100)
-                                  )
-                              )
-                          )
-                          , 2) as amount,
-                      IF(
-                          ot.label IS NOT NULL,
-                          ot.label,
-                          IF(
-                              wbh.id_bid IS NULL,
-                              "'. LenderOperationsManager::OP_REFUSED_BID . '",
-                              IF(
-                                  wbh.id_autobid IS NULL,
-                                  IF(
-                                      1 = (SELECT COUNT(*) FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_bid = wbh.id_bid),
-                                      "' . LenderOperationsManager::OP_BID . '",
-                                      IF(EXISTS(SELECT * FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_bid = wbh.id_bid AND wbh.added < wbh_bid.added), "' . LenderOperationsManager::OP_BID . '", "' . LenderOperationsManager::OP_REFUSED_BID . '")
-                                  ),
-                                  IF(
-                                      1 = (SELECT COUNT(*) FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_autobid = wbh.id_autobid AND wbh_bid.id_project = wbh.id_project),
-                                      "' . LenderOperationsManager::OP_AUTOBID . '",
-                                      IF(EXISTS(SELECT * FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_autobid = wbh.id_autobid AND wbh_bid.id_project = wbh.id_project AND wbh.added < wbh_bid.added), "' . LenderOperationsManager::OP_AUTOBID . '" , "' . LenderOperationsManager::OP_REFUSED_AUTOBID .'")
-                                  )
-                              )
-                          )) AS label,
-                      IF(o.id_project IS NOT NULL, o.id_project, wbh.id_project) as id_project,
-                      DATE(wbh.added) AS date,
-                      wbh.added AS operationDate,
-                      wbh.id_bid,
-                      wbh.id_autobid,
-                      IF(wbh.id_loan IS NOT NULL, wbh.id_loan, IF(o.id_loan IS NOT NULL, o.id_loan, IF(e.id_loan IS NOT NULL, e.id_loan, ""))) AS id_loan,
-                      o.id_repayment_schedule,
-                      p.id_project,
-                      p.title,
-                      ost.label as sub_type_label
-                    FROM wallet_balance_history wbh
-                      INNER JOIN wallet w ON wbh.id_wallet = w.id
-                      LEFT JOIN operation o ON wbh.id_operation = o.id
-                      LEFT JOIN operation_type ot ON ot.id = o.id_type
-                      LEFT JOIN operation_sub_type ost ON o.id_sub_type = ost.id
-                      LEFT JOIN echeanciers e ON e.id_echeancier = o.id_repayment_schedule
-                      LEFT JOIN bids b ON wbh.id_bid = b.id_bid
-                      LEFT JOIN projects p ON IF(o.id_project IS NULL, wbh.id_project, o.id_project) = p.id_project
-                    WHERE wbh.id_wallet = :idWallet
-                    AND wbh.added BETWEEN :startDate AND :endDate
-                    GROUP BY wbh.id
-                    ORDER BY wbh.id DESC, id_bid DESC, id_loan DESC, id_repayment_schedule DESC';
+        $query = '
+            SELECT
+                wbh.id AS id,
+                wbh.available_balance,
+                wbh.committed_balance,
+                ROUND(
+                    IF(
+                        wbh.id_operation IS NOT NULL,
+                        IF(
+                            o.id_wallet_creditor = wbh.id_wallet,
+                            o.amount,
+                            IF(ot.label = "' . OperationType::LENDER_LOAN . '", o.amount, - o.amount)
+                        ),
+                        IF(
+                            wbh.id_autobid IS NULL,
+                            IF(
+                                1 = (SELECT COUNT(*) FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_bid = wbh.id_bid),
+                                - b.amount / 100,
+                                IF(EXISTS(SELECT * FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_bid = wbh.id_bid AND wbh.added < wbh_bid.added), - b.amount / 100, b.amount / 100)
+                            ),
+                            IF(
+                                1 = (SELECT COUNT(*) FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_autobid = wbh.id_autobid AND wbh_bid.id_project = wbh.id_project),
+                                - b.amount / 100,
+                                IF(EXISTS(SELECT * FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_autobid = wbh.id_autobid AND wbh_bid.id_project = wbh.id_project AND wbh.added < wbh_bid.added), - b.amount / 100, b.amount / 100)
+                            )
+                        )
+                    ), 2
+                ) AS amount,
+                IF(
+                    ot.label IS NOT NULL,
+                    ot.label,
+                    IF(
+                        wbh.id_bid IS NULL,
+                        "' . LenderOperationsManager::OP_REFUSED_BID . '",
+                        IF(
+                            wbh.id_autobid IS NULL,
+                            IF(
+                                1 = (SELECT COUNT(*) FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_bid = wbh.id_bid),
+                                "' . LenderOperationsManager::OP_BID . '",
+                                IF(EXISTS(SELECT * FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_bid = wbh.id_bid AND wbh.added < wbh_bid.added), "' . LenderOperationsManager::OP_BID . '", "' . LenderOperationsManager::OP_REFUSED_BID . '")
+                            ),
+                            IF(
+                                1 = (SELECT COUNT(*) FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_autobid = wbh.id_autobid AND wbh_bid.id_project = wbh.id_project),
+                                "' . LenderOperationsManager::OP_AUTOBID . '",
+                                IF(EXISTS(SELECT * FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_autobid = wbh.id_autobid AND wbh_bid.id_project = wbh.id_project AND wbh.added < wbh_bid.added), "' . LenderOperationsManager::OP_AUTOBID . '" , "' . LenderOperationsManager::OP_REFUSED_AUTOBID .'")
+                            )
+                        )
+                )) AS label,
+                IF(o.id_project IS NOT NULL, o.id_project, wbh.id_project) AS id_project,
+                DATE(wbh.added) AS date,
+                wbh.added AS operationDate,
+                wbh.id_bid,
+                wbh.id_autobid,
+                IF(wbh.id_loan IS NOT NULL, wbh.id_loan, IF(o.id_loan IS NOT NULL, o.id_loan, IF(e.id_loan IS NOT NULL, e.id_loan, ""))) AS id_loan,
+                o.id_repayment_schedule,
+                p.id_project,
+                p.title,
+                ost.label AS sub_type_label
+            FROM wallet_balance_history wbh
+                INNER JOIN wallet w ON wbh.id_wallet = w.id
+                LEFT JOIN operation o ON wbh.id_operation = o.id
+                LEFT JOIN operation_type ot ON ot.id = o.id_type
+                LEFT JOIN operation_sub_type ost ON o.id_sub_type = ost.id
+                LEFT JOIN echeanciers e ON e.id_echeancier = o.id_repayment_schedule
+                LEFT JOIN bids b ON wbh.id_bid = b.id_bid
+                LEFT JOIN projects p ON IF(o.id_project IS NULL, wbh.id_project, o.id_project) = p.id_project
+            WHERE wbh.id_wallet = :idWallet
+            AND wbh.added BETWEEN :startDate AND :endDate
+            GROUP BY wbh.id
+            ORDER BY wbh.added DESC, wbh.id DESC, id_bid DESC, id_loan DESC, id_repayment_schedule DESC';
 
         /** @var QueryCacheProfile $qcProfile */
         $qcProfile = new QueryCacheProfile(\Unilend\librairies\CacheKeys::LONG_TIME, md5(__METHOD__ . $wallet->getId()));

@@ -9,6 +9,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
+use Unilend\Bundle\WSClientBundle\Entity\Ellisphere\EstablishmentCollection;
 use Unilend\Bundle\WSClientBundle\Entity\Ellisphere\Report;
 
 class EllisphereManager
@@ -22,6 +23,7 @@ class EllisphereManager
     const DELIVERY_OUTPUT_METHOD = 'raw';
 
     const RESOURCE_ONLINE_ORDER = 'get_online_order_ellisphere';
+    const RESOURCE_SEARCH       = 'search_ellisphere';
 
     /** @var int */
     private $contractId;
@@ -106,6 +108,18 @@ class EllisphereManager
         return null;
     }
 
+    public function searchBySiren($siren)
+    {
+        $wsResource = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WsExternalResource')->findOneBy(['label' => self::RESOURCE_SEARCH]);
+        $result     = $this->sendRequest($wsResource, ['siren' => $siren]);
+
+        if ($result && isset($result->response)) {
+            return $this->serializer->deserialize($result->response->asXML(), EstablishmentCollection::class, 'xml');
+        }
+
+        return null;
+    }
+
     /**
      * @param WsExternalResource $wsResource
      * @param array              $parameters
@@ -136,7 +150,7 @@ class EllisphereManager
         $body    = $this->generateXMLRequest($endpoint, $parameters)->asXML();
 
         try {
-            $response = $this->client->request(strtolower($wsResource->getMethod()), $endpoint, ['body' => $this->generateXMLRequest($endpoint, $parameters)->asXML(), 'headers' => $headers]);
+            $response = $this->client->request(strtolower($wsResource->getMethod()), $endpoint, ['body' => $body, 'headers' => $headers]);
             $validity = $this->isValidResponse($response, $logContext);
             $content  = $validity['content'];
 
@@ -218,6 +232,15 @@ class EllisphereManager
                     $product->addAttribute('version', self::ORDER_PRODUCT_VERSION);
                     $deliveryOptions = $request->addChild('deliveryOptions');
                     $deliveryOptions->addChild('outputMethod', self::DELIVERY_OUTPUT_METHOD);
+                } else {
+                    $this->logger->error('Siren is not set.', ['method' => __METHOD__, 'resource' => $endpoint]);
+                }
+                break;
+            case 'svcSearch':
+                if (isset($parameters['siren'])) {
+                    $searchCriteria = $request->addChild('searchCriteria');
+                    $id = $searchCriteria->addChild('id', $parameters['siren']);
+                    $id->addAttribute('type', 'register');
                 } else {
                     $this->logger->error('Siren is not set.', ['method' => __METHOD__, 'resource' => $endpoint]);
                 }

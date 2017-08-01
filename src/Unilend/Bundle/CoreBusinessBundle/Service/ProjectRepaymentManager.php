@@ -172,7 +172,6 @@ class ProjectRepaymentManager
                 $repaymentNb++;
 
                 $this->entityManager->flush($repaymentSchedule);
-
                 $this->entityManager->commit();
             } catch (\Exception $exception) {
                 $this->entityManager->rollback();

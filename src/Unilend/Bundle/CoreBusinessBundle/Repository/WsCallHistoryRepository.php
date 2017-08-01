@@ -80,4 +80,74 @@ class WsCallHistoryRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getSingleResult();
     }
+
+    /**
+     * @return array
+     */
+    public function getDailyStatistics()
+    {
+        return $this->getCallStatisticsByPeriod(
+            'hourly',
+            new \DateTime('1 day ago'),
+            new \DateTime('now')
+        );
+    }
+
+    /**
+     * @return array
+     */
+    public function getWeeklyStatistics()
+    {
+        return $this->getCallStatisticsByPeriod(
+            'daily',
+            new \DateTime('1 week ago'),
+            new \DateTime('now')
+        );
+    }
+
+    /**
+     * @return array
+     */
+    public function getMonthlyStatistics()
+    {
+        return $this->getCallStatisticsByPeriod(
+            'daily',
+            new \DateTime('1 month ago'),
+            new \DateTime('now')
+        );
+    }
+
+    /**
+     * @param string    $period
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     *
+     * @return array
+     */
+    private function getCallStatisticsByPeriod($period, \DateTime $startDate, \DateTime $endDate)
+    {
+        switch ($period) {
+            case 'hourly':
+                $time = 'HOUR(wch.added)';
+                break;
+            case 'daily':
+                $time = 'DATE(wch.added)';
+                break;
+            default:
+                throw new \InvalidArgumentException('Period not supported');
+        }
+        $queryBuilder = $this->createQueryBuilder('wch')
+            ->addSelect('wch.added')
+            ->addSelect('wch.callStatus')
+            ->addSelect('COUNT(wch.idCallHistory) AS totalVolume')
+            ->addSelect('SUM(CASE WHEN wch.siren != \'790766034\' THEN 1 ELSE 0 END) AS clientVolume')
+            ->addSelect($time . ' AS date')
+            ->where('wch.added BETWEEN :startDate AND :endDate')
+            ->groupBy('wch.callStatus, date')
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->orderBy('wch.added', 'ASC');
+
+        return $queryBuilder->getQuery()->getResult();
+    }
 }

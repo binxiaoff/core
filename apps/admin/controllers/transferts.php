@@ -857,7 +857,8 @@ class transfertsController extends bootstrap
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository $walletRepository */
-            $walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+            $walletRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+            $clientStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
 
             if (
                 false === empty($_POST['id_client_to_transfer'])
@@ -876,8 +877,11 @@ class transfertsController extends bootstrap
             ) {
                 $this->addErrorMessageAndRedirect('L\'héritier n\'est pas un prêteur');
             }
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus $lastStatusEntity */
+            $lastStatusEntity = $clientStatusRepository->getLastClientStatus($newOwner->id_client);
+            $lastStatus       = (null === $lastStatusEntity) ? null : $lastStatusEntity->getStatus();
 
-            if ($clientStatusManager->getLastClientStatus($newOwner) != \clients_status::VALIDATED) {
+            if ($lastStatus != \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus::VALIDATED) {
                 $this->addErrorMessageAndRedirect('Le compte de l\'héritier n\'est pas validé');
             }
 
@@ -968,8 +972,12 @@ class transfertsController extends bootstrap
                         throw $exception;
                     }
 
-                    $clientStatusManager->addClientStatus($newOwner, $_SESSION['user']['id_user'], $clientStatusManager->getLastClientStatus($newOwner),
-                        'Reçu solde (' . $this->ficelle->formatNumber($originalClientBalance) . ') et prêts (' . $numberLoans . ') du compte ' . $originalClient->id_client);
+                    $clientStatusManager->addClientStatus(
+                        $newOwner,
+                        $_SESSION['user']['id_user'],
+                        $lastStatus,
+                        'Reçu solde (' . $this->ficelle->formatNumber($originalClientBalance) . ') et prêts (' . $numberLoans . ') du compte ' . $originalClient->id_client
+                    );
 
                     $entityManager->getConnection()->commit();
                 } catch (\Exception $exception) {

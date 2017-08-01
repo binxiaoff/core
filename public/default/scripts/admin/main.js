@@ -2,6 +2,206 @@
 // *** FICHIER JS ADMIN ***//
 //*************************//
 
+// MEMO COMPONENT
+var Memo = function($trigger) {
+    var self = this
+    self.$elem = $($trigger.data('memo'))
+
+    if (self.$elem.length === 0 || self.$elem[0].hasOwnProperty('Memo')) {
+        return false
+    }
+
+    self.$elem.addClass('memo-editor')
+    self.textarea = self.$elem.attr('id') + '-textarea'
+    self.optional = $trigger.attr('data-memo-optional') ? true : false
+
+    self.track = {
+        open: false,
+        commentId: '',
+        projectId: $trigger.data('memo-project-id'),
+        submitUrl: $trigger.data('memo-onsubmit')
+    }
+
+    var existingHmtl = self.$elem.html()
+    if (existingHmtl) self.$elem.html('')
+
+    var html = '<form method="post" action="' + self.track.submitUrl + '">' +
+                    '<div class="existing">' + existingHmtl + '</div>' +
+                    '<textarea id="' + self.textarea + '" name="comment" method="post"></textarea>' +
+                    '<input type="hidden" name="projectId" value="' + self.track.projectId + '">' +
+                    '<input type="hidden" name="commentId" value="' + self.track.commentId + '">' +
+                    '<div class="controls text-right">' +
+                        '<button type="button" data-memo-close class="btn-default">Annuler</button>' +
+                        '<button type="submit" data-memo-submit class="btn-primary">Valider</button>' +
+                    '</div>' +
+                '</form>'
+
+    self.$elem.append(html)
+
+    if (self.track.submitUrl === 'add')
+        self.$elem.find('.controls').prepend('<label><input type="radio" name="public" value="0" checked>Privé</label>' +
+        '<label><input type="radio" name="public" value="1"> Public</label>')
+
+    self.$textarea = $('#' + self.textarea)
+
+
+    self.$elem[0].Memo = self
+}
+Memo.prototype.open = function (comment, commentId) {
+    var self = this
+
+    if (self.track.open) {
+        self.close()
+        return false
+    }
+
+    if ($('.memo-editor').length > 1) {
+        $('.memo-editor:not("#'+self.$elem.attr('id')+'")').each(function() {
+            $(this)[0].Memo.close()
+        })
+    }
+
+    var $publicCheckboxes = self.$elem.find('.controls input[name="public"]')
+
+    // By default, memos are private
+    var public = false
+
+    // If comment has ID, it is comming from the table with memos and has an attribute
+    // that shows whether the comment is public or private
+    if (commentId) {
+        public = $('[data-comment-id=' + commentId + ']').data('public')
+    }
+    // Check the right box
+    $publicCheckboxes.each(function(){
+        if (public) {
+            if ($(this).val() == 1)
+                $(this).attr('checked', true).prop('checked', true)
+        } else {
+            if ($(this).val() == 0)
+                $(this).attr('checked', true).prop('checked', true)
+        }
+    })
+
+    self.$elem.slideDown(300, function() {
+        CKEDITOR.replace(self.textarea, {
+            height: 170,
+            width: '100%',
+            toolbar: 'Basic',
+            removePlugins: 'elementspath',
+            resize_enabled: false
+        })
+
+        if (comment) {
+            CKEDITOR.instances[self.textarea].setData(comment)
+            self.track.commentId = commentId
+        }
+
+        self.track.open = true
+    })
+}
+Memo.prototype.submit = function() {
+    var self = this
+
+    var comment = CKEDITOR.instances[self.textarea].getData()
+
+    if (comment === '' && !self.optional) {
+        alert('Veuillez écrire un mémo.')
+        return false
+    }
+
+    console.log(self.track.submitUrl)
+
+    self.$textarea.html(comment)
+
+    if (self.track.submitUrl === 'suspensive') {
+        valid_rejete_etape7('4', self.track.projectId)
+        return false
+    } else if (self.track.submitUrl === 'add') {
+        $.ajax({
+            url: add_url + '/dossiers/memo',
+            method: 'POST',
+            dataType: 'html',
+            data: {
+                projectId: self.track.projectId,
+                commentId: self.track.commentId,
+                content: comment,
+                public: self.$elem.find('[name="public"]:checked').val()
+            },
+            success: function(response) {
+                $('#table_memo').html(response)
+                self.close()
+            }
+        });
+    } else if (self.track.submitUrl.indexOf('abandon') > -1) {
+        if (!self.$elem.find('.select').val()) {
+            alert('Merci de choisir un motif d\'abandon.')
+            return false
+        } else {
+            self.$elem.find('form').submit()
+        }
+    } else {
+        self.$elem.find('form').submit()
+    }
+}
+Memo.prototype.delete = function(commentId) {
+    var self = this
+    if (confirm('Êtes-vous sûr de vouloir supprimer le mémo ?')) {
+        var memoRows = $('#table_memo .tablesorter tbody tr'),
+            targetedMemoRow = event.target
+        $.ajax({
+            url: add_url + '/dossiers/memo/' + self.track.projectId + '/' + commentId,
+            method: 'DELETE',
+            dataType: 'json',
+            success: function(response) {
+                if (response.success != undefined && response.success) {
+                    if (memoRows.length == 1) {
+                        $('#table_memo *').remove()
+                    } else {
+                        $(targetedMemoRow).closest('tr').remove()
+                    }
+                } else {
+                    if (response.error != undefined && response.error) {
+                        if (response.message != undefined) {
+                            alert(response.message)
+                        } else {
+                            alert('Erreur inconnue')
+                        }
+                    }
+                }
+            }
+        })
+    }
+}
+Memo.prototype.edit = function(comment, commentId, public) {
+    var self = this
+    var $checks =  self.$elem.find('[name="public_memo"]')
+    if (public === true) {
+        $checks.each(function(){
+            if ($(this).val() === '1') {
+                $(this).attr('checked', true).prop('checked', true)
+            }
+        })
+    } else {
+        $checks.each(function(){
+            if ($(this).val() === '0') {
+                $(this).attr('checked', true).prop('checked', true)
+            }
+        })
+    }
+    self.open(comment, commentId)
+}
+Memo.prototype.close = function() {
+    var self = this
+    self.$elem.slideUp(300, function() {
+        if (CKEDITOR.instances[self.textarea]) {
+            CKEDITOR.instances[self.textarea].destroy(true)
+            self.$textarea.val('')
+            self.track.commentId = ''
+            self.track.open = false
+        }
+    })
+}
+
 /* Elements Jquery */
 $(document).ready(function()
 {
@@ -24,6 +224,39 @@ $(document).ready(function()
             };
         }
     });
+
+    $('[data-memo]').each(function(){
+        var $trigger = $(this)
+        new Memo($trigger)
+    })
+
+    $(document).on('click', '[data-memo]', function() {
+        var $target = $($(this).data('memo'))
+        $target[0].Memo.open()
+    })
+    $(document).on('click', '[data-memo-close]', function() {
+        var $target = $(this).parents('.memo-editor')
+        $target[0].Memo.close()
+    })
+    $(document).on('click', '[data-memo-submit]', function(event) {
+        var $target = $(this).parents('.memo-editor')
+        var submitFunction = $('[data-memo=#' + $target[0].id + ']').data('memo-onsubmit')
+        $target[0].Memo.submit(submitFunction)
+        event.preventDefault()
+
+    })
+    $(document).on('click', '#tab_memos .btn-edit-memo, #tab_memos .btn-delete-memo', function() {
+        var $target = $('#tab_memos_memo')
+        var $tr = $(this).closest('tr')
+        var commentId = $tr.attr('data-comment-id')
+        var public = $tr.data('public')
+        if ($(this).is('.btn-edit-memo')) {
+            var comment = $tr.find('.content-memo').html()
+            $target[0].Memo.edit(comment, commentId, public)
+        } else {
+            $target[0].Memo.delete(commentId)
+        }
+    })
 });
 
 // Prevent double-click

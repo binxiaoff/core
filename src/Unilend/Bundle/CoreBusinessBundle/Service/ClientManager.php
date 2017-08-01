@@ -278,20 +278,6 @@ class ClientManager
     }
 
     /**
-     * @param \clients $client
-     *
-     * @return bool
-     */
-    public function isValidated(\clients $client)
-    {
-        /** @var \clients_status $lastClientStatus */
-        $lastClientStatus = $this->entityManagerSimulator->getRepository('clients_status');
-        $lastClientStatus->getLastStatut($client->id_client);
-
-        return $lastClientStatus->status == \clients_status::VALIDATED;
-    }
-
-    /**
      * @param Request $request
      *
      * @return RedirectResponse|null
