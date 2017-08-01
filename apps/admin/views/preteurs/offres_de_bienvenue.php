@@ -52,6 +52,7 @@
 </style>
 <div id="contenu">
     <h1>Gestion offre de bienvenue</h1>
+    <h2>Somme des offres de bienvenue déjà donnée : <?= $this->ficelle->formatNumber($this->sumOffres / 100) ?> €</h2>
     <div class="fenetre_offres_de_bienvenues">
         <form method="post" name="form_offres" id="form_offres" enctype="multipart/form-data" action="" target="_parent">
             <fieldset>
@@ -92,54 +93,8 @@
             </fieldset>
         </form>
     </div>
-    <?php if (count($this->lOffres) > 0) : ?>
-        <h2>Somme des offres de bienvenue déjà donnée : <?= $this->ficelle->formatNumber($this->sumOffres / 100) ?> €</h2>
-        <table class="tablesorter">
-            <thead>
-                <tr>
-                    <th>Motif</th>
-                    <th>Source3</th>
-                    <th>Id client</th>
-                    <th>Nom</th>
-                    <th>Prenom</th>
-                    <th>Email</th>
-                    <th>Montant</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php $i = 1; ?>
-                <?php foreach ($this->lOffres as $o) : ?>
-                    <?php $this->clients->get($o['id_client'], 'id_client'); ?>
-                    <tr class="<?= ($i % 2 == 1 ? '' : 'odd') ?> ">
-                        <td><?= $o['motif'] ?></td>
-                        <td><?= $this->clients->slug_origine ?></td>
-                        <td><?= $o['id_client'] ?></td>
-                        <td><?= $this->clients->nom ?></td>
-                        <td><?= $this->clients->prenom ?></td>
-                        <td><?= $this->clients->email ?></td>
-                        <td align="center"><?= $this->ficelle->formatNumber($o['montant'] / 100) ?> €</td>
-                        <td align="center"><?= date('d/m/y H:i:s', strtotime($o['added'])) ?></td>
-                    </tr>
-                    <?php $i++; ?>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-        <?php if ($this->nb_lignes != '') : ?>
-            <table>
-                <tr>
-                    <td id="pager">
-                        <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first"/>
-                        <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev"/>
-                        <input type="text" class="pagedisplay"/>
-                        <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
-                        <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
-                        <select class="pagesize">
-                            <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
-                        </select>
-                    </td>
-                </tr>
-            </table>
-        <?php endif; ?>
-    <?php endif; ?>
-</div>
+
+    <?php $this->fireView('rattrapage_offre_bienvenue'); ?>
+
+
+</div> <!-- contenu !>
