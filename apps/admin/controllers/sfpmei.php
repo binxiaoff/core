@@ -9,7 +9,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 
 class sfpmeiController extends bootstrap
 {
@@ -20,7 +19,6 @@ class sfpmeiController extends bootstrap
         $this->catchAll   = true;
         $this->menu_admin = 'sfpmei';
         $this->pagination = 25;
-
 
         $this->users->checkAccess('sfpmei');
     }
@@ -91,7 +89,7 @@ class sfpmeiController extends bootstrap
 
             $siren = empty($_POST['siren']) ? '' : filter_var(str_replace(' ', '', $_POST['siren']), FILTER_SANITIZE_STRING);
             if (false === $siren) {
-                $_SESSION['error_search'][] = 'L\'ID du client doit être un nombre';
+                $_SESSION['error_search'][] = 'Le format du SIREN n\'est pas valide';
             }
 
             $companyName = empty($_POST['company']) ? '' : filter_var($_POST['company'], FILTER_SANITIZE_STRING);
@@ -141,12 +139,12 @@ class sfpmeiController extends bootstrap
 
             $projectId = empty($_POST['id']) ? '' : filter_var($_POST['id'], FILTER_SANITIZE_NUMBER_INT);
             if (false === $projectId) {
-                $_SESSION['error_search'][] = 'L\'ID du client doit être un nombre';
+                $_SESSION['error_search'][] = 'L\'ID du projet doit être un nombre';
             }
 
             $siren = empty($_POST['siren']) ? '' : filter_var(str_replace(' ', '', $_POST['siren']), FILTER_SANITIZE_STRING);
             if (false === $siren) {
-                $_SESSION['error_search'][] = 'L\'ID du client doit être un nombre';
+                $_SESSION['error_search'][] = 'Le format du SIREN n\'est pas valide';
             }
 
             $companyName = empty($_POST['company']) ? '' : filter_var($_POST['company'], FILTER_SANITIZE_STRING);
@@ -343,7 +341,7 @@ class sfpmeiController extends bootstrap
                     ];
                 }
 
-                $this->correspondenceAddress = [
+                $this->postalAddress = [
                     'address'  => $this->clients_adresses->adresse1,
                     'postCode' => $this->clients_adresses->cp,
                     'city'     => $this->clients_adresses->ville,
@@ -415,7 +413,7 @@ class sfpmeiController extends bootstrap
 
                     $this->projects = $this->projects->select('id_company = "' . $this->companies->id_company . '"');
 
-                    if ($this->clients->telephone != '') {
+                    if (false === empty($this->clients->telephone)) {
                         $this->clients->telephone = trim(chunk_split($this->clients->telephone, 2, ' '));
                     }
 
@@ -435,13 +433,13 @@ class sfpmeiController extends bootstrap
 
     public function _transferts()
     {
-        $this->statusOperations = array(
+        $this->statusOperations = [
             0 => 'Reçu',
             1 => 'Manu',
             2 => 'Auto',
             3 => 'Rejeté',
             4 => 'Rejet'
-        );
+        ];
 
         if (empty($this->params[0])) {
             header('Location: ' . $this->lurl . '/sfpmei/default');
@@ -474,7 +472,7 @@ class sfpmeiController extends bootstrap
 
             PHPExcel_Settings::setCacheStorageMethod(
                 PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
-                array('memoryCacheSize' => '2048MB', 'cacheTime' => 1200)
+                ['memoryCacheSize' => '2048MB', 'cacheTime' => 1200]
             );
 
             /** @var \PHPExcel_Writer_CSV $writer */
@@ -520,7 +518,7 @@ class sfpmeiController extends bootstrap
             $this->projects_status->get($this->projects->status, 'status');
             $this->projects_status_history->loadLastProjectHistory($this->projects->id_project);
 
-            $this->aAnnualAccountsDates = array();
+            $this->aAnnualAccountsDates = [];
 
             if (empty($this->projects->id_dernier_bilan)) {
                 $this->lbilans = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC', 0, 3);
@@ -529,8 +527,8 @@ class sfpmeiController extends bootstrap
             }
 
             if (empty($this->lbilans)) {
-                $this->lCompanies_actif_passif = array();
-                $this->aBalanceSheets          = array();
+                $this->lCompanies_actif_passif = [];
+                $this->aBalanceSheets          = [];
             } else {
                 $aAnnualAccountsIds            = array_column($this->lbilans, 'id_bilan');
                 $sAnnualAccountsIds            = implode(', ', $aAnnualAccountsIds);
@@ -548,10 +546,10 @@ class sfpmeiController extends bootstrap
                     $oEndDate   = new \DateTime($aAnnualAccounts['cloture_exercice_fiscal']);
                     $oStartDate = new \DateTime($aAnnualAccounts['cloture_exercice_fiscal']);
                     $oStartDate->sub(new \DateInterval('P' . $aAnnualAccounts['duree_exercice_fiscal'] . 'M'))->add(new \DateInterval('P1D'));
-                    $this->aAnnualAccountsDates[$aAnnualAccounts['id_bilan']] = array(
+                    $this->aAnnualAccountsDates[$aAnnualAccounts['id_bilan']] = [
                         'start' => $oStartDate,
                         'end'   => $oEndDate
-                    );
+                    ];
                 }
             }
 
@@ -905,7 +903,7 @@ class sfpmeiController extends bootstrap
         } catch (Exception $exception) {
             /** @var \Psr\Log\LoggerInterface $logger */
             $logger = $this->get('logger');
-            $logger->error('Could not get lender taxation history (id_lender = ' . $lenderId . ') Exception message : ' . $exception->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lenderId));
+            $logger->error('Could not get lender taxation history (id_lender = ' . $lenderId . ') Exception message : ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lenderId]);
             $taxationHistory = ['error' => 'Impossible de charger l\'historique de changement d\'adresse fiscale'];
         }
 

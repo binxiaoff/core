@@ -11,11 +11,12 @@
                 </tr>
                 </thead>
                 <tbody>
-                <?php foreach ($this->statusHistory as $historyEntry) {
+                <?php foreach ($this->statusHistory as $historyEntry) : ?>
+                    <?php
                     $this->clients_status->get($historyEntry['id_client_status'], 'id_client_status');
                     $this->users->get($historyEntry['id_user'], 'id_user');
-
-                    switch ($this->clients_status->status) {
+                    ?>
+                    <?php switch ($this->clients_status->status) :
                         case \clients_status::TO_BE_CHECKED: ?>
                             <tr>
                                 <td>
@@ -109,13 +110,12 @@
                                 <td><?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?></td>
                                 <td class="text-nowrap"><?= $this->users->firstname ?> <?= $this->users->name ?></td>
                             </tr>
-                            <?php break;
-                    }
-                }
-                ?>
+                            <?php break; ?>
+                    <?php endswitch; ?>
+                <?php endforeach; ?>
                 </tbody>
             </table>
-        <?php else :?>
+        <?php else : ?>
             <strong>Aucun historique disponible</strong>
         <?php endif; ?>
     </div>
@@ -150,7 +150,7 @@
                     </tbody>
                 <?php endif; ?>
             </table>
-        <?php else :?>
+        <?php else : ?>
             <strong>Aucun historique disponible</strong>
         <?php endif; ?>
     </div>
@@ -184,7 +184,7 @@
                 <?php endforeach; ?>
                 </tbody>
             </table>
-        <?php else :?>
+        <?php else : ?>
             <strong>Aucun historique disponible</strong>
         <?php endif; ?>
     </div>
@@ -213,7 +213,7 @@
                 <?php endforeach; ?>
                 </tbody>
             </table>
-        <?php else :?>
+        <?php else : ?>
             <strong>Aucun historique disponible</strong>
         <?php endif; ?>
     </div>

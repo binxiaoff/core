@@ -78,9 +78,9 @@
             <tr>
                 <th>Adresse de correspondance</th>
                 <td>
-                    <?= $this->correspondenceAddress['address'] ?><br>
-                    <?= $this->correspondenceAddress['postCode'] ?> <?= $this->correspondenceAddress['city'] ?><br>
-                    <?= $this->correspondenceAddress['country'] ?>
+                    <?= $this->postalAddress['address'] ?><br>
+                    <?= $this->postalAddress['postCode'] ?> <?= $this->postalAddress['city'] ?><br>
+                    <?= $this->postalAddress['country'] ?>
                 </td>
             </tr>
             </tbody>

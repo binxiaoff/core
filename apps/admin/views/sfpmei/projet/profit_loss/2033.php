@@ -46,7 +46,7 @@
     <br/>
     <?php
 
-    $aAssetsFields = array(
+    $aAssetsFields = [
         'immobilisations_corporelles'     => 'Immobilisations corporelles',
         'immobilisations_incorporelles'   => 'Immobilisations incorporelles',
         'immobilisations_financieres'     => 'Immobilisations financières',
@@ -55,7 +55,7 @@
         'disponibilites'                  => 'Disponibilités',
         'valeurs_mobilieres_de_placement' => 'Valeurs mobilières de placement',
         'comptes_regularisation_actif'    => 'Comptes de régularisation'
-    );
+    ];
 
     ?>
     <table class="table table-bordered table-striped">
@@ -134,7 +134,7 @@
     <br/>
     <?php
 
-    $aDebtsFields = array(
+    $aDebtsFields = [
         'capitaux_propres'                   => 'Capitaux propres',
         'provisions_pour_risques_et_charges' => 'Provisions pour risques & charges',
         'amortissement_sur_immo'             => 'Amortissements sur immobilisations',
@@ -142,7 +142,7 @@
         'dettes_fournisseurs'                => 'Dettes fournisseurs',
         'autres_dettes'                      => 'Autres dettes',
         'comptes_regularisation_passif'      => 'Comptes de régularisation'
-    );
+    ];
 
     ?>
     <table class="table table-bordered table-striped">
