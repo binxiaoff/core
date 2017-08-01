@@ -303,6 +303,12 @@
             <argument type="constant">\NumberFormatter::DEFAULT_STYLE</argument>
         </service>
 
+        <service id="date_formatter" class="IntlDateFormatter">
+            <argument>%kernel.default_locale%</argument>
+            <argument type="constant">\IntlDateFormatter::MEDIUM</argument>
+            <argument type="constant">\IntlDateFormatter::SHORT</argument>
+        </service>
+
         <service id="unilend.service.wire_transfer_out_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.project_manager"/>

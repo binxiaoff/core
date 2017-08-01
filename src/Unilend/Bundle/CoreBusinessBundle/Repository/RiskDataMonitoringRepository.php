@@ -13,7 +13,7 @@ class RiskDataMonitoringRepository extends EntityRepository
      *
      * @return array
      */
-    public function getMonitoringEventsByProjectStatus(array $status)
+    public function getMonitoringEvents()
     {
         $query = '
                 SELECT
@@ -24,7 +24,7 @@ class RiskDataMonitoringRepository extends EntityRepository
                   ps.label,
                   cr.type,
                   cr.value,
-                  crh.added,
+                  DATE(crh.added) AS added,
                   (SELECT cr_previous.value
                    FROM company_rating_history crh_previous
                      INNER JOIN company_rating cr_previous ON crh_previous.id_company_rating_history = cr_previous.id_company_rating_history
@@ -41,12 +41,11 @@ class RiskDataMonitoringRepository extends EntityRepository
                   INNER JOIN risk_data_monitoring_call_log rdmcl ON rdm.id = rdmcl.id_risk_data_monitoring
                   INNER JOIN company_rating cr ON rdmcl.id_company_rating_history = cr.id_company_rating_history
                   INNER JOIN company_rating_history crh ON rdmcl.id_company_rating_history = crh.id_company_rating_history
-                WHERE p.status IN (:status)
-                AND rdm.end IS NULL
+                WHERE rdm.end IS NULL
                 GROUP BY p.status, p.id_company, p.id_project
                 ORDER BY crh.added DESC, p.status ASC';
 
-        return $this->getEntityManager()->getConnection()->executeQuery($query, ['status' => $status], ['status' => Connection::PARAM_INT_ARRAY])->fetchAll(\PDO::FETCH_ASSOC);
+        return $this->getEntityManager()->getConnection()->executeQuery($query)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
 }
