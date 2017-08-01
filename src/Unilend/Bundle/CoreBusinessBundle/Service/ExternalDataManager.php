@@ -94,32 +94,38 @@ class ExternalDataManager
      * @param string $siren
      *
      * @return CompanyIdentityDetail|null
+     *
+     * @throws \Exception
      */
     public function getCompanyIdentity($siren)
     {
-        $identity = $this->altaresManager->getCompanyIdentity($siren);
+        try {
+            $identity = $this->altaresManager->getCompanyIdentity($siren);
 
-        if (null !== $identity && $this->companyRatingHistory instanceof CompanyRatingHistory) {
-            $company = $this->companyRatingHistory->getIdCompany();
+            if (null !== $identity && $this->companyRatingHistory instanceof CompanyRatingHistory) {
+                $company = $this->companyRatingHistory->getIdCompany();
 
-            if ($company->getSiren() === $siren) {
-                $company->setName($company->getName() ? : $identity->getCorporateName());
-                $company->setForme($company->getForme() ? : $identity->getCompanyForm());
-                $company->setCapital($company->getCapital() ? : $identity->getCapital());
-                $company->setCodeNaf($company->getCodeNaf() ? : $identity->getNAFCode());
-                $company->setAdresse1($company->getAdresse1() ? : $identity->getAddress());
-                $company->setCity($company->getCity() ? : $identity->getCity());
-                $company->setZip($company->getZip() ? : $identity->getPostCode());
-                $company->setSiret($company->getSiret() ? : $identity->getSiret());
-                $company->setDateCreation($company->getDateCreation() ? : $identity->getCreationDate());
-                $company->setRcs($company->getRcs() ? : $identity->getRcs());
-                $company->setTribunalCom($company->getTribunalCom() ? : $identity->getCommercialCourt());
+                if ($company->getSiren() === $siren) {
+                    $company->setName($company->getName() ? : $identity->getCorporateName());
+                    $company->setForme($company->getForme() ? : $identity->getCompanyForm());
+                    $company->setCapital($company->getCapital() ? : $identity->getCapital());
+                    $company->setCodeNaf($company->getCodeNaf() ? : $identity->getNAFCode());
+                    $company->setAdresse1($company->getAdresse1() ? : $identity->getAddress());
+                    $company->setCity($company->getCity() ? : $identity->getCity());
+                    $company->setZip($company->getZip() ? : $identity->getPostCode());
+                    $company->setSiret($company->getSiret() ? : $identity->getSiret());
+                    $company->setDateCreation($company->getDateCreation() ? : $identity->getCreationDate());
+                    $company->setRcs($company->getRcs() ? : $identity->getRcs());
+                    $company->setTribunalCom($company->getTribunalCom() ? : $identity->getCommercialCourt());
 
-                $this->entityManager->flush($company);
+                    $this->entityManager->flush($company);
+                }
             }
-        }
 
-        return $identity;
+            return $identity;
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
     }
 
     /**

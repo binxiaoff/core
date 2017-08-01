@@ -28,6 +28,7 @@ class AltaresManager
     const EXCEPTION_CODE_INVALID_OR_UNKNOWN_SIREN = [101, 102, 108, 109, 106];
     const EXCEPTION_CODE_NO_FINANCIAL_DATA        = [118];
     const EXCEPTION_CODE_TECHNICAL_ERROR          = [-1, 0, 1, 2, 3, 4, 5, 7, 8];
+    const EXCEPTION_CODE_ALTARES_DOWN             = -999;
 
     const CALL_TIMEOUT = 8;
 
@@ -140,14 +141,16 @@ class AltaresManager
      */
     public function getCompanyIdentity($siren)
     {
-        if (null !== ($response = $this->soapCall('identity', self::RESOURCE_COMPANY_IDENTITY, ['sirenRna' => $siren]))) {
+        $response = $this->soapCall('identity', self::RESOURCE_COMPANY_IDENTITY, ['sirenRna' => $siren]);
+
+        if (null === $response) {
+            throw new \RuntimeException(self::RESOURCE_COMPANY_IDENTITY . ' resource is down', self::EXCEPTION_CODE_ALTARES_DOWN);
+        } else {
             /** @var CompanyIdentity $companyIdentity */
             $companyIdentity = $this->serializer->deserialize(json_encode($response->return), CompanyIdentity::class, 'json');
 
             return $companyIdentity->getMyInfo();
         }
-
-        return null;
     }
 
     /**

@@ -65,18 +65,24 @@ class companyController extends bootstrap
             /** @var \Unilend\Bundle\WSClientBundle\Service\InfolegaleManager $infoLegale */
             $infoLegale = $this->get('unilend.service.ws_client.infolegale_manager');
 
-            $altaresCompanyIdentity       = $altares->getCompanyIdentity($siren);
+            $companyIdentity = [];
+            try {
+                $altaresCompanyIdentity = $altares->getCompanyIdentity($siren);
+
+                if ($altaresCompanyIdentity instanceof CompanyIdentityDetail) {
+                    $companyIdentity = [
+                        'corporateName' => $altaresCompanyIdentity->getCorporateName(),
+                        'address'       => $altaresCompanyIdentity->getAddress(),
+                        'postCode'      => $altaresCompanyIdentity->getPostCode(),
+                        'city'          => $altaresCompanyIdentity->getCity(),
+                    ];
+                }
+            } catch (\Exception $exception) {
+                unset($exception);
+            }
             $altaresEstablishmentIdentity = $altares->getEstablishmentIdentity($siren);
             $infoLegaleIdentity           = $infoLegale->getIdentity($siren);
-            $companyIdentity              = [];
-            if ($altaresCompanyIdentity instanceof CompanyIdentityDetail) {
-                $companyIdentity = [
-                    'corporateName' => $altaresCompanyIdentity->getCorporateName(),
-                    'address'       => $altaresCompanyIdentity->getAddress(),
-                    'postCode'      => $altaresCompanyIdentity->getPostCode(),
-                    'city'          => $altaresCompanyIdentity->getCity(),
-                ];
-            }
+
             if ($altaresEstablishmentIdentity instanceof EstablishmentIdentityDetail) {
                 $companyIdentity['phoneNumber'] = $altaresEstablishmentIdentity->getPhoneNumber();
             }

@@ -93,7 +93,11 @@ class CompanyValidator
             return $locationCheck;
         }
 
-        if (Companies::NAF_CODE_NO_ACTIVITY === $this->getNAFCode($siren)) {
+        $nafCode = $this->getNAFCode($siren);
+        if (is_array($nafCode)) {
+            return $nafCode;
+        }
+        if (Companies::NAF_CODE_NO_ACTIVITY === $nafCode) {
             return $this->checkNoActivityCompany($siren, $project);
         }
 
@@ -166,12 +170,17 @@ class CompanyValidator
      */
     private function checkSiren($siren)
     {
-        if (
-            Companies::INVALID_SIREN_EMPTY === $siren
-            || null === $this->externalDataManager->getCompanyIdentity($siren)
-        ) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN];
+        try {
+            if (
+                Companies::INVALID_SIREN_EMPTY === $siren
+                || null === $this->externalDataManager->getCompanyIdentity($siren)
+            ) {
+                return [ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN];
+            }
+        } catch (\Exception $exception) {
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
         }
+
         return [];
     }
 
@@ -182,10 +191,15 @@ class CompanyValidator
      */
     private function checkActiveCompany($siren)
     {
-        $companyData = $this->externalDataManager->getCompanyIdentity($siren);
-        if (in_array($companyData->getCompanyStatus(), [7, 9])) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_INACTIVE];
+        try {
+            $companyData = $this->externalDataManager->getCompanyIdentity($siren);
+            if (in_array($companyData->getCompanyStatus(), [7, 9])) {
+                return [ProjectsStatus::NON_ELIGIBLE_REASON_INACTIVE];
+            }
+        } catch (\Exception $exception) {
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
         }
+
         return [];
     }
 
@@ -196,21 +210,30 @@ class CompanyValidator
      */
     private function checkCollectiveProceeding($siren)
     {
-        $companyData = $this->externalDataManager->getCompanyIdentity($siren);
-        if ($companyData->getCollectiveProcedure()) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_PROCEEDING];
+        try {
+            $companyData = $this->externalDataManager->getCompanyIdentity($siren);
+            if ($companyData->getCollectiveProcedure()) {
+                return [ProjectsStatus::NON_ELIGIBLE_REASON_PROCEEDING];
+            }
+        } catch (\Exception $exception) {
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
         }
+
         return [];
     }
 
     private function checkLocation($siren)
     {
-        $companyData = $this->externalDataManager->getCompanyIdentity($siren);
-        if (
-            substr($companyData->getPostCode(), 0, 2) === '20' // Corse
-            || in_array(substr($companyData->getPostCode(), 0, 3), ['973', '976']) // Guyane et Mayotte
-        ) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_COMPANY_LOCATION];
+        try {
+            $companyData = $this->externalDataManager->getCompanyIdentity($siren);
+            if (
+                substr($companyData->getPostCode(), 0, 2) === '20' // Corse
+                || in_array(substr($companyData->getPostCode(), 0, 3), ['973', '976']) // Guyane et Mayotte
+            ) {
+                return [ProjectsStatus::NON_ELIGIBLE_REASON_COMPANY_LOCATION];
+            }
+        } catch (\Exception $exception) {
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
         }
 
         return [];
@@ -349,6 +372,10 @@ class CompanyValidator
     private function checkEliminationXerfiScore($siren)
     {
         $nafCode = $this->getNAFCode($siren);
+
+        if (is_array($nafCode)) {
+            return $nafCode;
+        }
         $xerfi   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($nafCode);
 
         if (Xerfi::UNILEND_ELIMINATION_SCORE === $xerfi->getUnilendRating()) {
@@ -392,6 +419,10 @@ class CompanyValidator
         }
 
         $nafCode = $this->getNAFCode($siren);
+
+        if (is_array($nafCode)) {
+            return $nafCode;
+        }
         $xerfi   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($nafCode);
 
         if (
@@ -657,11 +688,15 @@ class CompanyValidator
     /**
      * @param string $siren
      *
-     * @return string
+     * @return string|array
      */
     private function getNAFCode($siren)
     {
-        $companyData = $this->externalDataManager->getCompanyIdentity($siren);
+        try {
+            $companyData = $this->externalDataManager->getCompanyIdentity($siren);
+        } catch (\Exception $exception) {
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
+        }
 
         return $companyData->getNAFCode();
     }
