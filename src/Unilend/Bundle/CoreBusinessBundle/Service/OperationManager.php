@@ -134,6 +134,7 @@ class OperationManager
                         ->setWireTransferOut($item->getWireTransferOut());
                 }
             }
+
             $this->entityManager->persist($operation);
 
             $this->walletManager->handle($operation);

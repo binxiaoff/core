@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Autobid;
@@ -11,7 +12,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
-use Unilend\core\Loader;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Doctrine\ORM\EntityManager;
@@ -25,57 +25,31 @@ class BidManager
     const MODE_REBID_AUTO_BID_CREATE = 1;
     const MODE_REBID_AUTO_BID_UPDATE = 2;
 
-    /**
-     * @var \dates
-     */
-    private $oDate;
-
-    /**
-     * @var \ficelle
-     */
-    private $oFicelle;
-
-    /**
-     * @var LoggerInterface
-     */
+    /** @var LoggerInterface */
     private $oLogger;
 
-    /**
-     * @var NotificationManager
-     */
+    /** @var NotificationManager */
     private $oNotificationManager;
 
-    /**
-     * @var AutoBidSettingsManager
-     */
+    /** @var AutoBidSettingsManager */
     private $oAutoBidSettingsManager;
 
-    /**
-     * @var LenderManager
-     */
+    /** @var LenderManager */
     private $oLenderManager;
 
-    /**
-     * @var EntityManagerSimulator
-     */
+    /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
 
-    /**
-     * @var ProductManager
-     */
+    /** @var ProductManager */
     private $productManager;
 
     /** @var CIPManager */
-
     private $cipManager;
-    /**
-     * @var EntityManager
-     */
+
+    /** @var EntityManager */
     private $entityManager;
 
-    /**
-     * @var WalletManager
-     */
+    /** @var WalletManager */
     private $walletManager;
 
     public function __construct(
@@ -97,9 +71,6 @@ class BidManager
         $this->cipManager              = $cipManager;
         $this->entityManager           = $entityManager;
         $this->walletManager           = $walletManager;
-
-        $this->oDate    = Loader::loadLib('dates');
-        $this->oFicelle = Loader::loadLib('ficelle');
     }
 
     /**
@@ -130,12 +101,12 @@ class BidManager
         /** @var \projects $legacyProject */
         $legacyProject = $this->entityManagerSimulator->getRepository('projects');
         /** @var \bids $legacyBid */
-        $legacyBid     = $this->entityManagerSimulator->getRepository('bids');
+        $legacyBid = $this->entityManagerSimulator->getRepository('bids');
 
         $oSettings->get('Pret min', 'type');
         $iAmountMin = (int)$oSettings->value;
 
-        $iProjectId      = $project->getIdProject();
+        $iProjectId = $project->getIdProject();
         $legacyProject->get($iProjectId);
 
         $bid = new Bids();
@@ -299,14 +270,14 @@ class BidManager
      */
     public function bidByAutoBidSettings(Autobid $autoBid, Projects $project, $rate, $sendNotification = true)
     {
-        if (bccomp($autoBid->getRateMin(), $rate, 1) <= 0) {
-            if (
-                WalletType::LENDER === $autoBid->getIdLender()->getIdType()->getLabel()
-                && $this->oAutoBidSettingsManager->isOn($autoBid->getIdLender()->getIdClient())
-                && $this->oAutoBidSettingsManager->isQualified($autoBid->getIdLender()->getIdClient())
-            ) {
-                return $this->bid($autoBid->getIdLender(), $project, $autoBid->getAmount(), $rate, $autoBid, $sendNotification);
-            }
+        if (
+            bccomp($autoBid->getRateMin(), $rate, 1) <= 0
+            && WalletType::LENDER === $autoBid->getIdLender()->getIdType()->getLabel()
+            && bccomp($autoBid->getIdLender()->getAvailableBalance(), $autoBid->getAmount()) >= 0
+            && $this->oAutoBidSettingsManager->isOn($autoBid->getIdLender()->getIdClient())
+            && $this->oAutoBidSettingsManager->isQualified($autoBid->getIdLender()->getIdClient())
+        ) {
+            return $this->bid($autoBid->getIdLender(), $project, $autoBid->getAmount(), $rate, $autoBid, $sendNotification);
         }
 
         return false;
@@ -331,8 +302,8 @@ class BidManager
     }
 
     /**
-     * @param Bids    $bid
-     * @param float   $fRepaymentAmount
+     * @param Bids  $bid
+     * @param float $fRepaymentAmount
      */
     public function rejectPartially(Bids $bid, $fRepaymentAmount)
     {
@@ -424,7 +395,7 @@ class BidManager
     }
 
     /**
-     * @param Bids          $bid
+     * @param Bids                 $bid
      * @param WalletBalanceHistory $walletBalanceHistory
      */
     private function notificationRejection(Bids $bid, WalletBalanceHistory $walletBalanceHistory)

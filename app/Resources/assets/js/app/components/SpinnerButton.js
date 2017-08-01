@@ -299,18 +299,5 @@ $doc
   .on('Spinner:hideLoading Spinner:loading:ending Spinner:loading:ended', '.ui-spinnerbutton', function (event) {
     $(this).uiSpinnerButton('stopLoading', true)
   })
-  .on('submit', 'form', function(event) {
-    // Fix for Safari
-    // https://stackoverflow.com/questions/26398490/safari-not-activating-css-rule-on-jquery-submit-action
-    if (navigator.userAgent.indexOf('Safari') > -1 && navigator.userAgent.indexOf('Chrome') == -1 && $(this).find('[data-spinnerbutton]').length > 0) {
-      event.preventDefault()
-      var delay = 50 // miliseconds
-      console.log('Safari form submission delayed by ' + delay + 'ms')
-      var form = this
-      setTimeout(function() {
-        form.submit()
-      }, delay)
-    }
-  })
 
 module.exports = SpinnerButton

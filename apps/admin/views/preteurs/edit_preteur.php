@@ -162,7 +162,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                     <th></th>
                     <td>
                         <input style="font-size: 11px; height: 25px; width: 105px;" type="button" id="generer_mdp2" name="generer_mdp2" value="Générer mdp" class="btn-primary" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/>
-                        <span style="margin-left:5px;color:green; display:none;" class="reponse">mdp généré</span>
+                        <span style="margin-left:5px;color:green; display:none;" class="success">mdp envoyé</span>
+                        <span style="margin-left:5px;color:orange; display:none;" class="warning">Email non envoyé</span>
+                        <span style="margin-left:5px;color:red; display:none;" class="error">Erreur</span>
                     </td>
                 </tr>
             <?php else : ?>

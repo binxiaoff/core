@@ -914,9 +914,7 @@ class ProjectsController extends Controller
         }
 
         /** @var UserLender $user */
-        $user   = $this->getUser();
-        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
-        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $user = $this->getUser();
 
         if (false === ($user instanceof UserLender)) {
             return new JsonResponse([
@@ -925,6 +923,9 @@ class ProjectsController extends Controller
                 'messages' => [$translator->trans('project-detail_modal-bid-error-disconnected-lender-message')]
             ]);
         }
+
+        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
+        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
         if ($wallet->getAvailableBalance() < $amount) {
             return new JsonResponse([

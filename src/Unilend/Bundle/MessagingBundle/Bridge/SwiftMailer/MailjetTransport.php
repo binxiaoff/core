@@ -62,10 +62,11 @@ class MailjetTransport implements \Swift_Transport
      * @param string[]           $failedRecipients
      *
      * @return int
+     *
+     * @throws \Exception
      */
     public function send(Swift_Mime_Message $message, &$failedRecipients = null)
     {
-
         $count = (
             count((array) $message->getTo())
             + count((array) $message->getCc())
@@ -73,17 +74,7 @@ class MailjetTransport implements \Swift_Transport
         );
 
         if (0 === $count) {
-            $completeTrace = debug_backtrace();
-            $backtrace     = [];
-
-            foreach ($completeTrace as $key => $trace){
-                $backtrace[$key]['file'] = isset($trace['file']) ? $trace['file'] : '';
-                $backtrace[$key]['line'] = isset($trace['line']) ? $trace['line'] : '';
-            }
-
-            $this->logger->error('email address empty : ', ['template' => $message->getSubject(), 'backtrace'  => $backtrace]);
-
-            return 0;
+            throw new \Exception('No email address provided');
         }
 
         $senderEmail = array_keys($message->getFrom());

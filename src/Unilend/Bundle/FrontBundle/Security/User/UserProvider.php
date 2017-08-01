@@ -9,10 +9,10 @@ use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\NotificationDisplayManager;
@@ -29,8 +29,6 @@ class UserProvider implements UserProviderInterface
     private $notificationDisplayManager;
     /** @var LenderManager */
     private $lenderManager;
-    /** @var ClientStatusManager */
-    private $clientStatusManager;
 
     /**
      * UserProvider constructor.
@@ -39,15 +37,13 @@ class UserProvider implements UserProviderInterface
      * @param ClientManager              $clientManager
      * @param NotificationDisplayManager $notificationDisplayManager
      * @param LenderManager              $lenderManager
-     * @param ClientStatusManager        $clientStatusManager
      */
     public function __construct(
         EntityManager $entityManager,
         EntityManagerSimulator $entityManagerSimulator,
         ClientManager $clientManager,
         NotificationDisplayManager $notificationDisplayManager,
-        LenderManager $lenderManager,
-        ClientStatusManager $clientStatusManager
+        LenderManager $lenderManager
     )
     {
         $this->entityManagerSimulator     = $entityManagerSimulator;
@@ -55,7 +51,6 @@ class UserProvider implements UserProviderInterface
         $this->clientManager              = $clientManager;
         $this->notificationDisplayManager = $notificationDisplayManager;
         $this->lenderManager              = $lenderManager;
-        $this->clientStatusManager        = $clientStatusManager;
     }
 
     /**
@@ -115,7 +110,8 @@ class UserProvider implements UserProviderInterface
         if ($clientEntity->isLender()) {
             /** @var Wallet $wallet */
             $wallet                  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clientEntity, WalletType::LENDER);
-            $clientStatus            = $this->clientStatusManager->getLastClientStatus($client);
+            /** @var ClientsStatus $clientStatusEntity */
+            $clientStatusEntity      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->getLastClientStatus($client->id_client);
             $hasAcceptedCurrentTerms = $this->clientManager->hasAcceptedCurrentTerms($client);
             $notifications           = $this->notificationDisplayManager->getLastLenderNotifications($clientEntity);
             $userLevel               = $this->lenderManager->getDiversificationLevel($clientEntity);
@@ -134,7 +130,7 @@ class UserProvider implements UserProviderInterface
                 $initials,
                 $clientEntity->getPrenom(),
                 $clientEntity->getNom(),
-                $clientStatus,
+                (null === $clientStatusEntity) ? null : $clientStatusEntity->getStatus(),
                 $hasAcceptedCurrentTerms,
                 $notifications,
                 $clientEntity->getEtapeInscriptionPreteur(),

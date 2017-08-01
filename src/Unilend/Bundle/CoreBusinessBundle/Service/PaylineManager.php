@@ -121,7 +121,7 @@ class PaylineManager
         $backPayline->setAmount($amountInCent);
         $this->entityManager->persist($backPayline);
         $this->entityManager->flush($backPayline);
-        /** @var \paylineSDK $payline */
+
         $payline                  = new \paylineSDK($this->merchantId, $this->accessKey, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, $this->isProduction);
         $payline->returnURL       = $redirectUrl;
         $payline->cancelURL       = $cancelUrl;
@@ -170,7 +170,6 @@ class PaylineManager
      */
     public function handlePaylineReturn($token, $version)
     {
-        /** @var \paylineSDK $payline */
         $payline = new \paylineSDK($this->merchantId, $this->accessKey, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, $this->isProduction);
 
         $this->logger->debug('Calling Payline::getWebPaymentDetails: return token=' . $token . ' version: ' . $version);
@@ -281,8 +280,15 @@ class PaylineManager
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->messageProvider->newMessage('preteur-alimentation-cb', $varMail);
-            $message->setTo($backPayline->getWallet()->getIdClient()->getEmail());
-            $this->mailer->send($message);
+            try {
+                $message->setTo($backPayline->getWallet()->getIdClient()->getEmail());
+                $this->mailer->send($message);
+            } catch (\Exception $exception) {
+                $this->logger->warning(
+                    'Could not send email: preteur-alimentation-cb - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $backPayline->getWallet()->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
         }
     }
 }

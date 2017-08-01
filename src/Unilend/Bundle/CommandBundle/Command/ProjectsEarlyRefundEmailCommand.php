@@ -52,6 +52,8 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
         $client = $entityManagerSimulator->getRepository('clients');
         /** @var \settings $settings */
         $settings = $entityManagerSimulator->getRepository('settings');
+        $mailer = $this->getContainer()->get('mailer');
+        $logger = $this->getContainer()->get('monolog.logger.console');
 
         $operationRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $loanOperationType           = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_LOAN]);
@@ -97,9 +99,15 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-remboursement-anticipe', $keywords);
-            $message->setTo($client->email);
-            $mailer = $this->getContainer()->get('mailer');
-            $mailer->send($message);
+            try {
+                $message->setTo($client->email);
+                $mailer->send($message);
+            } catch (\Exception $exception) {
+                $logger->warning(
+                    'Could not send email : emprunteur-remboursement-anticipe - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
 
             foreach ($projectLenders as $projectLender) {
                 $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($projectLender['id_lender']);
@@ -156,9 +164,15 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
 
                         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                         $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement-anticipe', $keywords);
-                        $message->setTo($wallet->getIdClient()->getEmail());
-                        $mailer = $this->getContainer()->get('mailer');
-                        $mailer->send($message);
+                        try {
+                            $message->setTo($wallet->getIdClient()->getEmail());
+                            $mailer->send($message);
+                        } catch (\Exception $exception) {
+                            $logger->warning(
+                                'Could not send email : preteur-remboursement-anticipe - Exception: ' . $exception->getMessage(),
+                                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $wallet->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                            );
+                        }
                     }
 
                     $emailNotification->create();

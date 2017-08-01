@@ -114,18 +114,30 @@ class ProjectManager
         $offset = 0;
         $limit  = 100;
 
-        while ($bids = $bidData->getLastProjectBidsByLender($project->id_project, $limit, $offset)) {
+        while ($bids = $bidData->getFirstProjectBidsByLender($project->id_project, $limit, $offset)) {
             foreach ($bids as $bid) {
                 $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($bid['id_lender_account']);
-                if (
-                    null !== $wallet
-                    && WalletType::LENDER === $wallet->getIdType()->getLabel()
-                ) {
+
+                if (null !== $wallet && WalletType::LENDER === $wallet->getIdType()->getLabel()) {
+                    if ($bid['min_status'] == \bids::STATUS_BID_PENDING) {
+                        $notificationType = Notifications::TYPE_BID_PLACED;
+                        $mailType         = \clients_gestion_type_notif::TYPE_BID_PLACED;
+                        $mailFunction     = 'sendBidConfirmation';
+                    } else {
+                        $notificationType = Notifications::TYPE_BID_REJECTED;
+                        $mailType         = \clients_gestion_type_notif::TYPE_BID_REJECTED;
+                        $mailFunction     = 'sendBidRejected';
+                    }
+
+                    if ($bid['id_autobid'] > 0) {
+                        $mailType = \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID;
+                    }
+
                     $this->notificationManager->create(
-                        $bid['status'] == \bids::STATUS_BID_PENDING ? Notifications::TYPE_BID_PLACED : Notifications::TYPE_BID_REJECTED,
-                        $bid['id_autobid'] > 0 ? \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : ($bid['status'] == \bids::STATUS_BID_PENDING ? \clients_gestion_type_notif::TYPE_BID_PLACED : \clients_gestion_type_notif::TYPE_BID_REJECTED),
+                        $notificationType,
+                        $mailType,
                         $wallet->getIdClient()->getIdClient(),
-                        $bid['status'] == \bids::STATUS_BID_PENDING ? 'sendBidConfirmation' : 'sendBidRejected',
+                        $mailFunction,
                         $project->id_project,
                         $bid['amount'] / 100,
                         $bid['id_bid']
@@ -566,7 +578,7 @@ class ProjectManager
 
         foreach ($bids as $bid) {
             if ($bid) {
-                $this->bidManager->reject($bid, true);
+                $this->bidManager->reject($bid, false);
                 $treatedBidNb ++;
                 if ($this->logger instanceof LoggerInterface) {
                     $this->logger->info($treatedBidNb . '/' . $iBidNbTotal . 'bids treated (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));

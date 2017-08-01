@@ -389,9 +389,16 @@ EOF
         ];
 
         $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-nouveau-remboursement-anticipe', $varMail, false);
-        $message->setTo($email);
-        $mailer = $this->getContainer()->get('mailer');
-        $mailer->send($message);
+        try {
+            $message->setTo($email);
+            $mailer = $this->getContainer()->get('mailer');
+            $mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->getContainer()->get('monolog.logger.console')->warning(
+                'Could not send email : notification-nouveau-remboursement-anticipe - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'email address' => $email, 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     /**
@@ -504,9 +511,16 @@ EOF
                                 );
 
                                 $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation', $varMail);
-                                $message->setTo($client->getEmail());
-                                $mailer = $this->getContainer()->get('mailer');
-                                $mailer->send($message);
+                                try {
+                                    $message->setTo($client->getEmail());
+                                    $mailer = $this->getContainer()->get('mailer');
+                                    $mailer->send($message);
+                                } catch (\Exception $exception) {
+                                    $this->getContainer()->get('monolog.logger.console')->warning(
+                                        'Could not send email: preteur-alimentation - Exception: ' . $exception->getMessage(),
+                                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                                    );
+                                }
                             }
                         }
                     }
