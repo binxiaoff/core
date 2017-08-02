@@ -5457,9 +5457,11 @@ a.list-group-item:focus {
   .content .pull-b {
     margin-bottom: -1px;
   }
+  /*** TEMPORARILY REMOVE RESPONSIVE
   .content.content-boxed {
     max-width: 1280px;
   }
+  ***/
   .content.content-narrow {
     max-width: 95%;
   }
@@ -5549,10 +5551,17 @@ a.list-group-item:focus {
     margin-bottom: -1px;
   }
 }
+/*** TEMPORARILY REMOVE RESPONSIVE
 .content-boxed {
   margin: 0 auto;
   width: 100%;
   max-width: 1280px;
+}
+***/
+.content-boxed {
+  margin: 0 auto;
+  width: 1200px!important;
+  max-width: 1200px!important;
 }
 .bg-image {
   background-color: #f9f9f9;
