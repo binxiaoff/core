@@ -238,13 +238,6 @@ class Clients
     /**
      * @var integer
      *
-     * @ORM\Column(name="origine", type="integer", nullable=true)
-     */
-    private $origine;
-
-    /**
-     * @var integer
-     *
      * @ORM\Column(name="optin1", type="integer", nullable=true)
      */
     private $optin1;
@@ -966,30 +959,6 @@ class Clients
     public function getSlugOrigine()
     {
         return $this->slugOrigine;
-    }
-
-    /**
-     * Set origine
-     *
-     * @param integer $origine
-     *
-     * @return Clients
-     */
-    public function setOrigine($origine)
-    {
-        $this->origine = $origine;
-
-        return $this;
-    }
-
-    /**
-     * Get origine
-     *
-     * @return integer
-     */
-    public function getOrigine()
-    {
-        return $this->origine;
     }
 
     /**
