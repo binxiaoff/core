@@ -151,6 +151,7 @@
                     <li><a href="<?= $this->lurl ?>/sfpmei/projets" title="Projets">Projets</a></li>
                     <li><a href="<?= $this->lurl ?>/sfpmei/transferts/preteurs">Transferts de fonds prêteurs</a></li>
                     <li><a href="<?= $this->lurl ?>/sfpmei/transferts/emprunteurs">Transferts de fonds emprunteurs</a></li>
+                    <li><a href="<?= $this->lurl ?>/sfpmei/requetes">Requêtes</a></li>
                 </ul>
             </li>
         <?php endif; ?>

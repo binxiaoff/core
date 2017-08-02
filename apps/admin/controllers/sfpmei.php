@@ -3,6 +3,7 @@
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
@@ -799,39 +800,43 @@ class sfpmeiController extends bootstrap
      */
     private function getLenderStatusMessage()
     {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
-        $clientStatusManager = $this->get('unilend.service.client_status_manager');
-        $currentStatus       = $clientStatusManager->getLastClientStatus($this->clients);
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus $currentStatus */
+        $currentStatus       = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->getLastClientStatus($this->clients->id_client);
         $creationTime        = strtotime($this->clients->added);
         $clientStatusMessage = '';
 
-        switch ($currentStatus) {
-            case \clients_status::TO_BE_CHECKED:
+        if (null === $currentStatus) {
+            return $clientStatusMessage = '<div class="attention">Attention : Inscription non terminée </div>';
+        }
+        switch ($currentStatus->getStatus()) {
+            case ClientsStatus::TO_BE_CHECKED:
                 $clientStatusMessage = '<div class="attention">Attention : compte non validé - créé le ' . date('d/m/Y', $creationTime) . '</div>';
                 break;
-            case \clients_status::COMPLETENESS:
-            case \clients_status::COMPLETENESS_REMINDER:
-            case \clients_status::COMPLETENESS_REPLY:
+            case ClientsStatus::COMPLETENESS:
+            case ClientsStatus::COMPLETENESS_REMINDER:
+            case ClientsStatus::COMPLETENESS_REPLY:
                 $clientStatusMessage = '<div class="attention" style="background-color:#F9B137">Attention : compte en complétude - créé le ' . date('d/m/Y', $creationTime) . ' </div>';
                 break;
-            case \clients_status::MODIFICATION:
+            case ClientsStatus::MODIFICATION:
                 $clientStatusMessage = '<div class="attention" style="background-color:#F2F258">Attention : compte en modification - créé le ' . date('d/m/Y', $creationTime) . '</div>';
                 break;
-            case \clients_status::CLOSED_LENDER_REQUEST:
+            case ClientsStatus::CLOSED_LENDER_REQUEST:
                 $clientStatusMessage = '<div class="attention">Attention : compte clôturé (mis hors ligne) à la demande du prêteur</div>';
                 break;
-            case \clients_status::CLOSED_BY_UNILEND:
+            case ClientsStatus::CLOSED_BY_UNILEND:
                 $clientStatusMessage = '<div class="attention">Attention : compte clôturé (mis hors ligne) par Unilend</div>';
                 break;
-            case \clients_status::VALIDATED:
+            case ClientsStatus::VALIDATED:
                 $clientStatusMessage = '';
                 break;
-            case \clients_status::CLOSED_DEFINITELY:
+            case ClientsStatus::CLOSED_DEFINITELY:
                 $clientStatusMessage = '<div class="attention">Attention : compte définitivement fermé </div>';
                 break;
             default:
                 if (Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION == $this->clients->etape_inscription_preteur) {
-                    $clientStatusMessage = '<div class="attention">Attention : Inscription non terminé </div>';
+                    $clientStatusMessage = '<div class="attention">Attention : Inscription non terminée </div>';
                 }
                 break;
         }
@@ -951,5 +956,158 @@ class sfpmeiController extends bootstrap
         }
 
         echo json_encode($companies);
+    }
+
+    public function _requetes()
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
+        $settingsEntity    = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')
+            ->findOneBy([
+                'type' => 'Requetes acessibles a SFPMEI'
+            ]);
+        if (null === $settingsEntity) {
+            header('Location: ' . $this->lurl . '/sfpmei');
+            die;
+        }
+        $allowedQueries    = explode(',', str_replace(' ', '', $settingsEntity->getValue()));
+        $this->queriesList = [];
+
+        if (isset($this->params[0])) {
+            switch ($this->params[0]) {
+                case 'export':
+                    if (isset($this->params[1]) && in_array($this->params[1], $allowedQueries)) {
+                        $this->autoFireView = false;
+                        $this->exportResult($this->params[1]);
+                    }
+                    break;
+                default:
+                    $this->executeQuery($this->params[0]);
+                    $this->setView('requetes/resultats');
+                    break;
+            }
+        } else {
+            /** @var queries $queries */
+            $queries = $this->loadData('queries');
+            $this->queriesList = $queries->select('id_query IN (' . $settingsEntity->getValue() . ')', 'executed DESC');
+        }
+    }
+
+    /**
+     * @param int $queryId
+     */
+    private function executeQuery($queryId)
+    {
+        ini_set('memory_limit', '2G');
+        ini_set('max_execution_time', 1200);
+
+        $this->queries = $this->loadData('queries');
+        if (false === $this->queries->get($queryId, 'id_query')) {
+            header('Location: ' . $this->lurl . '/sfpmei/requetes');
+            die;
+        }
+        $this->queries->sql = trim(str_replace(
+            array('[ID_USER]'),
+            array($this->sessionIdUser),
+            $this->queries->sql
+        ));
+
+        if (
+            1 !== preg_match('/^SELECT\s/i', $this->queries->sql)
+            || 1 === preg_match('/[^A-Z](ALTER|INSERT|DELETE|DROP|TRUNCATE|UPDATE)[^A-Z]/i', $this->queries->sql)
+        ) {
+            $this->result    = array();
+            $this->sqlParams = array();
+            trigger_error('Stat query may be dangerous: ' . $this->queries->sql, E_USER_WARNING);
+            return;
+        }
+
+        preg_match_all('/@[_a-zA-Z1-9]+@/', $this->queries->sql, $this->sqlParams, PREG_SET_ORDER);
+
+        $this->sqlParams = $this->queries->super_unique($this->sqlParams);
+
+        foreach ($this->sqlParams as $param) {
+            $this->queries->sql = str_replace($param[0], $this->bdd->quote($_POST['param_' . str_replace('@', '', $param[0])]), $this->queries->sql);
+        }
+
+        $this->result = $this->queries->run($queryId, $this->queries->sql);
+    }
+
+    /**
+     * @param int $queryId
+     */
+    private function exportResult($queryId)
+    {
+        $oDocument = $this->exportDocument($queryId);
+
+        // As long as we use $this->queries in order to name file, headers must be sent after calling $this->export()
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment;filename=' . $this->bdd->generateSlug($this->queries->name) . '.csv');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Expires: 0');
+
+        /** @var \PHPExcel_Writer_CSV $oWriter */
+        $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
+        $oWriter->setUseBOM(true);
+        $oWriter->setDelimiter(';');
+        $oWriter->save('php://output');
+    }
+
+    /**
+     * @param int $queryId
+     *
+     * @return PHPExcel
+     *
+     * @throws PHPExcel_Exception
+     */
+    private function exportDocument($queryId)
+    {
+        $this->hideDecoration();
+
+        $this->autoFireview = false;
+
+        $this->executeQuery($queryId);
+
+        PHPExcel_Settings::setCacheStorageMethod(
+            PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
+            array('memoryCacheSize' => '2048MB', 'cacheTime' => 1200)
+        );
+
+        $oDocument    = new PHPExcel();
+        $oActiveSheet = $oDocument->setActiveSheetIndex(0);
+
+        if (is_array($this->result) && count($this->result) > 0) {
+            $aHeaders       = array_keys($this->result[0]);
+            $sLastColLetter = PHPExcel_Cell::stringFromColumnIndex(count($aHeaders) - 1);
+            $oActiveSheet->getStyle('A1:' . $sLastColLetter . '1')
+                ->applyFromArray(array(
+                    'fill' => array(
+                        'type'  => PHPExcel_Style_Fill::FILL_SOLID,
+                        'color' => array('rgb' => '2672A2')
+                    ),
+                    'font' => array(
+                        'bold'  => true,
+                        'color' => array('rgb' => 'FFFFFF')
+                    )
+                ))
+                ->getAlignment()
+                ->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+
+            foreach ($aHeaders as $iIndex => $sColumnName) {
+                $oActiveSheet->setCellValueByColumnAndRow($iIndex, 1, $sColumnName)
+                    ->getColumnDimension(PHPExcel_Cell::stringFromColumnIndex($iIndex))
+                    ->setAutoSize(true);
+            }
+
+            foreach ($this->result as $iRowIndex => $aRow) {
+                $iColIndex = 0;
+                foreach ($aRow as $sCellValue) {
+                    $oActiveSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 2, $sCellValue);
+                }
+            }
+        }
+
+        return $oDocument;
     }
 }

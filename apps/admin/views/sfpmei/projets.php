@@ -58,9 +58,8 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <?php $i = 1; ?>
                     <?php foreach ($this->projects as $project) : ?>
-                        <tr class="<?= ($i++ % 2 == 1 ? '' : 'odd') ?>">
+                        <tr>
                             <td><?= $project['id_project'] ?></td>
                             <td><?= $project['siren'] ?></td>
                             <td><?= $project['name'] ?></td>
