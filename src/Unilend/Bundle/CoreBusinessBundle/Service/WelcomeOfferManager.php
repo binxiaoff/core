@@ -2,31 +2,24 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Bundle\FrontBundle\Service\SourceManager;
 
 class WelcomeOfferManager
 {
-    /**
-     * @var  EntityManagerSimulator
-     */
+    /** @var EntityManagerSimulator  */
     private $entityManagerSimulator;
-    /**
-     * @var  MailerManager
-     */
+    /** @var MailerManager  */
     private $mailerManager;
-    /**
-     * @var OperationManager
-     */
+    /** @var OperationManager  */
     private $operationManager;
-    /**
-     * @var EntityManager
-     */
+    /** @var EntityManager  */
     private $entityManager;
 
     public function __construct(EntityManagerSimulator $entityManagerSimulator, MailerManager $mailerManager, EntityManager $entityManager, OperationManager $operationManager)
@@ -66,7 +59,7 @@ class WelcomeOfferManager
         $enoughMoneyLeft                 = false;
         $return                          = [];
 
-        if ($welcomeOffer->get(1, 'status = 0 AND id_offre_bienvenue')) {
+        if ($welcomeOffer->get(OffresBienvenues::STATUS_ONLINE, 'status')) {
             /** @var \offres_bienvenues_details $welcomeOfferDetail */
             $welcomeOfferDetail = $this->entityManagerSimulator->getRepository('offres_bienvenues_details');
             /** @var \settings $setting */
@@ -135,5 +128,22 @@ class WelcomeOfferManager
         }
 
         return (float) $promotionalAmountTotal;
+    }
+
+    /**
+     * @param Clients|\clients $client
+     *
+     * @return bool
+     */
+    public function clientIsEligibleToWelcomeOffer($client)
+    {
+        if ($client instanceof \clients) {
+            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        }
+
+        $hasSource            = in_array($client->getSource2(), [SourceManager::HP_LENDER_SOURCE_NAME, SourceManager::HP_SOURCE_NAME]);
+        $noPreviousValidation = (null === $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->getFirstClientValidation($client));
+
+        return ($hasSource && $noPreviousValidation);
     }
 }

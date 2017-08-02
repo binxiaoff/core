@@ -28,8 +28,6 @@
 
 class offres_bienvenues extends offres_bienvenues_crud
 {
-    const STATUS_ONLINE = 0;
-    const STATUS_OFFLINE = 1;
 
     function offres_bienvenues($bdd, $params = '')
     {
