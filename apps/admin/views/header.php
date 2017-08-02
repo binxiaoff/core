@@ -142,6 +142,19 @@
                 </ul>
             </li>
         <?php endif; ?>
+        <?php if (in_array('sfpmei', $this->lZonesHeader)) : ?>
+            <li>
+                <a href="<?= $this->lurl ?>/sfpmei" title="SFPMEI"<?= ($this->menu_admin == 'sfpmei' ? ' class="active"' : '') ?>>SFPMEI</a>
+                <ul class="sous_menu">
+                    <li><a href="<?= $this->lurl ?>/sfpmei/preteurs" title="Prêteurs">Prêteurs</a></li>
+                    <li><a href="<?= $this->lurl ?>/sfpmei/emprunteurs" title="Emprunteurs">Emprunteurs</a></li>
+                    <li><a href="<?= $this->lurl ?>/sfpmei/projets" title="Projets">Projets</a></li>
+                    <li><a href="<?= $this->lurl ?>/sfpmei/transferts/preteurs">Transferts de fonds prêteurs</a></li>
+                    <li><a href="<?= $this->lurl ?>/sfpmei/transferts/emprunteurs">Transferts de fonds emprunteurs</a></li>
+                    <li><a href="<?= $this->lurl ?>/sfpmei/requetes">Requêtes</a></li>
+                </ul>
+            </li>
+        <?php endif; ?>
     </ul>
 </div>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
