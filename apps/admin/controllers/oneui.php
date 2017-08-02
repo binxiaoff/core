@@ -8,5 +8,6 @@ class oneuiController extends bootstrap
 
         $this->catchAll   = true;
         $this->menu_admin = 'oneui';
+        $this->useOneUi();
     }
 }

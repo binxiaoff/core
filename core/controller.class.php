@@ -35,6 +35,8 @@ abstract class Controller implements ContainerAwareInterface
     public $current_template = '';
     /** @var  \Symfony\Component\HttpFoundation\Request */
     public $request;
+    /** @var  bool */
+    public $useOneUi = false;
 
     /**
      * Controller constructor.
@@ -274,5 +276,10 @@ abstract class Controller implements ContainerAwareInterface
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
+    }
+
+    protected function useOneUi()
+    {
+        $this->useOneUi = true;
     }
 }

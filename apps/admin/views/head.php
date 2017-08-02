@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<?php if ($this->Command->getControllerName() !== 'oneui') : ?>
+<?php if (false === $this->useOneUi) : ?>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Administration du site</title>

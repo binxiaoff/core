@@ -1,4 +1,4 @@
-<?php if ($this->Command->getControllerName() !== 'oneui') : ?>
+<?php if (false === $this->useOneUi) : ?>
     </div>
     </body>
 </html>
