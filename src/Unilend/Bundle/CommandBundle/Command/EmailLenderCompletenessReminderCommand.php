@@ -48,6 +48,7 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
 
         $iTimeMinus8D = mktime(0, 0, 0, date("m"), date("d") - 8, date("Y"));
         $aLenders     = $clients->selectPreteursByStatus(\clients_status::COMPLETENESS, '', 'added_status DESC');
+        $logger = $this->getContainer()->get('monolog.logger.console');
 
         foreach ($aLenders as $aLender) {
             $timestamp_date = $this->oDate->formatDateMySqlToTimeStamp($aLender['added_status']);
@@ -55,8 +56,15 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
 
             if ($timestamp_date <= $iTimeMinus8D) {
                 $clients_status_history->get($aLender['id_client_status_history'], 'id_client_status_history');
-                $this->sendReminderEmail($aLender, $sTwitterLink, $sFacebookLink, $clients_status_history->content);
-                $clientStatusManager->addClientStatus($clients, Users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $clients_status_history->content);
+                try {
+                    $this->sendReminderEmail($aLender, $sTwitterLink, $sFacebookLink, $clients_status_history->content);
+                    $clientStatusManager->addClientStatus($clients, Users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $clients_status_history->content);
+                } catch (\Exception $exception) {
+                    $logger->warning(
+                        'Could not send email: completude - Exception: ' . $exception->getMessage(),
+                        ['mail_type' => 'completude', 'id_client' => $aLender['id_client'], 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    );
+                }
             }
         }
 
@@ -67,6 +75,7 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
 
         foreach ($aLenders as $aLender) {
             $bSendReminder     = false;
+            $reminder          = null;
             $aClientLastStatus = $clients_status_history->get_last_statut($aLender['id_client']);
             $iRevivalNumber    = $aClientLastStatus['numero_relance'];
             $timestamp_date    = $this->oDate->formatDateMySqlToTimeStamp($aLender['added_status']);
@@ -74,17 +83,25 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
 
             if ($timestamp_date <= $iTimeMinus8D && $iRevivalNumber == 0) {// Reminder D+15
                 $bSendReminder = true;
-                $clientStatusManager->addClientStatus($clients, Users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $aClientLastStatus['content'], 2);
+                $reminder      = 2;
             } elseif ($timestamp_date <= $iTimeMinus8D && $iRevivalNumber == 2) {// Reminder D+30
                 $bSendReminder = true;
-                $clientStatusManager->addClientStatus($clients, Users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $aClientLastStatus['content'], 3);
+                $reminder      = 3;
             } elseif ($timestamp_date <= $iTimeMinus30D && $iRevivalNumber == 3) {// Reminder D+60
                 $bSendReminder = true;
-                $clientStatusManager->addClientStatus($clients, Users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $aClientLastStatus['content'], 4);
+                $reminder      = 4;
             }
 
             if (true === $bSendReminder) {
-                $this->sendReminderEmail($aLender, $sTwitterLink, $sFacebookLink, $aClientLastStatus['content']);
+                try {
+                    $this->sendReminderEmail($aLender, $sTwitterLink, $sFacebookLink, $aClientLastStatus['content']);
+                    $clientStatusManager->addClientStatus($clients, Users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $aClientLastStatus['content'], $reminder);
+                } catch (\Exception $exception) {
+                    $logger->warning(
+                        'Could not send email: completude - Reminder #' . $reminder . ' - Exception: ' . $exception->getMessage(),
+                        ['mail_type' => 'completude', 'id_client' => $aLender['id_client'], 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    );
+                }
             }
         }
     }

@@ -302,8 +302,15 @@ EOF
                             $varMail['motif_virement']               = $wallet->getWireTransferPattern();
 
                             $message = $messageProvider->newMessage('nouveau-projet', $varMail);
-                            $message->setTo($aLender['email']);
-                            $mailer->send($message);
+                            try {
+                                $message->setTo($aLender['email']);
+                                $mailer->send($message);
+                            } catch (\Exception $exception) {
+                                $oLogger->warning(
+                                    'Could not send email : nouveau-projet - Exception: ' . $exception->getMessage(),
+                                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $aLender['id_client'], 'class' => __CLASS__, 'function' => __FUNCTION__]
+                                );
+                            }
                             ++$iEmails;
                         }
                         $clients_gestion_mails_notif->create();

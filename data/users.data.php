@@ -196,12 +196,17 @@ class users extends users_crud
 
             if ($nb == 1) {
                 return true;
-            } else {
-                $_SESSION['msgErreur'] = 'loginInterdit';
+            }
 
-                header('Location: ' . $this->params['lurl'] . '/login');
+            $userZones = new users_zones($this->bdd);
+            $zones     = $userZones->selectZonesUser($_SESSION['user']['id_user']);
+
+            if (false === empty($zones)) {
+                header('Location: ' . $this->params['lurl'] . '/' . $zones[0]);
                 die;
             }
+
+            die('Aucun accès disponible, veuillez contacter l\'administrateur');
         }
     }
 

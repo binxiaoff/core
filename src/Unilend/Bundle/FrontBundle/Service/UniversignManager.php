@@ -487,8 +487,15 @@ class UniversignManager
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->messageProvider->newMessage('notification-erreur-universign', $varMail, false);
-        $message->setTo($settings->value);
-        $this->mailer->send($message);
+        try {
+            $message->setTo($settings->value);
+            $this->mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->logger->warning(
+                'Could not send email : notification-erreur-universign - Exception: ' . $exception->getMessage(),
+                [ 'email address' => $settings->value, 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
 
         $this->logger->error('Return Universign ' . $documentType . ' NOK (id: ' . $documentId . ') - Error code : ' . $soapResult->faultCode() . ' - Error Message : ' . $soapResult->faultString(),
             ['class' => __CLASS__, 'function' => __FUNCTION__]);

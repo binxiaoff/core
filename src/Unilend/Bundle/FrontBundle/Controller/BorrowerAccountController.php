@@ -371,10 +371,15 @@ class BorrowerAccountController extends Controller
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('demande-de-contact', $aVariables);
-                $message->setTo($formData['email']);
-                $mailer = $this->get('mailer');
-                $mailer->send($message);
+                try {
+                    $message->setTo($formData['email']);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
+                } catch (\Exception $exception) {
+                    $this->addFlash('error', $translator->trans('common-validator_email-address-invalid'));
 
+                    return ['contact_form' => $contactForm->createView(), 'company_siren' => $company->siren, 'company_name' => $company->name];
+                }
                 $settings->get('Adresse emprunteur', 'type');
 
                 $aReplacements = array(
@@ -391,12 +396,19 @@ class BorrowerAccountController extends Controller
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact-emprunteur', $aReplacements, false);
-                $message->setTo(trim($settings->value));
-                if (empty($filePath) === false) {
-                    $message->attach(\Swift_Attachment::fromPath($filePath));
+                try {
+                    $message->setTo(trim($settings->value));
+                    if (empty($filePath) === false) {
+                        $message->attach(\Swift_Attachment::fromPath($filePath));
+                    }
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
+                } catch (\Exception $exception) {
+                    $this->get('logger')->error(
+                        'Could not send email : notification-demande-de-contact-emprunteur - Exception: ' . $exception->getMessage(),
+                        ['id_mail_template' => $message->getTemplateId(), 'email address' => $settings->value, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    );
                 }
-                $mailer = $this->get('mailer');
-                $mailer->send($message);
 
                 @unlink($filePath);
                 $this->addFlash('success', $translator->trans('borrower-contact_success-message'));

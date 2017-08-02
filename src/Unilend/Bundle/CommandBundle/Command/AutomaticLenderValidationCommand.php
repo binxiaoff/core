@@ -49,7 +49,7 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
                 $this->validateLender($client, $row);
             }
         } catch (\Exception $exception) {
-            $logger->error('An exception occurred. Exception message: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
+            $logger->error('Could not validate the lender. Exception message: ' . $exception->getMessage(), ['id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]);
         }
     }
 
