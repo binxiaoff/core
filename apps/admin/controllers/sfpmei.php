@@ -605,6 +605,7 @@ class sfpmeiController extends bootstrap
      * @param \companies  $company
      * @param int|null    $companyRatingHistoryId
      * @param \xerfi|null $xerfi
+     *
      * @return array
      */
     private function loadRatings(\companies &$company, $companyRatingHistoryId = null, \xerfi &$xerfi = null)
@@ -1008,8 +1009,8 @@ class sfpmeiController extends bootstrap
             die;
         }
         $this->queries->sql = trim(str_replace(
-            array('[ID_USER]'),
-            array($this->sessionIdUser),
+            ['[ID_USER]'],
+            [$this->sessionIdUser],
             $this->queries->sql
         ));
 
@@ -1017,8 +1018,8 @@ class sfpmeiController extends bootstrap
             1 !== preg_match('/^SELECT\s/i', $this->queries->sql)
             || 1 === preg_match('/[^A-Z](ALTER|INSERT|DELETE|DROP|TRUNCATE|UPDATE)[^A-Z]/i', $this->queries->sql)
         ) {
-            $this->result    = array();
-            $this->sqlParams = array();
+            $this->result    = [];
+            $this->sqlParams = [];
             trigger_error('Stat query may be dangerous: ' . $this->queries->sql, E_USER_WARNING);
             return;
         }
@@ -1071,7 +1072,7 @@ class sfpmeiController extends bootstrap
 
         PHPExcel_Settings::setCacheStorageMethod(
             PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
-            array('memoryCacheSize' => '2048MB', 'cacheTime' => 1200)
+            ['memoryCacheSize' => '2048MB', 'cacheTime' => 1200]
         );
 
         $oDocument    = new PHPExcel();
@@ -1081,16 +1082,16 @@ class sfpmeiController extends bootstrap
             $aHeaders       = array_keys($this->result[0]);
             $sLastColLetter = PHPExcel_Cell::stringFromColumnIndex(count($aHeaders) - 1);
             $oActiveSheet->getStyle('A1:' . $sLastColLetter . '1')
-                ->applyFromArray(array(
-                    'fill' => array(
+                ->applyFromArray([
+                    'fill' => [
                         'type'  => PHPExcel_Style_Fill::FILL_SOLID,
-                        'color' => array('rgb' => '2672A2')
-                    ),
-                    'font' => array(
+                        'color' => ['rgb' => '2672A2']
+                    ],
+                    'font' => [
                         'bold'  => true,
-                        'color' => array('rgb' => 'FFFFFF')
-                    )
-                ))
+                        'color' => ['rgb' => 'FFFFFF']
+                    ]
+                ])
                 ->getAlignment()
                 ->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
 
