@@ -778,7 +778,7 @@
                                     </select>
                                 <?php endif; ?>
                                 <?php if (true === $this->projectHasMonitoringEvent) : ?>
-                                    <a href="/risk_monitoring" title="Changement de statut récent. Voir détails"><span class="e-change-warning"></span></a>
+                                    <a href="/risk_monitoring" title="Changement de de données externes récent. Voir détails"><span class="e-change-warning"></span></a>
                                 <?php endif; ?>
                                 <a href="<?= $this->lurl ?>/thickbox/project_history/<?= $this->projects->id_project ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Information"></a>
                             </td>
