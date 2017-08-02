@@ -308,7 +308,7 @@ function generateMenu($menuItems, $theme, $currentPage, $zoneHeader)
                 if (empty($item['children'])) {
                     $menuHtml .= '<li class="' . $active . '"><a href="' . $itemHandle . '">' . $item['title'] . '</a></li>';
                 } else {
-                    $menuHtml .= '<li class="dropdown' . $active . '"><a href="' . $itemHandle . '" data-toggle="dropdown" data-hover="dropdown" data-delay="200" data-close-others="false" aria-expanded="false">' . $item['title'] . '</a>';
+                    $menuHtml .= '<li class="dropdown' . $active . '"><a href="' . $itemHandle . '">' . $item['title'] . '</a>';
                     $menuHtml .= '<ul class="dropdown-menu">';
                     foreach ($item['children'] as $subItem) {
                         $menuHtml .= '<li><a href="' . $subItem['handle'] . '">' . $subItem['title'] . '</a><li>';
@@ -360,6 +360,7 @@ function generateMenu($menuItems, $theme, $currentPage, $zoneHeader)
 </div>
 <div id="navigation">
     <ul id="menu_deroulant">
+<<<<<<< HEAD
         <?php generateMenu($menuItems, 'oldbo', $this->menu_admin, $this->lZonesHeader) ?>
     </ul>
 </div>

@@ -11,7 +11,6 @@
 <!-- OneUI Core JS: jQuery, Bootstrap, slimScroll, scrollLock, Placeholder, Cookie and App.js -->
 <script src="oneui/js/core/jquery.min.js"></script>
 <script src="oneui/js/core/bootstrap.min.js"></script>
-<script src="oneui/js/core/bootstrap-hover-dropdown.min.js"></script>
 <script src="oneui/js/core/jquery.scrollLock.min.js"></script>
 <script src="oneui/js/core/jquery.placeholder.min.js"></script>
 <script src="oneui/js/core/js.cookie.min.js"></script>
@@ -36,79 +35,6 @@
 </script>
 <script>
     $(function(){
-        // Style Guide Navigation
-        var enterHandler = function( that, direction ) {
-            var id = that.id,
-                $item = $('.nav-sub-header > li > a').filter(function () {
-                    return this.href.indexOf('#' + that.id) > -1;
-                });
-
-            $('.nav-sub-header .active').removeClass('active');
-            $item.parent().addClass('active');
-        };
-        var leaveHandler = function ( that, direction ) {
-            var $item = $('.nav-sub-header > li > a').filter(function () {
-                return this.href.indexOf('#' + that.id) > -1;
-            });
-
-            $item.parent().removeClass('active');
-        };
-        var anchorClickHandler = function(anchorId) {
-            var offsetTop = $(anchorId).offset().top - $('.header-navbar').height() - 110,
-                $nav = $('.nav-sub-header'),
-                $elem = $nav.find('a[href="' + anchorId + '"]').closest('.dropdown');
-
-            $('body, html').animate({
-                scrollTop: offsetTop
-            }, 450, function(){
-                $nav.find('.active').removeClass('active');
-                $elem.addClass('active');
-            });
-        };
-        var $menuLinks = $('.nav-sub-header > li > a').filter(function () {
-            return /#\w+/.test(this.href);
-        });
-        $menuLinks.each(function (index) {
-            var href = this.href,
-                anchorId = href.substring(href.indexOf('#'), href.length),
-                $block = $(anchorId);
-
-            if ( $block.length ) {
-                $block.waypoint(function (direction) {
-                    if ( direction == 'down' ) {
-                        enterHandler( this.element, direction );
-                    }
-
-                }, { offset: 0 });
-
-                $block.waypoint(function (direction) {
-                    if ( direction == 'down' ) {
-                        leaveHandler( this.element, direction );
-
-                    }else {
-                        enterHandler( this.element, direction );
-                    }
-
-                }, { offset: -$block.outerHeight() });
-
-                $block.waypoint(function (direction) {
-                    if ( direction == 'up' ) {
-                        leaveHandler( this.element, direction );
-                    }
-
-                }, { offset: '100%' });
-            }
-        });
-        $('body').on( 'click', '.nav-sub-header a[href*="#"]', function (event) {
-            event.preventDefault();
-            var href = $(this).attr('href'),
-                anchorId = href.substring(href.indexOf('#'), href.length);
-
-            if ( $(anchorId).length ) {
-                anchorClickHandler(anchorId);
-            }
-        });
-
         // Form Validation
         $('.js-validation').validate({
             ignore: [],
