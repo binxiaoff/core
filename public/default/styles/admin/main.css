@@ -423,3 +423,6 @@ span[class^="vigilance-status-"], span[class*=" vigilance-status-"] {
 .ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus, .ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight {  background-color: #cf89b2; border-color: #cf89b2; color: #fff; }
 .ui-datepicker-trigger { display: none; }
 
+.e-change-warning {  display: inline-block;  width: 14px;  height: 14px;  background: #6d1f4f;  position: relative;  top: -1px;  margin-left: 1px; text-align: center; }
+.e-change-warning:before { content: '↑↓'; display: block; color: #fff; font-size: 10px; }
+
