@@ -1162,6 +1162,7 @@ class LenderSubscriptionController extends Controller
                 break;
         }
         $fundsOriginList = explode(';', $settings->value);
+
         return array_combine(range(1, count($fundsOriginList)), array_values($fundsOriginList));
     }
 
