@@ -549,11 +549,11 @@ class preteursController extends bootstrap
                             $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND, 'Doublon avec client ID : ' . $aExistingClient['id_client']);
                             header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->clients->id_client);
                             die;
-                        } elseif (1 == $this->clients->origine && 0 == $this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')')) {
+                        } elseif ($welcomeOfferManager->clientIsEligibleToWelcomeOffer($this->clients)) {
                             $response = $welcomeOfferManager->createWelcomeOffer($this->clients);
                             $logger->info('Client ID: ' . $this->clients->id_client . ' Welcome offer creation result: ' . json_encode($response), ['class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $this->clients->id_client ]);
                         } else {
-                            $logger->info('Client ID: ' . $this->clients->id_client . ' Welcome offer not created. The client has been validated by the past or the origine != 1.', [ 'class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $this->clients->id_client]);
+                            $logger->info('Client ID: ' . $this->clients->id_client . ' Welcome offer not created. The client has been validated by the past or has not the right source', [ 'class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $this->clients->id_client]);
                         }
 
                         $this->validateBankAccount($_POST['id_bank_account']);
