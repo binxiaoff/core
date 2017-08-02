@@ -82,7 +82,8 @@ class MailerManager
         $schema,
         $frontHost,
         $adminHost,
-        TranslatorInterface $translator
+        TranslatorInterface $translator,
+        LoggerInterface $logger
     )
     {
         $this->container              = $container;
@@ -101,9 +102,10 @@ class MailerManager
 
         $this->locale = $defaultLocale;
 
-        $this->sSUrl = $assetsPackages->getUrl('');
-        $this->sFUrl = $schema . '://' . $frontHost;
-        $this->sAUrl = $schema . '://' . $adminHost;
+        $this->sSUrl   = $assetsPackages->getUrl('');
+        $this->sFUrl   = $schema . '://' . $frontHost;
+        $this->sAUrl   = $schema . '://' . $adminHost;
+        $this->oLogger = $logger;
     }
 
     /**
@@ -144,8 +146,15 @@ class MailerManager
 
             /** @var TemplateMessage $message */
             $message = $this->messageProvider->newMessage($mailTemplate, $varMail);
-            $message->setTo($bid->getIdLenderAccount()->getIdClient()->getEmail());
-            $this->mailer->send($message);
+            try {
+                $message->setTo($bid->getIdLenderAccount()->getIdClient()->getEmail());
+                $this->mailer->send($message);
+            } catch (\Exception $exception){
+                $this->oLogger->warning(
+                    'Could not send email: ' . $mailTemplate . ' - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $bid->getIdLenderAccount()->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
         }
     }
 
@@ -161,7 +170,7 @@ class MailerManager
             $wallet = $bid->getIdLenderAccount();
             if (Clients::STATUS_ONLINE === $wallet->getIdClient()->getStatus()) {
                 $fBalance = $wallet->getAvailableBalance();
-                $varMail = [
+                $varMail  = [
                     'surl'                  => $this->sSUrl,
                     'url'                   => $this->sFUrl,
                     'prenom_p'              => $wallet->getIdClient()->getPrenom(),
@@ -180,8 +189,15 @@ class MailerManager
 
                 /** @var TemplateMessage $message */
                 $message = $this->messageProvider->newMessage('preteur-dossier-funding-ko', $varMail);
-                $message->setTo($wallet->getIdClient()->getEmail());
-                $this->mailer->send($message);
+                try {
+                    $message->setTo($wallet->getIdClient()->getEmail());
+                    $this->mailer->send($message);
+                } catch (\Exception $exception){
+                    $this->oLogger->warning(
+                        'Could not send email: preteur-dossier-funding-ko - Exception: ' . $exception->getMessage(),
+                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $wallet->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    );
+                }
             }
         }
     }
@@ -231,8 +247,15 @@ class MailerManager
 
             /** @var TemplateMessage $message */
             $message = $this->messageProvider->newMessage('emprunteur-dossier-funde', $keywords);
-            $message->setTo($oBorrower->email);
-            $this->mailer->send($message);
+            try {
+                $message->setTo($oBorrower->email);
+                $this->mailer->send($message);
+            } catch (\Exception $exception){
+                $this->oLogger->warning(
+                    'Could not send email: emprunteur-dossier-funde - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $oBorrower->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
         }
     }
 
@@ -273,10 +296,18 @@ class MailerManager
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('emprunteur-dossier-funde-et-termine', $varMail);
-        $message->setTo($borrower->email);
-        $this->mailer->send($message);
+        try {
+            $message->setTo($borrower->email);
+            $isSent = $this->mailer->send($message);
+        } catch (\Exception $exception){
+            $this->oLogger->warning(
+                'Could not send email: emprunteur-dossier-funde-et-termine - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $borrower->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+            $isSent = 0;
+        }
 
-        if ($this->oLogger instanceof LoggerInterface) {
+        if ($isSent > 0) {
             $this->oLogger->info(
                 'Email emprunteur-dossier-funde-et-termine sent (project ' . $project->id_project . ')',
                 array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project)
@@ -317,8 +348,15 @@ class MailerManager
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('notification-projet-funde-a-100', $keywords, false);
-        $message->setTo(explode(';', str_replace(' ', '', $recipient)));
-        $this->mailer->send($message);
+        try {
+            $message->setTo(explode(';', str_replace(' ', '', $recipient)));
+            $this->mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->oLogger->warning(
+                'Could not send email : notification-projet-funde-a-100 - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'email address' => explode(';', str_replace(' ', '', $recipient)), 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     public function sendBidAccepted(\projects $project)
@@ -366,7 +404,7 @@ class MailerManager
 
                 if ($wallet->getIdClient()->isNaturalPerson()) {
                     $contract->get(\underlying_contract::CONTRACT_IFP, 'label');
-                    $loanIFP               = $loanData->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $wallet->getId() . ' AND id_type_contract = ' .$contract->id_contract);
+                    $loanIFP               = $loanData->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $wallet->getId() . ' AND id_type_contract = ' . $contract->id_contract);
                     $numberOfBidsInLoanIFP = $acceptedBid->counter('id_loan = ' . $loanIFP[0]['id_loan']);
 
                     if ($numberOfBidsInLoanIFP > 1) {
@@ -424,10 +462,18 @@ class MailerManager
 
                 /** @var TemplateMessage $message */
                 $message = $this->messageProvider->newMessage('preteur-bid-ok', $varMail);
-                $message->setTo($wallet->getIdClient()->getEmail());
-                $this->mailer->send($message);
+                try {
+                    $message->setTo($wallet->getIdClient()->getEmail());
+                    $isSent = $this->mailer->send($message);
+                } catch (\Exception $exception){
+                    $this->oLogger->warning(
+                        'Could not send email: preteur-bid-ok - Exception: ' . $exception->getMessage(),
+                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $wallet->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    );
+                    $isSent = 0;
+                }
 
-                if ($this->oLogger instanceof LoggerInterface) {
+                if ($isSent > 0 && $this->oLogger instanceof LoggerInterface) {
                     $this->oLogger->info(
                         'Email preteur-bid-ok sent for client ' . $wallet->getIdClient()->getIdClient() . ' (project ' . $project->id_project . ')',
                         ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]
@@ -502,8 +548,15 @@ class MailerManager
 
             /** @var TemplateMessage $message */
             $message = $this->messageProvider->newMessage($mailTemplate, $varMail);
-            $message->setTo($bid->getIdLenderAccount()->getIdClient()->getEmail());
-            $this->mailer->send($message);
+            try {
+                $message->setTo($bid->getIdLenderAccount()->getIdClient()->getEmail());
+                $this->mailer->send($message);
+            } catch (\Exception $exception){
+                $this->oLogger->warning(
+                    'Could not send email: ' . $mailTemplate . ' - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $bid->getIdLenderAccount()->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
         }
     }
 
@@ -529,10 +582,18 @@ class MailerManager
 
             /** @var TemplateMessage $message */
             $message = $this->messageProvider->newMessage('emprunteur-dossier-funding-ko', $varMail);
-            $message->setTo($oClient->email);
-            $this->mailer->send($message);
+            try {
+                $message->setTo($oClient->email);
+                $isSent = $this->mailer->send($message);
+            } catch (\Exception $exception){
+                $this->oLogger->warning(
+                    'Could not send email: emprunteur-dossier-funding-ko - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $oClient->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+                $isSent = 0;
+            }
 
-            if ($this->oLogger instanceof LoggerInterface) {
+            if ($isSent > 0) {
                 $this->oLogger->info(
                     'Email emprunteur-dossier-funding-ko sent (project ' . $oProject->id_project . ')',
                     ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project]
@@ -580,8 +641,15 @@ class MailerManager
         ];
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage($this->oMailTemplate->type, $varMail, false);
-        $message->setTo(explode(';', str_replace(' ', '', $sRecipient)));
-        $this->mailer->send($message);
+        try {
+            $message->setTo(explode(';', str_replace(' ', '', $sRecipient)));
+            $this->mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->oLogger->warning(
+                'Could not send email : ' . $this->oMailTemplate->type . ' - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'email address' => explode(';', str_replace(' ', '', $sRecipient)), 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     public function sendFirstAutoBidActivation(\notifications $notification)
@@ -602,8 +670,15 @@ class MailerManager
 
             /** @var TemplateMessage $message */
             $message = $this->messageProvider->newMessage('preteur-autobid-activation', $varMail);
-            $message->setTo($wallet->getIdClient()->getEmail());
-            $this->mailer->send($message);
+            try {
+                $message->setTo($wallet->getIdClient()->getEmail());
+                $this->mailer->send($message);
+            } catch (\Exception $exception){
+                $this->oLogger->warning(
+                    'Could not send email: preteur-autobid-activation - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $wallet->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
         }
     }
 
@@ -702,24 +777,31 @@ class MailerManager
             $fundingTime = $publicationDate->diff($endDate);
             $fundingDay  = $fundingTime->d + ($fundingTime->h > 0 ? 1 : 0);
 
-        $mailVariables = [
-            'surl'           => $this->sSUrl,
-            'url'            => $this->sFUrl,
-            'nom_entreprise' => $company->getName(),
-            'projet_p'       => $this->sFUrl . '/projects/detail/' . $project->getSlug(),
-            'montant'        => $this->oFicelle->formatNumber((float)$project->getAmount(), 0),
-            'heure_debut'    => $publicationDate->format('H\hi'),
-            'duree'          => $fundingDay . ($fundingDay == 1 ? ' jour' : ' jours'),
-            'prenom_e'       => $firstName,
-            'lien_fb'        => $this->getFacebookLink(),
-            'lien_tw'        => $this->getTwitterLink(),
-            'annee'          => date('Y')
-        ];
+            $mailVariables = [
+                'surl'           => $this->sSUrl,
+                'url'            => $this->sFUrl,
+                'nom_entreprise' => $company->getName(),
+                'projet_p'       => $this->sFUrl . '/projects/detail/' . $project->getSlug(),
+                'montant'        => $this->oFicelle->formatNumber((float) $project->getAmount(), 0),
+                'heure_debut'    => $publicationDate->format('H\hi'),
+                'duree'          => $fundingDay . ($fundingDay == 1 ? ' jour' : ' jours'),
+                'prenom_e'       => $firstName,
+                'lien_fb'        => $this->getFacebookLink(),
+                'lien_tw'        => $this->getTwitterLink(),
+                'annee'          => date('Y')
+            ];
 
             /** @var TemplateMessage $message */
             $message = $this->messageProvider->newMessage('annonce-mise-en-ligne-emprunteur', $mailVariables);
-            $message->setTo($mailClient);
-            $this->mailer->send($message);
+            try {
+                $message->setTo($mailClient);
+                $this->mailer->send($message);
+            } catch (\Exception $exception){
+                $this->oLogger->warning(
+                    'Could not send email: annonce-mise-en-ligne-emprunteur - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $company->getIdClientOwner(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
         }
     }
 
@@ -863,8 +945,15 @@ class MailerManager
 
                 /** @var TemplateMessage $message */
                 $message = $this->messageProvider->newMessage('preteur-contrat', $varMail);
-                $message->setTo($loan->getIdLender()->getIdClient()->getEmail());
-                $this->mailer->send($message);
+                try {
+                    $message->setTo($loan->getIdLender()->getIdClient()->getEmail());
+                    $this->mailer->send($message);
+                } catch (\Exception $exception){
+                    $this->oLogger->warning(
+                        'Could not send email: preteur-contrat - Exception: ' . $exception->getMessage(),
+                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $loan->getIdLender()->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    );
+                }
             }
         }
     }
@@ -895,9 +984,15 @@ class MailerManager
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('facture-emprunteur', $varMail);
-        $message->setTo($project->getIdCompany()->getEmailFacture());
-
-        $this->mailer->send($message);
+        try {
+            $message->setTo($project->getIdCompany()->getEmailFacture());
+            $this->mailer->send($message);
+        } catch (\Exception $exception){
+            $this->oLogger->warning(
+                'Could not send email: facture-emprunteur - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     /**
@@ -1014,9 +1109,15 @@ class MailerManager
 
                         /** @var TemplateMessage $message */
                         $message = $this->messageProvider->newMessage($sMail, $aReplacements);
-                        $message->setTo($oCustomer->email);
-
-                        $this->mailer->send($message);
+                        try {
+                            $message->setTo($oCustomer->email);
+                            $this->mailer->send($message);
+                        } catch (\Exception $exception){
+                            $this->oLogger->warning(
+                                'Could not send email: ' . $sMail . ' - Exception: ' . $exception->getMessage(),
+                                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $iCustomerId, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                            );
+                        }
                     }
                 } catch (\Exception $oException) {
                     if ($this->oLogger instanceof LoggerInterface) {
@@ -1150,9 +1251,15 @@ class MailerManager
 
                     /** @var TemplateMessage $message */
                     $message = $this->messageProvider->newMessage($sMail, $aReplacements);
-                    $message->setTo($oCustomer->email);
-
-                    $this->mailer->send($message);
+                    try {
+                        $message->setTo($oCustomer->email);
+                        $this->mailer->send($message);
+                    } catch (\Exception $exception){
+                        $this->oLogger->warning(
+                            'Could not send email: ' . $sMail . ' - Exception: ' . $exception->getMessage(),
+                            ['id_mail_template' => $message->getTemplateId(), 'id_client' => $oCustomer->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                        );
+                    }
                 } catch (\Exception $oException) {
                     if ($this->oLogger instanceof LoggerInterface) {
                         $this->oLogger->error(
@@ -1284,9 +1391,15 @@ class MailerManager
 
                     /** @var TemplateMessage $message */
                     $message = $this->messageProvider->newMessage($sMail, $aReplacements);
-                    $message->setTo($oCustomer->email);
-
-                    $this->mailer->send($message);
+                    try {
+                        $message->setTo($oCustomer->email);
+                        $this->mailer->send($message);
+                    } catch (\Exception $exception){
+                        $this->oLogger->warning(
+                            'Could not send email: ' . $sMail . ' - Exception: ' . $exception->getMessage(),
+                            ['id_mail_template' => $message->getTemplateId(), 'id_client' => $oCustomer->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                        );
+                    }
                 } catch (\Exception $oException) {
                     if ($this->oLogger instanceof LoggerInterface) {
                         $this->oLogger->error(
@@ -1381,7 +1494,7 @@ class MailerManager
                         $oLoan->get($aMailNotification['id_loan']);
 
                         $iSumAcceptedLoans += $oLoan->amount / 100;
-                        $sContractType = '';
+                        $sContractType     = '';
                         if (isset($contractLabel[$oLoan->id_type_contract])) {
                             $sContractType = $contractLabel[$oLoan->id_type_contract];
                         } else {
@@ -1451,9 +1564,15 @@ class MailerManager
 
                     /** @var TemplateMessage $message */
                     $message = $this->messageProvider->newMessage($sMail, $aReplacements);
-                    $message->setTo($wallet->getIdClient()->getEmail());
-
-                    $this->mailer->send($message);
+                    try {
+                        $message->setTo($wallet->getIdClient()->getEmail());
+                        $this->mailer->send($message);
+                    } catch (\Exception $exception){
+                        $this->oLogger->warning(
+                            'Could not send email: ' . $sMail . ' - Exception: ' . $exception->getMessage(),
+                            ['id_mail_template' => $message->getTemplateId(), 'id_client' => $wallet->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                        );
+                    }
                 } catch (\Exception $oException) {
                     if ($this->oLogger instanceof LoggerInterface) {
                         $this->oLogger->error(
@@ -1523,7 +1642,7 @@ class MailerManager
             }
 
             if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->debug('Customer IDs in mail notifications: ' . json_encode(array_keys($aCustomerMailNotifications)) , array('class' => __CLASS__, 'function' => __FUNCTION__));
+                $this->oLogger->debug('Customer IDs in mail notifications: ' . json_encode(array_keys($aCustomerMailNotifications)), array('class' => __CLASS__, 'function' => __FUNCTION__));
             }
 
             foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
@@ -1608,10 +1727,10 @@ class MailerManager
                             $fRepaymentAmount = bcsub(bcadd($fRepaymentCapital, $fRepaymentInterestsTaxIncluded, 2), $fRepaymentTax, 2);
                         }
 
-                        $fTotalAmount += $fRepaymentAmount;
-                        $fTotalCapital += $fRepaymentCapital;
+                        $fTotalAmount               += $fRepaymentAmount;
+                        $fTotalCapital              += $fRepaymentCapital;
                         $fTotalInterestsTaxIncluded += $fRepaymentInterestsTaxIncluded;
-                        $fTotalInterestsTaxFree += $fRepaymentInterestsTaxIncluded - $fRepaymentTax;
+                        $fTotalInterestsTaxFree     += $fRepaymentInterestsTaxIncluded - $fRepaymentTax;
 
                         $sRepaymentsListHTML .= '
                             <tr style="color:#b20066;">
@@ -1673,9 +1792,15 @@ class MailerManager
 
                     /** @var TemplateMessage $message */
                     $message = $this->messageProvider->newMessage($sMail, $aReplacements);
-                    $message->setTo($wallet->getIdClient()->getEmail());
-
-                    $this->mailer->send($message);
+                    try {
+                        $message->setTo($wallet->getIdClient()->getEmail());
+                        $this->mailer->send($message);
+                    } catch (\Exception $exception){
+                        $this->oLogger->warning(
+                            'Could not send email: ' . $sMail . ' - Exception: ' . $exception->getMessage(),
+                            ['id_mail_template' => $message->getTemplateId(), 'id_client' => $wallet->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                        );
+                    }
                 } catch (\Exception $oException) {
                     if ($this->oLogger instanceof LoggerInterface) {
                         $this->oLogger->error(
@@ -1709,8 +1834,15 @@ class MailerManager
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('user-nouveau-mot-de-passe', $replacements);
-        $message->setTo(trim($user->email));
-        $this->mailer->send($message);
+        try {
+            $message->setTo(trim($user->email));
+            $this->mailer->send($message);
+        } catch (\Exception $exception){
+            $this->oLogger->warning(
+                'Could not send email: user-nouveau-mot-de-passe - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_user' => $user->id_user, 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     /**
@@ -1729,16 +1861,23 @@ class MailerManager
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('admin-nouveau-mot-de-passe', $replacements);
-        $message->setTo(trim($user->email));
+        try {
+            $message->setTo(trim($user->email));
 
-        /** @var \settings $settings */
-        $settings = $this->entityManagerSimulator->getRepository('settings');
-        $settings->get('alias_tracking_log', 'type');
+            /** @var \settings $settings */
+            $settings = $this->entityManagerSimulator->getRepository('settings');
+            $settings->get('alias_tracking_log', 'type');
 
-        if (false === empty($settings->value)) {
-            $message->setBcc($settings->value);
+            if (false === empty($settings->value)) {
+                $message->setBcc($settings->value);
+            }
+            $this->mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->oLogger->warning(
+                'Could not send email : admin-nouveau-mot-de-passe - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'email address' => trim($user->email), 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
         }
-        $this->mailer->send($message);
     }
 
     /**
@@ -1802,8 +1941,15 @@ class MailerManager
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('emprunteur-dernier-remboursement', $varMail);
-        $message->setTo($client->getEmail());
-        $this->mailer->send($message);
+        try {
+            $message->setTo($client->getEmail());
+            $this->mailer->send($message);
+        } catch (\Exception $exception){
+            $this->oLogger->warning(
+                'Could not send email: emprunteur-dernier-remboursement - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     /**
@@ -1823,8 +1969,15 @@ class MailerManager
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage($mailType, $varMail);
-        $message->setTo($client->email);
-        $this->mailer->send($message);
+        try {
+            $message->setTo($client->email);
+            $this->mailer->send($message);
+        } catch (\Exception $exception){
+            $this->oLogger->warning(
+                'Could not send email: ' . $mailType . ' - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     /**
@@ -1848,13 +2001,20 @@ class MailerManager
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('offre-de-bienvenue', $varMail);
-        $message->setTo($client->email);
-        $this->mailer->send($message);
+        try {
+            $message->setTo($client->email);
+            $this->mailer->send($message);
+        } catch (\Exception $exception){
+            $this->oLogger->warning(
+                'Could not send email: offre-de-bienvenue - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     /**
      * @param ProjectsPouvoir $proxy
-     * @param ClientsMandats $mandate
+     * @param ClientsMandats  $mandate
      */
     public function sendProxyAndMandateSigned(ProjectsPouvoir $proxy, ClientsMandats $mandate)
     {
@@ -1875,8 +2035,15 @@ class MailerManager
 
             /** @var TemplateMessage $message */
             $message = $this->messageProvider->newMessage('notification-pouvoir-mandat-signe', $template, false);
-            $message->setTo(explode(';', $destinataire));
-            $this->mailer->send($message);
+            try {
+                $message->setTo(explode(';', $destinataire));
+                $this->mailer->send($message);
+            } catch (\Exception $exception) {
+                $this->oLogger->warning(
+                    'Could not send email : notification-pouvoir-mandat-signe - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'email address' => explode(';', $destinataire), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
         }
     }
 
@@ -1898,8 +2065,15 @@ class MailerManager
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('ouverture-espace-partenaire', $variables);
-        $message->setTo($client->getEmail());
-        $this->mailer->send($message);
+        try {
+            $message->setTo($client->getEmail());
+            $this->mailer->send($message);
+        } catch (\Exception $exception){
+            $this->oLogger->warning(
+                'Could not send email: ouverture-espace-partenaire - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     /**
@@ -1922,8 +2096,15 @@ class MailerManager
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('signature-universign-de-cgv', $keywords);
-        $message->setTo($client->getEmail());
-        $this->mailer->send($message);
+        try {
+            $message->setTo($client->getEmail());
+            $this->mailer->send($message);
+        } catch (\Exception $exception){
+            $this->oLogger->warning(
+                'Could not send email: signature-universign-de-cgv - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     /**
@@ -1947,7 +2128,14 @@ class MailerManager
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage($email, $keywords);
-        $message->setTo($client->email);
-        $this->mailer->send($message);
+        try {
+            $message->setTo($client->email);
+            $this->mailer->send($message);
+        } catch (\Exception $exception){
+            $this->oLogger->warning(
+                'Could not send email: ' . $email . ' - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 }

@@ -1176,10 +1176,16 @@ class projects extends projects_crud
             INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status WHERE ps.status IN (:problematic_status) AND psh.id_project = p.id_project)
           ) AS judgement_date,
           (SELECT MIN(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project AND ps.status = " . ProjectsStatus::RECOUVREMENT . ") AS recovery_date,
-          (SELECT IFNULL(SUM(o.amount),0)
-           FROM operation o
-           WHERE id_sub_type in (SELECT id FROM operation_sub_type WHERE label IN ('" . OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION . "', '" . OperationSubType::GROSS_INTEREST_REPAYMENT_DEBT_COLLECTION . "'))
-           AND id_project = p.id_project
+          (
+            SELECT IFNULL(SUM(o.amount),0)
+            FROM operation o
+            WHERE id_sub_type in (SELECT id FROM operation_sub_type WHERE label IN ('" . OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION . "', '" . OperationSubType::GROSS_INTEREST_REPAYMENT_DEBT_COLLECTION . "'))
+            AND id_project = p.id_project
+          ) - (
+            SELECT IFNULL(SUM(o.amount),0)
+            FROM operation o
+            WHERE id_sub_type in (SELECT id FROM operation_sub_type WHERE label IN ('" . OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION_REGULARIZATION . "', '" . OperationSubType::GROSS_INTEREST_REPAYMENT_DEBT_COLLECTION_REGULARIZATION . "'))
+                  AND id_project = p.id_project
           ) AS debt_collection_repayment,
           (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l INNER JOIN wallet w ON w.id = l.id_lender
             INNER JOIN clients c ON c.id_client = w.id_client  WHERE l.id_project = p.id_project AND c.type IN (:client_type_person)) AS contributor_person_number,

@@ -16,6 +16,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 
 class preteursController extends bootstrap
 {
@@ -1197,9 +1198,16 @@ class preteursController extends bootstrap
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-fermeture-compte-preteur', $aVariablesMail);
-        $message->setTo($oClient->email);
-        $mailer = $this->get('mailer');
-        $mailer->send($message);
+        try {
+            $message->setTo($oClient->email);
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->get('logger')->warning(
+                'Could not send email: confirmation-fermeture-compte-preteur - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $oClient->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     private function sendCompletenessRequest()
@@ -1230,9 +1238,16 @@ class preteursController extends bootstrap
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('completude', $varMail);
-        $message->setTo($this->clients->email);
-        $mailer = $this->get('mailer');
-        $mailer->send($message);
+        try {
+            $message->setTo($this->clients->email);
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->get('logger')->warning(
+                'Could not send email: completude - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $this->clients->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     /**
@@ -1240,34 +1255,38 @@ class preteursController extends bootstrap
      */
     private function getMessageAboutClientStatus()
     {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
-        $clientStatusManager = $this->get('unilend.service.client_status_manager');
-        $currentStatus       = $clientStatusManager->getLastClientStatus($this->clients);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientStatusRepository $clientStatusRepository */
+        $clientStatusRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
+        /** @var ClientsStatus $currentStatus */
+        $currentStatus       = $clientStatusRepository->getLastClientStatus($this->clients->id_client);
         $creationTime        = strtotime($this->clients->added);
         $clientStatusMessage = '';
 
-        switch ($currentStatus) {
-            case \clients_status::TO_BE_CHECKED :
+        if (null === $currentStatus) {
+            return $clientStatusMessage;
+        }
+        switch ($currentStatus->getStatus()) {
+            case ClientsStatus::TO_BE_CHECKED :
                 $clientStatusMessage = '<div class="attention">Attention : compte non validé - créé le '. date('d/m/Y', $creationTime) . '</div>';
                 break;
-            case \clients_status::COMPLETENESS :
-            case \clients_status::COMPLETENESS_REMINDER:
-            case \clients_status::COMPLETENESS_REPLY:
+            case ClientsStatus::COMPLETENESS :
+            case ClientsStatus::COMPLETENESS_REMINDER:
+            case ClientsStatus::COMPLETENESS_REPLY:
                 $clientStatusMessage = '<div class="attention" style="background-color:#F9B137">Attention : compte en complétude - créé le ' . date('d/m/Y', $creationTime) . ' </div>';
                 break;
-            case \clients_status::MODIFICATION:
+            case ClientsStatus::MODIFICATION:
                 $clientStatusMessage = '<div class="attention" style="background-color:#F2F258">Attention : compte en modification - créé le ' . date('d/m/Y', $creationTime) . '</div>';
                 break;
-            case \clients_status::CLOSED_LENDER_REQUEST:
+            case ClientsStatus::CLOSED_LENDER_REQUEST:
                 $clientStatusMessage = '<div class="attention">Attention : compte clôturé (mis hors ligne) à la demande du prêteur</div>';
                 break;
-            case \clients_status::CLOSED_BY_UNILEND:
+            case ClientsStatus::CLOSED_BY_UNILEND:
                 $clientStatusMessage = '<div class="attention">Attention : compte clôturé (mis hors ligne) par Unilend</div>';
                 break;
-            case \clients_status::VALIDATED:
+            case ClientsStatus::VALIDATED:
                 $clientStatusMessage = '';
                 break;
-            case \clients_status::CLOSED_DEFINITELY:
+            case ClientsStatus::CLOSED_DEFINITELY:
                 $clientStatusMessage = '<div class="attention">Attention : compte définitivement fermé </div>';
                 break;
             default:
@@ -1276,7 +1295,7 @@ class preteursController extends bootstrap
                 } else {
                     /** @var \Psr\Log\LoggerInterface $logger */
                     $logger = $this->get('logger');
-                    $logger->warning('Unknown client status "' . $currentStatus . '"', ['client' => $this->clients->id_client]);
+                    $logger->warning('Unknown client status "' . $currentStatus->getStatus() . '"', ['client' => $this->clients->id_client]);
                 }
                 break;
         }

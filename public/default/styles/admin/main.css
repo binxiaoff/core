@@ -423,6 +423,14 @@ span[class^="vigilance-status-"], span[class*=" vigilance-status-"] {
 .ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus, .ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight {  background-color: #cf89b2; border-color: #cf89b2; color: #fff; }
 .ui-datepicker-trigger { display: none; }
 
+.memo-editor { display: none; margin: 20px 0;}
+.memo-editor .existing { margin-bottom: 10px;}
+.memo-editor textarea { visibility: hidden; }
+.memo-editor .controls { padding: 10px 0; }
+.memo-editor .controls label, .memo-editor .controls .btn-default, .memo-editor .controls .btn-primary { margin-left: 10px; }
+.memo-editor .controls label input { margin-right: 5px; }
+.memo-editor .controls .btn-default, .memo-editor .controls .btn-primary { padding: 4px 12px; }
+
 .e-change-warning {  display: inline-block;  width: 14px;  height: 14px;  background: #6d1f4f;  position: relative;  top: -1px;  margin-left: 1px; text-align: center; }
 .e-change-warning:before { content: '↑↓'; display: block; color: #fff; font-size: 10px; }
 

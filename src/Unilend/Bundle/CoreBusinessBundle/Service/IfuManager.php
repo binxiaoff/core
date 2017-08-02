@@ -16,7 +16,7 @@ class IfuManager
     private $cachePool;
 
     /**
-     * @param EntityManager $entityMananger
+     * @param EntityManager $entityManager
      * @param CacheItemPoolInterface $cachePool
      */
     public function __construct(EntityManager $entityManager, CacheItemPoolInterface $cachePool)

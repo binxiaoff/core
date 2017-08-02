@@ -14,7 +14,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class LenderOperationsManager
@@ -88,9 +87,9 @@ class LenderOperationsManager
     const FILTER_OFFERS             = 5;
     const FILTER_REPAYMENT          = 6;
 
-    /** @var  EntityManager */
+    /** @var EntityManager */
     private $entityManager;
-    /** @var  TranslatorInterface */
+    /** @var TranslatorInterface */
     private $translator;
 
     /**
@@ -126,6 +125,7 @@ class LenderOperationsManager
         $operationRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $walletHistory                  = $walletBalanceHistoryRepository->getLenderOperationHistory($wallet, $start, $end);
         $lenderOperations               = [];
+        $previousHistoryLineIndex       = null;
 
         foreach ($walletHistory as $index => $historyLine) {
             if (in_array(self::OP_REPAYMENT, $operations) && false === empty($historyLine['id_repayment_schedule'])) {
@@ -150,18 +150,17 @@ class LenderOperationsManager
             if (OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION === $historyLine['sub_type_label']) {
                 $historyLine['label'] = self::OP_RECOVERY_REPAYMENT;
             }
+
             if (OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION_REGULARIZATION === $historyLine['sub_type_label']) {
                 $historyLine['label'] = self::OP_RECOVERY_REPAYMENT_REGULARIZATION;
             }
 
             if (self::OP_REFUSED_BID === $historyLine['label']) {
-                if (empty($historyLine['amount']) && empty($historyLine['id_bid'] && empty($historyLine['id_loan']))) {
-                    /** @var WalletBalanceHistory $walletBalanceHistory */
+                if (empty($historyLine['amount']) && empty($historyLine['id_bid']) && empty($historyLine['id_loan'])) {
                     $walletBalanceHistory  = $walletBalanceHistoryRepository->getPreviousLineForWallet($wallet, $historyLine['id']);
                     $amount                = bcsub($walletBalanceHistory->getAvailableBalance(), $historyLine['amount'], 2);
                     $historyLine['amount'] = $amount;
                 }
-                $historyLine['amount'] = abs($historyLine['amount']);
 
                 if (false === empty($historyLine['id_loan'])) {
                     $historyLine['label']  = self::OP_REFUSED_LOAN;
@@ -169,7 +168,18 @@ class LenderOperationsManager
                     $historyLine['amount'] = bcdiv($loan->getAmount(), 100, 2);
                 }
             }
-            $lenderOperations[] = $historyLine;
+
+            // When a bid is partially rejected, as long as we update bid amount, we loose its intial amount. This is a (dirty) workaround to find out initial amount
+            if (
+                $previousHistoryLineIndex !== null
+                && in_array($lenderOperations[$previousHistoryLineIndex]['label'], [self::OP_BID, self::OP_AUTOBID, self::OP_REFUSED_BID, self::OP_REFUSED_AUTOBID])
+                && $lenderOperations[$previousHistoryLineIndex]['available_balance'] - $historyLine['available_balance'] != $lenderOperations[$previousHistoryLineIndex]['amount']
+            ) {
+                $lenderOperations[$previousHistoryLineIndex]['amount'] = $walletHistory[$previousHistoryLineIndex]['available_balance'] - $historyLine['available_balance'];
+            }
+
+            $lenderOperations[$index] = $historyLine;
+            $previousHistoryLineIndex = $index;
         }
 
         if (null !== $idProject || null !== $operations) {

@@ -859,4 +859,39 @@ class statsController extends bootstrap
 
         $this->exportCSV($extraction, 'extraction_b_lend' . date('Ymd'), $header);
     }
+
+    public function _requete_crs_cac()
+    {
+        $this->autoFireView = false;
+        $this->hideDecoration();
+
+        $year     = date('Y') - 1;
+        $fileName = 'preteurs_crs_dac' . $year . '.xlsx';
+        $filePath = $this->getParameter('path.protected') . '/' . $fileName;
+
+        if (file_exists($filePath)) {
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/force-download');
+            header("Content-Disposition: attachment; filename=\"" . basename($fileName) . "\";");
+            header('Content-Transfer-Encoding: binary');
+            header('Expires: 0');
+            header('Cache-Control: must-revalidate');
+            header('Pragma: public');
+            header('Content-Length: ' . filesize($filePath));
+            ob_clean();
+            flush();
+            readfile($filePath);
+            exit;
+        } else {
+            echo "Le fichier n'a pas été généré. ";
+        }
+    }
+
+    public function _logs_webservices()
+    {
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WsMonitoringManager $wsMonitoringManager */
+        $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
+        $data                = $wsMonitoringManager->getDataForChart();
+        $this->chartData     = json_encode($data);
+    }
 }

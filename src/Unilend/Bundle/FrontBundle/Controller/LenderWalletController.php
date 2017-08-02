@@ -13,16 +13,15 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
 use Symfony\Component\Security\Csrf\CsrfToken;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType;
@@ -160,11 +159,9 @@ class LenderWalletController extends Controller
         /** @var LoggerInterface $logger */
         $logger = $this->get('logger');
         /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
-        /** @var ClientStatusManager $clientStatusManager */
-        $clientStatusManager = $this->get('unilend.service.client_status_manager');
-        $entityManager       = $this->get('doctrine.orm.entity_manager');
-        $formManager         = $this->get('unilend.frontbundle.service.form_manager');
+        $translator    = $this->get('translator');
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $formManager   = $this->get('unilend.frontbundle.service.form_manager');
 
         $client = $this->getClient();
         /** @var BankAccount $bankAccount */
@@ -173,11 +170,13 @@ class LenderWalletController extends Controller
         if ($client) {
             $serialize = serialize(['id_client' => $client->getIdClient(), 'montant' => $post['amount'], 'mdp' => md5($post['password'])]);
             $formManager->saveFormSubmission($client, ClientsHistoryActions::LENDER_WITHDRAWAL, $serialize, $request->getClientIp());
+            $clientStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
+            /** @var ClientsStatus $lastStatus */
+            $lastStatus = $clientStatusRepository->getLastClientStatus($client);
 
-            if ($clientStatusManager->getLastClientStatus($client) < \clients_status::VALIDATED) {
+            if (null !== $lastStatus && $lastStatus->getStatus() < ClientsStatus::VALIDATED) {
                 $this->redirectToRoute('lender_wallet_withdrawal');
             }
-
             $amount = $post['amount'];
 
             /** @var UserPasswordEncoder $securityPasswordEncoder */
@@ -356,9 +355,16 @@ class LenderWalletController extends Controller
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-retrait', $varMail);
-        $message->setTo($client->getEmail());
-        $mailer = $this->get('mailer');
-        $mailer->send($message);
+        try {
+            $message->setTo($client->getEmail());
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->get('logger')->warning(
+                'Could not send email: preteur-retrait - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     /**
