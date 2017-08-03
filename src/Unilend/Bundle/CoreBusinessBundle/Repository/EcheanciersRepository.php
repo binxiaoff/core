@@ -365,7 +365,7 @@ class EcheanciersRepository extends EntityRepository
                   0 AS upcomingTaxes
                 FROM (
                        SELECT added
-                       FROM operation o
+                       FROM operation o USE INDEX (idx_id_wallet_creditor_type, idx_id_wallet_debitor_type)
                          INNER JOIN operation_type ot ON o.id_type = ot.id
                        WHERE (o.id_wallet_creditor = :lender OR o.id_wallet_debtor = :lender)
                              AND ot.label IN (:repaymentTypes)
