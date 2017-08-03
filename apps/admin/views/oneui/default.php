@@ -1357,7 +1357,6 @@
                         </td>
                         <td class="text-center">
                             <a class="btn btn-xs btn-default push-10-r" data-mission-download data-toggle="tooltip" title="" data-original-title="Télécharger XLS"><i class="fa fa-download"></i></a>
-                            <a class="btn btn-xs btn-primary" data-mission-update data-toggle="tooltip" title="" data-original-title="Actualiser"><i class="fa fa-refresh"></i></a>
                         </td>
                     </tr>
                     <tr data-mission-id="44931" data-project-id="429892">
@@ -1377,7 +1376,6 @@
                         </td>
                         <td class="text-center">
                             <a class="btn btn-xs btn-default push-10-r" data-toggle="tooltip" title="" data-original-title="Télécharger XLS"><i class="fa fa-download"></i></a>
-                            <a class="btn btn-xs btn-primary" data-toggle="tooltip" title="" data-original-title="Actualiser"><i class="fa fa-refresh"></i></a>
                         </td>
                     </tr>
                     </tbody>
