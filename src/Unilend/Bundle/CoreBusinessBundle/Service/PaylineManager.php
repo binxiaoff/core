@@ -280,8 +280,15 @@ class PaylineManager
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->messageProvider->newMessage('preteur-alimentation-cb', $varMail);
-            $message->setTo($backPayline->getWallet()->getIdClient()->getEmail());
-            $this->mailer->send($message);
+            try {
+                $message->setTo($backPayline->getWallet()->getIdClient()->getEmail());
+                $this->mailer->send($message);
+            } catch (\Exception $exception) {
+                $this->logger->warning(
+                    'Could not send email: preteur-alimentation-cb - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $backPayline->getWallet()->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
         }
     }
 }

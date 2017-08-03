@@ -220,10 +220,17 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
 
             /** @var TemplateMessage $message */
             $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-fiscal', $varMail, false);
-            $message->setTo(explode(';', trim($recipientSetting->getValue())));
-            $message->attach(\Swift_Attachment::fromPath($filePath));
-            $mailer = $this->getContainer()->get('mailer');
-            $mailer->send($message);
+            try {
+                $message->setTo(explode(';', trim($recipientSetting->getValue())));
+                $message->attach(\Swift_Attachment::fromPath($filePath));
+                $mailer = $this->getContainer()->get('mailer');
+                $mailer->send($message);
+            } catch (\Exception $exception) {
+                $this->getContainer()->get('monolog.logger.console')->warning(
+                    'Could not send email : notification-etat-fiscal - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'email address' => explode(';', trim($recipientSetting->getValue())), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
 
             $this->doTaxWalletsWithdrawals($lastDayOfLastMonth);
         }

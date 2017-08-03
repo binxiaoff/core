@@ -573,10 +573,16 @@ class ajaxController extends bootstrap
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-depot-de-dossier', $varMail);
-            $message->setTo($this->clients->email);
-            $mailer = $this->get('mailer');
-            $mailer->send($message);
-
+            try {
+                $message->setTo($this->clients->email);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
+            } catch (\Exception $exception) {
+                $this->get('logger')->warning(
+                    'Could not send email : confirmation-depot-de-dossier - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $this->clients->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
             $this->clients->password = password_hash($this->ficelle->generatePassword(8), PASSWORD_DEFAULT);
             $this->clients->status   = 1;
             $this->clients->update();
@@ -612,10 +618,24 @@ class ajaxController extends bootstrap
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $varMail);
-            $message->setTo($this->clients->email);
-            $mailer = $this->get('mailer');
-            $mailer->send($message);
+            try {
+                $message->setTo($this->clients->email);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
+            } catch (\Exception $exception) {
+                $this->get('logger')->warning(
+                    'Could not send email : generation-mot-de-passe - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $this->clients->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+                echo 'warning';
+
+                return;
+            }
+            echo 'success';
+
+            return;
         }
+        echo 'error';
     }
 
     public function _deleteBidPreteur()
@@ -721,9 +741,16 @@ class ajaxController extends bootstrap
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
-                $message->setTo($client->email);
-                $mailer = $this->get('mailer');
-                $mailer->send($message);
+                try {
+                    $message->setTo($client->email);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
+                } catch (\Exception $exception) {
+                    $this->get('logger')->warning(
+                        'Could not send email : emprunteur-dossier-rejete - Exception: ' . $exception->getMessage(),
+                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    );
+                }
             }
         }
 
@@ -831,9 +858,18 @@ class ajaxController extends bootstrap
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
-                $message->setTo($client->getEmail());
-                $mailer = $this->get('mailer');
-                $mailer->send($message);
+                try {
+                    $message->setTo($client->getEmail());
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
+                } catch (\Exception $exception) {
+                    $this->get('logger')->warning(
+                        'Could not send email : emprunteur-dossier-rejete - Exception: ' . $exception->getMessage(),
+                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    );
+                    echo json_encode(['success' => false, 'error' => 'Email non envoyé à l\'emprunteur.']);
+                    return;
+                }
             }
         }
 
@@ -961,9 +997,18 @@ class ajaxController extends bootstrap
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
-                $message->setTo($client->email);
-                $mailer = $this->get('mailer');
-                $mailer->send($message);
+                try {
+                    $message->setTo($client->email);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
+                } catch (\Exception $exception) {
+                    $this->get('logger')->warning(
+                        'Could not send email : emprunteur-dossier-rejete - Exception: ' . $exception->getMessage(),
+                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    );
+                    echo json_encode(['success' => false, 'error' => 'Email non envoyé à l\'emprunteur.']);
+                    return;
+                }
             }
         } elseif ($_POST['status'] == 4) {
             $projectCommentEntity = new \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments();

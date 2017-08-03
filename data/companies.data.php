@@ -15,7 +15,7 @@ class companies extends companies_crud
         $this->setSectorAccordingToNaf();
 
         if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
-            trigger_error('TMA-749 : ' . __CLASS__ . '.' . __FUNCTION__ . ' wrong company name - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
+            trigger_error('An invalid company name "' . $this->name . '" detected for siren : ' . $this->siren . ' during the creation - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
         }
 
         return parent::create($cs);
@@ -26,7 +26,7 @@ class companies extends companies_crud
         $this->setSectorAccordingToNaf();
 
         if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
-            trigger_error('TMA-749 : ' . __CLASS__ . '.' . __FUNCTION__ . ' wrong company name - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
+            trigger_error('An invalid company name "' . $this->name . '" detected for siren : ' . $this->siren . ' during the updating - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
         }
 
         parent::update($cs);

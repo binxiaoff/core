@@ -232,6 +232,7 @@ class loans extends loans_crud
             SELECT
                 l.id_project,
                 p.title,
+                p.period,
                 p.slug,
                 c.city,
                 c.zip,
