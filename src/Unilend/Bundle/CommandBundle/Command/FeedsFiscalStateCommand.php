@@ -3,7 +3,9 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
@@ -23,7 +25,9 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
     {
         $this
             ->setName('feeds:fiscal_state')
-            ->setDescription('Generate the fiscal state file');
+            ->setDescription('Generate the fiscal state file')
+            ->addArgument('month', InputArgument::OPTIONAL, 'The month that you want to generate the fiscal state. Support format : yyyy-mm, yyyy-mm-dd', 'last month')
+            ->addOption('withdraw', null, InputOption::VALUE_NONE, 'withdraw the tax wallets at the end of generation');
     }
 
     /**
@@ -36,70 +40,136 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
+        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+
         /** @var TaxType[] $frenchTaxes */
         $frenchTaxes = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->findBy(['country' => 'fr']);
         $taxRate     = [];
         foreach ($frenchTaxes as $tax) {
             $taxRate[$tax->getIdTaxType()] = $numberFormatter->format($tax->getRate());
         }
-        $firstDayOfLastMonth = new \DateTime('first day of last month');
-        $lastDayOfLastMonth  = new \DateTime('last day of last month');
-        $data                = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getInterestAndTaxForFiscalState($firstDayOfLastMonth, $lastDayOfLastMonth);
 
-        if (false === empty($data)) {
-            $exemptedInterests             = 0;
-            $exemptedIncomeTax             = 0;
-            $deductionAtSourceTax          = 0;
-            $deductionAtSourceInterests    = 0;
-            $interestsBDC                  = 0;
-            $statutoryContributionsBDC     = 0;
-            $interestsIFP                  = 0;
-            $statutoryContributionsIFP     = 0;
-            $interestsMiniBon              = 0;
-            $statutoryContributionsMiniBon = 0;
+        $month = $input->getArgument('month');
+        if ($month = $this->validateDate($month)) {
+            $firstDayOfLastMonth = new \DateTime('first day of ' . $month);
+            $lastDayOfLastMonth  = new \DateTime('last day of ' . $month);
+        } else {
+            $output->writeln('<error>Wrong date format. Support format : yyyy-mm, yyyy-mm-dd, or "last month"</error>');
+            return;
+        }
 
-            foreach ($data as $row) {
-                /** @var UnderlyingContract $contract */
-                $contract = $entityManager->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->find($row['id_type_contract']);
-                if ('person' == $row['client_type'] && 'fr' == $row['fiscal_residence'] && 'taxable' == $row['exemption_status']) {
-                    switch ($contract->getLabel()) {
-                        case \underlying_contract::CONTRACT_BDC:
-                            $interestsBDC              = $row['interests'];
-                            $statutoryContributionsBDC = $row[OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES];
-                            break;
-                        case \underlying_contract::CONTRACT_IFP:
-                            $interestsIFP              = $row['interests'];
-                            $statutoryContributionsIFP = $row[OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES];
-                            break;
-                        case \underlying_contract::CONTRACT_MINIBON:
-                            $interestsMiniBon              = $row['interests'];
-                            $statutoryContributionsMiniBon = $row[OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES];
-                            break;
-                    }
-                }
+        /*****TAX*****/
+        $statutoryContributionsByContract            = $operationRepository
+            ->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES, $firstDayOfLastMonth, $lastDayOfLastMonth, true);
+        $regularisedStatutoryContributionsByContract = $operationRepository
+            ->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES, $firstDayOfLastMonth, $lastDayOfLastMonth, true, true);
+        $statutoryContributionsByContract            = array_combine(array_column($statutoryContributionsByContract, 'contract_label'), array_values($statutoryContributionsByContract));
+        $regularisedStatutoryContributionsByContract = array_combine(array_column($regularisedStatutoryContributionsByContract, 'contract_label'),
+            array_values($regularisedStatutoryContributionsByContract));
 
-                if ('person' == $row['client_type'] && 'fr' == $row['fiscal_residence'] && 'non_taxable' == $row['exemption_status']) {
-                    $exemptedInterests = bcadd($exemptedInterests, $row['interests'], 2);
-                    $exemptedIncomeTax = bcadd($exemptedIncomeTax, $row[OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES], 2);
-                }
+        $deductionAtSource            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_RETENUES_A_LA_SOURCE, $firstDayOfLastMonth, $lastDayOfLastMonth);
+        $regularisedDeductionAtSource = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_RETENUES_A_LA_SOURCE, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
 
-                if ((('person' == $row['client_type'] && 'ww' == $row['fiscal_residence']) || 'legal_entity' == $row['client_type'])) {
-                    $deductionAtSourceInterests = bcadd($deductionAtSourceInterests, $row['interests'], 2);
+        $csg            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_CSG, $firstDayOfLastMonth, $lastDayOfLastMonth);
+        $regularisedCsg = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_CSG, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
 
-                    if ($contract->getLabel() != \underlying_contract::CONTRACT_IFP) {
-                        $deductionAtSourceTax = bcadd($deductionAtSourceTax, $row[OperationType::TAX_FR_RETENUES_A_LA_SOURCE], 2);
-                    }
+        $socialDeduction            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX, $firstDayOfLastMonth, $lastDayOfLastMonth);
+        $regularisedSocialDeduction = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
+
+        $additionalContribution            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES, $firstDayOfLastMonth, $lastDayOfLastMonth);
+        $regularisedAdditionalContribution = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
+
+        $solidarityDeduction            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE, $firstDayOfLastMonth, $lastDayOfLastMonth);
+        $regularisedSolidarityDeduction = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
+
+        $crds            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_CRDS, $firstDayOfLastMonth, $lastDayOfLastMonth);
+        $regularisedCrds = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_CRDS, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
+
+        $statutoryContributions            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES, $firstDayOfLastMonth, $lastDayOfLastMonth);
+        $regularisedStatutoryContributions = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
+
+        $exemptedIncome            = $operationRepository->getExemptedIncomeTax($firstDayOfLastMonth, $lastDayOfLastMonth);
+        $regularisedExemptedIncome = $operationRepository->getExemptedIncomeTax($firstDayOfLastMonth, $lastDayOfLastMonth, true);
+
+        $statutoryContributionsTaxBDC     = $this->getTaxFromGroupedRawData($statutoryContributionsByContract, $regularisedStatutoryContributionsByContract,
+            UnderlyingContract::CONTRACT_BDC);
+        $statutoryContributionsTaxIFP     = $this->getTaxFromGroupedRawData($statutoryContributionsByContract, $regularisedStatutoryContributionsByContract,
+            UnderlyingContract::CONTRACT_IFP);
+        $statutoryContributionsTaxMiniBon = $this->getTaxFromGroupedRawData($statutoryContributionsByContract, $regularisedStatutoryContributionsByContract,
+            UnderlyingContract::CONTRACT_MINIBON);
+        $statutoryContributionsTax        = $this->getTaxFromRawData($statutoryContributions, $regularisedStatutoryContributions);
+        $deductionAtSourceTax             = $this->getTaxFromRawData($deductionAtSource, $regularisedDeductionAtSource);
+        $csgTax                           = $this->getTaxFromRawData($csg, $regularisedCsg);
+        $socialDeductionTax               = $this->getTaxFromRawData($socialDeduction, $regularisedSocialDeduction);
+        $additionalContributionTax        = $this->getTaxFromRawData($additionalContribution, $regularisedAdditionalContribution);
+        $solidarityDeductionTax           = $this->getTaxFromRawData($solidarityDeduction, $regularisedSolidarityDeduction);
+        $crdsTax                          = $this->getTaxFromRawData($crds, $regularisedCrds);
+        $exemptedIncomeTax                = $this->getTaxFromRawData($exemptedIncome, $regularisedExemptedIncome);
+
+        /***** Interests *****/
+        $interestsRawData                       = $operationRepository->getInterestFiscalState($firstDayOfLastMonth, $lastDayOfLastMonth);
+        $statutoryContributionsInterestsBDC     = 0;
+        $statutoryContributionsInterestsIFP     = 0;
+        $statutoryContributionsInterestsMiniBon = 0;
+        $exemptedInterests                      = 0;
+        $deductionAtSourceInterests             = 0;
+        foreach ($interestsRawData as $row) {
+            /** @var UnderlyingContract $contract */
+            $contract = $entityManager->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->find($row['id_type_contract']);
+            if ('person' == $row['client_type'] && 'fr' == $row['fiscal_residence'] && 'taxable' == $row['exemption_status']) {
+                switch ($contract->getLabel()) {
+                    case \underlying_contract::CONTRACT_BDC:
+                        $statutoryContributionsInterestsBDC = $row['interests'];
+                        break;
+                    case \underlying_contract::CONTRACT_IFP:
+                        $statutoryContributionsInterestsIFP = $row['interests'];
+                        break;
+                    case \underlying_contract::CONTRACT_MINIBON:
+                        $statutoryContributionsInterestsMiniBon = $row['interests'];
+                        break;
                 }
             }
-            $csg                    = array_sum(array_column($data, OperationType::TAX_FR_CSG));
-            $socialDeduction        = array_sum(array_column($data, OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX));
-            $additionalContribution = array_sum(array_column($data, OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES));
-            $solidarityDeduction    = array_sum(array_column($data, OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE));
-            $crds                   = array_sum(array_column($data, OperationType::TAX_FR_CRDS));
-            $totalInterest          = bcadd(bcadd(bcadd($interestsBDC, $interestsIFP, 2), $interestsMiniBon, 2), $exemptedInterests, 2);
-            $statutoryContributions = bcadd(bcadd(bcadd($statutoryContributionsBDC, $statutoryContributionsIFP, 2), $statutoryContributionsMiniBon, 2), $exemptedIncomeTax, 2);
 
-            $table = '
+            if ('person' == $row['client_type'] && 'fr' == $row['fiscal_residence'] && 'non_taxable' == $row['exemption_status']) {
+                $exemptedInterests = round(bcadd($exemptedInterests, $row['interests'], 4), 2);
+            }
+
+            if ((('person' == $row['client_type'] && 'ww' == $row['fiscal_residence']) || 'legal_entity' == $row['client_type'])) {
+                $deductionAtSourceInterests = round(bcadd($deductionAtSourceInterests, $row['interests'], 4), 2);
+            }
+        }
+
+        $regularisedInterestsRawData = $operationRepository->getInterestFiscalState($firstDayOfLastMonth, $lastDayOfLastMonth, true);
+        foreach ($regularisedInterestsRawData as $row) {
+            /** @var UnderlyingContract $contract */
+            $contract = $entityManager->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->find($row['id_type_contract']);
+            if ('person' == $row['client_type'] && 'fr' == $row['fiscal_residence'] && 'taxable' == $row['exemption_status']) {
+                switch ($contract->getLabel()) {
+                    case \underlying_contract::CONTRACT_BDC:
+                        $statutoryContributionsInterestsBDC = round(bcsub($statutoryContributionsInterestsBDC, $row['interests'], 4), 2);
+                        break;
+                    case \underlying_contract::CONTRACT_IFP:
+                        $statutoryContributionsInterestsIFP = round(bcsub($statutoryContributionsInterestsIFP, $row['interests'], 4), 2);
+                        break;
+                    case \underlying_contract::CONTRACT_MINIBON:
+                        $statutoryContributionsInterestsMiniBon = round(bcsub($statutoryContributionsInterestsMiniBon, $row['interests'], 4), 2);
+                        break;
+                }
+            }
+
+            if ('person' == $row['client_type'] && 'fr' == $row['fiscal_residence'] && 'non_taxable' == $row['exemption_status']) {
+                $exemptedInterests = round(bcsub($exemptedInterests, $row['interests'], 4), 2);
+            }
+
+            if ((('person' == $row['client_type'] && 'ww' == $row['fiscal_residence']) || 'legal_entity' == $row['client_type'])) {
+                $deductionAtSourceInterests = round(bcsub($deductionAtSourceInterests, $row['interests'], 4), 2);
+            }
+        }
+
+        $totalFrPhysicalPersonInterest = round(bcadd(bcadd(bcadd($statutoryContributionsInterestsBDC, $statutoryContributionsInterestsIFP, 4), $statutoryContributionsInterestsMiniBon, 4),
+            $exemptedInterests, 4), 2);
+
+        $table = '
                 <style>
                     table th,table td{width:80px;height:20px;border:1px solid black;}
                     table td.dates{text-align:center;}
@@ -132,20 +202,20 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">Soumis au pr&eacute;l&egrave;vements (bons de caisse)</th> <!-- Somme des interets bruts pour : Personne physique, résident français, non exonéré, type loan : 1-->
-                        <td class="right">' . $ficelle->formatNumber($interestsBDC) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($statutoryContributionsBDC) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($statutoryContributionsInterestsBDC) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($statutoryContributionsTaxBDC) . '</td>
                         <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_STATUTORY_CONTRIBUTIONS] . '%</td>
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">Soumis au pr&eacute;l&egrave;vements (pr&ecirc;t IFP)</th> <!-- Somme des interets bruts pour : Personne physique, résident français, non exonéré, type loan : 2-->
-                        <td class="right">' . $ficelle->formatNumber($interestsIFP) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($statutoryContributionsIFP) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($statutoryContributionsInterestsIFP) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($statutoryContributionsTaxIFP) . '</td>
                         <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_STATUTORY_CONTRIBUTIONS] . '%</td>
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">Soumis au pr&eacute;l&egrave;vements (minibons)</th> <!-- Somme des interets bruts pour : Personne physique, résident français, non exonéré, type loan : minibons-->
-                        <td class="right">' . $ficelle->formatNumber($interestsMiniBon) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($statutoryContributionsMiniBon) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($statutoryContributionsInterestsMiniBon) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($statutoryContributionsTaxMiniBon) . '</td>
                         <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_STATUTORY_CONTRIBUTIONS] . '%</td>
                     </tr>
                     <tr>
@@ -156,8 +226,8 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">Total</th>
-                        <td class="right">' . $ficelle->formatNumber($totalInterest) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($statutoryContributions) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($totalFrPhysicalPersonInterest) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($statutoryContributionsTax) . '</td>
                         <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_STATUTORY_CONTRIBUTIONS] . '%</td>
                     </tr>
                     <tr>
@@ -180,58 +250,60 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">CSG</th>
-                        <td class="right">' . $ficelle->formatNumber($totalInterest) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($csg) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($totalFrPhysicalPersonInterest) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($csgTax) . '</td>
                         <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_CSG] . '%</td>
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">Pr&eacute;l&egrave;vement social</th>
-                        <td class="right">' . $ficelle->formatNumber($totalInterest) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($socialDeduction) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($totalFrPhysicalPersonInterest) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($socialDeductionTax) . '</td>
                         <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_SOCIAL_DEDUCTIONS] . '%</td>
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">Contribution additionnelle</th>
-                        <td class="right">' . $ficelle->formatNumber($totalInterest) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($additionalContribution) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($totalFrPhysicalPersonInterest) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($additionalContributionTax) . '</td>
                         <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS] . '%</td>
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">Pr&eacute;l&egrave;vements de solidarit&eacute;</th>
-                        <td class="right">' . $ficelle->formatNumber($totalInterest) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($solidarityDeduction) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($totalFrPhysicalPersonInterest) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($solidarityDeductionTax) . '</td>
                         <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_SOLIDARITY_DEDUCTIONS] . '%</td>
                     </tr>
                     <tr>
                         <th style="background-color:#E6F4DA;">CRDS</th>
-                        <td class="right">' . $ficelle->formatNumber($totalInterest) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($crds) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($totalFrPhysicalPersonInterest) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($crdsTax) . '</td>
                         <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_CRDS] . '%</td>
                     </tr>
                 </table>';
 
-            $filePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_fiscal/Unilend_etat_fiscal_' . date('Ymd') . '.xls';
-            file_put_contents($filePath, $table);
+        $filePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_fiscal/Unilend_etat_fiscal_' . date('Ymd') . '.xls';
+        file_put_contents($filePath, $table);
 
-            /** @var Settings $recipientSetting */
-            $recipientSetting = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneByType('Adresse notification etat fiscal');
-            $url              = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-            $varMail          = ['$surl' => $url, '$url' => $url];
+        /** @var Settings $recipientSetting */
+        $recipientSetting = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneByType('Adresse notification etat fiscal');
+        $url              = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
+        $varMail          = ['$surl' => $url, '$url' => $url];
 
-            /** @var TemplateMessage $message */
-            $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-fiscal', $varMail, false);
-            try {
-                $message->setTo(explode(';', trim($recipientSetting->getValue())));
-                $message->attach(\Swift_Attachment::fromPath($filePath));
-                $mailer = $this->getContainer()->get('mailer');
-                $mailer->send($message);
-            } catch (\Exception $exception) {
-                $this->getContainer()->get('monolog.logger.console')->warning(
-                    'Could not send email : notification-etat-fiscal - Exception: ' . $exception->getMessage(),
-                    ['id_mail_template' => $message->getTemplateId(), 'email address' => explode(';', trim($recipientSetting->getValue())), 'class' => __CLASS__, 'function' => __FUNCTION__]
-                );
-            }
+        /** @var TemplateMessage $message */
+        $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-fiscal', $varMail, false);
+        try {
+            $message->setTo(explode(';', trim($recipientSetting->getValue())));
+            $message->attach(\Swift_Attachment::fromPath($filePath));
+            $mailer = $this->getContainer()->get('mailer');
+            $mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->getContainer()->get('monolog.logger.console')->warning(
+                'Could not send email : notification-etat-fiscal - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'email address' => explode(';', trim($recipientSetting->getValue())), 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
 
+        $withdraw = $input->getOption('withdraw');
+        if (true === $withdraw && 'last month' === $month) {
             $this->doTaxWalletsWithdrawals($lastDayOfLastMonth);
         }
     }
@@ -255,8 +327,67 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                 $logger->error('Could not get the wallet balance for ' . $wallet->getIdType()->getLabel(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
                 continue;
             }
-            $totalTaxAmount = bcadd($lastMonthWalletHistory->getAvailableBalance(), $totalTaxAmount, 2);
+            $totalTaxAmount = round(bcadd($lastMonthWalletHistory->getAvailableBalance(), $totalTaxAmount, 4), 2);
             $operationsManager->withdrawTaxWallet($wallet, $lastMonthWalletHistory->getAvailableBalance());
         }
+    }
+
+    /**
+     * @param array  $rawDataByContract
+     * @param array  $regularisedRawDataByContract
+     * @param string $contractType
+     *
+     * @return float|int
+     */
+    private function getTaxFromGroupedRawData($rawDataByContract, $regularisedRawDataByContract, $contractType)
+    {
+        $statutoryContributions = 0;
+        if (isset($rawDataByContract[$contractType])) {
+            $statutoryContributions = $rawDataByContract[$contractType]['tax'];
+        }
+
+        if (isset($regularisedRawDataByContract[$contractType])) {
+            $statutoryContributions = round(bcsub($statutoryContributions, $regularisedRawDataByContract[$contractType]['tax'], 4), 2);
+        }
+
+        return $statutoryContributions;
+    }
+
+    private function getTaxFromRawData($rawDataByContract, $regularisedRawDataByContract)
+    {
+        $tax = 0;
+        if (isset($rawDataByContract[0]['tax'])) {
+            $tax = $rawDataByContract[0]['tax'];
+        }
+        if (isset($regularisedRawDataByContract[0]['tax'])) {
+            $tax = round(bcsub($tax, $regularisedRawDataByContract[0]['tax'], 4), 2);
+        }
+
+        return $tax;
+    }
+
+    /**
+     * @param $date
+     *
+     * @return bool|string
+     */
+    private function validateDate($date)
+    {
+        if ('last month' === $date) {
+            return $date;
+        }
+
+        if (1 === preg_match('#(\d{4}-\d{2}-\d{2})|(\d{4}-\d{2})#', $date, $match)) {
+            $date = $match[0];
+            if (false === empty($match[2])) {
+                $date .= '-01';
+            }
+            list($year, $month, $day) = explode('-', $date);
+            if (checkdate($month, $day, $year)) {
+                return $date;
+            }
+        }
+
+        return false;
     }
 }
