@@ -8,8 +8,27 @@
             $(".listeProjets").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
             $(".mandats").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
         <?php endif; ?>
+
+        $('.operation-tooltip').tooltip({
+            show: false,
+            position:{
+                at: 'right center',
+                my: 'right center',
+            },
+            content: function() {
+                var content = $(this).attr('title')
+                return content
+            }
+        })
     });
 </script>
+<style>
+    .operation-tooltip img {
+        position: relative;
+        top: -1px;
+    }
+</style>
+
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <h1>Detail emprunteur : <?= $this->clients->nom . ' ' . $this->clients->prenom ?></h1>
@@ -200,4 +219,33 @@
             <?php endforeach; ?>
         </tbody>
     </table>
+
+    <p>&nbsp;</p>
+
+    <h2>Relevé des opérations</h2>
+    <table class="tablesorter">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Type d'opération</th>
+                <th>Montant</th>
+                <th>Solde</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>12/02/2017</td>
+                <td class="operation-tooltip" title="SL01 Spécifique">Rejet <img src="<?php echo $this->surl; ?>/images/admin/info.png"></td>
+                <td>-200</td>
+                <td>0</td>
+            </tr>
+            <tr>
+                <td>12/02/2017</td>
+                <td>Prélèvement</td>
+                <td>+200</td>
+                <td>200</td>
+            </tr>
+        </tbody>
+    </table>
 </div>
+
