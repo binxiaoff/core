@@ -567,8 +567,10 @@ class OperationRepository extends EntityRepository
         $end->setTime(23, 59, 59);
 
         $interestOperationType = OperationType::GROSS_INTEREST_REPAYMENT;
+        $walletField           = 'id_wallet_creditor';
         if ($regularization) {
             $interestOperationType = OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION;
+            $walletField           = 'id_wallet_debtor';
         }
         $query = 'SELECT
                   CASE c.type
@@ -589,7 +591,7 @@ class OperationRepository extends EntityRepository
                   SUM(o_interest.amount) as interests
                 FROM operation o_interest USE INDEX (idx_operation_added)
                   INNER JOIN operation_type ot_interest ON o_interest.id_type = ot_interest.id AND ot_interest.label = "' . $interestOperationType . '"
-                  INNER JOIN wallet w ON o_interest.id_wallet_creditor = w.id
+                  INNER JOIN wallet w ON o_interest.' . $walletField . ' = w.id
                   INNER JOIN clients c ON w.id_client = c.id_client
                   INNER JOIN echeanciers e ON o_interest.id_repayment_schedule = e.id_echeancier
                   INNER JOIN loans l ON l.id_loan = o_interest.id_loan
@@ -1000,10 +1002,10 @@ class OperationRepository extends EntityRepository
     }
 
     /**
-     * @param Wallet            $creditorWallet
+     * @param Wallet         $creditorWallet
      * @param array          $operationTypes
      * @param array|null     $operationSubTypes
-     * @param \DateTime|null    $end
+     * @param \DateTime|null $end
      *
      * @return mixed
      */
@@ -1032,10 +1034,10 @@ class OperationRepository extends EntityRepository
     }
 
     /***
-     * @param Wallet            $debtorWallet
+     * @param Wallet         $debtorWallet
      * @param array          $operationTypes
      * @param array|null     $operationSubTypes
-     * @param \DateTime|null    $end
+     * @param \DateTime|null $end
      *
      * @return mixed
      */
