@@ -61,6 +61,7 @@ class BackpaylineRepository extends EntityRepository
         $queryBuilder->select('COUNT(bp.idBackpayline)')
             ->where('bp.code NOT IN (:codes)')
             ->andWhere('bp.added BETWEEN :start AND :end')
+            ->andWhere('bp.cardNumber IS NOT NULL')
             ->setParameter('codes', [Backpayline::CODE_TRANSACTION_APPROVED, Backpayline::CODE_TRANSACTION_CANCELLED])
             ->setParameter('start', $start->format('Y-m-d H:i:s'))
             ->setParameter('end', $end->format('Y-m-d H:i:s'));
