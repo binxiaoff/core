@@ -27,14 +27,12 @@
 <script src="oneui/js/plugins/summernote/summernote.min.js"></script>
 <script src="oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.js"></script>
 
-<script>
-    jQuery(function () {
-        // Init page helpers
-        App.initHelpers(['select2', 'datepicker', 'autocomplete', 'masked-inputs', 'summernote', 'table-tools', 'easy-pie-chart']);
-    });
-</script>
+<!-- Page Specific JS -->
 <script>
     $(function(){
+        // Init page helpers
+        App.initHelpers(['select2', 'datepicker', 'autocomplete', 'masked-inputs', 'summernote', 'table-tools', 'easy-pie-chart']);
+
         // Form Validation
         $('.js-validation').validate({
             ignore: [],
@@ -369,6 +367,17 @@
             showTags: true,
             levels: 1
         });
+    })
+</script>
+
+<!-- Recouvrement JS -->
+<script>
+    $(function() {
+        $(document).on('click', '[data-input-target]', function(event) {
+            var $form = $(this).parents('form')
+            var $target = $form.find('input[name="' + $(this).data('input-target') + '"]')
+            $target.val($(this).data('input-target-value'))
+        })
     })
 </script>
 </body>

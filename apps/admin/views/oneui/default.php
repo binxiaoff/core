@@ -219,7 +219,7 @@
                                 <a href="#btabs-static-profile">Profile</a>
                             </li>
                             <li class="pull-right">
-                                <a href="#btabs-static-settings" data-toggle="tooltip" title="" data-original-title="Settings"><i class="si si-settings"></i></a>
+                                <a href="#btabs-static-settings" data-toggle="tooltip" data-original-title="Settings"><i class="si si-settings"></i></a>
                             </li>
                         </ul>
                         <div class="block-content tab-content">
@@ -400,7 +400,7 @@
                     <h2 class="content-heading">Top</h2>
                     <div class="block">
                         <div class="block-content block-content-full">
-                            <button class="btn btn-default" data-toggle="popover" title="" data-placement="top" data-content="This is example content. You can put a description or more info here." type="button" data-original-title="Top Popover">Show Popover</button>
+                            <button class="btn btn-default" data-toggle="popover" data-placement="top" data-content="This is example content. You can put a description or more info here." type="button" data-original-title="Top Popover">Show Popover</button>
                         </div>
                     </div>
                 </div>
@@ -408,7 +408,7 @@
                     <h2 class="content-heading">Right</h2>
                     <div class="block">
                         <div class="block-content block-content-full">
-                            <button class="btn btn-default" data-toggle="popover" title="" data-placement="right" data-content="This is example content. You can put a description or more info here." type="button" data-original-title="Right Popover">Show Popover</button>
+                            <button class="btn btn-default" data-toggle="popover" data-placement="right" data-content="This is example content. You can put a description or more info here." type="button" data-original-title="Right Popover">Show Popover</button>
                         </div>
                     </div>
                 </div>
@@ -416,7 +416,7 @@
                     <h2 class="content-heading">Bottom</h2>
                     <div class="block">
                         <div class="block-content block-content-full">
-                            <button class="btn btn-default" data-toggle="popover" title="" data-placement="bottom" data-content="This is example content. You can put a description or more info here." type="button" data-original-title="Bottom Popover">Show Popover</button>
+                            <button class="btn btn-default" data-toggle="popover" data-placement="bottom" data-content="This is example content. You can put a description or more info here." type="button" data-original-title="Bottom Popover">Show Popover</button>
                         </div>
                     </div>
                 </div>
@@ -424,7 +424,7 @@
                     <h2 class="content-heading">Left</h2>
                     <div class="block">
                         <div class="block-content block-content-full">
-                            <button class="btn btn-default" data-toggle="popover" title="" data-placement="left" data-content="This is example content. You can put a description or more info here." type="button" data-original-title="Left Popover">Show Popover</button>
+                            <button class="btn btn-default" data-toggle="popover" data-placement="left" data-content="This is example content. You can put a description or more info here." type="button" data-original-title="Left Popover">Show Popover</button>
                         </div>
                     </div>
                 </div>
@@ -662,8 +662,8 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group">
-                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
-                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
+                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
+                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -675,8 +675,8 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group">
-                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
-                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
+                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
+                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -707,8 +707,8 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group">
-                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
-                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
+                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
+                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -720,8 +720,8 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group">
-                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
-                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
+                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
+                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -752,8 +752,8 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group">
-                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
-                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
+                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
+                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -765,8 +765,8 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group">
-                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
-                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
+                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
+                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -778,8 +778,8 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group">
-                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
-                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
+                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
+                                            <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -1118,7 +1118,7 @@
                         <tr>
                             <td>
                                 Europe Metal Concept<br>
-                                <span class="text-muted">Siren: 293823</span>
+                                <span class="text-muted">Siren: 29382332</span>
                             </td>
                             <td>
                                 Ingenerie, Etudes, Techniques<br>
@@ -1137,17 +1137,17 @@
                                 N/A
                             </td>
                             <td class="text-center">
-                                <button class="btn btn-xs btn-primary" type="button" data-toggle="tooltip" title="" data-original-title="Voir détails"><i class="fa fa-arrow-right"></i></button>
+                                <a href="/recouvrement/details/293823" class="btn btn-xs btn-primary" data-toggle="tooltip" data-original-title="Voir détails"><i class="fa fa-arrow-right"></i></a>
                             </td>
                         </tr>
                         <tr>
                             <td>
                                 Metal Europe Concept<br>
-                                <span class="text-muted">Siren: 293823</span>
+                                <span class="text-muted">Siren: 29382332</span>
                             </td>
                             <td>
                                 Ingenerie, Etudes, Techniques<br>
-                                <span class="text-muted">ID: 293823</span>
+                                <span class="text-muted">ID: 233433</span>
                             </td>
                             <td>
                                 <span class="label label-warning">Problème</span>
@@ -1162,17 +1162,17 @@
                                 N/A
                             </td>
                             <td class="text-center">
-                                <a class="btn btn-xs btn-primary" data-toggle="tooltip" title="" data-original-title="Voir détails"><i class="fa fa-arrow-right"></i></a>
+                                <a href="/recouvrement/details/233433" class="btn btn-xs btn-primary" data-toggle="tooltip" data-original-title="Voir détails"><i class="fa fa-arrow-right"></i></a>
                             </td>
                         </tr>
                         <tr>
                             <td>
                                 Europe Metal Concept<br>
-                                <span class="text-muted">Siren: 293823</span>
+                                <span class="text-muted">Siren: 29382332</span>
                             </td>
                             <td>
                                 Ingenerie, Etudes, Techniques<br>
-                                <span class="text-muted">ID: 293823</span>
+                                <span class="text-muted">ID: 434234</span>
                             </td>
                             <td>
                                 <span class="label label-primary">Recouvrement</span>
@@ -1187,7 +1187,7 @@
                                 2500 €
                             </td>
                             <td class="text-center">
-                                <a class="btn btn-xs btn-primary" data-toggle="tooltip" title="" data-original-title="Voir détails"><i class="fa fa-arrow-right"></i></a>
+                                <a href="/recouvrement/details/434234" class="btn btn-xs btn-primary" data-toggle="tooltip" data-original-title="Voir détails"><i class="fa fa-arrow-right"></i></a>
                             </td>
                         </tr>
                     </tbody>
@@ -1236,153 +1236,165 @@
         <div id="retards" class="block block-rounded">
             <div class="block-content block-content-full">
                 <h3 class="h4 push-20">Retards</h3>
-                <table class="table table-bordered table-hover table-header-bg" style="margin-bottom: 0;">
-                    <thead>
-                    <tr>
-                        <th style="width: 20%">
-                            Date
-                        </th>
-                        <th style="width: 20%">
-                            Retards
-                        </th>
-                        <th style="width: 20%">
-                            Montant
-                        </th>
-                        <th style="width: 20%">
-                            Confié au recouvreur
-                        </th>
-                        <th style="width: 20%">
-                            Restant à recouvrer
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>
-                            01/11/2016
-                        </td>
-                        <td>
-                            Capital Projet
-                        </td>
-                        <td>
-                            1 000 €
-                        </td>
-                        <td>
-                           500 €
-                        </td>
-                        <td>
-                            500 €
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            01/01/2017
-                        </td>
-                        <td>
-                            Écheance Janvier
-                        </td>
-                        <td>
-                            1 000 €
-                        </td>
-                        <td>
-                            N/A
-                        </td>
-                        <td>
-                            1 000 €
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-                <table class="table table-bordered font-w600" style="border-top: 0;">
-                    <thead>
-                    <tr>
-                        <td colspan="2" style="width: 40%;">
-                            Total:
-                        </td>
-                        <td style="width: 20%;">
-                            2000 €
-                        </td>
-                        <td style="width: 20%;">
-                            500 €
-                        </td>
-                        <td style="width: 20%;">
-                            2000 €
-                        </td>
-                    </tr>
-                    </thead>
-                </table>
-                <div class="text-right">
-                    <a href="#" class="btn btn-default push-10-r">Dechoir le terme</a>
-                    <a href="#" class="btn btn-primary">Missionner un recouvreur (2 000 €)</a>
-                </div>
+                <form action="/recouvrements/details/429892">
+                    <input type="hidden" name="cancel-term" value="0">
+                    <input type="hidden" name="project-status" value="remboursement">
+                    <input type="hidden" name="recover-amount" value="2000">
+                    <table class="table table-bordered table-hover table-header-bg" style="margin-bottom: 0;">
+                        <thead>
+                        <tr>
+                            <th style="width: 20%">
+                                Date
+                            </th>
+                            <th style="width: 20%">
+                                Retards
+                            </th>
+                            <th style="width: 20%">
+                                Montant
+                            </th>
+                            <th style="width: 20%">
+                                Confié au recouvreur
+                            </th>
+                            <th style="width: 20%">
+                                Restant à recouvrer
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>
+                                01/11/2016
+                            </td>
+                            <td>
+                                Capital Projet
+                            </td>
+                            <td>
+                                1 000 €
+                            </td>
+                            <td>
+                               500 €
+                            </td>
+                            <td>
+                                500 €
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                01/01/2017
+                            </td>
+                            <td>
+                                Écheance Janvier
+                            </td>
+                            <td>
+                                1 000 €
+                            </td>
+                            <td>
+                                N/A
+                            </td>
+                            <td>
+                                1 000 €
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <table class="table table-bordered font-w600" style="border-top: 0;">
+                        <thead>
+                        <tr>
+                            <td colspan="2" style="width: 40%;">
+                                Total:
+                            </td>
+                            <td style="width: 20%;">
+                                2000 €
+                            </td>
+                            <td style="width: 20%;">
+                                500 €
+                            </td>
+                            <td style="width: 20%;">
+                                2000 €
+                            </td>
+                        </tr>
+                        </thead>
+                    </table>
+                    <div class="text-right">
+                        <button type="submit" class="btn btn-default push-10-r" data-input-target="cancel-term" data-input-target-value="1">Dechoir le terme</button>
+
+                        <!-- If project is in status "Remboursement" : -->
+                        <button type="submit" class="btn btn-primary push-10-r" data-input-target="project-status" data-input-target-value="problem">Passer en statut problème</button>
+                        <!-- endif -->
+
+                        <!-- If project is already in status "Problem" : -->
+                        <button type="submit" class="btn btn-primary">Missionner un recouvreur (2 000 €)</button>
+                        <!-- endif -->
+                    </div>
+                </form>
             </div>
         </div>
         <div id="missions" class="block block-rounded">
             <div class="block-content block-content-full">
                 <h3 class="h4 push-20">Missions de revouvrement</h3>
-                <table class="table table-bordered table-hover table-header-bg">
-                    <thead>
-                    <tr>
-                        <th style="width: 20%">
-                            Date
-                        </th>
-                        <th style="width: 20%">
-                            Composition
-                        </th>
-                        <th style="width: 20%">
-                            Type
-                        </th>
-                        <th style="width: 20%">
-                            Taux
-                        </th>
-                        <th style="width: 20%">
-                            &nbsp;
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr data-mission-id="21837" data-project-id="429892">
-                        <td>
-                            14/02/2017
-                        </td>
-                        <td>
-                            Échéance Décembre 2016 (Partielle) <br>
-                            Échéance Janvier 2017 <br>
-                        </td>
-                        <td>
-                            Aimable
-                        </td>
-                        <td>
-                            13%
-                        </td>
-                        <td class="text-center">
-                            <a class="btn btn-xs btn-default push-10-r" data-mission-download data-toggle="tooltip" title="" data-original-title="Télécharger XLS"><i class="fa fa-download"></i></a>
-                        </td>
-                    </tr>
-                    <tr data-mission-id="44931" data-project-id="429892">
-                        <td>
-                            30/04/2017
-                        </td>
-                        <td>
-                            Échéance Février 2017<br>
-                            Échéance Mars 2017<br>
-                            Échéance Avril 2017
-                        </td>
-                        <td>
-                            Aimable
-                        </td>
-                        <td>
-                            13%
-                        </td>
-                        <td class="text-center">
-                            <a class="btn btn-xs btn-default push-10-r" data-toggle="tooltip" title="" data-original-title="Télécharger XLS"><i class="fa fa-download"></i></a>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-                <div class="text-right">
-
-                </div>
+                <form action="/recouvrements/details/429892">
+                    <input type="hidden" name="mission-id" value="">
+                    <table class="table table-bordered table-hover table-header-bg">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%">
+                                    Date
+                                </th>
+                                <th style="width: 20%">
+                                    Composition
+                                </th>
+                                <th style="width: 20%">
+                                    Type
+                                </th>
+                                <th style="width: 20%">
+                                    Taux
+                                </th>
+                                <th style="width: 20%">
+                                    Action
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    14/02/2017
+                                </td>
+                                <td>
+                                    Échéance Décembre 2016 (Partielle) <br>
+                                    Échéance Janvier 2017 <br>
+                                </td>
+                                <td>
+                                    Aimable
+                                </td>
+                                <td>
+                                    13%
+                                </td>
+                                <td class="text-center">
+                                    <button type="submit" data-input-target="mission-id" data-input-target-value="14022017" class="btn btn-xs btn-default push-10-r" data-toggle="tooltip" data-original-title="Télécharger XLS"><i class="fa fa-download"></i></a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    30/04/2017
+                                </td>
+                                <td>
+                                    Échéance Février 2017<br>
+                                    Échéance Mars 2017<br>
+                                    Échéance Avril 2017
+                                </td>
+                                <td>
+                                    Aimable
+                                </td>
+                                <td>
+                                    13%
+                                </td>
+                                <td class="text-center">
+                                    <button type="submit" data-input-target="mission-id" data-input-target-value="3004017" class="btn btn-xs btn-default push-10-r" data-toggle="tooltip" data-original-title="Télécharger XLS"><i class="fa fa-download"></i></a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>
             </div>
         </div>
         <div id="fees-honoraries" class="block block-rounded">
@@ -1451,61 +1463,64 @@
                     </tbody>
                 </table>
                 <div class="text-right">
-                    <a role="button" class="btn btn-primary" data-fees-honoraries-add>Ajouter des frais</a>
+                    <a role="button" class="btn btn-primary">Ajouter des frais</a>
                 </div>
             </div>
         </div>
         <div id="receptions" class="block block-rounded">
             <div class="block-content block-content-full">
                 <h3 class="h4 push-20">Réceptions à traiter</h3>
-                <table class="table table-bordered table-hover table-header-bg">
-                    <thead>
-                    <tr>
-                        <th style="width: 25%">
-                            Date
-                        </th>
-                        <th style="width: 25%">
-                            Montant
-                        </th>
-                        <th style="width: 25%">
-                            Statut
-                        </th>
-                        <th style="width: 25%">
-                            Action
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr data-reception-id="44931" data-project-id="429892">
-                        <td>
-                            14/03/2017
-                        </td>
-                        <td>
-                            1000 €
-                        </td>
-                        <td>
-                            À organiser
-                        </td>
-                        <td class="text-center">
-                            <a class="btn btn-xs btn-primary" data-reception-organise data-toggle="tooltip" data-original-title="Organiser"><i class="fa fa-arrow-right"></i></a>
-                        </td>
-                    </tr>
-                    <tr data-reception-id="23431" data-project-id="429892">
-                        <td>
-                            14/02/2017
-                        </td>
-                        <td>
-                            200 €
-                        </td>
-                        <td>
-                            En attente (contrôle interne)
-                        </td>
-                        <td class="text-center">
-                            &nbsp;
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+                <form action="/recouvrements/details/429892">
+                    <input type="hidden" name="reception-id" value="">
+                    <table class="table table-bordered table-hover table-header-bg">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%">
+                                    Date
+                                </th>
+                                <th style="width: 25%">
+                                    Montant
+                                </th>
+                                <th style="width: 25%">
+                                    Statut
+                                </th>
+                                <th style="width: 25%">
+                                    Action
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    14/03/2017
+                                </td>
+                                <td>
+                                    1000 €
+                                </td>
+                                <td>
+                                    À organiser
+                                </td>
+                                <td class="text-center">
+                                    <button type="submit" class="btn btn-xs btn-primary" data-input-target="reception-id" data-input-target-value="00001" data-toggle="tooltip" data-original-title="Organiser"><i class="fa fa-arrow-right"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    14/02/2017
+                                </td>
+                                <td>
+                                    200 €
+                                </td>
+                                <td>
+                                    En attente (contrôle interne)
+                                </td>
+                                <td class="text-center">
+                                    &nbsp;&nbsp;
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </form>
             </div>
         </div>
     </div>
