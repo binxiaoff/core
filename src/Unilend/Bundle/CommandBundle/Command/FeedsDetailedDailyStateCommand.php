@@ -37,26 +37,28 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
     const SOLIDARITY_DEDUCTIONS_COLUMN          = 'O';
     const CRDS_COLUMN                           = 'P';
     const LENDER_WITHDRAW_COLUMN                = 'Q';
-    const TOTAL_FINANCIAL_MOVEMENTS_COLUMN      = 'R';
-    const THEORETICAL_BALANCE_COLUMN            = 'S';
-    const BALANCE_COLUMN                        = 'T';
-    const BALANCE_DIFFERENCE_COLUMN             = 'U';
-    const LENDER_BALANCE_COLUMN                 = 'V';
-    const BORROWER_BALANCE_COLUMN               = 'W';
-    const DEBT_COLLECTOR_BALANCE_COLUMN         = 'X';
-    const UNILEND_PROMOTIONAL_BALANCE_COLUMN    = 'Y';
-    const UNILEND_BALANCE_COLUMN                = 'Z';
-    const TAX_BALANCE_COLUMN                    = 'AA';
-    const PROMOTION_OFFER_DISTRIBUTION_COLUMN   = 'AB';
-    const LENDER_LOAN_COLUMN                    = 'AC';
-    const CAPITAL_REPAYMENT_COLUMN              = 'AD';
-    const NET_INTEREST_COLUMN                   = 'AE';
-    const PAYMENT_ASSIGNMENT_COLUMN             = 'AF';
-    const FISCAL_DIFFERENCE_COLUMN              = 'AG';
-    const WIRE_TRANSFER_OUT_COLUMN              = 'AH';
-    const UNILEND_WITHDRAW_COLUMN               = 'AI';
-    const TAX_WITHDRAW_COLUMN                   = 'AJ';
-    const DIRECT_DEBIT_COLUMN                   = 'AK';
+    const UNILEND_WITHDRAW_COLUMN               = 'R';
+    const TOTAL_FINANCIAL_MOVEMENTS_COLUMN      = 'S';
+    const THEORETICAL_BALANCE_COLUMN            = 'T';
+    const BALANCE_COLUMN                        = 'U';
+    const BALANCE_DIFFERENCE_COLUMN             = 'V';
+    const LENDER_BALANCE_COLUMN                 = 'W';
+    const BORROWER_BALANCE_COLUMN               = 'X';
+    const DEBT_COLLECTOR_BALANCE_COLUMN         = 'Y';
+    const UNILEND_PROMOTIONAL_BALANCE_COLUMN    = 'Z';
+    const UNILEND_BALANCE_COLUMN                = 'AA';
+    const TAX_BALANCE_COLUMN                    = 'AB';
+    const PROMOTION_OFFER_DISTRIBUTION_COLUMN   = 'AC';
+    const LENDER_LOAN_COLUMN                    = 'AD';
+    const CAPITAL_REPAYMENT_COLUMN              = 'AE';
+    const NET_INTEREST_COLUMN                   = 'AF';
+    const PAYMENT_ASSIGNMENT_COLUMN             = 'AG';
+    const FISCAL_DIFFERENCE_COLUMN              = 'AH';
+    const DEBT_COLLECTOR_COMMISSION_COLUMN      = 'AI';
+    const WIRE_TRANSFER_OUT_COLUMN              = 'AJ';
+    const UNILEND_WIRE_TRANSFER_OUT_COLUMN      = 'AK';
+    const TAX_WITHDRAW_COLUMN                   = 'AL';
+    const DIRECT_DEBIT_COLUMN                   = 'AM';
     const LAST_COLUMN                           = self::DIRECT_DEBIT_COLUMN;
 
     /**
@@ -173,14 +175,11 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             OperationType::BORROWER_COMMISSION_REGULARIZATION,
             OperationType::CAPITAL_REPAYMENT_REGULARIZATION,
             OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION,
-            OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_REGULARIZATION,
-            OperationType::TAX_FR_CRDS_REGULARIZATION,
-            OperationType::TAX_FR_CSG_REGULARIZATION,
-            OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_REGULARIZATION,
-            OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_REGULARIZATION,
-            OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_REGULARIZATION,
-            OperationType::TAX_FR_RETENUES_A_LA_SOURCE_REGULARIZATION
-        ], OperationType::TAX_TYPES_FR);
+            OperationType::COLLECTION_COMMISSION_PROVISION,
+            OperationType::COLLECTION_COMMISSION_LENDER,
+            OperationType::COLLECTION_COMMISSION_BORROWER,
+            OperationType::UNILEND_WITHDRAW,
+        ], OperationType::TAX_TYPES_FR, OperationType::TAX_TYPES_FR_REGULARIZATION);
 
         $dailyMovements   = $operationRepository->sumMovementsForDailyStateByDay($firstDay, $requestedDate, $movements);
         $monthlyMovements = $operationRepository->sumMovementsForDailyStateByMonth($requestedDate, $movements);
@@ -383,6 +382,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $activeSheet->setCellValue(self::SOLIDARITY_DEDUCTIONS_COLUMN . $secondarySectionRow, 'Prélèvements solidarité');
         $activeSheet->setCellValue(self::CRDS_COLUMN . $secondarySectionRow, 'CRDS');
         $activeSheet->setCellValue(self::LENDER_WITHDRAW_COLUMN . $secondarySectionRow, 'Virement');
+        $activeSheet->setCellValue(self::UNILEND_WITHDRAW_COLUMN . $secondarySectionRow, 'Retrait Unilend');
         $activeSheet->setCellValue(self::TOTAL_FINANCIAL_MOVEMENTS_COLUMN . $secondarySectionRow, 'Total mouvements');
         $activeSheet->setCellValue(self::THEORETICAL_BALANCE_COLUMN . $secondarySectionRow, 'Solde théorique');
         $activeSheet->setCellValue(self::BALANCE_COLUMN . $secondarySectionRow, 'Solde réel');
@@ -399,8 +399,9 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $activeSheet->setCellValue(self::NET_INTEREST_COLUMN . $secondarySectionRow, 'Retour prêteur (Intêréts nets)');
         $activeSheet->setCellValue(self::PAYMENT_ASSIGNMENT_COLUMN . $secondarySectionRow, 'Affectation Ech. Empr.');
         $activeSheet->setCellValue(self::FISCAL_DIFFERENCE_COLUMN . $secondarySectionRow, 'Ecart fiscal');
+        $activeSheet->setCellValue(self::DEBT_COLLECTOR_COMMISSION_COLUMN . $secondarySectionRow, 'Commission Recouvreur');
         $activeSheet->setCellValue(self::WIRE_TRANSFER_OUT_COLUMN . $secondarySectionRow, 'Fichier virements');
-        $activeSheet->setCellValue(self::UNILEND_WITHDRAW_COLUMN . $secondarySectionRow, 'Dont SFF PME');
+        $activeSheet->setCellValue(self::UNILEND_WIRE_TRANSFER_OUT_COLUMN . $secondarySectionRow, 'Dont SFF PME');
         $activeSheet->setCellValue(self::TAX_WITHDRAW_COLUMN . $secondarySectionRow, 'Administration Fiscale');
         $activeSheet->setCellValue(self::DIRECT_DEBIT_COLUMN . $secondarySectionRow, 'Fichier prélèvements');
         $activeSheet->mergeCells(self::PROMOTION_OFFER_DISTRIBUTION_COLUMN. $previousBalanceRow . ':' . self::LAST_COLUMN . $previousBalanceRow);
@@ -546,6 +547,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $crds                                    = empty($line[OperationType::TAX_FR_CRDS]) ? 0 : $line[OperationType::TAX_FR_CRDS];
             $crdsRegularization                      = empty($line[OperationType::TAX_FR_CRDS_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_CRDS_REGULARIZATION];
             $lenderWithdraw                          = empty($line[OperationType::LENDER_WITHDRAW]) ? 0 : $line[OperationType::LENDER_WITHDRAW];
+            $unilendWithdraw                         = empty($line[OperationType::UNILEND_WITHDRAW]) ? 0 : $line[OperationType::UNILEND_WITHDRAW];
             $promotionalOffers                       = empty($line[OperationType::UNILEND_PROMOTIONAL_OPERATION]) ? 0 : $line[OperationType::UNILEND_PROMOTIONAL_OPERATION];
             $commercialGestures                      = empty($line[OperationType::UNILEND_BORROWER_COMMERCIAL_GESTURE]) ? 0 : $line[OperationType::UNILEND_BORROWER_COMMERCIAL_GESTURE];
             $lenderRegularization                    = empty($line[OperationType::UNILEND_LENDER_REGULARIZATION]) ? 0 : $line[OperationType::UNILEND_LENDER_REGULARIZATION];
@@ -555,6 +557,9 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $capitalRepaymentRegularization          = empty($line[OperationType::CAPITAL_REPAYMENT_REGULARIZATION]) ? 0 : $line[OperationType::CAPITAL_REPAYMENT_REGULARIZATION];
             $grossInterest                           = empty($line[OperationType::GROSS_INTEREST_REPAYMENT]) ? 0 : $line[OperationType::GROSS_INTEREST_REPAYMENT];
             $grossInterestRegularization             = empty($line[OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION]) ? 0 : $line[OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION];
+            $collectionCommissionProvision           = empty($line[OperationType::COLLECTION_COMMISSION_PROVISION]) ? 0 : $line[OperationType::COLLECTION_COMMISSION_PROVISION];
+            $collectionCommissionLender              = empty($line[OperationType::COLLECTION_COMMISSION_LENDER]) ? 0 : $line[OperationType::COLLECTION_COMMISSION_LENDER];
+            $collectionCommissionBorrower            = empty($line[OperationType::COLLECTION_COMMISSION_BORROWER]) ? 0 : $line[OperationType::COLLECTION_COMMISSION_BORROWER];
 
             $totalStatutoryContributions  = round(bcsub($statutoryContributions, $statutoryContributionsRegularization, 4), 2);
             $totalIncomeTax               = round(bcsub($incomeTax, $incomeTaxRegularization, 4), 2);
@@ -567,11 +572,21 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $totalPromotionProvision      = round(bcadd($unilendProvision, $promotionProvision, 4), 2);
             $totalProjectCommission       = round(bcsub($borrowerCommissionProject, $borrowerCommissionProjectRegularization, 4), 2);
             $totalPaymentCommission       = round(bcsub($borrowerCommissionPayment, $borrowerCommissionPaymentRegularization, 4), 2);
-            $totalCommission              = round(bcadd($totalPaymentCommission, $totalProjectCommission, 4), 2);
-            $totalIncoming                = round(bcadd($realBorrowerProvision, bcadd($totalPromotionProvision, bcadd($lenderProvisionCreditCard, $lenderProvisionWireTransfer, 4), 4), 4), 2);
-            $totalTax                     = round(bcadd($totalCrds, bcadd($totalSolidarityDeductions, bcadd($totalAdditionalContributions, bcadd($totalSocialDeductions, bcadd($totalCsg, bcadd($totalStatutoryContributions, $totalIncomeTax, 4), 4), 4), 4), 4), 4), 2);
-            $totalOutgoing                = round(bcadd($totalTax, bcadd($totalCommission, bcadd($borrowerWithdraw, $lenderWithdraw, 4), 4), 4), 2);
-            $totalFinancialMovementsLine  = round(bcsub($totalIncoming, $totalOutgoing, 4), 2);
+            $totalTax                     = round(bcadd($totalCrds, bcadd($totalSolidarityDeductions, bcadd($totalAdditionalContributions, bcadd($totalSocialDeductions,bcadd($totalCsg, bcadd($totalStatutoryContributions, $totalIncomeTax, 4), 4), 4), 4), 4), 4), 2);
+            $totalCollectionCommission   = round(bcsub($collectionCommissionProvision, bcadd($collectionCommissionLender, $collectionCommissionBorrower, 4), 4), 2);
+
+            $incomingLender              = bcadd($lenderProvisionCreditCard, $lenderProvisionWireTransfer, 4);
+            $incomingBorrower            = $realBorrowerProvision;
+            $incomingUnilend             = $totalPromotionProvision;
+            $incomingDebtCollector       = $totalCollectionCommission;
+            $outgoingLender              = bcadd($totalTax, $lenderWithdraw, 4);
+            $outgoingBorrower            = $borrowerWithdraw;
+            $outgoingUnilend             = $unilendWithdraw;
+            $outgoingDebtCollector       = $totalCollectionCommission;
+            $totalIncoming               = round(bcadd($incomingDebtCollector, bcadd(bcadd($incomingLender, $incomingBorrower, 4), $incomingUnilend, 4), 4), 2);
+            $totalOutgoing               = round(bcadd($outgoingDebtCollector, bcadd($outgoingUnilend, bcadd($outgoingBorrower, $outgoingLender, 4), 4), 4), 2);
+            $totalFinancialMovementsLine = round(bcsub($totalIncoming, $totalOutgoing, 4), 2);
+
             $totalPromotionOffer          = round(bcadd($lenderRegularization, bcadd($commercialGestures, bcsub($promotionalOffers, $promotionalOffersCancel, 4), 4), 4), 2);
             $totalCapitalRepayment        = round(bcsub($capitalRepayment, $capitalRepaymentRegularization, 4), 2);
             $netInterest                  = round(bcsub(bcsub($grossInterest, $grossInterestRegularization, 4), $totalTax, 4), 2);
@@ -595,6 +610,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $activeSheet->setCellValueExplicit(self::SOLIDARITY_DEDUCTIONS_COLUMN . $row, $totalSolidarityDeductions, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::CRDS_COLUMN . $row, $totalCrds, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::LENDER_WITHDRAW_COLUMN . $row, $lenderWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicit(self::UNILEND_WITHDRAW_COLUMN . $row, $unilendWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::TOTAL_FINANCIAL_MOVEMENTS_COLUMN . $row, $totalFinancialMovementsLine , \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
             /* Internal Movements */
@@ -604,6 +620,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $activeSheet->setCellValueExplicit(self::NET_INTEREST_COLUMN . $row, $netInterest, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::PAYMENT_ASSIGNMENT_COLUMN . $row, $repaymentAssignment, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::FISCAL_DIFFERENCE_COLUMN . $row, $fiscalDifference, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicit(self::DEBT_COLLECTOR_COMMISSION_COLUMN . $row, $totalCollectionCommission, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
             $row++;
         }
@@ -704,13 +721,13 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $totalDirectDebit            = round(bcadd($totalDirectDebit, $directDebit, 4), 2);
 
             $activeSheet->setCellValueExplicit(self::WIRE_TRANSFER_OUT_COLUMN . $row, $wireTransferOut, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            $activeSheet->setCellValueExplicit(self::UNILEND_WITHDRAW_COLUMN . $row, $unilendWireTransferOut, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicit(self::UNILEND_WIRE_TRANSFER_OUT_COLUMN. $row, $unilendWireTransferOut, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::TAX_WITHDRAW_COLUMN . $row, $taxWireTransferOut, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::DIRECT_DEBIT_COLUMN . $row, $directDebit, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         }
 
         $activeSheet->setCellValueExplicit(self::WIRE_TRANSFER_OUT_COLUMN . $totalRow, $totalWireTransferOut, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-        $activeSheet->setCellValueExplicit(self::UNILEND_WITHDRAW_COLUMN . $totalRow, $totalUnilendWireTransferOut, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicit(self::UNILEND_WIRE_TRANSFER_OUT_COLUMN . $totalRow, $totalUnilendWireTransferOut, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         $activeSheet->setCellValueExplicit(self::TAX_WITHDRAW_COLUMN . $totalRow, $totalTaxWireTransferOut, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         $activeSheet->setCellValueExplicit(self::DIRECT_DEBIT_COLUMN . $totalRow, $totalDirectDebit, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
     }
