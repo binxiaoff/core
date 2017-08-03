@@ -3,7 +3,9 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
@@ -23,7 +25,9 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
     {
         $this
             ->setName('feeds:fiscal_state')
-            ->setDescription('Generate the fiscal state file');
+            ->setDescription('Generate the fiscal state file')
+            ->addArgument('month', InputArgument::OPTIONAL, 'The month that you want to generate the fiscal state. Support format : yyyy-mm, yyyy-mm-dd', 'last month')
+            ->addOption('withdraw', null, InputOption::VALUE_NONE, 'withdraw the tax wallets at the end of generation');
     }
 
     /**
@@ -44,8 +48,15 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         foreach ($frenchTaxes as $tax) {
             $taxRate[$tax->getIdTaxType()] = $numberFormatter->format($tax->getRate());
         }
-        $firstDayOfLastMonth = new \DateTime('first day of last month');
-        $lastDayOfLastMonth  = new \DateTime('last day of last month');
+
+        $month = $input->getArgument('month');
+        if ($month = $this->validateDate($month)) {
+            $firstDayOfLastMonth = new \DateTime('first day of ' . $month);
+            $lastDayOfLastMonth  = new \DateTime('last day of ' . $month);
+        } else {
+            $output->writeln('<error>Wrong date format. Support format : yyyy-mm, yyyy-mm-dd, or "last month"</error>');
+            return;
+        }
 
         /*****TAX*****/
         $statutoryContributionsByContract            = $operationRepository
@@ -284,7 +295,10 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         $mailer = $this->getContainer()->get('mailer');
         $mailer->send($message);
 
-        $this->doTaxWalletsWithdrawals($lastDayOfLastMonth);
+        $withdraw = $input->getOption('withdraw');
+        if (true === $withdraw && 'last month' === $month) {
+            $this->doTaxWalletsWithdrawals($lastDayOfLastMonth);
+        }
     }
 
     /**
@@ -343,5 +357,30 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         }
 
         return $tax;
+    }
+
+    /**
+     * @param $date
+     *
+     * @return bool|string
+     */
+    private function validateDate($date)
+    {
+        if ('last month' === $date) {
+            return $date;
+        }
+
+        if (1 === preg_match('#(\d{4}-\d{2}-\d{2})|(\d{4}-\d{2})#', $date, $match)) {
+            $date = $match[0];
+            if (false === empty($match[2])) {
+                $date .= '-01';
+            }
+            list($year, $month, $day) = explode('-', $date);
+            if (checkdate($month, $day, $year)) {
+                return $date;
+            }
+        }
+
+        return false;
     }
 }
