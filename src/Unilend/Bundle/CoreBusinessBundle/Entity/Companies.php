@@ -1354,4 +1354,14 @@ class Companies
             $this->sector = 15;
         }
     }
+
+    /**
+     * @ORM\PreFlush
+     */
+    public function checkCompanyNameCreation()
+    {
+        if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
+            trigger_error('An invalid company name "' . $this->name . '" detected for siren : ' . $this->siren . '- trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5)), E_USER_WARNING);
+        }
+    }
 }
