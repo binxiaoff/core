@@ -1191,27 +1191,4 @@ class OperationRepository extends EntityRepository
 
         return $statement->fetchColumn();
     }
-
-    /**
-     * @param \DateTime $start
-     * @param \DateTime $end
-     *
-     * @return mixed
-     */
-    public function getCountProjectsWithRepaymentsBetweenDates(\DateTime $start, \DateTime $end)
-    {
-        $start->setTime(0, 0, 0);
-        $end->setTime(23, 59, 59);
-
-        $queryBuilder = $this->createQueryBuilder('o');
-        $queryBuilder->select('COUNT(DISTINCT o.idProject)')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
-            ->where('ot.label = :capitalRepayment')
-            ->andWhere('o.added BETWEEN :start AND :end')
-            ->setParameter('capitalRepayment', OperationType::CAPITAL_REPAYMENT)
-            ->setParameter('start', $start->format('Y-m-d H:i:s'))
-            ->setParameter('end', $end->format('Y-m-d H:i:s'));
-
-        return $queryBuilder->getQuery()->getSingleScalarResult();
-    }
 }

@@ -51,12 +51,13 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
         }
         $startDate = new \DateTime('First day of' . $endDate->format('F Y'));
 
-        $entityManager                     = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $operationRepository               = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $projectRepository                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $failedCreditCardProvision         = $entityManager->getRepository('UnilendCoreBusinessBundle:Backpayline')->getCountFailedTransactionsBetweenDates($startDate, $endDate);
-        $clientRepository                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        $wireTransferInRepository          = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+        $entityManager             = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $operationRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $projectRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $failedCreditCardProvision = $entityManager->getRepository('UnilendCoreBusinessBundle:Backpayline')->getCountFailedTransactionsBetweenDates($startDate, $endDate);
+        $clientRepository          = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $wireTransferInRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+        $repaymentRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
 
         $totalLendersPerson                = $clientRepository->countLendersByClientType([Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER], true);
         $totalLendersLegalEntity           = $clientRepository->countLendersByClientType([Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER], true);
@@ -105,22 +106,9 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
         ], $startDate, $endDate);
         $projectsInRepayment                  = $projectRepository->findProjectsInRepaymentAtDate($endDate);
         $remainingDueCapitalRunningRepayments = $operationRepository->getRemainingDueCapitalForProjects($endDate, array_column($projectsInRepayment, 'id_project'));
-        $repaymentTypes                       = array_merge([
-            OperationType::CAPITAL_REPAYMENT,
-            OperationType::CAPITAL_REPAYMENT_REGULARIZATION,
-            OperationType::GROSS_INTEREST_REPAYMENT,
-            OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION
-        ], OperationType::TAX_TYPES_FR, OperationType::TAX_TYPES_FR_REGULARIZATION);
-        $monthlyRepaymentData                 = $operationRepository->sumMovementsForDailyState($startDate, $endDate, $repaymentTypes);
-        $capitalRepayment                     = empty($monthlyRepaymentData[OperationType::CAPITAL_REPAYMENT]) ? 0 : $monthlyRepaymentData[OperationType::CAPITAL_REPAYMENT];
-        $capitalRepaymentRegularization       = empty($monthlyRepaymentData[OperationType::CAPITAL_REPAYMENT_REGULARIZATION]) ? 0 : $monthlyRepaymentData[OperationType::CAPITAL_REPAYMENT_REGULARIZATION];
-        $capitalRepayments                    = bcsub($capitalRepayment, $capitalRepaymentRegularization, 4);
-        $grossInterestRepayment               = empty($monthlyRepaymentData[OperationType::GROSS_INTEREST_REPAYMENT]) ? 0 : $monthlyRepaymentData[OperationType::GROSS_INTEREST_REPAYMENT];
-        $grossInterestRepaymentRegularization = empty($monthlyRepaymentData[OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION]) ? 0 : $monthlyRepaymentData[OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION];
-        $grossInterestRepayments              = bcsub($grossInterestRepayment, $grossInterestRepaymentRegularization, 4);
-        $grossRepayments                      = round(bcadd($capitalRepayments, $grossInterestRepayments, 4), 2);
-        $repaidProjectsInMonth                = $operationRepository->getCountProjectsWithRepaymentsBetweenDates($startDate, $endDate);
-
+        $repaymentsInMonth                    = $repaymentRepository->findRepaidRepaymentsBetweenDates($startDate, $endDate);
+        $sumRepaymentsInMonth =  $repaymentRepository->getSumRepaidRepaymentsBetweenDates($startDate, $endDate);
+        $lenderWithProvision                  = $operationRepository->getLenderProvisionIndicatorsBetweenDates($startDate, $endDate, false, true)[0]['numberLenders'];
 
         /** @var \PHPExcel $document */
         $document = new \PHPExcel();
@@ -149,8 +137,8 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
             27 => ['Nombre de financements en cours' => count($projectsInRepayment)],
             28 => ['Montant initial des financements en cours' => array_sum(array_column($projectsInRepayment, 'amount'))],
             29 => ['Montant restant dû des financements en cours' => $remainingDueCapitalRunningRepayments],
-            31 => ['Nombre de remboursements mensuels des emprunteurs' => $repaidProjectsInMonth],
-            32 => ['Montant de remboursements mensuels des emprunteurs' => $grossRepayments],
+            31 => ['Nombre de remboursements mensuels des emprunteurs' => count($repaymentsInMonth)],
+            32 => ['Montant de remboursements mensuels des emprunteurs' => $sumRepaymentsInMonth],
             34 => ['Nombre de financements clos' => count($repaymentFinishedProjects)],
             35 => ['Montant de financements clos' => array_sum(array_column($repaymentFinishedProjects, 'amount'))],
             37 => ['Nombre de rejets de prélèvements emprunteurs' => $rejectWireTransfersIn['number']],
@@ -169,12 +157,12 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
             54 => ['Nombre de prêteurs ouverts au cours du mois (KYC validé)' => $totalNewLenders],
             55 => ['Personnes physiques' => $newLendersPerson],
             56 => ['Personnes morales' => $newLenderLegalEntity],
-            57 => ['Nombre de prêteurs chargés au cours du mois' => bcadd($creditCardProvisions['numberProvisions'], $wireTransferInProvisions['numberProvisions'])],
-            58 => ['Nombre moyen de chargements par prêteur' => $totalLenderProvisionIndicators['averageAmount']],
+            57 => ['Nombre de prêteurs chargés au cours du mois' => $lenderWithProvision],
+            58 => ['Nombre moyen de chargements par prêteur' => bcdiv(bcadd($creditCardProvisions['numberProvisions'], $wireTransferInProvisions['numberProvisions'], 2), $lenderWithProvision, 2)],
             60 => ['Nombre de prêteurs ouverts (KYC validé / statut en ligne)' => $totalLenders],
             61 => ['Personnes physiques' => $totalLendersPerson],
             62 => ['Personnes morales' => $totalLendersLegalEntity],
-            63 => ['Nombre de prêteurs ayant enregistré au moins un chargement' => $totalLenderProvisionIndicators['numberProvisions']],
+            63 => ['Nombre de prêteurs ayant enregistré au moins un chargement' => $totalLenderProvisionIndicators['numberLenders']],
             64 => ['dont ceux n’ayant eu aucune enchère acceptée' => count($lendersWithProvisionAndNoValidBid)]
         ];
 

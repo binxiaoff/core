@@ -507,4 +507,42 @@ class EcheanciersRepository extends EntityRepository
             'pending'         => \PDO::PARAM_INT
         ])->fetchAll(\PDO::FETCH_ASSOC)[0];
     }
+
+    /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return mixed
+     */
+    public function findRepaidRepaymentsBetweenDates(\DateTime $start, \DateTime $end)
+    {
+        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder->where('e.status = :paid')
+            ->andWhere('e.dateEcheanceReel BETWEEN :start AND :end')
+            ->groupBy('e.idProject, e.ordre')
+            ->setParameter('paid', Echeanciers::STATUS_REPAID)
+            ->setParameter('start', $start->format('Y-m-d H:i:s'))
+            ->setParameter('end', $end->format('Y-m-d H:i:s'));
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return mixed
+     */
+    public function getSumRepaidRepaymentsBetweenDates(\DateTime $start, \DateTime $end)
+    {
+        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder->select('SUM(e.montant / 100)')
+            ->where('e.status = :paid')
+            ->andWhere('e.dateEcheanceReel BETWEEN :start AND :end')
+            ->setParameter('paid', Echeanciers::STATUS_REPAID)
+            ->setParameter('start', $start->format('Y-m-d H:i:s'))
+            ->setParameter('end', $end->format('Y-m-d H:i:s'));
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
 }

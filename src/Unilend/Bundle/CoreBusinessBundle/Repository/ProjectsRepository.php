@@ -351,16 +351,14 @@ class ProjectsRepository extends EntityRepository
     {
         $end->setTime(23, 59, 59);
 
-        $query = 'SELECT * FROM projects p
-                    INNER JOIN projects_status_history psh ON psh.id_project = p.id_project
-                    INNER JOIN (SELECT
-                              MAX(id_project_status_history) AS max_id_project_status_history
-                            FROM projects_status_history psh_max
-                              INNER JOIN projects_status ps_max ON psh_max.id_project_status = ps_max.id_project_status
-                            WHERE ps_max.status >= ' .  ProjectsStatus::REMBOURSEMENT . '
-                            GROUP BY id_project) t ON t.max_id_project_status_history = psh.id_project_status_history
-                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                  WHERE psh.added <= :end
+        $query = 'SELECT p.*
+                    FROM projects p
+                      INNER JOIN projects_status_history psh ON psh.id_project = p.id_project
+                      INNER JOIN (SELECT MAX(id_project_status_history) AS max_id_project_status_history
+                                  FROM projects_status_history psh_max
+                                  GROUP BY id_project) t ON t.max_id_project_status_history = psh.id_project_status_history
+                      INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                    WHERE psh.added <= :end AND ps.status >= ' . ProjectsStatus::REMBOURSEMENT . '
                     AND ps.status NOT IN (' . implode(',', [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::DEFAUT]) . ')';
 
         $result = $this->getEntityManager()->getConnection()->executeQuery($query, ['end' => $end->format('Y-m-d H:i:s')])->fetchAll();
