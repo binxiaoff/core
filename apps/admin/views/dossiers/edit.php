@@ -923,7 +923,7 @@
                                     case \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::COMMERCIAL_REVIEW: ?>
                                         <div style="text-align: right">
                                             <a role="button" data-memo="#postpone-project-memo" data-memo-onsubmit="/dossiers/postpone/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Reporter</a>
-                                            <a role="button" data-memo="#abandon-project-memo" data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
+                                            <a role="button" data-memo="#abandon-project-memo"  data-memo-optional data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
                                             <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/1/<?= $this->projects->id_project ?>" class="btn btn-small btn-reject btn_link thickbox">Rejeter</a>
                                             <?php if (empty($this->projects->id_product)) : ?>
                                                 <br><br>Pour passer le projet à l'étude risque, vous devez sélectionner un produit.
@@ -935,7 +935,7 @@
                                     case \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::POSTPONED: ?>
                                         <div style="text-align: right">
                                             <a href="<?= $this->lurl ?>/dossiers/postpone/<?= $this->projects->id_project ?>/resume" class="btn btn-small btnDisabled btn_link">Reprendre</a>
-                                            <a role="button" data-memo="#abandon-project-memo" data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
+                                            <a role="button" data-memo="#abandon-project-memo"  data-memo-optional data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
                                             <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/1/<?= $this->projects->id_project ?>" class="btn btn-small btn-reject btn_link thickbox">Rejeter</a>
                                             <?php if (empty($this->projects->id_product)) : ?>
                                                 <br><br>Pour passer le projet à l'étude risque, vous devez sélectionner un produit.
@@ -947,7 +947,7 @@
                                     case \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::ANALYSIS_REVIEW:
                                     case \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::COMITY_REVIEW: ?>
                                         <div style="text-align: right">
-                                            <a role="button" data-memo="#abandon-project-memo" data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
+                                            <a role="button" data-memo="#abandon-project-memo"  data-memo-optional data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
                                         </div>
                                         <?php break;
                                     case \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::SUSPENSIVE_CONDITIONS: ?>
@@ -958,7 +958,7 @@
                                         <?php break;
                                     case \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::PREP_FUNDING: ?>
                                         <div style="text-align: right">
-                                            <a role="button" data-memo="#abandon-project-memo" data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
+                                            <a role="button" data-memo="#abandon-project-memo"  data-memo-optional data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
                                             <?php if (empty($blockingPublishingError)) : ?>
                                                 <a href="<?= $this->lurl ?>/dossiers/publish/<?= $this->projects->id_project ?>" class="btn btn-small btn_link thickbox">Programmer la mise en ligne</a>
                                             <?php endif; ?>
