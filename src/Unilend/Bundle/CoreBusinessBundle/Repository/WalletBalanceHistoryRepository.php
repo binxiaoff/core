@@ -120,7 +120,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
             WHERE wbh.id_wallet = :idWallet
             AND wbh.added BETWEEN :startDate AND :endDate
             GROUP BY wbh.id
-            ORDER BY wbh.added DESC, wbh.id DESC, id_bid DESC, id_loan DESC, id_repayment_schedule DESC';
+            ORDER BY wbh.id DESC, id_bid DESC, id_loan DESC, id_repayment_schedule DESC';
 
         /** @var QueryCacheProfile $qcProfile */
         $qcProfile = new QueryCacheProfile(\Unilend\librairies\CacheKeys::LONG_TIME, md5(__METHOD__ . $wallet->getId()));
