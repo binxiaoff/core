@@ -146,4 +146,5 @@ class WelcomeOfferManager
 
         return ($hasSource && $noPreviousValidation);
     }
+
 }

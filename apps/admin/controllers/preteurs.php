@@ -809,30 +809,15 @@ class preteursController extends bootstrap
 
     public function _offres_de_bienvenue()
     {
+        /** @var \NumberFormatter $currencyFormatter */
+        $this->numberFormatter = $this->get('number_formatter');
+        /** @var \NumberFormatter $currencyFormatter */
+        $this->currencyFormatter = $this->get('currency_formatter');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $offres_bienvenues         = $this->loadData('offres_bienvenues');
-        $offres_bienvenues_details = $this->loadData('offres_bienvenues_details');
-        $this->clients             = $this->loadData('clients');
-        $this->settings            = $this->loadData('settings');
-
-        $this->settings->get("Offre de bienvenue motif", 'type');
-        $this->motifOffreBienvenue = $this->settings->value;
-
-        if ($offres_bienvenues->get(1, 'id_offre_bienvenue')) {
-            $create = false;
-
-            $debut       = explode('-', $offres_bienvenues->debut);
-            $this->debut = $debut[2] . '/' . $debut[1] . '/' . $debut[0];
-
-            $fin       = explode('-', $offres_bienvenues->fin);
-            $this->fin = $fin[2] . '/' . $fin[1] . '/' . $fin[0];
-
-            $this->montant       = str_replace('.', ',', ($offres_bienvenues->montant / 100));
-            $this->montant_limit = str_replace('.', ',', ($offres_bienvenues->montant_limit / 100));
-        } else {
-            $create = true;
-        }
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
+        $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
+        $this->welcomeOfferMotiveSetting = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Offre de bienvenue motif']);
 
         // form send offres de Bienvenues
         if (isset($_POST['form_send_offres'])) {
@@ -917,10 +902,7 @@ class preteursController extends bootstrap
 
         if (isset($_POST['affect_welcome_offer']) && isset($this->params[0])&& is_numeric($this->params[0])) {
             if($this->clients->get($this->params[0])) {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
-                $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
                 $response            = $welcomeOfferManager->createWelcomeOffer($this->clients);
-
                 switch ($response['code']) {
                     case 0:
                         $_SESSION['freeow']['title'] = 'Offre de bienvenue cr&eacute;dit&eacute;';
@@ -933,10 +915,15 @@ class preteursController extends bootstrap
             }
         }
 
-        $this->sumOffres                  = $offres_bienvenues_details->sum('type = 0 AND id_offre_bienvenue = ' . $offres_bienvenues->id_offre_bienvenue . ' AND status != 2', 'montant');
-        $unilendPromotionWalletType       = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
-        $unilendPromotionWallet           = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendPromotionWalletType]);
-        $this->sumDispoPourOffres         = $unilendPromotionWallet->getAvailableBalance();
+        $unilendPromotionWalletType        = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
+        $unilendPromotionWallet            = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendPromotionWalletType]);
+        $this->sumDispoPourOffres          = $unilendPromotionWallet->getAvailableBalance();
+        $this->alreadyPaidOutAllOffers     = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->getSumPaidOutForOffer();
+        $this->offerIsDisplayedOnHome      = $welcomeOfferManager->displayOfferOnHome();
+        $this->currentOffer                = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy(['status' => \Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues::STATUS_ONLINE]);
+        $this->alreadyPaidOutCurentOffer   = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->getSumPaidOutForOffer($this->currentOffer);
+        $this->remainingAmountCurrentOffer = round(bcsub($this->currentOffer->getMontantLimit(), $this->alreadyPaidOutCurentOffer, 4), 2);
+        $this->allOffers                   = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findAll();
     }
 
     public function _email_history()
