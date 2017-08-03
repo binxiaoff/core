@@ -270,9 +270,10 @@ $menuItems = [
 ];
 
 // Generate menu function
-function generateMenu($menuItems, $theme, $currentPage, $zoneHeader)
+function generateMenu($menuItems, $base, $theme, $currentPage, $zoneHeader)
 {
     $menuHtml = '';
+
     foreach ($menuItems as $item) {
 
         $itemHandle = $item['handle'];
@@ -294,11 +295,11 @@ function generateMenu($menuItems, $theme, $currentPage, $zoneHeader)
                 if ($currentPage === $itemHandle) {
                     $active = ' class="active"';
                 }
-                $menuHtml .= '<li><a href="' . $itemHandle . '"' . $active . '>' . $itemTitle . '</a>';
+                $menuHtml .= '<li><a href="' . $base . '/' . $itemHandle . '"' . $active . '>' . $itemTitle . '</a>';
                 if (! empty($item['children'])) {
                     $menuHtml .= '<ul class="sous_menu">';
                     foreach ($item['children'] as $subItem) {
-                        $menuHtml .= '<li><a href="' . $subItem['handle'] . '">' . $subItem['title'] . '</a><li>';
+                        $menuHtml .= '<li><a href="' . $base . '/' . $subItem['handle'] . '">' . $subItem['title'] . '</a><li>';
                     }
                     $menuHtml .= '</ul>';
                 }
@@ -310,12 +311,12 @@ function generateMenu($menuItems, $theme, $currentPage, $zoneHeader)
                 }
 
                 if (empty($item['children'])) {
-                    $menuHtml .= '<li class="' . $active . '"><a href="' . $itemHandle . '">' . $item['title'] . '</a></li>';
+                    $menuHtml .= '<li class="' . $active . '"><a href="' . $base . '/' . $itemHandle . '">' . $item['title'] . '</a></li>';
                 } else {
-                    $menuHtml .= '<li class="dropdown' . $active . '"><a href="' . $itemHandle . '">' . $item['title'] . '</a>';
+                    $menuHtml .= '<li class="dropdown' . $active . '"><a href="' . $base . '/' . $itemHandle . '">' . $item['title'] . '</a>';
                     $menuHtml .= '<ul class="dropdown-menu">';
                     foreach ($item['children'] as $subItem) {
-                        $menuHtml .= '<li><a href="' . $subItem['handle'] . '">' . $subItem['title'] . '</a><li>';
+                        $menuHtml .= '<li><a href="' . $base . '/' . $subItem['handle'] . '">' . $subItem['title'] . '</a><li>';
                     }
                     $menuHtml .= '</ul>';
                     $menuHtml .= '</li>';
@@ -365,7 +366,7 @@ function generateMenu($menuItems, $theme, $currentPage, $zoneHeader)
     </div>
     <div id="navigation">
         <ul id="menu_deroulant">
-            <?php generateMenu($menuItems, 'oldbo', $this->menu_admin, $this->lZonesHeader) ?>
+            <?php generateMenu($menuItems, $this->lurl, 'oldbo', $this->menu_admin, $this->lZonesHeader) ?>
         </ul>
     </div>
     <div id="freeow-tr" class="freeow freeow-top-right"></div>
@@ -376,7 +377,7 @@ function generateMenu($menuItems, $theme, $currentPage, $zoneHeader)
             <div class="nav-header pull-right">
                 <div class="collapse navbar-collapse remove-padding" id="sub-header-nav">
                     <ul class="nav nav-pills nav-sub-header">
-                        <?php generateMenu($menuItems, 'oneui', $this->menu_admin, $this->lZonesHeader) ?>
+                        <?php generateMenu($menuItems, $this->lurl, 'oneui', $this->menu_admin, $this->lZonesHeader) ?>
                     </ul>
                 </div>
             </div>
