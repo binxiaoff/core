@@ -1236,165 +1236,246 @@
         <div id="retards" class="block block-rounded">
             <div class="block-content block-content-full">
                 <h3 class="h4 push-20">Retards</h3>
-                <form action="/recouvrements/details/429892">
-                    <input type="hidden" name="cancel-term" value="0">
-                    <input type="hidden" name="project-status" value="remboursement">
-                    <input type="hidden" name="recover-amount" value="2000">
-                    <table class="table table-bordered table-hover table-header-bg" style="margin-bottom: 0;">
-                        <thead>
+                <table class="table table-bordered table-hover table-header-bg" style="margin-bottom: 0;">
+                    <thead>
+                    <tr>
+                        <th style="width: 20%">
+                            Date
+                        </th>
+                        <th style="width: 20%">
+                            Retards
+                        </th>
+                        <th style="width: 20%">
+                            Montant
+                        </th>
+                        <th style="width: 20%">
+                            Confié au recouvreur
+                        </th>
+                        <th style="width: 20%">
+                            Restant à recouvrer
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>
+                            01/11/2016
+                        </td>
+                        <td>
+                            Capital Projet
+                        </td>
+                        <td>
+                            1 000 €
+                        </td>
+                        <td>
+                           500 €
+                        </td>
+                        <td>
+                            500 €
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            01/01/2017
+                        </td>
+                        <td>
+                            Écheance Janvier
+                        </td>
+                        <td>
+                            1 000 €
+                        </td>
+                        <td>
+                            N/A
+                        </td>
+                        <td>
+                            1 000 €
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <table class="table table-bordered font-w600" style="border-top: 0;">
+                    <thead>
+                    <tr>
+                        <td colspan="2" style="width: 40%;">
+                            Total:
+                        </td>
+                        <td style="width: 20%;">
+                            2000 €
+                        </td>
+                        <td style="width: 20%;">
+                            500 €
+                        </td>
+                        <td style="width: 20%;">
+                            1500 €
+                        </td>
+                    </tr>
+                    </thead>
+                </table>
+                <div class="text-right">
+                    <button type="button" class="btn btn-default push-10-r" data-toggle="modal" data-target="#modal-cancel-term">Déchoir le terme</button>
+
+                    <!-- If project is in status "Remboursement" : -->
+                    <button type="button" class="btn btn-primary push-10-r" data-toggle="modal" data-target="#modal-status-problem">Passer en statut problème</button>
+                    <!-- endif -->
+
+                    <!-- If project is already in status "Problem" : -->
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-debt-collection">Missionner un recouvreur (1 500 €)</button>
+                    <!-- endif -->
+                </div>
+
+                <!-- Start MODALS -->
+                <div class="modal fade in" id="modal-cancel-term">
+                    <form class="modal-dialog" action="/recouvrements/details/429892" method="post">
+                        <div class="modal-content">
+                            <div class="block block-themed remove-margin-b">
+                                <div class="block-header bg-primary">
+                                    <h5 class="block-title">Déchoir le terme</h5>
+                                </div>
+                                <div class="block-content">
+                                    <p>Cette action est irrévsersible. Voulez-vous confirmer la déchéance du terme ?</p>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <input type="hidden" name="cancel-term" value="1">
+                                <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                                <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- If project is in status "Remboursement" : -->
+                <div class="modal fade in" id="modal-status-problem">
+                    <form class="modal-dialog" action="/recouvrements/details/429892" method="post">
+                        <div class="modal-content">
+                            <div class="block block-themed remove-margin-b">
+                                <div class="block-header bg-primary">
+                                    <h5 class="block-title">Passer en statut problème</h5>
+                                </div>
+                                <div class="block-content">
+                                    <p>Êtes-vous sûr de vouloir passer le projet en statut "problème" ?</p>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <input type="hidden" name="project-status-change" value="problem">
+                                <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                                <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <!-- endif -->
+
+                <!-- If project is already in status "Problem" : -->
+                <div class="modal fade in" id="modal-debt-collection">
+                    <form class="modal-dialog js-validation" action="/recouvrements/details/429892" method="post">
+                        <div class="modal-content">
+                            <div class="block block-themed remove-margin-b">
+                                <div class="block-header bg-primary">
+                                    <h5 class="block-title">Ajout d'une mission de recouvrement</h5>
+                                </div>
+                                <div class="block-content">
+                                    <div class="form-group">
+                                        <ul>
+                                            <li>Capital Projet - 500 €</li>
+                                            <li>Echeance Janvier - 1000 €</li>
+                                        </ul>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Recouvreur</label>
+                                        <select class="form-control required" name="debt-collection-agency">
+                                            <option value="1">Progeris</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Type de mission</label>
+                                        <select class="form-control required" name="debt-collection-type">
+                                            <option value="0">Selectionner</option>
+                                            <option value="1">Amiable</option>
+                                            <option value="2">Contentieux</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Taux (Pourcentage)</label>
+                                        <input class="form-control required" name="debt-collection-rate" type="text" placeholder="13">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <input type="hidden" name="recover-amount" value="1500">
+                                <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                                <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <!-- endif -->
+                <!-- End MODALS -->
+            </div>
+        </div>
+        <div id="debt-colletion" class="block block-rounded">
+            <div class="block-content block-content-full">
+                <h3 class="h4 push-20">Missions de revouvrement</h3>
+                <table class="table table-bordered table-hover table-header-bg">
+                    <thead>
                         <tr>
                             <th style="width: 20%">
                                 Date
                             </th>
                             <th style="width: 20%">
-                                Retards
+                                Composition
                             </th>
                             <th style="width: 20%">
-                                Montant
+                                Type
                             </th>
                             <th style="width: 20%">
-                                Confié au recouvreur
+                                Taux
                             </th>
                             <th style="width: 20%">
-                                Restant à recouvrer
+                                Action
                             </th>
                         </tr>
-                        </thead>
-                        <tbody>
+                    </thead>
+                    <tbody>
                         <tr>
                             <td>
-                                01/11/2016
+                                14/02/2017
                             </td>
                             <td>
-                                Capital Projet
+                                Échéance Décembre 2016 (Partielle) <br>
+                                Échéance Janvier 2017 <br>
                             </td>
                             <td>
-                                1 000 €
+                                Aimable
                             </td>
                             <td>
-                               500 €
+                                13%
                             </td>
-                            <td>
-                                500 €
+                            <td class="text-center">
+                                <a href="/path/to/file" class="btn btn-xs btn-default push-10-r" data-toggle="tooltip" data-original-title="Télécharger XLS"><i class="fa fa-download"></i></a>
                             </td>
                         </tr>
                         <tr>
                             <td>
-                                01/01/2017
+                                30/04/2017
                             </td>
                             <td>
-                                Écheance Janvier
+                                Échéance Février 2017<br>
+                                Échéance Mars 2017<br>
+                                Échéance Avril 2017
                             </td>
                             <td>
-                                1 000 €
+                                Aimable
                             </td>
                             <td>
-                                N/A
+                                13%
                             </td>
-                            <td>
-                                1 000 €
+                            <td class="text-center">
+                                <a href="/path/to/file" class="btn btn-xs btn-default push-10-r" data-toggle="tooltip" data-original-title="Télécharger XLS"><i class="fa fa-download"></i></a>
                             </td>
                         </tr>
-                        </tbody>
-                    </table>
-                    <table class="table table-bordered font-w600" style="border-top: 0;">
-                        <thead>
-                        <tr>
-                            <td colspan="2" style="width: 40%;">
-                                Total:
-                            </td>
-                            <td style="width: 20%;">
-                                2000 €
-                            </td>
-                            <td style="width: 20%;">
-                                500 €
-                            </td>
-                            <td style="width: 20%;">
-                                2000 €
-                            </td>
-                        </tr>
-                        </thead>
-                    </table>
-                    <div class="text-right">
-                        <button type="submit" class="btn btn-default push-10-r" data-input-target="cancel-term" data-input-target-value="1">Dechoir le terme</button>
-
-                        <!-- If project is in status "Remboursement" : -->
-                        <button type="submit" class="btn btn-primary push-10-r" data-input-target="project-status" data-input-target-value="problem">Passer en statut problème</button>
-                        <!-- endif -->
-
-                        <!-- If project is already in status "Problem" : -->
-                        <button type="submit" class="btn btn-primary">Missionner un recouvreur (2 000 €)</button>
-                        <!-- endif -->
-                    </div>
-                </form>
-            </div>
-        </div>
-        <div id="missions" class="block block-rounded">
-            <div class="block-content block-content-full">
-                <h3 class="h4 push-20">Missions de revouvrement</h3>
-                <form action="/recouvrements/details/429892">
-                    <input type="hidden" name="mission-id" value="">
-                    <table class="table table-bordered table-hover table-header-bg">
-                        <thead>
-                            <tr>
-                                <th style="width: 20%">
-                                    Date
-                                </th>
-                                <th style="width: 20%">
-                                    Composition
-                                </th>
-                                <th style="width: 20%">
-                                    Type
-                                </th>
-                                <th style="width: 20%">
-                                    Taux
-                                </th>
-                                <th style="width: 20%">
-                                    Action
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    14/02/2017
-                                </td>
-                                <td>
-                                    Échéance Décembre 2016 (Partielle) <br>
-                                    Échéance Janvier 2017 <br>
-                                </td>
-                                <td>
-                                    Aimable
-                                </td>
-                                <td>
-                                    13%
-                                </td>
-                                <td class="text-center">
-                                    <button type="submit" data-input-target="mission-id" data-input-target-value="14022017" class="btn btn-xs btn-default push-10-r" data-toggle="tooltip" data-original-title="Télécharger XLS"><i class="fa fa-download"></i></a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    30/04/2017
-                                </td>
-                                <td>
-                                    Échéance Février 2017<br>
-                                    Échéance Mars 2017<br>
-                                    Échéance Avril 2017
-                                </td>
-                                <td>
-                                    Aimable
-                                </td>
-                                <td>
-                                    13%
-                                </td>
-                                <td class="text-center">
-                                    <button type="submit" data-input-target="mission-id" data-input-target-value="3004017" class="btn btn-xs btn-default push-10-r" data-toggle="tooltip" data-original-title="Télécharger XLS"><i class="fa fa-download"></i></a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </form>
+                    </tbody>
+                </table>
             </div>
         </div>
         <div id="fees-honoraries" class="block block-rounded">
@@ -1463,14 +1544,57 @@
                     </tbody>
                 </table>
                 <div class="text-right">
-                    <a role="button" class="btn btn-primary">Ajouter des frais</a>
+                    <a role="button" class="btn btn-primary" data-toggle="modal" data-target="#additional-fees">Ajouter des frais</a>
                 </div>
+                <!-- Start MODALS -->
+                <div class="modal fade in" id="additional-fees">
+                    <form class="modal-dialog js-validation" action="/recouvrements/details/429892" method="post">
+                        <div class="modal-content">
+                            <div class="block block-themed remove-margin-b">
+                                <div class="block-header bg-primary">
+                                    <h5 class="block-title">Ajout de frais avancés par Unilend</h5>
+                                </div>
+                                <div class="block-content">
+                                    <div class="form-group">
+                                        <label>Type de frais</label>
+                                        <select class="form-control required" name="fee-type">
+                                            <option value="0">Selectionner</option>
+                                            <option value="1">Clause pénale</option>
+                                            <option value="2">Frais de visite domiciliare</option>
+                                            <option value="3">Injonction de payer</option>
+                                            <option value="4">Référé provision</option>
+                                            <option value="5">Saisie conservatoire</option>
+                                            <option value="6">Assignation au fond</option>
+                                            <option value="7">Assignation en procédure collective</option>
+                                            <option value="8">Procédure d'appel</option>
+                                            <option value="9">Opposition sur vente de fonds de commerce</option>
+                                            <option value="10">Frais de déclarations de créance</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Montant</label>
+                                        <input class="form-control required" type="number" name="fee-amount">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Date de facture</label>
+                                        <input class="form-control js-datepicker required" type="text" name="fee-invoice-date" data-date-format="mm/dd/yy" placeholder="mm/dd/yy">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                                <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <!-- End MODALS -->
             </div>
         </div>
         <div id="receptions" class="block block-rounded">
             <div class="block-content block-content-full">
                 <h3 class="h4 push-20">Réceptions à traiter</h3>
-                <form action="/recouvrements/details/429892">
+                <form action="/recouvrements/details/429892" method="post">
                     <input type="hidden" name="reception-id" value="">
                     <table class="table table-bordered table-hover table-header-bg">
                         <thead>
@@ -1515,7 +1639,7 @@
                                     En attente (contrôle interne)
                                 </td>
                                 <td class="text-center">
-                                    &nbsp;&nbsp;
+                                    &nbsp;&nbsp;&nbsp;
                                 </td>
                             </tr>
                         </tbody>

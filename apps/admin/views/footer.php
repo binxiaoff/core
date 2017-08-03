@@ -18,8 +18,6 @@
 
 <!-- OneUI Plugins -->
 <script src="oneui/js/plugins/select2/select2.min.js"></script>
-<script src="oneui/js/plugins/jquery-validation/jquery.validate.min.js"></script>
-<script src="oneui/js/plugins/select2/select2.full.min.js"></script>
 <script src="oneui/js/plugins/jquery-auto-complete/jquery.auto-complete.min.js"></script>
 <script src="oneui/js/plugins/masked-inputs/jquery.maskedinput.min.js"></script>
 <script src="oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
@@ -29,69 +27,37 @@
 
 <!-- Page Specific JS -->
 <script>
-    $(function(){
+    jQuery(function($){
         // Init page helpers
         App.initHelpers(['select2', 'datepicker', 'autocomplete', 'masked-inputs', 'summernote', 'table-tools', 'easy-pie-chart']);
 
-        // Form Validation
-        $('.js-validation').validate({
-            ignore: [],
-            errorClass: 'help-block',
-            errorElement: 'div',
-            errorPlacement: function(error, e) {
-                $(e).parents('.form-group').append(error);
-            },
-            highlight: function(e) {
-                var elem = $(e);
-
-                elem.closest('.form-group').removeClass('has-error').addClass('has-error');
-                elem.closest('.help-block').remove();
-            },
-            success: function(e) {
-                var elem = $(e);
-
-                elem.closest('.form-group').removeClass('has-error');
-                elem.closest('.help-block').remove();
-            },
-            rules: {
-                'val-name': {
-                    required: true,
-                    minlength: 3
-                },
-                'val-email': {
-                    required: true,
-                    email: true
-                },
-                'val-message': {
-                    required: true,
-                    minlength: 50
-                },
-                'val-select': {
-                    required: true
-                },
-                'val-select2': {
-                    required: true
-                },
-                'val-select2-multiple': {
-                    required: true,
-                    minlength: 2
+        $('.js-validation').submit(function(e){
+            var valid = true
+            $(this).find('.required').each(function(){
+                var $input = $(this)
+                if ($input.is('input[type=text]') || $input.is('input[type=number]') || $input.is('input[type=email]') || $input.is('textarea')) {
+                    if (!$input.val() || $input.val() === '') {
+                        $input.closest('.form-group').removeClass('has-error').addClass('has-error')
+                        valid = false
+                    } else {
+                        $input.closest('.form-group').removeClass('has-error')
+                        valid = true
+                    }
                 }
-            },
-            messages: {
-                'val-name': {
-                    required: 'Please enter a username',
-                    minlength: 'Your username must consist of at least 3 characters'
-                },
-                'val-email': 'Please enter a valid email address',
-                'val-message': {
-                    required: 'Please write a message',
-                    minlength: 'Message should be at least 50 characters'
-                },
-                'val-select2': 'Please select a value!',
-                'val-select': 'Please select a value!',
-                'val-select2-multiple': 'Please select at least 2 values!'
-            }
-        });
+                if ($input.is('select')) {
+                    if ($input.val() === '' || $input.val() === '0' || $input.val() === 'Selectionner') {
+                        $input.closest('.form-group').removeClass('has-error').addClass('has-error')
+                        valid = false
+                    } else {
+                        $input.closest('.form-group').removeClass('has-error')
+                        valid = true
+                    }
+                }
+                if (!valid) {
+                    e.preventDefault()
+                }
+            })
+        })
 
         // jQuery AutoComplete example, for more examples you can check out https://github.com/Pixabay/jQuery-autoComplete
         $('.js-autocomplete').autoComplete({
