@@ -138,6 +138,8 @@
 <link rel="stylesheet" href="oneui/css/bootstrap.min.css">
 <link rel="stylesheet" href="oneui/css/oneui.css">
 <link rel="stylesheet" href="oneui/css/unilend.min.css">
+<link rel="stylesheet" href="oneui/css/edits.css">
+
 </head>
 <body>
 <?php endif; ?>

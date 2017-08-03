@@ -274,12 +274,12 @@
 
         // Simple
         $('.js-dataTable-simple').dataTable({
-            pageLength: 5,
-            lengthMenu: [[5, 10], [15, 20]],
+            pageLength: 100,
             searching: false,
-            dom:
-            "<'row'<'col-sm-12'tr>>" +
-            "<'row'<'col-sm-6'i><'col-sm-6'p>>"
+            bPaginate: false,
+            bLengthChange: false,
+            bInfo: false,
+            bFilter: true
         });
 
         $('.js-dataTable-advanced').dataTable({
