@@ -7,6 +7,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
 use Symfony\Component\Translation\TranslatorInterface;
@@ -25,22 +26,33 @@ class NotificationDisplayManager
     private $router;
     /** @var  EntityManager */
     private $entityManager;
+    /** @var  BidManager */
+    private $bidManager;
 
-/**
+    /**
      * NotificationDisplayManager constructor.
      * @param EntityManagerSimulator $entityManagerSimulator
      * @param AutoBidSettingsManager $autoBidSettingsManager
      * @param TranslatorInterface    $translator
      * @param RouterInterface        $router
      * @param EntityManager          $entityManager
-     */    public function __construct(EntityManagerSimulator $entityManagerSimulator, AutoBidSettingsManager $autoBidSettingsManager, TranslatorInterface $translator, RouterInterface $router,
-    EntityManager $entityManager
-    ){
+     * @param BidManager             $bidManager
+     */
+    public function __construct(
+        EntityManagerSimulator $entityManagerSimulator,
+        AutoBidSettingsManager $autoBidSettingsManager,
+        TranslatorInterface $translator,
+        RouterInterface $router,
+        EntityManager $entityManager,
+        BidManager $bidManager
+    )
+    {
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->autoBidSettingsManager = $autoBidSettingsManager;
         $this->translator             = $translator;
         $this->router                 = $router;
         $this->entityManager          = $entityManager;
+        $this->bidManager             = $bidManager;
     }
 
     /**
@@ -72,8 +84,8 @@ class NotificationDisplayManager
     }
 
     /**
-     * @param Clients      $client
-     * @param Projects     $project
+     * @param Clients  $client
+     * @param Projects $project
      * @param null|int $offset
      * @param null|int $length
      *
@@ -85,10 +97,10 @@ class NotificationDisplayManager
     }
 
     /**
-     * @param Clients       $client
-     * @param integer|null  $projectId
-     * @param int           $offset
-     * @param int           $length
+     * @param Clients      $client
+     * @param integer|null $projectId
+     * @param int          $offset
+     * @param int          $length
      *
      * @return array
      * @throws \Exception
@@ -180,6 +192,8 @@ class NotificationDisplayManager
                     $bid->get($notification['id_bid'], 'id_bid');
                     $project->get($notification['id_project'], 'id_project');
                     $company->get($project->id_company, 'id_company');
+                    $projectRateRange = $this->bidManager->getProjectRateRange($project);
+                    $autoBidMinRate   = max($autobid->rate_min, $projectRateRange['rate_min']);
 
                     $type    = 'offer';
                     $image   = 'remboursement';
@@ -196,7 +210,7 @@ class NotificationDisplayManager
                         '%amount%'     => $ficelle->formatNumber($notification['amount'] / 100, 0),
                         '%projectUrl%' => $this->router->generate('project_detail', ['projectSlug' => $project->slug]),
                         '%company%'    => $company->name,
-                        '%minRate%'    => $bid->id_autobid > 0 ? $ficelle->formatNumber($autobid->rate_min, 1) : ''
+                        '%minRate%'    => $bid->id_autobid > 0 ? $ficelle->formatNumber($autoBidMinRate, 1) : ''
                     ]);
                     break;
                 case Notifications::TYPE_LOAN_ACCEPTED:
