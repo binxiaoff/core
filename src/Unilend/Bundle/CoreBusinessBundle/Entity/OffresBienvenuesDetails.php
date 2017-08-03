@@ -9,6 +9,8 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="offres_bienvenues_details", indexes={@ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_offre_bienvenue", columns={"id_offre_bienvenue"})})
  * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\OffresBienvenuesDetailsRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class OffresBienvenuesDetails
 {
@@ -349,5 +351,23 @@ class OffresBienvenuesDetails
     public function getIdOffreBienvenueDetail()
     {
         return $this->idOffreBienvenueDetail;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

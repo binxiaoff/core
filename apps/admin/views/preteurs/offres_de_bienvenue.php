@@ -52,49 +52,56 @@
 </style>
 <div id="contenu">
     <h1>Gestion offre de bienvenue</h1>
-    <h2>Somme des offres de bienvenue déjà donnée : <?= $this->ficelle->formatNumber($this->sumOffres / 100) ?> €</h2>
-    <div class="fenetre_offres_de_bienvenues">
-        <form method="post" name="form_offres" id="form_offres" enctype="multipart/form-data" action="" target="_parent">
-            <fieldset>
-                <table class="formColor">
-                    <tr>
-                        <th><label for="datepik_1">Debut de l'offre :</label></th>
-                        <td>
-                            <input type="text" name="debut" id="datepik_1" class="input_dp" value="<?= $this->debut ?>"/>
-                        </td>
-                        <th><label for="datepik_2">Fin de l'offre :</label></th>
-                        <td><input type="text" name="fin" id="datepik_2" class="input_dp" value="<?= $this->fin ?>"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><label for="montant">Montant de l'offre :</label></th>
-                        <td>
-                            <input type="text" name="montant" id="montant" class="input_moy" value="<?= $this->montant ?>"/> €
-                        </td>
-                        <th><label for="montant">Dépenses max :</label></th>
-                        <td>
-                            <input type="text" name="montant_limit" id="montant_limit" class="input_moy" value="<?= $this->montant_limit ?>"/> €
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><label>Motif :</label></th>
-                        <td><?= $this->motifOffreBienvenue ?></td>
-                        <th><label for="montant">Solde Reel disponible :</label></th>
-                        <td><?= $this->ficelle->formatNumber($this->sumDispoPourOffres) ?> €</td>
-                    </tr>
+    <h3>Somme des offres de bienvenue déjà donnée : <?= $this->currencyFormatter->format($this->alreadyPaidOutAllOffers) ?></h3>
+    <h3>Solde Reel disponible : <?= $this->currencyFormatter->format($this->sumDispoPourOffres) ?></h3>
+    <h3>Le macaron offre de bienvenue est affiché sur les home : <?= $this->offerIsDisplayedOnHome ? 'Oui' : 'Non' ?></h3>
 
-                    <tr>
-                        <th colspan="4" style="text-align:center;">
-                            <input type="hidden" name="form_send_offres" id="form_send_offres"/>
-                            <button type="submit" class="btn-primary">Mettre à jour</button>
-                        </th>
-                    </tr>
-                </table>
+    <?php $this->fireView('rattrapage_offre_bienvenue'); ?>
+
+    <h1>Gestion de la visibilité de l'offre de bienvenue</h1>
+    <?php if (null !== $this->currentOffer) : ?>
+    <div class="row">
+        <div>Offre en cours: </div>
+        Montant : <?= $this->currencyFormatter->format($this->currentOffer->getMontant() / 100) ?><br>
+        Actif depuis : <?= $this->currentOffer->getDebut()->format('d/m/Y') ?><br>
+        Montant maximum distribuable : <?= $this->currencyFormatter->format($this->currentOffer->getMontantLimit()) ?><br>
+        Montant deja distribué sur cette offre : <?= $this->currencyFormatter->format($this->alreadyPaidOutCurentOffer) ?><br>
+        Montant encore disponible sur cette offre : <?= $this->currencyFormatter->format($this->remainingAmountCurrentOffer) ?><br>
+        <div class="button">
+            Desactiver cette offre
+        </div>
+    <?php else : ?>
+        Il y a actuellement aucune offre valide en cours.
+        <div type="button">Créer une offre</div>
+    <?php endif; ?>
+    </div>
+
+<!--    @Dimitar: TODO  Faire un joli formualire :) -->
+<!--    <div id="form_create_offer" style="display: none;">-->
+    <div id="form_create_offer">
+        <form method="post" name="form_create_offer" id="form_create_offer" enctype="multipart/form-data" action="" target="_parent">
+            <fieldset>
+                <label for="datepik_1">Debut de l'offre :</label>
+                <input type="text" name="start" id="start" class="input_dp"/>
+                <label for="montant">Montant de l'offre :</label>
+                <input type="text" name="amount" id="amount" class="input_moy"/>
+                <label for="montant">Dépenses max :</label>
+                <input type="text" name="max_amount" id="max_amount" class="input_moy"/>
+                <label>Motif :</label><?= $this->welcomeOfferMotiveSetting->getValue() ?>>
+                <input type="hidden" name="form_send_offres" id="form_send_offres"/>
+                <button type="submit" class="btn-primary">Mettre à jour</button>
             </fieldset>
         </form>
     </div>
 
-    <?php $this->fireView('rattrapage_offre_bienvenue'); ?>
-
-
+<!--  @Dimitar: TODO  Va devenir un tableau de plusieurs lignes, bien que tu en a qu'un seul dans la base pour l'instant-->
+    <div id="past_offers">
+        <?php if (false === empty($this->allOffers)) : ?>
+            <?php foreach ($this->allOffers as $offer) : ?><br>
+                Debut: <?= $offer->getDebut()->format('d/m/Y') ?><br>
+                Fin: <?= $offer->getFin()->format('d/m/Y') ?><br>
+                Montant : <?= $this->currencyFormatter->format($offer->getMontant() / 100) ?><br>
+            <?endforeach; ?>
+        <?php endif; ?>
+    </div>
 </div> <!-- contenu !>
