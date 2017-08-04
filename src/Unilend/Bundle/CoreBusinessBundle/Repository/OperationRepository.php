@@ -481,7 +481,7 @@ class OperationRepository extends EntityRepository
 
         $result = $qb->getQuery()->getArrayResult();
 
-        return bcsub($result[0]['amount'], $result[0]['regularized_amount'], 2);
+        return round(bcsub($result[0]['amount'], $result[0]['regularized_amount'], 4) ,2);
     }
 
     /**
@@ -511,7 +511,7 @@ class OperationRepository extends EntityRepository
 
         $result = $qb->getQuery()->getArrayResult();
 
-        return bcsub($result[0]['amount'], $result[0]['regularized_amount'], 2);
+        return round(bcsub($result[0]['amount'], $result[0]['regularized_amount'], 4) ,2);
     }
 
     /**
@@ -521,37 +521,7 @@ class OperationRepository extends EntityRepository
      */
     public function getNetAmountByRepaymentScheduleId($idRepaymentSchedule)
     {
-        return bcsub($this->getGrossAmountByRepaymentScheduleId($idRepaymentSchedule), $this->getTaxAmountByRepaymentScheduleId($idRepaymentSchedule), 2);
-    }
-
-    /**
-     * @param int $idRepaymentSchedule
-     *
-     * @return mixed
-     */
-    public function getDetailByRepaymentScheduleId($idRepaymentSchedule)
-    {
-        $query = '
-                SELECT
-                  o_capital.amount AS capital,
-                  o_interest.amount AS interest,
-                  (SELECT SUM(amount) FROM operation INNER JOIN operation_type ON operation.id_type = operation_type.id AND operation_type.label IN ("' . implode('","', OperationType::TAX_TYPES_FR) . '") WHERE operation.id_repayment_schedule = o_interest.id_repayment_schedule) AS taxes,
-                  (SELECT available_balance
-                    FROM wallet_balance_history wbh 
-                    INNER JOIN operation o ON wbh.id_operation = o.id 
-                    WHERE o.id_repayment_schedule = o_interest.id_repayment_schedule ANd id_wallet = o_interest.id_wallet_creditor ORDER BY wbh.id DESC LIMIT 1) AS available_balance
-                FROM operation o_capital
-                  INNER JOIN operation_type ot_capital ON o_capital.id_type = ot_capital.id AND ot_capital.label = "' . OperationType::CAPITAL_REPAYMENT . '"
-                  LEFT JOIN operation o_interest ON o_capital.id_repayment_schedule = o_interest.id_repayment_schedule
-                  INNER JOIN operation_type ot_interest ON o_interest.id_type = ot_interest.id AND ot_interest.label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '"
-                WHERE o_capital.id_repayment_schedule = :idRepaymentSchedule';
-
-        $qcProfile = new QueryCacheProfile(\Unilend\librairies\CacheKeys::DAY, md5(__METHOD__ . $idRepaymentSchedule));
-        $statement = $this->getEntityManager()->getConnection()->executeCacheQuery($query, ['idRepaymentSchedule' => $idRepaymentSchedule], ['idRepaymentSchedule' => \PDO::PARAM_INT], $qcProfile);
-        $result    = $statement->fetch();
-        $statement->closeCursor();
-
-        return $result;
+        return round(bcsub($this->getGrossAmountByRepaymentScheduleId($idRepaymentSchedule), $this->getTaxAmountByRepaymentScheduleId($idRepaymentSchedule), 4), 2);
     }
 
     /**
@@ -677,18 +647,31 @@ class OperationRepository extends EntityRepository
      */
     public function getTotalGrossDebtCollectionRepayment($project, array $clients)
     {
+        $qbRegularization = $this->createQueryBuilder('o_r');
+        $qbRegularization->select('IFNULL(SUM(o_r.amount), 0)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost_r', Join::WITH, 'o_r.idSubType = ost_r.id')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w_r', Join::WITH, 'w_r.id = o_r.idWalletDebtor')
+            ->where('ost_r.label IN (:regularizationTypes)')
+            ->andWhere('w.idClient IN (:clients)')
+            ->andWhere('o.idProject = :project');
+        $regularization = $qbRegularization->getDQL();
+
         $qb = $this->createQueryBuilder('o');
-        $qb->select('SUM(o.amount)')
+        $qb->select('IFNULL(SUM(o.amount), 0) as amount')
+            ->addSelect('(' . $regularization . ') as regularized_amount')
             ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = o.idWalletCreditor')
             ->where('ost.label = :operationSubType')
             ->andWhere('w.idClient IN (:clients)')
             ->andWhere('o.idProject = :project')
             ->setParameter('operationSubType', OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION)
+            ->setParameter('regularizationTypes', OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION_REGULARIZATION)
             ->setParameter('clients', $clients)
             ->setParameter('project', $project);
 
-        return $qb->getQuery()->getSingleScalarResult();
+        $result = $qb->getQuery()->getArrayResult();
+
+        return round(bcsub($result[0]['amount'], $result[0]['regularized_amount'], 4), 2);
     }
 
     /**
@@ -719,6 +702,7 @@ class OperationRepository extends EntityRepository
     /**
      * @param \DateTime $start
      * @param \DateTime $end
+     * @param array     $operationTypes
      *
      * @return array
      */
