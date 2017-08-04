@@ -13,7 +13,10 @@ var Memo = function($trigger) {
 
     self.$elem.addClass('memo-editor')
     self.textarea = self.$elem.attr('id') + '-textarea'
-    self.optional = $trigger.attr('data-memo-optional') ? true : false
+    self.optional = false
+    if ($trigger.attr('data-memo-optional') !== undefined) {
+        self.optional = true
+    }
 
     self.track = {
         open: false,
