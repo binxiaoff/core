@@ -109,8 +109,8 @@ doctrine_mongodb:
     document_managers:
         default:
             auto_mapping: true
-            retry_connect: 2
-            retry_query:   2
+            retry_connect: 4
+            retry_query:   4
 
 cache_adapter:
     providers:
