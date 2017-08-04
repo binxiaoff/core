@@ -125,6 +125,9 @@ class EulerHermesManager
             if (null !== $result = $this->sendRequest(self::RESOURCE_TRAFFIC_LIGHT, $company->getSingleInvoiceId(), $this->gradingApiKey, $siren)) {
                 return $this->serializer->deserialize($result, CompanyRating::class, 'json');
             }
+        } elseif (null !== $company && 404 === $company->getCode()) {
+            return (new CompanyRating())
+                ->setColor(CompanyRating::COLOR_WHITE);
         }
 
         return null;
@@ -147,6 +150,9 @@ class EulerHermesManager
             if (null !== $result = $this->sendRequest(self::RESOURCE_EULER_GRADE, $company->getSingleInvoiceId(), $this->gradingApiKey, $siren)) {
                 return $this->serializer->deserialize($result, CompanyRating::class, 'json');
             }
+        } elseif (null !== $company && 404 === $company->getCode()) {
+            return (new CompanyRating())
+                ->setGrade(CompanyRating::GRADE_UNKNOWN);
         }
 
         return null;
@@ -214,7 +220,10 @@ class EulerHermesManager
         $stream->rewind();
         $content = $stream->getContents();
 
-        if (200 === $response->getStatusCode()) {
+        if (
+            200 === $response->getStatusCode()
+            || (404 === $response->getStatusCode() && self::RESOURCE_SEARCH_COMPANY === $resource->getLabel())
+        ) {
             $contentValidity = $this->isValidContent($content, $resource);
 
             if (false === $contentValidity) {
@@ -226,14 +235,9 @@ class EulerHermesManager
                 'is_valid' => $contentValidity
             ];
         } else {
-            $level = 'error';
+            $this->logger->error('Call to ' . $resource->getResourceName() . ' Response code: ' . $response->getStatusCode() . '. Response content: ' . $content, $logContext);
 
-            if (404 === $response->getStatusCode()) {
-                $level = 'warning';
-            }
-            $this->logger->{$level}('Call to ' . $resource->getResourceName() . ' Response code: ' . $response->getStatusCode() . '. Response content: ' . $content, $logContext);
-
-            return ['status' => $level, 'is_valid' => false];
+            return ['status' => 'error', 'is_valid' => false];
         }
     }
 
@@ -250,7 +254,7 @@ class EulerHermesManager
                 case self::RESOURCE_TRAFFIC_LIGHT:
                     return isset($response->Color) && is_string($response->Color) && false === empty($response->Color);
                 case self::RESOURCE_SEARCH_COMPANY:
-                    return isset($response->Id) && false === empty($response->Id);
+                    return (isset($response->Id) && false === empty($response->Id)) || (isset($response->code) && 404 === $response->code);
                 case self::RESOURCE_EULER_GRADE:
                     return isset($response->message) && in_array($response->message, array_merge(range(1, 10), ['NA']));
                 default:
