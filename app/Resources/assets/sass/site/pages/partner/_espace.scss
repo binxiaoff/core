@@ -386,4 +386,12 @@
   }
 }
 
+// Partner Profile
+
+.form-project-partner-profile {
+  @include devices('lg') {
+    padding-right: 200px;
+  }
+}
+
 

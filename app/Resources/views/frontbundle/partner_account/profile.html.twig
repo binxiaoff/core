@@ -1,0 +1,63 @@
+{% extends 'partner_account/_layout.html.twig' %}
+
+{% set page = {
+id: 'partner-account-profile',
+classNames: 'partner-account'
+} %}
+
+{% block dashboardContent %}
+    <section class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-content tab-content">
+            <article class="dashboard-tab-pane">
+                <div id="partner-projects-profile" class="panel">
+                    <header class="panel-header">
+                        <h3>{% trans %} partner-profile_title {% endtrans %}</h3>
+                    </header>
+
+                    <form action="" method="post" class="form-project-partner-profile" data-formvalidation data-formvalidation-notificationselem="#form-project-partner-profile-notifications">
+                        <div id="form-project-partner-profile-notifications" class="ui-formvalidation-notifications"></div>
+
+                        <div class="row row-multi-col-computer">
+                            <div class="form-field col-lg-6 col-md-6">
+                                <label for="partner-profile-password-former">
+                                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                    {% trans %} partner-profile_password-former-field-label {% endtrans %}
+                                </label>
+                                <div class="input-group">
+                                    <input type="password" id="partner-profile-password-former"
+                                           name="partner_password[formerPassword]" required="required" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                                    {#{{ form_errors(forms.securityPwd.formerPassword) }}#}
+                                </div><!-- /.input-group -->
+                                <ul class="ui-formvalidation-messages"></ul>
+                            </div><!-- /.form-field -->
+                        </div>
+                        <div class="row row-multi-col-computer">
+                            <div class="form-field col-lg-6 col-md-6">
+                                <label for="partner-profile-password-new">{% trans %} partner-profile_password-new-field-label {% endtrans %}
+                                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                </label>
+                                <input type="password" id="partner-profile-password-new"
+                                       name="partner_password[password][first]" required="required" class="input-field"
+                                       data-passwordcheck data-formvalidation-input data-formvalidation-required="true" data-formvalidation-minlength="6">
+                            </div><!-- /.form-field -->
+                            <div class="form-field col-lg-6 col-md-6">
+                                <label for="partner-profile-password-confirm">{% trans %} partner-profile_password-confirm-field-label {% endtrans %}
+                                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                <div class="input-group">
+                                    <input type="password" id="form-profile-security-password-passe-new-conf"
+                                           name="client_password[password][second]" required="required" class="input-field"
+                                           data-formvalidation-input="" data-formvalidation-required="true" data-formvalidation-samevalueas="#partner-profile-password-new">
+                                </div>
+                            </div><!-- /.form-field -->
+                            {#{{ form_errors(forms.securityPwd.password) }}#}
+                        </div>
+
+                        <div class="row btn-controls">
+                            <button type="submit" class="btn-primary btn-shape-medium">{% trans %} partner-profile_password-button-submit {% endtrans %}</button>
+                        </div>
+                    </form><!-- /#form-project-partner-profile -->
+                </div><!-- /.panel -->
+            </article><!-- /.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </section><!-- /.dashboard-tabs -->
+{% endblock %}
