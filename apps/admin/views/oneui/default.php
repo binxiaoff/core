@@ -1650,4 +1650,510 @@
     </div>
 </div>
 
+<h4 class="h4 push">/controle-interne</h4>
+<div class="row">
+    <div class="col-md-12">
+        <div class="block block-rounded">
+            <div class="block-content block-content-full">
+                <h2 class="h3">
+                    Contrôle Interne
+                </h2>
+            </div>
+        </div>
+        <div id="validate-repayments" class="block block-rounded">
+            <div class="block-content block-content-full">
+                <h3 class="h4 push-20">Remboursements nécessitant validation</h3>
+                <table class="table table-bordered table-hover table-header-bg">
+                    <thead>
+                    <tr>
+                        <th style="width: 25%">
+                            Projet
+                        </th>
+                        <th style="width: 25%">
+                            Mission Recouvrement
+                        </th>
+                        <th style="width: 25%">
+                            Date réception
+                        </th>
+                        <th style="width: 25%">
+                           Action
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <a href="/recouvrements/details/293823" data-toggle="tooltip" data-original-title="Historique des retards et recouvrements">Ingenerie, Etudes, Techniques</a><br>
+                                <span class="text-muted">ID: 293823</span>
+                            </td>
+                            </td>
+                            <td>
+                                Non
+                            </td>
+                            <td>
+                                12/02/2017
+                            </td>
+                            <td class="text-center">
+                                <a href="/path/to/file" class="btn btn-xs btn-primary" data-toggle="tooltip" data-original-title="Voir détails du remboursement et valider"><i class="fa fa-arrow-right"></i></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a href="/recouvrements/details/293823" data-toggle="tooltip" data-original-title="Historique des retards et recouvrements">Ingenerie, Etudes, Techniques</a><br>
+                                <span class="text-muted">ID: 293823</span>
+                            </td>
+                            </td>
+                            <td>
+                                Non
+                            </td>
+                            <td>
+                                12/02/2017
+                            </td>
+                            <td class="text-center">
+                                <a href="/path/to/file" class="btn btn-xs btn-primary" data-toggle="tooltip" data-original-title="Voir détails du remboursement et valider"><i class="fa fa-arrow-right"></i></a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="h4 push">/remboursements/organisation/frais</h4>
+<div class="row">
+    <div class="col-md-12">
+        <div class="block block-bordered block-rounded">
+            <div class="block-header">
+                <h2 class="block-title">
+                    Remboursement > Frais à régulariser
+                </h2>
+            </div>
+            <div class="block-content block-content-full">
+                <div id="repayment-cover-fees" class="block block-rounded">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <form action="/remboursements/organisation/frais" method="get">
+
+                                <p>Selectionnez les frais à régulariser avec ce remboursement.</p>
+
+                                <table class="table table-bordered table-hover table-header-bg">
+                                    <thead>
+                                    <tr>
+                                        <th style="width: 25%">
+                                            Date
+                                        </th>
+                                        <th style="width: 25%">
+                                            Type de frais
+                                        </th>
+                                        <th style="width: 25%">
+                                            Montant
+                                        </th>
+                                        <th style="width: 25%">
+                                            Selectionner
+                                        </th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            05/02/2017
+                                        </td>
+                                        <td>
+                                            Visite à domicile
+                                        </td>
+                                        <td>
+                                            150 €
+                                        </td>
+                                        <td class="text-center">
+                                            <label class="css-input css-checkbox css-checkbox-default">
+                                                <input type="checkbox" name="repayment-cover-fees[0]" value="105022017"><span></span>
+                                            </label>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            05/03/2017
+                                        </td>
+                                        <td>
+                                            Visite à domicile
+                                        </td>
+                                        <td>
+                                            150 €
+                                        </td>
+                                        <td class="text-center">
+                                            <label class="css-input css-checkbox css-checkbox-default">
+                                                <input type="checkbox" name="repayment-cover-fees[1]" value="205022017"><span></span>
+                                            </label>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                                <p><small class="text-muted"> * Les frais non-régularisés peuvent l'être lors du traitement d'une
+                                        prochaine réception. </small></p>
+                                <button class="btn btn-primary" type="submit">Continuer</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="h4 push">/remboursements/organisation/taux</h4>
+<div class="row">
+    <div class="col-md-12">
+        <div class="block block-bordered block-rounded">
+            <div class="block-header">
+                <h2 class="block-title">
+                    Remboursement > Taux de recouvrement
+                </h2>
+            </div>
+            <div class="block-content block-content-full">
+                <div id="repayment-debt-collection" class="block block-rounded">
+                    <form class="js-validation" action="/remboursements/organisation/frais" method="get">
+                        <p>Quel est le taux de recouvrement pour ce remboursement ? </p>
+                        <div class="row">
+                            <div class="form-group col-md-3">
+                                <label>Recouvreur</label>
+                                <select class="form-control required" name="debt-collection-agency">
+                                    <option value="1">Progeris</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label>Taux (Pourcentage)</label>
+                                <input class="form-control required" name="debt-collection-rate" type="text" placeholder="13">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" type="submit">Continuer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="h4 push">/remboursements/organisation/summary</h4>
+<div class="row">
+    <div class="col-md-12">
+        <div class="block block-bordered block-rounded">
+            <div class="block-header">
+                <h2 class="block-title">
+                    Remboursement > Confirmation
+                </h2>
+            </div>
+            <div class="block-content block-content-full">
+                <div id="repayment-summary" class="block block-rounded">
+                    <form class="js-validation" action="/remboursements/organisation/summary" method="get">
+
+                        <!--  CONDITIONAL if the response is success-->
+                        <div class="content-mini content-mini-full bg-success push">
+                            Le remboursement a été soumis au contrôle interne avec succès.
+                        </div>
+                        <!-- endif -->
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h3 class="h5 push">Opérations prévues</h3>
+                                <table class="table table-bordered table-hover table-header-bg">
+                                    <thead>
+                                    <tr>
+                                        <th class="description" style="width: 40%">
+                                            Description
+                                        </th>
+                                        <th class="borrower" style="width: 15%">
+                                            Recouvreur
+                                        </th>
+                                        <th class="unilend" style="width: 15%">
+                                            Emprunteur
+                                        </th>
+                                        <th class="lender" style="width: 15%">
+                                            Unilend
+                                        </th>
+                                        <th class="description" style="width: 15%">
+                                            Prêteurs
+                                        </th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td class="description">
+                                            Réception brut
+                                        </td>
+                                        <td class="debt-collection-agency">
+                                            &nbsp;
+                                        </td>
+                                        <td class="borrower">
+                                            + 500
+                                        </td>
+                                        <td class="unilend">
+                                            &nbsp;
+                                        </td>
+                                        <td class="lender">
+                                            &nbsp;
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="description">
+                                            Honoraires de recouvrement (loans)
+                                        </td>
+                                        <td class="debt-collection-agency">
+                                            +33.97
+                                        </td>
+                                        <td class="borrower">
+                                            -33.97
+                                        </td>
+                                        <td class="unilend">
+                                            &nbsp;
+                                        </td>
+                                        <td class="lender">
+                                            &nbsp;
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="description">
+                                            TVA sur honoraires de recouvrement (loans)
+                                        </td>
+                                        <td class="debt-collection-agency">
+                                            +6.80
+                                        </td>
+                                        <td class="borrower">
+                                            -6.80
+                                        </td>
+                                        <td class="unilend">
+                                            &nbsp;
+                                        </td>
+                                        <td class="lender">
+                                            &nbsp;
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="description">
+                                            Frais
+                                        </td>
+                                        <td class="debt-collection-agency">
+                                            &nbsp;
+                                        </td>
+                                        <td class="borrower">
+                                            -150
+                                        </td>
+                                        <td class="unilend">
+                                            +150
+                                        </td>
+                                        <td class="lender">
+                                            &nbsp;
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="description">
+                                            Honoraires sur frais
+                                        </td>
+                                        <td class="debt-collection-agency">
+                                            +19.50
+                                        </td>
+                                        <td class="borrower">
+                                            -19.50
+                                        </td>
+                                        <td class="unilend">
+                                            &nbsp;
+                                        </td>
+                                        <td class="lender">
+                                            &nbsp;
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="description">
+                                            TVA sur honoraires de frais
+                                        </td>
+                                        <td class="debt-collection-agency">
+                                            +3.90
+                                        </td>
+                                        <td class="borrower">
+                                            -3.90
+                                        </td>
+                                        <td class="unilend">
+                                            &nbsp;
+                                        </td>
+                                        <td class="lender">
+                                            &nbsp;
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="description">
+                                            Honoraires de recouvrement Com Unilend
+                                        </td>
+                                        <td class="debt-collection-agency">
+                                            +15.00
+                                        </td>
+                                        <td class="borrower">
+                                            &nbsp;
+                                        </td>
+                                        <td class="unilend">
+                                            -15.00
+                                        </td>
+                                        <td class="lender">
+                                            &nbsp;
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="description">
+                                            TVA sur honoraires de recouvrement Com Unilend
+                                        </td>
+                                        <td class="debt-collection-agency">
+                                            +3.00
+                                        </td>
+                                        <td class="borrower">
+                                            &nbsp;
+                                        </td>
+                                        <td class="unilend">
+                                            -3.00
+                                        </td>
+                                        <td class="lender">
+                                            &nbsp;
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="description">
+                                            Montant Comission remboursable à Unilend
+                                        </td>
+                                        <td class="debt-collection-agency">
+                                            &nbsp;
+                                        </td>
+                                        <td class="borrower">
+                                            -82.00
+                                        </td>
+                                        <td class="unilend">
+                                            +82.00
+                                        </td>
+                                        <td class="lender">
+                                            &nbsp;
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="description">
+                                            Montant remboursable aux prêteurs
+                                        </td>
+                                        <td class="debt-collection-agency">
+                                            &nbsp;
+                                        </td>
+                                        <td class="borrower">
+                                            -203.83
+                                        </td>
+                                        <td class="unilend">
+                                            &nbsp;
+                                        </td>
+                                        <td class="lender">
+                                            +203.83
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <h3 class="h5 push">Le montant remboursé aux prêteurs couvre:</h3>
+                                <table class="table table-bordered table-hover table-header-bg">
+                                    <thead>
+                                    <tr>
+                                        <th width="70%">Description</th>
+                                        <th width="30%">Remboursement complet / partiel</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            Échéance Février 2017 - <span class="text-muted">Intérêts Partiels</span>
+                                        </td>
+                                        <td>
+                                            <span class="glyphicon glyphicon-adjust text-muted bg-muted" style="border-radius: 50%;"><span class="sr-only">complet</span></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Échéance Mars 2017 - <span class="text-muted">Capital</span>
+                                        </td>
+                                        <td>
+                                            <span class="glyphicon glyphicon-adjust text-muted bg-muted" style="border-radius: 50%;"><span class="sr-only">complet</span></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Échéance Mars 2017 - <span class="text-muted">Intérêts</span>
+                                        </td>
+                                        <td>
+                                            <span class="glyphicon glyphicon-adjust text-muted"><span class="sr-only">partiel</span></span>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+
+                                <h3 class="h5 push">Le montant remboursé à Unilend couvre:</h3>
+                                <table class="table table-bordered table-hover table-header-bg">
+                                    <thead>
+                                    <tr>
+                                        <th width="70%">Description</th>
+                                        <th width="30%">Remboursement complet / partiel</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            Commission remboursement Février 2017 - <span class="text-muted">Partiel</span>
+                                        </td>
+                                        <td>
+                                            <span class="glyphicon glyphicon-adjust text-muted bg-muted" style="border-radius: 50%;"><span class="sr-only">complet</span></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Commission remboursement Mars 2017
+                                        </td>
+                                        <td>
+                                            <span class="glyphicon glyphicon-adjust text-muted bg-muted" style="border-radius: 50%;"><span class="sr-only">complet</span></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Commission remboursement Acril 2017
+                                        </td>
+                                        <td>
+                                            <span class="glyphicon glyphicon-adjust text-muted bg-muted" style="border-radius: 50%;"><span class="sr-only">complet</span></span>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!--  CONDITIONAL if the response is success hide the code below -->
+                        <div class="content-mini bg-warning">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <b>Programmer l'exécution des transactions</b>
+                                    <p>Attention! S'agissant d'un prélèvement emprunteur pendant un recouvrement, un délai de 8 semaines s'impose, pendant lequel aucun rejet ne devra avoir eu lieu.</p>
+                                    <div class="row">
+                                        <div class="form-group col-md-6">
+                                            <label>Date</label>
+                                            <input id="js-datepicker-organise-repayment" class="form-control required" type="text" name="fee-invoice-date" data-date-format="mm/dd/yy" placeholder="mm/dd/yy">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <br>
+
+                        <button class="btn btn-primary push-10-r" type="submit">Confirmer et Soumettre au contrôle interne</button>
+                        <a class="btn btn-default" href="/">Annuler</a>
+                    <!-- endif -->
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
 

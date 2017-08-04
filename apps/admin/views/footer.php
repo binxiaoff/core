@@ -31,6 +31,13 @@
         // Init page helpers
         App.initHelpers(['select2', 'datepicker', 'autocomplete', 'masked-inputs', 'summernote', 'table-tools', 'easy-pie-chart']);
 
+        // Organisation de remboursement datepicker
+        $('#js-datepicker-organise-repayment').datepicker({
+            startDate: '+8w',
+            autoclose: true
+        });
+
+        // Generic form validation - to be further developed
         $('.js-validation').submit(function(e){
             var valid = true
             $(this).find('.required').each(function(){
