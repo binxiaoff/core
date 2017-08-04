@@ -215,10 +215,6 @@
     }
   }
 
-  .col-graph {
-
-  }
-
   p {
     font-size: $fs-base * .9;
     line-height: 1.5em;
@@ -244,6 +240,15 @@
         padding-left: 0;
         padding-right: 0;
         float: none;
+      }
+    }
+
+    .highcharts-tooltip {
+      > span {
+        > b {
+          max-width: 160px;
+          white-space: pre-wrap;
+        }
       }
     }
   }
