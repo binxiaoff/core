@@ -5,6 +5,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
@@ -35,7 +36,7 @@ class CheckWelcomeOfferValidityCommand extends ContainerAwareCommand
 
         foreach ($welcomeOfferDetails->getUnusedWelcomeOffers($dateLimit) as $welcomeOffer) {
             $welcomeOfferDetails->get($welcomeOffer['id_offre_bienvenue_detail']);
-            $welcomeOfferDetails->status = \offres_bienvenues_details::STATUS_CANCELED;
+            $welcomeOfferDetails->status = OffresBienvenuesDetails::STATUS_CANCELED;
             $welcomeOfferDetails->update();
 
             $wallet       = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($welcomeOfferDetails->id_client, WalletType::LENDER);

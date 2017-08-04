@@ -1981,38 +1981,6 @@ class MailerManager
     }
 
     /**
-     * @param \clients           $client
-     * @param \offres_bienvenues $welcomeOffer
-     */
-    public function sendWelcomeOfferEmail(\clients $client, \offres_bienvenues $welcomeOffer)
-    {
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
-
-        $varMail = [
-            'surl'            => $this->sSUrl,
-            'url'             => $this->sFUrl,
-            'prenom_p'        => $client->prenom,
-            'projets'         => $this->sFUrl . '/projets-a-financer',
-            'offre_bienvenue' => $ficelle->formatNumber($welcomeOffer->montant / 100),
-            'lien_fb'         => $this->getFacebookLink(),
-            'lien_tw'         => $this->getTwitterLink(),
-        ];
-
-        /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('offre-de-bienvenue', $varMail);
-        try {
-            $message->setTo($client->email);
-            $this->mailer->send($message);
-        } catch (\Exception $exception){
-            $this->oLogger->warning(
-                'Could not send email: offre-de-bienvenue - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
-        }
-    }
-
-    /**
      * @param ProjectsPouvoir $proxy
      * @param ClientsMandats  $mandate
      */
