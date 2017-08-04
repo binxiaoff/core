@@ -1314,11 +1314,11 @@
                 <div class="text-right">
                     <button type="button" class="btn btn-default push-10-r" data-toggle="modal" data-target="#modal-cancel-term">Déchoir le terme</button>
 
-                    <!-- If project is in status "Remboursement" : -->
+                    <!-- CONDITIONAL If project is in status "Remboursement" : -->
                     <button type="button" class="btn btn-primary push-10-r" data-toggle="modal" data-target="#modal-status-problem">Passer en statut problème</button>
                     <!-- endif -->
 
-                    <!-- If project is already in status "Problem" : -->
+                    <!-- CONDITIONAL If project is already in status "Problem" : -->
                     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-debt-collection">Missionner un recouvreur (1 500 €)</button>
                     <!-- endif -->
                 </div>
@@ -1344,7 +1344,7 @@
                     </form>
                 </div>
 
-                <!-- If project is in status "Remboursement" : -->
+                <!-- CONDITIONAL If project is in status "Remboursement" : -->
                 <div class="modal fade in" id="modal-status-problem">
                     <form class="modal-dialog" action="/recouvrements/details/429892" method="post">
                         <div class="modal-content">
@@ -1366,7 +1366,7 @@
                 </div>
                 <!-- endif -->
 
-                <!-- If project is already in status "Problem" : -->
+                <!-- CONDITIONAL If project is already in status "Problem" : -->
                 <div class="modal fade in" id="modal-debt-collection">
                     <form class="modal-dialog js-validation" action="/recouvrements/details/429892" method="post">
                         <div class="modal-content">
