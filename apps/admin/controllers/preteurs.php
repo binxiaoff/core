@@ -18,6 +18,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues;
 
 class preteursController extends bootstrap
 {
@@ -546,7 +547,7 @@ class preteursController extends bootstrap
                             header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->clients->id_client);
                             die;
                         } elseif ($welcomeOfferManager->clientIsEligibleToWelcomeOffer($this->clients)) {
-                            $response = $welcomeOfferManager->createWelcomeOffer($this->clients);
+                            $response = $welcomeOfferManager->payOutWelcomeOffer($this->clients);
                             $logger->info('Client ID: ' . $this->clients->id_client . ' Welcome offer creation result: ' . json_encode($response), ['class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $this->clients->id_client ]);
                         } else {
                             $logger->info('Client ID: ' . $this->clients->id_client . ' Welcome offer not created. The client has been validated by the past or has not the right source', [ 'class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $this->clients->id_client]);
@@ -675,7 +676,7 @@ class preteursController extends bootstrap
                         if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')') > 1) {
                             $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
                         } else {
-                            $welcomeOfferManager->createWelcomeOffer($this->clients);;
+                            $welcomeOfferManager->payOutWelcomeOffer($this->clients);;
                             $mailerManager->sendClientValidationEmail($this->clients, 'preteur-confirmation-activation');
                         }
 
@@ -817,113 +818,169 @@ class preteursController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
         $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
-        $this->welcomeOfferMotiveSetting = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Offre de bienvenue motif']);
+        $paidOutWelcomeOffers = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails');
 
-        // form send offres de Bienvenues
-        if (isset($_POST['form_send_offres'])) {
+        if (isset($_SESSION['create_new_welcome_offer']['errors'])) {
+            $this->newWelcomeOfferFormErrors = $_SESSION['create_new_welcome_offer']['errors'];
+            unset($_SESSION['create_new_welcome_offer']['errors']);
+        }
 
-            $this->debut         = $_POST['debut'];
-            $this->fin           = $_POST['fin'];
-            $this->montant       = $_POST['montant'];
-            $this->montant_limit = $_POST['montant_limit'];
-
-            $form_ok = true;
-
-            if (!isset($_POST['debut']) || strlen($_POST['debut']) == 0) {
-                $form_ok = false;
-            }
-            if (!isset($_POST['fin']) || strlen($_POST['fin']) == 0) {
-                $form_ok = false;
-            }
-            if (!isset($_POST['montant']) || strlen($_POST['montant']) == 0) {
-                $form_ok = false;
-            } elseif (is_numeric(str_replace(',', '.', $_POST['montant'])) == false) {
-                $form_ok = false;
-            }
-            if (!isset($_POST['montant_limit']) || strlen($_POST['montant_limit']) == 0) {
-                $form_ok = false;
-            } elseif (is_numeric(str_replace(',', '.', $_POST['montant_limit'])) == false) {
-                $form_ok = false;
-            }
-
-            if ($form_ok == true) {
-                // debut
-                $debut = explode('/', $_POST['debut']);
-                $debut = $debut[2] . '-' . $debut[1] . '-' . $debut[0];
-                // fin
-                $fin = explode('/', $_POST['fin']);
-                $fin = $fin[2] . '-' . $fin[1] . '-' . $fin[0];
-                // montant
-                $montant = str_replace(',', '.', $_POST['montant']);
-                // montant limit
-                $montant_limit = str_replace(',', '.', $_POST['montant_limit']);
-
-                // Enregistrement
-                $offres_bienvenues->debut         = $debut;
-                $offres_bienvenues->fin           = $fin;
-                $offres_bienvenues->montant       = ($montant * 100);
-                $offres_bienvenues->montant_limit = ($montant_limit * 100);
-                $offres_bienvenues->id_user       = $_SESSION['user']['id_user'];
-
-                if ($create == false) {
-                    $offres_bienvenues->update();
-                } else {
-                    $offres_bienvenues->id_offre_bienvenue = $offres_bienvenues->create();
-                }
-
-                $_SESSION['freeow']['title']   = 'Offre de bienvenue';
-                $_SESSION['freeow']['message'] = 'Offre de bienvenue ajouté';
-            } else {
-                $_SESSION['freeow']['title']   = 'Offre de bienvenue';
-                $_SESSION['freeow']['message'] = 'Erreur offre de bienvenue';
-            }
+        if (null !== $this->request->request->get('form_send_new_offer')) {
+            $this->createNewWelcomeOffer();
         }
 
         unset($_SESSION['forms']['rattrapage_offre_bienvenue']);
 
         if (isset($_POST['spy_search'])) {
-            if (false === empty($_POST['dateStart']) && false === empty($_POST['dateEnd'])) {
-                $dateTimeStart                                                   = \DateTime::createFromFormat('d/m/Y', $_POST['dateStart']);
-                $dateTimeEnd                                                     = \DateTime::createFromFormat('d/m/Y', $_POST['dateEnd']);
-                $startDateSQL                                                    = $dateTimeStart->format('Y-m-d');
-                $endDateSQL                                                      = $dateTimeEnd->format('Y-m-d');
-                $_SESSION['forms']['rattrapage_offre_bienvenue']['startDateSQL'] = $startDateSQL;
-                $_SESSION['forms']['rattrapage_offre_bienvenue']['endDateSQL']   = $endDateSQL;
+            /** @var \clients $clientData */
+            $clientData = $this->loadData('clients');
 
-                $this->clientsWithoutWelcomeOffer = $this->clients->getClientsWithNoWelcomeOffer(null, $startDateSQL, $endDateSQL);
-            } elseif (false === empty($_POST['id'])) {
-                $this->clientsWithoutWelcomeOffer                     = $this->clients->getClientsWithNoWelcomeOffer($_POST['id']);
+            if (false === empty($_POST['id'])) {
+                $this->clientsWithoutWelcomeOffer                      = $clientData->getClientsWithNoWelcomeOffer($_POST['id']);
                 $_SESSION['forms']['rattrapage_offre_bienvenue']['id'] = $_POST['id'];
             } else {
-                $_SESSION['freeow']['title']   = 'Recherche non aboutie. Indiquez soit la liste des ID clients soit un interval de date';
-                $_SESSION['freeow']['message'] = 'Il faut une date de d&eacutebut et de fin ou ID(s)!';
+                $_SESSION['freeow']['title']   = 'Recherche non aboutie. Indiquez la liste des ID clients';
+                $_SESSION['freeow']['message'] = 'Il faut séparer les ids par des virgules';
             }
         }
 
-        if (isset($_POST['affect_welcome_offer']) && isset($this->params[0])&& is_numeric($this->params[0])) {
-            if($this->clients->get($this->params[0])) {
-                $response            = $welcomeOfferManager->createWelcomeOffer($this->clients);
-                switch ($response['code']) {
-                    case 0:
-                        $_SESSION['freeow']['title'] = 'Offre de bienvenue cr&eacute;dit&eacute;';
-                        break;
-                    default:
-                        $_SESSION['freeow']['title'] = 'Offre de bienvenue non cr&eacute;dit&eacute;';
-                        break;
-                }
-                $_SESSION['freeow']['message'] = $response['message'];
-            }
+        if (isset($_POST['affect_welcome_offer']) && isset($this->params[0]) && is_numeric($this->params[0])) {
+            $this->payOutWelcomeOffer();
         }
 
-        $unilendPromotionWalletType        = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
-        $unilendPromotionWallet            = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendPromotionWalletType]);
-        $this->sumDispoPourOffres          = $unilendPromotionWallet->getAvailableBalance();
-        $this->alreadyPaidOutAllOffers     = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->getSumPaidOutForOffer();
-        $this->offerIsDisplayedOnHome      = $welcomeOfferManager->displayOfferOnHome();
-        $this->currentOffer                = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy(['status' => \Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues::STATUS_ONLINE]);
-        $this->alreadyPaidOutCurentOffer   = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->getSumPaidOutForOffer($this->currentOffer);
-        $this->remainingAmountCurrentOffer = round(bcsub($this->currentOffer->getMontantLimit(), $this->alreadyPaidOutCurentOffer, 4), 2);
-        $this->allOffers                   = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findAll();
+        $unilendPromotionWalletType          = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
+        $unilendPromotionWallet              = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendPromotionWalletType]);
+        $this->sumDispoPourOffres            = $unilendPromotionWallet->getAvailableBalance();
+        $this->alreadyPaidOutAllOffers       = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->getSumPaidOutForOffer();
+        $this->offerIsDisplayedOnHome        = $welcomeOfferManager->displayOfferOnHome();
+        $this->offerIsDisplayedOnLandingPage = $welcomeOfferManager->displayOfferOnLandingPage();
+
+        $this->currentOfferHomepage                = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy([
+            'status'  => OffresBienvenues::STATUS_ONLINE,
+            'display' => OffresBienvenues::DISPLAY_HOME
+        ]);
+        if (null !== $this->currentOfferHomepage) {
+            $alreadyPaidOutCurrentOfferHomepage        = $paidOutWelcomeOffers->getSumPaidOutForOffer($this->currentOfferHomepage);
+            $this->alreadyPaidOutCurrentOfferHomepage  = null === $alreadyPaidOutCurrentOfferHomepage ? 0 : $alreadyPaidOutCurrentOfferHomepage;
+            $this->remainingAmountCurrentOfferHomepage = round(bcsub($this->currentOfferHomepage->getMontantLimit(), $this->alreadyPaidOutCurrentOfferHomepage, 4), 2);
+        }
+
+        $this->currentOfferLandingPage             = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy([
+            'status'  => OffresBienvenues::STATUS_ONLINE,
+            'display' => OffresBienvenues::DISPLAY_LANDING_PAGE
+        ]);
+        if (null !== $this->currentOfferLandingPage) {
+            $alreadyPaidOutCurrentOfferLandingPage        = $paidOutWelcomeOffers->getSumPaidOutForOffer($this->currentOfferLandingPage);
+            $this->alreadyPaidOutCurrentOfferLandingPage  = null === $alreadyPaidOutCurrentOfferLandingPage ? 0 : $alreadyPaidOutCurrentOfferLandingPage;
+            $this->remainingAmountCurrentOfferLandingPage = round(bcsub($this->currentOfferLandingPage->getMontantLimit(), $this->alreadyPaidOutCurrentOfferLandingPage, 4), 2);
+        }
+
+        $this->allOffers = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findAll();
+    }
+
+    private function createNewWelcomeOffer()
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+
+        $start     = $this->request->request->get('start');
+        $amount    = $this->request->request->getInt('amount');
+        $maxAmount = $this->request->request->getInt('max_amount');
+        $display   = $this->request->request->get('type_offer');
+
+        $startDate = \DateTime::createFromFormat('d/m/Y', $start);
+        if (null === $startDate) {
+            $_SESSION['create_new_welcome_offer']['errors'][] = 'Le format de la date n\'nest pas correct';
+        }
+        if ($amount > $maxAmount) {
+            $_SESSION['create_new_welcome_offer']['errors'][] = 'Le montant de l\'offre ne peut pas être inférieur au montant limite';
+        }
+        if (empty($display)) {
+            $_SESSION['create_new_welcome_offer']['errors'][] = 'Il faut choisir le type de page sur laquelle l\'offre va être affiché';
+        }
+        if (false === empty($_SESSION['create_new_welcome_offer']['errors'])) {
+            header('Location:' . $this->lurl . '/preteurs/offres_de_bienvenue');
+            die;
+        }
+
+        $welcomeOffer = new OffresBienvenues();
+        $welcomeOffer->setDebut($startDate);
+        $welcomeOffer->setMontant($amount * 100);
+        $welcomeOffer->setMontantLimit($maxAmount * 100);
+        $welcomeOffer->setDisplay($display);
+        $welcomeOffer->setIdUser($user->getIdUser());
+        $welcomeOffer->setStatus(OffresBienvenues::STATUS_ONLINE);
+
+        $entityManager->persist($welcomeOffer);
+        $entityManager->flush($welcomeOffer);
+
+        header('Location:' . $this->lurl . '/preteurs/offres_de_bienvenue');
+        die;
+    }
+
+    private function payOutWelcomeOffer()
+    {
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
+        $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
+
+        if (null !== $client) {
+            $response = $welcomeOfferManager->payOutWelcomeOffer($client);
+            switch ($response['code']) {
+                case 0:
+                    $_SESSION['freeow']['title'] = 'Offre de bienvenue cr&eacute;dit&eacute;';
+                    break;
+                default:
+                    $_SESSION['freeow']['title'] = 'Offre de bienvenue non cr&eacute;dit&eacute;';
+                    break;
+            }
+            $_SESSION['freeow']['message'] = $response['message'];
+        }
+
+        header('Location:' . $this->lurl . '/preteurs/offres_de_bienvenue');
+        die;
+    }
+
+    public function _affect_welcome_offer()
+    {
+        $this->hideDecoration();
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
+        $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager      = $this->get('doctrine.orm.entity_manager');
+        $this->client       = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
+        $welcomeOfferType   = $welcomeOfferManager->getWelcomeOfferForClient($this->client);
+        $this->welcomeOffer = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy(['status' => OffresBienvenues::STATUS_ONLINE, 'display' => $welcomeOfferType]);
+
+        if (false === $this->client->isNaturalPerson()) {
+            $this->company      = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->client->getIdClient()]);
+        }
+    }
+
+    public function _deactivate_welcome_offer()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $welcomeOffer = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->find($this->request->request->get('welcome_offer_id'));
+        if (
+            null !== $welcomeOffer
+            && OffresBienvenues::STATUS_ONLINE == $welcomeOffer->getStatus()
+            && true == $this->request->request->get('deactivate_welcome_offer')
+        ) {
+            $welcomeOffer->setStatus(OffresBienvenues::STATUS_OFFLINE);
+            $welcomeOffer->setFin(new \DateTime('NOW'));
+
+            $entityManager->flush($welcomeOffer);
+        }
+
+        header('Location:' . $this->lurl . '/preteurs/offres_de_bienvenue');
+        die;
     }
 
     public function _email_history()
@@ -1686,97 +1743,5 @@ class preteursController extends bootstrap
             'message' => 'Echec lors de l\'ajout de la notification',
             'status'  => 'ko'
         ]);
-    }
-
-    public function _csv_rattrapage_offre_bienvenue()
-    {
-        $this->autoFireView = false;
-        $this->hideDecoration();
-        /** @var \clients $clients */
-        $clients                    = $this->loadData('clients');
-        $clientsWithoutWelcomeOffer = [];
-
-        if (isset($_SESSION['forms']['rattrapage_offre_bienvenue']['startDateSQL']) && isset($_SESSION['forms']['rattrapage_offre_bienvenue']['endDateSQL'])) {
-            $clientsWithoutWelcomeOffer = $clients->getClientsWithNoWelcomeOffer(
-                null,
-                $_SESSION['forms']['rattrapage_offre_bienvenue']['startDateSQL'],
-                $_SESSION['forms']['rattrapage_offre_bienvenue']['endDateSQL']
-            );
-        }
-
-        if (isset($_SESSION['forms']['rattrapage_offre_bienvenue']['id'])) {
-            $clientsWithoutWelcomeOffer = $clients->getClientsWithNoWelcomeOffer($_SESSION['forms']['rattrapage_offre_bienvenue']['id']);
-        }
-
-        $fileName      = 'ratrappage_offre_bienvenue';
-        $columnHeaders = ['ID Client', 'Nom ou Raison Sociale', 'Prénom', 'Email', 'Date de création', 'Date de validation'];
-        $data          = [];
-
-        foreach ($clientsWithoutWelcomeOffer as $key => $client) {
-            $validationDate = \DateTime::createFromFormat('Y-m-d H:i:s', $client['date_validation']);
-            $creationDate = \DateTime::createFromFormat('Y-m-d', $client['date_creation']);
-            $data[] = [
-                $client['id_client'],
-                empty($client['company']) ? $client['nom'] : $client['company'],
-                empty($client['company']) ? $client['prenom'] : '',
-                $client['email'],
-                $creationDate->format('d-m-Y'),
-                (false !== $validationDate) ? $validationDate->format('d-m-Y') : ''
-            ];
-        }
-        $this->exportCSV($columnHeaders, $data, $fileName);
-    }
-
-    /**
-     * @param array  $columnHeaders
-     * @param array  $data
-     * @param string $fileName
-     */
-    private function exportCSV(array $columnHeaders, array $data, $fileName)
-    {
-        PHPExcel_Settings::setCacheStorageMethod(
-            PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
-            ['memoryCacheSize' => '2048MB', 'cacheTime' => 1200]
-        );
-
-        $document    = new PHPExcel();
-        $activeSheet = $document->setActiveSheetIndex(0);
-
-        if (count($columnHeaders) > 0) {
-            foreach ($columnHeaders as $index => $columnName) {
-                $activeSheet->setCellValueByColumnAndRow($index, 1, $columnName);
-            }
-        }
-
-        foreach ($data as $rowIndex => $row) {
-            $colIndex = 0;
-            foreach ($row as $cellValue) {
-                $activeSheet->setCellValueByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
-            }
-        }
-
-        header('Content-Type: text/csv');
-        header('Content-Disposition: attachment;filename=' . $fileName . '.csv');
-        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-        header('Expires: 0');
-
-        /** @var \PHPExcel_Writer_CSV $oWriter */
-        $oWriter = PHPExcel_IOFactory::createWriter($document, 'CSV');
-        $oWriter->setUseBOM(true);
-        $oWriter->setDelimiter(';');
-        $oWriter->save('php://output');
-    }
-
-    public function _affect_welcome_offer()
-    {
-        $this->hideDecoration();
-
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager      = $this->get('doctrine.orm.entity_manager');
-        $this->welcomeOffer = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy(['status' => 0, 'idOffreBienvenue' => 1]);
-        $this->client       = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
-        if (false === $this->client->isNaturalPerson()) {
-            $this->company      = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->client->getIdClient()]);
-        }
     }
 }

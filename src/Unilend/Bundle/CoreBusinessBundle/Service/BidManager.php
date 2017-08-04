@@ -6,6 +6,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Autobid;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
@@ -234,8 +235,8 @@ class BidManager
                         $oWelcomeOfferDetails->id_client          = $iClientId;
                         $oWelcomeOfferDetails->id_bid             = 0;
                         $oWelcomeOfferDetails->id_bid_remb        = $bid->getIdBid();
-                        $oWelcomeOfferDetails->status             = \offres_bienvenues_details::STATUS_NEW;
-                        $oWelcomeOfferDetails->type               = \offres_bienvenues_details::TYPE_CUT;
+                        $oWelcomeOfferDetails->status             = OffresBienvenuesDetails::STATUS_NEW;
+                        $oWelcomeOfferDetails->type               = OffresBienvenuesDetails::TYPE_CUT;
                         $oWelcomeOfferDetails->montant            = $iAmountRepayment * 100;
                         $oWelcomeOfferDetails->create();
                     }
@@ -384,8 +385,8 @@ class BidManager
                 $oWelcomeOfferDetails->id_client          = $bid->getIdLenderAccount()->getIdClient()->getIdClient();
                 $oWelcomeOfferDetails->id_bid             = 0;
                 $oWelcomeOfferDetails->id_bid_remb        = $bid->getIdBid();
-                $oWelcomeOfferDetails->status             = \offres_bienvenues_details::STATUS_NEW;
-                $oWelcomeOfferDetails->type               = \offres_bienvenues_details::TYPE_PAYBACK;
+                $oWelcomeOfferDetails->status             = OffresBienvenuesDetails::STATUS_NEW;
+                $oWelcomeOfferDetails->type               = OffresBienvenuesDetails::TYPE_PAYBACK;
                 $oWelcomeOfferDetails->create();
             }
         }

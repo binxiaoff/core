@@ -30,13 +30,6 @@ class OffresBienvenuesDetails
     private $idOffreBienvenue;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="motif", type="string", length=191, nullable=false)
-     */
-    private $motif;
-
-    /**
      * @var integer
      *
      * @ORM\Column(name="id_client", type="integer", nullable=false)
@@ -125,30 +118,6 @@ class OffresBienvenuesDetails
     public function getIdOffreBienvenue()
     {
         return $this->idOffreBienvenue;
-    }
-
-    /**
-     * Set motif
-     *
-     * @param string $motif
-     *
-     * @return OffresBienvenuesDetails
-     */
-    public function setMotif($motif)
-    {
-        $this->motif = $motif;
-
-        return $this;
-    }
-
-    /**
-     * Get motif
-     *
-     * @return string
-     */
-    public function getMotif()
-    {
-        return $this->motif;
     }
 
     /**

@@ -23,9 +23,6 @@
     <div class="col-md-6">
         <h1>Rattrapage offre de bienvenue</h1>
     </div>
-    <div class="col-md-6">
-        <a href="<?= $this->lurl ?>/preteurs/csv_rattrapage_offre_bienvenue" class="btn-primary pull-right">Recuperation du CSV</a>
-    </div>
 </div>
 <div class="datepicker_table">
     <form method="post" name="date_select">
@@ -36,17 +33,6 @@
                         <input type="text" name="id" id="id" class="input_large"
                                value="<?= (empty($_POST['dateStart']) && empty($_POST['dateEnd']) && false === empty($_POST['id'])) ? $_POST['id'] : '' ?>"/>
                     </td>
-                    <td><label>Date debut</label><br/>
-                        <input type="text" name="dateStart"
-                               id="datepik_1"
-                               class="input_dp"
-                               value="<?= (empty($_POST['id']) && false === empty($_POST['dateStart'])) ? $_POST['dateStart'] : '' ?>"/>
-                    </td>
-                    <td><label>Date fin</label><br/>
-                        <input type="text" name="dateEnd"
-                               id="datepik_2" class="input_dp"
-                               value="<?= (empty($_POST['id']) && false === empty($_POST['dateEnd'])) ? $_POST['dateEnd'] : '' ?>"/>
-                    </td>
                     <td><br>
                         <input type="hidden" name="spy_search" id="spy_search"/>
                         <button type="submit" class="btn-primary">Rechercher</button>
@@ -56,10 +42,11 @@
         </fieldset>
     </form>
 </div>
+<!-- TODO add hide table button -->
 <?php if (empty($this->clientsWithoutWelcomeOffer)) : ?>
     <p>Il n'y a aucun utilisateur pour le moment.</p>
 <?php else : ?>
-    <div class="table">
+    <div class="table"> <!-- limiter le tableau en lignes et paginer -->
         <table class="tablesorter">
             <thead>
             <tr>
@@ -83,8 +70,7 @@
                     <td><?= (false === empty($client['date_validation'])) ? \DateTime::createFromFormat('Y-m-d H:i:s', $client['date_validation'])->format('d/m/Y') : '' ?></td>
                     <td>
                         <?php if (false === empty($client['date_validation'])) : ?>
-                            <a href="<?= $this->lurl ?>/preteurs/affect_welcome_offer/<?= $client['id_client'] ?>"
-                               class="link thickbox"><img alt="Modifier " src="<?= $this->surl ?>/images/admin/edit.png"></a>
+                            <a href="<?= $this->lurl ?>/preteurs/affect_welcome_offer/<?= $client['id_client'] ?>" class="link thickbox">Attribuer</a>
                         <?php endif; ?>
                     </td>
                 </tr>

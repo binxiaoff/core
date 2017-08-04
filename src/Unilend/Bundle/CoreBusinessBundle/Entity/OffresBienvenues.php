@@ -17,6 +17,9 @@ class OffresBienvenues
     const STATUS_OFFLINE = 0;
     const STATUS_ONLINE  = 1;
 
+    const DISPLAY_HOME = 'home_page';
+    const DISPLAY_LANDING_PAGE = 'landing_page';
+
     /**
      * @var integer
      *
@@ -30,6 +33,13 @@ class OffresBienvenues
      * @ORM\Column(name="montant_limit", type="integer", nullable=true)
      */
     private $montantLimit;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="display", type="string", length=45, nullable=false)
+     */
+    private $display;
 
     /**
      * @var \DateTime
@@ -69,7 +79,7 @@ class OffresBienvenues
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -130,6 +140,30 @@ class OffresBienvenues
     public function getMontantLimit()
     {
         return $this->montantLimit;
+    }
+
+    /**
+     * Set display
+     *
+     * @param string $display
+     *
+     * @return OffresBienvenues
+     */
+    public function setDisplay($display)
+    {
+        $this->display = $display;
+
+        return $this;
+    }
+
+    /**
+     * Get display
+     *
+     * @return string
+     */
+    public function getDisplay()
+    {
+        return $this->display;
     }
 
     /**
