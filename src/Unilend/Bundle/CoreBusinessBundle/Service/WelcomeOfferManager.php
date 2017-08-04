@@ -30,12 +30,24 @@ class WelcomeOfferManager
         $this->entityManager          = $entityManager;
     }
 
+    /**
+     * @return bool
+     */
     public function displayOfferOnHome()
     {
         /** @var \settings $settings */
         $settings = $this->entityManagerSimulator->getRepository('settings');
         $settings->get('offre-de-bienvenue-sur-home', 'type');
         return (bool) $settings->value;
+    }
+
+    /**
+     * @return bool
+     */
+    public function displayOfferOnLandingPage()
+    {
+
+        return true;
     }
 
     /**
@@ -141,10 +153,9 @@ class WelcomeOfferManager
             $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
         }
 
-        $hasSource            = in_array($client->getSource2(), [SourceManager::HP_LENDER_SOURCE_NAME, SourceManager::HP_SOURCE_NAME]);
+        $hasOrigin            = in_array($client->getOrigine(), [Clients::ORIGIN_WELCOME_OFFER_HOME, Clients::ORIGIN_WELCOME_OFFER_LP]);
         $noPreviousValidation = (null === $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->getFirstClientValidation($client));
 
-        return ($hasSource && $noPreviousValidation);
+        return ($hasOrigin && $noPreviousValidation);
     }
-
 }
