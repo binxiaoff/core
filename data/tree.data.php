@@ -339,7 +339,7 @@ class tree extends tree_crud
 
                 case 'Partner':
                     $partner  = new \partner($this->bdd);
-                    $partners = $partner->select('status = ' . Partner::STATUS_VALIDATED, 'name ASC');
+                    $partners = $partner->select('status = ' . Partner::STATUS_VALIDATED, 'label ASC');
 
                     echo '
                     <tr>
