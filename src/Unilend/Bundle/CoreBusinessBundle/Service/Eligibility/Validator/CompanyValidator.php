@@ -505,7 +505,7 @@ class CompanyValidator
                 continue;
             }
 
-            $executivePeriod[$change->getSiren()] = $this->getPeriodForExecutiveInACompany($executiveId, $change->getSiren());
+            $executivePeriod[$change->getSiren()] = $this->getPeriodForExecutiveInACompany($executiveId, $change->getSiren(), $extended);
         }
 
         $incidentAnnouncements = $this->externalDataManager->getExecutiveAnnouncements($executiveId);
@@ -524,7 +524,6 @@ class CompanyValidator
                 }
             }
 
-            $executivePeriod[$announcement->getSiren()]['ended']->modify('+' . $extended . ' year');
             if (
                 $executivePeriod[$announcement->getSiren()]['started'] <= $announcement->getPublishedDate()
                 && $executivePeriod[$announcement->getSiren()]['ended'] >= $announcement->getPublishedDate()
@@ -537,12 +536,13 @@ class CompanyValidator
     }
 
     /**
-     * @param $executiveId
-     * @param $siren
+     * @param int    $executiveId
+     * @param string $siren
+     * @param int    $extended
      *
      * @return array
      */
-    private function getPeriodForExecutiveInACompany($executiveId, $siren)
+    private function getPeriodForExecutiveInACompany($executiveId, $siren, $extended)
     {
         $now     = new \DateTime();
         $started = $now;
@@ -568,7 +568,7 @@ class CompanyValidator
             }
         }
 
-        return ['started' => $started, 'ended' => $ended];
+        return ['started' => $started, 'ended' => $ended->modify('+' . $extended . ' year')];
     }
 
     /**
