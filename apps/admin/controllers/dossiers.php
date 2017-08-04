@@ -1857,6 +1857,7 @@ class dossiersController extends bootstrap
             if (isset($this->params[1]) && $this->params[1] == 'remb') {
                 /** @var \Symfony\Component\Stopwatch\Stopwatch $stopWatch */
                 $stopWatch = $this->get('debug.stopwatch');
+                $stopWatch->start('repayment');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRepaymentManager $projectRepaymentManager */
                 $projectRepaymentManager = $this->get('unilend.service.project_repayment_manager');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
@@ -1870,8 +1871,6 @@ class dossiersController extends bootstrap
 
                 if (false === empty($paidPaymentSchedules)) {
                     foreach ($paidPaymentSchedules as $paidPaymentSchedule) {
-                        $stopWatch->start('repayment');
-
                         $repaymentSchedules = $repaymentScheduleRepository->findByProject($project, $paidPaymentSchedule->getOrdre(), null, Echeanciers::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PAID);
                         $repaymentNb        = 0;
 
