@@ -32,6 +32,10 @@ class Clients
     const TITLE_MISTER    = 'M.';
     const TITLE_UNDEFINED = '';
 
+    const ORIGIN_WELCOME_OFFER      = 1;
+    const ORIGIN_WELCOME_OFFER_HOME = 2;
+    const ORIGIN_WELCOME_OFFER_LP   = 3;
+
     /**
      * @var string
      *
@@ -234,6 +238,13 @@ class Clients
      * @ORM\Column(name="slug_origine", type="string", length=191, nullable=true)
      */
     private $slugOrigine;
+
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="origine", type="integer", nullable=true)
+     */
+    private $origine;
 
     /**
      * @var integer
@@ -959,6 +970,30 @@ class Clients
     public function getSlugOrigine()
     {
         return $this->slugOrigine;
+    }
+
+    /**
+     * Set origine
+     *
+     * @param integer $origine
+     *
+     * @return Clients
+     */
+    public function setOrigine($origine)
+    {
+        $this->origine = $origine;
+
+        return $this;
+    }
+
+    /**
+     * Get origine
+     *
+     * @return integer
+     */
+    public function getOrigine()
+    {
+        return $this->origine;
     }
 
     /**

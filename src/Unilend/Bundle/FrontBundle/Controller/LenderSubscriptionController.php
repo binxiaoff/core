@@ -58,12 +58,24 @@ class LenderSubscriptionController extends Controller
         $clientAddress = new ClientsAdresses();
         $company       = new Companies();
 
+        $this->addClientSources($client);
+
         if (false === empty($this->get('session')->get('landingPageData'))) {
             $landingPageData = $this->get('session')->get('landingPageData');
             $this->get('session')->remove('landingPageData');
             $client->setNom($landingPageData['prospect_name']);
             $client->setPrenom($landingPageData['prospect_first_name']);
             $client->setEmail($landingPageData['prospect_email']);
+
+            if ($this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage()) {
+                $client->setOrigine(Clients::ORIGIN_WELCOME_OFFER_LP);
+            }
+        }
+        if (
+            in_array($client->getSource2(), [SourceManager::HP_SOURCE_NAME, SourceManager::HP_LENDER_SOURCE_NAME])
+            && $this->get('unilend.service.welcome_offer_manager')->displayOfferOnHome()
+        ) {
+            $client->setOrigine(Clients::ORIGIN_WELCOME_OFFER_HOME);
         }
 
         $formManager         = $this->get('unilend.frontbundle.service.form_manager');
@@ -173,8 +185,6 @@ class LenderSubscriptionController extends Controller
         }
 
         if ($form->isValid()) {
-            $this->addClientSources($client);
-
             $clientType   = ($client->getIdPaysNaissance() == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
             $password     = password_hash($client->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
             $slug         = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
@@ -292,8 +302,6 @@ class LenderSubscriptionController extends Controller
         }
 
         if ($form->isValid()){
-            $this->addClientSources($client);
-
             $clientType   = ($client->getIdPaysNaissance() == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_LEGAL_ENTITY : Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
             $password     = password_hash($client->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
             $slug         = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
