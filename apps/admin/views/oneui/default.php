@@ -1733,7 +1733,7 @@
                 <div id="repayment-cover-fees" class="block block-rounded">
                     <div class="row">
                         <div class="col-md-8">
-                            <form action="/remboursements/organisation/frais" method="get">
+                            <form action="/remboursements/organisation" method="get">
 
                                 <p>Selectionnez les frais à régulariser avec ce remboursement.</p>
 
@@ -1812,7 +1812,7 @@
             </div>
             <div class="block-content block-content-full">
                 <div id="repayment-debt-collection" class="block block-rounded">
-                    <form class="js-validation" action="/remboursements/organisation/frais" method="get">
+                    <form class="js-validation" action="/remboursements/organisation" method="get">
                         <p>Quel est le taux de recouvrement pour ce remboursement ? </p>
                         <div class="row">
                             <div class="form-group col-md-3">
@@ -1845,7 +1845,7 @@
             </div>
             <div class="block-content block-content-full">
                 <div id="repayment-summary" class="block block-rounded">
-                    <form class="js-validation" action="/remboursements/organisation/summary" method="get">
+                    <form class="js-validation" action="/remboursements/organisation" method="get">
 
                         <!--  CONDITIONAL if the response is success-->
                         <div class="content-mini content-mini-full bg-success push">
