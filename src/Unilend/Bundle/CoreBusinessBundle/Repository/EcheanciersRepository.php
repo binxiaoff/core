@@ -321,60 +321,25 @@ class EcheanciersRepository extends EntityRepository
                 ROUND(SUM(t.grossInterests - t.repaidTaxes - t.upcomingTaxes), 2)     AS netInterests,
                 ROUND(SUM(t.repaidTaxes + t.upcomingTaxes), 2)                        AS taxes
             FROM (
-                 SELECT
-                  LEFT(dates.added, 7) AS month,
-                  QUARTER(dates.added) AS quarter,
-                  YEAR(dates.added)    AS year,
-                  (
-                    SELECT SUM(amount)
-                    FROM operation o
-                      INNER JOIN operation_type ot ON ot.id = o.id_type
-                    WHERE ot.label = \'' . OperationType::CAPITAL_REPAYMENT . '\' AND o.id_wallet_creditor = :lender AND LEFT(o.added, 7) = month
-                  ) - (
-                    IFNULL((SELECT SUM(amount)
-                            FROM operation o
-                              INNER JOIN operation_type ot ON ot.id = o.id_type
-                            WHERE ot.label = \'' . OperationType::CAPITAL_REPAYMENT_REGULARIZATION . '\' AND o.id_wallet_debtor = :lender AND LEFT(o.added, 7) = month)
-                    , 0))              AS capital,
-                  (
-                    SELECT SUM(amount)
-                    FROM operation o
-                      INNER JOIN operation_type ot ON ot.id = o.id_type
-                    WHERE ot.label = \'' . OperationType::GROSS_INTEREST_REPAYMENT . '\' AND o.id_wallet_creditor = :lender AND LEFT(o.added, 7) = month
-                  ) - (
-                    IFNULL((SELECT SUM(amount)
-                            FROM operation o
-                              INNER JOIN operation_type ot ON ot.id = o.id_type
-                            WHERE ot.label = \'' . OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION . '\' AND o.id_wallet_debtor = :lender AND LEFT(o.added, 7) = month)
-                    , 0)) AS grossInterests,
-                  (
-                    SELECT SUM(amount)
-                    FROM operation o
-                      INNER JOIN operation_type ot ON ot.id = o.id_type
-                    WHERE ot.label IN
-                          (:frenchTax)
-                          AND o.id_wallet_debtor = :lender AND LEFT(o.added, 7) = month
-                  ) - (
-                    IFNULL((SELECT SUM(amount)
-                            FROM operation o
-                              INNER JOIN operation_type ot ON ot.id = o.id_type
-                            WHERE ot.label IN
-                                  (:frenchTaxRegularizaton)
-                                  AND o.id_wallet_creditor = :lender AND LEFT(o.added, 7) = month)
-                    , 0)) AS repaidTaxes,
-                  0 AS upcomingTaxes
-                FROM (
-                       SELECT added
-                       FROM operation o
-                         INNER JOIN operation_type ot ON o.id_type = ot.id
-                       WHERE (o.id_wallet_creditor = :lender OR o.id_wallet_debtor = :lender)
-                             AND ot.label IN (:repaymentTypes)
-                       GROUP BY LEFT(added, 7)
-                     ) dates
+                SELECT
+                 LEFT(o.added, 7) AS month,
+                 QUARTER(o.added) AS quarter,
+                 YEAR(o.added) AS year,
+                 SUM(IF(ot.label = \'' . OperationType::CAPITAL_REPAYMENT_REGULARIZATION . '\', -amount, IF(ot.label = \'' . OperationType::CAPITAL_REPAYMENT . '\', amount, 0))) AS capital,
+                 SUM(IF(ot.label = \'' . OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION . '\', -amount, IF(ot.label= \'' . OperationType::GROSS_INTEREST_REPAYMENT . '\', amount, 0))) AS grossInterests,
+                 SUM(IF(ot.label in (:frenchTaxRegularisation), -amount, IF(ot.label in (:frenchTax), amount, 0))) AS repaidTaxes,
+                 0 upcomingTaxes
+               FROM operation o USE INDEX (idx_id_wallet_creditor_type, idx_id_wallet_debitor_type)
+                 INNER JOIN operation_type ot ON ot.id = o.id_type
+               WHERE
+                 ot.label IN (:allOperationTypes)
+                 AND (o.id_wallet_creditor = :lender
+                      OR o.id_wallet_debtor = :lender)
+               GROUP BY LEFT(o.added, 7)
 
                 UNION ALL
 
-                (SELECT
+                SELECT
                     LEFT(e.date_echeance, 7)        AS month,
                     QUARTER(e.date_echeance)        AS quarter,
                     YEAR(e.date_echeance)           AS year,
@@ -421,23 +386,29 @@ class EcheanciersRepository extends EntityRepository
                         ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                         LIMIT 1
                     )) > 180)), TRUE, FALSE) = FALSE
-                GROUP BY month)
+                GROUP BY month
             ) AS t
             GROUP BY t.month';
+
+        $frenchTax              = OperationType::TAX_TYPES_FR;
+        $frenchTaxRegularisation = OperationType::TAX_TYPES_FR_REGULARIZATION;
+        $repaymentTypes         = [
+            OperationType::CAPITAL_REPAYMENT,
+            OperationType::CAPITAL_REPAYMENT_REGULARIZATION,
+            OperationType::GROSS_INTEREST_REPAYMENT,
+            OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION
+        ];
+        $allOperationTypes      = array_merge($frenchTax, $frenchTaxRegularisation, $repaymentTypes);
 
         $oQCProfile    = new QueryCacheProfile(CacheKeys::DAY, md5(__METHOD__));
         $statement     = $this->getEntityManager()->getConnection()->executeQuery(
             $query,
             [
                 'lender'                       => $lender,
-                'frenchTax'                    => OperationType::TAX_TYPES_FR,
-                'frenchTaxRegularizaton'       => OperationType::TAX_TYPES_FR_REGULARIZATION,
-                'repaymentTypes'               => [
-                    OperationType::CAPITAL_REPAYMENT,
-                    OperationType::CAPITAL_REPAYMENT_REGULARIZATION,
-                    OperationType::GROSS_INTEREST_REPAYMENT,
-                    OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION
-                ],
+                'frenchTax'                    => $frenchTax,
+                'frenchTaxRegularisation'       => $frenchTaxRegularisation,
+                'repaymentTypes'               => $repaymentTypes,
+                'allOperationTypes'            => $allOperationTypes,
                 'tax_type_exempted_lender'     => TaxManager::TAX_TYPE_EXEMPTED_LENDER,
                 'tax_type_taxable_lender'      => TaxManager::TAX_TYPE_TAXABLE_LENDER,
                 'tax_type_foreigner_lender'    => TaxManager::TAX_TYPE_FOREIGNER_LENDER,
@@ -446,7 +417,8 @@ class EcheanciersRepository extends EntityRepository
             [
                 'repaymentTypes'               => Connection::PARAM_INT_ARRAY,
                 'frenchTax'                    => Connection::PARAM_INT_ARRAY,
-                'frenchTaxRegularizaton'       => Connection::PARAM_INT_ARRAY,
+                'frenchTaxRegularisation'       => Connection::PARAM_INT_ARRAY,
+                'allOperationTypes'            => Connection::PARAM_INT_ARRAY,
                 'tax_type_exempted_lender'     => Connection::PARAM_INT_ARRAY,
                 'tax_type_taxable_lender'      => Connection::PARAM_INT_ARRAY,
                 'tax_type_foreigner_lender'    => Connection::PARAM_INT_ARRAY,

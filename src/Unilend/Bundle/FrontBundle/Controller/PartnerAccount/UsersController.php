@@ -77,10 +77,17 @@ class UsersController extends Controller
                         'lien_tw'       => $settingsRepository->findOneBy(['type' => 'Twitter'])->getValue()
                     ];
 
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $keywords);
-                    $message->setTo($client->getEmail());
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
+                    $message       = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $keywords);
+                    try {
+                        $message->setTo($client->getEmail());
+                        $mailer = $this->get('mailer');
+                        $mailer->send($message);
+                    } catch (\Exception $exception) {
+                        $this->get('logger')->warning(
+                            'Could not send email : mot-de-passe-oublie - Exception: ' . $exception->getMessage(),
+                            ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                        );
+                    }
                     break;
                 case 'deactivate':
                     $client->setStatus(Clients::STATUS_OFFLINE);

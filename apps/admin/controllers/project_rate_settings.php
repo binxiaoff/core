@@ -112,9 +112,16 @@ class project_rate_settingsController extends bootstrap
                     ];
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                     $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-bad-autolend-settings', $varMail);
-                    $message->setTo($wallet->getIdClient()->getEmail());
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
+                    try {
+                        $message->setTo($wallet->getIdClient()->getEmail());
+                        $mailer = $this->get('mailer');
+                        $mailer->send($message);
+                    } catch (\Exception $exception) {
+                        $this->get('logger')->warning(
+                            'Could not send email: notification-bad-autolend-settings - Exception: ' . $exception->getMessage(),
+                            ['id_mail_template' => $message->getTemplateId(), 'id_client' => $wallet->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                        );
+                    }
                 }
             }
         }

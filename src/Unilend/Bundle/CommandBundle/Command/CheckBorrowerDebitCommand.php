@@ -6,7 +6,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class CheckBorrowerDebitCommand extends ContainerAwareCommand
 {
@@ -25,17 +25,17 @@ class CheckBorrowerDebitCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \echeanciers $echeanciers */
-        $echeanciers = $entityManager->getRepository('echeanciers');
+        $echeanciers = $entityManagerSimulator->getRepository('echeanciers');
         /** @var \projects $projects */
-        $projects    = $entityManager->getRepository('projects');
-        /** @var \settings $oSettings */
-        $oSettings = $entityManager->getRepository('settings');
+        $projects = $entityManagerSimulator->getRepository('projects');
+        /** @var \settings $settings */
+        $settings = $entityManagerSimulator->getRepository('settings');
 
-        $liste       = $echeanciers->selectEcheanciersByprojetEtOrdre();
-        $liste_remb  = '';
+        $liste      = $echeanciers->selectEcheanciersByprojetEtOrdre();
+        $liste_remb = '';
         foreach ($liste as $l) {
             $projects->get($l['id_project'], 'id_project');
             $liste_remb .= '
@@ -56,13 +56,20 @@ class CheckBorrowerDebitCommand extends ContainerAwareCommand
             '$liste_remb' => $liste_remb
         );
 
-        $oSettings->get('Adresse notification check remb preteurs', 'type');
-        $destinataire = $oSettings->value;
+        $settings->get('Adresse notification check remb preteurs', 'type');
+        $recipient = $settings->value;
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-prelevement-emprunteur', $varMail, false);
-        $message->setTo(explode(';', trim($destinataire)));
-        $mailer = $this->getContainer()->get('mailer');
-        $mailer->send($message);
+        try {
+            $message->setTo(explode(';', trim($recipient)));
+            $mailer = $this->getContainer()->get('mailer');
+            $mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->getContainer()->get('monolog.logger.console')->warning(
+                'Could not send email : notification-prelevement-emprunteur - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'email address' => explode(';', trim($recipient)), 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 }

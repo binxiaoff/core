@@ -367,6 +367,8 @@ class dossiersController extends bootstrap
                     $loanRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
                     /** @var \echeanciers $echeanciers */
                     $echeanciers = $this->loadData('echeanciers');
+                    /** @var LoggerInterface $logger */
+                    $logger = $this->get('logger');
 
                     $this->settings->get('Facebook', 'type');
                     $facebookLink = $this->settings->value;
@@ -389,7 +391,7 @@ class dossiersController extends bootstrap
                             $entityManager->flush($loan);
 
                             $this->get('unilend.service.operation_manager')->refuseLoan($loan);
-
+                            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
                             $wallet  = $loan->getIdLender();
                             $varMail = [
                                 'surl'              => $this->surl,
@@ -405,9 +407,16 @@ class dossiersController extends bootstrap
 
                             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-pret-refuse', $varMail);
-                            $message->setTo($wallet->getIdClient()->getEmail());
-                            $mailer = $this->get('mailer');
-                            $mailer->send($message);
+                            try {
+                                $message->setTo($wallet->getIdClient()->getEmail());
+                                $mailer = $this->get('mailer');
+                                $mailer->send($message);
+                            } catch (\Exception $exception) {
+                                $logger->warning(
+                                    'Could not send email: preteur-pret-refuse - Exception: ' . $exception->getMessage(),
+                                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $wallet->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                                );
+                            }
                         }
                         $entityManager->getConnection()->commit();
                     } catch (Exception $exception) {
@@ -982,9 +991,16 @@ class dossiersController extends bootstrap
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMailType, $aReplacements);
-        $message->setTo($this->clients->email);
-        $mailer = $this->get('mailer');
-        $mailer->send($message);
+        try {
+            $message->setTo($this->clients->email);
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->get('logger')->warning(
+                'Could not send email: ' . $sMailType . ' - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $this->clients->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     private function sendProblemStatusEmailLender($iStatus, $projectStatusHistoryDetails)
@@ -1080,6 +1096,8 @@ class dossiersController extends bootstrap
 
         if (is_array($aLenderLoans)) {
             $aNextRepayment = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND date_echeance > "' . date('Y-m-d') . '"', 'date_echeance ASC', 0, 1);
+            /** @var LoggerInterface $logger */
+            $logger = $this->get('logger');
 
             foreach ($aLenderLoans as $aLoans) {
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
@@ -1127,15 +1145,18 @@ class dossiersController extends bootstrap
                     $this->mail_template->get($sMailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $locale . '" AND type');
                     $aReplacements['sujet'] = $this->mail_template->subject;
 
-                    /** @var \Psr\Log\LoggerInterface $logger */
-                    $logger = $this->get('logger');
-                    $logger->debug('Mail to send : ' . $sMailType . ' Variables : ' . json_encode($aReplacements), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project]);
-
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                     $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMailType, $aReplacements);
-                    $message->setTo($wallet->getIdClient()->getEmail());
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
+                    try {
+                        $message->setTo($wallet->getIdClient()->getEmail());
+                        $mailer = $this->get('mailer');
+                        $mailer->send($message);
+                    } catch (\Exception $exception) {
+                        $logger->warning(
+                            'Could not send email: ' . $sMailType . ' - Exception: ' . $exception->getMessage(),
+                            ['id_mail_template' => $message->getTemplateId(), 'id_client' => $wallet->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                        );
+                    }
                 }
             }
         }
@@ -1836,6 +1857,7 @@ class dossiersController extends bootstrap
             if (isset($this->params[1]) && $this->params[1] == 'remb') {
                 /** @var \Symfony\Component\Stopwatch\Stopwatch $stopWatch */
                 $stopWatch = $this->get('debug.stopwatch');
+                $stopWatch->start('repayment');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRepaymentManager $projectRepaymentManager */
                 $projectRepaymentManager = $this->get('unilend.service.project_repayment_manager');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
@@ -1849,8 +1871,6 @@ class dossiersController extends bootstrap
 
                 if (false === empty($paidPaymentSchedules)) {
                     foreach ($paidPaymentSchedules as $paidPaymentSchedule) {
-                        $stopWatch->start('repayment');
-
                         $repaymentSchedules = $repaymentScheduleRepository->findByProject($project, $paidPaymentSchedule->getOrdre(), null, Echeanciers::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PAID);
                         $repaymentNb        = 0;
 
@@ -2413,17 +2433,24 @@ class dossiersController extends bootstrap
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeEmail, $varMail);
-            $message->setTo($sRecipientEmail);
-            $mailer = $this->get('mailer');
-            $mailer->send($message);
+            try {
+                $message->setTo($sRecipientEmail);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
-            $oProjectManager = $this->get('unilend.service.project_manager');
-            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::COMMERCIAL_REVIEW, $oProjects, 1, $varMail['liste_pieces']);
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
+                $oProjectManager = $this->get('unilend.service.project_manager');
+                $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::COMMERCIAL_REVIEW, $oProjects, 1, $varMail['liste_pieces']);
 
-            unset($_SESSION['project_submission_files_list'][$oProjects->id_project]);
-
-            echo 'Votre email a été envoyé';
+                unset($_SESSION['project_submission_files_list'][$oProjects->id_project]);
+                echo 'Votre email a été envoyé';
+            } catch (\Exception $exception) {
+                $this->get('logger')->warning(
+                    'Could not send email: ' . $sTypeEmail . ' - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $oClients->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+                echo 'Le mail n\'a pas été envoyé';
+            }
         }
     }
 
@@ -2861,9 +2888,16 @@ class dossiersController extends bootstrap
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
-            $message->setTo($client->email);
-            $mailer = $this->get('mailer');
-            $mailer->send($message);
+            try {
+                $message->setTo($client->email);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
+            } catch (\Exception $exception) {
+                $this->get('logger')->warning(
+                    'Could not send email: emprunteur-dossier-rejete - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
         }
 
         header('Location: ' . $this->lurl . '/dossiers/edit/' . $project->id_project);

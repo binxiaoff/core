@@ -167,7 +167,7 @@ var MapView = function (elem, options) {
         // console.log('MapViewMarker', mouseEvent.layer, mouseEvent.layer.__parent)
 
         // Select the mapviewItem element
-        self.selectMapviewItem(mouseEvent.layer.options.mapviewItemId)
+        // self.selectMapviewItem(mouseEvent.layer.options.mapviewItemId)
       }
     },
 
@@ -184,7 +184,9 @@ var MapView = function (elem, options) {
   ElementAttrsObject(elem, {
     style: 'data-mapview-style',
     showFilters: 'data-mapview-showfilters',
-    mapbox: 'data-mapview-mapbox'
+    mapbox: 'data-mapview-mapbox',
+    ajaxUrl: 'data-mapview-ajaxurl',
+    ajaxPaginationUrl: 'data-mapview-ajaxpaginationurl'
   }),
   // Options specified in JS call override all the previous
   options)
@@ -318,6 +320,24 @@ MapView.prototype.init = function (markerData) {
     })
   }
 
+  // Chech if data needs to be loaded via ajax
+  if (self.settings.ajaxUrl) {
+    self.getAjaxData(self.settings.ajaxUrl)
+  // Complete the mapview initialisation
+  } else {
+    self.completeInit(markerData)
+  }
+}
+
+/*
+ * Completes Initialisation as a callback function (necessary for ajax-loaded data)
+ *
+ * @method completeInit
+ * @returns {Void}
+ */
+MapView.prototype.completeInit = function (markerData) {
+  var self = this
+
   // Find [data-mapview-item] to compile/generate the marker data to populate with
   if (!markerData || markerData.length === 0) {
     // @debug
@@ -348,6 +368,37 @@ MapView.prototype.init = function (markerData) {
 
   // @trigger elem `MapView:initialised` [{MapView}]
   self.$elem.trigger('MapView:initialised', [self])
+}
+
+/*
+ * Ajax-load marker data
+ *
+ * @method getAjaxData
+ * @returns {Void}
+ */
+MapView.prototype.getAjaxData = function (ajaxUrl) {
+  var self = this
+  // @debug
+  // console.log('Ajax loading url' + ajaxUrl)
+
+  // Retrieve marker data
+  $.ajax({
+    url: ajaxUrl,
+    method: 'POST',
+    beforeSend: function() {
+      // Using a custom spinner so remove the default one
+      $('body').removeClass('ui-is-loading');
+    },
+    success: function (markerData) {
+      // Complete the mapview initialisation
+      self.completeInit(markerData)
+    },
+    error: function(jqXHR) {
+      // Handle server errors
+      self.completeInit()
+      console.log('Error retrieving marker data. Error code: ' + jqXHR.status)
+    }
+  });
 }
 
 /*
@@ -1055,8 +1106,14 @@ var MapViewMarker = function (mapView, options) {
 
     // Generate the popup's content based on the templates
     self.popup.setContent(Templating.replace(self.templates.popupContent, [{
-      title: options.popupTitle || options.title || '',
-      content: options.popupContent || options.description || ''
+      title: options.title,
+      url: options.url,
+      city: options.city,
+      zip: options.zip,
+      rating: options.rating,
+      amount: options.amount,
+      offers: options.offers,
+      interest: options.interest,
     }, __]))
 
     // Bind popup to the marker (popup shows when clicked)
@@ -1070,7 +1127,7 @@ var MapViewMarker = function (mapView, options) {
  * MapViewMarker prototype properties and methods
  */
 MapViewMarker.prototype.templates = {
-  popupContent: '<div class="mapview-marker-popup" data-parent="{{ id }}"><div class="mapview-marker-popup-title">{{ title }}</div><div class="mapview-marker-popup-content">{{ content }}</div></div>'
+  popupContent: '<div class="mapview-marker-popup" data-parent="{{ id }}"><div class="mapview-marker-popup-title"><a href="{{ url }}">{{ title }}</a></div><div class="mapview-marker-popup-content"><div class="left"><div class="ellipsis">{{ city }},</div> {{ zip }}<br><span class="rating rating-{{ rating }}"></span></div><div class="right">{{ amount }}<br>{{ interest }}<br>{{ offers }}</div></div>'
 }
 
 /*
@@ -1208,7 +1265,7 @@ var MapViewFilter = function (options) {
  */
 MapViewFilter.prototype.templates = {
   inputCheckbox: '<label class="mapview-filter mapview-group-{{ groupName }} mapview-filter-type-checkbox" data-mapview-group="{{ groupName }}">\
-    <input type="checkbox" name="mapview_filter[{{ name }}]" value="{{ value }}" {{ enabled }}/><span class="label">{{ label }}</span>\
+    <input type="checkbox" name="mapview_filter[{{ name }}]" value="{{ value }}" {{ enabled }}/><span class="label"><span class="mapview-marker-icon mapview-marker-icon-{{ groupName }}"></span> {{ label }}</span>\
   </label>',
   inputText: '<label class="mapview-filter mapview-group-{{ groupName }} mapview-filter-type-text" data-mapview-group="{{ groupName }}">\
     <input type="text" name="mapview_filter[{{ name }}]" class="input-field" placeholder="{{ label }}" value="{{ value }}" />\
@@ -1241,32 +1298,55 @@ MapView.prototype.destroy = function () {
 }
 
 /*
- * Select (highlight) the mapviewItem on the project map list using a markerId
+ * Ajax load the next page of mapview items
  *
- * @method selectMapviewItem
- * @param {String} markerId
+ * @method paginationAjax
+ * @param {String} page
  * @returns {Void}
  */
-MapView.prototype.selectMapviewItem = function (markerId) {
+MapView.prototype.paginationAjax = function (page) {
   var self = this
-  var $mapviewItem = $('[data-mapview-markerid="' + markerId + '"]')
 
-  // Not found
-  if ($mapviewItem.length === 0) return
+  if (!page) {
+    console.log('Missing page attribute')
+    return
+  }
 
-  // UI
-  $('[data-mapview-item].ui-project-list-map-item-selected').not($mapviewItem).removeClass('ui-project-list-map-item-selected')
-  $mapviewItem.addClass('ui-project-list-map-item-selected')
+  var ajaxUrl = self.settings.ajaxPaginationUrl + '/' + page.toString()
+  // @debug
+  // console.log('Ajax loading page from ' + ajaxUrl + ' | marker: ' + markerId)
 
-  // Scroll to the element within the list
-  $mapviewItem.parents().each(function (i, parent) {
-    var $parent = $(parent)
-    // Only scroll the first parent with `overflow: auto`
-    if ($parent.css('overflow') === 'auto') {
-      $parent.uiScrollTo($mapviewItem)
-      return false
+  $.ajax({
+    url: ajaxUrl,
+    method: 'POST',
+    beforeSend: function () {
+      // Using a custom spinner so remove the default one
+      $('body').removeClass('ui-is-loading');
+      self.$elem.trigger('Spinner:showLoading')
+    },
+    success: function (response) {
+      self.$elem.trigger('Spinner:hideLoading')
+
+      // Append results
+      var $list = self.$elem.parent().find('.list-projects')
+      var $lastItemIndex = $list.children().length
+      $list.append(response)
+      $list.parent().uiScrollTo($list.find('li:nth-child(' + $lastItemIndex + ')'))
+
+      // Update the next page link
+      var $next = $list.parent().find('.pagination-next')
+      var next = parseInt($next.attr('href').split(/[/ ]+/).pop()) + 1
+      var href = self.settings.ajaxPaginationUrl + '/' + next.toString()
+      // @debug
+      // console.log(href)
+      $next.attr('href', href)
+    },
+    error: function (jqXHR) {
+      // Handle server errors
+      self.$elem.trigger('Spinner:hideLoading')
+      console.log('Server error: ' + jqXHR.status)
     }
-  })
+  });
 }
 
 /*
@@ -1286,7 +1366,7 @@ MapView.prototype.refreshMapbox = function (options) {
  */
 $.fn.uiMapView = function (op) {
   // Fire a command to the MapView object, e.g. $('[data-mapview]').uiMapView('addMarker', {..})
-  if (typeof op === 'string' && /^(panTo|zoom|populateMarkers|addMarker|removeMarker|showMarker|refreshMapbox|refreshFilters|showGroup|hideGroup|debug)$/.test(op)) {
+  if (typeof op === 'string' && /^(panTo|zoom|populateMarkers|addMarker|removeMarker|showMarker|refreshMapbox|refreshFilters|showGroup|hideGroup|paginationAjax|debug)$/.test(op)) {
     // Get further additional arguments to apply to the matched command method
     var args = Array.prototype.slice.call(arguments)
     args.shift()
@@ -1346,14 +1426,28 @@ $(document)
       // Show the marker in the mapview
       if (markerItemData) {
         $map.uiMapView('showMarker', markerItemData.id, 13, true)
-
-        // UI
-        MapView.prototype.selectMapviewItem(markerItemData.id)
       }
     }
+  })
+
+  // Ajax-load more items inside map projects list
+  .on(Utility.clickEvent, '.project-list-map .pagination-next', function(event) {
+    event.preventDefault()
+
+    var currentPage = $(this).attr('href').match(/\d+/)[0]
+    var $map = $(document).find('[data-mapview], .ui-mapview, .ui-has-mapview').first()
+    $map.uiMapView('paginationAjax', currentPage)
   })
 
   // Refresh the MapView's map when the window has been updated or when made visible
   .on('UI:update UI:visible', function (event) {
     $('.ui-mapview').uiMapView('refreshMapbox')
+  })
+  // Append legend
+  .on('MapView:initialised', '#project-list-map-view', function() {
+      if ($('body').is('.ui-user-type-lender')) {
+          var $legend  = $(this).find('.mapview-filter-legend')
+          var $filters = $(this).find('.mapview-filters')
+          $filters.append($legend)
+      }
   })

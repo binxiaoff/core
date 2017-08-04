@@ -162,7 +162,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                     <th></th>
                     <td>
                         <input style="font-size: 11px; height: 25px; width: 105px;" type="button" id="generer_mdp2" name="generer_mdp2" value="Générer mdp" class="btn-primary" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/>
-                        <span style="margin-left:5px;color:green; display:none;" class="reponse">mdp généré</span>
+                        <span style="margin-left:5px;color:green; display:none;" class="success">mdp envoyé</span>
+                        <span style="margin-left:5px;color:orange; display:none;" class="warning">Email non envoyé</span>
+                        <span style="margin-left:5px;color:red; display:none;" class="error">Erreur</span>
                     </td>
                 </tr>
             <?php else : ?>
@@ -232,12 +234,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                             <?php endforeach; ?>
                         </select>
                     </td>
-                    <th></th>
-                    <td></td>
-                </tr>
-                <tr>
-                    <th></th>
-                    <td><input type="submit" value="Valider ce pays et appliquer aux échéanciers" class="btn-primary" id="valider_pays" name="valider_pays"></td>
                     <th></th>
                     <td></td>
                 </tr>
@@ -407,14 +403,14 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
         </table>
         <h2>Etape 2</h2>
         <table class="form" style="margin: auto;">
-            <input type="hidden" value="<?= $this->currentBankAccount->getId() ?>" name="id_bank_account" id="id_bank_account">
+            <input type="hidden" value="<?= (null !== $this->currentBankAccount) ? $this->currentBankAccount->getId() : ''?>" name="id_bank_account" id="id_bank_account">
             <tr>
                 <th>BIC :</th>
-                <td><?= $this->currentBankAccount->getBic() ?></td>
+                <td><?= (null !== $this->currentBankAccount) ? $this->currentBankAccount->getBic() : '' ?></td>
             </tr>
             <tr>
                 <th>IBAN :</th>
-                <td><?= chunk_split($this->currentBankAccount->getIban(), 4, ' ') ?></td>
+                <td><?= (null !== $this->currentBankAccount) ? chunk_split($this->currentBankAccount->getIban(), 4, ' ') : '' ?></td>
             </tr>
             <?php if ($this->origine_fonds[0] != false) : ?>
                 <?php if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER, Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) : ?>

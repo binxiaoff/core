@@ -10,6 +10,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,6 +38,8 @@ class ProjectsController extends Controller
      * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", defaults={"page": "1", "sortType": "end", "sortDirection": "desc"}, requirements={"page": "\d+"}, name="projects_list")
      * @Template("pages/projects.html.twig")
      *
+     * @Method("GET")
+     *
      * @param int    $page
      * @param string $sortType
      * @param string $sortDirection
@@ -46,6 +49,72 @@ class ProjectsController extends Controller
     public function projectsListAction($page, $sortType, $sortDirection)
     {
         return $this->getProjectsList($page, $sortType, $sortDirection);
+    }
+
+    /**
+     * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", defaults={"page": "1", "sortType": "end", "sortDirection": "desc"}, requirements={"page": "\d+"}, name="projects_list_json")
+     * @Template("partials/components/project-list/map-item-template.html.twig")
+     *
+     * @Method("POST")
+     * @return Response
+     */
+    public function projectsListMapListAction($page, $sortType, $sortDirection)
+    {
+        return $this->getProjectsList($page, $sortType, $sortDirection);
+    }
+
+    /**
+     * @Route("/projets-list-all", name="projects_list_all", condition="request.isXmlHttpRequest()")
+     * @Method("POST")
+     *
+     * @return Response
+     */
+    public function projectsListAllAction()
+    {
+        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+        $translator            = $this->get('translator');
+        $router                = $this->get('router');
+        $projects              = $projectDisplayManager->getProjectsList();
+        $projectsMapview       = [];
+        $offerStatus           = '';
+
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
+
+        foreach ($projects as $project) {
+            if ($project['finished'] === true) {
+                $status = 'expired';
+            } else {
+                $status = 'active';
+            }
+
+            // Offer status
+            if (array_key_exists('lender', $project) && $project['lender']['bids']['count'] > 0) {
+                if (count($project['lender']['bids']['inprogress']) > 0) {
+                    $offerStatus = 'inprogress';
+                } elseif (count($project['lender']['bids']['inprogress']) > 0) {
+                    $offerStatus = 'accepted';
+                }
+            }
+
+            $item['id']          = 'marker' . $project['projectId'];
+            $item['categoryId']  = $project['company']['sectorId'];
+            $item['latLng']      = [$project['company']['latitude'], $project['company']['longitude']];
+            $item['title']       = $translator->trans('company-sector_sector-' . $project['company']['sectorId']);
+            $item['url']         = $router->generate('project_detail', ['projectSlug' => $project['slug']]);
+            $item['city']        = $project['company']['city'];
+            $item['zip']         = $project['company']['zip'];
+            $item['rating']      = str_replace('.', '-', constant('\projects::RISK_' . $project['risk']));
+            $item['amount']      = $ficelle->formatNumber($project['amount'], 0) . '&nbsp;€';
+            $item['interest']    = $ficelle->formatNumber($project['averageRate'], 1) . '&nbsp;%';
+            $item['status']      = $status;
+            $item['offers']      = $translator->transchoice('project-list_project-map-tooltip-offers-count', $project['bidsCount'], ['%count%' => $ficelle->formatNumber($project['bidsCount'], 0)]);
+            $item['offerStatus'] = $offerStatus;
+            $item['groupName']   = $status;
+            $projectsMapview[]   = $item;
+        }
+
+        return new JsonResponse($projectsMapview);
     }
 
     /**
@@ -914,9 +983,7 @@ class ProjectsController extends Controller
         }
 
         /** @var UserLender $user */
-        $user   = $this->getUser();
-        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
-        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $user = $this->getUser();
 
         if (false === ($user instanceof UserLender)) {
             return new JsonResponse([
@@ -925,6 +992,9 @@ class ProjectsController extends Controller
                 'messages' => [$translator->trans('project-detail_modal-bid-error-disconnected-lender-message')]
             ]);
         }
+
+        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
+        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
         if ($wallet->getAvailableBalance() < $amount) {
             return new JsonResponse([

@@ -149,6 +149,8 @@ class transfertsController extends bootstrap
     public function _attribution_preteur()
     {
         $this->hideDecoration();
+        $this->lPreteurs = [];
+
 
         $this->clients   = $this->loadData('clients');
         $this->companies = $this->loadData('companies');
@@ -156,7 +158,41 @@ class transfertsController extends bootstrap
         if (isset($_POST['id'], $_POST['nom'], $_POST['prenom'], $_POST['email'], $_POST['raison_sociale'], $_POST['id_reception'])) {
             $_SESSION['controlDoubleAttr'] = md5($_SESSION['user']['id_user']);
 
-            $this->lPreteurs    = $this->clients->searchPreteurs($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale']);
+            if (empty($_POST['id']) && empty($_POST['nom']) && empty($_POST['email']) && empty($_POST['prenom']) && empty($_POST['raison_sociale'])) {
+                $_SESSION['search_lender_attribution_error'][] = 'Veuillez remplir au moins un champ';
+            }
+
+            $email = empty($_POST['email']) ? '' : filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
+            if (false === $email) {
+                $_SESSION['search_lender_attribution_error'][] = 'Format de l\'email est non valide';
+            }
+
+            $clientId = empty($_POST['id']) ? '' : filter_var($_POST['id'], FILTER_SANITIZE_NUMBER_INT);
+            if (false === $clientId) {
+                $_SESSION['search_lender_attribution_error'][] = 'L\'id du client doit être numérique';
+            }
+
+            $lastName = empty($_POST['nom']) ? '' : filter_var($_POST['nom'], FILTER_SANITIZE_STRING);
+            if (false === $lastName) {
+                $_SESSION['search_lender_attribution_error'][] = 'Le format du nom n\'est pas valide';
+            }
+
+            $firstName = empty($_POST['prenom']) ? '' : filter_var($_POST['prenom'], FILTER_SANITIZE_STRING);
+            if (false === $firstName) {
+                $_SESSION['search_lender_attribution_error'][] = 'Le format du prenom n\'est pas valide';
+            }
+
+            $companyName = empty($_POST['raison_sociale']) ? '' : filter_var($_POST['raison_sociale'], FILTER_SANITIZE_STRING);
+            if (false === $companyName) {
+                $_SESSION['search_lender_attribution_error'][] = 'Le format de la raison sociale n\'est pas valide';
+            }
+
+            if (false === empty($_SESSION['search_lender_attribution_error'])) {
+                header('Location:' . $this->lurl . '/transferts/attribution_preteur');
+                die;
+            }
+
+            $this->lPreteurs    = $this->clients->searchPreteurs(trim($clientId), trim($lastName), trim($email), trim($firstName), trim($companyName));
             $this->id_reception = $_POST['id_reception'];
         }
     }
@@ -252,9 +288,16 @@ class transfertsController extends bootstrap
 
                         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation-manu', $varMail);
-                        $message->setTo($preteurs->email);
-                        $mailer = $this->get('mailer');
-                        $mailer->send($message);
+                        try {
+                            $message->setTo($preteurs->email);
+                            $mailer = $this->get('mailer');
+                            $mailer->send($message);
+                        } catch (\Exception $exception) {
+                            $this->get('logger')->warning(
+                                'Could not send email : preteur-alimentation-manu - Exception: ' . $exception->getMessage(),
+                                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $preteurs->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                            );
+                        }
                     }
 
                     echo $reception->getIdClient()->getIdClient();

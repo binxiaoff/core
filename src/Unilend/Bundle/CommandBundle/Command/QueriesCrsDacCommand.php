@@ -90,20 +90,24 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
         $activeSheet->setCellValue('N' . $row, 'Solde au 31/12/' . $year);
         $activeSheet->setCellValue('O' . $row, 'Montant investi au 31/12/' . $year);
         $activeSheet->setCellValue('P' . $row, 'CRD au 31/12/' . $year);
+        $activeSheet->setCellValue('Q' . $row, 'Intérêts bruts versés jusqu\'au 31/12/' . $year);
         $row++;
 
         /** @var Clients $client */
         foreach ($clientRepository->findValidatedClientsUntilYear($year) as $client) {
             /** @var ClientsAdresses $clientAddress */
-            $clientAddress           = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $client]);
-            $wallet                  = $walletRepository->getWalletByType($client, WalletType::LENDER);
-            $endOfYearBalanceHistory = $walletBalanceHistoryRepository->getBalanceOfTheDay($wallet, $lastDayOfTheYear);
-            $endOfYearBalance        = null !== $endOfYearBalanceHistory ? bcadd($endOfYearBalanceHistory->getAvailableBalance(), $endOfYearBalanceHistory->getCommittedBalance(), 2) : 0;
-            $remainingDuCapital      = $operationRepository->getRemainingDueCapitalAtDate($client->getIdClient(), $lastDayOfTheYear);
-            $amountInvested          = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::LENDER_LOAN], null, $lastDayOfTheYear);
-            $currentClientStatus     = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->getLastClientStatus($client);
-            $firstValidation         = $clientStatusHistoryRepository->getFirstClientValidation($client);
-            $fiscalCountryIso        = $lenderImpositionRepository->getFiscalIsoAtDate($wallet, $lastDayOfTheYear);
+            $clientAddress               = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $client]);
+            $wallet                      = $walletRepository->getWalletByType($client, WalletType::LENDER);
+            $endOfYearBalanceHistory     = $walletBalanceHistoryRepository->getBalanceOfTheDay($wallet, $lastDayOfTheYear);
+            $endOfYearBalance            = null !== $endOfYearBalanceHistory ? bcadd($endOfYearBalanceHistory->getAvailableBalance(), $endOfYearBalanceHistory->getCommittedBalance(), 2) : 0;
+            $remainingDuCapital          = $operationRepository->getRemainingDueCapitalAtDate($client->getIdClient(), $lastDayOfTheYear);
+            $amountInvested              = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::LENDER_LOAN], null, $lastDayOfTheYear);
+            $currentClientStatus         = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->getLastClientStatus($client);
+            $firstValidation             = $clientStatusHistoryRepository->getFirstClientValidation($client);
+            $fiscalCountryIso            = $lenderImpositionRepository->getFiscalIsoAtDate($wallet, $lastDayOfTheYear);
+            $grossInterest               = $operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::GROSS_INTEREST_REPAYMENT], null, $year);
+            $grossInterestRegularization = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION], null, $year);
+            $yearlyGrossInterest         = round(bcsub($grossInterest, $grossInterestRegularization, 4), 2);
 
             if (false === $client->isNaturalPerson()) {
                 /** @var Companies $company */
@@ -126,6 +130,7 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
             $activeSheet->setCellValueExplicit('N' . $row, $endOfYearBalance, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit('O' . $row, $amountInvested, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit('P' . $row, $remainingDuCapital, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicit('Q' . $row, $yearlyGrossInterest, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
             $row+=1;
         }

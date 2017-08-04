@@ -411,15 +411,14 @@ function generer_le_mdp(id_client) {
     var val = {
         id_client: id_client
     };
-    $.post(add_url + '/ajax/generer_mdp', val).done(function (data) {
-        if (data != 'nok') {
+    $.post(add_url + '/ajax/generer_mdp', val).done(function (status) {
+        $reponse = $('.' + status);
+        $reponse.slideDown();
 
-            $(".reponse").slideDown();
+        setTimeout(function () {
+            $reponse.slideUp();
+        }, 3000);
 
-            setTimeout(function () {
-                $(".reponse").slideUp();
-            }, 3000);
-        }
     });
 }
 
