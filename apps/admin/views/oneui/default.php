@@ -1853,6 +1853,15 @@
                         </div>
                         <!-- endif -->
 
+                        <div class="row push">
+                            <div class="col-md-3">
+                                <div class="content-mini content-mini-full push" style="background: #f5f5f5;">
+                                    <div class="font-s12 font-w600 text-uppercase">Montant remboursé</div>
+                                    <a class="h2 font-w300 text-primary">500 €</a>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="row">
                             <div class="col-md-6">
                                 <h3 class="h5 push">Opérations prévues</h3>
