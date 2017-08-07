@@ -1206,12 +1206,12 @@ class ProjectManager
         $commissionRate = round(bcdiv($project->getCommissionRateFunds(), 100, 5), 4);
         $commission     = round(bcmul($project->getAmount(), $commissionRate, 4), 2);
         if (null !== $invoice) {
-            $commission = bcdiv($invoice->getMontantHt(), 100, 2);
+            $commission = round(bcdiv($invoice->getMontantHt(), 100, 4), 2);
         }
 
         if ($inclTax) {
             if (null !== $invoice) {
-                $commission = bcdiv($invoice->getMontantTtc(), 100, 2);
+                $commission = round(bcdiv($invoice->getMontantTtc(), 100, 4), 2);
             } else {
                 $vatTax     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
                 $vatRate    = bcadd(1, bcdiv($vatTax->getRate(), 100, 4), 4);
