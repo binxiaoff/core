@@ -86,6 +86,7 @@
             <argument type="service" id="translator"/>
             <argument type="service" id="router" />
             <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="unilend.service.bid_manager"/>
         </service>
 
         <service id="unilend.frontbundle.seo_manager" class="Unilend\Bundle\FrontBundle\Service\SeoManager">
