@@ -93,8 +93,12 @@ class CompanyValidator
             return $locationCheck;
         }
 
-        if (Companies::NAF_CODE_NO_ACTIVITY === $this->getNAFCode($siren)) {
-            return $this->checkNoActivityCompany($siren, $project);
+        try {
+            if (Companies::NAF_CODE_NO_ACTIVITY === $this->getNAFCode($siren)) {
+                return $this->checkNoActivityCompany($siren, $project);
+            }
+        } catch (\Exception $exception) {
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
         }
 
         $paymentIncidentsCheck = $this->checkRule('TC-RISK-005', $siren, $project);
@@ -166,12 +170,17 @@ class CompanyValidator
      */
     private function checkSiren($siren)
     {
-        if (
-            Companies::INVALID_SIREN_EMPTY === $siren
-            || null === $this->externalDataManager->getCompanyIdentity($siren)
-        ) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN];
+        try {
+            if (
+                Companies::INVALID_SIREN_EMPTY === $siren
+                || null === $this->externalDataManager->getCompanyIdentity($siren)
+            ) {
+                return [ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN];
+            }
+        } catch (\Exception $exception) {
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
         }
+
         return [];
     }
 
@@ -182,10 +191,15 @@ class CompanyValidator
      */
     private function checkActiveCompany($siren)
     {
-        $companyData = $this->externalDataManager->getCompanyIdentity($siren);
-        if (in_array($companyData->getCompanyStatus(), [7, 9])) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_INACTIVE];
+        try {
+            $companyData = $this->externalDataManager->getCompanyIdentity($siren);
+            if (in_array($companyData->getCompanyStatus(), [7, 9])) {
+                return [ProjectsStatus::NON_ELIGIBLE_REASON_INACTIVE];
+            }
+        } catch (\Exception $exception) {
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
         }
+
         return [];
     }
 
@@ -196,21 +210,30 @@ class CompanyValidator
      */
     private function checkCollectiveProceeding($siren)
     {
-        $companyData = $this->externalDataManager->getCompanyIdentity($siren);
-        if ($companyData->getCollectiveProcedure()) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_PROCEEDING];
+        try {
+            $companyData = $this->externalDataManager->getCompanyIdentity($siren);
+            if ($companyData->getCollectiveProcedure()) {
+                return [ProjectsStatus::NON_ELIGIBLE_REASON_PROCEEDING];
+            }
+        } catch (\Exception $exception) {
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
         }
+
         return [];
     }
 
     private function checkLocation($siren)
     {
-        $companyData = $this->externalDataManager->getCompanyIdentity($siren);
-        if (
-            substr($companyData->getPostCode(), 0, 2) === '20' // Corse
-            || in_array(substr($companyData->getPostCode(), 0, 3), ['973', '976']) // Guyane et Mayotte
-        ) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_COMPANY_LOCATION];
+        try {
+            $companyData = $this->externalDataManager->getCompanyIdentity($siren);
+            if (
+                substr($companyData->getPostCode(), 0, 2) === '20' // Corse
+                || in_array(substr($companyData->getPostCode(), 0, 3), ['973', '976']) // Guyane et Mayotte
+            ) {
+                return [ProjectsStatus::NON_ELIGIBLE_REASON_COMPANY_LOCATION];
+            }
+        } catch (\Exception $exception) {
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
         }
 
         return [];
@@ -348,11 +371,15 @@ class CompanyValidator
      */
     private function checkEliminationXerfiScore($siren)
     {
-        $nafCode = $this->getNAFCode($siren);
-        $xerfi   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($nafCode);
+        try {
+            $nafCode = $this->getNAFCode($siren);
+            $xerfi   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($nafCode);
 
-        if (Xerfi::UNILEND_ELIMINATION_SCORE === $xerfi->getUnilendRating()) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE];
+            if (Xerfi::UNILEND_ELIMINATION_SCORE === $xerfi->getUnilendRating()) {
+                return [ProjectsStatus::NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE];
+            }
+        } catch (\Exception $exception) {
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
         }
 
         return [];
@@ -391,14 +418,18 @@ class CompanyValidator
             return [ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE];
         }
 
-        $nafCode = $this->getNAFCode($siren);
-        $xerfi   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($nafCode);
+        try {
+            $nafCode = $this->getNAFCode($siren);
+            $xerfi   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($nafCode);
 
-        if (
-            EulerHermesCompanyRating::COLOR_RED === $trafficLight->getColor()
-            && $xerfi->getScore() > 75
-        ) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI];
+            if (
+                EulerHermesCompanyRating::COLOR_RED === $trafficLight->getColor()
+                && $xerfi->getScore() > 75
+            ) {
+                return [ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI];
+            }
+        } catch (\Exception $exception) {
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
         }
 
         return [];
@@ -658,6 +689,8 @@ class CompanyValidator
      * @param string $siren
      *
      * @return string
+     *
+     * @throws \Exception
      */
     private function getNAFCode($siren)
     {
