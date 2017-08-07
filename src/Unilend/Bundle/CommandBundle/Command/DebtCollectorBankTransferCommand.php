@@ -8,7 +8,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
-class DebtCollectorTransferCommand extends ContainerAwareCommand
+class DebtCollectorBankTransferCommand extends ContainerAwareCommand
 {
     protected function configure()
     {
