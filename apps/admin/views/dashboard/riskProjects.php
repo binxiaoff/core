@@ -28,6 +28,9 @@
                         <?php if (false === empty($project['partner_logo'])) : ?>
                             <img src="<?= $this->surl ?>/images/admin/partner/<?= $project['partner_logo'] ?>" alt="<?= $project['partner_logo'] ?>">
                         <?php endif; ?>
+                        <?php if (true === $project['hasMonitoringEvent']) : ?>
+                            <span class="e-change-warning"></span>
+                        <?php endif; ?>
                     </td>
                     <td data-project="<?= $project['id_project'] ?>"><?= $project['id_project'] ?></td>
                     <td data-project="<?= $project['id_project'] ?>"><?= $project['company_name'] ?></td>
