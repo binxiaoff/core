@@ -193,7 +193,7 @@ class NotificationDisplayManager
                     $project->get($notification['id_project'], 'id_project');
                     $company->get($project->id_company, 'id_company');
                     $projectRateRange = $this->bidManager->getProjectRateRange($project);
-                    $autoBidMinRate   = max($autobid->rate_min, $projectRateRange['rate_min']);
+                    $appliedMinRate   = max($autobid->rate_min, $projectRateRange['rate_min']);
 
                     $type    = 'offer';
                     $image   = 'remboursement';
@@ -210,7 +210,7 @@ class NotificationDisplayManager
                         '%amount%'     => $ficelle->formatNumber($notification['amount'] / 100, 0),
                         '%projectUrl%' => $this->router->generate('project_detail', ['projectSlug' => $project->slug]),
                         '%company%'    => $company->name,
-                        '%minRate%'    => $bid->id_autobid > 0 ? $ficelle->formatNumber($autoBidMinRate, 1) : ''
+                        '%minRate%'    => $bid->id_autobid > 0 ? $ficelle->formatNumber($appliedMinRate, 1) : ''
                     ]);
                     break;
                 case Notifications::TYPE_LOAN_ACCEPTED:
