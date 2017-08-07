@@ -38,7 +38,7 @@ class DevAddDetailedDailyStateBalanceHistoryCommand extends ContainerAwareComman
 
         /** @var \DateTime $date */
         foreach ($days as $date) {
-            if (null === $entityManager->getRepository('UnilendCoreBusinessBundle:DetailedDailyStateBalanceHistory')->findOneBy(['date' => $date->format('Y-m-d')])) {
+            if (null === $entityManager->getRepository('UnilendCoreBusinessBundle:DetailedDailyStateBalanceHistory')->findOneBy(['date' => $date])) {
                 $this->saveBalance($date);
             }
         }
@@ -46,7 +46,7 @@ class DevAddDetailedDailyStateBalanceHistoryCommand extends ContainerAwareComman
         /** @var \DateTime $month */
         foreach (new \DatePeriod($firstDayOfThisYear, $monthInterval, $end->sub($monthInterval)) as $month) {
             if (null === $entityManager->getRepository('UnilendCoreBusinessBundle:DetailedDailyStateBalanceHistory')->findOneBy(['date' => $month->format('Y-m-t')])) {
-                $lastDayOfTheMonth = \DateTIme::createFromFormat('Y-m-d', $month->format('Y-m-t'));
+                $lastDayOfTheMonth = \DateTime::createFromFormat('Y-m-d', $month->format('Y-m-t'));
                 $this->saveBalance($lastDayOfTheMonth);
             }
         }
@@ -67,7 +67,7 @@ class DevAddDetailedDailyStateBalanceHistoryCommand extends ContainerAwareComman
         $dailyStateBalanceHistory->setUnilendBalance($walletBalanceHistoryRepository->sumBalanceForDailyState($date, [WalletType::UNILEND]));
         $dailyStateBalanceHistory->setUnilendPromotionalBalance($walletBalanceHistoryRepository->sumBalanceForDailyState($date, [WalletType::UNILEND_PROMOTIONAL_OPERATION]));
         $dailyStateBalanceHistory->setTaxBalance($walletBalanceHistoryRepository->sumBalanceForDailyState($date, WalletType::TAX_FR_WALLETS));
-        $dailyStateBalanceHistory->setDate($date->format('Y-m-d'));
+        $dailyStateBalanceHistory->setDate($date);
 
         $entityManager->persist($dailyStateBalanceHistory);
         $entityManager->flush($dailyStateBalanceHistory);

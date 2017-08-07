@@ -7,16 +7,15 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * DetailedDailyStateBalanceHistory
  *
- * @ORM\Table(name="detailed_daily_state_balance_history", indexes={@ORM\Index(name="idx_date", columns={"date"})})
- * @ORM\HasLifecycleCallbacks()
+ * @ORM\Table(name="detailed_daily_state_balance_history", uniqueConstraints={@ORM\UniqueConstraint(name="date", columns={"date"})}, indexes={@ORM\Index(name="idx_date", columns={"date"})})
  * @ORM\Entity
  */
 class DetailedDailyStateBalanceHistory
 {
     /**
-     * @var string
+     * @var \DateTime
      *
-     * @ORM\Column(name="date", type="string", length=10, nullable=false)
+     * @ORM\Column(name="date", type="date", nullable=false)
      */
     private $date;
 
@@ -90,7 +89,7 @@ class DetailedDailyStateBalanceHistory
     /**
      * Set date
      *
-     * @param string $date
+     * @param \DateTime $date
      *
      * @return DetailedDailyStateBalanceHistory
      */
@@ -104,7 +103,7 @@ class DetailedDailyStateBalanceHistory
     /**
      * Get date
      *
-     * @return string
+     * @return \DateTime
      */
     public function getDate()
     {
