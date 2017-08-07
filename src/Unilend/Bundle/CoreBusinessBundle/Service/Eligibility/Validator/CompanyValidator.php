@@ -93,12 +93,12 @@ class CompanyValidator
             return $locationCheck;
         }
 
-        $nafCode = $this->getNAFCode($siren);
-        if (is_array($nafCode)) {
-            return $nafCode;
-        }
-        if (Companies::NAF_CODE_NO_ACTIVITY === $nafCode) {
-            return $this->checkNoActivityCompany($siren, $project);
+        try {
+            if (Companies::NAF_CODE_NO_ACTIVITY === $this->getNAFCode($siren)) {
+                return $this->checkNoActivityCompany($siren, $project);
+            }
+        } catch (\Exception $exception) {
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
         }
 
         $paymentIncidentsCheck = $this->checkRule('TC-RISK-005', $siren, $project);
@@ -371,15 +371,15 @@ class CompanyValidator
      */
     private function checkEliminationXerfiScore($siren)
     {
-        $nafCode = $this->getNAFCode($siren);
+        try {
+            $nafCode = $this->getNAFCode($siren);
+            $xerfi   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($nafCode);
 
-        if (is_array($nafCode)) {
-            return $nafCode;
-        }
-        $xerfi   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($nafCode);
-
-        if (Xerfi::UNILEND_ELIMINATION_SCORE === $xerfi->getUnilendRating()) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE];
+            if (Xerfi::UNILEND_ELIMINATION_SCORE === $xerfi->getUnilendRating()) {
+                return [ProjectsStatus::NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE];
+            }
+        } catch (\Exception $exception) {
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
         }
 
         return [];
@@ -418,18 +418,18 @@ class CompanyValidator
             return [ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE];
         }
 
-        $nafCode = $this->getNAFCode($siren);
+        try {
+            $nafCode = $this->getNAFCode($siren);
+            $xerfi   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($nafCode);
 
-        if (is_array($nafCode)) {
-            return $nafCode;
-        }
-        $xerfi   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($nafCode);
-
-        if (
-            EulerHermesCompanyRating::COLOR_RED === $trafficLight->getColor()
-            && $xerfi->getScore() > 75
-        ) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI];
+            if (
+                EulerHermesCompanyRating::COLOR_RED === $trafficLight->getColor()
+                && $xerfi->getScore() > 75
+            ) {
+                return [ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI];
+            }
+        } catch (\Exception $exception) {
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
         }
 
         return [];
@@ -688,15 +688,13 @@ class CompanyValidator
     /**
      * @param string $siren
      *
-     * @return string|array
+     * @return string
+     *
+     * @throws \Exception
      */
     private function getNAFCode($siren)
     {
-        try {
-            $companyData = $this->externalDataManager->getCompanyIdentity($siren);
-        } catch (\Exception $exception) {
-            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
-        }
+        $companyData = $this->externalDataManager->getCompanyIdentity($siren);
 
         return $companyData->getNAFCode();
     }

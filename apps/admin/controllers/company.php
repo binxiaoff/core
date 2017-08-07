@@ -64,6 +64,8 @@ class companyController extends bootstrap
             $altares = $this->get('unilend.service.ws_client.altares_manager');
             /** @var \Unilend\Bundle\WSClientBundle\Service\InfolegaleManager $infoLegale */
             $infoLegale = $this->get('unilend.service.ws_client.infolegale_manager');
+            /** @var \JMS\Serializer\Serializer $serializer */
+            $serializer = $this->get('jms_serializer');
 
             $companyIdentity = [];
             try {
@@ -77,25 +79,22 @@ class companyController extends bootstrap
                         'city'          => $altaresCompanyIdentity->getCity(),
                     ];
                 }
+                $altaresEstablishmentIdentity = $altares->getEstablishmentIdentity($siren);
+                $infoLegaleIdentity           = $infoLegale->getIdentity($siren);
+
+                if ($altaresEstablishmentIdentity instanceof EstablishmentIdentityDetail) {
+                    $companyIdentity['phoneNumber'] = $altaresEstablishmentIdentity->getPhoneNumber();
+                }
+                if (false === empty($infoLegaleIdentity->getDirectors())) {
+                    $companyIdentity['title']          = $infoLegaleIdentity->getDirectors()->first()->getTitle();
+                    $companyIdentity['ownerName']      = $infoLegaleIdentity->getDirectors()->first()->getName();
+                    $companyIdentity['ownerFirstName'] = $infoLegaleIdentity->getDirectors()->first()->getFirstName();
+                }
+
+                echo $serializer->serialize($companyIdentity, 'json');
             } catch (\Exception $exception) {
-                unset($exception);
+                echo $serializer->serialize(['error' => 'Problème technique, veuillez réessayer ultérieurement.'], 'json');
             }
-            $altaresEstablishmentIdentity = $altares->getEstablishmentIdentity($siren);
-            $infoLegaleIdentity           = $infoLegale->getIdentity($siren);
-
-            if ($altaresEstablishmentIdentity instanceof EstablishmentIdentityDetail) {
-                $companyIdentity['phoneNumber'] = $altaresEstablishmentIdentity->getPhoneNumber();
-            }
-            if (false === empty($infoLegaleIdentity->getDirectors())) {
-                $companyIdentity['title']          = $infoLegaleIdentity->getDirectors()->first()->getTitle();
-                $companyIdentity['ownerName']      = $infoLegaleIdentity->getDirectors()->first()->getName();
-                $companyIdentity['ownerFirstName'] = $infoLegaleIdentity->getDirectors()->first()->getFirstName();
-            }
-
-            /** @var \JMS\Serializer\Serializer $serializer */
-            $serializer = $this->get('jms_serializer');
-
-            echo $serializer->serialize($companyIdentity, 'json');
         }
     }
 
