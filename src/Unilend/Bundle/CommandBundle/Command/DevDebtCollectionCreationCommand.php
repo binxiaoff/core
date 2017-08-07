@@ -31,6 +31,7 @@ class DevDebtCollectionCreationCommand extends ContainerAwareCommand
             ->addOption('project-id', null, InputOption::VALUE_REQUIRED, 'Use with the action "provision" and "repayment". The project id of the debt collection.')
             ->addOption('commission', null, InputOption::VALUE_REQUIRED, 'Use with the action "provision" and "repayment". The commission for the debt collection.')
             ->addOption('collector', null, InputOption::VALUE_REQUIRED, 'Use with the action "provision" and "repayment". The debt collector for the debt collection.')
+            ->addOption('net-amount', null, null, 'Use with the action "provision". If net amount, generate operation to cancel debt collection provision.')
             ->setHelp(<<<EOF
 The <info>unilend:dev_tools:debt_collection:create</info> create the transactions and operations for the debt collection.
 <info>php bin/console unilend:dev_tools:debt_collection:create provision|repayment</info>
@@ -60,6 +61,7 @@ EOF
         $receptionId      = $input->getOption('reception-id');
         $projectId        = $input->getOption('project-id');
         $commission       = filter_var($input->getOption('commission'), FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+        $isNetAmount      = $input->getOption('net-amount');
         $entityManager    = $this->getContainer()->get('doctrine.orm.entity_manager');
         $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         $walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
@@ -105,7 +107,12 @@ EOF
                       ->setIdClient($client)
                       ->setIdProject($project)
                       ->setAssignmentDate(new \DateTime());
-            $this->getContainer()->get('unilend.service.operation_manager')->provisionCollection($collector, $borrower, $reception, $commission);
+            if ($isNetAmount) {
+                $this->getContainer()->get('unilend.service.operation_manager')->provisionBorrowerWallet($reception);
+                $this->getContainer()->get('unilend.service.operation_manager')->provisionCollection($collector, $borrower, $reception, $commission);
+            } else {
+                $this->getContainer()->get('unilend.service.operation_manager')->provisionBorrowerWallet($reception);
+            }
 
             $entityManager->flush();
             $entityManager->getConnection()->commit();
