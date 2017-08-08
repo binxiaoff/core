@@ -218,6 +218,8 @@ class dashboardController extends bootstrap
                 $project['memo_datetime'] = \DateTime::createFromFormat('Y-m-d H:i:s', $project['memo_datetime']);
             }
 
+            $project['hasMonitoringEvent'] = $this->get('unilend.service.risk_data_monitoring_manager')->hasMonitoringEvent($project['siren']);
+
             $formattedProjects[$project['status']]['count']++;
             $formattedProjects[$project['status']]['projects'][] = $project;
         }

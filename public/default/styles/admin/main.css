@@ -412,6 +412,9 @@ span[class^="vigilance-status-"], span[class*=" vigilance-status-"] { width: 84p
 .memo-editor .controls label input { margin-right: 5px; }
 .memo-editor .controls .btn-default, .memo-editor .controls .btn-primary { padding: 4px 12px; }
 
+.e-change-warning {  display: inline-block;  width: 14px;  height: 14px;  background: #6d1f4f;  position: relative;  top: -1px;  margin-left: 1px; text-align: center; }
+.e-change-warning:before { content: '↑↓'; display: block; color: #fff; font-size: 10px; }
+
 /* Override main.css colors with Bootstrap ones - Trick used because bootstrap.css is included before main.css */
 /* @todo delete once migration to Bootstrap/OneUI is over */
 .btn-success {

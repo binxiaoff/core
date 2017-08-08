@@ -130,6 +130,11 @@ $doc.ready(function ($) {
   // Remove HTML
   $html.removeClass('no-js')
 
+  // Detect Safari
+  if (navigator.userAgent.indexOf('Safari') > -1 && navigator.userAgent.indexOf('Chrome') == -1) {
+    $body.addClass('ua-safari')
+  }
+
   // TWBS setup
   // @todo refactor into General controller
   // $.support.transition = false

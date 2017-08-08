@@ -284,6 +284,7 @@ class dossiersController extends bootstrap
             $needs            = $projectNeed->getTree();
             $this->needs      = $needs;
             $this->isTakeover = $this->isTakeover();
+            $this->projectHasMonitoringEvent = $this->get('unilend.service.risk_data_monitoring_manager')->hasMonitoringEvent($this->companies->siren);
 
             if (isset($_POST['problematic_status']) && $this->projects->status != $_POST['problematic_status']) {
                 $this->problematicStatusForm($_POST['problematic_status']);
@@ -1857,6 +1858,7 @@ class dossiersController extends bootstrap
             if (isset($this->params[1]) && $this->params[1] == 'remb') {
                 /** @var \Symfony\Component\Stopwatch\Stopwatch $stopWatch */
                 $stopWatch = $this->get('debug.stopwatch');
+                $stopWatch->start('repayment');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRepaymentManager $projectRepaymentManager */
                 $projectRepaymentManager = $this->get('unilend.service.project_repayment_manager');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
@@ -1870,8 +1872,6 @@ class dossiersController extends bootstrap
 
                 if (false === empty($paidPaymentSchedules)) {
                     foreach ($paidPaymentSchedules as $paidPaymentSchedule) {
-                        $stopWatch->start('repayment');
-
                         $repaymentSchedules = $repaymentScheduleRepository->findByProject($project, $paidPaymentSchedule->getOrdre(), null, Echeanciers::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PAID);
                         $repaymentNb        = 0;
 

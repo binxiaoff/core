@@ -4,7 +4,7 @@
     <table class="tablesorter projects">
         <thead>
         <tr>
-            <th style="width:14px;"></th>
+            <th style="width:50px;"></th>
             <th style="width:40px">ID</th>
             <th>Raison sociale</th>
             <th style="width:70px">Montant</th>
@@ -30,6 +30,9 @@
                     <td class="partner-logo">
                         <?php if (false === empty($project['partner_logo'])) : ?>
                             <img src="<?= $this->surl ?>/images/admin/partner/<?= $project['partner_logo'] ?>" alt="<?= $project['partner_logo'] ?>">
+                        <?php endif; ?>
+                        <?php if (true === $project['hasMonitoringEvent']) : ?>
+                            <span class="e-change-warning"></span>
                         <?php endif; ?>
                     </td>
                     <td data-project="<?= $project['id_project'] ?>"><?= $project['id_project'] ?></td>

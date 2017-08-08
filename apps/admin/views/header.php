@@ -208,6 +208,10 @@ $menuItems = [
             [
                 'title'  => 'Partenaires',
                 'handle' => 'partner'
+            ],
+            [
+                'title'  => 'Monitoring données risque',
+                'handle' => 'risk_monitoring'
             ]
         ]
     ],

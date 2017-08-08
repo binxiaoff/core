@@ -79,8 +79,13 @@ class SlackEndpointController extends Controller
             ]);
         }
 
-        $riskCheck       = $this->get('unilend.service.eligibility.eligibility_manager')->checkSirenEligibility($siren);
-        $companyIdentity = $this->get('unilend.service.ws_client.altares_manager')->getCompanyIdentity($siren);
+        $riskCheck = $this->get('unilend.service.eligibility.eligibility_manager')->checkSirenEligibility($siren);
+        try {
+            $companyIdentity = $this->get('unilend.service.ws_client.altares_manager')->getCompanyIdentity($siren);
+        } catch (\Exception $exception) {
+            unset($exception);
+            $companyIdentity = null;
+        }
 
         $eligibility = 'Éligible';
         $color       = 'good';
