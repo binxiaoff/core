@@ -57,7 +57,7 @@ class WelcomeOfferManager
      */
     public function displayOfferOnHome()
     {
-        $welcomeOfferHomepage = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findBy([
+        $welcomeOfferHomepage = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy([
             'status' => OffresBienvenues::STATUS_ONLINE,
             'type'   => OffresBienvenues::TYPE_HOME
         ]);
@@ -74,7 +74,7 @@ class WelcomeOfferManager
      */
     public function displayOfferOnLandingPage()
     {
-        $welcomeOfferLandingPage = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findBy([
+        $welcomeOfferLandingPage = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy([
             'status' => OffresBienvenues::STATUS_ONLINE,
             'type'   => OffresBienvenues::TYPE_LANDING_PAGE
         ]);

@@ -798,7 +798,7 @@ class LenderSubscriptionController extends Controller
      */
     public function landingPageAction()
     {
-        return $this->render('pages/lender_subscription/landing_page.html.twig');
+        return $this->render('pages/lender_subscription/landing_page.html.twig', ['showWelcomeOffer' => $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage()]);
     }
 
     /**
@@ -808,7 +808,7 @@ class LenderSubscriptionController extends Controller
      */
     public function figaroLandingPageAction()
     {
-        return $this->render('pages/lender_subscription/partners/figaro.html.twig');
+        return $this->render('pages/lender_subscription/partners/figaro.html.twig', ['showWelcomeOffer' => $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage()]);
     }
 
     /**
@@ -818,7 +818,7 @@ class LenderSubscriptionController extends Controller
      */
     public function landingPageFormOnlyAction()
     {
-        return $this->render('pages/lender_subscription/landing_page_form_only.html.twig');
+        return $this->render('pages/lender_subscription/landing_page_form_only.html.twig', ['showWelcomeOffer' => $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage()]);
     }
 
     /**
