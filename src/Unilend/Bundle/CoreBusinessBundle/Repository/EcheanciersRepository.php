@@ -456,7 +456,7 @@ class EcheanciersRepository extends EntityRepository
                     INNER JOIN projects_status_history psh2 ON t.first_status_history = psh2.id_project_status_history
                     INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
                     INNER JOIN echeanciers e ON e.id_project = psh2.id_project
-                  WHERE t.added <= :end
+                  WHERE psh2.added <= :end
                     AND ps2.status IN (:status)
                     AND e.status = :pending
                     AND e.date_echeance <= :end';

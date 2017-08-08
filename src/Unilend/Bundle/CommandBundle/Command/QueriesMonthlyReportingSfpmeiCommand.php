@@ -54,32 +54,13 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
         $entityManager             = $this->getContainer()->get('doctrine.orm.entity_manager');
         $operationRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $projectRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $failedCreditCardProvision = $entityManager->getRepository('UnilendCoreBusinessBundle:Backpayline')->getCountFailedTransactionsBetweenDates($startDate, $endDate);
         $clientRepository          = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         $wireTransferInRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
         $repaymentRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
 
-        $totalLendersPerson = $clientRepository->countLendersByClientTypeBetweenDates([Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER], new \DateTime('January 2013'), $endDate, true);
-        $totalLendersLegalEntity = $clientRepository->countLendersByClientTypeBetweenDates([
-            Clients::TYPE_LEGAL_ENTITY,
-            Clients::TYPE_LEGAL_ENTITY_FOREIGNER
-        ], new \DateTime('January 2013'), $endDate, true);
-        $totalLenders = $clientRepository->countLendersByClientTypeBetweenDates([
-            Clients::TYPE_PERSON,
-            Clients::TYPE_PERSON_FOREIGNER,
-            Clients::TYPE_LEGAL_ENTITY,
-            Clients::TYPE_LEGAL_ENTITY_FOREIGNER
-        ], new \DateTime('January 2013'), $endDate);
-        $newLendersPerson                  = $clientRepository->countLendersByClientTypeBetweenDates([Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER], $startDate, $endDate, true);
-        $newLenderLegalEntity              = $clientRepository->countLendersByClientTypeBetweenDates([Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER], $startDate, $endDate, true);
-        $totalNewLenders                   = $clientRepository->countLendersBetweenDates($startDate, $endDate, true);
-        $lenderWithdrawIndicators          = $operationRepository->getLenderWithdrawIndicatorsBetweenDates($startDate, $endDate);
-        $lendersWithProvisionAndNoValidBid = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findLendersWithProvisionButWithoutAcceptedBidBetweenDates(new \DateTime('January 2013'), $endDate);
-        $totalLenderProvisionIndicators    = $operationRepository->getLenderProvisionIndicatorsBetweenDates(new \DateTime('January 2013'), $endDate, false)[0];
-        $rejectWireTransfersIn             = $wireTransferInRepository->getRejectedDirectDebitIndicatorsBetweenDates($startDate, $endDate);
-        $regularizationWireTransfers       = $wireTransferInRepository->getBorrowerProvisionRegularizationIndicatorsBetweenDates($startDate, $endDate);
-        $creditCardProvisions              = [];
-        $wireTransferInProvisions          = [];
+        $failedCreditCardProvision = $entityManager->getRepository('UnilendCoreBusinessBundle:Backpayline')->getCountFailedTransactionsBetweenDates($startDate, $endDate);
+        $creditCardProvisions      = [];
+        $wireTransferInProvisions  = [];
         foreach ($operationRepository->getLenderProvisionIndicatorsBetweenDates($startDate, $endDate) as $indicator) {
             switch ($indicator['provisionType']) {
                 case 'creditCard':
@@ -92,14 +73,25 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
                     break;
             }
         }
+        $lenderWithdrawIndicators             = $operationRepository->getLenderWithdrawIndicatorsBetweenDates($startDate, $endDate);
+
         $fundingIndicators                    = [
             'totalAmount'     => $projectRepository->getIndicatorBetweenDates('SUM(p.amount) AS amount', $startDate, $endDate, ProjectsStatus::REMBOURSEMENT)['amount'],
             'number'          => $projectRepository->getIndicatorBetweenDates('COUNT(p.id_project) AS number', $startDate, $endDate, ProjectsStatus::REMBOURSEMENT)['number'],
             'avgPeriod'       => $projectRepository->getIndicatorBetweenDates('AVG(p.period) AS avgPeriod', $startDate, $endDate, ProjectsStatus::REMBOURSEMENT)['avgPeriod'],
             'avgInterestRate' => $projectRepository->getIndicatorBetweenDates('AVG(p.interest_rate) AS avgInterestRate', $startDate, $endDate, ProjectsStatus::REMBOURSEMENT)['avgInterestRate']
         ];
-        $newlyPresentedProjects               = $projectRepository->getIndicatorBetweenDates('COUNT(p.id_project) AS newProjects', $startDate, $endDate, ProjectsStatus::EN_FUNDING)['newProjects'];
-        $newlyRiskAnalysisProjects            = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->getCountProjectsInRiskReviewBetweenDates($startDate, $endDate);
+        $projectsInRepayment                  = $projectRepository->findProjectsInRepaymentAtDate($endDate);
+        $remainingDueCapitalRunningRepayments = $operationRepository->getRemainingDueCapitalForProjects($endDate, array_column($projectsInRepayment, 'id_project'));
+        $repaymentsInMonth                    = $repaymentRepository->findRepaidRepaymentsBetweenDates($startDate, $endDate);
+        $sumRepaymentsInMonth                 = $repaymentRepository->getSumRepaidRepaymentsBetweenDates($startDate, $endDate);
+        $repaymentFinishedProjects            = $projectRepository->findProjectsHavingHadStatusBetweenDates([
+            ProjectsStatus::REMBOURSE,
+            ProjectsStatus::REMBOURSEMENT_ANTICIPE
+        ], $startDate, $endDate);
+        $rejectWireTransfersIn                = $wireTransferInRepository->getRejectedDirectDebitIndicatorsBetweenDates($startDate, $endDate);
+        $regularizationWireTransfers          = $wireTransferInRepository->getBorrowerProvisionRegularizationIndicatorsBetweenDates($startDate, $endDate);
+        $lateRepayments                       = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->getLateRepaymentIndicators($endDate);
         $projectsInDebtCollection             = $projectRepository->findProjectsHavingHadStatusBetweenDates([ProjectsStatus::RECOUVREMENT], new \DateTime('January 2013'), $endDate);
         $remainingDueCapitalInDebtCollection  = $operationRepository->getRemainingDueCapitalForProjects($endDate, array_column($projectsInDebtCollection, 'id_project'));
         $projectsInCollectiveProceeding       = $projectRepository->findProjectsHavingHadStatusBetweenDates([
@@ -107,16 +99,28 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
             ProjectsStatus::LIQUIDATION_JUDICIAIRE,
             ProjectsStatus::REDRESSEMENT_JUDICIAIRE
         ], new \DateTime('January 2013'), $endDate);
-        $lateRepayments                       = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->getLateRepaymentIndicators($endDate);
-        $repaymentFinishedProjects            = $projectRepository->findProjectsHavingHadStatusBetweenDates([
-            ProjectsStatus::REMBOURSE,
-            ProjectsStatus::REMBOURSEMENT_ANTICIPE
-        ], $startDate, $endDate);
-        $projectsInRepayment                  = $projectRepository->findProjectsInRepaymentAtDate($endDate);
-        $remainingDueCapitalRunningRepayments = $operationRepository->getRemainingDueCapitalForProjects($endDate, array_column($projectsInRepayment, 'id_project'));
-        $repaymentsInMonth                    = $repaymentRepository->findRepaidRepaymentsBetweenDates($startDate, $endDate);
-        $sumRepaymentsInMonth =  $repaymentRepository->getSumRepaidRepaymentsBetweenDates($startDate, $endDate);
+        $newlyRiskAnalysisProjects            = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->getCountProjectsInRiskReviewBetweenDates($startDate, $endDate);
+        $newlyPresentedProjects               = $projectRepository->getIndicatorBetweenDates('COUNT(p.id_project) AS newProjects', $startDate, $endDate, ProjectsStatus::EN_FUNDING)['newProjects'];
+        $totalNewLenders                      = $clientRepository->countLendersBetweenDates($startDate, $endDate, true);
+        $newLendersPerson                     = $clientRepository->countLendersByClientTypeBetweenDates([Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER], $startDate, $endDate, true);
+        $newLenderLegalEntity                 = $clientRepository->countLendersByClientTypeBetweenDates([Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER], $startDate, $endDate, true);
         $lenderWithProvision                  = $operationRepository->getLenderProvisionIndicatorsBetweenDates($startDate, $endDate, false, true)[0]['numberLenders'];
+        $totalLenders                         = $clientRepository->countLendersByClientTypeBetweenDates([
+            Clients::TYPE_PERSON,
+            Clients::TYPE_PERSON_FOREIGNER,
+            Clients::TYPE_LEGAL_ENTITY,
+            Clients::TYPE_LEGAL_ENTITY_FOREIGNER
+        ], new \DateTime('January 2013'), $endDate, true);
+        $totalLendersPerson                   = $clientRepository->countLendersByClientTypeBetweenDates([
+            Clients::TYPE_PERSON,
+            Clients::TYPE_PERSON_FOREIGNER
+        ], new \DateTime('January 2013'), $endDate, true);
+        $totalLendersLegalEntity              = $clientRepository->countLendersByClientTypeBetweenDates([
+            Clients::TYPE_LEGAL_ENTITY,
+            Clients::TYPE_LEGAL_ENTITY_FOREIGNER
+        ], new \DateTime('January 2013'), $endDate, true);
+        $lendersWithProvisionAndNoValidBid    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findLendersWithProvisionButWithoutAcceptedBidBetweenDates(new \DateTime('January 2013'), $endDate);
+        $totalLenderProvisionIndicators       = $operationRepository->getLenderProvisionIndicatorsBetweenDates(new \DateTime('January 2013'), $endDate, false)[0];
 
         /** @var \PHPExcel $document */
         $document = new \PHPExcel();

@@ -346,7 +346,7 @@ class ProjectsRepository extends EntityRepository
                       INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                       INNER JOIN projects p ON p.id_project = psh.id_project
                     WHERE
-                      ps.status IN (;status)
+                      ps.status IN (:status)
                       AND psh.added BETWEEN :start AND :end';
 
         $result = $this->getEntityManager()->getConnection()
