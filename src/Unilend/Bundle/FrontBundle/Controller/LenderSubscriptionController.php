@@ -68,7 +68,7 @@ class LenderSubscriptionController extends Controller
             $client->setEmail($landingPageData['prospect_email']);
 
             if ($this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage()) {
-                $client->setOrigine(Clients::ORIGIN_WELCOME_OFFER_LP);
+                $this->get('session')->set('originLandingPage', true);
             }
         }
         if (
@@ -76,6 +76,12 @@ class LenderSubscriptionController extends Controller
             && $this->get('unilend.service.welcome_offer_manager')->displayOfferOnHome()
         ) {
             $client->setOrigine(Clients::ORIGIN_WELCOME_OFFER_HOME);
+        }
+        if (
+            $this->get('session')->get('originLandingPage')
+            && $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage()
+        ) {
+            $client->setOrigine(Clients::ORIGIN_WELCOME_OFFER_LP);
         }
 
         $formManager         = $this->get('unilend.frontbundle.service.form_manager');
@@ -90,6 +96,7 @@ class LenderSubscriptionController extends Controller
                 $isValid = $this->handleIdentityPersonForm($client, $clientAddress, $identityForm);
                 if ($isValid) {
                     $this->saveClientHistoryAction($client, $request, Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION);
+                    $this->get('session')->remove('originLandingPage');
                     return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->getHash()]);
                 }
             }
@@ -98,6 +105,7 @@ class LenderSubscriptionController extends Controller
                 $isValid = $this->handleLegalEntityForm($client, $clientAddress, $company, $companyIdentityForm);
                 if ($isValid) {
                     $this->saveClientHistoryAction($client, $request, Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION);
+                    $this->get('session')->remove('originLandingPage');
                     return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->getHash()]);
                 }
             }

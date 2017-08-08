@@ -125,8 +125,8 @@
                 <label for="type_offer">Affiché sur</label>
                 <select id="type_offer" name="type_offer">
                     <option value=""></option>
-                    <option value="<?= \Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues::DISPLAY_HOME ?>">Landing Page</option>
-                    <option value="<?= \Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues::DISPLAY_LANDING_PAGE ?>">HomePage</option>
+                    <option value="<?= \Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues::TYPE_HOME ?>">Landing Page</option>
+                    <option value="<?= \Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues::TYPE_LANDING_PAGE ?>">HomePage</option>
                 </select>
                 <input type="hidden" name="form_send_new_offer" id="form_send_offer"/>
                 <button type="submit" class="btn-primary">Créer</button>

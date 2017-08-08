@@ -29,13 +29,6 @@
 class offres_bienvenues_details extends offres_bienvenues_details_crud
 {
 
-    const STATUS_NEW      = 0;
-    const STATUS_USED     = 1;
-    const STATUS_CANCELED = 2;
-
-    const TYPE_OFFER   = 0;
-    const TYPE_CUT     = 1;
-    const TYPE_PAYBACK = 2;
 
     public function __construct($bdd, $params = '')
     {

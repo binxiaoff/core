@@ -6,6 +6,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Autobid;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
@@ -222,7 +223,7 @@ class BidManager
                     $iOfferTotal += ($aOffer['montant'] / 100); // total des offres
 
                     $oWelcomeOfferDetails->get($aOffer['id_offre_bienvenue_detail'], 'id_offre_bienvenue_detail');
-                    $oWelcomeOfferDetails->status = \offres_bienvenues_details::STATUS_USED;
+                    $oWelcomeOfferDetails->status = OffresBienvenuesDetails::STATUS_USED;
                     $oWelcomeOfferDetails->id_bid = $bid->getIdBid();
                     $oWelcomeOfferDetails->update();
 
@@ -231,14 +232,17 @@ class BidManager
                         // On fait la diff et on créer un remb du trop plein d'offres
                         $iAmountRepayment = $iOfferTotal - $amount;
                         $oWelcomeOfferDetails->unsetData();
-                        $oWelcomeOfferDetails->id_offre_bienvenue = 0;
-                        $oWelcomeOfferDetails->id_client          = $iClientId;
-                        $oWelcomeOfferDetails->id_bid             = 0;
-                        $oWelcomeOfferDetails->id_bid_remb        = $bid->getIdBid();
-                        $oWelcomeOfferDetails->status             = OffresBienvenuesDetails::STATUS_NEW;
-                        $oWelcomeOfferDetails->type               = OffresBienvenuesDetails::TYPE_CUT;
-                        $oWelcomeOfferDetails->montant            = $iAmountRepayment * 100;
-                        $oWelcomeOfferDetails->create();
+
+                        $welcomeOffer = new OffresBienvenuesDetails();
+                        $welcomeOffer->setIdOffreBienvenue(0)
+                            ->setIdClient($iClientId)
+                            ->setIdBidRemb($bid->getIdBid())
+                            ->setStatus(OffresBienvenuesDetails::STATUS_NEW)
+                            ->setType(OffresBienvenuesDetails::TYPE_CUT)
+                            ->setMontant($iAmountRepayment * 100);
+
+                        $this->entityManager->persist($welcomeOffer);
+                        $this->entityManager->flush($welcomeOffer);
                     }
                 } else {
                     break;

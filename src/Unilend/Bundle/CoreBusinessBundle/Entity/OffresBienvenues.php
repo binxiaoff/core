@@ -17,8 +17,8 @@ class OffresBienvenues
     const STATUS_OFFLINE = 0;
     const STATUS_ONLINE  = 1;
 
-    const DISPLAY_HOME = 'home_page';
-    const DISPLAY_LANDING_PAGE = 'landing_page';
+    const TYPE_HOME         = 'home_page';
+    const TYPE_LANDING_PAGE = 'landing_page';
 
     /**
      * @var integer
@@ -37,9 +37,9 @@ class OffresBienvenues
     /**
      * @var string
      *
-     * @ORM\Column(name="display", type="string", length=45, nullable=false)
+     * @ORM\Column(name="type", type="string", length=45, nullable=false)
      */
-    private $display;
+    private $type;
 
     /**
      * @var \DateTime
@@ -143,27 +143,27 @@ class OffresBienvenues
     }
 
     /**
-     * Set display
+     * Set type
      *
-     * @param string $display
+     * @param string $type
      *
      * @return OffresBienvenues
      */
-    public function setDisplay($display)
+    public function setType($type)
     {
-        $this->display = $display;
+        $this->type = $type;
 
         return $this;
     }
 
     /**
-     * Get display
+     * Get type
      *
      * @return string
      */
-    public function getDisplay()
+    public function getType()
     {
-        return $this->display;
+        return $this->type;
     }
 
     /**

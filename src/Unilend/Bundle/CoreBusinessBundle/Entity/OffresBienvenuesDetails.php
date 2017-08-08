@@ -39,14 +39,14 @@ class OffresBienvenuesDetails
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_bid", type="integer", nullable=false)
+     * @ORM\Column(name="id_bid", type="integer", nullable=true)
      */
     private $idBid;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_bid_remb", type="integer", nullable=false)
+     * @ORM\Column(name="id_bid_remb", type="integer", nullable=true)
      */
     private $idBidRemb;
 
@@ -81,7 +81,7 @@ class OffresBienvenuesDetails
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -151,7 +151,7 @@ class OffresBienvenuesDetails
      *
      * @return OffresBienvenuesDetails
      */
-    public function setIdBid($idBid)
+    public function setIdBid($idBid = null)
     {
         $this->idBid = $idBid;
 
@@ -161,7 +161,7 @@ class OffresBienvenuesDetails
     /**
      * Get idBid
      *
-     * @return integer
+     * @return integer|null
      */
     public function getIdBid()
     {
@@ -175,7 +175,7 @@ class OffresBienvenuesDetails
      *
      * @return OffresBienvenuesDetails
      */
-    public function setIdBidRemb($idBidRemb)
+    public function setIdBidRemb($idBidRemb = null)
     {
         $this->idBidRemb = $idBidRemb;
 
@@ -185,7 +185,7 @@ class OffresBienvenuesDetails
     /**
      * Get idBidRemb
      *
-     * @return integer
+     * @return integer|null
      */
     public function getIdBidRemb()
     {
@@ -295,7 +295,7 @@ class OffresBienvenuesDetails
      *
      * @return OffresBienvenuesDetails
      */
-    public function setUpdated($updated)
+    public function setUpdated($updated = null)
     {
         $this->updated = $updated;
 
