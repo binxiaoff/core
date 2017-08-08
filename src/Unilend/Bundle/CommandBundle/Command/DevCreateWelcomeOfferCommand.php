@@ -56,7 +56,7 @@ class DevCreateWelcomeOfferCommand extends ContainerAwareCommand
                 $welcomeOfferCanceled = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL]);
 
                 if (0 == bcsub($welcomeOffer, $welcomeOfferCanceled, 2)) {
-                    $return = $welcomeOfferManager->createWelcomeOffer($client);
+                    $return = $welcomeOfferManager->payOutWelcomeOffer($client);
                     if (0 == $return['code']) {
                         $distributedOffers += 1;
                         $output->writeln(' Client ' . $clientId . ' : ' . $return['message']);

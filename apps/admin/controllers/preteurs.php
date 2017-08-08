@@ -534,9 +534,6 @@ class preteursController extends bootstrap
                     $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur', $_SESSION['user']['id_user'], $serialize);
 
                     if (isset($_POST['statut_valider_preteur']) && 1 == $_POST['statut_valider_preteur']) {
-                        /** @var \Psr\Log\LoggerInterface $logger */
-                        $logger = $this->get('logger');
-
                         $aExistingClient       = $this->clients->getDuplicates($this->clients->nom, $this->clients->prenom, $this->clients->naissance);
                         $aExistingClient       = array_shift($aExistingClient);
                         $iOriginForUserHistory = 3;
@@ -546,11 +543,8 @@ class preteursController extends bootstrap
                             $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND, 'Doublon avec client ID : ' . $aExistingClient['id_client']);
                             header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->clients->id_client);
                             die;
-                        } elseif ($welcomeOfferManager->clientIsEligibleToWelcomeOffer($this->clients)) {
-                            $response = $welcomeOfferManager->payOutWelcomeOffer($this->clients);
-                            $logger->info('Client ID: ' . $this->clients->id_client . ' Welcome offer creation result: ' . json_encode($response), ['class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $this->clients->id_client ]);
-                        } else {
-                            $logger->info('Client ID: ' . $this->clients->id_client . ' Welcome offer not created. The client has been validated by the past or has not the right source', [ 'class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $this->clients->id_client]);
+                        } elseif ($welcomeOfferManager->clientIsEligibleForWelcomeOffer($this->clients)) {
+                            $welcomeOfferManager->payOutWelcomeOffer($this->clients);
                         }
 
                         $this->validateBankAccount($_POST['id_bank_account']);
@@ -856,8 +850,8 @@ class preteursController extends bootstrap
         $this->offerIsDisplayedOnLandingPage = $welcomeOfferManager->displayOfferOnLandingPage();
 
         $this->currentOfferHomepage                = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy([
-            'status'  => OffresBienvenues::STATUS_ONLINE,
-            'display' => OffresBienvenues::DISPLAY_HOME
+            'status' => OffresBienvenues::STATUS_ONLINE,
+            'type'   => OffresBienvenues::TYPE_HOME
         ]);
         if (null !== $this->currentOfferHomepage) {
             $alreadyPaidOutCurrentOfferHomepage        = $paidOutWelcomeOffers->getSumPaidOutForOffer($this->currentOfferHomepage);
@@ -866,8 +860,8 @@ class preteursController extends bootstrap
         }
 
         $this->currentOfferLandingPage             = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy([
-            'status'  => OffresBienvenues::STATUS_ONLINE,
-            'display' => OffresBienvenues::DISPLAY_LANDING_PAGE
+            'status' => OffresBienvenues::STATUS_ONLINE,
+            'type'   => OffresBienvenues::TYPE_LANDING_PAGE
         ]);
         if (null !== $this->currentOfferLandingPage) {
             $alreadyPaidOutCurrentOfferLandingPage        = $paidOutWelcomeOffers->getSumPaidOutForOffer($this->currentOfferLandingPage);
@@ -887,7 +881,7 @@ class preteursController extends bootstrap
         $start     = $this->request->request->get('start');
         $amount    = $this->request->request->getInt('amount');
         $maxAmount = $this->request->request->getInt('max_amount');
-        $display   = $this->request->request->get('type_offer');
+        $type      = $this->request->request->get('type_offer');
 
         $startDate = \DateTime::createFromFormat('d/m/Y', $start);
         if (null === $startDate) {
@@ -896,7 +890,7 @@ class preteursController extends bootstrap
         if ($amount > $maxAmount) {
             $_SESSION['create_new_welcome_offer']['errors'][] = 'Le montant de l\'offre ne peut pas être inférieur au montant limite';
         }
-        if (empty($display)) {
+        if (empty($type)) {
             $_SESSION['create_new_welcome_offer']['errors'][] = 'Il faut choisir le type de page sur laquelle l\'offre va être affiché';
         }
         if (false === empty($_SESSION['create_new_welcome_offer']['errors'])) {
@@ -908,7 +902,7 @@ class preteursController extends bootstrap
         $welcomeOffer->setDebut($startDate);
         $welcomeOffer->setMontant($amount * 100);
         $welcomeOffer->setMontantLimit($maxAmount * 100);
-        $welcomeOffer->setDisplay($display);
+        $welcomeOffer->setType($type);
         $welcomeOffer->setIdUser($user->getIdUser());
         $welcomeOffer->setStatus(OffresBienvenues::STATUS_ONLINE);
 
@@ -952,8 +946,8 @@ class preteursController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager      = $this->get('doctrine.orm.entity_manager');
         $this->client       = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
-        $welcomeOfferType   = $welcomeOfferManager->getWelcomeOfferForClient($this->client);
-        $this->welcomeOffer = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy(['status' => OffresBienvenues::STATUS_ONLINE, 'display' => $welcomeOfferType]);
+        $welcomeOfferType   = $welcomeOfferManager->getWelcomeOfferTypeForClient($this->client);
+        $this->welcomeOffer = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy(['type' => $welcomeOfferType]);
 
         if (false === $this->client->isNaturalPerson()) {
             $this->company      = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->client->getIdClient()]);

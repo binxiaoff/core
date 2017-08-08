@@ -3,14 +3,22 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 
 class OffresBienvenuesRepository extends EntityRepository
 {
-    public function getValidWelcomeOffer()
+    /**
+     * @param Clients $client
+     */
+    public function getWelcomeOfferForClient(Clients $client, $type)
     {
         $queryBuilder = $this->createQueryBuilder('ob');
-        $queryBuilder->where('status = :online')
-            ->andWhere('fin IS NULL');
-    }
+        $queryBuilder->where('ob.debut <= :clientAdded')
+            ->andWhere('ob.fin IS NULL OR ob.fin >= :clientAdded')
+            ->andWhere('ob.type = :type')
+            ->setParameter('clientAdded', $client->getAdded())
+            ->setParameter('type', $type);
 
+        return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
 }
