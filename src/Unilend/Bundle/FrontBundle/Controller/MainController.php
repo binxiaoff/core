@@ -57,9 +57,9 @@ class MainController extends Controller
         /** @var WelcomeOfferManager $welcomeOfferManager */
         $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
 
-        $template = [];
-        $template['showWelcomeOffer'] = $welcomeOfferManager->displayOfferOnHome();
-        $template['testimonialPeople'] = $testimonialService->getAllBattenbergTestimonials();
+        $template                       = [];
+        $template['showWelcomeOffer']   = $welcomeOfferManager->displayOfferOnHome();
+        $template['testimonialPeople']  = $testimonialService->getAllBattenbergTestimonials();
         $template['sliderTestimonials'] = $testimonialService->getSliderInformation();
 
         if ($authorizationChecker->isGranted('ROLE_LENDER')) {
