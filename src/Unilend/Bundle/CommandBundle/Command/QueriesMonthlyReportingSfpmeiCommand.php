@@ -59,9 +59,17 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
         $wireTransferInRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
         $repaymentRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
 
-        $totalLendersPerson                = $clientRepository->countLendersByClientType([Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER], true);
-        $totalLendersLegalEntity           = $clientRepository->countLendersByClientType([Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER], true);
-        $totalLenders                      = $clientRepository->countLenders(true);
+        $totalLendersPerson = $clientRepository->countLendersByClientTypeBetweenDates([Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER], new \DateTime('January 2013'), $endDate, true);
+        $totalLendersLegalEntity = $clientRepository->countLendersByClientTypeBetweenDates([
+            Clients::TYPE_LEGAL_ENTITY,
+            Clients::TYPE_LEGAL_ENTITY_FOREIGNER
+        ], new \DateTime('January 2013'), $endDate, true);
+        $totalLenders = $clientRepository->countLendersByClientTypeBetweenDates([
+            Clients::TYPE_PERSON,
+            Clients::TYPE_PERSON_FOREIGNER,
+            Clients::TYPE_LEGAL_ENTITY,
+            Clients::TYPE_LEGAL_ENTITY_FOREIGNER
+        ], new \DateTime('January 2013'), $endDate);
         $newLendersPerson                  = $clientRepository->countLendersByClientTypeBetweenDates([Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER], $startDate, $endDate, true);
         $newLenderLegalEntity              = $clientRepository->countLendersByClientTypeBetweenDates([Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER], $startDate, $endDate, true);
         $totalNewLenders                   = $clientRepository->countLendersBetweenDates($startDate, $endDate, true);

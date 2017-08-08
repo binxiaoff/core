@@ -478,22 +478,16 @@ class EcheanciersRepository extends EntityRepository
                         COUNT(DISTINCT e.id_project) AS projectCount,
                         ROUND(SUM(e.montant) / 100, 2) AS lateAmount
                   FROM (
-                       SELECT
-                         MAX(id_project_status_history) AS first_status_history,
-                         added,
-                         id_project
+                       SELECT MAX(id_project_status_history) AS first_status_history
                        FROM projects_status_history psh
-                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                       WHERE ps.status >= :repaymentStatus
                        GROUP BY id_project) AS t
-                    INNER JOIN echeanciers e ON e.id_project = t.id_project
                     INNER JOIN projects_status_history psh2 ON t.first_status_history = psh2.id_project_status_history
                     INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                    INNER JOIN echeanciers e ON e.id_project = psh2.id_project
                   WHERE t.added <= :end
                     AND ps2.status IN (:status)
                     AND e.status = :pending
-                    AND e.date_echeance <= :end
-                  GROUP BY e.id_project';
+                    AND e.date_echeance <= :end';
 
         return $this->getEntityManager()->getConnection()->executeQuery($query, [
             'end'             => $end->format('Y-m-d h:i:s'),

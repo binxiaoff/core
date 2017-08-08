@@ -318,15 +318,17 @@ class ProjectsRepository extends EntityRepository
         $start->setTime(0, 0, 0);
         $end->setTime(23, 59, 59);
 
-        $query = 'SELECT 
-                    * 
-                  FROM (SELECT MAX(id_project_status_history), added, id_project 
-                        FROM projects_status_history psh
-                          INNER JOIN projects_status ps  ON psh.id_project_status = ps.id_project_status
-                        WHERE ps.status IN (:status)
-                        GROUP BY id_project) AS t
-                      INNER JOIN projects p ON p.id_project = t.id_project
-                    WHERE t.added BETWEEN :start AND :end';
+        $query = 'SELECT
+                      *
+                    FROM (SELECT MAX(id_project_status_history) AS max_id_projects_status_history
+                          FROM projects_status_history psh_max
+                          GROUP BY id_project) AS psh_max
+                      INNER JOIN projects_status_history psh ON psh_max.max_id_projects_status_history = psh.id_project_status_history
+                      INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                      INNER JOIN projects p ON p.id_project = psh.id_project
+                    WHERE
+                      ps.status IN (;status)
+                      AND psh.added  <= BETWEEN :start AND :end';
 
         $result = $this->getEntityManager()->getConnection()
             ->executeQuery($query, [
