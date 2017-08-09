@@ -36,6 +36,9 @@ class mailsController extends bootstrap
 
         $this->externalEmails = $mailTemplateManager->getActiveMailTemplates(MailTemplates::RECIPIENT_TYPE_EXTERNAL);
         $this->internalEmails = $mailTemplateManager->getActiveMailTemplates(MailTemplates::RECIPIENT_TYPE_INTERNAL);
+
+        $this->externalEmailUsage = $mailTemplateManager->getMailTemplateUsage($this->externalEmails);
+        $this->internalEmailUsage = $mailTemplateManager->getMailTemplateUsage($this->internalEmails);
     }
 
     public function _add()

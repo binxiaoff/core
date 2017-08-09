@@ -102,4 +102,21 @@ class MailTemplateManager
 
         return $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findBy(['status' => MailTemplates::STATUS_ACTIVE, 'recipientType' => $recipientType]);
     }
+
+    /**
+     * @param array $mailTemplates
+     *
+     * @return array
+     */
+    public function getMailTemplateUsage(array $mailTemplates)
+    {
+        $mailQueueRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailQueue');
+        $mailTemplatesUsage  = [];
+
+        foreach ($mailTemplates as $mailTemplate) {
+            $mailTemplatesUsage[$mailTemplate->getType()] = $mailQueueRepository->getSendFrequencyForMailTemplate($mailTemplate->getType());
+        }
+
+        return $mailTemplatesUsage;
+    }
 }

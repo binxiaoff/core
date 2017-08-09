@@ -23,11 +23,23 @@
             <table class="tablesorter">
                 <thead>
                 <tr>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th colspan="3">Nombre d'emails envoyés dans la periode 24h</th>
+                    <th>&nbsp;</th>
+                </tr>
+                <tr>
                     <th>Type</th>
                     <th>Nom Expéditeur</th>
                     <th>Email Expéditeur</th>
                     <th>Sujet</th>
                     <th>Mise à jour</th>
+                    <th>24h</th>
+                    <th>7 jours</th>
+                    <th>30 jours</th>
                     <th>&nbsp;</th>
                 </tr>
                 </thead>
@@ -40,6 +52,9 @@
                         <td><?= $mailTemplate->getSenderEmail() ?></td>
                         <td><?= $mailTemplate->getSubject() ?></td>
                         <td><?= $mailTemplate->getUpdated()->format('d/m/Y H:i') ?></td>
+                        <td><?= $this->externalEmailUsage[$mailTemplate->getType()]['24h'] ?></td>
+                        <td><?= $this->externalEmailUsage[$mailTemplate->getType()]['7d'] ?></td>
+                        <td><?= $this->externalEmailUsage[$mailTemplate->getType()]['30d'] ?></td>
                         <td align="center">
                             <a href="<?= $this->lurl ?>/mails/edit/<?= $mailTemplate->getType() ?>" title="Modifier <?= $mailTemplate->getType() ?>">
                                 <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $mailTemplate->getType() ?>"/>
@@ -69,6 +84,7 @@
                     <th>Email Expéditeur</th>
                     <th>Sujet</th>
                     <th>Mise à jour</th>
+                    <th>Nombre d'envois dans les 30 denriers jours</th>
                     <th>&nbsp;</th>
                 </tr>
                 </thead>
@@ -81,6 +97,7 @@
                         <td><?= $mailTemplate->getSenderEmail() ?></td>
                         <td><?= $mailTemplate->getSubject() ?></td>
                         <td><?= $mailTemplate->getUpdated()->format('d/m/Y H:i') ?></td>
+                        <td><?= $this->internalEmailUsage[$mailTemplate->getType()]['30d'] ?></td>
                         <td align="center">
                             <a href="<?= $this->lurl ?>/mails/edit/<?= $mailTemplate->getType() ?>" title="Modifier <?= $mailTemplate->getType() ?>">
                                 <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $mailTemplate->getType() ?>"/>
