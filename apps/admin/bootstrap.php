@@ -5,6 +5,302 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 
 class bootstrap extends Controller
 {
+    const MENU = [
+        [
+            'title'    => 'Dashboard',
+            'handle'   => 'dashboard',
+            'children' => []
+        ],
+        [
+            'title'    => 'Edition',
+            'handle'   => 'edition',
+            'children' => [
+                [
+                    'title'  => 'Arborescence',
+                    'handle' => 'tree',
+                ],
+                [
+                    'title'  => 'Blocs',
+                    'handle' => 'blocs'
+                ],
+                [
+                    'title'  => 'Menus',
+                    'handle' => 'menus'
+                ],
+                [
+                    'title'  => 'Templates',
+                    'handle' => 'templates'
+                ],
+                [
+                    'title'  => 'Traductions',
+                    'handle' => 'traductions'
+                ],
+                [
+                    'title'  => 'Mails',
+                    'handle' => 'mails'
+                ]
+            ]
+        ],
+        [
+            'title'    => 'Configuration',
+            'handle'   => 'configuration',
+            'children' => [
+                [
+                    'title'  => 'Paramètres',
+                    'handle' => 'settings',
+                ],
+                [
+                    'title'  => 'Historique des Mails',
+                    'handle' => 'mails/emailhistory'
+                ],
+                [
+                    'title'  => 'Campagnes',
+                    'handle' => 'partenaires'
+                ],
+                [
+                    'title'  => 'Types de campagnes',
+                    'handle' => 'partenaires/types'
+                ],
+                [
+                    'title'  => 'Medias de campagnes',
+                    'handle' => 'partenaires/medias'
+                ],
+                [
+                    'title'  => 'Grille de taux',
+                    'handle' => 'project_rate_settings'
+                ]
+            ]
+        ],
+        [
+            'title'    => 'Statistiques',
+            'handle'   => 'stats',
+            'children' => [
+                [
+                    'title'  => 'Requêtes',
+                    'handle' => 'queries',
+                ],
+                [
+                    'title'  => 'Etape d\'inscription',
+                    'handle' => 'stats/etape_inscription'
+                ],
+                [
+                    'title'  => 'Sources emprunteurs',
+                    'handle' => 'stats/requete_source_emprunteurs'
+                ],
+                [
+                    'title'  => 'Revenus',
+                    'handle' => 'stats/requete_revenus_download'
+                ],
+                [
+                    'title'  => 'Bénéficiaires',
+                    'handle' => 'stats/requete_beneficiaires_csv'
+                ],
+                [
+                    'title'  => 'Infosben',
+                    'handle' => 'stats/requete_infosben'
+                ],
+                [
+                    'title'  => 'Toutes les enchères',
+                    'handle' => 'stats/requete_encheres'
+                ],
+                [
+                    'title'  => 'Echeanciers projet',
+                    'handle' => 'stats/tous_echeanciers_pour_projet'
+                ],
+                [
+                    'title'  => 'Statistiques Autolend',
+                    'handle' => 'stats/autobid_statistic'
+                ],
+                [
+                    'title'  => 'Déclarations BDF',
+                    'handle' => 'stats/declarations_bdf'
+                ],
+                [
+                    'title'  => 'CRS CAC',
+                    'handle' => 'stats/requete_crs_cac'
+                ],
+                [
+                    'title'  => 'Extraction des évaluations d\'éligibilité des dossiers',
+                    'handle' => 'stats/extraction_b_lend'
+                ],
+                [
+                    'title'  => 'Logs webservices',
+                    'handle' => 'stats/logs_webservices'
+                ]
+            ]
+        ],
+        [
+            'title'    => 'Prêteurs',
+            'handle'   => 'preteurs',
+            'children' => [
+                [
+                    'title'  => 'Recherche prêteurs',
+                    'handle' => 'preteurs/search',
+                ],
+                [
+                    'title'  => 'Activation prêteurs',
+                    'handle' => 'preteurs/activation '
+                ],
+                [
+                    'title'  => 'Offre de bienvenue',
+                    'handle' => 'preteurs/offres_de_bienvenue'
+                ],
+                [
+                    'title'  => 'Matching ville fiscale',
+                    'handle' => 'preteurs/control_fiscal_city'
+                ],
+                [
+                    'title'  => 'Matching ville de naissance',
+                    'handle' => 'preteurs/control_birth_city'
+                ],
+                [
+                    'title'  => 'Notifications',
+                    'handle' => 'preteurs/notifications'
+                ]
+            ]
+        ],
+        [
+            'title'    => 'Emprunteurs',
+            'handle'   => 'emprunteurs',
+            'children' => [
+                [
+                    'title'  => 'Dossiers',
+                    'handle' => 'dossiers',
+                ],
+                [
+                    'title'  => 'Emprunteurs',
+                    'handle' => 'emprunteurs/gestion'
+                ],
+                [
+                    'title'  => 'Prescripteurs',
+                    'handle' => 'prescripteurs/gestion'
+                ],
+                [
+                    'title'  => 'Dossiers en funding',
+                    'handle' => 'dossiers/funding '
+                ],
+                [
+                    'title'  => 'Remboursements',
+                    'handle' => 'dossiers/remboursements'
+                ],
+                [
+                    'title'  => 'Erreurs remboursements',
+                    'handle' => 'dossiers/no_remb'
+                ],
+                [
+                    'title'  => 'Suivi statuts projets',
+                    'handle' => 'dossiers/status'
+                ],
+                [
+                    'title'  => 'Erreurs remboursements',
+                    'handle' => 'dossiers/no_remb'
+                ],
+                [
+                    'title'  => 'Produits',
+                    'handle' => 'product'
+                ],
+                [
+                    'title'  => 'Sociétés',
+                    'handle' => 'company'
+                ],
+                [
+                    'title'  => 'Partenaires',
+                    'handle' => 'partner'
+                ],
+                [
+                    'title'  => 'Monitoring données risque',
+                    'handle' => 'risk_monitoring'
+                ]
+            ]
+        ],
+        [
+            'title'    => 'Dépôt de fonds',
+            'handle'   => 'transferts',
+            'children' => [
+                [
+                    'title'  => 'Prêteurs',
+                    'handle' => 'transferts/preteurs',
+                ],
+                [
+                    'title'  => 'Emprunteurs',
+                    'handle' => 'transferts/emprunteurs'
+                ],
+                [
+                    'title'  => 'Non attribués',
+                    'handle' => 'transferts/non_attribues'
+                ],
+                [
+                    'title'  => 'Rattrapage offre de bienvenue',
+                    'handle' => 'transferts/rattrapage_offre_bienvenue'
+                ],
+                [
+                    'title'  => 'Déblocage des fonds',
+                    'handle' => 'transferts/deblocage'
+                ],
+                [
+                    'title'  => 'Succession (Transfert de solde et prêts)',
+                    'handle' => 'transferts/succession'
+                ],
+                [
+                    'title'  => 'Opérations atypiques',
+                    'handle' => 'client_atypical_operation'
+                ],
+                [
+                    'title'  => 'Transfert des fonds',
+                    'handle' => 'transferts/virement_emprunteur'
+                ]
+            ]
+        ],
+        [
+            'title'    => 'Administration',
+            'handle'   => 'admin',
+            'children' => [
+                [
+                    'title'  => 'Utilisateurs',
+                    'handle' => 'users',
+                ],
+                [
+                    'title'  => 'Droits d\'accès',
+                    'handle' => 'zones'
+                ],
+                [
+                    'title'  => 'Logs connexions',
+                    'handle' => 'users/logs'
+                ]
+            ]
+        ],
+        [
+            'title'    => 'SFPMEI',
+            'handle'   => 'sfpmei',
+            'children' => [
+                [
+                    'title'  => 'Prêteurs',
+                    'handle' => 'sfpmei/preteurs',
+                ],
+                [
+                    'title'  => 'Prêteurs',
+                    'handle' => 'sfpmei/emprunteurs',
+                ],
+                [
+                    'title'  => 'Emprunteurs',
+                    'handle' => 'sfpmei/projets',
+                ],
+                [
+                    'title'  => 'Projets',
+                    'handle' => 'sfpmei/transferts/preteurs',
+                ],
+                [
+                    'title'  => 'Transferts de fonds prêteurs',
+                    'handle' => 'sfpmei/transferts/emprunteurs',
+                ],
+                [
+                    'title'  => 'Transferts de fonds emprunteurs',
+                    'handle' => 'sfpmei/requetes',
+                ]
+            ]
+        ]
+    ];
+
     /**
      * Helpers
      */
