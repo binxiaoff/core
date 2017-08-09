@@ -161,7 +161,7 @@ class EllisphereManager
             }
         } catch (\Exception $exception) {
             call_user_func($callback, isset($content) ? $content : '', 'error');
-            $message = 'Call to ' . $wsResource->getResourceName() . ' using params: ' . $body . '. Error message: ' . $exception->getMessage() . ' Error code: ' . $exception->getCode();
+            $message = 'Call to ' . $wsResource->getResourceName() . '. Error message: ' . $exception->getMessage() . ' Error code: ' . $exception->getCode();
             if (isset($content)) {
                 $message .= $content;
             }
