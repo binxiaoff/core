@@ -156,11 +156,6 @@ class EllisphereManager
 
             call_user_func($callback, $content, $validity['status']);
 
-            if ('error' === $validity['status']) {
-                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
-            } else {
-                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
-            }
             if ('valid' === $validity['status']) {
                 return new \SimpleXMLElement($content);
             }
@@ -171,7 +166,6 @@ class EllisphereManager
                 $message .= $content;
             }
             $this->logger->error($message, $logContext);
-            $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
         }
 
         return null;
