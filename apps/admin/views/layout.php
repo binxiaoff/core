@@ -29,9 +29,9 @@
         <div class="slimScrollDiv">
             <div id="sidebar-scroll">
                 <div class="sidebar-content">
-                    <div class="side-header side-content bg-white-op">
+                    <div class="side-header side-content">
                         <a class="h5 text-white" href="<?= $this->lurl ?>">
-                            <img src="<?= $this->surl ?>/styles/default/images/logo.png" alt="Unilend">
+                            <img src="<?= $this->surl ?>/assets/images/logo/logo-unilend-52x52-purple.png" srcset="<?= $this->surl ?>/assets/images/logo/logo-unilend-52x52-purple@2x.png 2x" alt="Unilend">
                         </a>
                     </div>
                     <div class="side-content side-content-full">
