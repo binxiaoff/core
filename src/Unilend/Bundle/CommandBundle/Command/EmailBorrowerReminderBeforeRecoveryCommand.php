@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
@@ -50,7 +51,7 @@ class EmailBorrowerReminderBeforeRecoveryCommand extends ContainerAwareCommand
             /** @var \settings $settings */
             $settings = $entityManger->getRepository('settings');
 
-            $mailTemplate->get('emprunteur-projet-statut-probleme-j-x-avant-prochaine-echeance', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getContainer()->getParameter('locale') . '" AND type');
+            $mailTemplate->get('emprunteur-projet-statut-probleme-j-x-avant-prochaine-echeance', 'status = ' . MailTemplates::STATUS_ACTIVE . ' AND locale = "' . $this->getContainer()->getParameter('locale') . '" AND type');
 
             $settings->get('Virement - BIC', 'type');
             $bic = $settings->value;

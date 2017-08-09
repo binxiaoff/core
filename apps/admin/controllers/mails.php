@@ -1,5 +1,7 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
+
 class mailsController extends bootstrap
 {
 
@@ -15,15 +17,15 @@ class mailsController extends bootstrap
 
     public function _default()
     {
-        /** @var \Unilend\Bundle\MessagingBundle\Service\MailTemplateManager $oMailTemplateManager */
-        $oMailTemplateManager = $this->get('unilend.service.mail_template');
+        /** @var \Unilend\Bundle\MessagingBundle\Service\MailTemplateManager $mailTemplateManager */
+        $mailTemplateManager = $this->get('unilend.service.mail_template');
 
         if (isset($this->params[0]) && $this->params[0] == 'delete') {
-            /** @var \mail_templates $oMailTemplate */
-            $oMailTemplate = $this->loadData('mail_templates');
+            /** @var \mail_templates $mailTemplate */
+            $mailTemplate = $this->loadData('mail_templates');
 
-            $oMailTemplate->get($this->params[1], 'type');
-            $oMailTemplateManager->archiveTemplate($oMailTemplate);
+            $mailTemplate->get($this->params[1], 'type');
+            $mailTemplateManager->archiveTemplate($mailTemplate);
 
             $_SESSION['freeow']['title']   = 'Archivage d\'un mail';
             $_SESSION['freeow']['message'] = 'Le mail a bien &eacute;t&eacute; archiv&eacute; !';
@@ -32,26 +34,27 @@ class mailsController extends bootstrap
             die;
         }
 
-        $this->lMails = $oMailTemplateManager->getActiveMailTemplates();
+        $this->externalEmails = $mailTemplateManager->getActiveMailTemplates(MailTemplates::RECIPIENT_TYPE_EXTERNAL);
+        $this->internalEmails = $mailTemplateManager->getActiveMailTemplates(MailTemplates::RECIPIENT_TYPE_INTERNAL);
     }
 
     public function _add()
     {
         if (isset($_POST['form_add_mail'])) {
             $aPost = $this->handlePost();
-            /** @var \Unilend\Bundle\MessagingBundle\Service\MailTemplateManager $oMailTemplateManager */
-            $oMailTemplateManager = $this->get('unilend.service.mail_template');
+            /** @var \Unilend\Bundle\MessagingBundle\Service\MailTemplateManager $mailTemplateManager */
+            $mailTemplateManager = $this->get('unilend.service.mail_template');
             /** @var \mail_templates $mailTemplate */
             $mailTemplate = $this->loadData('mail_templates');
 
             if (empty($aPost['type']) || empty($aPost['sender_name']) || empty($aPost['sender_email']) || empty($aPost['subject'])) {
                 $_SESSION['freeow']['title']   = 'Ajout d\'un mail';
                 $_SESSION['freeow']['message'] = 'Ajout impossible : tous les champs n\'ont &eacute;t&eacute; remplis';
-            } else if ($mailTemplate->exist($aPost['type'] . '" AND status = "' . \mail_templates::STATUS_ACTIVE, 'type')) {
+            } else if ($mailTemplate->exist($aPost['type'] . '" AND status = "' . MailTemplates::STATUS_ACTIVE, 'type')) {
                 $_SESSION['freeow']['title']   = 'Ajout d\'un mail';
                 $_SESSION['freeow']['message'] = 'Ajout impossible : ce mail existe d&eacute;j&agrave;';
             } else {
-                $oMailTemplateManager->addTemplate($aPost['type'], $aPost['sender_name'], $aPost['sender_email'], $aPost['subject'], $aPost['content']);
+                $mailTemplateManager->addTemplate($aPost['type'], $aPost['sender_name'], $aPost['sender_email'], $aPost['subject'], $aPost['content']);
 
                 $_SESSION['freeow']['title']   = 'Ajout d\'un mail';
                 $_SESSION['freeow']['message'] = 'Le mail a bien &eacute;t&eacute; ajout&eacute;';
@@ -64,13 +67,13 @@ class mailsController extends bootstrap
 
     public function _edit()
     {
-        /** @var \Unilend\Bundle\MessagingBundle\Service\MailTemplateManager $oMailTemplateManager */
-        $oMailTemplateManager = $this->get('unilend.service.mail_template');
+        /** @var \Unilend\Bundle\MessagingBundle\Service\MailTemplateManager $mailTemplateManager */
+        $mailTemplateManager = $this->get('unilend.service.mail_template');
 
         if (false === empty($this->params[0])) {
             /** @var \mail_templates oMailTemplate */
             $this->oMailTemplate = $this->loadData('mail_templates');
-            $this->oMailTemplate->get($this->params[0], 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND type');
+            $this->oMailTemplate->get($this->params[0], 'status = ' . MailTemplates::STATUS_ACTIVE . ' AND type');
 
             if (isset($_POST['form_mod_mail']) && false === empty($this->oMailTemplate->id_mail_template)) {
                 $aPost = $this->handlePost();
@@ -79,7 +82,7 @@ class mailsController extends bootstrap
                     $_SESSION['freeow']['title']   = 'Modification d\'un mail';
                     $_SESSION['freeow']['message'] = 'Modification impossible : tous les champs n\'ont &eacute;t&eacute; remplis';
                 } else {
-                    $oMailTemplateManager->modifyTemplate($this->oMailTemplate, $aPost['sender_name'], $aPost['sender_email'], $aPost['subject'], $aPost['content']);
+                    $mailTemplateManager->modifyTemplate($this->oMailTemplate, $aPost['sender_name'], $aPost['sender_email'], $aPost['subject'], $aPost['content']);
 
                     $_SESSION['freeow']['title']   = 'Modification d\'un mail';
                     $_SESSION['freeow']['message'] = 'Le mail a bien &eacute;t&eacute; modifi&eacute;';

@@ -8,10 +8,17 @@ use Doctrine\ORM\Mapping as ORM;
  * MailTemplates
  *
  * @ORM\Table(name="mail_templates", indexes={@ORM\Index(name="type", columns={"status", "locale", "type"})})
+ * @ORM\HasLifecycleCallbacks
  * @ORM\Entity
  */
 class MailTemplates
 {
+    const STATUS_ACTIVE   = 1;
+    const STATUS_ARCHIVED = 2;
+
+    const RECIPIENT_TYPE_INTERNAL = 'internal';
+    const RECIPIENT_TYPE_EXTERNAL = 'external';
+
     /**
      * @var string
      *
@@ -25,6 +32,13 @@ class MailTemplates
      * @ORM\Column(name="locale", type="string", length=5, nullable=false)
      */
     private $locale;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="recipient_type", type="string", length=30, nullable=false)
+     */
+    private $recipientType;
 
     /**
      * @var string
@@ -132,6 +146,30 @@ class MailTemplates
     public function getLocale()
     {
         return $this->locale;
+    }
+
+    /**
+     * Set recipientType
+     *
+     * @param string $recipientType
+     *
+     * @return MailTemplates
+     */
+    public function setRecipientType($recipientType)
+    {
+        $this->recipientType = $recipientType;
+
+        return $this;
+    }
+
+    /**
+     * Get recipientType
+     *
+     * @return string
+     */
+    public function getRecipientType()
+    {
+        return $this->recipientType;
     }
 
     /**
@@ -310,5 +348,23 @@ class MailTemplates
     public function getIdMailTemplate()
     {
         return $this->idMailTemplate;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

@@ -2,28 +2,37 @@
 
 namespace Unilend\Bundle\MessagingBundle\Service;
 
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class MailTemplateManager
 {
-    /** @var EntityManager */
-    private $entityManager;
-
+    /** @var EntityManagerSimulator */
+    private $entityManagerSimulator;
     /** @var MailQueueManager */
     private $mailQueueManager;
+    /** @var  EntityManager */
+    private $entityManager;
 
     /**
      * MailTextManager constructor.
      *
-     * @param EntityManager    $entityManager
-     * @param MailQueueManager $mailQueueManager
-     * @param                  $defaultLanguage
+     * @param EntityManager          $entityManager
+     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param MailQueueManager       $mailQueueManager
+     * @param                        $defaultLanguage
      */
-    public function __construct(EntityManager $entityManager, MailQueueManager $mailQueueManager, $defaultLanguage)
-    {
-        $this->entityManager    = $entityManager;
-        $this->mailQueueManager = $mailQueueManager;
-        $this->defaultLanguage  = $defaultLanguage;
+    public function __construct(
+        EntityManager $entityManager,
+        EntityManagerSimulator $entityManagerSimulator,
+        MailQueueManager $mailQueueManager,
+        $defaultLanguage
+    ) {
+        $this->entityManager          = $entityManager;
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->mailQueueManager       = $mailQueueManager;
+        $this->defaultLanguage        = $defaultLanguage;
     }
 
     /**
@@ -36,17 +45,17 @@ class MailTemplateManager
     public function addTemplate($type, $sender, $senderEmail, $subject, $content)
     {
         /** @var \mail_templates $mailTemplate */
-        $oMailTemplate = $this->entityManager->getRepository('mail_templates');
+        $mailTemplate = $this->entityManagerSimulator->getRepository('mail_templates');
 
-        if (false === $oMailTemplate->exist(\mail_templates::STATUS_ACTIVE, 'type = "' . $type . '" AND status')) {
-            $oMailTemplate->type         = $type;
-            $oMailTemplate->sender_name  = $sender;
-            $oMailTemplate->sender_email = $senderEmail;
-            $oMailTemplate->subject      = $subject;
-            $oMailTemplate->content      = $content;
-            $oMailTemplate->locale       = $this->defaultLanguage;
-            $oMailTemplate->status       = \mail_templates::STATUS_ACTIVE;
-            $oMailTemplate->create();
+        if (false === $mailTemplate->exist(MailTemplates::STATUS_ACTIVE, 'type = "' . $type . '" AND status')) {
+            $mailTemplate->type         = $type;
+            $mailTemplate->sender_name  = $sender;
+            $mailTemplate->sender_email = $senderEmail;
+            $mailTemplate->subject      = $subject;
+            $mailTemplate->content      = $content;
+            $mailTemplate->locale       = $this->defaultLanguage;
+            $mailTemplate->status       = MailTemplates::STATUS_ACTIVE;
+            $mailTemplate->create();
         }
     }
 
@@ -76,18 +85,21 @@ class MailTemplateManager
      */
     public function archiveTemplate(\mail_templates $mailTemplate)
     {
-        $mailTemplate->status = \mail_templates::STATUS_ARCHIVED;
+        $mailTemplate->status = MailTemplates::STATUS_ARCHIVED;
         $mailTemplate->update();
     }
 
     /**
+     * @param string|null $recipientType
+     *
      * @return array
      */
-    public function getActiveMailTemplates()
+    public function getActiveMailTemplates($recipientType = null)
     {
-        /** @var \mail_templates $mailTemplate */
-        $mailTemplate = $this->entityManager->getRepository('mail_templates');
-        return $mailTemplate->getActiveMailTemplates();
-    }
+        if (null === $recipientType) {
+            return $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findBy(['status' => MailTemplates::STATUS_ACTIVE]);
+        }
 
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findBy(['status' => MailTemplates::STATUS_ACTIVE, 'recipientType' => $recipientType]);
+    }
 }

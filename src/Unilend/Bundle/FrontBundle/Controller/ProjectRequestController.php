@@ -14,6 +14,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
@@ -1355,7 +1356,7 @@ class ProjectRequestController extends Controller
 
         /** @var \mail_templates $mailTemplate */
         $mailTemplate = $entityManagerSimulator->getRepository('mail_templates');
-        $mailTemplate->get('confirmation-depot-de-dossier', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
+        $mailTemplate->get('confirmation-depot-de-dossier', 'status = ' . MailTemplates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
 
         if (false === empty($this->project->id_prescripteur)) {
             /** @var \prescripteurs $advisor */
@@ -1413,7 +1414,7 @@ class ProjectRequestController extends Controller
 
             /** @var \mail_templates $mailTemplate */
             $mailTemplate = $entityManagerSimulator->getRepository('mail_templates');
-            $mailTemplate->get($emailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
+            $mailTemplate->get($emailType, 'status = ' . MailTemplates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
 
             $aReplacements = [
                 '[ID_PROJET]'      => $this->project->id_project,

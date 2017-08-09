@@ -17,6 +17,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
 
 class preteursController extends bootstrap
 {
@@ -760,7 +761,7 @@ class preteursController extends bootstrap
         $this->mail_template = $this->loadData('mail_templates');
 
         $this->clients->get($this->params[0], 'id_client');
-        $this->mail_template->get('completude', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
+        $this->mail_template->get('completude', 'status = ' . MailTemplates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
     }
 
     public function _completude_preview_iframe()
@@ -775,7 +776,7 @@ class preteursController extends bootstrap
         $this->settings               = $this->loadData('settings');
 
         $this->clients->get($this->params[0], 'id_client');
-        $this->mail_template->get('completude', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
+        $this->mail_template->get('completude', 'status = ' . MailTemplates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
 
         $this->settings->get('Facebook', 'type');
         $lien_fb = $this->settings->value;

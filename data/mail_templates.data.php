@@ -27,9 +27,6 @@
 // **************************************************************************************************** //
 class mail_templates extends mail_templates_crud
 {
-    const STATUS_ACTIVE   = 1;
-    const STATUS_ARCHIVED = 2;
-
     public function __construct($bdd, $params = '')
     {
         parent::mail_templates($bdd, $params);
@@ -68,18 +65,4 @@ class mail_templates extends mail_templates_crud
     {
         return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `mail_templates` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
-
-    public function getActiveMailTemplates()
-    {
-        $sQuery = 'SELECT * FROM mail_templates WHERE status  = ' . self::STATUS_ACTIVE . ' ORDER BY type ASC';
-
-        $aTemplates     = array();
-        $oStatement     = $this->bdd->executeQuery($sQuery);
-        while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
-            $aTemplates[] = $aRow;
-        }
-
-        return $aTemplates;
-    }
-
 }

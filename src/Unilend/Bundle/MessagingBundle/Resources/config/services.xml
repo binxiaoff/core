@@ -18,6 +18,7 @@
         </service>
 
         <service id="unilend.service.mail_template" class="Unilend\Bundle\MessagingBundle\Service\MailTemplateManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.mail_queue"/>
             <argument>%kernel.default_locale%</argument>

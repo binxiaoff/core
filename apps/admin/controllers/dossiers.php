@@ -15,6 +15,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsRemb;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
+use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
 use \Psr\Log\LoggerInterface;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
 
@@ -983,7 +984,7 @@ class dossiersController extends bootstrap
                 'annee'                => date('Y')
             );
 
-        $this->mail_template->get($sMailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
+        $this->mail_template->get($sMailType, 'status = ' . MailTemplates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
         $aReplacements['sujet'] = $this->mail_template->subject;
 
         /** @var LoggerInterface $logger */
@@ -1143,7 +1144,7 @@ class dossiersController extends bootstrap
 
                     $sMailType = ($wallet->getIdClient()->isNaturalPerson()) ? $sEmailTypePerson : $sEmailTypeSociety;
                     $locale    = $this->getParameter('locale');
-                    $this->mail_template->get($sMailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $locale . '" AND type');
+                    $this->mail_template->get($sMailType, 'status = ' . MailTemplates::STATUS_ACTIVE . ' AND locale = "' . $locale . '" AND type');
                     $aReplacements['sujet'] = $this->mail_template->subject;
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
@@ -2350,7 +2351,7 @@ class dossiersController extends bootstrap
         $this->iProjectId = $oProjects->id_project;
 
         $sTypeEmail = $this->selectEmailCompleteness($iClientId);
-        $this->mail_template->get($sTypeEmail, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
+        $this->mail_template->get($sTypeEmail, 'status = ' . MailTemplates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
     }
 
     public function _completude_preview_iframe()
@@ -2382,7 +2383,7 @@ class dossiersController extends bootstrap
         }
 
         $sTypeEmail = $this->selectEmailCompleteness($oClients->id_client);
-        $oMailTemplate->get($sTypeEmail, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
+        $oMailTemplate->get($sTypeEmail, 'status = ' . MailTemplates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
 
         $varMail          = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
         $varMail['sujet'] = $oMailTemplate->subject;
@@ -2427,7 +2428,7 @@ class dossiersController extends bootstrap
                 return;
             }
             $sTypeEmail       = $this->selectEmailCompleteness($oClients->id_client);
-            $oMailTemplate->get($sTypeEmail, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
+            $oMailTemplate->get($sTypeEmail, 'status = ' . MailTemplates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
             $varMail          = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
             $varMail['sujet'] = htmlentities($oMailTemplate->subject, null, 'UTF-8');
             $sRecipientEmail  = preg_replace('/^(.*)-[0-9]+$/', '$1', trim($oClients->email));

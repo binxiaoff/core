@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
+use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
@@ -626,7 +627,7 @@ class MailerManager
         }
 
         $iLendersNb = $loan->getNbPreteurs($oProject->id_project);
-        $this->oMailTemplate->get('notification-projet-fini', 'locale = "' . $this->locale . '" AND status = ' . \mail_templates::STATUS_ACTIVE . ' AND type');
+        $this->oMailTemplate->get('notification-projet-fini', 'locale = "' . $this->locale . '" AND status = ' . MailTemplates::STATUS_ACTIVE . ' AND type');
 
         $varMail = [
             '$surl'         => $this->sSUrl,
