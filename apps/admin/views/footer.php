@@ -9,21 +9,23 @@
     </footer>
 </div>
 <!-- OneUI Core JS: jQuery, Bootstrap, slimScroll, scrollLock, Placeholder, Cookie and App.js -->
-<script src="oneui/js/core/jquery.min.js"></script>
-<script src="oneui/js/core/bootstrap.min.js"></script>
-<script src="oneui/js/core/jquery.scrollLock.min.js"></script>
-<script src="oneui/js/core/jquery.placeholder.min.js"></script>
-<script src="oneui/js/core/js.cookie.min.js"></script>
-<script src="oneui/js/app.js"></script>
+<script src="/oneui/js/core/jquery.min.js"></script>
+<script src="/oneui/js/core/bootstrap.min.js"></script>
+<script src="/oneui/js/core/jquery.scrollLock.min.js"></script>
+<script src="/oneui/js/core/jquery.placeholder.min.js"></script>
+<script src="/oneui/js/core/js.cookie.min.js"></script>
+<script src="/oneui/js/app.js"></script>
 
 <!-- OneUI Plugins -->
-<script src="oneui/js/plugins/select2/select2.min.js"></script>
-<script src="oneui/js/plugins/jquery-auto-complete/jquery.auto-complete.min.js"></script>
-<script src="oneui/js/plugins/masked-inputs/jquery.maskedinput.min.js"></script>
-<script src="oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
-<script src="oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="oneui/js/plugins/summernote/summernote.min.js"></script>
-<script src="oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.js"></script>
+<script src="/oneui/js/plugins/select2/select2.min.js"></script>
+<script src="/oneui/js/plugins/jquery-validation/jquery.validate.min.js"></script>
+<script src="/oneui/js/plugins/select2/select2.full.min.js"></script>
+<script src="/oneui/js/plugins/jquery-auto-complete/jquery.auto-complete.min.js"></script>
+<script src="/oneui/js/plugins/masked-inputs/jquery.maskedinput.min.js"></script>
+<script src="/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
+<script src="/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/oneui/js/plugins/summernote/summernote.min.js"></script>
+<script src="/oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.js"></script>
 
 <!-- Page Specific JS -->
 <script>
