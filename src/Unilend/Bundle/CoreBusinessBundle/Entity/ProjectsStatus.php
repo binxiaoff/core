@@ -138,20 +138,6 @@ class ProjectsStatus
     ];
 
     /**
-     * List of project status with pending repayments
-     * @var array
-     */
-    const RUNNING_REPAYMENT = [
-        ProjectsStatus::REMBOURSEMENT,
-        ProjectsStatus::PROBLEME,
-        ProjectsStatus::PROBLEME_J_X,
-        ProjectsStatus::RECOUVREMENT,
-        ProjectsStatus::PROCEDURE_SAUVEGARDE,
-        ProjectsStatus::REDRESSEMENT_JUDICIAIRE,
-        ProjectsStatus::LIQUIDATION_JUDICIAIRE
-    ];
-
-    /**
      * @var string
      *
      * @ORM\Column(name="label", type="string", length=191, nullable=false)

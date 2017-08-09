@@ -51,12 +51,13 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
         }
         $startDate = new \DateTime('First day of' . $endDate->format('F Y'));
 
-        $entityManager             = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $operationRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $projectRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $clientRepository          = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        $wireTransferInRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
-        $repaymentRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $entityManager                 = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $operationRepository           = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $projectRepository             = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $wireTransferInRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+        $repaymentRepository           = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $clientStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory');
+        $companiesRepository           = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
 
         $failedCreditCardProvision = $entityManager->getRepository('UnilendCoreBusinessBundle:Backpayline')->getCountFailedTransactionsBetweenDates($startDate, $endDate);
         $creditCardProvisions      = [];
@@ -99,26 +100,27 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
             ProjectsStatus::LIQUIDATION_JUDICIAIRE,
             ProjectsStatus::REDRESSEMENT_JUDICIAIRE
         ], new \DateTime('January 2013'), $endDate);
+        $companiesInCollectiveProceeding      = $companiesRepository->getCountCompaniesInCollectiveProceedingBetweenDates($startDate, $endDate);
         $newlyRiskAnalysisProjects            = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->getCountProjectsInRiskReviewBetweenDates($startDate, $endDate);
         $newlyPresentedProjects               = $projectRepository->getIndicatorBetweenDates('COUNT(p.id_project) AS newProjects', $startDate, $endDate, ProjectsStatus::EN_FUNDING)['newProjects'];
-        $totalNewLenders                      = $clientRepository->countLendersBetweenDates($startDate, $endDate, true);
-        $newLendersPerson                     = $clientRepository->countLendersByClientTypeBetweenDates([Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER], $startDate, $endDate, true);
-        $newLenderLegalEntity                 = $clientRepository->countLendersByClientTypeBetweenDates([Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER], $startDate, $endDate, true);
-        $lenderWithProvision                  = $operationRepository->getLenderProvisionIndicatorsBetweenDates($startDate, $endDate, false, true)[0]['numberLenders'];
-        $totalLenders                         = $clientRepository->countLendersByClientTypeBetweenDates([
+        $totalNewLenders                      = $totalLenders                         = $clientStatusHistoryRepository->countLendersValidatedBetweenDatesByType($startDate, $endDate, [
             Clients::TYPE_PERSON,
             Clients::TYPE_PERSON_FOREIGNER,
             Clients::TYPE_LEGAL_ENTITY,
             Clients::TYPE_LEGAL_ENTITY_FOREIGNER
-        ], new \DateTime('January 2013'), $endDate, true);
-        $totalLendersPerson                   = $clientRepository->countLendersByClientTypeBetweenDates([
+        ]);
+        $newLendersPerson                     = $clientStatusHistoryRepository->countLendersValidatedBetweenDatesByType($startDate, $endDate, [
             Clients::TYPE_PERSON,
             Clients::TYPE_PERSON_FOREIGNER
-        ], new \DateTime('January 2013'), $endDate, true);
-        $totalLendersLegalEntity              = $clientRepository->countLendersByClientTypeBetweenDates([
+        ]);
+        $newLenderLegalEntity                 = $clientStatusHistoryRepository->countLendersValidatedBetweenDatesByType($startDate, $endDate, [
             Clients::TYPE_LEGAL_ENTITY,
             Clients::TYPE_LEGAL_ENTITY_FOREIGNER
-        ], new \DateTime('January 2013'), $endDate, true);
+        ]);
+        $lenderWithProvision                  = $operationRepository->getLenderProvisionIndicatorsBetweenDates($startDate, $endDate, false, true)[0]['numberLenders'];
+        $totalLenders                         = $clientStatusHistoryRepository->countLendersValidatedBetweenDatesByType(new \DateTime('January 2013'), $endDate);
+        $totalLendersPerson                   = $clientStatusHistoryRepository->countLendersValidatedBetweenDatesByType(new \DateTime('January 2013'), $endDate, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]);
+        $totalLendersLegalEntity              = $clientStatusHistoryRepository->countLendersValidatedBetweenDatesByType(new \DateTime('January 2013'), $endDate, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER]);
         $lendersWithProvisionAndNoValidBid    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findLendersWithProvisionButWithoutAcceptedBidBetweenDates(new \DateTime('January 2013'), $endDate);
         $totalLenderProvisionIndicators       = $operationRepository->getLenderProvisionIndicatorsBetweenDates(new \DateTime('January 2013'), $endDate, false)[0];
 
@@ -162,7 +164,7 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
             44 => ['Nombre cumulé de financements envoyés à la société de recouvrement (MCS = DdT)' => count($projectsInDebtCollection)],
             45 => ['Montant cumulé (capital) des financements envoyés à la société de recouvrement' => array_sum(array_column($projectsInDebtCollection, 'amount'))],
             46 => ['Montant restant dû des financements envoyés à la société de recouvrement' => $remainingDueCapitalInDebtCollection],
-            47 => ['Nombre cumulé de financements en procédure collective (entreprises)' => count($projectsInCollectiveProceeding)],
+            47 => ['Nombre cumulé de financements en procédure collective (entreprises)' => $companiesInCollectiveProceeding],
             48 => ['Montant cumulé (capital) de financements en procédure collective (montant financé)' => array_sum(array_column($projectsInCollectiveProceeding, 'amount'))],
             50 => ['Nombre de projets analysés par le Comité des Risques' => $newlyRiskAnalysisProjects],
             51 => ['Nombre de projets présentés aux prêteurs en ligne' => $newlyPresentedProjects],

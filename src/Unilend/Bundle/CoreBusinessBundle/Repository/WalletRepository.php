@@ -262,10 +262,10 @@ class WalletRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
             ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'c.idClient = w.idClient')
             ->where('ot.label = :lenderProvision')
-            ->andwhere('w.id NOT IN (SELECT IDENTITY(b.idLenderAccount) FROM Unilend\Bundle\CoreBusinessBundle\Entity\Bids b WHERE b.status = :pending AND b.added BETWEEN :start AND :end)')
+            ->andwhere('w.id NOT IN (SELECT IDENTITY(b.idLenderAccount) FROM Unilend\Bundle\CoreBusinessBundle\Entity\Bids b WHERE b.status = :accepted AND b.added BETWEEN :start AND :end)')
             ->groupBy('w.id')
             ->setParameter('lenderProvision', OperationType::LENDER_PROVISION)
-            ->setParameter('pending', Bids::STATUS_BID_PENDING)
+            ->setParameter('accepted', Bids::STATUS_BID_ACCEPTED)
             ->setParameter('start', $start->format('Y-m-d H:i:s'))
             ->setParameter('end', $end->format('Y-m-d H:i:s'));
 
