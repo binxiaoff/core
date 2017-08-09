@@ -241,7 +241,7 @@ class OffresBienvenues
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param integer $status
      *
      * @return OffresBienvenues
      */
@@ -255,7 +255,7 @@ class OffresBienvenues
     /**
      * Get status
      *
-     * @return boolean
+     * @return integer
      */
     public function getStatus()
     {
