@@ -190,10 +190,6 @@ $menuItems = [
                 'handle' => 'dossiers/status'
             ],
             [
-                'title'  => 'Erreurs remboursements',
-                'handle' => 'dossiers/no_remb'
-            ],
-            [
                 'title'  => 'Produits',
                 'handle' => 'product'
             ],
@@ -208,6 +204,10 @@ $menuItems = [
             [
                 'title'  => 'Monitoring données risque',
                 'handle' => 'risk_monitoring'
+            ],
+            [
+                'title'  => 'Projets avec retard',
+                'handle' => 'emprunteurs/projets_avec_retard'
             ]
         ]
     ],

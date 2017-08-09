@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\ORM\Query\Expr\Join;
 use PDO;
+use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\librairies\CacheKeys;
 use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
@@ -292,5 +293,35 @@ class ProjectsRepository extends EntityRepository
             ->setParameter('siren', $siren);
 
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @return array
+     */
+    public function getProjectsWithLateRepayments()
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+        $queryBuilder->select('p.idProject, p.status AS projectStatus, ps.label AS projectStatusLabel, p.title AS projectTitle, co.siren, co.name AS companyName, SUM(ee.montant) / 100 AS owedAmount, \'N/A\' AS pendingReceipt, \'N/A\' AS entrustedToCollector')
+            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'co.idCompany = p.idCompany')
+            ->innerJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'ee.idProject = p.idProject')
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'p.status = ps.status')
+            ->where('ee.dateEcheanceEmprunteur <= NOW()')
+            ->andWhere('ee.statusEmprunteur = :pending')
+            ->setParameter('pending', EcheanciersEmprunteur::STATUS_PENDING)
+            ->andWhere('p.status >= :repaymentStatus')
+            ->setParameter('repaymentStatus', ProjectsStatus::REMBOURSEMENT)
+            ->groupBy('p.idProject');
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    public function getCountProjectsByStatus($status)
+    {
+        $queryBuilder = $this->createQueryBuilder('p')
+            ->select('COUNT(p.idProject)')
+            ->where('p.status = :status')
+            ->setParameter('status', $status);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }

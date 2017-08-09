@@ -184,4 +184,35 @@ class emprunteursController extends bootstrap
             }
         }
     }
+
+    public function _projets_avec_retard()
+    {
+        $this->useOneUi();
+        /** @var \users $user */
+        $user = $this->loadData('users');
+        $user->get($_SESSION['user']['id_user']);
+
+        if (\users_types::TYPE_RISK == $user->id_user_type
+            || $user->id_user == 28
+            || isset($this->params[0]) && 'risk' == $this->params[0] && in_array($user->id_user_type, [\users_types::TYPE_ADMIN, \users_types::TYPE_IT])
+            || true
+        ) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager                    = $this->get('doctrine.orm.entity_manager');
+            $projectsRepository               = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $this->projectsWithLateRepayments = $projectsRepository->getProjectsWithLateRepayments();
+
+            /** @todo set the correct values for the summary variables when mission details are implemented */
+            $pendingReceiptAmount       = 2500;
+            $this->lateRepaymentSummary = [
+                'remainingAmountToCollect'  => array_sum(array_column($this->projectsWithLateRepayments, 'owedAmount')),
+                'pendingReceiptAmount'      => $pendingReceiptAmount,
+                'projectsWithLateRepayment' => count($this->projectsWithLateRepayments),
+                'projectsInDeptCollection'  => $projectsRepository->getCountProjectsByStatus(\Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::RECOUVREMENT)
+            ];
+        } else {
+            header('Location: ' . $this->lurl . '/emprunteurs/gestion/');
+            die;
+        }
+    }
 }
