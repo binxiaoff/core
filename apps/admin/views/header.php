@@ -384,7 +384,7 @@ function generateMenu($menuItems, $base, $theme, $currentPage, $zoneHeader)
             <ul class="nav-header pull-left">
                 <li class="header-content">
                     <a class="logo" href="/">
-                        <img src="oneui/img/logo-and-type-unilend-209x44-purple@2x.png" width="209" height="44" alt="Unilend">
+                        <img src="/oneui/img/logo-and-type-unilend-209x44-purple@2x.png" width="209" height="44" alt="Unilend">
                     </a>
                 </li>
             </ul>

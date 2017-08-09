@@ -126,18 +126,18 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400italic,600,700%7COpen+Sans:300,400,400italic,600,700">
 
 <!-- Plugins CSS -->
-<link rel="stylesheet" href="oneui/js/plugins/select2/select2.min.css">
-<link rel="stylesheet" href="oneui/js/plugins/select2/select2-bootstrap.min.css">
-<link rel="stylesheet" href="oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
-<link rel="stylesheet" href="oneui/js/plugins/jquery-auto-complete/jquery.auto-complete.min.css">
-<link rel="stylesheet" href="oneui/js/plugins/datatables/jquery.dataTables.min.css">
-<link rel="stylesheet" href="oneui/js/plugins/summernote/summernote.min.css">
-<link rel="stylesheet" href="oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.css">
+<link rel="stylesheet" href="/oneui/js/plugins/select2/select2.min.css">
+<link rel="stylesheet" href="/oneui/js/plugins/select2/select2-bootstrap.min.css">
+<link rel="stylesheet" href="/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
+<link rel="stylesheet" href="/oneui/js/plugins/jquery-auto-complete/jquery.auto-complete.min.css">
+<link rel="stylesheet" href="/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+<link rel="stylesheet" href="/oneui/js/plugins/summernote/summernote.min.css">
+<link rel="stylesheet" href="/oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.css">
 
 <!-- Core CSS -->
-<link rel="stylesheet" href="oneui/css/bootstrap.min.css">
-<link rel="stylesheet" href="oneui/css/oneui.css">
-<link rel="stylesheet" href="oneui/css/unilend.min.css">
+<link rel="stylesheet" href="/oneui/css/bootstrap.min.css">
+<link rel="stylesheet" href="/oneui/css/oneui.css">
+<link rel="stylesheet" href="/oneui/css/unilend.min.css">
 </head>
 <body>
 <?php endif; ?>
