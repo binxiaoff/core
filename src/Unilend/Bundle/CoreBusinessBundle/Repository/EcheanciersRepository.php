@@ -86,7 +86,7 @@ class EcheanciersRepository extends EntityRepository
      * @param Projects|int     $project
      * @param int|null         $repaymentSequence
      * @param Clients|int|null $client
-     * @param int|null         $status
+     * @param int|array|null   $status
      * @param int|null         $paymentStatus
      * @param int|null         $earlyRepaymentStatus
      * @param int|null         $start
@@ -94,7 +94,7 @@ class EcheanciersRepository extends EntityRepository
      *
      * @return Echeanciers[]
      */
-    public function findByProject($project, $repaymentSequence = null, $client = null, $status = null, $paymentStatus = null, $earlyRepaymentStatus = null, $start = null, $limit = null)
+    public function findByProject($project, $repaymentSequence = null, $client = null, $status = [], $paymentStatus = null, $earlyRepaymentStatus = null, $start = null, $limit = null)
     {
         $qb = $this->createQueryBuilder('e');
         $qb->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'e.idLoan = l.idLoan')
@@ -113,8 +113,11 @@ class EcheanciersRepository extends EntityRepository
                 ->setParameter('client', $client);
         }
 
-        if (null !== $status) {
-            $qb->andWhere('e.status = :status')
+        if (false === empty($status)) {
+            if (false === is_array($status)) {
+                $status = [$status];
+            }
+            $qb->andWhere('e.status in :status')
                 ->setParameter('status', $status);
         }
 
@@ -390,15 +393,15 @@ class EcheanciersRepository extends EntityRepository
             ) AS t
             GROUP BY t.month';
 
-        $frenchTax              = OperationType::TAX_TYPES_FR;
+        $frenchTax               = OperationType::TAX_TYPES_FR;
         $frenchTaxRegularisation = OperationType::TAX_TYPES_FR_REGULARIZATION;
-        $repaymentTypes         = [
+        $repaymentTypes          = [
             OperationType::CAPITAL_REPAYMENT,
             OperationType::CAPITAL_REPAYMENT_REGULARIZATION,
             OperationType::GROSS_INTEREST_REPAYMENT,
             OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION
         ];
-        $allOperationTypes      = array_merge($frenchTax, $frenchTaxRegularisation, $repaymentTypes);
+        $allOperationTypes       = array_merge($frenchTax, $frenchTaxRegularisation, $repaymentTypes);
 
         $oQCProfile    = new QueryCacheProfile(CacheKeys::DAY, md5(__METHOD__));
         $statement     = $this->getEntityManager()->getConnection()->executeQuery(
@@ -406,7 +409,7 @@ class EcheanciersRepository extends EntityRepository
             [
                 'lender'                       => $lender,
                 'frenchTax'                    => $frenchTax,
-                'frenchTaxRegularisation'       => $frenchTaxRegularisation,
+                'frenchTaxRegularisation'      => $frenchTaxRegularisation,
                 'repaymentTypes'               => $repaymentTypes,
                 'allOperationTypes'            => $allOperationTypes,
                 'tax_type_exempted_lender'     => TaxManager::TAX_TYPE_EXEMPTED_LENDER,
@@ -417,7 +420,7 @@ class EcheanciersRepository extends EntityRepository
             [
                 'repaymentTypes'               => Connection::PARAM_INT_ARRAY,
                 'frenchTax'                    => Connection::PARAM_INT_ARRAY,
-                'frenchTaxRegularisation'       => Connection::PARAM_INT_ARRAY,
+                'frenchTaxRegularisation'      => Connection::PARAM_INT_ARRAY,
                 'allOperationTypes'            => Connection::PARAM_INT_ARRAY,
                 'tax_type_exempted_lender'     => Connection::PARAM_INT_ARRAY,
                 'tax_type_taxable_lender'      => Connection::PARAM_INT_ARRAY,
