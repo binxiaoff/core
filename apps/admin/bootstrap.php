@@ -131,7 +131,11 @@ class bootstrap extends Controller
                 [
                     'title' => 'Logs webservices',
                     'uri'   => 'stats/logs_webservices'
-                ]
+                ],
+                [
+                    'title' => 'Reporting Mensuel SFPMEI',
+                    'uri'   => 'stats/reporting_sfpmei'
+                ],
             ]
         ],
         [

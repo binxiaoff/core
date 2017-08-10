@@ -187,7 +187,7 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
             }
         }
 
-        $filePath = $this->getContainer()->getParameter('path.protected') . '/' . 'reporting_mensuel_sfpmei_' . $endDate->format('Ymd') . '.xlsx';
+        $filePath = $this->getContainer()->getParameter('path.protected') . '/queries/' . 'reporting_mensuel_sfpmei_' . $endDate->format('Ymd') . '.xlsx';
 
         /** @var \PHPExcel_Writer_CSV $writer */
         $writer = \PHPExcel_IOFactory::createWriter($document, 'Excel2007');

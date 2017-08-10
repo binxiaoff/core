@@ -886,7 +886,7 @@ class statsController extends bootstrap
 
     public function _reporting_sfpmei()
     {
-        $directoryPath       = $this->getParameter('path.protected') . '/';
+        $directoryPath       = $this->getParameter('path.protected') . '/queries/';
         $this->reportingList = [];
 
         if (isset($this->params[0], $this->params[1]) && 'file' === $this->params[0] && is_string($this->params[1])) {
