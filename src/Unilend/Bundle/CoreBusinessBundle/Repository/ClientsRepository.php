@@ -39,11 +39,12 @@ class ClientsRepository extends EntityRepository
     }
 
     /**
-     * @param $email
+     * @param string   $email
+     * @param int|null $status
      *
      * @return bool
      */
-    public function existEmail($email)
+    public function existEmail($email, $status = null)
     {
         if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return false;
@@ -54,6 +55,13 @@ class ClientsRepository extends EntityRepository
             ->select('COUNT(c)')
             ->where('c.email = :email')
             ->setParameter('email', $email);
+
+        if (null !== $status) {
+            $queryBuilder
+                ->andWhere('c.status = :status')
+                ->setParameter('status', $status, \PDO::PARAM_INT);
+        }
+
         $query = $queryBuilder->getQuery();
 
         return $query->getSingleScalarResult() > 0;
