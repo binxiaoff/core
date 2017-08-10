@@ -21,6 +21,11 @@
 
 .myoffer-project-period {
   // float: right;
+  .ui-timecount:before {
+    content: $fa-clock-u; // clock
+    margin-right: 5px;
+    font-family: $ff-icon;
+  }
 }
 
 .myoffer-amount {

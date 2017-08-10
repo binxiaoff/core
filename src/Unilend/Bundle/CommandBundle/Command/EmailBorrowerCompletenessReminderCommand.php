@@ -78,6 +78,7 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
             'lien_fb'              => $sFB,
             'lien_tw'              => $sTwitter
         );
+        $oProjectManager = $this->getContainer()->get('unilend.service.project_manager');
 
         foreach ($aReminderIntervals as $sStatus => $aIntervals) {
             if (1 === preg_match('/^status-([1-9][0-9]*)$/', $sStatus, $aMatches)) {
@@ -135,13 +136,17 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
 
                                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                                 $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex, $aReplacements);
-                                $message->setTo($sRecipientEmail);
-                                $mailer = $this->getContainer()->get('mailer');
-                                $mailer->send($message);
+                                try {
+                                    $message->setTo($sRecipientEmail);
+                                    $mailer = $this->getContainer()->get('mailer');
+                                    $mailer->send($message);
+                                } catch (\Exception $exception) {
+                                    $logger->warning(
+                                        'Could not send email: depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex . ' - Exception: ' . $exception->getMessage(),
+                                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                                    );
+                                }
                             }
-
-                            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
-                            $oProjectManager = $this->getContainer()->get('unilend.service.project_manager');
 
                             /**
                              * When project is pending documents, abort status is not automatic and must be set manually in BO

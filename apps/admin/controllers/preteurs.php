@@ -363,10 +363,6 @@ class preteursController extends bootstrap
             /** @var BankAccount $currentBankAccount */
             $this->currentBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
 
-            if (null === $this->currentBankAccount) {
-                $this->currentBankAccount = new BankAccount();
-            }
-
             if ($this->clients->telephone != '') {
                 trim(chunk_split($this->clients->telephone, 2, ' '));
             }
@@ -1198,9 +1194,16 @@ class preteursController extends bootstrap
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-fermeture-compte-preteur', $aVariablesMail);
-        $message->setTo($oClient->email);
-        $mailer = $this->get('mailer');
-        $mailer->send($message);
+        try {
+            $message->setTo($oClient->email);
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->get('logger')->warning(
+                'Could not send email: confirmation-fermeture-compte-preteur - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $oClient->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     private function sendCompletenessRequest()
@@ -1231,9 +1234,16 @@ class preteursController extends bootstrap
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('completude', $varMail);
-        $message->setTo($this->clients->email);
-        $mailer = $this->get('mailer');
-        $mailer->send($message);
+        try {
+            $message->setTo($this->clients->email);
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->get('logger')->warning(
+                'Could not send email: completude - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $this->clients->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     /**

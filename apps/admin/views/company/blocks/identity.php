@@ -8,7 +8,7 @@
             <th><label for="siren">SIREN*</label></th>
             <td><input type="text" name="siren" id="siren" class="input_large" value="<?= $this->siren ?>" required></td>
             <td colspan="2">
-                <?php if (null === $this->client->getNom()) : ?>
+                <?php if (empty($this->client->getNom())) : ?>
                     <button name="fetch" id="fetch" class="btn">Remplir les champs par WS externe</button>
                 <? endif; ?>
             </td>
@@ -80,17 +80,21 @@
         url: '/company/fetch_details_ajax/' + siren,
         dataType: 'json'
       }).done(function (companyIdentity) {
-        $('#corporate_name').val(companyIdentity.corporateName);
-        $('#name').val(companyIdentity.ownerName);
-        $('#firstName').val(companyIdentity.ownerFirstName);
-        $('#phone').val(companyIdentity.phoneNumber);
-        $('#address').val(companyIdentity.address);
-        $('#postCode').val(companyIdentity.postCode);
-        $('#city').val(companyIdentity.city);
-        if ('Mme' === companyIdentity.title) {
-          $("#title1").prop("checked", true)
+        if (companyIdentity.hasOwnProperty('error')) {
+            alert(companyIdentity.error);
         } else {
-          $("#title2").prop("checked", true)
+            $('#corporate_name').val(companyIdentity.corporateName);
+            $('#name').val(companyIdentity.ownerName);
+            $('#firstName').val(companyIdentity.ownerFirstName);
+            $('#phone').val(companyIdentity.phoneNumber);
+            $('#address').val(companyIdentity.address);
+            $('#postCode').val(companyIdentity.postCode);
+            $('#city').val(companyIdentity.city);
+            if ('Mme' === companyIdentity.title) {
+                $("#title1").prop("checked", true)
+            } else {
+                $("#title2").prop("checked", true)
+            }
         }
       })
     }

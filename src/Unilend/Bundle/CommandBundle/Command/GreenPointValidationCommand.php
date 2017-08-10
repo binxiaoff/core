@@ -52,7 +52,8 @@ EOF
             AttachmentType::CNI_PASSPORTE_DIRIGEANT,
             AttachmentType::RIB,
         ];
-        $clients                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getLendersInStatus($statusToCheck);
+        /** @var Clients[] $clients */
+        $clients = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getLendersInStatus($statusToCheck);
 
         if (false === empty($clients)) {
             /** @var greenPoint $oGreenPoint */
@@ -100,9 +101,13 @@ EOF
                         $greenPointData = $this->getGreenPointData($client, $attachment, $type);
                         $requestId      = $greenPoint->send($greenPointData, $type, false);
                         if (is_int($requestId)) {
+                            $entityManager->flush($greenPointAttachment);
                             $requests[$requestId] = $greenPointAttachment;
+                        } else {
+                            $entityManager->detach($greenPointAttachment);
                         }
                     } catch (\Exception $exception) {
+                        $entityManager->detach($greenPointAttachment);
                         $logger->error(
                             'Greenpoint was unable to process data (client ' . $client->getIdClient() . ') - Message: ' . $exception->getMessage() . ' - Code: ' . $exception->getCode(),
                             ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]
@@ -112,7 +117,7 @@ EOF
                 }
                 if (false === empty($requests)) {
                     $response = $greenPoint->sendRequests();
-                    $this->processGreenPointResponse($client->getIdClient(), $response, $requests);
+                    $this->processGreenPointResponse($response, $requests);
                     unset($response, $requests);
                     greenPointStatus::addCustomer($client->getIdClient(), $greenPoint, $greenPointKyc);
                 }
@@ -195,11 +200,10 @@ EOF
     }
 
     /**
-     * @param int   $clientId
      * @param array $response
      * @param array $requests
      */
-    private function processGreenPointResponse($clientId, array $response, array $requests)
+    private function processGreenPointResponse(array $response, array $requests)
     {
         /**
          * @var  int                  $requestId
@@ -218,42 +222,42 @@ EOF
             }
             $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
 
-            $response = json_decode($response[$requestId]['RESPONSE'], true);
+            $responseData = json_decode($response[$requestId]['RESPONSE'], true);
 
-            if (isset($response['resource']) && is_array($response['resource'])) {
-                $greenPointData = greenPointStatus::getGreenPointData($response['resource'], $attachment->getType()->getId(), $response['code']);
+            if (isset($responseData['resource']) && is_array($responseData['resource'])) {
+                $greenPointData = greenPointStatus::getGreenPointData($responseData['resource'], $attachment->getType()->getId(), $responseData['code']);
             } else {
-                $greenPointData = greenPointStatus::getGreenPointData([], $attachment->getType()->getId(), $response['code']);
+                $greenPointData = greenPointStatus::getGreenPointData([], $attachment->getType()->getId(), $responseData['code']);
             }
 
             $greenPointAttachment->setValidationCode($greenPointData['greenpoint_attachment']['validation_code'])
-                                 ->setValidationStatus($greenPointData['greenpoint_attachment']['validation_status'])
-                                 ->setValidationStatusLabel($greenPointData['greenpoint_attachment']['validation_status_label']);
+                ->setValidationStatus($greenPointData['greenpoint_attachment']['validation_status'])
+                ->setValidationStatusLabel($greenPointData['greenpoint_attachment']['validation_status_label']);
             $entityManager->flush($greenPointAttachment);
 
             $greenPointAttachmentDetails = new GreenpointAttachmentDetail();
             $greenPointAttachmentDetails->setIdGreenpointAttachment($greenPointAttachment)
-                                        ->setDocumentType($greenPointData['greenpoint_attachment_detail']['document_type'])
-                                        ->setIdentityCivility($greenPointData['greenpoint_attachment_detail']['identity_civility'])
-                                        ->setIdentityName($greenPointData['greenpoint_attachment_detail']['identity_name'])
-                                        ->setIdentitySurname($greenPointData['greenpoint_attachment_detail']['identity_surname'])
-                                        ->setIdentityExpirationDate($greenPointData['greenpoint_attachment_detail']['identity_expiration_date'])
-                                        ->setIdentityBirthdate($greenPointData['greenpoint_attachment_detail']['identity_birthdate'])
-                                        ->setIdentityMrz1($greenPointData['greenpoint_attachment_detail']['identity_mrz1'])
-                                        ->setIdentityMrz2($greenPointData['greenpoint_attachment_detail']['identity_mrz2'])
-                                        ->setIdentityMrz3($greenPointData['greenpoint_attachment_detail']['identity_mrz3'])
-                                        ->setIdentityNationality($greenPointData['greenpoint_attachment_detail']['identity_nationality'])
-                                        ->setIdentityIssuingCountry($greenPointData['greenpoint_attachment_detail']['identity_issuing_country'])
-                                        ->setIdentityIssuingAuthority($greenPointData['greenpoint_attachment_detail']['identity_issuing_authority'])
-                                        ->setIdentityDocumentNumber($greenPointData['greenpoint_attachment_detail']['identity_document_number'])
-                                        ->setIdentityDocumentTypeId($greenPointData['greenpoint_attachment_detail']['identity_document_type_id'])
-                                        ->setBankDetailsIban($greenPointData['greenpoint_attachment_detail']['bank_details_iban'])
-                                        ->setBankDetailsBic($greenPointData['greenpoint_attachment_detail']['bank_details_bic'])
-                                        ->setBankDetailsUrl($greenPointData['greenpoint_attachment_detail']['bank_details_url'])
-                                        ->setAddressAddress($greenPointData['greenpoint_attachment_detail']['address_address'])
-                                        ->setAddressPostalCode($greenPointData['greenpoint_attachment_detail']['address_postal_code'])
-                                        ->setAddressCity($greenPointData['greenpoint_attachment_detail']['address_city'])
-                                        ->setAddressCountry($greenPointData['greenpoint_attachment_detail']['address_country']);
+                ->setDocumentType($greenPointData['greenpoint_attachment_detail']['document_type'])
+                ->setIdentityCivility($greenPointData['greenpoint_attachment_detail']['identity_civility'])
+                ->setIdentityName($greenPointData['greenpoint_attachment_detail']['identity_name'])
+                ->setIdentitySurname($greenPointData['greenpoint_attachment_detail']['identity_surname'])
+                ->setIdentityExpirationDate($greenPointData['greenpoint_attachment_detail']['identity_expiration_date'])
+                ->setIdentityBirthdate($greenPointData['greenpoint_attachment_detail']['identity_birthdate'])
+                ->setIdentityMrz1($greenPointData['greenpoint_attachment_detail']['identity_mrz1'])
+                ->setIdentityMrz2($greenPointData['greenpoint_attachment_detail']['identity_mrz2'])
+                ->setIdentityMrz3($greenPointData['greenpoint_attachment_detail']['identity_mrz3'])
+                ->setIdentityNationality($greenPointData['greenpoint_attachment_detail']['identity_nationality'])
+                ->setIdentityIssuingCountry($greenPointData['greenpoint_attachment_detail']['identity_issuing_country'])
+                ->setIdentityIssuingAuthority($greenPointData['greenpoint_attachment_detail']['identity_issuing_authority'])
+                ->setIdentityDocumentNumber($greenPointData['greenpoint_attachment_detail']['identity_document_number'])
+                ->setIdentityDocumentTypeId($greenPointData['greenpoint_attachment_detail']['identity_document_type_id'])
+                ->setBankDetailsIban($greenPointData['greenpoint_attachment_detail']['bank_details_iban'])
+                ->setBankDetailsBic($greenPointData['greenpoint_attachment_detail']['bank_details_bic'])
+                ->setBankDetailsUrl($greenPointData['greenpoint_attachment_detail']['bank_details_url'])
+                ->setAddressAddress($greenPointData['greenpoint_attachment_detail']['address_address'])
+                ->setAddressPostalCode($greenPointData['greenpoint_attachment_detail']['address_postal_code'])
+                ->setAddressCity($greenPointData['greenpoint_attachment_detail']['address_city'])
+                ->setAddressCountry($greenPointData['greenpoint_attachment_detail']['address_country']);
             $entityManager->persist($greenPointAttachmentDetails);
             $entityManager->flush($greenPointAttachmentDetails);
         }

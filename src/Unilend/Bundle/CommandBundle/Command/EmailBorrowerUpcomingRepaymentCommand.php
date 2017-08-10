@@ -41,6 +41,7 @@ class EmailBorrowerUpcomingRepaymentCommand extends ContainerAwareCommand
         $ficelle = Loader::loadLib('ficelle');
 
         $upcomingRepayments = $directDebit->getUpcomingRepayments(7);
+        $logger = $this->getContainer()->get('monolog.logger.console');
 
         foreach ($upcomingRepayments as $repayment) {
             $project->get($repayment['id_project']);
@@ -79,9 +80,16 @@ class EmailBorrowerUpcomingRepaymentCommand extends ContainerAwareCommand
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('mail-echeance-emprunteur', $varMail);
-            $message->setTo($clientEmail);
-            $mailer = $this->getContainer()->get('mailer');
-            $mailer->send($message);
+            try {
+                $message->setTo($clientEmail);
+                $mailer = $this->getContainer()->get('mailer');
+                $mailer->send($message);
+            } catch (\Exception $exception) {
+                $logger->warning(
+                    'Could not send email: mail-echeance-emprunteur - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $company->id_client_owner, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
         }
     }
 }

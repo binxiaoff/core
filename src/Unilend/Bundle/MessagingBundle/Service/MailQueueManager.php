@@ -57,18 +57,8 @@ class MailQueueManager
         );
 
         if (0 === $count) {
-            $completeTrace     = debug_backtrace();
-            $backtrace = [];
-
-            foreach ($completeTrace as $key => $trace){
-                $backtrace[$key]['file'] = isset($trace['file']) ? $trace['file'] : '';
-                $backtrace[$key]['line'] = isset($trace['line']) ? $trace['line'] : '';
-            }
-
-            $this->logger->error('email address empty : ', ['template' => $message->getTemplateId(), 'backtrace'  => $backtrace]);
             return false;
         }
-
 
         $attachments = [];
         foreach ($message->getChildren() as $index => $child) {

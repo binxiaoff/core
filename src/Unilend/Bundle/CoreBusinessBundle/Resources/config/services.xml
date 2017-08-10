@@ -72,9 +72,7 @@
             <argument>%url.host_default%</argument>
             <argument>%url.host_admin%</argument>
             <argument type="service" id="translator.default"/>
-            <call method="setLogger">
-                <argument type="service" id="logger" on-invalid="null"/>
-            </call>
+            <argument type="service" id="logger"/>
         </service>
 
         <service id="unilend.service.project_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager">
@@ -88,6 +86,7 @@
             <argument type="service" id="unilend.service_product.product_manager"/>
             <argument type="service" id="unilend.service_product_contract.contract_attribute_manager"/>
             <argument type="service" id="unilend.service.slack_manager"/>
+            <argument type="service" id="unilend.service.risk_data_monitoring_manager" />
             <argument>%url.universign%</argument>
             <call method="setLogger">
                 <argument type="service" id="logger" on-invalid="null"/>
@@ -159,6 +158,7 @@
             <argument type="service" id="unilend.service.ws_client.infogreffe_manager"/>
             <argument type="service" id="unilend.service.ws_client.ellisphere_manager"/>
             <argument type="service" id="unilend.service.company_balance_sheet_manager"/>
+            <argument type="service" id="unilend.service.risk_data_monitoring_manager"/>
         </service>
 
         <service id="unilend.service.location_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LocationManager">
@@ -301,6 +301,12 @@
             <argument type="constant">\NumberFormatter::DEFAULT_STYLE</argument>
         </service>
 
+        <service id="date_formatter" class="IntlDateFormatter">
+            <argument>%kernel.default_locale%</argument>
+            <argument type="constant">\IntlDateFormatter::MEDIUM</argument>
+            <argument type="constant">\IntlDateFormatter::SHORT</argument>
+        </service>
+
         <service id="unilend.service.wire_transfer_out_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.project_manager"/>
@@ -312,6 +318,7 @@
             <argument type="service" id="unilend.service.operation_manager"/>
             <argument>%router.request_context.scheme%://%url.host_default%</argument>
             <argument>%router.request_context.scheme%://%url.host_admin%</argument>
+            <argument type="service" id="logger"/>
         </service>
 
         <service id="unilend.service.invoice_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\InvoiceManager">
@@ -358,5 +365,14 @@
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.ws_client.call_history_handler"/>
         </service>
+
+
+        <service id="unilend.service.risk_data_monitoring_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoringManager">
+            <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="unilend.service.ws_client.euler_manager" />
+            <argument type="service" id="monolog.logger.wsclient" />
+            <argument type="service" id="translator" />
+        </service>
+
     </services>
 </container>

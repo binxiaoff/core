@@ -47,7 +47,7 @@ class CompanyRatingHistory
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -59,7 +59,6 @@ class CompanyRatingHistory
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $idCompanyRatingHistory;
-
 
 
     /**
@@ -175,7 +174,7 @@ class CompanyRatingHistory
     /**
      * Get updated
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
     public function getUpdated()
     {

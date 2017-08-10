@@ -59,8 +59,15 @@ class CheckLendersRepaymentCommand extends ContainerAwareCommand
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-check-remboursements-preteurs', $replacements, false);
-        $message->setTo(explode(';', str_replace(' ', '', $recipient)));
-        $mailer = $this->getContainer()->get('mailer');
-        $mailer->send($message);
+         try{
+             $message->setTo(explode(';', str_replace(' ', '', $recipient)));
+             $mailer = $this->getContainer()->get('mailer');
+             $mailer->send($message);
+         } catch (\Exception $exception) {
+             $this->getContainer()->get('monolog.logger.console')->warning(
+                 'Could not send email : notification-check-remboursements-preteurs - Exception: ' . $exception->getMessage(),
+                 ['id_mail_template' => $message->getTemplateId(), 'email address' => explode(';', str_replace(' ', '', $recipient)), 'class' => __CLASS__, 'function' => __FUNCTION__]
+             );
+         }
     }
 }

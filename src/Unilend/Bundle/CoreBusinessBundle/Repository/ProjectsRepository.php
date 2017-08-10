@@ -261,6 +261,25 @@ class ProjectsRepository extends EntityRepository
     }
 
     /**
+     * @param string $siren
+     * @param array  $status
+     *
+     * @return mixed
+     */
+    public function getCountProjectsBySirenAndNotInStatus($siren, array $status)
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+        $queryBuilder->select('COUNT(p.idProject)')
+            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'co.idCompany = p.idCompany')
+            ->where('p.status IN (:status)')
+            ->andWhere('co.siren = :siren')
+            ->setParameter('siren', $siren)
+            ->setParameter('status', $status);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
      * @param $siren
      *
      * @return Projects[]

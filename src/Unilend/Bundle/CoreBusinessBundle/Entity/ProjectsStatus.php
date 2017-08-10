@@ -75,6 +75,29 @@ class ProjectsStatus
     const NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT  = 'infolegale_previous_manager_incident';
     const UNEXPECTED_RESPONSE                                       = 'unexpected_response_from_';
 
+    const RUNNING_REPAYMENT = [
+        ProjectsStatus::REMBOURSEMENT,
+        ProjectsStatus::PROBLEME,
+        ProjectsStatus::PROBLEME_J_X,
+        ProjectsStatus::RECOUVREMENT,
+        ProjectsStatus::PROCEDURE_SAUVEGARDE,
+        ProjectsStatus::REDRESSEMENT_JUDICIAIRE,
+        ProjectsStatus::LIQUIDATION_JUDICIAIRE
+    ];
+
+    const AFTER_REPAYMENT = [
+        ProjectsStatus::REMBOURSEMENT,
+        ProjectsStatus::REMBOURSE,
+        ProjectsStatus::REMBOURSEMENT_ANTICIPE,
+        ProjectsStatus::PROBLEME,
+        ProjectsStatus::PROBLEME_J_X,
+        ProjectsStatus::RECOUVREMENT,
+        ProjectsStatus::PROCEDURE_SAUVEGARDE,
+        ProjectsStatus::REDRESSEMENT_JUDICIAIRE,
+        ProjectsStatus::LIQUIDATION_JUDICIAIRE,
+        ProjectsStatus::DEFAUT
+    ];
+
     /**
      * List of project status when project should be assigned to a commercial
      * @var array

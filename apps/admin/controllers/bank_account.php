@@ -181,9 +181,16 @@ class bank_accountController extends bootstrap
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                     $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('changement-de-rib', $varMail);
-                    $message->setTo($client->getEmail());
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
+                    try {
+                        $message->setTo($client->getEmail());
+                        $mailer = $this->get('mailer');
+                        $mailer->send($message);
+                    } catch (\Exception $exception) {
+                        $this->get('logger')->warning(
+                            'Could not send email: changement-de-rib - Exception - Exception ' . $exception->getMessage(),
+                            ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                        );
+                    }
                 }
             }
         }

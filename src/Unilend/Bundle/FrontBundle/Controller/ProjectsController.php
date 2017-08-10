@@ -10,6 +10,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,6 +38,8 @@ class ProjectsController extends Controller
      * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", defaults={"page": "1", "sortType": "end", "sortDirection": "desc"}, requirements={"page": "\d+"}, name="projects_list")
      * @Template("pages/projects.html.twig")
      *
+     * @Method("GET")
+     *
      * @param int    $page
      * @param string $sortType
      * @param string $sortDirection
@@ -46,6 +49,67 @@ class ProjectsController extends Controller
     public function projectsListAction($page, $sortType, $sortDirection)
     {
         return $this->getProjectsList($page, $sortType, $sortDirection);
+    }
+
+    /**
+     * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", defaults={"page": "1", "sortType": "end", "sortDirection": "desc"}, requirements={"page": "\d+"}, name="projects_list_json")
+     * @Template("partials/components/project-list/map-item-template.html.twig")
+     *
+     * @Method("POST")
+     * @return Response
+     */
+    public function projectsListMapListAction($page, $sortType, $sortDirection)
+    {
+        return $this->getProjectsList($page, $sortType, $sortDirection);
+    }
+
+    /**
+     * @Route("/projets-list-all", name="projects_list_all", condition="request.isXmlHttpRequest()")
+     * @Method("POST")
+     *
+     * @return Response
+     */
+    public function projectsListAllAction()
+    {
+        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
+        $translator            = $this->get('translator');
+        $router                = $this->get('router');
+        $projects              = $projectDisplayManager->getProjectsList();
+        $projectsMapview       = [];
+
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
+
+        foreach ($projects as $project) {
+            $status      = $project['finished'] ? 'expired' : 'active';
+            $offerStatus = '';
+            if (array_key_exists('lender', $project) && $project['lender']['bids']['count'] > 0) {
+                if (count($project['lender']['bids']['inprogress']) > 0) {
+                    $offerStatus = 'inprogress';
+                } elseif (count($project['lender']['bids']['inprogress']) > 0) {
+                    $offerStatus = 'accepted';
+                }
+            }
+
+            $projectsMapview[] = [
+                'id'          => 'marker' . $project['projectId'],
+                'categoryId'  => $project['company']['sectorId'],
+                'latLng'      => [$project['company']['latitude'], $project['company']['longitude']],
+                'title'       => $translator->trans('company-sector_sector-' . $project['company']['sectorId']),
+                'url'         => $router->generate('project_detail', ['projectSlug' => $project['slug']]),
+                'city'        => $project['company']['city'],
+                'zip'         => $project['company']['zip'],
+                'rating'      => str_replace('.', '-', constant('\projects::RISK_' . $project['risk'])),
+                'amount'      => $ficelle->formatNumber($project['amount'], 0) . '&nbsp;€',
+                'interest'    => $ficelle->formatNumber($project['averageRate'], 1) . '&nbsp;%',
+                'status'      => $status,
+                'offers'      => $translator->transchoice('project-list_project-map-tooltip-offers-count', $project['bidsCount'], ['%count%' => $ficelle->formatNumber($project['bidsCount'], 0)]),
+                'offerStatus' => $offerStatus,
+                'groupName'   => $status
+            ];
+        }
+
+        return new JsonResponse($projectsMapview);
     }
 
     /**
