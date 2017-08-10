@@ -278,15 +278,15 @@ class bootstrap extends Controller
                     'handle' => 'sfpmei/preteurs',
                 ],
                 [
-                    'title'  => 'Prêteurs',
+                    'title'  => 'Emprunteurs',
                     'handle' => 'sfpmei/emprunteurs',
                 ],
                 [
-                    'title'  => 'Emprunteurs',
+                    'title'  => 'Projets',
                     'handle' => 'sfpmei/projets',
                 ],
                 [
-                    'title'  => 'Projets',
+                    'title'  => 'Transferts de fonds prêteurs',
                     'handle' => 'sfpmei/transferts/preteurs',
                 ],
                 [
@@ -294,7 +294,7 @@ class bootstrap extends Controller
                     'handle' => 'sfpmei/transferts/emprunteurs',
                 ],
                 [
-                    'title'  => 'Transferts de fonds emprunteurs',
+                    'title'  => 'Requêtes',
                     'handle' => 'sfpmei/requetes',
                 ]
             ]
