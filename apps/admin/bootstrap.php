@@ -2,6 +2,7 @@
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\UserAccess;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class bootstrap extends Controller
 {
@@ -9,13 +10,13 @@ class bootstrap extends Controller
         [
             'title'    => 'Dashboard',
             'uri'      => 'dashboard',
-            'zone'     => 'dashboard',
+            'zone'     => Zones::ZONE_LABEL_DASHBOARD,
             'children' => []
         ],
         [
             'title'    => 'Edition',
             'uri'      => 'tree',
-            'zone'     => 'edition',
+            'zone'     => Zones::ZONE_LABEL_EDITION,
             'children' => [
                 [
                     'title' => 'Arborescence',
@@ -46,7 +47,7 @@ class bootstrap extends Controller
         [
             'title'    => 'Configuration',
             'uri'      => 'settings',
-            'zone'     => 'configuration',
+            'zone'     => Zones::ZONE_LABEL_CONFIGURATION,
             'children' => [
                 [
                     'title' => 'Paramètres',
@@ -71,14 +72,14 @@ class bootstrap extends Controller
                 [
                     'title' => 'Grille de taux',
                     'uri'   => 'project_rate_settings',
-                    'zone'  => 'admin'
+                    'zone'  => Zones::ZONE_LABEL_ADMINISTRATION
                 ]
             ]
         ],
         [
             'title'    => 'Statistiques',
             'uri'      => 'queries',
-            'zone'     => 'stats',
+            'zone'     => Zones::ZONE_LABEL_STATISTICS,
             'children' => [
                 [
                     'title' => 'Requêtes',
@@ -125,8 +126,8 @@ class bootstrap extends Controller
                     'uri'   => 'stats/requete_crs_cac'
                 ],
                 [
-                    'title' => 'Extraction des évaluations d\'éligibilité des dossiers',
-                    'uri'   => 'stats/extraction_b_lend'
+                    'title' => 'Éligibilité des dossiers',
+                    'uri'   => 'stats/projects_eligibility'
                 ],
                 [
                     'title' => 'Logs webservices',
@@ -137,7 +138,7 @@ class bootstrap extends Controller
         [
             'title'    => 'Prêteurs',
             'uri'      => 'preteurs/search',
-            'zone'     => 'preteurs',
+            'zone'     => Zones::ZONE_LABEL_LENDERS,
             'children' => [
                 [
                     'title' => 'Recherche prêteurs',
@@ -162,12 +163,20 @@ class bootstrap extends Controller
                 [
                     'title' => 'Notifications',
                     'uri'   => 'preteurs/notifications'
+                ],
+                [
+                    'title' => 'Rattrapage offre de bienvenue',
+                    'uri'   => 'transferts/rattrapage_offre_bienvenue'
+                ],
+                [
+                    'title' => 'Opérations atypiques',
+                    'uri'   => 'client_atypical_operation'
                 ]
             ]
         ],
         [
             'title'    => 'Emprunteurs',
-            'zone'     => 'emprunteurs',
+            'zone'     => Zones::ZONE_LABEL_BORROWERS,
             'children' => [
                 [
                     'title' => 'Dossiers',
@@ -198,10 +207,6 @@ class bootstrap extends Controller
                     'uri'   => 'dossiers/status'
                 ],
                 [
-                    'title' => 'Erreurs remboursements',
-                    'uri'   => 'dossiers/no_remb'
-                ],
-                [
                     'title' => 'Produits',
                     'uri'   => 'product'
                 ],
@@ -222,7 +227,7 @@ class bootstrap extends Controller
         [
             'title'    => 'Dépôt de fonds',
             'uri'      => 'transferts',
-            'zone'     => 'transferts',
+            'zone'     => Zones::ZONE_LABEL_TRANSFERS,
             'children' => [
                 [
                     'title' => 'Prêteurs',
@@ -260,8 +265,8 @@ class bootstrap extends Controller
         ],
         [
             'title'    => 'Administration',
-            'uri'      => 'admin',
-            'zone'     => 'admin',
+            'uri'      => 'users',
+            'zone'     => Zones::ZONE_LABEL_ADMINISTRATION,
             'children' => [
                 [
                     'title' => 'Utilisateurs',
@@ -280,7 +285,7 @@ class bootstrap extends Controller
         [
             'title'    => 'SFPMEI',
             'uri'      => 'sfpmei',
-            'zone'     => 'sfpmei',
+            'zone'     => Zones::ZONE_LABEL_SFPMEI,
             'children' => [
                 [
                     'title' => 'Prêteurs',

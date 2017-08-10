@@ -1,6 +1,7 @@
 <?php
 
-use \Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class usersController extends bootstrap
 {
@@ -8,10 +9,10 @@ class usersController extends bootstrap
     {
         parent::initialize();
 
+        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
+
         $this->catchAll   = true;
         $this->menu_admin = 'admin';
-
-        $this->users->checkAccess('admin');
 
         $this->users_zones       = $this->loadData('users_zones');
         $this->users_types       = $this->loadData('users_types');
