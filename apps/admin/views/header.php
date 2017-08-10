@@ -36,11 +36,11 @@
 
         $menuHtml = '';
         foreach (static::MENU as $item) {
-            $handle = $item['handle'];
-            $title  = $item['title'];
+            $zone  = $item['zone'];
+            $title = $item['title'];
 
             // Item visibility
-            if (in_array($handle, $this->lZonesHeader)) {
+            if (in_array($zone, $this->lZonesHeader)) {
                 // Check user and adjust title for Dashboard item
                 if ($title === 'Dashboard') {
                     if (in_array($_SESSION['user']['id_user_type'], [\users_types::TYPE_RISK, \users_types::TYPE_COMMERCIAL]) || in_array($_SESSION['user']['id_user'], [23, 26])) {
@@ -48,12 +48,16 @@
                     }
                 }
 
-                $active = $this->menu_admin === $handle ? ' class="active"' : '';
-                $menuHtml .= '<li><a href="' . $this->lurl . '/' . $handle . '"' . $active . '>' . $title . '</a>';
+                $active = $this->menu_admin === $zone ? ' class="active"' : '';
+                $menuHtml .= '<li>';
+                $menuHtml .= empty($item['uri']) ? '<span' . $active . '>' . $title . '</span>' : '<a href="' . $this->lurl . '/' . $item['uri'] . '"' . $active . '>' . $title . '</a>';
+
                 if (false === empty($item['children'])) {
                     $menuHtml .= '<ul class="sous_menu">';
                     foreach ($item['children'] as $subItem) {
-                        $menuHtml .= '<li><a href="' . $this->lurl . '/' . $subItem['handle'] . '">' . $subItem['title'] . '</a><li>';
+                        if (false === isset($subItem['zone']) || in_array($subItem['zone'], $this->lZonesHeader)) {
+                            $menuHtml .= '<li><a href="' . $this->lurl . '/' . $subItem['uri'] . '">' . $subItem['title'] . '</a><li>';
+                        }
                     }
                     $menuHtml .= '</ul>';
                 }

@@ -8,294 +8,303 @@ class bootstrap extends Controller
     const MENU = [
         [
             'title'    => 'Dashboard',
-            'handle'   => 'dashboard',
+            'uri'      => 'dashboard',
+            'zone'     => 'dashboard',
             'children' => []
         ],
         [
             'title'    => 'Edition',
-            'handle'   => 'edition',
+            'uri'      => 'tree',
+            'zone'     => 'edition',
             'children' => [
                 [
-                    'title'  => 'Arborescence',
-                    'handle' => 'tree',
+                    'title' => 'Arborescence',
+                    'uri'   => 'tree',
                 ],
                 [
-                    'title'  => 'Blocs',
-                    'handle' => 'blocs'
+                    'title' => 'Blocs',
+                    'uri'   => 'blocs'
                 ],
                 [
-                    'title'  => 'Menus',
-                    'handle' => 'menus'
+                    'title' => 'Menus',
+                    'uri'   => 'menus'
                 ],
                 [
-                    'title'  => 'Templates',
-                    'handle' => 'templates'
+                    'title' => 'Templates',
+                    'uri'   => 'templates'
                 ],
                 [
-                    'title'  => 'Traductions',
-                    'handle' => 'traductions'
+                    'title' => 'Traductions',
+                    'uri'   => 'traductions'
                 ],
                 [
-                    'title'  => 'Mails',
-                    'handle' => 'mails'
+                    'title' => 'Mails',
+                    'uri'   => 'mails'
                 ]
             ]
         ],
         [
             'title'    => 'Configuration',
-            'handle'   => 'configuration',
+            'uri'      => 'settings',
+            'zone'     => 'configuration',
             'children' => [
                 [
-                    'title'  => 'Paramètres',
-                    'handle' => 'settings',
+                    'title' => 'Paramètres',
+                    'uri'   => 'settings',
                 ],
                 [
-                    'title'  => 'Historique des Mails',
-                    'handle' => 'mails/emailhistory'
+                    'title' => 'Historique des Mails',
+                    'uri'   => 'mails/emailhistory'
                 ],
                 [
-                    'title'  => 'Campagnes',
-                    'handle' => 'partenaires'
+                    'title' => 'Campagnes',
+                    'uri'   => 'partenaires'
                 ],
                 [
-                    'title'  => 'Types de campagnes',
-                    'handle' => 'partenaires/types'
+                    'title' => 'Types de campagnes',
+                    'uri'   => 'partenaires/types'
                 ],
                 [
-                    'title'  => 'Medias de campagnes',
-                    'handle' => 'partenaires/medias'
+                    'title' => 'Medias de campagnes',
+                    'uri'   => 'partenaires/medias'
                 ],
                 [
-                    'title'  => 'Grille de taux',
-                    'handle' => 'project_rate_settings'
+                    'title' => 'Grille de taux',
+                    'uri'   => 'project_rate_settings',
+                    'zone'  => 'admin'
                 ]
             ]
         ],
         [
             'title'    => 'Statistiques',
-            'handle'   => 'stats',
+            'uri'      => 'queries',
+            'zone'     => 'stats',
             'children' => [
                 [
-                    'title'  => 'Requêtes',
-                    'handle' => 'queries',
+                    'title' => 'Requêtes',
+                    'uri'   => 'queries',
                 ],
                 [
-                    'title'  => 'Etape d\'inscription',
-                    'handle' => 'stats/etape_inscription'
+                    'title' => 'Etape d\'inscription',
+                    'uri'   => 'stats/etape_inscription'
                 ],
                 [
-                    'title'  => 'Sources emprunteurs',
-                    'handle' => 'stats/requete_source_emprunteurs'
+                    'title' => 'Sources emprunteurs',
+                    'uri'   => 'stats/requete_source_emprunteurs'
                 ],
                 [
-                    'title'  => 'Revenus',
-                    'handle' => 'stats/requete_revenus_download'
+                    'title' => 'Revenus',
+                    'uri'   => 'stats/requete_revenus_download'
                 ],
                 [
-                    'title'  => 'Bénéficiaires',
-                    'handle' => 'stats/requete_beneficiaires_csv'
+                    'title' => 'Bénéficiaires',
+                    'uri'   => 'stats/requete_beneficiaires_csv'
                 ],
                 [
-                    'title'  => 'Infosben',
-                    'handle' => 'stats/requete_infosben'
+                    'title' => 'Infosben',
+                    'uri'   => 'stats/requete_infosben'
                 ],
                 [
-                    'title'  => 'Toutes les enchères',
-                    'handle' => 'stats/requete_encheres'
+                    'title' => 'Toutes les enchères',
+                    'uri'   => 'stats/requete_encheres'
                 ],
                 [
-                    'title'  => 'Echeanciers projet',
-                    'handle' => 'stats/tous_echeanciers_pour_projet'
+                    'title' => 'Echeanciers projet',
+                    'uri'   => 'stats/tous_echeanciers_pour_projet'
                 ],
                 [
-                    'title'  => 'Statistiques Autolend',
-                    'handle' => 'stats/autobid_statistic'
+                    'title' => 'Statistiques Autolend',
+                    'uri'   => 'stats/autobid_statistic'
                 ],
                 [
-                    'title'  => 'Déclarations BDF',
-                    'handle' => 'stats/declarations_bdf'
+                    'title' => 'Déclarations BDF',
+                    'uri'   => 'stats/declarations_bdf'
                 ],
                 [
-                    'title'  => 'CRS CAC',
-                    'handle' => 'stats/requete_crs_cac'
+                    'title' => 'CRS CAC',
+                    'uri'   => 'stats/requete_crs_cac'
                 ],
                 [
-                    'title'  => 'Extraction des évaluations d\'éligibilité des dossiers',
-                    'handle' => 'stats/extraction_b_lend'
+                    'title' => 'Extraction des évaluations d\'éligibilité des dossiers',
+                    'uri'   => 'stats/extraction_b_lend'
                 ],
                 [
-                    'title'  => 'Logs webservices',
-                    'handle' => 'stats/logs_webservices'
+                    'title' => 'Logs webservices',
+                    'uri'   => 'stats/logs_webservices'
                 ]
             ]
         ],
         [
             'title'    => 'Prêteurs',
-            'handle'   => 'preteurs',
+            'uri'      => 'preteurs/search',
+            'zone'     => 'preteurs',
             'children' => [
                 [
-                    'title'  => 'Recherche prêteurs',
-                    'handle' => 'preteurs/search',
+                    'title' => 'Recherche prêteurs',
+                    'uri'   => 'preteurs/search'
                 ],
                 [
-                    'title'  => 'Activation prêteurs',
-                    'handle' => 'preteurs/activation '
+                    'title' => 'Activation prêteurs',
+                    'uri'   => 'preteurs/activation '
                 ],
                 [
-                    'title'  => 'Offre de bienvenue',
-                    'handle' => 'preteurs/offres_de_bienvenue'
+                    'title' => 'Offre de bienvenue',
+                    'uri'   => 'preteurs/offres_de_bienvenue'
                 ],
                 [
-                    'title'  => 'Matching ville fiscale',
-                    'handle' => 'preteurs/control_fiscal_city'
+                    'title' => 'Matching ville fiscale',
+                    'uri'   => 'preteurs/control_fiscal_city'
                 ],
                 [
-                    'title'  => 'Matching ville de naissance',
-                    'handle' => 'preteurs/control_birth_city'
+                    'title' => 'Matching ville de naissance',
+                    'uri'   => 'preteurs/control_birth_city'
                 ],
                 [
-                    'title'  => 'Notifications',
-                    'handle' => 'preteurs/notifications'
+                    'title' => 'Notifications',
+                    'uri'   => 'preteurs/notifications'
                 ]
             ]
         ],
         [
             'title'    => 'Emprunteurs',
-            'handle'   => 'emprunteurs',
+            'zone'     => 'emprunteurs',
             'children' => [
                 [
-                    'title'  => 'Dossiers',
-                    'handle' => 'dossiers',
+                    'title' => 'Dossiers',
+                    'uri'   => 'dossiers',
                 ],
                 [
-                    'title'  => 'Emprunteurs',
-                    'handle' => 'emprunteurs/gestion'
+                    'title' => 'Emprunteurs',
+                    'uri'   => 'emprunteurs/gestion'
                 ],
                 [
-                    'title'  => 'Prescripteurs',
-                    'handle' => 'prescripteurs/gestion'
+                    'title' => 'Prescripteurs',
+                    'uri'   => 'prescripteurs/gestion'
                 ],
                 [
-                    'title'  => 'Dossiers en funding',
-                    'handle' => 'dossiers/funding '
+                    'title' => 'Dossiers en funding',
+                    'uri'   => 'dossiers/funding '
                 ],
                 [
-                    'title'  => 'Remboursements',
-                    'handle' => 'dossiers/remboursements'
+                    'title' => 'Remboursements',
+                    'uri'   => 'dossiers/remboursements'
                 ],
                 [
-                    'title'  => 'Erreurs remboursements',
-                    'handle' => 'dossiers/no_remb'
+                    'title' => 'Erreurs remboursements',
+                    'uri'   => 'dossiers/no_remb'
                 ],
                 [
-                    'title'  => 'Suivi statuts projets',
-                    'handle' => 'dossiers/status'
+                    'title' => 'Suivi statuts projets',
+                    'uri'   => 'dossiers/status'
                 ],
                 [
-                    'title'  => 'Erreurs remboursements',
-                    'handle' => 'dossiers/no_remb'
+                    'title' => 'Erreurs remboursements',
+                    'uri'   => 'dossiers/no_remb'
                 ],
                 [
-                    'title'  => 'Produits',
-                    'handle' => 'product'
+                    'title' => 'Produits',
+                    'uri'   => 'product'
                 ],
                 [
-                    'title'  => 'Sociétés',
-                    'handle' => 'company'
+                    'title' => 'Sociétés',
+                    'uri'   => 'company'
                 ],
                 [
-                    'title'  => 'Partenaires',
-                    'handle' => 'partner'
+                    'title' => 'Partenaires',
+                    'uri'   => 'partner'
                 ],
                 [
-                    'title'  => 'Monitoring données risque',
-                    'handle' => 'risk_monitoring'
+                    'title' => 'Monitoring données risque',
+                    'uri'   => 'risk_monitoring'
                 ]
             ]
         ],
         [
             'title'    => 'Dépôt de fonds',
-            'handle'   => 'transferts',
+            'uri'      => 'transferts',
+            'zone'     => 'transferts',
             'children' => [
                 [
-                    'title'  => 'Prêteurs',
-                    'handle' => 'transferts/preteurs',
+                    'title' => 'Prêteurs',
+                    'uri'   => 'transferts/preteurs',
                 ],
                 [
-                    'title'  => 'Emprunteurs',
-                    'handle' => 'transferts/emprunteurs'
+                    'title' => 'Emprunteurs',
+                    'uri'   => 'transferts/emprunteurs'
                 ],
                 [
-                    'title'  => 'Non attribués',
-                    'handle' => 'transferts/non_attribues'
+                    'title' => 'Non attribués',
+                    'uri'   => 'transferts/non_attribues'
                 ],
                 [
-                    'title'  => 'Rattrapage offre de bienvenue',
-                    'handle' => 'transferts/rattrapage_offre_bienvenue'
+                    'title' => 'Rattrapage offre de bienvenue',
+                    'uri'   => 'transferts/rattrapage_offre_bienvenue'
                 ],
                 [
-                    'title'  => 'Déblocage des fonds',
-                    'handle' => 'transferts/deblocage'
+                    'title' => 'Déblocage des fonds',
+                    'uri'   => 'transferts/deblocage'
                 ],
                 [
-                    'title'  => 'Succession (Transfert de solde et prêts)',
-                    'handle' => 'transferts/succession'
+                    'title' => 'Succession (Transfert de solde et prêts)',
+                    'uri'   => 'transferts/succession'
                 ],
                 [
-                    'title'  => 'Opérations atypiques',
-                    'handle' => 'client_atypical_operation'
+                    'title' => 'Opérations atypiques',
+                    'uri'   => 'client_atypical_operation'
                 ],
                 [
-                    'title'  => 'Transfert des fonds',
-                    'handle' => 'transferts/virement_emprunteur'
+                    'title' => 'Transfert des fonds',
+                    'uri'   => 'transferts/virement_emprunteur'
                 ]
             ]
         ],
         [
             'title'    => 'Administration',
-            'handle'   => 'admin',
+            'uri'      => 'admin',
+            'zone'     => 'admin',
             'children' => [
                 [
-                    'title'  => 'Utilisateurs',
-                    'handle' => 'users',
+                    'title' => 'Utilisateurs',
+                    'uri'   => 'users',
                 ],
                 [
-                    'title'  => 'Droits d\'accès',
-                    'handle' => 'zones'
+                    'title' => 'Droits d\'accès',
+                    'uri'   => 'zones'
                 ],
                 [
-                    'title'  => 'Logs connexions',
-                    'handle' => 'users/logs'
+                    'title' => 'Logs connexions',
+                    'uri'   => 'users/logs'
                 ]
             ]
         ],
         [
             'title'    => 'SFPMEI',
-            'handle'   => 'sfpmei',
+            'uri'      => 'sfpmei',
+            'zone'     => 'sfpmei',
             'children' => [
                 [
-                    'title'  => 'Prêteurs',
-                    'handle' => 'sfpmei/preteurs',
+                    'title' => 'Prêteurs',
+                    'uri'   => 'sfpmei/preteurs',
                 ],
                 [
-                    'title'  => 'Emprunteurs',
-                    'handle' => 'sfpmei/emprunteurs',
+                    'title' => 'Emprunteurs',
+                    'uri'   => 'sfpmei/emprunteurs',
                 ],
                 [
-                    'title'  => 'Projets',
-                    'handle' => 'sfpmei/projets',
+                    'title' => 'Projets',
+                    'uri'   => 'sfpmei/projets',
                 ],
                 [
-                    'title'  => 'Transferts de fonds prêteurs',
-                    'handle' => 'sfpmei/transferts/preteurs',
+                    'title' => 'Transferts de fonds prêteurs',
+                    'uri'   => 'sfpmei/transferts/preteurs',
                 ],
                 [
-                    'title'  => 'Transferts de fonds prêteurs',
-                    'handle' => 'sfpmei/transferts/emprunteurs',
+                    'title' => 'Transferts de fonds prêteurs',
+                    'uri'   => 'sfpmei/transferts/emprunteurs',
                 ],
                 [
-                    'title'  => 'Requêtes',
-                    'handle' => 'sfpmei/requetes',
+                    'title' => 'Requêtes',
+                    'uri'   => 'sfpmei/requetes',
                 ]
             ]
         ]
