@@ -337,10 +337,6 @@ class transfertsController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        /** @var \projects $projects */
-        $projects = $this->loadData('projects');
-        /** @var \receptions $receptions */
-        $receptions = $this->loadData('receptions');
         /** @var \echeanciers $echeanciers */
         $echeanciers = $this->loadData('echeanciers');
         /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
@@ -379,7 +375,7 @@ class transfertsController extends bootstrap
                     $entityManager->flush();
 
                     $eche   = $echeanciers_emprunteur->select('id_project = ' . $projectId . ' AND status_emprunteur = 1', 'ordre DESC');
-                    $newsum = $receptions->montant / 100;
+                    $newsum = round(bcdiv($reception->getMontant(), 100, 4), 2);
 
                     foreach ($eche as $e) {
                         $montantDuMois = round($e['montant'] / 100 + $e['commission'] / 100 + $e['tva'] / 100, 2);
@@ -415,8 +411,6 @@ class transfertsController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        /** @var \receptions $receptions */
-        $receptions = $this->loadData('receptions');
         /** @var \echeanciers $echeanciers */
         $echeanciers = $this->loadData('echeanciers');
         /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
@@ -453,7 +447,7 @@ class transfertsController extends bootstrap
                     $entityManager->flush();
 
                     $eche   = $echeanciers_emprunteur->select('id_project = ' . $reception->getIdProject()->getIdProject() . ' AND status_emprunteur = 1', 'ordre DESC');
-                    $newsum = $receptions->montant / 100;
+                    $newsum = round(bcdiv($reception->getMontant(), 100, 4), 2);
 
                     foreach ($eche as $e) {
                         $montantDuMois = round($e['montant'] / 100 + $e['commission'] / 100 + $e['tva'] / 100, 2);

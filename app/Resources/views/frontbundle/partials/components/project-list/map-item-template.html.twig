@@ -1,3 +1,4 @@
+{# Inline CSS? #}
 <style>
     .mapview-marker-popup-content span {
         display: block;
@@ -41,7 +42,7 @@
 
     <li class="project{% if project.finished %} ui-project-expired{% endif %}{% if project.lender is defined and project.lender.bids.count > 0 %} ui-current-user-involved{% endif %}"{% if mapviewItem is defined %} data-mapview-markerid="{{ mapviewItem.id }}" data-mapview-item='{{ mapviewItem|json_encode|escape('html_attr') }}'{% endif %}>
         <div class="project-name">
-            <a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}">{{ project.title }}</a>
+            <a href="{{ path('project_detail', {'projectSlug' : project.slug}) }}">{{ project.title }}</a>
         </div>
         <div class="project-location">{{ project.company.city }}, {{ project.company.zip }}</div>
         <div class="project-cost">{{ project.amount|localizednumber }}&nbsp;€</div>
