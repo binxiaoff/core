@@ -54,7 +54,7 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
             return;
         }
 
-        $filePath      = $this->getContainer()->getParameter('path.protected') . '/' . 'preteurs_crs_dac' . $year . '.xlsx';
+        $filePath      = $this->getContainer()->getParameter('path.protected') . '/queries/' . 'preteurs_crs_dac' . $year . '.xlsx';
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
         /** @var ClientsRepository $clientRepository */
         $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');

@@ -867,21 +867,10 @@ class statsController extends bootstrap
 
         $year     = date('Y') - 1;
         $fileName = 'preteurs_crs_dac' . $year . '.xlsx';
-        $filePath = $this->getParameter('path.protected') . '/' . $fileName;
+        $filePath = $this->getParameter('path.protected') . '/queries/' . $fileName;
 
         if (file_exists($filePath)) {
-            header('Content-Description: File Transfer');
-            header('Content-Type: application/force-download');
-            header("Content-Disposition: attachment; filename=\"" . basename($fileName) . "\";");
-            header('Content-Transfer-Encoding: binary');
-            header('Expires: 0');
-            header('Cache-Control: must-revalidate');
-            header('Pragma: public');
-            header('Content-Length: ' . filesize($filePath));
-            ob_clean();
-            flush();
-            readfile($filePath);
-            exit;
+           $this->download($filePath);
         } else {
             echo "Le fichier n'a pas été généré. ";
         }
@@ -893,5 +882,19 @@ class statsController extends bootstrap
         $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
         $data                = $wsMonitoringManager->getDataForChart();
         $this->chartData     = json_encode($data);
+    }
+
+    public function _loi_eckert()
+    {
+        $this->autoFireView = false;
+        $this->hideDecoration();
+
+        $filePath = $this->getParameter('path.protected') . '/queries/loi_eckert.xlsx';
+
+        if (file_exists($filePath)) {
+            $this->download($filePath);
+        } else {
+            echo "Le fichier n'a pas été généré. ";
+        }
     }
 }
