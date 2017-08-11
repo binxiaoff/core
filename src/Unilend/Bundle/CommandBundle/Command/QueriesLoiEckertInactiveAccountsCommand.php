@@ -7,7 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 
-class QueriesLoiEckertInnactiveAccountsCommand extends ContainerAwareCommand
+class QueriesLoiEckertInactiveAccountsCommand extends ContainerAwareCommand
 {
     /**
      * @see Command
@@ -23,7 +23,6 @@ class QueriesLoiEckertInnactiveAccountsCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $entityManager       = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $filePath            = $this->getContainer()->getParameter('path.protected') . '/queries/' . 'loi_eckert.xlsx';
 
         /** @var \PHPExcel $document */
@@ -41,11 +40,10 @@ class QueriesLoiEckertInnactiveAccountsCommand extends ContainerAwareCommand
         $activeSheet->setCellValue('H' . $row, 'Dernière connection');
         $activeSheet->setCellValue('I' . $row, 'Dernier mouvement');
         $activeSheet->setCellValue('J' . $row, 'Montant disponible');
-        $activeSheet->setCellValue('K' . $row, 'Status du compte');
+        $activeSheet->setCellValue('K' . $row, 'Statut du compte');
         $activeSheet->setCellValue('L' . $row, 'Date de validation');
         $row++;
 
-        /** @var Clients $client */
         foreach ($entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findAllClientsForLoiEckert() as $client) {
             $activeSheet->setCellValue('A' . $row, $client['id_client']);
             $activeSheet->setCellValue('B' . $row, in_array($client['type'], [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 'Personne physique' : 'Personne morale');

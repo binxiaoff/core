@@ -468,8 +468,14 @@ class ClientsRepository extends EntityRepository
     {
         $query = 'SELECT
                   c.*,
-                  IF (o_provision.added IS NOT NULL, IF (o_withdraw.added IS NOT NULL,IF (MAX(o_provision.added) > MAX(o_withdraw.added), MAX(o_provision.added), MAX(o_withdraw.added)),
-                          MAX(o_provision.added)),MAX(o_withdraw.added)) AS lastMovement,
+                  IF (
+                    o_provision.added IS NOT NULL, 
+                    IF (
+                        o_withdraw.added IS NOT NULL,
+                        IF (MAX(o_provision.added) > MAX(o_withdraw.added), MAX(o_provision.added), MAX(o_withdraw.added)),
+                        MAX(o_provision.added)), 
+                    MAX(o_withdraw.added)
+                  ) AS lastMovement,
                   w.available_balance AS availableBalance,
                   MIN(csh.added) AS validationDate
                 FROM clients c
@@ -481,6 +487,9 @@ class ClientsRepository extends EntityRepository
                 GROUP BY c.id_client
                 ORDER BY c.lastlogin ASC';
 
-        return $this->getEntityManager()->getConnection()->executeQuery($query)->fetchAll(\PDO::FETCH_ASSOC);
+        return $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery($query)
+            ->fetchAll(\PDO::FETCH_ASSOC);
     }
 }
