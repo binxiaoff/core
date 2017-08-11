@@ -870,7 +870,7 @@ class statsController extends bootstrap
         $filePath = $this->getParameter('path.protected') . '/' . $fileName;
 
         if (file_exists($filePath)) {
-            $this->download($filePath);
+           $this->download($filePath);
         } else {
             echo "Le fichier n'a pas été généré. ";
         }
@@ -882,6 +882,20 @@ class statsController extends bootstrap
         $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
         $data                = $wsMonitoringManager->getDataForChart();
         $this->chartData     = json_encode($data);
+    }
+
+    public function _loi_eckert()
+    {
+        $this->autoFireView = false;
+        $this->hideDecoration();
+
+        $filePath = $this->getParameter('path.protected') . '/queries/loi_eckert.xlsx';
+
+        if (file_exists($filePath)) {
+            $this->download($filePath);
+        } else {
+            echo "Le fichier n'a pas été généré. ";
+        }
     }
 
     public function _reporting_sfpmei()

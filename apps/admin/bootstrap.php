@@ -136,6 +136,10 @@ class bootstrap extends Controller
                     'title' => 'Reporting Mensuel SFPMEI',
                     'uri'   => 'stats/reporting_sfpmei'
                 ],
+                [
+                    'title' => 'Loi Eckert',
+                    'uri'   => 'stats/loi_eckert'
+                ],
             ]
         ],
         [
