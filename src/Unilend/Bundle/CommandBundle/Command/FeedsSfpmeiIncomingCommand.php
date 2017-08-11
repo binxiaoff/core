@@ -8,9 +8,12 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -259,51 +262,6 @@ EOF
     }
 
     /**
-     * @param int   $iProjectId
-     * @param float $fAmount
-     */
-    private function updateRepayment($iProjectId, $fAmount)
-    {
-        /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
-        $echeanciers_emprunteur = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
-        /** @var \echeanciers $echeanciers */
-        $echeanciers = $this->entityManagerSimulator->getRepository('echeanciers');
-        /** @var \projects_remb $projects_remb */
-        $projects_remb = $this->entityManagerSimulator->getRepository('projects_remb');
-
-        $aRepaymentSchedules = $echeanciers_emprunteur->select('id_project = ' . $iProjectId . ' AND status_emprunteur = 0', 'ordre ASC');
-
-        foreach ($aRepaymentSchedules as $aRepayment) {
-            $fMonthlyAmount = round(bcdiv($aRepayment['montant'], 100, 2) + bcdiv($aRepayment['commission'], 100, 2) + bcdiv($aRepayment['tva'], 100, 2), 2);
-
-            if ($fMonthlyAmount <= $fAmount) {
-                $echeanciers->updateStatusEmprunteur($iProjectId, $aRepayment['ordre']);
-
-                $echeanciers_emprunteur->get($iProjectId, 'ordre = ' . $aRepayment['ordre'] . ' AND id_project');
-                $echeanciers_emprunteur->status_emprunteur             = 1;
-                $echeanciers_emprunteur->date_echeance_emprunteur_reel = date('Y-m-d H:i:s');
-                $echeanciers_emprunteur->update();
-
-                $fAmount = $fAmount - $fMonthlyAmount;
-
-                if ($projects_remb->counter('id_project = "' . $iProjectId . '" AND ordre = "' . $aRepayment['ordre'] . '" AND status IN(0, 1)') <= 0) {
-                    $date_echeance_preteur = $echeanciers->select('id_project = "' . $iProjectId . '" AND ordre = "' . $aRepayment['ordre'] . '"', '', 0, 1);
-
-                    $projects_remb->id_project                = $iProjectId;
-                    $projects_remb->ordre                     = $aRepayment['ordre'];
-                    $projects_remb->date_remb_emprunteur_reel = date('Y-m-d H:i:s');
-                    $projects_remb->date_remb_preteurs        = $date_echeance_preteur[0]['date_echeance'];
-                    $projects_remb->date_remb_preteurs_reel   = '0000-00-00 00:00:00';
-                    $projects_remb->status                    = \projects_remb::STATUS_PENDING;
-                    $projects_remb->create();
-                }
-            } else {
-                break;
-            }
-        }
-    }
-
-    /**
      * @param array $aRow
      */
     private function processWelcomeOffer(array $aRow)
@@ -321,20 +279,18 @@ EOF
     private function processDirectDebit($motif, Receptions $reception)
     {
         if (1 === preg_match('#[0-9]+#', $motif, $extract)) {
-            $projectId = (int) $extract[0];
-            /** @var \echeanciers_emprunteur $repaymentSchedule */
-            $repaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
-            $nextRepayment     = $repaymentSchedule->select('id_project = ' . $projectId . ' AND status_emprunteur = 0', 'ordre ASC', 0, 1);
+            $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
+            $projectId     = (int) $extract[0];
+            /** @var EcheanciersEmprunteur $nextPayment */
+            $nextPayment = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')
+                ->findOneBy(['idProject' => $projectId, 'statusEmprunteur' => EcheanciersEmprunteur::STATUS_PENDING], ['ordre' => 'ASC']);
 
-            /** @var \prelevements $bankDirectDebit */
-            $bankDirectDebit = $this->entityManagerSimulator->getRepository('prelevements');
-            if (
-                count($nextRepayment) > 0
-                && $bankDirectDebit->get($projectId . '" AND num_prelevement = "' . $nextRepayment[0]['ordre'], 'id_project')
-                && false !== strpos($motif, $bankDirectDebit->motif)
-            ) {
-                $entityManager    = $this->getContainer()->get('doctrine.orm.entity_manager');
+            /** @var Prelevements $bankDirectDebit */
+            $bankDirectDebit = $entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements')
+                ->findOneBy(['idProject' => $projectId, 'numPrelevement' => $nextPayment->getOrdre()]);
+            if ($nextPayment && $bankDirectDebit && false !== strpos($motif, $bankDirectDebit->getMotif())) {
                 $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
+                $repaymentManager = $this->getContainer()->get('unilend.service.project_repayment_manager');
 
                 $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
                 $client  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
@@ -349,7 +305,8 @@ EOF
 
                     $operationManager->provisionBorrowerWallet($reception);
 
-                    $this->updateRepayment($project->getIdProject(), bcdiv($reception->getMontant(), 100, 2));
+                    $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
+                    $repaymentManager->pay($project, $reception, $user);
                 }
             }
         }
@@ -363,6 +320,7 @@ EOF
     {
         $entityManager    = $this->getContainer()->get('doctrine.orm.entity_manager');
         $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
+        $repaymentManager = $this->getContainer()->get('unilend.service.project_repayment_manager');
 
         $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
 
@@ -375,30 +333,8 @@ EOF
         $entityManager->flush();
 
         $operationManager->provisionBorrowerWallet($reception);
-
-        $email = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse notification nouveau remboursement anticipe'])->getValue();
-
-        $url       = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-        $staticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
-        $varMail   = [
-            '$surl'       => $staticUrl,
-            '$url'        => $url,
-            '$id_projet'  => $project->getIdProject(),
-            '$montant'    => bcdiv($reception->getMontant(), 100, 2),
-            '$nom_projet' => $project->getTitle()
-        ];
-
-        $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-nouveau-remboursement-anticipe', $varMail, false);
-        try {
-            $message->setTo($email);
-            $mailer = $this->getContainer()->get('mailer');
-            $mailer->send($message);
-        } catch (\Exception $exception) {
-            $this->getContainer()->get('monolog.logger.console')->warning(
-                'Could not send email : notification-nouveau-remboursement-anticipe - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'email address' => $email, 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
-        }
+        $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
+        $repaymentManager->planEarlyRepayment($project, $reception, $user);
     }
 
     /**
@@ -410,6 +346,7 @@ EOF
     {
         $entityManager    = $this->getContainer()->get('doctrine.orm.entity_manager');
         $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
+        $repaymentManager = $this->getContainer()->get('unilend.service.project_repayment_manager');
 
         $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
 
@@ -424,8 +361,8 @@ EOF
 
         $operationManager->provisionBorrowerWallet($reception);
 
-        $this->updateRepayment($project->getIdProject(), bcdiv($reception->getMontant(), 100, 2));
-
+        $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
+        $repaymentManager->pay($project, $reception, $user);
     }
 
     /**
@@ -535,14 +472,10 @@ EOF
      */
     private function processBorrowerRepaymentRejection(array $aRow, Receptions $reception)
     {
-        /** @var \echeanciers $oEcheanciers */
-        $oEcheanciers = $this->entityManagerSimulator->getRepository('echeanciers');
-        /** @var \echeanciers_emprunteur $oEcheanciersEmprunteur */
-        $oEcheanciersEmprunteur = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
-        /** @var \projects_remb $oProjectsRemb */
-        $oProjectsRemb    = $this->entityManagerSimulator->getRepository('projects_remb');
         $entityManager    = $this->getContainer()->get('doctrine.orm.entity_manager');
         $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
+        $repaymentManager = $this->getContainer()->get('unilend.service.project_repayment_manager');
+
         if (1 === preg_match('#^RUM[^0-9]*([0-9]+)#', $aRow['libelleOpe3'], $aMatches)) {
             /** @var Projects $project */
             $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find((int) $aMatches[1]);
@@ -562,31 +495,8 @@ EOF
 
                     $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
                     $operationManager->cancelProvisionBorrowerWallet($wallet, $amount, $reception);
-
-                    $fNewAmount = $amount;
-
-                    foreach ($oEcheanciersEmprunteur->select('id_project = ' . $project->getIdProject() . ' AND status_emprunteur = 1', 'ordre DESC') as $e) {
-                        $fMonthlyAmount = round(bcdiv($e['montant'], 100, 2) + bcdiv($e['commission'], 100, 2) + bcdiv($e['tva'], 100, 2), 2);
-
-                        if ($fMonthlyAmount <= $fNewAmount) {
-                            $oEcheanciers->updateStatusEmprunteur($project->getIdProject(), $e['ordre'], 'annuler');
-
-                            $oEcheanciersEmprunteur->get($project->getIdProject(), 'ordre = ' . $e['ordre'] . ' AND id_project');
-                            $oEcheanciersEmprunteur->status_emprunteur             = 0;
-                            $oEcheanciersEmprunteur->date_echeance_emprunteur_reel = '0000-00-00 00:00:00';
-                            $oEcheanciersEmprunteur->update();
-
-                            $fNewAmount = $fNewAmount - $fMonthlyAmount;
-
-                            if ($oProjectsRemb->counter('id_project = "' . $project->getIdProject() . '" AND ordre = "' . $e['ordre'] . '" AND status = 0') > 0) {
-                                $oProjectsRemb->get($e['ordre'], 'status = 0 AND id_project = "' . $project->getIdProject() . '" AND ordre');
-                                $oProjectsRemb->status = \projects_remb::STATUS_REJECTED;
-                                $oProjectsRemb->update();
-                            }
-                        } else {
-                            break;
-                        }
-                    }
+                    $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
+                    $repaymentManager->rejectPayment($project, $reception, $user);
                 }
             }
         }

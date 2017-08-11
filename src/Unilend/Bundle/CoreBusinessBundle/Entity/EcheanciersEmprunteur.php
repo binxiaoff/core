@@ -80,7 +80,7 @@ class EcheanciersEmprunteur
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_echeance_emprunteur_reel", type="datetime", nullable=false)
+     * @ORM\Column(name="date_echeance_emprunteur_reel", type="datetime", nullable=true)
      */
     private $dateEcheanceEmprunteurReel;
 
@@ -320,7 +320,7 @@ class EcheanciersEmprunteur
      *
      * @return EcheanciersEmprunteur
      */
-    public function setDateEcheanceEmprunteurReel($dateEcheanceEmprunteurReel)
+    public function setDateEcheanceEmprunteurReel($dateEcheanceEmprunteurReel = null)
     {
         $this->dateEcheanceEmprunteurReel = $dateEcheanceEmprunteurReel;
 

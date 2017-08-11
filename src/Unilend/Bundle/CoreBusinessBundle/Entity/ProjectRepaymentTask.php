@@ -9,22 +9,23 @@ use Doctrine\ORM\Mapping as ORM;
  * ProjectRepaymentTask
  *
  * @ORM\Table(name="project_repayment_task", indexes={@ORM\Index(name="idx_project_repayment_task_id_project", columns={"id_project"}), @ORM\Index(name="idx_project_repayment_task_id_project_sequence", columns={"id_project", "sequence"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectRepaymentTaskRepository"
  * @ORM\HasLifecycleCallbacks
  */
 class ProjectRepaymentTask
 {
-    const TYPE_NORMAL          = 1;
-    const TYPE_REGULARIZATION  = 2;
+    const TYPE_REGULAR         = 1;
+    const TYPE_LATE            = 2;
     const TYPE_EARLY           = 3;
     const TYPE_DEBT_COLLECTION = 4;
 
-    const STATUS_PENDING         = 0;
-    const STATUS_TO_VALIDATE     = 1;
+    const STATUS_ERROR           = -1;
+    const STATUS_SUSPENDED       = 0;
+    const STATUS_PENDING         = 1;
     const STATUS_READY_FOR_REPAY = 2;
     const STATUS_IN_PROGRESS     = 3;
-    const STATUS_ERROR           = -1;
     const STATUS_REPAID          = 4;
+    const STATUS_CANCELLED       = 5;
 
     /**
      * @var string
@@ -93,6 +94,56 @@ class ProjectRepaymentTask
      * })
      */
     private $idProject;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_user_creation", referencedColumnName="id_user")
+     * })
+     */
+    private $idUserCreation;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_user_suspending", referencedColumnName="id_user")
+     * })
+     */
+    private $idUserSuspending;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_user_validation", referencedColumnName="id_user")
+     * })
+     */
+    private $idUserValidation;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_user_cancellation", referencedColumnName="id_user")
+     * })
+     */
+    private $idUserCancellation;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Receptions")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_wire_transfer_in", referencedColumnName="id_reception")
+     * })
+     */
+    private $idWireTransferIn;
 
     /**
      * @var ProjectRepaymentTaskLog[]
@@ -267,7 +318,7 @@ class ProjectRepaymentTask
      *
      * @return ProjectRepaymentTask
      */
-    public function setIdProject(\Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject = null)
+    public function setIdProject(Projects $idProject = null)
     {
         $this->idProject = $idProject;
 
@@ -344,5 +395,125 @@ class ProjectRepaymentTask
         $this->taskLogs = $taskLogs;
 
         return $this;
+    }
+
+    /**
+     * Set idUserCreation
+     *
+     * @param Users $idUser
+     *
+     * @return ProjectRepaymentTask
+     */
+    public function setIdUserCreation(Users $idUser = null)
+    {
+        $this->idUserCreation = $idUser;
+
+        return $this;
+    }
+
+    /**
+     * Get idUserCreation
+     *
+     * @return Users
+     */
+    public function getIdUserCreation()
+    {
+        return $this->idUserCreation;
+    }
+
+    /**
+     * Set idUserSuspending
+     *
+     * @param Users $idUser
+     *
+     * @return ProjectRepaymentTask
+     */
+    public function setIdUserSuspending(Users $idUser = null)
+    {
+        $this->idUserSuspending = $idUser;
+
+        return $this;
+    }
+
+    /**
+     * Get idUserSuspending
+     *
+     * @return Users
+     */
+    public function getIdUserSuspending()
+    {
+        return $this->idUserSuspending;
+    }
+
+    /**
+     * Set idUserValidation
+     *
+     * @param Users $idUser
+     *
+     * @return ProjectRepaymentTask
+     */
+    public function setIdUserValidation(Users $idUser = null)
+    {
+        $this->idUserValidation = $idUser;
+
+        return $this;
+    }
+
+    /**
+     * Get idUserValidation
+     *
+     * @return Users
+     */
+    public function getIdUserValidation()
+    {
+        return $this->idUserValidation;
+    }
+
+    /**
+     * Set idUserCancellation
+     *
+     * @param Users $idUser
+     *
+     * @return ProjectRepaymentTask
+     */
+    public function setIdUserCancellation(Users $idUser = null)
+    {
+        $this->idUserCancellation = $idUser;
+
+        return $this;
+    }
+
+    /**
+     * Get idUserCancellation
+     *
+     * @return Users
+     */
+    public function getIdUserCancellation()
+    {
+        return $this->idUserCancellation;
+    }
+
+    /**
+     * Set idWireTransferIn
+     *
+     * @param Receptions $idWireTransferIn
+     *
+     * @return ProjectRepaymentTask
+     */
+    public function setIdWireTransferIn(Receptions $idWireTransferIn = null)
+    {
+        $this->idWireTransferIn = $idWireTransferIn;
+
+        return $this;
+    }
+
+    /**
+     * Get idWireTransferIn
+     *
+     * @return Receptions
+     */
+    public function getIdWireTransferIn()
+    {
+        return $this->idWireTransferIn;
     }
 }

@@ -69,6 +69,8 @@ class transfertsController extends bootstrap
         if (isset($_POST['id_project'], $_POST['id_reception'])) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
             $operationManager = $this->get('unilend.service.operation_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRepaymentManager $repaymentManager */
+            $repaymentManager = $this->get('unilend.service.project_repayment_manager');
             $project          = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);
             $reception        = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
             $client           = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
@@ -85,9 +87,10 @@ class transfertsController extends bootstrap
 
                 if ($_POST['type_remb'] === 'remboursement_anticipe') {
                     $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_EARLY);
+                    $repaymentManager->planEarlyRepayment($project, $reception, $user);
                 } elseif ($_POST['type_remb'] === 'regularisation') {
                     $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_REGULARISATION);
-                    $this->updateEcheances($project->getIdProject(), $reception->getMontant());
+                    $repaymentManager->pay($project, $reception, $user);
                 }
 
                 $entityManager->flush();
@@ -95,46 +98,6 @@ class transfertsController extends bootstrap
 
             header('Location: ' . $this->lurl . '/transferts/emprunteurs');
             die;
-        }
-    }
-
-    private function updateEcheances($id_project, $montant)
-    {
-        $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-        $echeanciers            = $this->loadData('echeanciers');
-        $projects_remb          = $this->loadData('projects_remb');
-
-        $eche   = $echeanciers_emprunteur->select('id_project = ' . $id_project . ' AND status_emprunteur = 0', 'ordre ASC');
-        $newsum = $montant / 100;
-
-        foreach ($eche as $e) {
-            $ordre         = $e['ordre'];
-            $montantDuMois = round($e['montant'] / 100 + $e['commission'] / 100 + $e['tva'] / 100, 2);
-
-            if ($montantDuMois <= $newsum) {
-                $echeanciers->updateStatusEmprunteur($id_project, $ordre);
-
-                $echeanciers_emprunteur->get($id_project, 'ordre = ' . $ordre . ' AND id_project');
-                $echeanciers_emprunteur->status_emprunteur             = 1;
-                $echeanciers_emprunteur->date_echeance_emprunteur_reel = date('Y-m-d H:i:s');
-                $echeanciers_emprunteur->update();
-
-                $newsum = $newsum - $montantDuMois;
-
-                if ($projects_remb->counter('id_project = "' . $id_project . '" AND ordre = "' . $ordre . '" AND status IN(0, 1)') <= 0) {
-                    $date_echeance_preteur = $echeanciers->select('id_project = "' . $id_project . '" AND ordre = "' . $ordre . '"', '', 0, 1);
-
-                    $projects_remb->id_project                = $id_project;
-                    $projects_remb->ordre                     = $ordre;
-                    $projects_remb->date_remb_emprunteur_reel = date('Y-m-d H:i:s');
-                    $projects_remb->date_remb_preteurs        = $date_echeance_preteur[0]['date_echeance'];
-                    $projects_remb->date_remb_preteurs_reel   = '0000-00-00 00:00:00';
-                    $projects_remb->status                    = \projects_remb::STATUS_PENDING;
-                    $projects_remb->create();
-                }
-            } else {
-                break;
-            }
         }
     }
 
@@ -337,26 +300,21 @@ class transfertsController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        /** @var \echeanciers $echeanciers */
-        $echeanciers = $this->loadData('echeanciers');
-        /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
-        $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-        /** @var \projects_remb $projects_remb */
-        $projects_remb = $this->loadData('projects_remb');
-
         if ($_POST['id_reception']) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             $reception     = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
             if ($reception) {
-                $projectId = $reception->getIdProject()->getIdProject();
-                $wallet    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
+                $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
                 if ($wallet) {
                     $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
                     $operationManager = $this->get('unilend.service.operation_manager');
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRepaymentManager $repaymentManager */
+                    $repaymentManager = $this->get('unilend.service.project_repayment_manager');
 
-                    $operationType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\OperationType::BORROWER_PROVISION]);
+                    $operationType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')
+                        ->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\OperationType::BORROWER_PROVISION]);
                     $operation     = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy([
                         'idWireTransferIn' => $reception->getIdReception(),
                         'idWalletCreditor' => $wallet,
@@ -369,34 +327,12 @@ class transfertsController extends bootstrap
                     $operationManager->cancelProvisionBorrowerWallet($wallet, $amount, $reception);
 
                     $reception->setIdClient(null)
-                              ->setIdProject(null)
-                              ->setStatusBo(Receptions::STATUS_PENDING)
-                              ->setRemb(0); // todo: delete the field
+                        ->setIdProject(null)
+                        ->setStatusBo(Receptions::STATUS_PENDING)
+                        ->setRemb(0); // todo: delete the field
                     $entityManager->flush();
-
-                    $eche   = $echeanciers_emprunteur->select('id_project = ' . $projectId . ' AND status_emprunteur = 1', 'ordre DESC');
-                    $newsum = round(bcdiv($reception->getMontant(), 100, 4), 2);
-
-                    foreach ($eche as $e) {
-                        $montantDuMois = round($e['montant'] / 100 + $e['commission'] / 100 + $e['tva'] / 100, 2);
-
-                        if ($montantDuMois <= $newsum) {
-                            $echeanciers->updateStatusEmprunteur($projectId, $e['ordre'], 'annuler');
-                            $echeanciers_emprunteur->get($projectId, 'ordre = ' . $e['ordre'] . ' AND id_project');
-                            $echeanciers_emprunteur->status_emprunteur             = 0;
-                            $echeanciers_emprunteur->date_echeance_emprunteur_reel = '0000-00-00 00:00:00';
-                            $echeanciers_emprunteur->update();
-
-                            // et on retire du wallet unilend
-                            $newsum = $newsum - $montantDuMois;
-
-                            if ($projects_remb->counter('id_project = "' . $projectId . '" AND ordre = "' . $e['ordre'] . '" AND status = 0') > 0) {
-                                $projects_remb->delete($e['ordre'], 'status = 0 AND id_project = "' . $projectId . '" AND ordre');
-                            }
-                        } else {
-                            break;
-                        }
-                    }
+                    $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+                    $repaymentManager->rejectPayment($reception->getIdProject(), $reception, $user);
                     echo 'supp';
                     return;
                 }
@@ -411,12 +347,6 @@ class transfertsController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        /** @var \echeanciers $echeanciers */
-        $echeanciers = $this->loadData('echeanciers');
-        /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
-        $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-        /** @var \projects_remb $projects_remb */
-        $projects_remb = $this->loadData('projects_remb');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
@@ -446,33 +376,10 @@ class transfertsController extends bootstrap
                     $reception->setRemb(0);
                     $entityManager->flush();
 
-                    $eche   = $echeanciers_emprunteur->select('id_project = ' . $reception->getIdProject()->getIdProject() . ' AND status_emprunteur = 1', 'ordre DESC');
-                    $newsum = round(bcdiv($reception->getMontant(), 100, 4), 2);
-
-                    foreach ($eche as $e) {
-                        $montantDuMois = round($e['montant'] / 100 + $e['commission'] / 100 + $e['tva'] / 100, 2);
-
-                        if ($montantDuMois <= $newsum) {
-                            $echeanciers->updateStatusEmprunteur($reception->getIdProject()->getIdProject(), $e['ordre'], 'annuler');
-
-                            $echeanciers_emprunteur->get($reception->getIdProject()->getIdProject(), 'ordre = ' . $e['ordre'] . ' AND id_project');
-                            $echeanciers_emprunteur->status_emprunteur             = 0;
-                            $echeanciers_emprunteur->date_echeance_emprunteur_reel = '0000-00-00 00:00:00';
-                            $echeanciers_emprunteur->update();
-
-                            // et on retire du wallet unilend
-                            $newsum = $newsum - $montantDuMois;
-
-                            // On met a jour le remb emprunteur rejete
-                            if ($projects_remb->counter('id_project = "' . $reception->getIdProject()->getIdProject() . '" AND ordre = "' . $e['ordre'] . '" AND status = 0') > 0) {
-                                $projects_remb->get($e['ordre'], 'status = 0 AND id_project = "' . $reception->getIdProject()->getIdProject() . '" AND ordre');
-                                $projects_remb->status = \projects_remb::STATUS_REJECTED;
-                                $projects_remb->update();
-                            }
-                        } else {
-                            break;
-                        }
-                    }
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRepaymentManager $repaymentManager */
+                    $repaymentManager = $this->get('unilend.service.project_repayment_manager');
+                    $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+                    $repaymentManager->rejectPayment($reception->getIdProject(), $reception, $user);
                     echo 'ok';
                 }
             }
