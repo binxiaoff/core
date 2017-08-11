@@ -80,6 +80,13 @@ class Receptions
     private $statusPrelevement;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="rejection_iso_code", type="string", length=4, nullable=true)
+     */
+    private $rejectionIsoCode;
+
+    /**
      * @var integer
      *
      * @ORM\Column(name="status_bo", type="integer", nullable=false)
@@ -302,6 +309,26 @@ class Receptions
     public function getStatusPrelevement()
     {
         return $this->statusPrelevement;
+    }
+
+    /**
+     * @param string $rejectionIsoCode
+     *
+     * @return Receptions
+     */
+    public function setRejectionIsoCode($rejectionIsoCode)
+    {
+        $this->rejectionIsoCode = $rejectionIsoCode;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRejectionIsoCode()
+    {
+        return $this->rejectionIsoCode;
     }
 
     /**

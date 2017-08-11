@@ -557,7 +557,8 @@ EOF
                     $reception->setStatusBo(Receptions::STATUS_REJECTED)
                         ->setIdProject($project)
                         ->setIdClient($wallet->getIdClient())
-                        ->setRemb(0);
+                        ->setRemb(0)
+                        ->setRejectionIsoCode($this->getRejectionIsoCode($aRow));
                     $entityManager->flush();
 
                     $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
@@ -590,5 +591,19 @@ EOF
                 }
             }
         }
+    }
+
+    /**
+     * @param array $row
+     *
+     * @return null|string
+     */
+    private function getRejectionIsoCode(array $row)
+    {
+        if (false === empty($row['libelleOpe6']) && false !== ($isoCode = substr($row['libelleOpe6'], -4, 4))) {
+            return $isoCode;
+        }
+
+        return null;
     }
 }

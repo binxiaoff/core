@@ -1048,4 +1048,24 @@ class OperationRepository extends EntityRepository
 
         return $qb->getQuery()->getSingleScalarResult();
     }
+
+    /**
+     * @param $wallet
+     * @return array
+     */
+    public function getBorrowerOperations($wallet)
+    {
+        $queryBuilder = $this->createQueryBuilder('o');
+        $queryBuilder->select('o.id, o.added, o.amount, ot.label AS operationLabel, r.statusPrelevement, r.rejectionIsoCode, srr.label as rejectionReasonLabel, wbh.availableBalance')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->innerJoin('UnilendCoreBusinessBundle:Receptions', 'r', Join::WITH, 'o.idWireTransferIn = r.idReception')
+            ->innerJoin('UnilendCoreBusinessBundle:WalletBalanceHistory', 'wbh', Join::WITH, 'o.id = wbh.idOperation')
+            ->leftJoin('UnilendCoreBusinessBundle:SepaRejectionReason', 'srr', Join::WITH, 'r.rejectionIsoCode = srr.isoCode')
+            ->where('o.idWalletCreditor = :walletCreditor OR o.idWalletDebtor = :walletDebtor')
+            ->setParameter('walletCreditor', $wallet)
+            ->setParameter('walletDebtor', $wallet)
+            ->orderBy('o.added', 'DESC');
+
+        return $queryBuilder->getQuery()->getResult();
+    }
 }

@@ -122,6 +122,13 @@ class emprunteursController extends bootstrap
                 die;
             }
             $this->aMoneyOrders = $this->clients_mandats->getMoneyOrderHistory($this->companies->id_company);
+
+            if ($client->isBorrower()) {
+                $this->operations = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')
+                    ->getBorrowerOperations($client->getWallets()[0]->getId());
+            } else {
+                $this->operations = [];
+            }
         } else {
             header('Location: ' . $this->lurl . '/emprunteurs/gestion/');
             die;
