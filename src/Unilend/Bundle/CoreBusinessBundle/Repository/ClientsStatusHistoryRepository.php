@@ -38,8 +38,9 @@ class ClientsStatusHistoryRepository extends EntityRepository
     }
 
     /**
-     * @param \DateTime $start
-     * @param \DateTime $end
+     * @param \DateTime  $start
+     * @param \DateTime  $end
+     * @param array|null $types
      *
      * @return bool|string
      */
@@ -48,12 +49,15 @@ class ClientsStatusHistoryRepository extends EntityRepository
         $start->setTime(0, 0, 0);
         $end->setTime(23, 59, 59);
 
-        $query = 'SELECT COUNT(DISTINCT c.id_client)
-                    FROM
-                      (SELECT MIN(id_client_status_history) AS id_client_status_history FROM clients_status_history WHERE id_client_status = 6 GROUP BY id_client) AS min_csh_validated
-                      INNER JOIN clients_status_history csh ON min_csh_validated.id_client_status_history = csh.id_client_status_history
-                      INNER JOIN clients c ON csh.id_client = c.id_client
-                    WHERE csh.added BETWEEN :start AND :end';
+        $query = 'SELECT
+                    COUNT(DISTINCT c.id_client)
+                  FROM (
+                    SELECT MIN(id_client_status_history) AS id_client_status_history 
+                    FROM clients_status_history 
+                    WHERE id_client_status = 6 GROUP BY id_client) AS min_csh_validated
+                  INNER JOIN clients_status_history csh ON min_csh_validated.id_client_status_history = csh.id_client_status_history
+                  INNER JOIN clients c ON csh.id_client = c.id_client
+                  WHERE csh.added BETWEEN :start AND :end';
 
         $params    = ['start' => $start->format('Y-m-d H:i:s'), 'end' => $end->format('Y-m-d H:i:s')];
         $bindTypes = ['start' => \PDO::PARAM_STR, 'end' => \PDO::PARAM_STR];

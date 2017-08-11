@@ -462,7 +462,7 @@ class EcheanciersRepository extends EntityRepository
                     AND e.date_echeance <= :end';
 
         return $this->getEntityManager()->getConnection()->executeQuery($query, [
-            'end'             => $end->format('Y-m-d h:i:s'),
+            'end'             => $end->format('Y-m-d H:i:s'),
             'repaymentStatus' => ProjectsStatus::REMBOURSEMENT,
             'status'          => [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME, ProjectsStatus::PROBLEME_J_X],
             'pending'         => Echeanciers::STATUS_PENDING

@@ -903,7 +903,12 @@ class statsController extends bootstrap
         $directoryPath       = $this->getParameter('path.protected') . '/queries/';
         $this->reportingList = [];
 
-        if (isset($this->params[0], $this->params[1]) && 'file' === $this->params[0] && is_string($this->params[1])) {
+        if (
+            isset($this->params[0], $this->params[1])
+            && 'file' === $this->params[0]
+            && is_string($this->params[1])
+            && false !== strpos($this->params[1], 'reporting_mensuel_sfpmei')
+        ) {
             $this->download($directoryPath . $this->params[1]);
         }
 
@@ -911,13 +916,12 @@ class statsController extends bootstrap
         foreach ($files as $file) {
             if ('reporting_mensuel_sfpmei' == substr($file, 0, 24)) {
                 $fileDate = \DateTime::createFromFormat('Ymd', substr($file, -13, 8));
-                $this->reportingList[] = [
-                    'sortDate' => $fileDate->format('Ym'),
+                $this->reportingList[$fileDate->format('Ym')] = [
                     'displayDate' => strftime('%B %Y', $fileDate->getTimestamp()),
-                    'link' => '/stats/reporting_sfpmei/file/' . $file,
-                    'name' => $file
+                    'link'        => '/stats/reporting_sfpmei/file/' . $file,
+                    'name'        => $file
                 ];
-                ksort($this->reportingList, SORT_NUMERIC);
+                krsort($this->reportingList, SORT_NUMERIC);
             }
         }
     }

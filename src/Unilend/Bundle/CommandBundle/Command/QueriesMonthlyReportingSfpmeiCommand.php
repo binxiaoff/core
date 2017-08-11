@@ -7,9 +7,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-
 
 class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
 {
@@ -23,7 +21,7 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
             ->setDescription('Create monthly reporting file for SFPMEI')
             ->addArgument(
                 'day',
-                InputArgument::REQUIRED,
+                InputArgument::OPTIONAL,
                 'last day of the month to export (format: Y-m-d)'
             );
     }
@@ -33,7 +31,8 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $date = $input->getArgument('day');
+        $date    = $input->getArgument('day');
+        $endDate = null;
 
         if (false === empty($date)) {
             if (preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/", $date)) {
@@ -42,9 +41,6 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
                     $output->writeln('<error>Wrong date format ("Y-m-d" expected)</error>');
                     return;
                 }
-            } else {
-                $output->writeln('<error>Wrong date format ("Y-m-d" expected)</error>');
-                return;
             }
         } else {
             $endDate = new \DateTime('Last day of last month');
@@ -103,7 +99,7 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
         $companiesInCollectiveProceeding      = $companiesRepository->getCountCompaniesInCollectiveProceedingBetweenDates($startDate, $endDate);
         $newlyRiskAnalysisProjects            = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->getCountProjectsInRiskReviewBetweenDates($startDate, $endDate);
         $newlyPresentedProjects               = $projectRepository->getIndicatorBetweenDates('COUNT(p.id_project) AS newProjects', $startDate, $endDate, ProjectsStatus::EN_FUNDING)['newProjects'];
-        $totalNewLenders                      = $totalLenders                         = $clientStatusHistoryRepository->countLendersValidatedBetweenDatesByType($startDate, $endDate, [
+        $totalNewLenders                      = $clientStatusHistoryRepository->countLendersValidatedBetweenDatesByType($startDate, $endDate, [
             Clients::TYPE_PERSON,
             Clients::TYPE_PERSON_FOREIGNER,
             Clients::TYPE_LEGAL_ENTITY,
@@ -124,7 +120,6 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
         $lendersWithProvisionAndNoValidBid    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findLendersWithProvisionButWithoutAcceptedBidBetweenDates(new \DateTime('January 2013'), $endDate);
         $totalLenderProvisionIndicators       = $operationRepository->getLenderProvisionIndicatorsBetweenDates(new \DateTime('January 2013'), $endDate, false)[0];
 
-        /** @var \PHPExcel $document */
         $document = new \PHPExcel();
         $document->getDefaultStyle()->getFont()->setName('Arial');
         $document->getDefaultStyle()->getFont()->setSize(11);

@@ -1052,6 +1052,8 @@ class OperationRepository extends EntityRepository
     /**
      * @param \DateTime $start
      * @param \DateTime $end
+     * @param bool      $groupByProvision
+     * @param bool      $onlineLenders
      *
      * @return array
      */
@@ -1128,23 +1130,25 @@ class OperationRepository extends EntityRepository
               FROM operation o_repayment
               INNER JOIN operation_type ot ON ot.id = o_repayment.id_type
               WHERE o_repayment.added <= :end
-              AND ot.label = \'' . OperationType::CAPITAL_REPAYMENT . '\'
+              AND ot.label = "' . OperationType::CAPITAL_REPAYMENT . '"
               AND o_repayment.id_project IN (:projects)
             ) - (
               SELECT IFNULL(SUM(o_repayment_regul.amount), 0)
               FROM operation o_repayment_regul
               INNER JOIN operation_type ot ON ot.id = o_repayment_regul.id_type
               WHERE o_repayment_regul.added <= :end
-              AND ot.label = \'' . OperationType::CAPITAL_REPAYMENT_REGULARIZATION . '\'
+              AND ot.label = "' . OperationType::CAPITAL_REPAYMENT_REGULARIZATION . '"
               AND o_repayment_regul.id_project IN (:projects)
             )
             FROM operation o_loan
             INNER JOIN operation_type ot ON ot.id = o_loan.id_type
             WHERE o_loan.added <= :end
-            AND ot.label = \'' . OperationType::LENDER_LOAN . '\'
+            AND ot.label = "' . OperationType::LENDER_LOAN . '"
             AND o_loan.id_project  IN (:projects)';
 
-        $statement = $this->getEntityManager()->getConnection()->executeQuery($query, ['end' => $end->format('Y-m-d H:i:s'), 'projects' => $projects], ['end' => \PDO::PARAM_STR, 'projects' => Connection::PARAM_INT_ARRAY]);
+        $statement = $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery($query, ['end' => $end->format('Y-m-d H:i:s'), 'projects' => $projects], ['end' => \PDO::PARAM_STR, 'projects' => Connection::PARAM_INT_ARRAY]);
 
         return $statement->fetchColumn();
     }

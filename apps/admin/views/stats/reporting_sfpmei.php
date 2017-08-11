@@ -31,9 +31,9 @@
             </tr>
             </thead>
             <tbody>
-            <?php foreach ($this->reportingList as $year => $reporting) : ?>
+            <?php foreach ($this->reportingList as $sortDate => $reporting) : ?>
                 <tr>
-                    <td data-sort-value="<?= $reporting['sortDate'] ?>"><?= $reporting['displayDate'] ?></td>
+                    <td data-sort-value="<?= $sortDate ?>"><?= $reporting['displayDate'] ?></td>
                     <td><?= $reporting['name'] ?></td>
                     <td class="text-right"><a href="<?= $reporting['link'] ?>" class="btn-primary btn-sm">Télécharger</a></td>
                 </tr>

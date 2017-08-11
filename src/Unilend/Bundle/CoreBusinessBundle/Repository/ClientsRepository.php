@@ -438,18 +438,20 @@ class ClientsRepository extends EntityRepository
     }
 
     /**
-     * @param array $clientType
-     * @param bool  $onlyActive
+     * @param array     $clientType
+     * @param \DateTime $start
+     * @param \DateTime $end
+     * @param bool      $onlyActive
      *
-     * @return int
+     * @return int|null
      */
     public function countLendersByClientTypeBetweenDates(array $clientType, \DateTime $start, \DateTime $end, $onlyActive = false)
     {
         $start->setTime(0, 0, 0);
         $end->setTime(23, 59, 59);
 
-        $qb = $this->createQueryBuilder('c');
-        $qb->select('COUNT(DISTINCT(c.idClient))')
+        $queryBuilder = $this->createQueryBuilder('c');
+        $queryBuilder->select('COUNT(DISTINCT(c.idClient))')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
             ->andWhere('wt.label = :lender')
@@ -463,23 +465,26 @@ class ClientsRepository extends EntityRepository
             ->setParameter('end', $end->format('Y-m-d H:i:s'));
 
         if ($onlyActive) {
-            $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idClientStatus = 6');
+            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idClientStatus = 6');
         }
 
-        return $qb->getQuery()->getSingleScalarResult();
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 
     /**
      * if true only lenders activated at least once (active lenders)
      * if false all online lender (Community)
-     * @param bool $onlyActive
      *
-     * @return int
+     * @param \DateTime $start
+     * @param \DateTime $end
+     * @param bool      $onlyActive
+     *
+     * @return int|null
      */
     public function countLendersBetweenDates(\DateTime $start, \DateTime $end, $onlyActive = false)
     {
-        $qb = $this->createQueryBuilder('c');
-        $qb->select('COUNT(DISTINCT(c.idClient))')
+        $queryBuilder = $this->createQueryBuilder('c');
+        $queryBuilder->select('COUNT(DISTINCT(c.idClient))')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
             ->andWhere('wt.label = :lender')
@@ -491,10 +496,10 @@ class ClientsRepository extends EntityRepository
             ->setParameter('end', $end->format('Y-m-d H:i:s'));
 
         if ($onlyActive) {
-            $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idClientStatus = 6');
+            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idClientStatus = 6');
         }
 
-        return $qb->getQuery()->getSingleScalarResult();
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 
     /**
@@ -504,8 +509,8 @@ class ClientsRepository extends EntityRepository
      */
     public function findValidatedClientsUntilYear($year)
     {
-        $qb  = $this->createQueryBuilder('c');
-        $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClient = csh.idClient')
+        $queryBuilder  = $this->createQueryBuilder('c');
+        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClient = csh.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:ClientsStatus', 'cs', Join::WITH, 'csh.idClientStatus = cs.idClientStatus')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
@@ -518,7 +523,7 @@ class ClientsRepository extends EntityRepository
             ->setParameter('clientStatus', Clients::STATUS_ONLINE)
             ->setParameter('year', $year . '-12-31 23:59:59');
 
-        return $qb->getQuery()->getResult();
+        return $queryBuilder->getQuery()->getResult();
     }
 
     /**
