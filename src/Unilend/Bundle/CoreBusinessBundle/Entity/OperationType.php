@@ -88,6 +88,16 @@ class OperationType
         self::TAX_FR_RETENUES_A_LA_SOURCE_REGULARIZATION
     ];
 
+    const TAX_WITHDRAW_TYPES = [
+        OperationType::TAX_FR_CRDS_WITHDRAW,
+        OperationType::TAX_FR_CSG_WITHDRAW,
+        OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_WITHDRAW,
+        OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_WITHDRAW,
+        OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_WITHDRAW,
+        OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_WITHDRAW,
+        OperationType::TAX_FR_RETENUES_A_LA_SOURCE_WITHDRAW
+    ];
+
     /**
      * @var integer
      *

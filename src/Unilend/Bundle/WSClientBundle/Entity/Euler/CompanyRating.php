@@ -79,4 +79,16 @@ class CompanyRating
     {
         return $this->color;
     }
+
+    /**
+     * @param $color
+     *
+     * @return $this
+     */
+    public function setColor($color)
+    {
+        $this->color = $color;
+
+        return $this;
+    }
 }

@@ -1,5 +1,7 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+
 class partenairesController extends bootstrap
 {
     /** @var \partenaires */
@@ -12,10 +14,9 @@ class partenairesController extends bootstrap
     {
         parent::initialize();
 
-        $this->catchAll = true;
+        $this->users->checkAccess(Zones::ZONE_LABEL_CONFIGURATION);
 
-        $this->users->checkAccess('configuration');
-
+        $this->catchAll   = true;
         $this->menu_admin = 'configuration';
     }
 

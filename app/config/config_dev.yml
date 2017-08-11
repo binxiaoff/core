@@ -20,3 +20,16 @@ monolog:
             max_files: 90
             file_permission: 0664
             date_format: 'Y-m-d'
+
+        wsclient:
+            type: fingers_crossed
+            action_level: info
+            handler: wsclient_handler
+            channels : wsclient
+        wsclient_handler:
+            type: rotating_file
+            level: info
+            path: "%kernel.logs_dir%/wsclient.%kernel.environment%.log"
+            max_files: 90
+            file_permission: 0664
+            date_format : 'Y-m-d'

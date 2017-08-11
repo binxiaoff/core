@@ -3,18 +3,22 @@
 namespace Unilend\Bundle\WSClientBundle\Service;
 
 use JMS\Serializer\Serializer;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Client;
 use Psr\Http\Message\ResponseInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyIdentity;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating;
+use Unilend\librairies\CacheKeys;
 
 class EulerHermesManager
 {
-    const RESOURCE_SEARCH_COMPANY = 'search_company_euler';
-    const RESOURCE_EULER_GRADE    = 'get_grade_euler';
-    const RESOURCE_TRAFFIC_LIGHT  = 'get_traffic_light_euler';
+    const RESOURCE_SEARCH_COMPANY               = 'search_company_euler';
+    const RESOURCE_EULER_GRADE                  = 'get_grade_euler';
+    const RESOURCE_TRAFFIC_LIGHT                = 'get_traffic_light_euler';
+    const RESOURCE_EULER_GRADE_MONITORING_START = 'start_euler_grade_monitoring';
+    const RESOURCE_EULER_GRADE_MONITORING_END   = 'end_euler_grade_monitoring';
 
     /** @var Client */
     private $client;
@@ -36,17 +40,20 @@ class EulerHermesManager
     private $resourceManager;
     /** @var bool */
     private $useCache = true;
+    /** @var CacheItemPoolInterface */
+    private $cachePool;
 
     /**
-     * @param Client             $client
-     * @param string             $gradingApiKey
-     * @param string             $accountApiKey
-     * @param string             $accountPassword
-     * @param string             $accountEmail
-     * @param LoggerInterface    $logger
-     * @param CallHistoryManager $callHistoryManager
-     * @param Serializer         $serializer
-     * @param ResourceManager    $resourceManager
+     * @param Client                 $client
+     * @param string                 $gradingApiKey
+     * @param string                 $accountApiKey
+     * @param string                 $accountPassword
+     * @param string                 $accountEmail
+     * @param LoggerInterface        $logger
+     * @param CallHistoryManager     $callHistoryManager
+     * @param Serializer             $serializer
+     * @param ResourceManager        $resourceManager
+     * @param CacheItemPoolInterface $cachePool;
      */
     public function __construct(
         Client $client,
@@ -57,7 +64,8 @@ class EulerHermesManager
         LoggerInterface $logger,
         CallHistoryManager $callHistoryManager,
         Serializer $serializer,
-        ResourceManager $resourceManager
+        ResourceManager $resourceManager,
+        CacheItemPoolInterface $cachePool
     )
     {
         $this->client             = $client;
@@ -69,6 +77,7 @@ class EulerHermesManager
         $this->accountPassword    = $accountPassword;
         $this->accountEmail       = $accountEmail;
         $this->resourceManager    = $resourceManager;
+        $this->cachePool          = $cachePool;
     }
 
     /**
@@ -125,6 +134,9 @@ class EulerHermesManager
             if (null !== $result = $this->sendRequest(self::RESOURCE_TRAFFIC_LIGHT, $company->getSingleInvoiceId(), $this->gradingApiKey, $siren)) {
                 return $this->serializer->deserialize($result, CompanyRating::class, 'json');
             }
+        } elseif (null !== $company && 404 === $company->getCode()) {
+            return (new CompanyRating())
+                ->setColor(CompanyRating::COLOR_WHITE);
         }
 
         return null;
@@ -133,20 +145,30 @@ class EulerHermesManager
     /**
      * @param string $siren
      * @param string $countryCode
+     * @param bool   $withMonitoring
      *
      * @return null|CompanyRating
      *
      * @throws \Exception
      */
-    public function getGrade($siren, $countryCode)
+    public function getGrade($siren, $countryCode, $withMonitoring = false)
     {
         /** @var CompanyIdentity $company */
         $company = $this->searchCompany($siren, $countryCode);
 
+        if ($withMonitoring) {
+            $apiKey = $this->getMonitoringApiKey();
+        } else {
+            $apiKey = $this->gradingApiKey;
+        }
+
         if (null !== $company && null !== $company->getSingleInvoiceId()) {
-            if (null !== $result = $this->sendRequest(self::RESOURCE_EULER_GRADE, $company->getSingleInvoiceId(), $this->gradingApiKey, $siren)) {
+            if (null !== $result = $this->sendRequest(self::RESOURCE_EULER_GRADE, $company->getSingleInvoiceId(), $apiKey, $siren)) {
                 return $this->serializer->deserialize($result, CompanyRating::class, 'json');
             }
+        } elseif (null !== $company && 404 === $company->getCode()) {
+            return (new CompanyRating())
+                ->setGrade(CompanyRating::GRADE_UNKNOWN);
         }
 
         return null;
@@ -214,7 +236,10 @@ class EulerHermesManager
         $stream->rewind();
         $content = $stream->getContents();
 
-        if (200 === $response->getStatusCode()) {
+        if (
+            200 === $response->getStatusCode()
+            || (404 === $response->getStatusCode() && self::RESOURCE_SEARCH_COMPANY === $resource->getLabel())
+        ) {
             $contentValidity = $this->isValidContent($content, $resource);
 
             if (false === $contentValidity) {
@@ -226,14 +251,9 @@ class EulerHermesManager
                 'is_valid' => $contentValidity
             ];
         } else {
-            $level = 'error';
+            $this->logger->error('Call to ' . $resource->getResourceName() . ' Response code: ' . $response->getStatusCode() . '. Response content: ' . $content, $logContext);
 
-            if (404 === $response->getStatusCode()) {
-                $level = 'warning';
-            }
-            $this->logger->{$level}('Call to ' . $resource->getResourceName() . ' Response code: ' . $response->getStatusCode() . '. Response content: ' . $content, $logContext);
-
-            return ['status' => $level, 'is_valid' => false];
+            return ['status' => 'error', 'is_valid' => false];
         }
     }
 
@@ -250,7 +270,7 @@ class EulerHermesManager
                 case self::RESOURCE_TRAFFIC_LIGHT:
                     return isset($response->Color) && is_string($response->Color) && false === empty($response->Color);
                 case self::RESOURCE_SEARCH_COMPANY:
-                    return isset($response->Id) && false === empty($response->Id);
+                    return (isset($response->Id) && false === empty($response->Id)) || (isset($response->code) && 404 === $response->code);
                 case self::RESOURCE_EULER_GRADE:
                     return isset($response->message) && in_array($response->message, array_merge(range(1, 10), ['NA']));
                 default:
@@ -288,5 +308,82 @@ class EulerHermesManager
             'headers' => ['apikey' => $this->accountKey],
             'json'    => ['email' => $this->accountEmail, 'password' => $this->accountPassword]
         ]);
+    }
+
+    /**
+     * @param string $siren
+     * @param string $countryCode
+     *
+     * @return bool
+     *
+     * @throws \Exception
+     */
+    public function startLongTermMonitoring($siren, $countryCode)
+    {
+        /** @var CompanyIdentity $company */
+        $company = $this->searchCompany($siren, $countryCode);
+
+        if (null !== $company && null !== $company->getSingleInvoiceId()) {
+            $wsResource = $this->resourceManager->getResource(self::RESOURCE_EULER_GRADE_MONITORING_START);
+            $response   = $this->client->post($wsResource->getResourceName() . $company->getSingleInvoiceId(), ['headers' => ['apikey' => $this->getMonitoringApiKey()]]);
+            if (200 === $response->getStatusCode()) {
+                $this->logger->info('Euler grade long term monitoring has been activated for siren ' . $siren);
+
+                return true;
+            } else {
+                $this->logger->warning('Long term monitoring could not activated for siren ' . $siren . ' Status Code : ' . $response->getStatusCode() . ' / Reason : ' . $response->getReasonPhrase() . ' / Content : ' . $response->getBody()->getContents());
+            }
+        }
+
+        return false;
+    }
+
+
+    /**
+     * @param string $siren
+     * @param string $countryCode
+     *
+     * @return bool
+     *
+     * @throws \Exception
+     */
+    public function stopMonitoring($siren, $countryCode)
+    {
+        /** @var CompanyIdentity $company */
+        $company = $this->searchCompany($siren, $countryCode);
+
+        if (null !== $company && null !== $company->getSingleInvoiceId()) {
+            $wsResource = $this->resourceManager->getResource(self::RESOURCE_EULER_GRADE_MONITORING_END);
+            $response   = $this->client->post($wsResource->getResourceName() . $company->getSingleInvoiceId(), ['headers' => ['apikey' => $this->getMonitoringApiKey()]]);
+            var_dump($response, $response->getBody()->getContents());
+            if (200 === $response->getStatusCode()) {
+                $this->logger->info('Euler grade long term monitoring has been stopped for siren ' . $siren);
+
+                return true;
+            } else {
+                $this->logger->warning('Long term monitoring could not be stopped for siren ' . $siren . ' Status Code : ' . $response->getStatusCode() . ' / Reason : ' . $response->getReasonPhrase() . ' / Content : ' . $response->getBody()->getContents());
+            }
+        }
+
+        return false;
+    }
+
+
+    private function getMonitoringApiKey()
+    {
+        $cachedItem = $this->cachePool->getItem(CacheKeys::EULER_HERMES_MONITORING_API_KEY);
+
+        if (false === $cachedItem->isHit()) {
+            $response         = $this->client->post('account/key', ['headers' => ['apikey' => $this->accountKey], 'json' => ['package' => 'Monitoring']]);
+            $content          = json_decode($response->getBody()->getContents(), true);
+            $monitoringApiKey = $content['packages']['Monitoring'][0];
+
+            $cachedItem->set($monitoringApiKey)->expiresAfter(CacheKeys::DAY * 30);
+            $this->cachePool->save($cachedItem);
+
+            return $monitoringApiKey;
+        } else {
+            return $cachedItem->get();
+        }
     }
 }

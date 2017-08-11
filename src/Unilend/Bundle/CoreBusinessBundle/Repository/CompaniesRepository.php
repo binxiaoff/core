@@ -10,12 +10,13 @@ class CompaniesRepository extends EntityRepository
 {
     /**
      * @param int $maxDepositAmount
+     *
      * @return array
      */
     public function getLegalEntitiesByCumulativeDepositAmount($maxDepositAmount)
     {
         $operationType = $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType');
-        $qb            = $this->createQueryBuilder('c')
+        $queryBuilder  = $this->createQueryBuilder('c')
             ->select('c.idClientOwner AS idClient, c.capital, SUM(o.amount) AS depositAmount, GROUP_CONCAT(o.id) AS operation')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClientOwner = w.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.idWalletCreditor = w.id')
@@ -26,6 +27,32 @@ class CompaniesRepository extends EntityRepository
             ->andHaving('depositAmount >= :max_deposit_amount')
             ->setParameter('max_deposit_amount', $maxDepositAmount);
 
-        return $qb->getQuery()->getResult();
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param string      $siren
+     * @param string|null $ratingType
+     * @param bool        $ongoing
+     *
+     * @return array
+     */
+    public function getMonitoredCompaniesBySiren($siren, $ratingType = null, $ongoing = true)
+    {
+        $queryBuilder = $this->createQueryBuilder('c');
+        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm', Join::WITH, 'c.siren = rdm.siren')
+            ->where('c.siren = :siren')
+            ->setParameter('siren', $siren);
+
+        if ($ongoing) {
+            $queryBuilder->andWhere('rdm.end IS NULL');
+        }
+
+        if (null !== $ratingType) {
+            $queryBuilder->andWhere('rdm.ratingType = :ratingType')
+                ->setParameter('ratingType', $ratingType);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }

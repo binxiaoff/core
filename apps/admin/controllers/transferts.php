@@ -11,6 +11,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class transfertsController extends bootstrap
 {
@@ -18,10 +19,9 @@ class transfertsController extends bootstrap
     {
         parent::initialize();
 
-        $this->catchAll = true;
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
 
-        $this->users->checkAccess('transferts');
-
+        $this->catchAll   = true;
         $this->menu_admin = 'transferts';
 
         $this->statusOperations = array(
@@ -156,7 +156,41 @@ class transfertsController extends bootstrap
         if (isset($_POST['id'], $_POST['nom'], $_POST['prenom'], $_POST['email'], $_POST['raison_sociale'], $_POST['id_reception'])) {
             $_SESSION['controlDoubleAttr'] = md5($_SESSION['user']['id_user']);
 
-            $this->lPreteurs    = $this->clients->searchPreteurs($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale']);
+            if (empty($_POST['id']) && empty($_POST['nom']) && empty($_POST['email']) && empty($_POST['prenom']) && empty($_POST['raison_sociale'])) {
+                $_SESSION['search_lender_attribution_error'][] = 'Veuillez remplir au moins un champ';
+            }
+
+            $email = empty($_POST['email']) ? '' : filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
+            if (false === $email) {
+                $_SESSION['search_lender_attribution_error'][] = 'Format de l\'email est non valide';
+            }
+
+            $clientId = empty($_POST['id']) ? '' : filter_var($_POST['id'], FILTER_SANITIZE_NUMBER_INT);
+            if (false === $clientId) {
+                $_SESSION['search_lender_attribution_error'][] = 'L\'id du client doit être numérique';
+            }
+
+            $lastName = empty($_POST['nom']) ? '' : filter_var($_POST['nom'], FILTER_SANITIZE_STRING);
+            if (false === $lastName) {
+                $_SESSION['search_lender_attribution_error'][] = 'Le format du nom n\'est pas valide';
+            }
+
+            $firstName = empty($_POST['prenom']) ? '' : filter_var($_POST['prenom'], FILTER_SANITIZE_STRING);
+            if (false === $firstName) {
+                $_SESSION['search_lender_attribution_error'][] = 'Le format du prenom n\'est pas valide';
+            }
+
+            $companyName = empty($_POST['raison_sociale']) ? '' : filter_var($_POST['raison_sociale'], FILTER_SANITIZE_STRING);
+            if (false === $companyName) {
+                $_SESSION['search_lender_attribution_error'][] = 'Le format de la raison sociale n\'est pas valide';
+            }
+
+            if (false === empty($_SESSION['search_lender_attribution_error'])) {
+                header('Location:' . $this->lurl . '/transferts/attribution_preteur');
+                die;
+            }
+
+            $this->lPreteurs    = $this->clients->searchPreteurs(trim($clientId), trim($lastName), trim($email), trim($firstName), trim($companyName));
             $this->id_reception = $_POST['id_reception'];
         }
     }
@@ -301,10 +335,6 @@ class transfertsController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        /** @var \projects $projects */
-        $projects = $this->loadData('projects');
-        /** @var \receptions $receptions */
-        $receptions = $this->loadData('receptions');
         /** @var \echeanciers $echeanciers */
         $echeanciers = $this->loadData('echeanciers');
         /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
@@ -343,7 +373,7 @@ class transfertsController extends bootstrap
                     $entityManager->flush();
 
                     $eche   = $echeanciers_emprunteur->select('id_project = ' . $projectId . ' AND status_emprunteur = 1', 'ordre DESC');
-                    $newsum = $receptions->montant / 100;
+                    $newsum = round(bcdiv($reception->getMontant(), 100, 4), 2);
 
                     foreach ($eche as $e) {
                         $montantDuMois = round($e['montant'] / 100 + $e['commission'] / 100 + $e['tva'] / 100, 2);
@@ -379,8 +409,6 @@ class transfertsController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        /** @var \receptions $receptions */
-        $receptions = $this->loadData('receptions');
         /** @var \echeanciers $echeanciers */
         $echeanciers = $this->loadData('echeanciers');
         /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
@@ -417,7 +445,7 @@ class transfertsController extends bootstrap
                     $entityManager->flush();
 
                     $eche   = $echeanciers_emprunteur->select('id_project = ' . $reception->getIdProject()->getIdProject() . ' AND status_emprunteur = 1', 'ordre DESC');
-                    $newsum = $receptions->montant / 100;
+                    $newsum = round(bcdiv($reception->getMontant(), 100, 4), 2);
 
                     foreach ($eche as $e) {
                         $montantDuMois = round($e['montant'] / 100 + $e['commission'] / 100 + $e['tva'] / 100, 2);

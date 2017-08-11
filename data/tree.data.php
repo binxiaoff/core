@@ -339,7 +339,7 @@ class tree extends tree_crud
 
                 case 'Partner':
                     $partner  = new \partner($this->bdd);
-                    $partners = $partner->select('status = ' . Partner::STATUS_VALIDATED, 'name ASC');
+                    $partners = $partner->select('status = ' . Partner::STATUS_VALIDATED, 'label ASC');
 
                     echo '
                     <tr>
@@ -349,7 +349,7 @@ class tree extends tree_crud
                                 <option value=""></option>';
 
                     foreach ($partners as $partner) {
-                        echo '<option value="' . $partner['id'] . '"' . ($this->params['tree_elements']->value == $partner['id'] ? ' selected' : '') . '>' . $partner['name'] . '</option>';
+                        echo '<option value="' . $partner['id'] . '"' . ($this->params['tree_elements']->value == $partner['id'] ? ' selected' : '') . '>' . $partner['label'] . '</option>';
                     }
 
                     echo '

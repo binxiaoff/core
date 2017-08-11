@@ -13,10 +13,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsRemb;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use \Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
+use \Psr\Log\LoggerInterface;
 
 class dossiersController extends bootstrap
 {
@@ -61,7 +61,7 @@ class dossiersController extends bootstrap
     {
         parent::initialize();
 
-        $this->users->checkAccess('emprunteurs');
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
 
         $this->catchAll   = true;
         $this->menu_admin = 'emprunteurs';
@@ -107,7 +107,7 @@ class dossiersController extends bootstrap
             $this->lProjects = $this->projects->searchDossiers('', '', '', '', $this->params[0]);
         }
 
-        $this->iCountProjects = (isset($this->lProjects) && is_array($this->lProjects)) ? array_shift($this->lProjects) : 0;
+        $this->iCountProjects = isset($this->lProjects) && is_array($this->lProjects) ? array_shift($this->lProjects) : null;
 
         if (1 === $this->iCountProjects && (false === empty($projectId) || false === empty($companyName))) {
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->lProjects[0]['id_project']);
@@ -284,6 +284,7 @@ class dossiersController extends bootstrap
             $needs            = $projectNeed->getTree();
             $this->needs      = $needs;
             $this->isTakeover = $this->isTakeover();
+            $this->projectHasMonitoringEvent = $this->get('unilend.service.risk_data_monitoring_manager')->hasMonitoringEvent($this->companies->siren);
 
             if (isset($_POST['problematic_status']) && $this->projects->status != $_POST['problematic_status']) {
                 $this->problematicStatusForm($_POST['problematic_status']);
@@ -1857,6 +1858,7 @@ class dossiersController extends bootstrap
             if (isset($this->params[1]) && $this->params[1] == 'remb') {
                 /** @var \Symfony\Component\Stopwatch\Stopwatch $stopWatch */
                 $stopWatch = $this->get('debug.stopwatch');
+                $stopWatch->start('repayment');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRepaymentManager $projectRepaymentManager */
                 $projectRepaymentManager = $this->get('unilend.service.project_repayment_manager');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
@@ -1870,8 +1872,6 @@ class dossiersController extends bootstrap
 
                 if (false === empty($paidPaymentSchedules)) {
                     foreach ($paidPaymentSchedules as $paidPaymentSchedule) {
-                        $stopWatch->start('repayment');
-
                         $repaymentSchedules = $repaymentScheduleRepository->findByProject($project, $paidPaymentSchedule->getOrdre(), null, Echeanciers::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PAID);
                         $repaymentNb        = 0;
 

@@ -39,11 +39,12 @@ class ClientsRepository extends EntityRepository
     }
 
     /**
-     * @param $email
+     * @param string   $email
+     * @param int|null $status
      *
      * @return bool
      */
-    public function existEmail($email)
+    public function existEmail($email, $status = null)
     {
         if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return false;
@@ -54,6 +55,13 @@ class ClientsRepository extends EntityRepository
             ->select('COUNT(c)')
             ->where('c.email = :email')
             ->setParameter('email', $email);
+
+        if (null !== $status) {
+            $queryBuilder
+                ->andWhere('c.status = :status')
+                ->setParameter('status', $status, \PDO::PARAM_INT);
+        }
+
         $query = $queryBuilder->getQuery();
 
         return $query->getSingleScalarResult() > 0;
@@ -451,5 +459,37 @@ class ClientsRepository extends EntityRepository
             ->setParameter('year', $year . '-12-31 23:59:59');
 
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @return array
+     */
+    public function findAllClientsForLoiEckert()
+    {
+        $query = 'SELECT
+                  c.*,
+                  IF (
+                    o_provision.added IS NOT NULL, 
+                    IF (
+                        o_withdraw.added IS NOT NULL,
+                        IF (MAX(o_provision.added) > MAX(o_withdraw.added), MAX(o_provision.added), MAX(o_withdraw.added)),
+                        MAX(o_provision.added)), 
+                    MAX(o_withdraw.added)
+                  ) AS lastMovement,
+                  w.available_balance AS availableBalance,
+                  MIN(csh.added) AS validationDate
+                FROM clients c
+                  INNER JOIN wallet w ON c.id_client = w.id_client AND w.id_type = (SELECT id FROM wallet_type WHERE label = "' . WalletType::LENDER . '")
+                  LEFT JOIN operation o_provision ON w.id = o_provision.id_wallet_creditor AND o_provision.id_type = (SELECT id FROM operation_type WHERE label = "'. OperationType::LENDER_PROVISION . '")
+                  LEFT JOIN operation o_withdraw ON w.id = o_withdraw.id_wallet_debtor AND o_withdraw.id_type = (SELECT id FROM operation_type WHERE label = "'. OperationType::LENDER_WITHDRAW . '")
+                  LEFT JOIN clients_status_history csh ON c.id_client = csh.id_client AND csh.id_client_status = 6
+                WHERE csh.id_client_status_history IS NOT NULL OR available_balance > 0
+                GROUP BY c.id_client
+                ORDER BY c.lastlogin ASC';
+
+        return $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery($query)
+            ->fetchAll(\PDO::FETCH_ASSOC);
     }
 }

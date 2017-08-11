@@ -1,4 +1,4 @@
-<div id="popup" style="background-color:#FFF;">
+<div id="popup" style="width: 250px;">
     <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"/></a>
     <div class="row">
         <p>
@@ -9,7 +9,7 @@
     <div id="affect_welcome_offer">
         <form action="<?= $this->lurl ?>/preteurs/offres_de_bienvenue/<?= $this->client->getIdClient() ?>/<?= $this->welcomeOffer->getIdOffreBienvenue() ?>"
               method="post" name="affect_welcome_offer" id="affect_welcome_offer">
-            <table border="1" style="margin:auto;">
+            <table style="margin:auto;">
                 <tr>
                     <td colspan="2" style="text-align:center;">
                         <button type="submit" name="oui" class="btn btn-medium">Oui</button>

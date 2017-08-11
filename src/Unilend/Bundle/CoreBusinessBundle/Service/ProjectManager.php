@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
@@ -44,6 +45,8 @@ class ProjectManager
     private $contractAttributeManager;
     /** @var SlackManager */
     private $slackManager;
+    /** @var RiskDataMonitoringManager */
+    private $riskDataMonitoringManger;
     /** @var string */
     private $universignUrl;
     /** @var \dates */
@@ -64,6 +67,7 @@ class ProjectManager
         ProductManager $productManager,
         ContractAttributeManager $contractAttributeManager,
         SlackManager $slackManager,
+        RiskDataMonitoringManager $riskDataMonitoringManager,
         $universignUrl
     )
     {
@@ -77,6 +81,7 @@ class ProjectManager
         $this->productManager             = $productManager;
         $this->contractAttributeManager   = $contractAttributeManager;
         $this->slackManager               = $slackManager;
+        $this->riskDataMonitoringManger   = $riskDataMonitoringManager;
         $this->universignUrl              = $universignUrl;
 
         $this->datesManager = Loader::loadLib('dates');
@@ -962,6 +967,13 @@ class ProjectManager
             case \projects_status::PRET_REFUSE:
                 $this->cancelProxyAndMandate($project);
                 break;
+            case ProjectsStatus::REMBOURSE:
+            case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
+            case ProjectsStatus::LIQUIDATION_JUDICIAIRE:
+            case ProjectsStatus::REDRESSEMENT_JUDICIAIRE:
+            case ProjectsStatus::PROCEDURE_SAUVEGARDE:
+                $this->riskDataMonitoringManger->stopMonitoringForSiren($project->getIdCompany()->getSiren());
+                break;
         }
     }
 
@@ -1201,13 +1213,21 @@ class ProjectManager
      */
     public function getCommissionFunds(Projects $project, $inclTax)
     {
+        $invoice        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Factures')->findOneBy(['idProject' => $project, 'typeCommission' => Factures::TYPE_COMMISSION_FUNDS]);
         $commissionRate = round(bcdiv($project->getCommissionRateFunds(), 100, 5), 4);
         $commission     = round(bcmul($project->getAmount(), $commissionRate, 4), 2);
+        if (null !== $invoice) {
+            $commission = round(bcdiv($invoice->getMontantHt(), 100, 4), 2);
+        }
 
         if ($inclTax) {
-            $vatTax     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
-            $vatRate    = bcadd(1, bcdiv($vatTax->getRate(), 100, 4), 4);
-            $commission = round(bcmul($vatRate, $commission, 4), 2);
+            if (null !== $invoice) {
+                $commission = round(bcdiv($invoice->getMontantTtc(), 100, 4), 2);
+            } else {
+                $vatTax     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+                $vatRate    = bcadd(1, bcdiv($vatTax->getRate(), 100, 4), 4);
+                $commission = round(bcmul($vatRate, $commission, 4), 2);
+            }
         }
 
         return $commission;
