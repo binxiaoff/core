@@ -1,5 +1,6 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\CoreBusinessBundle\Repository\RiskDataMonitoringRepository;
 
 class risk_monitoringController extends bootstrap
@@ -9,11 +10,10 @@ class risk_monitoringController extends bootstrap
     {
         parent::initialize();
 
-        $this->catchAll = true;
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
 
-        $this->users->checkAccess('emprunteurs');
-
-        $this->menu_admin = 'risk_monitoring';
+        $this->catchAll   = true;
+        $this->menu_admin = 'emprunteurs';
     }
 
     public function _default()
