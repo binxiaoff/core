@@ -84,6 +84,8 @@ class settingsController extends bootstrap
     {
         $this->hideDecoration();
 
+        $_SESSION['request_url'] = $this->url;
+
         $this->settings->get($this->params[0], 'id_setting');
     }
 
