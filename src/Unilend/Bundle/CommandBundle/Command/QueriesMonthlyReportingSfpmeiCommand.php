@@ -37,13 +37,14 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
         if (false === empty($date)) {
             if (preg_match("/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/", $date)) {
                 $endDate = \DateTime::createFromFormat('Y-m-d', $date);
-                if (null === $endDate) {
-                    $output->writeln('<error>Wrong date format ("Y-m-d" expected)</error>');
-                    return;
-                }
             }
         } else {
             $endDate = new \DateTime('Last day of last month');
+        }
+
+        if (null === $endDate) {
+            $output->writeln('<error>Wrong date format ("Y-m-d" expected)</error>');
+            return;
         }
         $startDate = new \DateTime('First day of' . $endDate->format('F Y'));
 
