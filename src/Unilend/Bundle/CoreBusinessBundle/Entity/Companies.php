@@ -14,8 +14,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Companies
 {
-    const INVALID_SIREN_EMPTY  = '000000000';
-    const NAF_CODE_NO_ACTIVITY = '0000Z';
+    const INVALID_SIREN_EMPTY       = '000000000';
+    const NAF_CODE_NO_ACTIVITY      = '0000Z';
 
     const SAME_ADDRESS_FOR_POSTAL_AND_FISCAL      = 1;
     const DIFFERENT_ADDRESS_FOR_POSTAL_AND_FISCAL = 0;
@@ -71,6 +71,13 @@ class Companies
      * @ORM\Column(name="forme", type="string", length=191, nullable=true)
      */
     private $forme;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="legal_form_code", type="string", length=10, nullable=true)
+     */
+    private $legalFormCode;
 
     /**
      * @var string
@@ -1230,6 +1237,22 @@ class Companies
     public function getIdParentCompany()
     {
         return $this->idParentCompany;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getLegalFormCode()
+    {
+        return $this->legalFormCode;
+    }
+
+    /**
+     * @param string $legalFormCode
+     */
+    public function setLegalFormCode($legalFormCode = null)
+    {
+        $this->legalFormCode = $legalFormCode;
     }
 
     /**
