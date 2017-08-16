@@ -33,9 +33,9 @@ abstract class Controller implements ContainerAwareInterface
     protected $container;
     /** @var string */
     public $current_template = '';
-    /** @var  \Symfony\Component\HttpFoundation\Request */
+    /** @var \Symfony\Component\HttpFoundation\Request */
     public $request;
-    /** @var  bool */
+    /** @var bool */
     public $useOneUi = false;
 
     /**
@@ -136,17 +136,21 @@ abstract class Controller implements ContainerAwareInterface
 
         call_user_func([$this, '_' . $FunctionToCall]);
 
-        if ($this->autoFireHead) {
-            $this->fireHead();
-        }
-        if ($this->autoFireHeader) {
-            $this->fireHeader();
-        }
-        if ($this->autoFireView) {
-            $this->fireView();
-        }
-        if ($this->autoFireFooter) {
-            $this->fireFooter();
+        if ($this->useOneUi) {
+            include $this->path . 'apps/' . $this->App . '/views/layout.php';
+        } else {
+            if ($this->autoFireHead) {
+                $this->fireHead();
+            }
+            if ($this->autoFireHeader) {
+                $this->fireHeader();
+            }
+            if ($this->autoFireView) {
+                $this->fireView();
+            }
+            if ($this->autoFireFooter) {
+                $this->fireFooter();
+            }
         }
     }
 

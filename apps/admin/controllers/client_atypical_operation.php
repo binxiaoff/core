@@ -1,11 +1,12 @@
 <?php
 
-use \Unilend\Bundle\CoreBusinessBundle\Entity\ClientAtypicalOperation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use \Unilend\Bundle\CoreBusinessBundle\Entity\ClientVigilanceStatusHistory;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientAtypicalOperation;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientVigilanceStatusHistory;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientVigilanceStatusManager;
-use \Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use \Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
 
 class client_atypical_operationController extends bootstrap
 {
@@ -13,10 +14,10 @@ class client_atypical_operationController extends bootstrap
     {
         parent::initialize();
 
-        $this->catchAll = true;
-        $this->users->checkAccess('transferts');
+        $this->users->checkAccess(Zones::ZONE_LABEL_LENDERS);
 
-        $this->menu_admin = 'transferts';
+        $this->catchAll   = true;
+        $this->menu_admin = isset($this->lZonesHeader) && in_array(Zones::ZONE_LABEL_TRANSFERS, $this->lZonesHeader) ? 'transferts' : 'preteurs';
 
         /** @var \Symfony\Component\Translation\Translator translator */
         $this->translator = $this->get('translator');

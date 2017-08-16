@@ -1,16 +1,18 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+
 class menusController extends bootstrap
 {
     public function initialize()
     {
         parent::initialize();
 
-        $this->catchAll = true;
+        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
 
-        $this->users->checkAccess('edition');
+        $this->catchAll   = true;
+        $this->menu_admin = 'edition';
 
-        $this->menu_admin    = 'edition';
         $this->typesElements = ['L' => 'Lien Interne', 'LX' => 'Lien Externe'];
     }
 
