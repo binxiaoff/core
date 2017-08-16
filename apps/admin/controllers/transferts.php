@@ -458,7 +458,7 @@ class transfertsController extends bootstrap
                     $operationManager = $this->get('unilend.service.operation_manager');
                     $operationManager->cancelProvisionBorrowerWallet($wallet, $amount, $reception);
 
-                    $reception->setStatusBo(Receptions::STATUS_REJECTED);
+                    $reception->setStatusBo(Receptions::STATUS_MANUALLY_ASSIGNED);
                     $reception->setRemb(0);
                     $entityManager->flush();
 

@@ -57,7 +57,7 @@ EOF
         $receptionPath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/receptions/';
 
         if (false === @file_get_contents($receptionPath . self::FILE_ROOT_NAME . date('Ymd') . '.txt')) {
-            $this->logger->info('No SFPMEI incoming file to process in "' . $receptionPath . '"', array('class' => __CLASS__, 'function' => __FUNCTION__));
+            $this->logger->info('No SFPMEI incoming file to process in "' . $receptionPath . '"', ['class' => __CLASS__, 'function' => __FUNCTION__]);
             exit;
         }
 
@@ -66,34 +66,34 @@ EOF
 
         if (false === empty($aReceivedData) && (empty($aReception) || $input->getOption('force-replay'))) {
             foreach ($aReceivedData as $aRow) {
-                $code = $aRow['codeOpInterbancaire'];
+                $motif = '';
+                $code  = $aRow['codeOpInterbancaire'];
 
                 if (in_array($code, $aReceivedTransfersStatus)) {
-                    $type                = 2;
-                    $iBankTransferStatus = 1;
+                    $type                = Receptions::TYPE_WIRE_TRANSFER;
+                    $iBankTransferStatus = Receptions::WIRE_TRANSFER_STATUS_RECEIVED;
                     $iBankDebitStatus    = 0;
                 } elseif (in_array($code, $aEmittedTransfersStatus)) {
-                    $type                = 2;
-                    $iBankTransferStatus = 2;
+                    $type                = Receptions::TYPE_WIRE_TRANSFER;
+                    $iBankTransferStatus = Receptions::WIRE_TRANSFER_STATUS_SENT;
                     $iBankDebitStatus    = 0;
                 } elseif (in_array($code, $aRejectedTransfersStatus)) {
-                    $type                = 2;
-                    $iBankTransferStatus = 3;
+                    $type                = Receptions::TYPE_WIRE_TRANSFER;
+                    $iBankTransferStatus = Receptions::WIRE_TRANSFER_STATUS_REJECTED;
                     $iBankDebitStatus    = 0;
                 } elseif (in_array($code, $aEmittedLeviesStatus)) {
-                    $type                = 1;
+                    $type                = Receptions::TYPE_DIRECT_DEBIT;
                     $iBankTransferStatus = 0;
-                    $iBankDebitStatus    = 2;
+                    $iBankDebitStatus    = Receptions::DIRECT_DEBIT_STATUS_SENT;
                 } elseif (in_array($code, $aRejectedLeviesStatus)) {
-                    $type                = 1;
+                    $type                = Receptions::TYPE_DIRECT_DEBIT;
                     $iBankTransferStatus = 0;
-                    $iBankDebitStatus    = 3;
+                    $iBankDebitStatus    = Receptions::DIRECT_DEBIT_STATUS_REJECTED;
                 } else {
-                    $type                = 4; // recap payline
+                    $type                = Receptions::TYPE_UNKNOWN;
                     $iBankTransferStatus = 0;
                     $iBankDebitStatus    = 0;
                 }
-                $motif = '';
 
                 for ($index = 1; $index <= 5; $index++) {
                     if (false === empty($aRow['libelleOpe' . $index])) {
@@ -119,9 +119,9 @@ EOF
                     $entityManager->persist($reception);
                     $entityManager->flush();
 
-                    if ($type === 1 && $iBankDebitStatus === 2) {
+                    if ($type === Receptions::TYPE_DIRECT_DEBIT && $iBankDebitStatus === Receptions::DIRECT_DEBIT_STATUS_SENT) {
                         $this->processDirectDebit($motif, $reception);
-                    } elseif ($type === 2 && $iBankTransferStatus === 1) { // Received bank transfer
+                    } elseif ($type === Receptions::TYPE_WIRE_TRANSFER && $iBankTransferStatus === Receptions::WIRE_TRANSFER_STATUS_RECEIVED) {
                         if (
                             isset($aRow['libelleOpe3'])
                             && 1 === preg_match('/RA-?([0-9]+)/', $aRow['libelleOpe3'], $matches)
@@ -137,7 +137,7 @@ EOF
                         } elseif (self::FRENCH_BANK_TRANSFER_BNPP_CODE === $aRow['codeOpBNPP']) {
                             $this->processLenderBankTransfer($motif, $reception);
                         }
-                    } elseif ($type === 1 && $iBankDebitStatus === 3) {
+                    } elseif ($type === Receptions::TYPE_DIRECT_DEBIT && $iBankDebitStatus === Receptions::DIRECT_DEBIT_STATUS_REJECTED) {
                         $this->processBorrowerRepaymentRejection($aRow, $reception);
                     }
                 }
@@ -146,7 +146,6 @@ EOF
             $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
             $slackManager->sendMessage('SFPMEI - ' . count($aReceivedData) . ' opérations réceptionnées');
         }
-
     }
 
     /**
@@ -157,7 +156,7 @@ EOF
      */
     private function parseReceptionFile($file, array $aEmittedLeviesStatus)
     {
-        $aPattern = array(
+        $aPattern = [
             '{' => 0,
             'A' => 1,
             'B' => 2,
@@ -178,10 +177,10 @@ EOF
             'P' => 7,
             'Q' => 8,
             'R' => 9
-        );
+        ];
 
-        $aResult      = array();
-        $aRestriction = array();
+        $aResult      = [];
+        $aRestriction = [];
         $rHandler     = fopen($file, 'r');
 
         if ($rHandler) {
@@ -237,7 +236,7 @@ EOF
                         }
 
                         if (in_array(substr($sLine, 32, 2), $aEmittedLeviesStatus)) {
-                            if (in_array(trim(substr($sLine, 45, 3)), array('LCC', 'LC2'))) {
+                            if (in_array(trim(substr($sLine, 45, 3)), ['LCC', 'LC2'])) {
                                 $iLine                              += 1;
                                 $aResult[$i]['libelleOpe' . $iLine] = trim(substr($sLine, 45));
                             }
@@ -308,7 +307,7 @@ EOF
      */
     private function processWelcomeOffer(array $aRow)
     {
-        $this->logger->info('Bank transfer welcome offer: ' . json_encode($aRow['unilend_bienvenue']), array('class' => __CLASS__, 'function' => __FUNCTION__));
+        $this->logger->info('Bank transfer welcome offer: ' . json_encode($aRow['unilend_bienvenue']), ['class' => __CLASS__, 'function' => __FUNCTION__]);
 
         $amount = round(bcdiv($aRow['montant'], 100, 4), 2);
         $this->getContainer()->get('unilend.service.operation_manager')->provisionUnilendPromotionalWallet($amount);
@@ -497,7 +496,7 @@ EOF
                                 $facebookLink = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue();
                                 $twitterLink  = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue();
 
-                                $varMail = array(
+                                $varMail = [
                                     'surl'            => $sStaticUrl,
                                     'url'             => $sUrl,
                                     'prenom_p'        => $client->getPrenom(),
@@ -508,7 +507,7 @@ EOF
                                     'gestion_alertes' => $sUrl . '/profile',
                                     'lien_fb'         => $facebookLink,
                                     'lien_tw'         => $twitterLink
-                                );
+                                ];
 
                                 $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation', $varMail);
                                 try {
@@ -554,7 +553,8 @@ EOF
                 $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
 
                 if ($wallet) {
-                    $reception->setStatusBo(Receptions::STATUS_REJECTED)
+                    $reception
+                        ->setStatusBo(Receptions::STATUS_MANUALLY_ASSIGNED)
                         ->setIdProject($project)
                         ->setIdClient($wallet->getIdClient())
                         ->setRemb(0);

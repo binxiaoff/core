@@ -18,7 +18,7 @@
     });
 </script>
 <div id="contenu">
-    <h1>Liste des mouvements non affectés</h1>
+    <h1>Liste des mouvements non affectés (<?= count($this->nonAttributedReceptions) ?>)</h1>
     <table class="tablesorter">
         <thead>
             <tr>
