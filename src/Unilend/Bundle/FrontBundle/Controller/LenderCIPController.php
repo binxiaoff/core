@@ -300,7 +300,6 @@ class LenderCIPController extends Controller
             $snappy->getOutputFromHtml(
                 $pdfContent, [
                     'footer-html' => $pdfFooter,
-                    'margin-top'    => 30,
                     'margin-right'  => 20,
                     'margin-bottom' => 20,
                     'margin-left'   => 20
@@ -308,7 +307,7 @@ class LenderCIPController extends Controller
             ),
             200,
             [
-                'Content-Type' => 'application/pdf',
+                'Content-Type'        => 'application/pdf',
                 'Content-Disposition' => sprintf('attachment; filename="%s"', $filename)
             ]
         );
