@@ -867,7 +867,7 @@ class statsController extends bootstrap
 
         $year     = date('Y') - 1;
         $fileName = 'preteurs_crs_dac' . $year . '.xlsx';
-        $filePath = $this->getParameter('path.protected') . '/queries/' . $fileName;
+        $filePath = $this->getParameter('path.protected') . '/' . $fileName;
 
         if (file_exists($filePath)) {
            $this->download($filePath);
@@ -895,6 +895,34 @@ class statsController extends bootstrap
             $this->download($filePath);
         } else {
             echo "Le fichier n'a pas été généré. ";
+        }
+    }
+
+    public function _reporting_sfpmei()
+    {
+        $directoryPath       = $this->getParameter('path.protected') . '/queries/';
+        $this->reportingList = [];
+
+        if (
+            isset($this->params[0], $this->params[1])
+            && 'file' === $this->params[0]
+            && is_string($this->params[1])
+            && false !== strpos($this->params[1], 'reporting_mensuel_sfpmei')
+        ) {
+            $this->download($directoryPath . $this->params[1]);
+        }
+
+        $files = scandir($directoryPath);
+        foreach ($files as $file) {
+            if ('reporting_mensuel_sfpmei' == substr($file, 0, 24)) {
+                $fileDate = \DateTime::createFromFormat('Ymd', substr($file, -13, 8));
+                $this->reportingList[$fileDate->format('Ym')] = [
+                    'displayDate' => strftime('%B %Y', $fileDate->getTimestamp()),
+                    'link'        => '/stats/reporting_sfpmei/file/' . $file,
+                    'name'        => $file
+                ];
+                krsort($this->reportingList, SORT_NUMERIC);
+            }
         }
     }
 }

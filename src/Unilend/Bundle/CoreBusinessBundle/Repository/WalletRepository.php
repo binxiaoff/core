@@ -5,11 +5,11 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\DBAL\Connection;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\librairies\CacheKeys;
 
 class WalletRepository extends EntityRepository
 {
@@ -244,5 +244,31 @@ class WalletRepository extends EntityRepository
         $update = 'UPDATE wallet SET available_balance = available_balance - :amount, committed_balance = committed_balance + :amount WHERE id = :walletId';
 
         return $this->getEntityManager()->getConnection()->executeUpdate($update, ['amount' => $amount, 'walletId' => $wallet]);
+    }
+
+    /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return array
+     */
+    public function findLendersWithProvisionButWithoutAcceptedBidBetweenDates(\DateTime $start, \DateTime $end)
+    {
+        $start->setTime(0, 0, 0);
+        $end->setTime(23, 59,59);
+
+        $queryBuilder = $this->createQueryBuilder('w');
+        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.idWalletCreditor = w.id')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'c.idClient = w.idClient')
+            ->where('ot.label = :lenderProvision')
+            ->andwhere('w.id NOT IN (SELECT IDENTITY(b.idLenderAccount) FROM Unilend\Bundle\CoreBusinessBundle\Entity\Bids b WHERE b.status = :accepted AND b.added BETWEEN :start AND :end)')
+            ->groupBy('w.id')
+            ->setParameter('lenderProvision', OperationType::LENDER_PROVISION)
+            ->setParameter('accepted', Bids::STATUS_BID_ACCEPTED)
+            ->setParameter('start', $start->format('Y-m-d H:i:s'))
+            ->setParameter('end', $end->format('Y-m-d H:i:s'));
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }
