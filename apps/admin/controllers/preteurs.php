@@ -447,17 +447,27 @@ class preteursController extends bootstrap
                         $this->clients->email = $_POST['email'];
                     }
 
-                    $oBirthday = new \DateTime(str_replace('/', '-', $_POST['naissance']));
+                    $birthday = null;
+                    if (isset($_POST['naissance']) && 1 === preg_match("#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#", $_POST['naissance'])) {
+                        $birthday = \DateTime::createFromFormat('d/m/Y', $_POST['naissance']);
+                    }
+
+                    if (null === $birthday) {
+                        $_SESSION['freeow']['title']   = 'Erreur de donnés clients';
+                        $_SESSION['freeow']['message'] = 'Le format de la date de naissance n\'a pas le bon format';
+                        header('location:' . $this->lurl . '/preteurs/edit_preteur/' . $this->clients->id_client);
+                        die;
+                    }
 
                     $this->clients->telephone           = str_replace(' ', '', $_POST['phone']);
                     $this->clients->mobile              = str_replace(' ', '', $_POST['mobile']);
                     $this->clients->ville_naissance     = $_POST['com-naissance'];
                     $this->clients->insee_birth         = $_POST['insee_birth'];
-                    $this->clients->naissance           = $oBirthday->format('Y-m-d');
+                    $this->clients->naissance           = $birthday->format('Y-m-d');
                     $this->clients->id_pays_naissance   = $_POST['id_pays_naissance'];
                     $this->clients->id_nationalite      = $_POST['nationalite'];
                     $this->clients->id_langue           = 'fr';
-                    $this->clients->type                = 1;
+                    $this->clients->type                = ($_POST['id_pays_naissance'] == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
                     $this->clients->fonction            = '';
                     $this->clients->funds_origin        = $_POST['origine_des_fonds'];
                     $this->clients->funds_origin_detail = $this->clients->funds_origin == '1000000' ? $_POST['preciser'] : '';
