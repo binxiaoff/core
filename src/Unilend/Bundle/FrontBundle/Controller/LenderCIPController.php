@@ -285,15 +285,9 @@ class LenderCIPController extends Controller
         /** @var GeneratorInterface $snappy */
         $snappy = $this->get('knp_snappy.pdf');
         /** @var Clients $client */
-        $client = $this->getClient();
+        $client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
 
-        if ($client->getHash() !== $clientHash) {
-            throw new \Exception('ClientHash does not match the client in session');
-        }
-
-        $pdfHeader             = $this->renderView('/pdf/cip/header.html.twig');
         $pdfFooter             = $this->renderView('/pdf/cip/footer.html.twig');
-
         $content['advice']     = $this->getFormatedAdvice($client);
         $content['clientName'] = $client->getPrenom();
         $pdfContent            = $this->renderView('/pdf/cip/advice.html.twig', $content);
@@ -306,7 +300,6 @@ class LenderCIPController extends Controller
             $snappy->getOutputFromHtml(
                 $pdfContent, [
                     'footer-html' => $pdfFooter,
-                    'header-html' => $pdfHeader,
                     'margin-top'    => 30,
                     'margin-right'  => 20,
                     'margin-bottom' => 20,
