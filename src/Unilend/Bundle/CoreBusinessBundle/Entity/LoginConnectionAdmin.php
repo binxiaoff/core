@@ -5,12 +5,13 @@ namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * LogginConnectionAdmin
+ * LoginConnectionAdmin
  *
- * @ORM\Table(name="loggin_connection_admin", indexes={@ORM\Index(name="id_user", columns={"id_user"})})
- * @ORM\Entity
+ * @ORM\Table(name="login_connection_admin", indexes={@ORM\Index(name="id_user", columns={"id_user"})})
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\LoginConnectionAdminRepository")
+ * @ORM\HasLifecycleCallbacks
  */
-class LogginConnectionAdmin
+class LoginConnectionAdmin
 {
     /**
      * @var integer
@@ -22,7 +23,7 @@ class LogginConnectionAdmin
     /**
      * @var string
      *
-     * @ORM\Column(name="nom_user", type="string", length=191, nullable=false)
+     * @ORM\Column(name="nom_user", type="string", length=191, nullable=true)
      */
     private $nomUser;
 
@@ -48,16 +49,9 @@ class LogginConnectionAdmin
     private $ip;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="pays", type="string", length=191, nullable=false)
-     */
-    private $pays;
-
-    /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -71,11 +65,11 @@ class LogginConnectionAdmin
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_loggin_connection_admin", type="integer")
+     * @ORM\Column(name="id_login_connection_admin", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $idLogginConnectionAdmin;
+    private $idLoginConnectionAdmin;
 
 
 
@@ -84,7 +78,7 @@ class LogginConnectionAdmin
      *
      * @param integer $idUser
      *
-     * @return LogginConnectionAdmin
+     * @return LoginConnectionAdmin
      */
     public function setIdUser($idUser)
     {
@@ -108,7 +102,7 @@ class LogginConnectionAdmin
      *
      * @param string $nomUser
      *
-     * @return LogginConnectionAdmin
+     * @return LoginConnectionAdmin
      */
     public function setNomUser($nomUser)
     {
@@ -132,7 +126,7 @@ class LogginConnectionAdmin
      *
      * @param string $email
      *
-     * @return LogginConnectionAdmin
+     * @return LoginConnectionAdmin
      */
     public function setEmail($email)
     {
@@ -156,7 +150,7 @@ class LogginConnectionAdmin
      *
      * @param \DateTime $dateConnexion
      *
-     * @return LogginConnectionAdmin
+     * @return LoginConnectionAdmin
      */
     public function setDateConnexion($dateConnexion)
     {
@@ -180,7 +174,7 @@ class LogginConnectionAdmin
      *
      * @param string $ip
      *
-     * @return LogginConnectionAdmin
+     * @return LoginConnectionAdmin
      */
     public function setIp($ip)
     {
@@ -200,35 +194,11 @@ class LogginConnectionAdmin
     }
 
     /**
-     * Set pays
-     *
-     * @param string $pays
-     *
-     * @return LogginConnectionAdmin
-     */
-    public function setPays($pays)
-    {
-        $this->pays = $pays;
-
-        return $this;
-    }
-
-    /**
-     * Get pays
-     *
-     * @return string
-     */
-    public function getPays()
-    {
-        return $this->pays;
-    }
-
-    /**
      * Set updated
      *
      * @param \DateTime $updated
      *
-     * @return LogginConnectionAdmin
+     * @return LoginConnectionAdmin
      */
     public function setUpdated($updated)
     {
@@ -252,7 +222,7 @@ class LogginConnectionAdmin
      *
      * @param \DateTime $added
      *
-     * @return LogginConnectionAdmin
+     * @return LoginConnectionAdmin
      */
     public function setAdded($added)
     {
@@ -272,12 +242,30 @@ class LogginConnectionAdmin
     }
 
     /**
-     * Get idLogginConnectionAdmin
+     * Get idLoginConnectionAdmin
      *
      * @return integer
      */
-    public function getIdLogginConnectionAdmin()
+    public function getIdLoginConnectionAdmin()
     {
-        return $this->idLogginConnectionAdmin;
+        return $this->idLoginConnectionAdmin;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

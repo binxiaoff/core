@@ -1,5 +1,7 @@
 <?php
 
+use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\LoginConnectionAdmin;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UserAccess;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
@@ -418,72 +420,80 @@ class bootstrap extends Controller
         $this->users_history    = $this->loadData('users_history');
         $this->mail_template    = $this->loadData('mail_templates');
 
-        if (! empty($_POST['connect']) && ! empty($_POST['password'])) {
-            $this->loggin_connection_admin = $this->loadData('loggin_connection_admin');
-            $user                          = $this->users->login($_POST['login'], $_POST['password']);
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
-            if ($user != false) {
-                $this->loggin_connection_admin->id_user        = $user['id_user'];
-                $this->loggin_connection_admin->nom_user       = $user['firstname'] . ' ' . $user['name'];
-                $this->loggin_connection_admin->email          = $user['email'];
-                $this->loggin_connection_admin->date_connexion = date('Y-m-d H:i:s');
-                $this->loggin_connection_admin->ip             = $_SERVER['REMOTE_ADDR'];
+        if (false === empty($_POST['connect']) && false === empty($_POST['password'])) {
+            $loginLog = new LoginConnectionAdmin();
+            $loginLog->setEmail($_POST['login']);
+            $loginLog->setDateConnexion(new \DateTime('now'));
+            $loginLog->setIp($_SERVER['REMOTE_ADDR']);
 
-                if (function_exists('geoip_country_code_by_name')) {
-                    $country_code = strtolower(geoip_country_code_by_name($_SERVER['REMOTE_ADDR']));
-                } else {
-                    $country_code = 'fr';
+            $isAuthorizedIp = true;
+            $user           = $this->users->login($_POST['login'], $_POST['password']);
+
+            if ($user !== false && false === empty($user['ip'])) {
+                $ip            = ip2long($_SERVER['REMOTE_ADDR']);
+                $authorizedIps = explode(';', $user['ip']);
+
+                foreach ($authorizedIps as $authorizedIp) {
+                    $min            = null;
+                    $max            = null;
+                    $isAuthorizedIp = false;
+                    $authorizedIp   = trim($authorizedIp);
+
+                    if (false === strpos($authorizedIp, '-')) {
+                        if (false !== filter_var($authorizedIp, FILTER_VALIDATE_IP)) {
+                            $min = ip2long($authorizedIp);
+                            $max = ip2long($authorizedIp);
+                        }
+                    } else {
+                        $range = explode('-', $authorizedIp);
+
+                        if (
+                            2 === count($range)
+                            && false !== filter_var($range[0], FILTER_VALIDATE_IP)
+                            && false !== filter_var($range[1], FILTER_VALIDATE_IP)
+                        ) {
+                            $min = ip2long($range[0]);
+                            $max = ip2long($range[1]);
+                        }
+                    }
+
+                    if (isset($min, $max) && $ip >= $min && $ip <= $max) {
+                        $isAuthorizedIp = true;
+                        break;
+                    }
                 }
+            }
 
-                $this->loggin_connection_admin->pays = $country_code;
-                $this->loggin_connection_admin->create();
+            if ($user !== false && $isAuthorizedIp) {
+                $loginLog->setIdUser($user['id_user']);
+                $loginLog->setNomUser($user['firstname'] . ' ' . $user['name']);
+
+                $entityManager->persist($loginLog);
+                $entityManager->flush();
 
                 unset($_SESSION['login_user']);
 
-                $this->users->handleLogin('connect', 'login', 'password');
-                die;
+                $this->users->handleLogin($_POST['login'], $_POST['password']);
+            } elseif (false === $isAuthorizedIp) {
+                $this->error_login = 'Vous n\'êtes pas autorisé à vous connecter depuis cette adresse IP';
             } else {
-                /*
-                 * À chaque tentative on double le temps d'attente entre 2 demandes
-                 * - tentative 2 = 2 secondes d'attente
-                 * - tentative 3 = 4 secondes
-                 * - tentative 4 = 8 secondes
-                 * - etc...
-                 *
-                 * Au bout de 10 demandes (avec la même IP) DANS LES 10min
-                 * - Ajout d'un captcha + @ admin
-                 */
+                $this->duree_waiting             = 1;
+                $this->nb_tentatives_precedentes = $entityManager->getRepository('UnilendCoreBusinessBundle:LoginConnectionAdmin')->countFailedAttemptsSince($_SERVER['REMOTE_ADDR'], new \DateTime('10 minutes ago'));
 
-                // H - 10min
-                $this->duree_waiting             = 0;
-                $coef_multiplicateur             = 2;
-                $resultat_precedent              = 1;
-                $h_moins_dix_min                 = date('Y-m-d H:i:s', mktime(date('H'), date('i') - 10, 0, date('m'), date('d'), date('Y')));
-                $this->nb_tentatives_precedentes = $this->loggin_connection_admin->counter('ip = "' . $_SERVER["REMOTE_ADDR"] . '" AND date_connexion >= "' . $h_moins_dix_min . '" AND id_user = 0');
-
-                if ($this->nb_tentatives_precedentes > 0 && $this->nb_tentatives_precedentes < 1000) { // 1000 pour ne pas bloquer le site
+                if ($this->nb_tentatives_precedentes > 0 && $this->nb_tentatives_precedentes < 100) {
                     for ($i = 1; $i <= $this->nb_tentatives_precedentes; $i++) {
-                        $this->duree_waiting = $resultat_precedent * $coef_multiplicateur;
-                        $resultat_precedent  = $this->duree_waiting;
+                        $this->duree_waiting *= 2;
                     }
                 }
 
-                $this->error_login = "Le couple d'identifiant n'est pas correct";
-
-                $this->loggin_connection_admin        = $this->loadData('loggin_connection_admin');
-                $this->loggin_connection_admin->email = $_POST['login'];
-                $this->loggin_connection_admin->ip    = $_SERVER['REMOTE_ADDR'];
-
-                if (function_exists('geoip_country_code_by_name')) {
-                    $country_code = strtolower(geoip_country_code_by_name($_SERVER['REMOTE_ADDR']));
-                } else {
-                    $country_code = 'fr';
-                }
-                $this->loggin_connection_admin->pays           = $country_code;
-                $this->loggin_connection_admin->date_connexion = date('Y-m-d H:i:s');
-                $this->loggin_connection_admin->statut         = 1;
-                $this->loggin_connection_admin->create();
+                $this->error_login = 'Identifiant ou mot de passe incorrect';
             }
+
+            $entityManager->persist($loginLog);
+            $entityManager->flush();
         }
 
         $this->loadJs('admin/external/jquery/jquery');
@@ -513,7 +523,7 @@ class bootstrap extends Controller
         $this->lLangues  = ['fr' => 'Francais'];
         $this->dLanguage = 'fr';
 
-        if (isset($_SESSION['user']) && !empty($_SESSION['user']['id_user'])) {
+        if (isset($_SESSION['user']) && false === empty($_SESSION['user']['id_user'])) {
             $this->sessionIdUser = $_SESSION['user']['id_user'];
             $this->lZonesHeader  = $this->users_zones->selectZonesUser($_SESSION['user']['id_user']);
 
