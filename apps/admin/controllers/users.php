@@ -1,5 +1,7 @@
 <?php
 
+use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\LogginConnectionAdmin;
 use \Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 
 class usersController extends bootstrap
@@ -48,6 +50,7 @@ class usersController extends bootstrap
             $this->users->mobile       = $_POST['mobile'];
             $this->users->email        = $_POST['email'];
             $this->users->slack        = $_POST['slack'];
+            $this->users->ip           = $_POST['ip'];
             $this->users->status       = $_POST['status'];
             $this->users->id_user_type = $_POST['id_user_type'];
             $this->users->password     = password_hash($newPassword, PASSWORD_DEFAULT);
@@ -55,8 +58,7 @@ class usersController extends bootstrap
 
             /** @var \users_zones $usersZones */
             $usersZones = $this->loadData('users_zones');
-
-            $lZones = $this->users_types_zones->select('id_user_type = ' . $this->users->id_user_type . ' ');
+            $lZones     = $this->users_types_zones->select('id_user_type = ' . $this->users->id_user_type . ' ');
             foreach ($lZones as $zone) {
                 $usersZones->id_user = $this->users->id_user;
                 $usersZones->id_zone = $zone['id_zone'];
@@ -68,7 +70,7 @@ class usersController extends bootstrap
             $mailerManager->sendNewPasswordEmail($this->users, $newPassword);
 
             $_SESSION['freeow']['title']   = 'Ajout d\'un utilisateur';
-            $_SESSION['freeow']['message'] = 'L\'utilisateur a bien &eacute;t&eacute; ajout&eacute; !';
+            $_SESSION['freeow']['message'] = 'L\'utilisateur a bien été ajouté';
 
             header('Location: ' . $this->lurl . '/zones');
             die;
@@ -76,48 +78,19 @@ class usersController extends bootstrap
 
         if (isset($_POST['form_mod_users'])) {
             $this->users->get($this->params[0], 'id_user');
-
-            $this->users->firstname = $_POST['firstname'];
-            $this->users->name      = $_POST['name'];
-            $this->users->phone     = $_POST['phone'];
-            $this->users->mobile    = $_POST['mobile'];
-            $this->users->email     = $_POST['email'];
-            $this->users->slack     = $_POST['slack'];
-
-            /** @var \users_zones $usersZones */
-            $usersZones = $this->loadData('users_zones');
-
-            $this->users->status       = ($this->users->status == 2 ? 2 : isset($_POST['status']) ? $_POST['status'] : $this->users->status);
+            $this->users->firstname    = $_POST['firstname'];
+            $this->users->name         = $_POST['name'];
+            $this->users->phone        = $_POST['phone'];
+            $this->users->mobile       = $_POST['mobile'];
+            $this->users->email        = $_POST['email'];
+            $this->users->slack        = $_POST['slack'];
+            $this->users->ip           = $_POST['ip'];
+            $this->users->status       = $_POST['status'];
             $this->users->id_user_type = $_POST['id_user_type'];
             $this->users->update();
 
-            $this->users_zones->delete($this->users->id_user, 'id_user');
-            $lZones = $this->users_types_zones->select('id_user_type = ' . $this->users->id_user_type . ' ');
-
-            foreach ($lZones as $zone) {
-                $usersZones->unsetData();
-                $usersZones->id_user = $this->users->id_user;
-                $usersZones->id_zone = $zone['id_zone'];
-                $usersZones->create();
-            }
-
             $_SESSION['freeow']['title']   = 'Modification d\'un utilisateur';
-            $_SESSION['freeow']['message'] = 'L\'utilisateur a bien &eacute;t&eacute; modifi&eacute; !';
-
-            header('Location: ' . $this->lurl . '/users');
-            die;
-        }
-
-        if (isset($this->params[0]) && $this->params[0] == 'delete') {
-            $this->users->get($this->params[0], 'id_user');
-
-            if ($this->users->status != 2) {
-                $this->users->delete($this->params[1], 'id_user');
-                $this->users_zones->delete($this->params[1], 'id_user');
-            }
-
-            $_SESSION['freeow']['title']   = 'Suppression d\'un utilisateur';
-            $_SESSION['freeow']['message'] = 'L\'utilisateur a bien &eacute;t&eacute; supprim&eacute; !';
+            $_SESSION['freeow']['message'] = 'L\'utilisateur a bien été modifié';
 
             header('Location: ' . $this->lurl . '/users');
             die;
@@ -125,22 +98,20 @@ class usersController extends bootstrap
 
         if (isset($this->params[0]) && $this->params[0] == 'status') {
             $this->users->get($this->params[1], 'id_user');
+            $this->users->status = ($this->params[2] == Users::STATUS_ONLINE ? Users::STATUS_OFFLINE : Users::STATUS_ONLINE);
+            $this->users->update();
 
-            if ($this->users->status != 2) {
-                $this->users->status = ($this->params[2] == 1 ? 0 : 1);
-                $this->users->update();
-            }
-
-            $_SESSION['freeow']['title']   = 'Statut d\'un utilisateur';
-            $_SESSION['freeow']['message'] = 'Le statut de l\'utilisateur a bien &eacute;t&eacute; modifi&eacute; !';
+            $_SESSION['freeow']['title']   = 'Modification d\'un utilisateur';
+            $_SESSION['freeow']['message'] = 'Le statut de l\'utilisateur a bien été modifié';
 
             header('Location: ' . $this->lurl . '/users');
             die;
         }
 
-        $onlineUsers  = $this->users->select('id_user NOT IN (-1, -2,  1) AND status = ' . Users::STATUS_ONLINE, 'name ASC');
-        $offlineUsers = $this->users->select('id_user NOT IN (-1, -2,  1) AND status = ' . Users::STATUS_OFFLINE, 'name ASC');
-        $this->users  = [Users::STATUS_ONLINE => $onlineUsers, Users::STATUS_OFFLINE => $offlineUsers];
+        $this->users  = [
+            Users::STATUS_ONLINE  => $this->users->select('id_user NOT IN (' . Users::USER_ID_FRONT . ', ' . Users::USER_ID_CRON . ',  1) AND status = ' . Users::STATUS_ONLINE, 'name ASC, firstname ASC'),
+            Users::STATUS_OFFLINE => $this->users->select('id_user NOT IN (' . Users::USER_ID_FRONT . ', ' . Users::USER_ID_CRON . ',  1) AND status = ' . Users::STATUS_OFFLINE, 'name ASC, firstname ASC')
+        ];
     }
 
     public function _edit()
@@ -206,15 +177,17 @@ class usersController extends bootstrap
                 $previousPasswords->create();
                 $previousPasswords->deleteOldPasswords($this->users->id_user);
 
-                $this->loggin_connection_admin                 = $this->loadData('loggin_connection_admin');
-                $this->loggin_connection_admin->id_user        = $this->users->id_user;
-                $this->loggin_connection_admin->nom_user       = $this->users->firstname . ' ' . $this->users->name;
-                $this->loggin_connection_admin->email          = $this->users->email;
-                $this->loggin_connection_admin->date_connexion = date('Y-m-d H:i:s');
-                $this->loggin_connection_admin->ip             = $_SERVER['REMOTE_ADDR'];
-                $this->loggin_connection_admin->pays           = strtolower(geoip_country_code_by_name($_SERVER['REMOTE_ADDR']));
-                $this->loggin_connection_admin->statut         = 2;
-                $this->loggin_connection_admin->create();
+                $loginLog = new LogginConnectionAdmin();
+                $loginLog->setIdUser($this->users->id_user);
+                $loginLog->setNomUser($this->users->firstname . ' ' . $this->users->name);
+                $loginLog->setEmail($this->users->email);
+                $loginLog->setDateConnexion(new \DateTime('now'));
+                $loginLog->setIp($_SERVER['REMOTE_ADDR']);
+
+                /** @var EntityManager $entityManager */
+                $entityManager = $this->get('doctrine.orm.entity_manager');
+                $entityManager->persist($loginLog);
+                $entityManager->flush();
 
                 $_SESSION['freeow']['title']   = 'Modification de votre mot de passe';
                 $_SESSION['freeow']['message'] = 'Votre mot de passe a bien &eacute;t&eacute; modifi&eacute; !';
@@ -227,17 +200,9 @@ class usersController extends bootstrap
 
     public function _logs()
     {
-        $this->loggin_connection_admin = $this->loadData('loggin_connection_admin');
-        $this->L_Recuperation_logs     = $this->loggin_connection_admin->select('', 'added DESC', '', 500);
-    }
-
-    public function _export_logs()
-    {
-        $this->hideDecoration();
-        $_SESSION['request_url'] = $this->url;
-
-        $this->requete        = 'SELECT * FROM loggin_connection_admin ORDER BY added desc';
-        $this->requete_result = $this->bdd->query($this->requete);
+        /** @var EntityManager $entityManager */
+        $entityManager   = $this->get('doctrine.orm.entity_manager');
+        $this->loginLogs = $entityManager->getRepository('UnilendCoreBusinessBundle:LogginConnectionAdmin')->findBy([], ['added' => 'DESC'], 500);
     }
 
     public function _generate_new_password()

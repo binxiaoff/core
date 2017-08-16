@@ -8,7 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
  * LogginConnectionAdmin
  *
  * @ORM\Table(name="loggin_connection_admin", indexes={@ORM\Index(name="id_user", columns={"id_user"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\LogginConnectionAdminRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class LogginConnectionAdmin
 {
@@ -22,7 +23,7 @@ class LogginConnectionAdmin
     /**
      * @var string
      *
-     * @ORM\Column(name="nom_user", type="string", length=191, nullable=false)
+     * @ORM\Column(name="nom_user", type="string", length=191, nullable=true)
      */
     private $nomUser;
 
@@ -48,16 +49,9 @@ class LogginConnectionAdmin
     private $ip;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="pays", type="string", length=191, nullable=false)
-     */
-    private $pays;
-
-    /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -200,30 +194,6 @@ class LogginConnectionAdmin
     }
 
     /**
-     * Set pays
-     *
-     * @param string $pays
-     *
-     * @return LogginConnectionAdmin
-     */
-    public function setPays($pays)
-    {
-        $this->pays = $pays;
-
-        return $this;
-    }
-
-    /**
-     * Get pays
-     *
-     * @return string
-     */
-    public function getPays()
-    {
-        return $this->pays;
-    }
-
-    /**
      * Set updated
      *
      * @param \DateTime $updated
@@ -279,5 +249,23 @@ class LogginConnectionAdmin
     public function getIdLogginConnectionAdmin()
     {
         return $this->idLogginConnectionAdmin;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }
