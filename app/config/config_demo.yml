@@ -8,7 +8,6 @@ monolog:
             type: fingers_crossed
             action_level: error
             handler: error_handler
-            channels: ['!translation']
         error_handler:
             type: group
             members: [error_file]
@@ -49,7 +48,7 @@ monolog:
             type: filter
             handler: site_handler
             max_level: warning
-            channels: ['!console', '!translation', '!mongodb']
+            channels: ['!console', '!mongodb']
         site_handler:
             type: rotating_file
             level: info
@@ -57,15 +56,6 @@ monolog:
             max_files: 90
             file_permission: 0664
             date_format: 'Y-m-d'
-
-        translation_handler:
-            type: rotating_file
-            level: warning
-            path: "%kernel.logs_dir%/translation.%kernel.environment%.log"
-            max_files: 90
-            file_permission: 0664
-            date_format: 'Y-m-d'
-            channels: translation
 
         mongodb:
             type: fingers_crossed
