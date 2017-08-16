@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 
-class LogginConnectionAdminRepository extends EntityRepository
+class LoginConnectionAdminRepository extends EntityRepository
 {
     /**
      * @param string    $ip
@@ -16,8 +16,8 @@ class LogginConnectionAdminRepository extends EntityRepository
     {
         $queryBuilder = $this->getEntityManager()->createQueryBuilder();
         $queryBuilder
-            ->select('COUNT(log.idLogginConnectionAdmin)')
-            ->from('UnilendCoreBusinessBundle:LogginConnectionAdmin', 'log')
+            ->select('COUNT(log.idLoginConnectionAdmin)')
+            ->from('UnilendCoreBusinessBundle:LoginConnectionAdmin', 'log')
             ->where('log.ip = :ip')
             ->andWhere('log.idUser IS NULL')
             ->andWhere('log.dateConnexion >= :start')

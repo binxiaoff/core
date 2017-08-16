@@ -1,7 +1,7 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\LogginConnectionAdmin;
+use Unilend\Bundle\CoreBusinessBundle\Entity\LoginConnectionAdmin;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class rootController extends bootstrap
@@ -26,7 +26,7 @@ class rootController extends bootstrap
                 $mailerManager = $this->get('unilend.service.email_manager');
                 $mailerManager->sendNewPasswordEmail($this->users, $newPassword);
 
-                $loginLog = new LogginConnectionAdmin();
+                $loginLog = new LoginConnectionAdmin();
                 $loginLog->setIdUser($this->users->id_user);
                 $loginLog->setNomUser($this->users->firstname . ' ' . $this->users->name);
                 $loginLog->setEmail($this->users->email);
@@ -131,7 +131,7 @@ class rootController extends bootstrap
                 $previousPasswords->create();
                 $previousPasswords->deleteOldPasswords($this->users->id_user);
 
-                $loginLog = new LogginConnectionAdmin();
+                $loginLog = new LoginConnectionAdmin();
                 $loginLog->setIdUser($this->users->id_user);
                 $loginLog->setNomUser($this->users->firstname . ' ' . $this->users->name);
                 $loginLog->setEmail($this->users->email);

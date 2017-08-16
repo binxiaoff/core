@@ -1,7 +1,6 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\LogginConnectionAdmin;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
@@ -178,18 +177,6 @@ class usersController extends bootstrap
                 $previousPasswords->create();
                 $previousPasswords->deleteOldPasswords($this->users->id_user);
 
-                $loginLog = new LogginConnectionAdmin();
-                $loginLog->setIdUser($this->users->id_user);
-                $loginLog->setNomUser($this->users->firstname . ' ' . $this->users->name);
-                $loginLog->setEmail($this->users->email);
-                $loginLog->setDateConnexion(new \DateTime('now'));
-                $loginLog->setIp($_SERVER['REMOTE_ADDR']);
-
-                /** @var EntityManager $entityManager */
-                $entityManager = $this->get('doctrine.orm.entity_manager');
-                $entityManager->persist($loginLog);
-                $entityManager->flush();
-
                 $_SESSION['freeow']['title']   = 'Modification de votre mot de passe';
                 $_SESSION['freeow']['message'] = 'Votre mot de passe a bien &eacute;t&eacute; modifi&eacute; !';
 
@@ -203,7 +190,7 @@ class usersController extends bootstrap
     {
         /** @var EntityManager $entityManager */
         $entityManager   = $this->get('doctrine.orm.entity_manager');
-        $this->loginLogs = $entityManager->getRepository('UnilendCoreBusinessBundle:LogginConnectionAdmin')->findBy([], ['added' => 'DESC'], 500);
+        $this->loginLogs = $entityManager->getRepository('UnilendCoreBusinessBundle:LoginConnectionAdmin')->findBy([], ['added' => 'DESC'], 500);
     }
 
     public function _generate_new_password()

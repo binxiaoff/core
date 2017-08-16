@@ -1,7 +1,7 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\LogginConnectionAdmin;
+use Unilend\Bundle\CoreBusinessBundle\Entity\LoginConnectionAdmin;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UserAccess;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
@@ -424,7 +424,7 @@ class bootstrap extends Controller
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (false === empty($_POST['connect']) && false === empty($_POST['password'])) {
-            $loginLog = new LogginConnectionAdmin();
+            $loginLog = new LoginConnectionAdmin();
             $loginLog->setEmail($_POST['login']);
             $loginLog->setDateConnexion(new \DateTime('now'));
             $loginLog->setIp($_SERVER['REMOTE_ADDR']);
@@ -468,7 +468,6 @@ class bootstrap extends Controller
             }
 
             if ($user !== false && $isAuthorizedIp) {
-                $loginLog->setEmail($user['email']);
                 $loginLog->setIdUser($user['id_user']);
                 $loginLog->setNomUser($user['firstname'] . ' ' . $user['name']);
 
@@ -481,27 +480,12 @@ class bootstrap extends Controller
             } elseif (false === $isAuthorizedIp) {
                 $this->error_login = 'Vous n\'êtes pas autorisé à vous connecter depuis cette adresse IP';
             } else {
-                /*
-                 * À chaque tentative on double le temps d'attente entre 2 demandes
-                 * - tentative 2 = 2 secondes d'attente
-                 * - tentative 3 = 4 secondes
-                 * - tentative 4 = 8 secondes
-                 * - etc...
-                 *
-                 * Au bout de 10 demandes (avec la même IP) DANS LES 10min
-                 * - Ajout d'un captcha + @ admin
-                 */
-
-                // H - 10min
-                $this->duree_waiting             = 0;
-                $coef_multiplicateur             = 2;
-                $resultat_precedent              = 1;
-                $this->nb_tentatives_precedentes = $entityManager->getRepository('UnilendCoreBusinessBundle:LogginConnectionAdmin')->countFailedAttemptsSince($_SERVER['REMOTE_ADDR'], new \DateTime('10 minutes ago'));
+                $this->duree_waiting             = 1;
+                $this->nb_tentatives_precedentes = $entityManager->getRepository('UnilendCoreBusinessBundle:LoginConnectionAdmin')->countFailedAttemptsSince($_SERVER['REMOTE_ADDR'], new \DateTime('10 minutes ago'));
 
                 if ($this->nb_tentatives_precedentes > 0 && $this->nb_tentatives_precedentes < 100) {
                     for ($i = 1; $i <= $this->nb_tentatives_precedentes; $i++) {
-                        $this->duree_waiting = $resultat_precedent * $coef_multiplicateur;
-                        $resultat_precedent  = $this->duree_waiting;
+                        $this->duree_waiting *= 2;
                     }
                 }
 
