@@ -2,6 +2,7 @@
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyIdentityDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
@@ -12,10 +13,11 @@ class companyController extends bootstrap
     {
         parent::initialize();
 
-        $this->catchAll = true;
-        $this->users->checkAccess('emprunteurs');
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
 
+        $this->catchAll   = true;
         $this->menu_admin = 'emprunteurs';
+
         $this->translator = $this->get('translator');
     }
 

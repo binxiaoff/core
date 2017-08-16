@@ -2,6 +2,7 @@
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LogginConnectionAdmin;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class rootController extends bootstrap
 {
@@ -68,7 +69,7 @@ class rootController extends bootstrap
 
     public function _default()
     {
-        $this->users->checkAccess('dashboard');
+        $this->users->checkAccess(Zones::ZONE_LABEL_DASHBOARD);
 
         /** @var \users $user */
         $user = $this->loadData('users');

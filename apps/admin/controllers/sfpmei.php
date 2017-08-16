@@ -9,6 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 
 class sfpmeiController extends bootstrap
@@ -17,11 +18,11 @@ class sfpmeiController extends bootstrap
     {
         parent::initialize();
 
+        $this->users->checkAccess(Zones::ZONE_LABEL_SFPMEI);
+
         $this->catchAll   = true;
         $this->menu_admin = 'sfpmei';
         $this->pagination = 25;
-
-        $this->users->checkAccess('sfpmei');
     }
 
     /**
