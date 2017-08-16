@@ -14,8 +14,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Companies
 {
-    const INVALID_SIREN_EMPTY       = '000000000';
-    const NAF_CODE_NO_ACTIVITY      = '0000Z';
+    const INVALID_SIREN_EMPTY  = '000000000';
+    const NAF_CODE_NO_ACTIVITY = '0000Z';
 
     const SAME_ADDRESS_FOR_POSTAL_AND_FISCAL      = 1;
     const DIFFERENT_ADDRESS_FOR_POSTAL_AND_FISCAL = 0;
