@@ -98,8 +98,6 @@ class BidManager
     {
         /** @var \settings $oSettings */
         $oSettings = $this->entityManagerSimulator->getRepository('settings');
-        /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
-        $oWelcomeOfferDetails = $this->entityManagerSimulator->getRepository('offres_bienvenues_details');
         /** @var \projects $legacyProject */
         $legacyProject = $this->entityManagerSimulator->getRepository('projects');
         /** @var \bids $legacyBid */
@@ -214,24 +212,21 @@ class BidManager
         $walletBalanceHistory = $this->walletManager->engageBalance($wallet, $amount, $bid);
         $this->entityManager->flush($bid);
 
-        // Liste des offres non utilisées
-        $aAllOffers = $oWelcomeOfferDetails->select('id_client = ' . $iClientId . ' AND status = 0');
-        if ($aAllOffers != false) {
-            $iOfferTotal = 0;
-            foreach ($aAllOffers as $aOffer) {
-                if ($iOfferTotal <= $amount) {
-                    $iOfferTotal += ($aOffer['montant'] / 100); // total des offres
-
-                    $oWelcomeOfferDetails->get($aOffer['id_offre_bienvenue_detail'], 'id_offre_bienvenue_detail');
-                    $oWelcomeOfferDetails->status = OffresBienvenuesDetails::STATUS_USED;
-                    $oWelcomeOfferDetails->id_bid = $bid->getIdBid();
-                    $oWelcomeOfferDetails->update();
+        $unusedWelcomeOffers = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->findBy(['idClient' => $iClientId, 'status' => OffresBienvenuesDetails::TYPE_OFFER]);
+        if ($unusedWelcomeOffers != null) {
+            $offerTotal = 0;
+            /** @var OffresBienvenuesDetails $offer */
+            foreach ($unusedWelcomeOffers as $offer) {
+                if ($offerTotal <= $amount) {
+                    $offerTotal += ($offer->getMontant() / 100); // total des offres
+                    $offer->setStatus(OffresBienvenuesDetails::STATUS_USED);
+                    $offer->setIdBid($bid->getIdBid());
+                    $this->entityManager->flush($offer);
 
                     // Apres addition de la derniere offre on se rend compte que le total depasse
-                    if ($iOfferTotal > $amount) {
+                    if ($offerTotal > $amount) {
                         // On fait la diff et on créer un remb du trop plein d'offres
-                        $iAmountRepayment = $iOfferTotal - $amount;
-                        $oWelcomeOfferDetails->unsetData();
+                        $iAmountRepayment = $offerTotal - $amount;
 
                         $welcomeOffer = new OffresBienvenuesDetails();
                         $welcomeOffer->setIdOffreBienvenue(0)
@@ -371,27 +366,28 @@ class BidManager
      */
     private function creditRejectedBid(Bids $bid, $fAmount)
     {
-        /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
-        $oWelcomeOfferDetails = $this->entityManagerSimulator->getRepository('offres_bienvenues_details');
         $walletBalanceHistory = $this->walletManager->releaseBalance($bid->getIdLenderAccount(), $fAmount, $bid);
         $fAmountX100          = $fAmount * 100;
+        $welcomeOffer         = new OffresBienvenuesDetails();
 
-        $iWelcomeOfferTotal = $oWelcomeOfferDetails->sum('id_client = ' . $bid->getIdLenderAccount()->getIdClient()->getIdClient() . ' AND id_bid = ' . $bid->getIdBid(), 'montant');
-        if ($iWelcomeOfferTotal > 0) {
+        $welcomeOfferTotal = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->getSumOfferByBid($bid->getIdLenderAccount()->getIdClient()->getIdClient(), $bid->getIdBid());
+        if ($welcomeOfferTotal > 0) {
             if ($bid->getAmount() === $fAmountX100) { //Totally credit
-                $oWelcomeOfferDetails->montant = min($iWelcomeOfferTotal, $fAmountX100);
-            } elseif (($bid->getAmount() - $fAmountX100) <= $iWelcomeOfferTotal) { //Partially credit
-                $oWelcomeOfferDetails->montant = $iWelcomeOfferTotal - ($bid->getAmount() - $fAmountX100);
+                $welcomeOffer->setMontant(min($welcomeOfferTotal, $fAmountX100));
+            } elseif (($bid->getAmount() - $fAmountX100) <= $welcomeOfferTotal) { //Partially credit
+                $welcomeOffer->setMontant($welcomeOfferTotal - ($bid->getAmount() - $fAmountX100));
             }
 
-            if (false === empty($oWelcomeOfferDetails->montant)) {
-                $oWelcomeOfferDetails->id_offre_bienvenue = 0;
-                $oWelcomeOfferDetails->id_client          = $bid->getIdLenderAccount()->getIdClient()->getIdClient();
-                $oWelcomeOfferDetails->id_bid             = 0;
-                $oWelcomeOfferDetails->id_bid_remb        = $bid->getIdBid();
-                $oWelcomeOfferDetails->status             = OffresBienvenuesDetails::STATUS_NEW;
-                $oWelcomeOfferDetails->type               = OffresBienvenuesDetails::TYPE_PAYBACK;
-                $oWelcomeOfferDetails->create();
+            if (false === empty($welcomeOffer->getMontant())) {
+                $welcomeOffer->setIdOffreBienvenue(0);
+                $welcomeOffer->setIdClient($bid->getIdLenderAccount()->getIdClient()->getIdClient());
+                $welcomeOffer->setIdBid(0);
+                $welcomeOffer->setIdBidRemb($bid->getIdBid());
+                $welcomeOffer->setStatus(OffresBienvenuesDetails::STATUS_NEW);
+                $welcomeOffer->setType(OffresBienvenuesDetails::TYPE_PAYBACK);
+
+                $this->entityManager->persist($welcomeOffer);
+                $this->entityManager->flush($welcomeOffer);
             }
         }
 

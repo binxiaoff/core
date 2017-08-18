@@ -20,27 +20,17 @@ class CheckWelcomeOfferValidityCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $entityManager    = $this->getContainer()->get('unilend.service.entity_manager');
-        $em               = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
-        $logger           = $this->getContainer()->get('monolog.logger.console');
-        /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
-        /** @var \offres_bienvenues_details $welcomeOfferDetails */
-        $welcomeOfferDetails = $entityManager->getRepository('offres_bienvenues_details');
-
-        $settings->get('Durée validité Offre de bienvenue', 'type');
-        $offerValidity               = $settings->value;
-        $dateLimit                   = new \DateTime('NOW - ' . $offerValidity . ' DAYS');
+        $entityManager               = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $operationManager            = $this->getContainer()->get('unilend.service.operation_manager');
+        $logger                      = $this->getContainer()->get('monolog.logger.console');
+        $validitySetting             = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Durée validité Offre de bienvenue']);
+        $dateLimit                   = new \DateTime('NOW - ' . $validitySetting->getValue() . ' DAYS');
         $numberOfUnusedWelcomeOffers = 0;
 
-        foreach ($welcomeOfferDetails->getUnusedWelcomeOffers($dateLimit) as $welcomeOffer) {
-            $welcomeOfferDetails->get($welcomeOffer['id_offre_bienvenue_detail']);
-            $welcomeOfferDetails->status = OffresBienvenuesDetails::STATUS_CANCELED;
-            $welcomeOfferDetails->update();
-
-            $wallet       = $em->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($welcomeOfferDetails->id_client, WalletType::LENDER);
-            $welcomeOffer = $em->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->find($welcomeOfferDetails->id_offre_bienvenue_detail);
+        /** @var OffresBienvenuesDetails $welcomeOffer */
+        foreach ($entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->findUnusedWelcomeOffers($dateLimit) as $welcomeOffer) {
+            $welcomeOffer->setStatus(OffresBienvenuesDetails::STATUS_CANCELED);
+            $wallet       = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($welcomeOffer->getIdClient(), WalletType::LENDER);
             try {
                 $operationManager->cancelWelcomeOffer($wallet, $welcomeOffer);
                 $numberOfUnusedWelcomeOffers +=1;
@@ -48,6 +38,7 @@ class CheckWelcomeOfferValidityCommand extends ContainerAwareCommand
                 continue;
             }
         }
+        $entityManager->flush();
 
         $logger->info('Number of withdrawn welcome offers: ' . $numberOfUnusedWelcomeOffers);
     }

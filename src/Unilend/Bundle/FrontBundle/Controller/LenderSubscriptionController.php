@@ -77,10 +77,7 @@ class LenderSubscriptionController extends Controller
         ) {
             $client->setOrigine(Clients::ORIGIN_WELCOME_OFFER_HOME);
         }
-        if (
-            $this->get('session')->get('originLandingPage')
-            && $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage()
-        ) {
+        if ($this->get('session')->get('originLandingPage')) {
             $client->setOrigine(Clients::ORIGIN_WELCOME_OFFER_LP);
         }
 
