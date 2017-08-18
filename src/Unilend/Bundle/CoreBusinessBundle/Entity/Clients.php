@@ -306,6 +306,12 @@ class Clients
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet", mappedBy="idClient")
      */
     private $wallets;
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="sponsorship_code", type="string", nullable=true)
+     */
+    private $sponsorshipCode;
 
     /**
      * Clients constructor.
@@ -1338,5 +1344,36 @@ class Clients
     public function isNaturalPerson()
     {
         return in_array($this->type, [self::TYPE_PERSON, self::TYPE_PERSON_FOREIGNER]);
+    }
+
+    /**
+     * @return string
+     */
+    public function getSponsorshipCode()
+    {
+        return $this->sponsorshipCode;
+    }
+
+    /**
+     * @param string $sponsorshipCode
+     *
+     * @return Clients
+     */
+    public function setSponsorshipCode($sponsorshipCode = null)
+    {
+        $this->sponsorshipCode = $sponsorshipCode;
+
+        return $this;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setSponsorshipCodeValue()
+    {
+        if (is_null($this->hash)) {
+            $this->setHashValue();
+        }
+        $this->sponsorshipCode = substr($this->hash, 0, 6) . $this->nom;
     }
 }

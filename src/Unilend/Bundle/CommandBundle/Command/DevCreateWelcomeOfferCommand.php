@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager;
@@ -52,8 +53,8 @@ class DevCreateWelcomeOfferCommand extends ContainerAwareCommand
         foreach ($clients as $clientId) {
             if ($client->get($clientId)) {
                 $wallet               = $walletRepository->getWalletByType($clientId, WalletType::LENDER);
-                $welcomeOffer         = $operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION]);
-                $welcomeOfferCanceled = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL]);
+                $welcomeOffer         = $operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION], [OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER]);
+                $welcomeOfferCanceled = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL], [OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_WELCOME_OFFER]);
 
                 if (0 == bcsub($welcomeOffer, $welcomeOfferCanceled, 2)) {
                     $return = $welcomeOfferManager->createWelcomeOffer($client);

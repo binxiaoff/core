@@ -13,6 +13,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Sponsorship;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Transfer;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
@@ -273,9 +274,10 @@ class OperationManager
     {
         $amount            = round(bcdiv($welcomeOffer->getMontant(), 100, 4), 2);
         $operationType     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_PROMOTIONAL_OPERATION]);
+        $operationSubType  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER]);
         $unilendWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
         $unilendWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
-        $this->newOperation($amount, $operationType, null, $unilendWallet, $wallet, $welcomeOffer);
+        $this->newOperation($amount, $operationType, $operationSubType, $unilendWallet, $wallet, $welcomeOffer);
     }
 
     /**
@@ -286,9 +288,10 @@ class OperationManager
     {
         $amount            = round(bcdiv($welcomeOffer->getMontant(), 100, 4), 2);
         $operationType     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL]);
+        $operationSubType  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_WELCOME_OFFER]);
         $unilendWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
         $unilendWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
-        $this->newOperation($amount, $operationType, null, $wallet, $unilendWallet, $welcomeOffer);
+        $this->newOperation($amount, $operationType, $operationSubType, $wallet, $unilendWallet, $welcomeOffer);
     }
 
     /**
@@ -774,5 +777,61 @@ class OperationManager
         $operationSubType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => $operationSubTypeLabel]);
 
         return $this->newOperation($amount, $operationType, $operationSubType, $debtor, $creditor, $operation);
+    }
+
+    /**
+     * @param Wallet      $wallet
+     * @param Sponsorship $sponsorship
+     */
+    public function newSponsorReward(Wallet $wallet, Sponsorship $sponsorship)
+    {
+        $amount            = $sponsorship->getIdSponsorshipCampaign()->getAmountSponsor();
+        $operationType     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_PROMOTIONAL_OPERATION]);
+        $operationSubType  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR]);
+        $unilendWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
+        $unilendWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
+        $this->newOperation($amount, $operationType, $operationSubType, $unilendWallet, $wallet, $sponsorship);
+    }
+
+    /**
+     * @param Wallet      $wallet
+     * @param Sponsorship $sponsorship
+     */
+    public function cancelSponsorReward(Wallet $wallet, Sponsorship $sponsorship)
+    {
+        $amount            = $sponsorship->getIdSponsorshipCampaign()->getAmountSponsor();
+        $operationType     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL]);
+        $operationSubType  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_SPONSORSHIP_REWARD_SPONSOR]);
+        $unilendWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
+        $unilendWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
+        $this->newOperation($amount, $operationType, $operationSubType, $wallet, $unilendWallet, $sponsorship);
+    }
+
+    /**
+     * @param Wallet      $wallet
+     * @param Sponsorship $sponsorship
+     */
+    public function newSponseeReward(Wallet $wallet, Sponsorship $sponsorship)
+    {
+        $amount            = $sponsorship->getIdSponsorshipCampaign()->getAmountSponsee();
+        $operationType     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_PROMOTIONAL_OPERATION]);
+        $operationSubType  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSEE]);
+        $unilendWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
+        $unilendWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
+        $this->newOperation($amount, $operationType, $operationSubType, $unilendWallet, $wallet, $sponsorship);
+    }
+
+    /**
+     * @param Wallet      $wallet
+     * @param Sponsorship $sponsorship
+     */
+    public function cancelSponseeReward(Wallet $wallet, Sponsorship $sponsorship)
+    {
+        $amount            = $sponsorship->getIdSponsorshipCampaign()->getAmountSponsee();
+        $operationType     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL]);
+        $operationSubType  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_SPONSORSHIP_REWARD_SPONSEE]);
+        $unilendWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
+        $unilendWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
+        $this->newOperation($amount, $operationType, $operationSubType, $wallet, $unilendWallet, $sponsorship);
     }
 }

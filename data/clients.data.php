@@ -578,7 +578,7 @@ class clients extends clients_crud
                 WHERE
                     DATE(c.added) BETWEEN "' . $sStartDate . '" AND ' . $sEndDate . '
                     AND NOT EXISTS (SELECT obd.id_client FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
-                    AND NOT EXISTS (SELECT o.id FROM operation o WHERE o.id_type = (SELECT id FROM operation_type WHERE label = \'' . OperationType::UNILEND_PROMOTIONAL_OPERATION . '\') AND o.id_wallet_creditor = w.id)
+                    AND NOT EXISTS (SELECT o.id FROM operation o WHERE o.id_sub_type = (SELECT id FROM operation_sub_type WHERE label = \'' . \Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER . '\') AND o.id_wallet_creditor = w.id)
                     ' . $sWhereID;
 
         $resultat = $this->bdd->query($sql);
