@@ -9,6 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectNotification;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;

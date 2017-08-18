@@ -19,6 +19,8 @@ class transfertsController extends bootstrap
     {
         parent::initialize();
 
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
+
         $this->catchAll   = true;
         $this->menu_admin = 'transferts';
 
