@@ -9,6 +9,9 @@ class OffresBienvenuesRepository extends EntityRepository
 {
     /**
      * @param Clients $client
+     * @param string  $type
+     *
+     * @return mixed
      */
     public function getWelcomeOfferForClient(Clients $client, $type)
     {

@@ -30,8 +30,8 @@
             <table class="search_fields">
                 <tr>
                     <td><label for="id">ID ou liste d'IDs (séparés par virgules):</label><br/>
-                        <input type="text" name="id" id="id" class="input_large"
-                               value="<?= (empty($_POST['dateStart']) && empty($_POST['dateEnd']) && false === empty($_POST['id'])) ? $_POST['id'] : '' ?>"/>
+                        <input type="text" name="id_client" id="id_client" class="input_large"
+                               value="<?= (empty($_POST['dateStart']) && empty($_POST['dateEnd']) && false === empty($_POST['id_client'])) ? $_POST['id_client'] : '' ?>"/>
                     </td>
                     <td><br>
                         <input type="hidden" name="spy_search" id="spy_search"/>
@@ -52,7 +52,7 @@
             <tr>
                 <th>Id Client</th>
                 <th>Nom</th>
-                <th>Pr&eacute;nom</th>
+                <th>Prénom</th>
                 <th>Email</th>
                 <th>Date de création</th>
                 <th>Date de validation</th>

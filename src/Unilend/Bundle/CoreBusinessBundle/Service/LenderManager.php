@@ -170,4 +170,24 @@ class LenderManager
 
         return $lossRate;
     }
+
+    public function validateClient($client)
+    {
+        if ($client instanceof \clients) {
+            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        }
+
+
+
+        //todo check if its first Validation
+
+            // check if eligible to sponsorship && check if client has no welcome offer
+                //todo attribute sponsorship
+
+            //check if eligible to welcome offer
+                //todo attribute welcome offer
+
+        // else
+            //todo validate client
+    }
 }

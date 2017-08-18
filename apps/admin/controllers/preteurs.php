@@ -829,9 +829,9 @@ class preteursController extends bootstrap
             /** @var \clients $clientData */
             $clientData = $this->loadData('clients');
 
-            if (false === empty($_POST['id'])) {
-                $this->clientsWithoutWelcomeOffer                      = $clientData->getClientsWithNoWelcomeOffer($_POST['id']);
-                $_SESSION['forms']['rattrapage_offre_bienvenue']['id'] = $_POST['id'];
+            if (false === empty($_POST['id_client'])) {
+                $this->clientsWithoutWelcomeOffer                             = $clientData->getClientsWithNoWelcomeOffer($_POST['id']);
+                $_SESSION['forms']['rattrapage_offre_bienvenue']['id_client'] = $_POST['id_client'];
             } else {
                 $_SESSION['freeow']['title']   = 'Recherche non aboutie. Indiquez la liste des ID clients';
                 $_SESSION['freeow']['message'] = 'Il faut séparer les ids par des virgules';
@@ -854,8 +854,7 @@ class preteursController extends bootstrap
             'type'   => OffresBienvenues::TYPE_HOME
         ]);
         if (null !== $this->currentOfferHomepage) {
-            $alreadyPaidOutCurrentOfferHomepage        = $paidOutWelcomeOffers->getSumPaidOutForOffer($this->currentOfferHomepage);
-            $this->alreadyPaidOutCurrentOfferHomepage  = null === $alreadyPaidOutCurrentOfferHomepage ? 0 : $alreadyPaidOutCurrentOfferHomepage;
+            $this->alreadyPaidOutCurrentOfferHomepage  = $paidOutWelcomeOffers->getSumPaidOutForOffer($this->currentOfferHomepage);
             $this->remainingAmountCurrentOfferHomepage = round(bcsub($this->currentOfferHomepage->getMontantLimit(), $this->alreadyPaidOutCurrentOfferHomepage, 4), 2);
         }
 
@@ -864,8 +863,7 @@ class preteursController extends bootstrap
             'type'   => OffresBienvenues::TYPE_LANDING_PAGE
         ]);
         if (null !== $this->currentOfferLandingPage) {
-            $alreadyPaidOutCurrentOfferLandingPage        = $paidOutWelcomeOffers->getSumPaidOutForOffer($this->currentOfferLandingPage);
-            $this->alreadyPaidOutCurrentOfferLandingPage  = null === $alreadyPaidOutCurrentOfferLandingPage ? 0 : $alreadyPaidOutCurrentOfferLandingPage;
+            $this->alreadyPaidOutCurrentOfferLandingPage  = $paidOutWelcomeOffers->getSumPaidOutForOffer($this->currentOfferLandingPage);
             $this->remainingAmountCurrentOfferLandingPage = round(bcsub($this->currentOfferLandingPage->getMontantLimit(), $this->alreadyPaidOutCurrentOfferLandingPage, 4), 2);
         }
 
@@ -884,11 +882,11 @@ class preteursController extends bootstrap
         $type      = $this->request->request->get('type_offer');
 
         $startDate = \DateTime::createFromFormat('d/m/Y', $start);
-        if (null === $startDate) {
+        if (false === $startDate) {
             $_SESSION['create_new_welcome_offer']['errors'][] = 'Le format de la date n\'nest pas correct';
         }
         if ($amount > $maxAmount) {
-            $_SESSION['create_new_welcome_offer']['errors'][] = 'Le montant de l\'offre ne peut pas être inférieur au montant limite';
+            $_SESSION['create_new_welcome_offer']['errors'][] = 'Le montant de l\'offre (' . $amount . ') ne peut pas être inférieur au montant limite (' . $maxAmount . ')';
         }
         if (empty($type)) {
             $_SESSION['create_new_welcome_offer']['errors'][] = 'Il faut choisir le type de page sur laquelle l\'offre va être affiché';
@@ -900,8 +898,8 @@ class preteursController extends bootstrap
 
         $welcomeOffer = new OffresBienvenues();
         $welcomeOffer->setDebut($startDate);
-        $welcomeOffer->setMontant($amount * 100);
-        $welcomeOffer->setMontantLimit($maxAmount * 100);
+        $welcomeOffer->setMontant(bcmul($amount, 100));
+        $welcomeOffer->setMontantLimit(bcmul($maxAmount, 100));
         $welcomeOffer->setType($type);
         $welcomeOffer->setIdUser($user->getIdUser());
         $welcomeOffer->setStatus(OffresBienvenues::STATUS_ONLINE);
@@ -925,10 +923,10 @@ class preteursController extends bootstrap
             $response = $welcomeOfferManager->payOutWelcomeOffer($client);
             switch ($response['code']) {
                 case 0:
-                    $_SESSION['freeow']['title'] = 'Offre de bienvenue cr&eacute;dit&eacute;';
+                    $_SESSION['freeow']['title'] = 'Offre de bienvenue crédité;';
                     break;
                 default:
-                    $_SESSION['freeow']['title'] = 'Offre de bienvenue non cr&eacute;dit&eacute;';
+                    $_SESSION['freeow']['title'] = 'Offre de bienvenue non cédite';
                     break;
             }
             $_SESSION['freeow']['message'] = $response['message'];
