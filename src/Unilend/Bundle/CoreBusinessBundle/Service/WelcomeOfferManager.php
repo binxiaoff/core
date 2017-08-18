@@ -87,7 +87,7 @@ class WelcomeOfferManager
     }
 
     /**
-     * @param \clients|Clients $client
+     * @param Clients|\clients $client
      *
      * @return array
      * @throws \Exception

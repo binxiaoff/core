@@ -12,7 +12,7 @@ class OffresBienvenuesDetailsRepository extends EntityRepository
     /**
      * @param OffresBienvenues|null $offer
      *
-     * @return mixed
+     * @return int
      */
     public function getSumPaidOutForOffer(OffresBienvenues $offer = null)
     {
@@ -28,6 +28,11 @@ class OffresBienvenuesDetailsRepository extends EntityRepository
                 ->setParameter('offer', $offer->getIdOffreBienvenue());
         }
 
-        return $queryBuilder->getQuery()->getSingleScalarResult();
+        $result = $queryBuilder->getQuery()->getSingleScalarResult();
+        if (null === $result) {
+            return 0;
+        }
+
+        return $result;
     }
 }
