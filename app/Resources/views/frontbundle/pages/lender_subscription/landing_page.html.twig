@@ -71,7 +71,11 @@
                     </div>
                 </div>
                 <div class="col-conditions col-lg-4 col-md-4">
-                    <p>* <a href="#dialog-conditions-content" class="fancybox-html">{% trans %} lender-landing-page_welcome-offer-conditions-title {% endtrans %}</a></p>
+                    {% if isSponsorship == true %}
+                        <p>* <a href="#dialog-conditions-content" class="fancybox-html">{% trans %} lender-landing-page_sponsorship-conditions-title {% endtrans %}</a></p>
+                    {% else  %}
+                        <p>* <a href="#dialog-conditions-content" class="fancybox-html">{% trans %} lender-landing-page_welcome-offer-conditions-title {% endtrans %}</a></p>
+                    {% endif %}
                 </div>
             </div>
         </div><!-- /.block-copy-lp-footer -->
@@ -79,8 +83,13 @@
         {# Hidden text until made visible through the fancybox #}
         <div class="hide-accessible">
             <div id="dialog-conditions-content" class="dialog-content readable-wrap text-align-center">
-                <h3>{% trans %} lender-landing-page_welcome-offer-conditions-title {% endtrans %} </h3>
-                {% trans %} lender-landing-page_welcome-offer-conditions-text {% endtrans %}
+                {% if isSponsorship == true %}
+                    <h3>{% trans %} lender-landing-page_sponsorship-conditions-title {% endtrans %} </h3>
+                    {% trans %} lender-landing-page_sponsorship-conditions-text {% endtrans %}
+                {% else  %}
+                    <h3>{% trans %} lender-landing-page_welcome-offer-conditions-title {% endtrans %} </h3>
+                    {% trans %} lender-landing-page_welcome-offer-conditions-text {% endtrans %}
+                {% endif %}
             </div><!-- /#dialog-conditions-content -->
         </div><!-- /.hide-accessible -->
     </article><!-- /.page -->

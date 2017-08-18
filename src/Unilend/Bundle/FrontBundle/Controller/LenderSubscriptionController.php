@@ -38,6 +38,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
 use Unilend\core\Loader;
@@ -57,6 +58,7 @@ class LenderSubscriptionController extends Controller
         $client        = new Clients();
         $clientAddress = new ClientsAdresses();
         $company       = new Companies();
+        $sponsorCode   = $this->get('session')->get('sponsorCode');
 
         if (false === empty($this->get('session')->get('landingPageData'))) {
             $landingPageData = $this->get('session')->get('landingPageData');
@@ -64,6 +66,14 @@ class LenderSubscriptionController extends Controller
             $client->setNom($landingPageData['prospect_name']);
             $client->setPrenom($landingPageData['prospect_first_name']);
             $client->setEmail($landingPageData['prospect_email']);
+
+            if (isset($landingPageData['sponsor_code']) && null !== $this->get('unilend.service.sponsorship_manager')->getCurrentSponsorshipCampaign()) {
+                $this->get('session')->set('sponsorCode', $landingPageData['sponsor_code']);
+            }
+
+            if (false === isset($landingPageData['sponsor_code']) && $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage()) {
+                $this->get('session')->set('originLandingPage', true);
+            }
         }
 
         $formManager         = $this->get('unilend.frontbundle.service.form_manager');
@@ -78,6 +88,10 @@ class LenderSubscriptionController extends Controller
                 $isValid = $this->handleIdentityPersonForm($client, $clientAddress, $identityForm);
                 if ($isValid) {
                     $this->saveClientHistoryAction($client, $request, Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION);
+                    if (false === empty($sponsorCode)) {
+                        $this->get('unilend.service.sponsorship_manager')->createSponsorship($client, $sponsorCode);
+                        $this->get('session')->remove('sponsorCode');
+                    }
                     return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->getHash()]);
                 }
             }
@@ -86,6 +100,10 @@ class LenderSubscriptionController extends Controller
                 $isValid = $this->handleLegalEntityForm($client, $clientAddress, $company, $companyIdentityForm);
                 if ($isValid) {
                     $this->saveClientHistoryAction($client, $request, Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION);
+                    if (false === empty($sponsorCode)) {
+                        $this->get('unilend.service.sponsorship_manager')->createSponsorship($client, $sponsorCode);
+                        $this->get('session')->remove('sponsorCode');
+                    }
                     return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->getHash()]);
                 }
             }
@@ -780,9 +798,23 @@ class LenderSubscriptionController extends Controller
      * @Route("devenir-preteur-lp", name="lender_landing_page")
      * @Method("GET")
      */
-    public function landingPageAction()
+    public function landingPageAction(Request $request)
     {
-        return $this->render('pages/lender_subscription/landing_page.html.twig');
+        $clientRepository          = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+        $template['isSponsorship'] = false;
+
+        if (
+            SponsorshipManager::UTM_SOURCE === $request->query->get('utm_source')
+            && SponsorshipManager::UTM_MEDIUM === $request->query->get('utm_medium')
+            && SponsorshipManager::UTM_CAMPAIGN === $request->query->get('utm_campaign')
+            && null !== $clientRepository->findOneBy(['sponsorshipCode' => $request->query->get('sponsor')])
+            && null !== $this->get('unilend.service.sponsorship_manager')->getCurrentSponsorshipCampaign()
+        ) {
+            $template['isSponsorship']   = true;
+            $template['sponsorshipCode'] = $request->query->get('sponsor');
+        }
+
+        return $this->render('pages/lender_subscription/landing_page.html.twig', $template);
     }
 
     /**

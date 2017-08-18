@@ -37,6 +37,9 @@
         <div class="col-lg-7 col-md-7">
             <input type="email" id="form-preter-lp-email" name="prospect_email" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
             <ul class="ui-formvalidation-messages"></ul>
+            {% if isSponsorship is defined and true == isSponsorship %}
+                <input type="hidden" id="form-preter-lp-sponsor-code" name="sponsor_code" value="{{ sponsorshipCode }}" />
+            {% endif %}
         </div>
     </div><!-- /.form-field -->
 
@@ -46,7 +49,7 @@
         </div>
     </footer><!-- /.form-preter-lp-footer -->
 
-    {% if setting('offre-de-bienvenue-sur-lp') == 1 %}
+    {% if (isSponsorship is not defined or false == isSponsorship) and setting('offre-de-bienvenue-sur-lp') == 1 %}
         <div class="stamp bg-p1" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
             {% trans %} lender-landing-page_welcome-offer-text {% endtrans %}
         </div><!-- /.stamp -->
