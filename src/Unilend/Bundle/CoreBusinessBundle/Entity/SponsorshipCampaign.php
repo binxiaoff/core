@@ -5,13 +5,13 @@ namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * SponsorshipCampaigns
+ * SponsorshipCampaign
  *
- * @ORM\Table(name="sponsorship_campaigns")
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\SponsorshipCampaignsRepository")
+ * @ORM\Table(name="sponsorship_campaign")
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\SponsorshipCampaignRepository")
  * @ORM\HasLifecycleCallbacks()
  */
-class SponsorshipCampaigns
+class SponsorshipCampaign
 {
     const STATUS_VALID    = 1;
     const STATUS_ARCHIVED = 2;
@@ -88,7 +88,7 @@ class SponsorshipCampaigns
      *
      * @param string $amountSponsor
      *
-     * @return SponsorshipCampaigns
+     * @return SponsorshipCampaign
      */
     public function setAmountSponsor($amountSponsor)
     {
@@ -112,7 +112,7 @@ class SponsorshipCampaigns
      *
      * @param string $amountSponsee
      *
-     * @return SponsorshipCampaigns
+     * @return SponsorshipCampaign
      */
     public function setAmountSponsee($amountSponsee)
     {
@@ -136,7 +136,7 @@ class SponsorshipCampaigns
      *
      * @param \DateTime $start
      *
-     * @return SponsorshipCampaigns
+     * @return SponsorshipCampaign
      */
     public function setStart($start)
     {
@@ -160,7 +160,7 @@ class SponsorshipCampaigns
      *
      * @param \DateTime $end
      *
-     * @return SponsorshipCampaigns
+     * @return SponsorshipCampaign
      */
     public function setEnd($end)
     {
@@ -184,7 +184,7 @@ class SponsorshipCampaigns
      *
      * @param boolean $status
      *
-     * @return SponsorshipCampaigns
+     * @return SponsorshipCampaign
      */
     public function setStatus($status)
     {
@@ -208,7 +208,7 @@ class SponsorshipCampaigns
      *
      * @param integer $maxNumberSponsee
      *
-     * @return SponsorshipCampaigns
+     * @return SponsorshipCampaign
      */
     public function setMaxNumberSponsee($maxNumberSponsee)
     {
@@ -232,7 +232,7 @@ class SponsorshipCampaigns
      *
      * @param \DateTime $added
      *
-     * @return SponsorshipCampaigns
+     * @return SponsorshipCampaign
      */
     public function setAdded($added)
     {
@@ -256,7 +256,7 @@ class SponsorshipCampaigns
      *
      * @param \DateTime $updated
      *
-     * @return SponsorshipCampaigns
+     * @return SponsorshipCampaign
      */
     public function setUpdated($updated)
     {

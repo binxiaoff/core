@@ -3,12 +3,12 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaigns;
+use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign;
 
-class SponsorshipCampaignsRepository extends EntityRepository
+class SponsorshipCampaignRepository extends EntityRepository
 {
     /**
-     * @return null|SponsorshipCampaigns
+     * @return null|SponsorshipCampaign
      */
     public function findCurrentCampaign()
     {
@@ -16,7 +16,7 @@ class SponsorshipCampaignsRepository extends EntityRepository
         $queryBuilder->where('sc.status = :valid')
             ->andWhere('sc.start <= :now')
             ->andWhere('sc.end IS NULL')
-            ->setParameter('valid', SponsorshipCampaigns::STATUS_VALID)
+            ->setParameter('valid', SponsorshipCampaign::STATUS_VALID)
             ->setParameter('now', new \DateTime('now'));
 
         return $queryBuilder->getQuery()->getOneOrNullResult();

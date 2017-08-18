@@ -807,11 +807,11 @@ class LenderSubscriptionController extends Controller
             SponsorshipManager::UTM_SOURCE === $request->query->get('utm_source')
             && SponsorshipManager::UTM_MEDIUM === $request->query->get('utm_medium')
             && SponsorshipManager::UTM_CAMPAIGN === $request->query->get('utm_campaign')
-            && null !== $clientRepository->findOneBy(['sponsorshipCode' => $request->query->get('sponsor')])
+            && null !== $clientRepository->findOneBy(['sponsorCode' => $request->query->get('sponsor')])
             && null !== $this->get('unilend.service.sponsorship_manager')->getCurrentSponsorshipCampaign()
         ) {
             $template['isSponsorship']   = true;
-            $template['sponsorshipCode'] = $request->query->get('sponsor');
+            $template['sponsorCode'] = $request->query->get('sponsor');
         }
 
         return $this->render('pages/lender_subscription/landing_page.html.twig', $template);

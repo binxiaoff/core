@@ -309,9 +309,9 @@ class Clients
     /**
      * @var string
      *
-     * @ORM\Column(name="sponsorship_code", type="string", nullable=true)
+     * @ORM\Column(name="sponsor_code", type="string", nullable=true)
      */
-    private $sponsorshipCode;
+    private $sponsorCode;
 
     /**
      * Clients constructor.
@@ -1349,19 +1349,19 @@ class Clients
     /**
      * @return string
      */
-    public function getSponsorshipCode()
+    public function getSponsorCode()
     {
-        return $this->sponsorshipCode;
+        return $this->sponsorCode;
     }
 
     /**
-     * @param string $sponsorshipCode
+     * @param string $sponsorCode
      *
      * @return Clients
      */
-    public function setSponsorshipCode($sponsorshipCode = null)
+    public function setSponsorCode($sponsorCode = null)
     {
-        $this->sponsorshipCode = $sponsorshipCode;
+        $this->sponsorCode = $sponsorCode;
 
         return $this;
     }
@@ -1369,11 +1369,11 @@ class Clients
     /**
      * @ORM\PrePersist
      */
-    public function setSponsorshipCodeValue()
+    public function setSponsorCodeValue()
     {
         if (is_null($this->hash)) {
             $this->setHashValue();
         }
-        $this->sponsorshipCode = substr($this->hash, 0, 6) . $this->nom;
+        $this->sponsorCode = substr($this->hash, 0, 6) . $this->nom;
     }
 }

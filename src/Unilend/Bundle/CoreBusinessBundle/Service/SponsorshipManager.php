@@ -7,7 +7,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Sponsorship;
-use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaigns;
+use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class SponsorshipManager
@@ -74,11 +74,11 @@ class SponsorshipManager
     }
 
     /**
-     * @return null|SponsorshipCampaigns
+     * @return null|SponsorshipCampaign
      */
     public function getCurrentSponsorshipCampaign()
     {
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaigns')->findCurrentCampaign();
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->findCurrentCampaign();
 
     }
 
@@ -138,7 +138,7 @@ class SponsorshipManager
      */
     public function createSponsorship(Clients $sponsee, $sponsorCode)
     {
-        $sponsor  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['sponsorshipCode' => $sponsorCode]);
+        $sponsor  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['sponsorCode' => $sponsorCode]);
         $campaign = $this->getCurrentSponsorshipCampaign();
 
         $sponsorship = new Sponsorship();

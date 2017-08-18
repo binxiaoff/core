@@ -48,9 +48,9 @@ class Sponsorship
     private $id;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaigns
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaigns")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_sponsorship_campaign", referencedColumnName="id")
      * })
@@ -164,11 +164,11 @@ class Sponsorship
     /**
      * Set idSponsorshipCampaign
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaigns $idSponsorshipCampaign
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign $idSponsorshipCampaign
      *
      * @return Sponsorship
      */
-    public function setIdSponsorshipCampaign(\Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaigns $idSponsorshipCampaign = null)
+    public function setIdSponsorshipCampaign(\Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign $idSponsorshipCampaign = null)
     {
         $this->idSponsorshipCampaign = $idSponsorshipCampaign;
 
@@ -178,7 +178,7 @@ class Sponsorship
     /**
      * Get idSponsorshipCampaign
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaigns
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign
      */
     public function getIdSponsorshipCampaign()
     {
