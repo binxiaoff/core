@@ -16,6 +16,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Doctrine\DBAL\Connection;
 use Unilend\librairies\CacheKeys;
@@ -1151,5 +1152,25 @@ class OperationRepository extends EntityRepository
             ->executeQuery($query, ['end' => $end->format('Y-m-d H:i:s'), 'projects' => $projects], ['end' => \PDO::PARAM_STR, 'projects' => Connection::PARAM_INT_ARRAY]);
 
         return $statement->fetchColumn();
+    }
+
+    /**
+     * @param string              $subTypeLabel
+     * @param SponsorshipCampaign $sponsorshipCampaign
+     *
+     * @return mixed
+     */
+    public function getSumRewardAmountByCampaign($subTypeLabel, SponsorshipCampaign $sponsorshipCampaign)
+    {
+        $queryBuilder = $this->createQueryBuilder('o');
+        $queryBuilder->select('SUM(o.amount)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'ost.id = o.idSubType')
+            ->innerJoin('UnilendCoreBusinessBundle:Sponsorship', 'ss', Join::WITH, 'ss.id = o.idSponsorship')
+            ->where('ost.label = :subTypeLabel')
+            ->andWhere('ss.idCampaign = :idCampaign')
+            ->setParameter('subTypeLabel', $subTypeLabel)
+            ->setParameter('idCampaign', $sponsorshipCampaign);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }

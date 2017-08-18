@@ -55,6 +55,8 @@ class ProjectManager
     private $workingDay;
     /** @var LoggerInterface */
     private $logger;
+    /** @var SponsorshipManager */
+    private $sponsorshipManager;
 
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -68,6 +70,7 @@ class ProjectManager
         ContractAttributeManager $contractAttributeManager,
         SlackManager $slackManager,
         RiskDataMonitoringManager $riskDataMonitoringManager,
+        SponsorshipManager $sponsorshipManager,
         $universignUrl
     )
     {
@@ -82,6 +85,7 @@ class ProjectManager
         $this->contractAttributeManager   = $contractAttributeManager;
         $this->slackManager               = $slackManager;
         $this->riskDataMonitoringManger   = $riskDataMonitoringManager;
+        $this->sponsorshipManager         = $sponsorshipManager;
         $this->universignUrl              = $universignUrl;
 
         $this->datesManager = Loader::loadLib('dates');
@@ -319,7 +323,7 @@ class ProjectManager
         $this->addProjectStatus(Users::USER_ID_CRON, \projects_status::FUNDE, $oProject);
 
         if ($this->logger instanceof LoggerInterface) {
-            $this->logger->info('Project ' . $oProject->id_project . ' is now changed to status funded', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+            $this->logger->info('Project ' . $oProject->id_project . ' is now changed to status funded', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project]);
         }
 
         $criteria     = ['idProject' => $oProject->id_project, 'status' => Bids::STATUS_BID_PENDING];
@@ -329,7 +333,7 @@ class ProjectManager
         $treatedBidNb = 0;
 
         if ($this->logger instanceof LoggerInterface) {
-            $this->logger->info($iBidNbTotal . ' bids created (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+            $this->logger->info($iBidNbTotal . ' bids created (project ' . $oProject->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project]);
         }
 
         foreach ($bids as $bid) {
@@ -342,10 +346,15 @@ class ProjectManager
                     } else {
                         $bid->setStatus(Bids::STATUS_BID_ACCEPTED);
                         $this->entityManager->flush($bid);
+                        try {
+                            $this->sponsorshipManager->attributeSponsorReward($bid->getIdLenderAccount()->getIdClient());
+                        } catch (\Exception $exception) {
+                            $this->logger->info('Sponsor reward could not be attributed for bid ' . $bid->getIdBid() . '. Reason: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project]);
+                        }
                     }
 
                     if ($this->logger instanceof LoggerInterface) {
-                        $this->logger->info('The bid status has been updated to 1' . $bid->getIdBid() . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+                        $this->logger->info('The bid status has been updated to 1' . $bid->getIdBid() . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project]);
                     }
                 } else {
                     $this->bidManager->reject($bid, true);
@@ -354,7 +363,7 @@ class ProjectManager
                 $treatedBidNb ++;
 
                 if ($this->logger instanceof LoggerInterface) {
-                    $this->logger->info($treatedBidNb . '/' . $iBidNbTotal . ' bids treated (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+                    $this->logger->info($treatedBidNb . '/' . $iBidNbTotal . ' bids treated (project ' . $oProject->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project]);
                 }
             }
         }
