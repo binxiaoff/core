@@ -64,9 +64,9 @@
                     <td><?= $reception->getMotif() ?></td>
                     <td style="text-align:right"><?= $this->ficelle->formatNumber($reception->getMontant() / 100) ?> €</td>
                     <td class="statut_operation_<?= $reception->getIdReception() ?>">
-                        <?php if (1 == $reception->getstatusBo() && $reception->getIdUser()): ?>
+                        <?php if (\Unilend\Bundle\CoreBusinessBundle\Entity\Receptions::STATUS_ASSIGNED_MANUAL == $reception->getstatusBo() && $reception->getIdUser()): ?>
                             <?= $reception->getIdUser()->getFirstname() . ' ' . $reception->getIdUser()->getName() ?><br/>
-                            <?= $reception->getAssignmentDate()->format('d/m/Y à H:i:s') ?>
+                            <?= $reception->getAssignmentDate()->format('d/m/Y H:i:s') ?>
                         <?php else: ?>
                             <?= $this->statusOperations[$reception->getstatusBo()] ?>
                         <?php endif; ?>

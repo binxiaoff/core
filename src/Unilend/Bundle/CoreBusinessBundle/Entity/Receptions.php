@@ -14,19 +14,21 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Receptions
 {
-    const STATUS_PENDING           = 0;
-    const STATUS_MANUALLY_ASSIGNED = 1;
-    const STATUS_AUTO_ASSIGNED     = 2;
-    const STATUS_REJECTED          = 3;
+    const STATUS_PENDING         = 0;
+    const STATUS_ASSIGNED_MANUAL = 1;
+    const STATUS_ASSIGNED_AUTO   = 2;
+    const STATUS_IGNORED_MANUAL  = 3;
+    const STATUS_IGNORED_AUTO    = 4;
+
+    const TYPE_DIRECT_DEBIT  = 1;
+    const TYPE_WIRE_TRANSFER = 2;
+    const TYPE_CHEQUE        = 3;
+    const TYPE_UNKNOWN       = 4;
 
     const REPAYMENT_TYPE_NORMAL         = 0;
     const REPAYMENT_TYPE_EARLY          = 1;
     const REPAYMENT_TYPE_REGULARISATION = 2;
     const REPAYMENT_TYPE_RECOVERY       = 3;
-
-    const TYPE_DIRECT_DEBIT  = 1;
-    const TYPE_WIRE_TRANSFER = 2;
-    const TYPE_CHEQUE        = 3;
 
     const WIRE_TRANSFER_STATUS_RECEIVED = 1;
     const WIRE_TRANSFER_STATUS_SENT     = 2;

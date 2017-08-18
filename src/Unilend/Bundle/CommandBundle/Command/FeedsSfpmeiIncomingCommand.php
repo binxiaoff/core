@@ -66,33 +66,27 @@ EOF
 
         if (false === empty($aReceivedData) && (empty($aReception) || $input->getOption('force-replay'))) {
             foreach ($aReceivedData as $aRow) {
-                $motif = '';
-                $code  = $aRow['codeOpInterbancaire'];
+                $motif               = '';
+                $code                = $aRow['codeOpInterbancaire'];
+                $type                = Receptions::TYPE_UNKNOWN;
+                $iBankTransferStatus = 0;
+                $iBankDebitStatus    = 0;
 
                 if (in_array($code, $aReceivedTransfersStatus)) {
                     $type                = Receptions::TYPE_WIRE_TRANSFER;
                     $iBankTransferStatus = Receptions::WIRE_TRANSFER_STATUS_RECEIVED;
-                    $iBankDebitStatus    = 0;
                 } elseif (in_array($code, $aEmittedTransfersStatus)) {
                     $type                = Receptions::TYPE_WIRE_TRANSFER;
                     $iBankTransferStatus = Receptions::WIRE_TRANSFER_STATUS_SENT;
-                    $iBankDebitStatus    = 0;
                 } elseif (in_array($code, $aRejectedTransfersStatus)) {
                     $type                = Receptions::TYPE_WIRE_TRANSFER;
                     $iBankTransferStatus = Receptions::WIRE_TRANSFER_STATUS_REJECTED;
-                    $iBankDebitStatus    = 0;
                 } elseif (in_array($code, $aEmittedLeviesStatus)) {
-                    $type                = Receptions::TYPE_DIRECT_DEBIT;
-                    $iBankTransferStatus = 0;
-                    $iBankDebitStatus    = Receptions::DIRECT_DEBIT_STATUS_SENT;
+                    $type             = Receptions::TYPE_DIRECT_DEBIT;
+                    $iBankDebitStatus = Receptions::DIRECT_DEBIT_STATUS_SENT;
                 } elseif (in_array($code, $aRejectedLeviesStatus)) {
-                    $type                = Receptions::TYPE_DIRECT_DEBIT;
-                    $iBankTransferStatus = 0;
-                    $iBankDebitStatus    = Receptions::DIRECT_DEBIT_STATUS_REJECTED;
-                } else {
-                    $type                = Receptions::TYPE_UNKNOWN;
-                    $iBankTransferStatus = 0;
-                    $iBankDebitStatus    = 0;
+                    $type             = Receptions::TYPE_DIRECT_DEBIT;
+                    $iBankDebitStatus = Receptions::DIRECT_DEBIT_STATUS_REJECTED;
                 }
 
                 for ($index = 1; $index <= 5; $index++) {
@@ -101,45 +95,53 @@ EOF
                     }
                 }
 
-                if (isset($aRow['unilend_bienvenue'])) {
+                $status = Receptions::STATUS_PENDING;
+
+                if (false === empty($aRow['welcomeOffer'])) {
+                    $status = Receptions::STATUS_ASSIGNED_AUTO;
                     $this->processWelcomeOffer($aRow);
-                } else {
-                    $reception = new Receptions();
-                    $reception->setRemb(0)
-                        ->setStatusBo(Receptions::STATUS_PENDING)
-                        ->setMotif($motif)
-                        ->setMontant($aRow['montant'])
-                        ->setType($type)
-                        ->setStatusVirement($iBankTransferStatus)
-                        ->setStatusPrelevement($iBankDebitStatus)
-                        ->setLigne($aRow['ligne1'])
-                        ->setTypeRemb(0)
-                        ->setIdUser(null);
+                }
 
-                    $entityManager->persist($reception);
-                    $entityManager->flush();
+                if (false !== stripos($aRow['ligne1'], 'CANTONNEMENT') || false !== stripos($aRow['ligne1'], 'DECANTON')) {
+                    $status = Receptions::STATUS_IGNORED_AUTO;
+                }
 
-                    if ($type === Receptions::TYPE_DIRECT_DEBIT && $iBankDebitStatus === Receptions::DIRECT_DEBIT_STATUS_SENT) {
-                        $this->processDirectDebit($motif, $reception);
-                    } elseif ($type === Receptions::TYPE_WIRE_TRANSFER && $iBankTransferStatus === Receptions::WIRE_TRANSFER_STATUS_RECEIVED) {
-                        if (
-                            isset($aRow['libelleOpe3'])
-                            && 1 === preg_match('/RA-?([0-9]+)/', $aRow['libelleOpe3'], $matches)
-                            && $project = $projectRepository->find((int) $matches[1])
-                        ) {
-                            $this->processBorrowerAnticipatedRepayment($reception, $project);
-                        } elseif (
-                            isset($aRow['libelleOpe3'])
-                            && preg_match('/([0-9]+) REGULARISATION/', $aRow['libelleOpe3'], $matches)
-                            && $project = $projectRepository->find((int) $matches[1])
-                        ) {
-                            $this->processRegulation($motif, $reception, $project);
-                        } elseif (self::FRENCH_BANK_TRANSFER_BNPP_CODE === $aRow['codeOpBNPP']) {
-                            $this->processLenderBankTransfer($motif, $reception);
-                        }
-                    } elseif ($type === Receptions::TYPE_DIRECT_DEBIT && $iBankDebitStatus === Receptions::DIRECT_DEBIT_STATUS_REJECTED) {
-                        $this->processBorrowerRepaymentRejection($aRow, $reception);
+                $reception = new Receptions();
+                $reception
+                    ->setRemb(0)
+                    ->setStatusBo($status)
+                    ->setMotif($motif)
+                    ->setMontant($aRow['montant'])
+                    ->setType($type)
+                    ->setStatusVirement($iBankTransferStatus)
+                    ->setStatusPrelevement($iBankDebitStatus)
+                    ->setLigne($aRow['ligne1'])
+                    ->setTypeRemb(0)
+                    ->setIdUser(null);
+
+                $entityManager->persist($reception);
+                $entityManager->flush();
+
+                if ($type === Receptions::TYPE_DIRECT_DEBIT && $iBankDebitStatus === Receptions::DIRECT_DEBIT_STATUS_SENT) {
+                    $this->processDirectDebit($motif, $reception);
+                } elseif ($type === Receptions::TYPE_WIRE_TRANSFER && $iBankTransferStatus === Receptions::WIRE_TRANSFER_STATUS_RECEIVED) {
+                    if (
+                        isset($aRow['libelleOpe3'])
+                        && 1 === preg_match('/RA-?([0-9]+)/', $aRow['libelleOpe3'], $matches)
+                        && $project = $projectRepository->find((int) $matches[1])
+                    ) {
+                        $this->processBorrowerAnticipatedRepayment($reception, $project);
+                    } elseif (
+                        isset($aRow['libelleOpe3'])
+                        && preg_match('/([0-9]+) REGULARISATION/', $aRow['libelleOpe3'], $matches)
+                        && $project = $projectRepository->find((int) $matches[1])
+                    ) {
+                        $this->processRegulation($motif, $reception, $project);
+                    } elseif (self::FRENCH_BANK_TRANSFER_BNPP_CODE === $aRow['codeOpBNPP']) {
+                        $this->processLenderBankTransfer($motif, $reception);
                     }
+                } elseif ($type === Receptions::TYPE_DIRECT_DEBIT && $iBankDebitStatus === Receptions::DIRECT_DEBIT_STATUS_REJECTED) {
+                    $this->processBorrowerRepaymentRejection($aRow, $reception);
                 }
             }
 
@@ -179,81 +181,70 @@ EOF
             'R' => 9
         ];
 
-        $aResult      = [];
-        $aRestriction = [];
-        $rHandler     = fopen($file, 'r');
+        $aResult  = [];
+        $rHandler = fopen($file, 'r');
 
         if ($rHandler) {
             $i = 0;
             while (($sLine = fgets($rHandler)) !== false) {
-                if (false !== stripos($sLine, 'CANTONNEMENT') || false !== stripos($sLine, 'DECANTON')) {
-                    $sRecordCode = substr($sLine, 0, 2);
-                    if ($sRecordCode == 04) {
-                        $i++;
+                $sLine       = trim($sLine, "\n\r");
+                $sRecordCode = substr($sLine, 0, 2);
+
+                if ($sRecordCode == 04) {
+                    $i++;
+                    $iLine = 1;
+
+                    $aResult[$i]['codeEnregi']          = substr($sLine, 0, 2);
+                    $aResult[$i]['codeBanque']          = substr($sLine, 2, 5);
+                    $aResult[$i]['codeOpBNPP']          = substr($sLine, 7, 4);
+                    $aResult[$i]['codeGuichet']         = substr($sLine, 11, 5);
+                    $aResult[$i]['codeDevises']         = substr($sLine, 16, 3);
+                    $aResult[$i]['nbDecimales']         = substr($sLine, 19, 1);
+                    $aResult[$i]['zoneReserv1']         = substr($sLine, 20, 1);
+                    $aResult[$i]['numCompte']           = substr($sLine, 21, 11);
+                    $aResult[$i]['codeOpInterbancaire'] = substr($sLine, 32, 2);
+                    $aResult[$i]['dateEcriture']        = substr($sLine, 34, 6);
+                    $aResult[$i]['codeMotifRejet']      = substr($sLine, 40, 2);
+                    $aResult[$i]['dateValeur']          = substr($sLine, 42, 6);
+                    $aResult[$i]['zoneReserv2']         = substr($sLine, 79, 2);
+                    $aResult[$i]['numEcriture']         = substr($sLine, 81, 7);
+                    $aResult[$i]['codeExoneration']     = substr($sLine, 88, 1);
+                    $aResult[$i]['zoneReserv3']         = substr($sLine, 89, 1);
+                    $aResult[$i]['refOp']               = substr($sLine, 104, 16);
+                    $aResult[$i]['ligne1']              = $sLine;
+                    $aResult[$i]['welcomeOffer']        = false !== strpos($sLine, 'BIENVENUE');
+
+                    if (false === in_array(substr($sLine, 32, 2), $aEmittedLeviesStatus)) {
+                        $aResult[$i]['libelleOpe1'] = substr($sLine, 48, 31);
                     }
-                    $aRestriction[$i] = $i;
-                } else {
-                    $sRecordCode = substr($sLine, 0, 2);
+                    $amount                 = substr($sLine, 90, 14);
+                    $sFirstAmountPart       = ltrim(substr($amount, 0, 13), '0');
+                    $sLastAmountPart        = substr($amount, -1, 1);
+                    $aResult[$i]['montant'] = $sFirstAmountPart . $aPattern[$sLastAmountPart];
+                }
 
-                    if ($sRecordCode == 04) {
-                        $i++;
-                        $iLine = 1;
-
-                        if (strpos($sLine, 'BIENVENUE') == true) {
-                            $aResult[$i]['unilend_bienvenue'] = true;
-                        }
-                        $aResult[$i]['codeEnregi']          = substr($sLine, 0, 2);
-                        $aResult[$i]['codeBanque']          = substr($sLine, 2, 5);
-                        $aResult[$i]['codeOpBNPP']          = substr($sLine, 7, 4);
-                        $aResult[$i]['codeGuichet']         = substr($sLine, 11, 5);
-                        $aResult[$i]['codeDevises']         = substr($sLine, 16, 3);
-                        $aResult[$i]['nbDecimales']         = substr($sLine, 19, 1);
-                        $aResult[$i]['zoneReserv1']         = substr($sLine, 20, 1);
-                        $aResult[$i]['numCompte']           = substr($sLine, 21, 11);
-                        $aResult[$i]['codeOpInterbancaire'] = substr($sLine, 32, 2);
-                        $aResult[$i]['dateEcriture']        = substr($sLine, 34, 6);
-                        $aResult[$i]['codeMotifRejet']      = substr($sLine, 40, 2);
-                        $aResult[$i]['dateValeur']          = substr($sLine, 42, 6);
-                        $aResult[$i]['zoneReserv2']         = substr($sLine, 79, 2);
-                        $aResult[$i]['numEcriture']         = substr($sLine, 81, 7);
-                        $aResult[$i]['codeExoneration']     = substr($sLine, 88, 1);
-                        $aResult[$i]['zoneReserv3']         = substr($sLine, 89, 1);
-                        $aResult[$i]['refOp']               = substr($sLine, 104, 16);
-                        $aResult[$i]['ligne1']              = $sLine;
-
-                        if (! in_array(substr($sLine, 32, 2), $aEmittedLeviesStatus)) {
-                            $aResult[$i]['libelleOpe1'] = substr($sLine, 48, 31);
-                        }
-                        $amount                 = substr($sLine, 90, 14);
-                        $sFirstAmountPart       = ltrim(substr($amount, 0, 13), '0');
-                        $sLastAmountPart        = substr($amount, -1, 1);
-                        $aResult[$i]['montant'] = $sFirstAmountPart . $aPattern[$sLastAmountPart];
+                if ($sRecordCode == 05) {
+                    if (false !== strpos($sLine, 'BIENVENUE')) {
+                        $aResult[$i]['welcomeOffer'] = true;
                     }
 
-                    if ($sRecordCode == 05) {
-                        if (strpos($sLine, 'BIENVENUE') == true) {
-                            $aResult[$i]['unilend_bienvenue'] = true;
-                        }
-
-                        if (in_array(substr($sLine, 32, 2), $aEmittedLeviesStatus)) {
-                            if (in_array(trim(substr($sLine, 45, 3)), ['LCC', 'LC2'])) {
-                                $iLine                              += 1;
-                                $aResult[$i]['libelleOpe' . $iLine] = trim(substr($sLine, 45));
-                            }
-                        } else {
+                    if (in_array(substr($sLine, 32, 2), $aEmittedLeviesStatus)) {
+                        if (in_array(trim(substr($sLine, 45, 3)), ['LCC', 'LC2'])) {
                             $iLine                              += 1;
                             $aResult[$i]['libelleOpe' . $iLine] = trim(substr($sLine, 45));
                         }
+                    } else {
+                        $iLine                              += 1;
+                        $aResult[$i]['libelleOpe' . $iLine] = trim(substr($sLine, 45));
                     }
                 }
             }
+
             fclose($rHandler);
-            foreach ($aRestriction as $item) {
-                unset($aResult[$item]);
-            }
         } else {
             $this->logger->error('SFPMEI incoming file "' . $file . '" not processed');
         }
+
         return $aResult;
     }
 
@@ -307,8 +298,6 @@ EOF
      */
     private function processWelcomeOffer(array $aRow)
     {
-        $this->logger->info('Bank transfer welcome offer: ' . json_encode($aRow['unilend_bienvenue']), ['class' => __CLASS__, 'function' => __FUNCTION__]);
-
         $amount = round(bcdiv($aRow['montant'], 100, 4), 2);
         $this->getContainer()->get('unilend.service.operation_manager')->provisionUnilendPromotionalWallet($amount);
     }
@@ -341,7 +330,7 @@ EOF
                 if ($project instanceof Projects) {
                     $reception->setIdProject($project)
                         ->setIdClient($client)
-                        ->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED)
+                        ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)
                         ->setAssignmentDate(new \DateTime())
                         ->setRemb(1);
                     $entityManager->flush();
@@ -367,7 +356,7 @@ EOF
 
         $reception->setIdProject($project)
             ->setIdClient($client)
-            ->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED)
+            ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)
             ->setTypeRemb(Receptions::REPAYMENT_TYPE_EARLY)
             ->setAssignmentDate(new \DateTime())
             ->setRemb(1);
@@ -414,7 +403,7 @@ EOF
 
         $reception->setIdProject($project)
             ->setIdClient($client)
-            ->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED)
+            ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)
             ->setTypeRemb(Receptions::REPAYMENT_TYPE_REGULARISATION)
             ->setRemb(1)
             ->setAssignmentDate(new \DateTime())
@@ -456,7 +445,7 @@ EOF
 
                     if (false !== strpos($pattern, $lenderPattern)) {
                         $reception->setIdClient($wallet->getIdClient())
-                            ->setStatusBo(Receptions::STATUS_AUTO_ASSIGNED)
+                            ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)
                             ->setRemb(1); // todo: delete the field
                         $entityManager->flush();
 
@@ -542,6 +531,7 @@ EOF
         $oProjectsRemb    = $this->entityManagerSimulator->getRepository('projects_remb');
         $entityManager    = $this->getContainer()->get('doctrine.orm.entity_manager');
         $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
+
         if (1 === preg_match('#^RUM[^0-9]*([0-9]+)#', $aRow['libelleOpe3'], $aMatches)) {
             /** @var Projects $project */
             $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find((int) $aMatches[1]);
@@ -549,12 +539,13 @@ EOF
             if ($project) {
                 $project->setRembAuto(Projects::AUTO_REPAYMENT_OFF);
                 $entityManager->flush();
+
                 /** @var Wallet $wallet */
                 $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
 
                 if ($wallet) {
                     $reception
-                        ->setStatusBo(Receptions::STATUS_MANUALLY_ASSIGNED)
+                        ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)
                         ->setIdProject($project)
                         ->setIdClient($wallet->getIdClient())
                         ->setRemb(0);
