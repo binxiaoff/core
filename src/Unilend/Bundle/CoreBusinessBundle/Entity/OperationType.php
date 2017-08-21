@@ -46,6 +46,7 @@ class OperationType
     const COLLECTION_COMMISSION_PROVISION = 'collection_commission_provision';
     const COLLECTION_COMMISSION_BORROWER  = 'collection_commission_borrower';
     const COLLECTION_COMMISSION_LENDER    = 'collection_commission_lender';
+    const DEBT_COLLECTOR_WITHDRAW         = 'debt_collector_withdraw';
 
     // General regularization
     const UNILEND_BORROWER_COMMERCIAL_GESTURE = 'unilend_borrower_commercial_gesture';
