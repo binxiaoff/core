@@ -232,7 +232,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
     {
         $detailedDailyStateBalanceRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:DetailedDailyStateBalanceHistory');
         $previousDay                         = $firstDay->sub(\DateInterval::createFromDateString('1 day'));
-        $previousDayBalanceHistory           = $detailedDailyStateBalanceRepository->findOneBy(['date' => $previousDay->format('Y-m-d')]);
+        $previousDayBalanceHistory           = $detailedDailyStateBalanceRepository->findOneBy(['date' => $previousDay]);
 
         if (null === $previousDayBalanceHistory) {
             $previousDayBalanceHistory = $this->newDailyStateBalanceHistory($previousDay);
@@ -247,7 +247,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
                 break;
             }
 
-            $balanceHistory = $detailedDailyStateBalanceRepository->findOneBy(['date' => $date]);
+            $balanceHistory = $detailedDailyStateBalanceRepository->findOneBy(['date' => $dateTime]);
             if (null === $balanceHistory) {
                 $balanceDate    = ($date == $requestedDate->format('Y-m-d')) ? $requestedDate : $dateTime;
                 $balanceHistory = $this->newDailyStateBalanceHistory($balanceDate);
@@ -261,7 +261,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
 
         $previousYear = new \DateTime('Last day of december ' . $requestedDate->format('Y'));
         $previousYear->sub(\DateInterval::createFromDateString('1 year'));
-        $previousMonthBalanceHistory = $detailedDailyStateBalanceRepository->findOneBy(['date' => $previousYear->format('Y-m-d')]);
+        $previousMonthBalanceHistory = $detailedDailyStateBalanceRepository->findOneBy(['date' => $previousYear]);
 
         if (null === $previousMonthBalanceHistory) {
             $previousMonthBalanceHistory = $this->newDailyStateBalanceHistory($previousYear);
@@ -273,12 +273,12 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
 
             if ($month <= $requestedDate->format('n')) {
                 if ($month == $requestedDate->format('n')) {
-                    $balanceHistory = $detailedDailyStateBalanceRepository->findOneBy(['date' => $requestedDate->format('Y-m-d')]);
+                    $balanceHistory = $detailedDailyStateBalanceRepository->findOneBy(['date' => $requestedDate]);
                     $this->addBalanceLine($activeSheet, $balanceHistory, $row, $specificRows);
                     $this->addBalanceLine($activeSheet, $balanceHistory, $specificRows['totalMonth'], $specificRows);
                     continue;
                 }
-                $balanceHistory = $detailedDailyStateBalanceRepository->findOneBy(['date' => $lastDayOfMonth->format('Y-m-t')]);
+                $balanceHistory = $detailedDailyStateBalanceRepository->findOneBy(['date' => $lastDayOfMonth]);
                 if (null === $balanceHistory) {
                     $balanceHistory = $this->newDailyStateBalanceHistory($lastDayOfMonth);
                 }
@@ -305,6 +305,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $balanceHistory->setUnilendPromotionalBalance($walletBalanceHistoryRepository->sumBalanceForDailyState($date, [WalletType::UNILEND_PROMOTIONAL_OPERATION]));
         $balanceHistory->setTaxBalance($walletBalanceHistoryRepository->sumBalanceForDailyState($date, WalletType::TAX_FR_WALLETS));
         $balanceHistory->setDate($date);
+        $balanceHistory->setAdded(new \DateTime('NOW'));
 
         $entityManager->persist($balanceHistory);
         $entityManager->flush($balanceHistory);
@@ -649,12 +650,12 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
 
         if ($isTotal) {
             if ($row == $specificRows['totalDay']) {
-                $lastNotEmptyRow    = $specificRows['coordinatesDay'][$dailyBalances->getDate()];
+                $lastNotEmptyRow    = $specificRows['coordinatesDay'][$dailyBalances->getDate()->format('Y-m-d')];
                 $theoreticalBalance = $activeSheet->getCell(self::THEORETICAL_BALANCE_COLUMN . $lastNotEmptyRow)->getValue();
             }
 
             if ($row == $specificRows['totalMonth']) {
-                $month              = (int) substr($dailyBalances->getDate(), 5, 2);
+                $month              = $dailyBalances->getDate()->format('n');
                 $lastNotEmptyRow    = $specificRows['coordinatesMonth'][$month];
                 $theoreticalBalance = $activeSheet->getCell(self::THEORETICAL_BALANCE_COLUMN . $lastNotEmptyRow)->getValue();
             }
