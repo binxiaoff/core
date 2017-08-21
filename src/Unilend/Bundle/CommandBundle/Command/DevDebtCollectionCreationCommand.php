@@ -107,11 +107,10 @@ EOF
                       ->setIdClient($client)
                       ->setIdProject($project)
                       ->setAssignmentDate(new \DateTime());
+            $this->getContainer()->get('unilend.service.operation_manager')->provisionBorrowerWallet($reception);
+
             if ($isNetAmount) {
-                $this->getContainer()->get('unilend.service.operation_manager')->provisionBorrowerWallet($reception);
                 $this->getContainer()->get('unilend.service.operation_manager')->provisionCollection($collector, $borrower, $reception, $commission);
-            } else {
-                $this->getContainer()->get('unilend.service.operation_manager')->provisionBorrowerWallet($reception);
             }
 
             $entityManager->flush();

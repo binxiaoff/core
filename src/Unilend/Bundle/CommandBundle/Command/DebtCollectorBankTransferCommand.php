@@ -12,7 +12,7 @@ class DebtCollectorBankTransferCommand extends ContainerAwareCommand
 {
     protected function configure()
     {
-        $this->setName('debt_collector:bank_transfer')
+        $this->setName('unilend:debt_collector:wallet:withdraw')
             ->setDescription('Creates virtual transaction for Debt Collector bank transfer with his whole available balance amount');
     }
 
