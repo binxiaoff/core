@@ -307,6 +307,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $balanceHistory->setUnilendPromotionalBalance($walletBalanceHistoryRepository->sumBalanceForDailyState($date, [WalletType::UNILEND_PROMOTIONAL_OPERATION]));
         $balanceHistory->setTaxBalance($walletBalanceHistoryRepository->sumBalanceForDailyState($date, WalletType::TAX_FR_WALLETS));
         $balanceHistory->setDate($date);
+        $balanceHistory->setAdded(new \DateTime('NOW'));
 
         $entityManager->persist($balanceHistory);
         $entityManager->flush($balanceHistory);
