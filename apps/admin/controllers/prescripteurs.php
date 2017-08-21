@@ -1,23 +1,22 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+
 class prescripteursController extends bootstrap
 {
     public function initialize()
     {
         parent::initialize();
 
-        $this->catchAll = true;
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
 
-        // Controle d'acces à la rubrique
-        $this->users->checkAccess('emprunteurs');
-
-        // Activation du menu
+        $this->catchAll   = true;
         $this->menu_admin = 'emprunteurs';
     }
 
     public function _default()
     {
-        header('Location:' . $this->lurl . '/prescripteur/gestion');
+        header('Location: ' . $this->lurl . '/prescripteurs/gestion');
     }
 
     public function _gestion()
@@ -109,6 +108,7 @@ class prescripteursController extends bootstrap
             $_SESSION['freeow']['message'] = 'le prescripteur a &eacute;t&eacute; mis a jour !';
 
             header('Location: ' . $this->lurl . '/prescripteurs/edit/' . $this->prescripteurs->id_prescripteur);
+            exit;
         }
     }
 

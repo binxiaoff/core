@@ -12,6 +12,17 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Zones
 {
+    const ZONE_LABEL_ADMINISTRATION = 'admin';
+    const ZONE_LABEL_BORROWERS      = 'emprunteurs';
+    const ZONE_LABEL_CONFIGURATION  = 'configuration';
+    const ZONE_LABEL_DASHBOARD      = 'dashboard';
+    const ZONE_LABEL_EDITION        = 'edition';
+    const ZONE_LABEL_LENDERS        = 'preteurs';
+    const ZONE_LABEL_SFPMEI         = 'sfpmei';
+    const ZONE_LABEL_SIMULATOR      = 'simulator';
+    const ZONE_LABEL_STATISTICS     = 'stats';
+    const ZONE_LABEL_TRANSFERS      = 'transferts';
+
     /**
      * @var string
      *

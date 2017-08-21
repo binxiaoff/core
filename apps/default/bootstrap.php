@@ -203,10 +203,9 @@ class bootstrap extends Controller
 
 
         if ($this->clients->checkAccess()) {
-
             $this->addDataLayer('uid', md5($this->clients->email));
-
         }
+
         $this->setSessionMail();
 
         false === isset($_SESSION['email']) || $_SESSION['email'] == '' ? $this->addDataLayer('unique_id', '') : $this->addDataLayer('unique_id', md5($_SESSION['email']));

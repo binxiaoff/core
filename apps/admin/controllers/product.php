@@ -2,6 +2,7 @@
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class productController extends bootstrap
 {
@@ -9,9 +10,11 @@ class productController extends bootstrap
     {
         parent::initialize();
 
-        $this->catchAll = true;
-        $this->users->checkAccess('emprunteurs');
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
+
+        $this->catchAll   = true;
         $this->menu_admin = 'emprunteurs';
+
         $this->translator = $this->get('translator');
     }
 

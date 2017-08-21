@@ -108,4 +108,49 @@ class ReceptionsRepository extends EntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return array
+     */
+    public function getRejectedDirectDebitIndicatorsBetweenDates(\DateTime $start, \DateTime $end)
+    {
+        $queryBuilder = $this->createQueryBuilder('r');
+        $queryBuilder->select('COUNT(r.idReception) AS number')
+            ->addSelect('ROUND(SUM(r.montant) / 100, 2) AS amount')
+            ->where('r.type = :directDebit')
+            ->andWhere('r.statusPrelevement = :rejected')
+            ->andWhere('r.added BETWEEN :start AND :end')
+            ->setParameter('directDebit', Receptions::TYPE_DIRECT_DEBIT)
+            ->setParameter('rejected', Receptions::DIRECT_DEBIT_STATUS_REJECTED)
+            ->setParameter('start', $start->format('Y-m-d H:i:s'))
+            ->setParameter('end', $end->format('Y-m-d H:i:s'));
+
+        return $queryBuilder->getQuery()->getArrayResult()[0];
+    }
+
+    /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return mixed
+     */
+    public function getBorrowerProvisionRegularizationIndicatorsBetweenDates(\DateTime $start, \DateTime $end)
+    {
+        $queryBuilder = $this->createQueryBuilder('r');
+        $queryBuilder->select('COUNT(r.idReception) AS number')
+            ->addSelect('ROUND(SUM(r.montant) / 100, 2) AS amount')
+            ->where('r.type != :directDebit')
+            ->andWhere('r.typeRemb = :regularization')
+            ->andWhere('r.added BETWEEN :start AND :end')
+            ->setParameter('directDebit', Receptions::TYPE_DIRECT_DEBIT)
+            ->setParameter('regularization', Receptions::REPAYMENT_TYPE_REGULARISATION)
+            ->setParameter('start', $start->format('Y-m-d H:i:s'))
+            ->setParameter('end', $end->format('Y-m-d H:i:s'));
+
+        return $queryBuilder->getQuery()->getArrayResult()[0];
+    }
 }
+

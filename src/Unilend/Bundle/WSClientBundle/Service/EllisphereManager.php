@@ -156,22 +156,16 @@ class EllisphereManager
 
             call_user_func($callback, $content, $validity['status']);
 
-            if ('error' === $validity['status']) {
-                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
-            } else {
-                $this->callHistoryManager->sendMonitoringAlert($wsResource, 'up');
-            }
             if ('valid' === $validity['status']) {
                 return new \SimpleXMLElement($content);
             }
         } catch (\Exception $exception) {
             call_user_func($callback, isset($content) ? $content : '', 'error');
-            $message = 'Call to ' . $wsResource->getResourceName() . ' using params: ' . $body . '. Error message: ' . $exception->getMessage() . ' Error code: ' . $exception->getCode();
+            $message = 'Call to ' . $wsResource->getResourceName() . '. Error message: ' . $exception->getMessage() . ' Error code: ' . $exception->getCode();
             if (isset($content)) {
                 $message .= $content;
             }
             $this->logger->error($message, $logContext);
-            $this->callHistoryManager->sendMonitoringAlert($wsResource, 'down');
         }
 
         return null;

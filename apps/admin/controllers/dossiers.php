@@ -13,10 +13,11 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog;
-use \Psr\Log\LoggerInterface;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
+use \Psr\Log\LoggerInterface;
 
 class dossiersController extends bootstrap
 {
@@ -61,7 +62,7 @@ class dossiersController extends bootstrap
     {
         parent::initialize();
 
-        $this->users->checkAccess('emprunteurs');
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
 
         $this->catchAll   = true;
         $this->menu_admin = 'emprunteurs';
@@ -107,7 +108,7 @@ class dossiersController extends bootstrap
             $this->lProjects = $this->projects->searchDossiers('', '', '', '', $this->params[0]);
         }
 
-        $this->iCountProjects = (isset($this->lProjects) && is_array($this->lProjects)) ? array_shift($this->lProjects) : 0;
+        $this->iCountProjects = isset($this->lProjects) && is_array($this->lProjects) ? array_shift($this->lProjects) : null;
 
         if (1 === $this->iCountProjects && (false === empty($projectId) || false === empty($companyName))) {
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->lProjects[0]['id_project']);

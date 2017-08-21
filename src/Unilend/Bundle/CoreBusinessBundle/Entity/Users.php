@@ -73,6 +73,13 @@ class Users
     /**
      * @var string
      *
+     * @ORM\Column(name="ip", type="string", length=191, nullable=true)
+     */
+    private $ip;
+
+    /**
+     * @var string
+     *
      * @ORM\Column(name="password", type="string", length=191, nullable=false)
      */
     private $password;
@@ -289,6 +296,30 @@ class Users
     public function getSlack()
     {
         return $this->slack;
+    }
+
+    /**
+     * Set IP range
+     *
+     * @param string $ip
+     *
+     * @return Users
+     */
+    public function setIp($ip)
+    {
+        $this->ip = $ip;
+
+        return $this;
+    }
+
+    /**
+     * Get ip
+     *
+     * @return string
+     */
+    public function getIp()
+    {
+        return $this->ip;
     }
 
     /**

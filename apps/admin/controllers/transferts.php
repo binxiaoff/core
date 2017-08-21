@@ -11,6 +11,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class transfertsController extends bootstrap
 {
@@ -18,10 +19,7 @@ class transfertsController extends bootstrap
     {
         parent::initialize();
 
-        $this->catchAll = true;
-
-        $this->users->checkAccess('transferts');
-
+        $this->catchAll   = true;
         $this->menu_admin = 'transferts';
 
         $this->statusOperations = array(
@@ -43,6 +41,8 @@ class transfertsController extends bootstrap
 
     public function _preteurs()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
+
         $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->getLenderAttributions();
         if (isset($this->params[0]) && 'csv' === $this->params[0]) {
             $this->hideDecoration();
@@ -52,6 +52,8 @@ class transfertsController extends bootstrap
 
     public function _emprunteurs()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
+
         $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->getBorrowerAttributions();
         if (isset($this->params[0]) && 'csv' === $this->params[0]) {
             $this->hideDecoration();
@@ -61,6 +63,8 @@ class transfertsController extends bootstrap
 
     public function _non_attribues()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
+
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
@@ -103,6 +107,8 @@ class transfertsController extends bootstrap
 
     public function _attribution()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
+
         $this->hideDecoration();
 
         $this->receptions = $this->loadData('receptions');
@@ -111,6 +117,8 @@ class transfertsController extends bootstrap
 
     public function _attribution_preteur()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
+
         $this->hideDecoration();
         $this->lPreteurs = [];
 
@@ -162,6 +170,8 @@ class transfertsController extends bootstrap
 
     public function _attribuer_preteur()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
+
         $this->hideDecoration();
         $this->autoFireView = false;
 
@@ -271,6 +281,8 @@ class transfertsController extends bootstrap
 
     public function _annuler_attribution_preteur()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
+
         $this->hideDecoration();
         $this->autoFireView = false;
 
@@ -297,6 +309,8 @@ class transfertsController extends bootstrap
 
     public function _annuler_attribution_projet()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
+
         $this->hideDecoration();
         $this->autoFireView = false;
 
@@ -344,6 +358,8 @@ class transfertsController extends bootstrap
 
     public function _rejeter_prelevement_projet()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
+
         $this->hideDecoration();
         $this->autoFireView = false;
 
@@ -388,6 +404,9 @@ class transfertsController extends bootstrap
 
     public function _rattrapage_offre_bienvenue()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_LENDERS);
+        $this->menu_admin = isset($this->lZonesHeader) && in_array(Zones::ZONE_LABEL_TRANSFERS, $this->lZonesHeader) ? 'transferts' : 'preteurs';
+
         /** @var \clients clients */
         $this->clients = $this->loadData('clients');
 
@@ -413,7 +432,7 @@ class transfertsController extends bootstrap
         }
 
         if (isset($_POST['affect_welcome_offer']) && isset($this->params[0])&& is_numeric($this->params[0])) {
-            if($this->clients->get($this->params[0])) {
+            if ($this->clients->get($this->params[0])) {
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
                 $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
                 $response            = $welcomeOfferManager->createWelcomeOffer($this->clients);
@@ -433,8 +452,12 @@ class transfertsController extends bootstrap
 
     public function _csv_rattrapage_offre_bienvenue()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_LENDERS);
+        $this->menu_admin = isset($this->lZonesHeader) && in_array(Zones::ZONE_LABEL_TRANSFERS, $this->lZonesHeader) ? 'transferts' : 'preteurs';
+
         $this->autoFireView = false;
         $this->hideDecoration();
+
         /** @var \clients $oClients */
         $oClients                    = $this->loadData('clients');
         $aClientsWithoutWelcomeOffer = array();
@@ -505,6 +528,9 @@ class transfertsController extends bootstrap
 
     public function _affect_welcome_offer()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_LENDERS);
+        $this->menu_admin = isset($this->lZonesHeader) && in_array(Zones::ZONE_LABEL_TRANSFERS, $this->lZonesHeader) ? 'transferts' : 'preteurs';
+
         $this->hideDecoration();
 
         $this->oWelcomeOffer = $this->loadData('offres_bienvenues');
@@ -518,6 +544,8 @@ class transfertsController extends bootstrap
 
     public function _deblocage()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
+
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
@@ -789,6 +817,8 @@ class transfertsController extends bootstrap
 
     public function _succession()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
+
         if (isset($_POST['succession_check']) || isset($_POST['succession_validate'])) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
             $clientManager = $this->get('unilend.service.client_manager');
@@ -1021,6 +1051,8 @@ class transfertsController extends bootstrap
 
     public function _validate_lightbox()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
+
         $this->hideDecoration();
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
@@ -1061,6 +1093,8 @@ class transfertsController extends bootstrap
 
     public function _virement_emprunteur()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
+
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \NumberFormatTest currencyFormatter */
