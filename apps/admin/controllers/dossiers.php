@@ -1969,14 +1969,20 @@ class dossiersController extends bootstrap
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::REMBOURSEMENT_ANTICIPE, $this->projects);
 
                     foreach ($this->echeanciers->get_liste_preteur_on_project($this->projects->id_project) as $item) {
-                        $loan = $loanRepository->find($item['id_loan']);
-                        $operationManager->earlyRepayment($loan);
+                        try {
+                            $loan = $loanRepository->find($item['id_loan']);
+                            $operationManager->earlyRepayment($loan);
 
-                        $repaidAmount = round(bcadd($repaidAmount, bcdiv($loan->getAmount(), 100, 4), 4), 2);
-                        $repaidLoanNb++;
-                        $repaymentTaskLog->setRepaymentNb($repaidLoanNb)->setRepaidAmount($repaidAmount);
-                        $entityManager->flush();
+                            $repaidAmount = round(bcadd($repaidAmount, bcdiv($loan->getAmount(), 100, 4), 4), 2);
+                            $repaidLoanNb++;
+                        } catch (Exception $exception){
+                            $oLogger->info('Early repayment error on loan (id: ' . $item['id_loan'] . ') Error message : ' . $exception->getMessage());
+                            break;
+                        }
                     }
+
+                    $repaymentTaskLog->setRepaymentNb($repaidLoanNb)->setRepaidAmount($repaidAmount);
+                    $entityManager->flush();
 
                     $this->bdd->query('
                         UPDATE echeanciers SET
