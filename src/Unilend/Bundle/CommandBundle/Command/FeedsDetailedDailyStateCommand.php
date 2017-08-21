@@ -557,17 +557,16 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $totalProjectCommission       = round(bcsub($borrowerCommissionProject, $borrowerCommissionProjectRegularization, 4), 2);
             $totalPaymentCommission       = round(bcsub($borrowerCommissionPayment, $borrowerCommissionPaymentRegularization, 4), 2);
             $totalTax                     = round(bcadd($totalCrds, bcadd($totalSolidarityDeductions, bcadd($totalAdditionalContributions, bcadd($totalSocialDeductions, bcadd($totalCsg, bcadd($totalStatutoryContributions, $totalIncomeTax, 4), 4), 4), 4), 4), 4), 2);
-            $totalCollectionCommission    = round(bcsub($collectionCommissionProvision, bcadd(bcsub($collectionCommissionLender, $collectionCommissionLenderRegularization, 4), bcsub($collectionCommissionBorrower, $collectionCommissionBorrowerRegularization, 4), 4), 4), 2);
+            $totalCollectionCommission    = round(bcsub(bcadd(bcsub($collectionCommissionLender, $collectionCommissionLenderRegularization, 4), bcsub($collectionCommissionBorrower, $collectionCommissionBorrowerRegularization, 4), 4), $collectionCommissionProvision, 4), 2);
 
             $incomingLender              = bcadd($lenderProvisionCreditCard, $lenderProvisionWireTransfer, 4);
             $incomingBorrower            = $realBorrowerProvision;
             $incomingUnilend             = $totalPromotionProvision;
-            $incomingDebtCollector       = $totalCollectionCommission;
             $outgoingLender              = bcadd($totalTax, $lenderWithdraw, 4);
             $outgoingBorrower            = $borrowerWithdraw;
             $outgoingUnilend             = $unilendWithdraw;
-            $outgoingDebtCollector       = bcadd($totalCollectionCommission, $debtCollectorWithdraw, 4);
-            $totalIncoming               = round(bcadd($incomingDebtCollector, bcadd(bcadd($incomingLender, $incomingBorrower, 4), $incomingUnilend, 4), 4), 2);
+            $outgoingDebtCollector       = $debtCollectorWithdraw;
+            $totalIncoming               = round(bcadd(bcadd($incomingLender, $incomingBorrower, 4), $incomingUnilend, 4), 2);
             $totalOutgoing               = round(bcadd($outgoingDebtCollector, bcadd($outgoingUnilend, bcadd($outgoingBorrower, $outgoingLender, 4), 4), 4), 2);
             $totalFinancialMovementsLine = round(bcsub($totalIncoming, $totalOutgoing, 4), 2);
 

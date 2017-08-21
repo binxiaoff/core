@@ -275,9 +275,8 @@ class OperationManager
      */
     private function withdrawDebtCollectorWallet(Virements $wireTransferOut)
     {
-        $walletType    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::DEBT_COLLECTOR]);
-        $wallet        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $walletType]);
         $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::DEBT_COLLECTOR_WITHDRAW]);
+        $wallet        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($wireTransferOut->getClient(), WalletType::DEBT_COLLECTOR);
         $amount        = round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2);
 
         $this->newOperation($amount, $operationType, null, $wallet, null, $wireTransferOut);
