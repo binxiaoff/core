@@ -558,7 +558,7 @@ class ProjectRepaymentManager
             if ($monthlyAmount <= $amount) {
                 $echeanciers->updateStatusEmprunteur($project->getIdProject(), $paymentSchedules->getOrdre());
 
-                $paymentSchedules->setStatusEmprunteur(EcheanciersEmprunteur::STATUS_EARLY_REPAYMENT_DONE)
+                $paymentSchedules->setStatusEmprunteur(EcheanciersEmprunteur::STATUS_PAID)
                     ->setDateEcheanceEmprunteurReel(new \DateTime());
                 $this->entityManager->flush($paymentSchedules);
 
