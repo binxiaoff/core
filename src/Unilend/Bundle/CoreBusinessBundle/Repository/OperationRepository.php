@@ -1050,6 +1050,110 @@ class OperationRepository extends EntityRepository
     }
 
     /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     * @param bool      $groupByProvision
+     * @param bool      $onlineLenders
+     *
+     * @return array
+     */
+    public function getLenderProvisionIndicatorsBetweenDates(\DateTime $start, \DateTime $end, $groupByProvision = true, $onlineLenders = true)
+    {
+        $start->setTime(0, 0, 0);
+        $end->setTime(23, 59, 59);
+
+        $queryBuilder = $this->createQueryBuilder('o');
+        $queryBuilder->select('SUM(o.amount) AS totalAmount')
+            ->addSelect('COUNT(DISTINCT o.idWalletCreditor) AS numberLenders')
+            ->addSelect('ROUND(AVG(o.amount), 2) AS averageAmount')
+            ->addSelect('COUNT(o.id) AS numberProvisions')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('ot.label = :lenderProvision')
+            ->andWhere('o.added BETWEEN :start AND :end')
+            ->setParameter('lenderProvision', OperationType::LENDER_PROVISION)
+            ->setParameter('start', $start->format('Y-m-d H:i:s'))
+            ->setParameter('end', $end->format('Y-m-d H:i:s'));
+
+        if ($groupByProvision) {
+            $queryBuilder->addSelect('CASE WHEN (o.idBackpayline IS NOT NULL) THEN \'creditCard\' ELSE \'wireTransferIn\' END AS provisionType')
+            ->groupBy('provisionType');
+        }
+
+        if ($onlineLenders) {
+            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'o.idWalletCreditor = w.id')
+                ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'c.idClient = w.idClient')
+                ->andWhere('c.status = :online')
+                ->setParameter('online', Clients::STATUS_ONLINE);
+        }
+
+        return $queryBuilder->getQuery()->getArrayResult();
+    }
+
+    /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return array
+     */
+    public function getLenderWithdrawIndicatorsBetweenDates(\DateTime $start, \DateTime $end)
+    {
+        $start->setTime(0, 0, 0);
+        $end->setTime(23, 59, 59);
+
+        $queryBuilder = $this->createQueryBuilder('o');
+        $queryBuilder->select('SUM(o.amount) AS totalAmount')
+            ->addSelect('AVG(o.amount) AS averageAmount')
+            ->addSelect('COUNT(o.id) AS numberWithdraw')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('ot.label = :lenderWithdraw')
+            ->andWhere('o.added BETWEEN :start AND :end')
+            ->setParameter('lenderWithdraw', OperationType::LENDER_WITHDRAW)
+            ->setParameter('start', $start->format('Y-m-d H:i:s'))
+            ->setParameter('end', $end->format('Y-m-d H:i:s'));
+
+        return $queryBuilder->getQuery()->getResult()[0];
+    }
+
+    /**
+     * @param \DateTime $end
+     * @param array     $projects
+     *
+     * @return bool|string
+     */
+    public function getRemainingDueCapitalForProjects(\DateTime $end, array $projects)
+    {
+        $end->setTime(23, 59, 59);
+
+        $query = '
+            SELECT IFNULL(SUM(o_loan.amount), 0) - (
+              SELECT IFNULL(SUM(o_repayment.amount), 0)
+              FROM operation o_repayment
+              INNER JOIN operation_type ot ON ot.id = o_repayment.id_type
+              WHERE o_repayment.added <= :end
+              AND ot.label = "' . OperationType::CAPITAL_REPAYMENT . '"
+              AND o_repayment.id_project IN (:projects)
+            ) - (
+              SELECT IFNULL(SUM(o_repayment_regul.amount), 0)
+              FROM operation o_repayment_regul
+              INNER JOIN operation_type ot ON ot.id = o_repayment_regul.id_type
+              WHERE o_repayment_regul.added <= :end
+              AND ot.label = "' . OperationType::CAPITAL_REPAYMENT_REGULARIZATION . '"
+              AND o_repayment_regul.id_project IN (:projects)
+            )
+            FROM operation o_loan
+            INNER JOIN operation_type ot ON ot.id = o_loan.id_type
+            WHERE o_loan.added <= :end
+            AND ot.label = "' . OperationType::LENDER_LOAN . '"
+            AND o_loan.id_project  IN (:projects)';
+
+        $statement = $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery($query, ['end' => $end->format('Y-m-d H:i:s'), 'projects' => $projects], ['end' => \PDO::PARAM_STR, 'projects' => Connection::PARAM_INT_ARRAY]);
+
+        return $statement->fetchColumn();
+    }
+
+    /**
      * @param $wallet
      * @return array
      */

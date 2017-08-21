@@ -19,6 +19,11 @@ use Unilend\librairies\CacheKeys;
 
 class EcheanciersRepository extends EntityRepository
 {
+    /**
+     * @param int $idLender
+     *
+     * @return mixed
+     */
     public function getLostCapitalForLender($idLender)
     {
         $projectStatusCollectiveProceeding = [
@@ -430,5 +435,80 @@ class EcheanciersRepository extends EntityRepository
         $statement->closeCursor();
 
         return $repaymentData;
+    }
+
+    /**
+     * @param \DateTime $end
+     *
+     * @return array
+     */
+    public function getLateRepaymentIndicators(\DateTime $end)
+    {
+        $end->setTime(23, 59, 59);
+
+        $query = 'SELECT
+                        COUNT(DISTINCT e.id_project) AS projectCount,
+                        ROUND(SUM(e.montant) / 100, 2) AS lateAmount
+                  FROM (
+                       SELECT MAX(id_project_status_history) AS first_status_history
+                       FROM projects_status_history psh
+                       GROUP BY id_project) AS t
+                    INNER JOIN projects_status_history psh2 ON t.first_status_history = psh2.id_project_status_history
+                    INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                    INNER JOIN echeanciers e ON e.id_project = psh2.id_project
+                  WHERE psh2.added <= :end
+                    AND ps2.status IN (:status)
+                    AND e.status = :pending
+                    AND e.date_echeance <= :end';
+
+        return $this->getEntityManager()->getConnection()->executeQuery($query, [
+            'end'             => $end->format('Y-m-d H:i:s'),
+            'repaymentStatus' => ProjectsStatus::REMBOURSEMENT,
+            'status'          => [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME, ProjectsStatus::PROBLEME_J_X],
+            'pending'         => Echeanciers::STATUS_PENDING
+        ], [
+            'end'             => \PDO::PARAM_STR,
+            'repaymentStatus' => \PDO::PARAM_INT,
+            'status'          => Connection::PARAM_INT_ARRAY,
+            'pending'         => \PDO::PARAM_INT
+        ])->fetchAll(\PDO::FETCH_ASSOC)[0];
+    }
+
+    /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return mixed
+     */
+    public function findRepaidRepaymentsBetweenDates(\DateTime $start, \DateTime $end)
+    {
+        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder->where('e.status = :paid')
+            ->andWhere('e.dateEcheanceReel BETWEEN :start AND :end')
+            ->groupBy('e.idProject, e.ordre')
+            ->setParameter('paid', Echeanciers::STATUS_REPAID)
+            ->setParameter('start', $start->format('Y-m-d H:i:s'))
+            ->setParameter('end', $end->format('Y-m-d H:i:s'));
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return mixed
+     */
+    public function getSumRepaidRepaymentsBetweenDates(\DateTime $start, \DateTime $end)
+    {
+        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder->select('SUM(e.montant / 100)')
+            ->where('e.status = :paid')
+            ->andWhere('e.dateEcheanceReel BETWEEN :start AND :end')
+            ->setParameter('paid', Echeanciers::STATUS_REPAID)
+            ->setParameter('start', $start->format('Y-m-d H:i:s'))
+            ->setParameter('end', $end->format('Y-m-d H:i:s'));
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }

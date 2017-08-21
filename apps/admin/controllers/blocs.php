@@ -1,15 +1,17 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+
 class blocsController extends bootstrap
 {
     public function initialize()
     {
         parent::initialize();
 
+        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
+
         $this->catchAll   = true;
         $this->menu_admin = 'edition';
-
-        $this->users->checkAccess('edition');
     }
 
     public function _add()

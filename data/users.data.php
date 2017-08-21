@@ -81,38 +81,42 @@ class users extends users_crud
     var $userMail = 'email';
     var $userPass = 'password';
 
-    public function handleLogin($button, $email, $pass)
+    public function handleLogin($email, $password)
     {
-        if (isset($_POST[$button])) {
-            $user = $this->login($_POST[$email], $_POST[$pass]);
+        $user = $this->login($email, $password);
 
-            if ($user != false && $this->get($user['email'], 'email')) {
-                $_SESSION['auth']  = true;
-                $_SESSION['token'] = md5(md5(time() . $this->securityKey));
-                $_SESSION['user']  = $user;
+        if (false === $user) {
+            $_SESSION['msgErreur'] = 'loginError';
+            header('Location: ' . $this->params['lurl'] . '/login');
+            die;
+        }
 
-                if (md5($_POST[$pass]) === $user['password'] || password_needs_rehash($user['password'], PASSWORD_DEFAULT)) {
-                    $user['password']             = password_hash($_POST[$pass], PASSWORD_DEFAULT);
-                    $_SESSION['user']['password'] = $user['password'];
-                    $this->password               = $user['password'];
-                }
+        if ($user != false && $this->get($user['email'], 'email')) {
+            $_SESSION['auth']  = true;
+            $_SESSION['token'] = md5(md5(time() . $this->securityKey));
+            $_SESSION['user']  = $user;
 
-                $this->lastlogin = date('Y-m-d H:i:s');
-                $this->update();
-                $this->checkExpiredPassword();
+            if (md5($password) === $user['password'] || password_needs_rehash($user['password'], PASSWORD_DEFAULT)) {
+                $user['password']             = password_hash($password, PASSWORD_DEFAULT);
+                $_SESSION['user']['password'] = $user['password'];
+                $this->password               = $user['password'];
+            }
 
-                if (isset($_SESSION['request_url']) && $_SESSION['request_url'] != '' && $_SESSION['request_url'] != 'login' && $_SESSION['request_url'] != 'captcha') {
-                    header('Location: ' . $_SESSION['request_url']);
-                    die;
-                } else {
-                    header('Location: ' . $this->params['lurl'] . '/');
-                    die;
-                }
+            $this->lastlogin = date('Y-m-d H:i:s');
+            $this->update();
+            $this->checkExpiredPassword();
+
+            if (isset($_SESSION['request_url']) && $_SESSION['request_url'] != '' && $_SESSION['request_url'] != 'login' && $_SESSION['request_url'] != 'captcha') {
+                header('Location: ' . $_SESSION['request_url']);
+                die;
             } else {
-                $_SESSION['msgErreur'] = 'loginError';
-                header('Location: ' . $this->params['lurl'] . '/login');
+                header('Location: ' . $this->params['lurl'] . '/');
                 die;
             }
+        } else {
+            $_SESSION['msgErreur'] = 'loginError';
+            header('Location: ' . $this->params['lurl'] . '/login');
+            die;
         }
     }
 
@@ -139,6 +143,12 @@ class users extends users_crud
         header('Location: ' . $this->params['lurl'] . '/login');
     }
 
+    /**
+     * @param string $email
+     * @param string $pass
+     *
+     * @return bool|array
+     */
     public function login($email, $pass)
     {
         $email = $this->bdd->escape_string($email);

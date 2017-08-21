@@ -1,6 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class emprunteursController extends bootstrap
 {
@@ -8,10 +9,9 @@ class emprunteursController extends bootstrap
     {
         parent::initialize();
 
-        $this->catchAll = true;
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
 
-        $this->users->checkAccess('emprunteurs');
-
+        $this->catchAll   = true;
         $this->menu_admin = 'emprunteurs';
     }
 
