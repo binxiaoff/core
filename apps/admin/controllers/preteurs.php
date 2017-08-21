@@ -830,7 +830,7 @@ class preteursController extends bootstrap
             $clientData = $this->loadData('clients');
 
             if (false === empty($_POST['id_client'])) {
-                $this->clientsWithoutWelcomeOffer                             = $clientData->getClientsWithNoWelcomeOffer($_POST['id']);
+                $this->clientsWithoutWelcomeOffer                             = $clientData->getClientsWithNoWelcomeOffer($_POST['id_client']);
                 $_SESSION['forms']['rattrapage_offre_bienvenue']['id_client'] = $_POST['id_client'];
             } else {
                 $_SESSION['freeow']['title']   = 'Recherche non aboutie. Indiquez la liste des ID clients';
@@ -926,7 +926,7 @@ class preteursController extends bootstrap
                     $_SESSION['freeow']['title'] = 'Offre de bienvenue crédité;';
                     break;
                 default:
-                    $_SESSION['freeow']['title'] = 'Offre de bienvenue non cédite';
+                    $_SESSION['freeow']['title'] = 'Offre de bienvenue non cédité';
                     break;
             }
             $_SESSION['freeow']['message'] = $response['message'];
