@@ -10,6 +10,11 @@ class SourceManager
     const SOURCE3    = 'user_source_utm_source_campaign';
     const ENTRY_SLUG = 'user_source_entry_slug';
 
+    const HP_LENDER_SOURCE_NAME      = 'HomePreteur';
+    const HP_LENDER_SOURCE_PARAMETER = 'hl';
+    const HP_SOURCE_NAME             = 'HomePage';
+    const HP_SOURCE_PARAMETER        = 'hm';
+
     /** @var RequestStack */
     private $requestStack;
 
@@ -46,6 +51,21 @@ class SourceManager
 
         if (false === $session->has(self::SOURCE1)) {
             $this->setSource(self::SOURCE1, 'Directe');
+        }
+
+        if (false === $session->has(self::SOURCE2) && 'Directe' == $this->getSource(self::SOURCE1)) {
+            if (false === empty($request->query->get('source'))) {
+                switch ($request->query->get('source')) {
+                    case self::HP_LENDER_SOURCE_PARAMETER:
+                        $this->setSource(self::SOURCE2, self::HP_LENDER_SOURCE_NAME);
+                        break;
+                    case self::HP_SOURCE_PARAMETER:
+                        $this->setSource(self::SOURCE2, self::HP_SOURCE_NAME);
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
     }
 

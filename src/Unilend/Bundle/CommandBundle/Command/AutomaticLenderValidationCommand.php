@@ -103,9 +103,8 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         if (false === empty($existingClient) && $existingClient['id_client'] != $client->id_client) {
             $logger->warning('Processing client id: ' . $client->id_client . ' - Duplicate client found: ' . json_encode($existingClient), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
             return;
-        } elseif (1 == $client->origine && 0 == $clientStatusHistory->counter('id_client = ' . $client->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . ClientsStatus::VALIDATED . ')')) {
-            $response = $welcomeOfferManager->createWelcomeOffer($client);
-            $logger->info('Client ID: ' . $client->id_client . ' Welcome offer creation result: ' . json_encode($response), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $client->id_client]);
+        } elseif ($welcomeOfferManager->clientIsEligibleForWelcomeOffer($client)) {
+            $welcomeOfferManager->payOutWelcomeOffer($client);
         }
         $clientAddress->get($client->id_client, 'id_client');
         $clientStatusManager->addClientStatus($client, Users::USER_ID_CRON, ClientsStatus::VALIDATED, 'Validation automatique basée sur Green Point');

@@ -32,6 +32,11 @@ class Clients
     const TITLE_MISTER    = 'M.';
     const TITLE_UNDEFINED = '';
 
+    /** Legacy welcome offer before separating them and adding types  */
+    const ORIGIN_WELCOME_OFFER      = 1;
+    const ORIGIN_WELCOME_OFFER_HOME = 2;
+    const ORIGIN_WELCOME_OFFER_LP   = 3;
+
     /**
      * @var string
      *

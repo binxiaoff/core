@@ -220,7 +220,8 @@
                                         {% trans %} site-general_unilend-advantages-join-us-description {% endtrans %}
                                     </ul>
                                 </div><!-- /.card-text -->
-                                <a href="{{ path('lender_subscription_personal_information') }}" class="btn-primary btn-shape-md">{% trans %} site-general_unilend-advantages-welcome-offer-title {% endtrans %}</a>
+                                <a href="{{ path('lender_subscription_personal_information',
+                                {'source' : constant('\\Unilend\\Bundle\\FrontBundle\\Service\\SourceManager::HP_SOURCE_PARAMETER')}) }}" class="btn-primary btn-shape-md">{% trans %} site-general_unilend-advantages-welcome-offer-title {% endtrans %}</a>
                                 {% if showWelcomeOffer == true %}
                                     <div class="stamp" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
                                         {% trans %} site-general_unilend-advantages-welcome-offer-description {% endtrans %}

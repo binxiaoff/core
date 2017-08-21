@@ -60,6 +60,8 @@ class LenderSubscriptionController extends Controller
         $company       = new Companies();
         $sponsorCode   = $this->get('session')->get('sponsorCode');
 
+        $this->addClientSources($client);
+
         if (false === empty($this->get('session')->get('landingPageData'))) {
             $landingPageData = $this->get('session')->get('landingPageData');
             $this->get('session')->remove('landingPageData');
@@ -74,7 +76,22 @@ class LenderSubscriptionController extends Controller
             if (false === isset($landingPageData['sponsor_code']) && $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage()) {
                 $this->get('session')->set('originLandingPage', true);
             }
+
+            if ($this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage()) {
+                $this->get('session')->set('originLandingPage', true);
+            }
         }
+
+        if (
+            in_array($client->getSource2(), [SourceManager::HP_SOURCE_NAME, SourceManager::HP_LENDER_SOURCE_NAME])
+            && $this->get('unilend.service.welcome_offer_manager')->displayOfferOnHome()
+        ) {
+            $client->setOrigine(Clients::ORIGIN_WELCOME_OFFER_HOME);
+        }
+        if ($this->get('session')->get('originLandingPage')) {
+            $client->setOrigine(Clients::ORIGIN_WELCOME_OFFER_LP);
+        }
+
 
         $formManager         = $this->get('unilend.frontbundle.service.form_manager');
         $identityForm        = $formManager->getLenderSubscriptionPersonIdentityForm($client, $clientAddress);
@@ -92,6 +109,7 @@ class LenderSubscriptionController extends Controller
                         $this->get('unilend.service.sponsorship_manager')->createSponsorship($client, $sponsorCode);
                         $this->get('session')->remove('sponsorCode');
                     }
+                    $this->get('session')->remove('originLandingPage');
                     return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->getHash()]);
                 }
             }
@@ -104,6 +122,7 @@ class LenderSubscriptionController extends Controller
                         $this->get('unilend.service.sponsorship_manager')->createSponsorship($client, $sponsorCode);
                         $this->get('session')->remove('sponsorCode');
                     }
+                    $this->get('session')->remove('originLandingPage');
                     return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->getHash()]);
                 }
             }
@@ -191,8 +210,6 @@ class LenderSubscriptionController extends Controller
         }
 
         if ($form->isValid()) {
-            $this->addClientSources($client);
-
             $clientType   = ($client->getIdPaysNaissance() == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
             $password     = password_hash($client->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
             $slug         = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
@@ -310,8 +327,6 @@ class LenderSubscriptionController extends Controller
         }
 
         if ($form->isValid()){
-            $this->addClientSources($client);
-
             $clientType   = ($client->getIdPaysNaissance() == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_LEGAL_ENTITY : Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
             $password     = password_hash($client->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
             $slug         = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
@@ -800,8 +815,9 @@ class LenderSubscriptionController extends Controller
      */
     public function landingPageAction(Request $request)
     {
-        $clientRepository          = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
-        $template['isSponsorship'] = false;
+        $clientRepository             = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+        $template['isSponsorship']    = false;
+        $template['showWelcomeOffer'] = $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage();
 
         if (
             SponsorshipManager::UTM_SOURCE === $request->query->get('utm_source')
@@ -824,7 +840,7 @@ class LenderSubscriptionController extends Controller
      */
     public function figaroLandingPageAction()
     {
-        return $this->render('pages/lender_subscription/partners/figaro.html.twig');
+        return $this->render('pages/lender_subscription/partners/figaro.html.twig', ['showWelcomeOffer' => $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage()]);
     }
 
     /**
@@ -834,7 +850,7 @@ class LenderSubscriptionController extends Controller
      */
     public function landingPageFormOnlyAction()
     {
-        return $this->render('pages/lender_subscription/landing_page_form_only.html.twig');
+        return $this->render('pages/lender_subscription/landing_page_form_only.html.twig', ['showWelcomeOffer' => $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage()]);
     }
 
     /**
@@ -1194,6 +1210,7 @@ class LenderSubscriptionController extends Controller
                 break;
         }
         $fundsOriginList = explode(';', $settings->value);
+
         return array_combine(range(1, count($fundsOriginList)), array_values($fundsOriginList));
     }
 

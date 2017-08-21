@@ -49,7 +49,7 @@
         </div>
     </footer><!-- /.form-preter-lp-footer -->
 
-    {% if (isSponsorship is not defined or false == isSponsorship) and setting('offre-de-bienvenue-sur-lp') == 1 %}
+    {% if (isSponsorship is not defined or false == isSponsorship) and showWelcomeOffer == true %}
         <div class="stamp bg-p1" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
             {% trans %} lender-landing-page_welcome-offer-text {% endtrans %}
         </div><!-- /.stamp -->
