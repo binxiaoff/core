@@ -153,27 +153,6 @@ class WelcomeOfferManager
     }
 
     /**
-     * @param Clients $client
-     *
-     * @return float
-     */
-    public function getCurrentWelcomeOfferAmount(Clients $client)
-    {
-        $welcomeOffers = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->findBy([
-            'idClient' => $client->getIdClient(),
-            'status'   => OffresBienvenuesDetails::STATUS_NEW
-        ]);
-
-        $promotionalAmountTotal = 0;
-        foreach ($welcomeOffers as $offer) {
-            $offerAmount            = round(bcdiv($offer->getMontant(), 100, 4), 2);
-            $promotionalAmountTotal = bcadd($promotionalAmountTotal, $offerAmount, 2);
-        }
-
-        return (float) $promotionalAmountTotal;
-    }
-
-    /**
      * @param Clients|\clients $client
      *
      * @return bool

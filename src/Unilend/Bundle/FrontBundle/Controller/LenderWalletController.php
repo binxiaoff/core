@@ -20,8 +20,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Repository\OperationRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType;
@@ -162,10 +164,13 @@ class LenderWalletController extends Controller
         $translator    = $this->get('translator');
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $formManager   = $this->get('unilend.frontbundle.service.form_manager');
+        /** @var OperationRepository $operationRepository */
+        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
 
         $client = $this->getClient();
         /** @var BankAccount $bankAccount */
         $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
+        $wallet = $this->getWallet();
 
         if ($client) {
             $serialize = serialize(['id_client' => $client->getIdClient(), 'montant' => $post['amount'], 'mdp' => md5($post['password'])]);
@@ -191,18 +196,22 @@ class LenderWalletController extends Controller
                 } elseif (empty($bankAccount->getBic()) || empty($bankAccount->getIban())) {
                     $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
                 } else {
-                    $sumOffres = $this->get('unilend.service.welcome_offer_manager')->getCurrentWelcomeOfferAmount($client);
+                    $now                        = new \DateTime('now');
+                    $sumPromotionalOffers       = $operationRepository->sumCreditOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION], null, $now);
+                    $sumPromotionalOffersCancel = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL], null, $now);
+                    $sumLoans                   = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::LENDER_LOAN], null, $now);
+                    $promotionalOffers          = round(bcsub($sumPromotionalOffers, $sumPromotionalOffersCancel, 4), 2);
+                    $blockedAmount              = $sumLoans > $promotionalOffers ? 0 : round(bcsub($promotionalOffers, $sumLoans, 4), 2);
 
-                    if (($amount + $sumOffres) > $this->getUser()->getBalance() || $amount <= 0) {
+                    if (round(bcadd($amount, $blockedAmount, 4), 2) > $this->getUser()->getBalance() || $amount <= 0) {
                         $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
                     }
                 }
             }
 
             if ($this->get('session')->getFlashBag()->has('withdrawalErrors')) {
-                $logger->warning('Wrong parameters submitted, id_client=' . $client->getIdClient() . ' Amount : ' . $post['amount'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
+                $logger->info('Wrong parameters submitted, id_client=' . $client->getIdClient() . ' Amount : ' . $post['amount'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
             } else {
-                $wallet = $this->getWallet();
 
                 if ($bankAccount) {
                     try {
