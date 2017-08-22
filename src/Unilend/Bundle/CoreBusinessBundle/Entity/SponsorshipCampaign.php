@@ -59,6 +59,13 @@ class SponsorshipCampaign
     private $maxNumberSponsee;
 
     /**
+     * @var integer
+     *
+     * @ORM\Column(name="validity_days", type="integer", nullable=false)
+     */
+    private $validityDays;
+
+    /**
      * @var \DateTime
      *
      * @ORM\Column(name="added", type="datetime", nullable=false)
@@ -225,6 +232,30 @@ class SponsorshipCampaign
     public function getMaxNumberSponsee()
     {
         return $this->maxNumberSponsee;
+    }
+
+    /**
+     * Set validityDays
+     *
+     * @param integer $validityDays
+     *
+     * @return SponsorshipCampaign
+     */
+    public function setValidityDays($validityDays)
+    {
+        $this->validityDays = $validityDays;
+
+        return $this;
+    }
+
+    /**
+     * Get validityDays
+     *
+     * @return integer
+     */
+    public function getValidityDays()
+    {
+        return $this->validityDays;
     }
 
     /**

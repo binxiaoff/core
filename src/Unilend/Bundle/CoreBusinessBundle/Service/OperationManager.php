@@ -112,6 +112,9 @@ class OperationManager
                 if ($item instanceof OffresBienvenuesDetails) {
                     $operation->setWelcomeOffer($item);
                 }
+                if ($item instanceof Sponsorship) {
+                    $operation->setSponsorship($item);
+                }
                 if ($item instanceof Virements) {
                     $operation->setWireTransferOut($item);
                     $operation->setProject($item->getProject());

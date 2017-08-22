@@ -1,13 +1,11 @@
 <?php
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class CheckWelcomeOfferValidityCommand extends ContainerAwareCommand
 {
@@ -30,7 +28,7 @@ class CheckWelcomeOfferValidityCommand extends ContainerAwareCommand
         /** @var OffresBienvenuesDetails $welcomeOffer */
         foreach ($entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->findUnusedWelcomeOffers($dateLimit) as $welcomeOffer) {
             $welcomeOffer->setStatus(OffresBienvenuesDetails::STATUS_CANCELED);
-            $wallet       = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($welcomeOffer->getIdClient(), WalletType::LENDER);
+            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($welcomeOffer->getIdClient(), WalletType::LENDER);
             try {
                 $operationManager->cancelWelcomeOffer($wallet, $welcomeOffer);
                 $numberOfUnusedWelcomeOffers +=1;

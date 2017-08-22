@@ -15,8 +15,8 @@ class SponsorshipBlacklistRepository extends EntityRepository
     public function findBlacklistForClient($idClient, $idCampaign)
     {
         $queryBuilder  = $this->createQueryBuilder('sb');
-        $queryBuilder->where('idClient = :idClient')
-            ->andWhere('idCampaign = :idCampaign OR idCampaign IS NULL')
+        $queryBuilder->where('sb.idClient = :idClient')
+            ->andWhere('sb.idCampaign = :idCampaign OR sb.idCampaign IS NULL')
             ->setParameter('idClient', $idClient)
             ->setParameter('idCampaign', $idCampaign);
 
