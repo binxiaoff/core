@@ -14,15 +14,14 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ProjectRepaymentTask
 {
-    const TYPE_REGULAR         = 1;
-    const TYPE_LATE            = 2;
-    const TYPE_EARLY           = 3;
-    const TYPE_DEBT_COLLECTION = 4;
+    const TYPE_REGULAR           = 1;
+    const TYPE_LATE              = 2;
+    const TYPE_EARLY             = 3;
+    const TYPE_CLOSE_OUT_NETTING = 4;
 
     const STATUS_ERROR           = -1;
-    const STATUS_SUSPENDED       = 0;
     const STATUS_PENDING         = 1;
-    const STATUS_READY_FOR_REPAY = 2;
+    const STATUS_READY           = 2;
     const STATUS_IN_PROGRESS     = 3;
     const STATUS_REPAID          = 4;
     const STATUS_CANCELLED       = 5;

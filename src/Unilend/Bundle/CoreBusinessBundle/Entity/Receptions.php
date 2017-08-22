@@ -161,6 +161,15 @@ class Receptions
     private $idReception;
 
     /**
+     * @var Receptions
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Receptions")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_reception_rejected", referencedColumnName="id_reception")
+     */
+    private $idReceptionRejected;
+
+    /**
      * Set motif
      *
      * @param string $motif
@@ -546,5 +555,25 @@ class Receptions
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * @return Receptions
+     */
+    public function getIdReceptionRejected()
+    {
+        return $this->idReceptionRejected;
+    }
+
+    /**
+     * @param Receptions|null $idReceptionRejected
+     *
+     * @return Receptions
+     */
+    public function setIdReceptionRejected(Receptions $idReceptionRejected = null)
+    {
+        $this->idReceptionRejected = $idReceptionRejected;
+
+        return $this;
     }
 }

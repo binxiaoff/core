@@ -1858,7 +1858,7 @@ class dossiersController extends bootstrap
 
                 if ($projectRepaymentTask) {
                     $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
-                    $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_READY_FOR_REPAY)
+                    $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_READY)
                         ->setRepayAt(new DateTime())
                         ->setIdUserValidation($user);
 

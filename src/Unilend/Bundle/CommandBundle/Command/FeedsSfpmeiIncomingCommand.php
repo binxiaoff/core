@@ -476,11 +476,16 @@ EOF
         $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
         $repaymentManager = $this->getContainer()->get('unilend.service.project_repayment_manager');
 
-        if (1 === preg_match('#^RUM[^0-9]*([0-9]+)#', $aRow['libelleOpe3'], $aMatches)) {
+        if (1 === preg_match('#^RUM[^0-9]*([0-9]+)#', $aRow['libelleOpe3'], $matches)) {
             /** @var Projects $project */
-            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find((int) $aMatches[1]);
+            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find((int) $matches[1]);
 
-            if ($project) {
+            if (1 === preg_match('#^RCNUNILEND/([0-9]{8})/([0-9]+)#', $aRow['libelleOpe4'], $matches)) {
+                $from                = \DateTime::createFromFormat('Ymd', $matches[1]);
+                $originalRejectedDirectDebit = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->findOriginalDirectDebitByRejectedOne($reception, $from);
+            }
+
+            if ($project && false === empty($originalRejectedDirectDebit)) {
                 $project->setRembAuto(Projects::AUTO_REPAYMENT_OFF);
                 $entityManager->flush();
                 /** @var Wallet $wallet */
@@ -490,7 +495,8 @@ EOF
                     $reception->setStatusBo(Receptions::STATUS_REJECTED)
                         ->setIdProject($project)
                         ->setIdClient($wallet->getIdClient())
-                        ->setRemb(0);
+                        ->setRemb(0)
+                        ->setIdReceptionRejected($originalRejectedDirectDebit);
                     $entityManager->flush();
 
                     $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);

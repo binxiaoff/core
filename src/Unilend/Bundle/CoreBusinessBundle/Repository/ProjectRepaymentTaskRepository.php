@@ -21,7 +21,7 @@ class ProjectRepaymentTaskRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:Echeanciers', 'e', Join::WITH, 'prt.idProject = e.idProject AND prt.sequence = e.ordre')
             ->where('prt.status = :ready')
             ->having('DATE(repaymentDate) <= :repaymentDate')
-            ->setParameter('ready', ProjectRepaymentTask::STATUS_READY_FOR_REPAY)
+            ->setParameter('ready', ProjectRepaymentTask::STATUS_READY)
             ->setParameter('repaymentDate', $repaymentDate->format('Y-m-d'))
             ->setMaxResults($limit);
 

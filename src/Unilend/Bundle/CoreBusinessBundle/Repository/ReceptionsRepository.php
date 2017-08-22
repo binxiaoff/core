@@ -96,13 +96,13 @@ class ReceptionsRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('r');
         $qb->where('r.idClient IS NULL')
-           ->andWhere('r.idProject IS NULL')
-           ->andWhere('r.type IN (:types)')
-           ->andWhere(
-               $qb->expr()->orX(
-                   'r.type = ' . Receptions::TYPE_DIRECT_DEBIT . ' AND r.statusPrelevement = ' . Receptions::DIRECT_DEBIT_STATUS_SENT,
-                   'r.type = ' . Receptions::TYPE_WIRE_TRANSFER . ' AND r.statusVirement = ' . Receptions::WIRE_TRANSFER_STATUS_RECEIVED
-               ))
+            ->andWhere('r.idProject IS NULL')
+            ->andWhere('r.type IN (:types)')
+            ->andWhere(
+                $qb->expr()->orX(
+                    'r.type = ' . Receptions::TYPE_DIRECT_DEBIT . ' AND r.statusPrelevement = ' . Receptions::DIRECT_DEBIT_STATUS_SENT,
+                    'r.type = ' . Receptions::TYPE_WIRE_TRANSFER . ' AND r.statusVirement = ' . Receptions::WIRE_TRANSFER_STATUS_RECEIVED
+                ))
             ->orderBy('r.idReception', 'DESC')
             ->setParameter('types', [Receptions::TYPE_DIRECT_DEBIT, Receptions::TYPE_WIRE_TRANSFER], Connection::PARAM_INT_ARRAY);
 
@@ -151,6 +151,24 @@ class ReceptionsRepository extends EntityRepository
             ->setParameter('end', $end->format('Y-m-d H:i:s'));
 
         return $queryBuilder->getQuery()->getArrayResult()[0];
+    }
+
+    public function findOriginalDirectDebitByRejectedOne(Receptions $reception, \DateTime $from)
+    {
+        $queryBuilder = $this->createQueryBuilder('r');
+        $queryBuilder->where('r.idProject = :project')
+            ->andWhere('r.statusBo in (:affected)')
+            ->andWhere('r.statusPrelevement = :sent')
+            ->andWhere('r.type = :directDebit')
+            ->andWhere('r.added >= :from')
+            ->setParameter('project', $reception->getIdProject())
+            ->setParameter('affected', [Receptions::STATUS_AUTO_ASSIGNED, Receptions::STATUS_MANUALLY_ASSIGNED])
+            ->setParameter('sent', Receptions::DIRECT_DEBIT_STATUS_SENT)
+            ->setParameter('directDebit', Receptions::TYPE_DIRECT_DEBIT)
+            ->setParameter('from', $from)
+            ->setMaxResults(1);
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 }
 
