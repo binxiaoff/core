@@ -61,8 +61,8 @@
                                 $active = $this->menu_admin === $zone ? ' class="open"' : '';
                                 $submenu = empty($item['children']) ? '' : ' class="nav-submenu" data-toggle="nav-submenu"';
 
-                                $menuHtml .= '<li'. $active .'>';
-                                $menuHtml .= empty($item['uri']) ? '<a'. $submenu .'>' . $title . '</a>' : '<a href="' . $this->lurl . '/' . $item['uri'] . '"'. $submenu .'>' . $title . '</a>';
+                                $menuHtml .= '<li' . $active . '>';
+                                $menuHtml .= empty($item['uri']) ? '<a' . $submenu . '>' . $title . '</a>' : '<a href="' . $this->lurl . '/' . $item['uri'] . '"' . $submenu .'>' . $title . '</a>';
 
                                 if (false === empty($item['children'])) {
                                     $menuHtml .= '<ul>';
@@ -78,7 +78,6 @@
                             }
                         }
                         ?>
-
                         <?= $menuHtml ?>
                     </ul>
                 </div>
@@ -131,35 +130,37 @@
 
 <!--Modals-->
 <div class="modal fade in" id="modal-profile-settings" role="dialog" aria-hidden="true">
-    <form class="modal-dialog modal-sm" method="post" name="mod_users" id="mod_users" enctype="multipart/form-data" action="<?= $this->lurl ?>/users/edit_perso_user/<?= $this->users->id_user ?>" target="_parent" data-formvalidate>
+    <form class="modal-dialog modal-sm">
         <div class="modal-content">
             <div class="block block-themed block-transparent remove-margin-b">
                 <div class="block-header bg-primary-light">
-                    <h3 class="block-title">Modifier <?= $this->users->firstname ?> <?= $this->users->name ?></h3>
+                    <h3 class="block-title">Vos informations</h3>
                 </div>
                 <div class="block-content">
                     <div class="form-group">
-                        <label>Pr&eacute;nom</label>
-                        <input type="text" name="firstname" value="<?= $this->users->firstname ?>" class="form-control">
+                        <label>Prénom</label>
+                        <input type="text" name="firstname" value="<?= $_SESSION['user']['firstname'] ?>" class="form-control">
                     </div>
                     <div class="form-group">
                         <label>Nom</label>
-                        <input type="text" name="name" value="<?= $this->users->name ?>" class="form-control">
+                        <input type="text" name="name" value="<?= $_SESSION['user']['name'] ?>" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label>T&eacute;l&eacute;phone</label>
-                        <input type="text" name="phone" value="<?= $this->users->phone ?>" class="form-control">
+                        <label>Email</label>
+                        <input type="email" name="email" value="<?= $_SESSION['user']['email'] ?>" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label>Email *</label>
-                        <input type="email" name="email" value="<?= $this->users->phone ?>" class="form-control required">
+                        <label>Téléphone</label>
+                        <input type="text" name="phone" value="<?= $_SESSION['user']['phone'] ?>" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Slack</label>
+                        <input type="text" name="slack" value="<?= $_SESSION['user']['slack'] ?>" class="form-control">
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <input type="hidden" name="form_mod_users" id="form_mod_users">
-                <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
-                <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+                <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Fermer</button>
             </div>
         </div>
     </form>

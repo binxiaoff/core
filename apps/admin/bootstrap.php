@@ -68,10 +68,6 @@ class bootstrap extends Controller
                     'uri'   => 'partenaires/types'
                 ],
                 [
-                    'title' => 'Medias de campagnes',
-                    'uri'   => 'partenaires/medias'
-                ],
-                [
                     'title' => 'Grille de taux',
                     'uri'   => 'project_rate_settings',
                     'zone'  => Zones::ZONE_LABEL_ADMINISTRATION
