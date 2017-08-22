@@ -453,9 +453,9 @@ class preteursController extends bootstrap
                     }
 
                     if (null === $birthday) {
-                        $_SESSION['freeow']['title']   = 'Erreur de donnés clients';
-                        $_SESSION['freeow']['message'] = 'Le format de la date de naissance n\'a pas le bon format';
-                        header('location:' . $this->lurl . '/preteurs/edit_preteur/' . $this->clients->id_client);
+                        $_SESSION['freeow']['title']   = 'Erreur de données clients';
+                        $_SESSION['freeow']['message'] = 'Le format de la date de naissance n\'est pas correct';
+                        header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->clients->id_client);
                         die;
                     }
 
