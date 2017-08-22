@@ -253,12 +253,13 @@ class LenderDashboardController extends Controller
                 $preferences = $panelPreferences->getLenderPreferencesByPage($wallet->getId(), $pageName);
                 foreach ($postData as $panel) {
                     if (
-                        isset($preferences[$panel['id']], $panel['hidden'], $panel['order'])
+                        isset($panel['hidden'], $panel['order'])
                         && filter_var($panel['order'], FILTER_VALIDATE_INT)
                     ) {
                         if (
-                            $preferences[$panel['id']]['hidden'] != $panel['hidden']
-                            || $preferences[$panel['id']]['panel_order'] != $panel['order']
+                            isset ($preferences[$panel['id']])
+                            && ($preferences[$panel['id']]['hidden'] != $panel['hidden']
+                            || $preferences[$panel['id']]['panel_order'] != $panel['order'])
                         ) {
                             $panelPreferences->get($preferences[$panel['id']]['id_lender_panel_preference']);
                             $panelPreferences->hidden      = ('true' === $panel['hidden']) ? 1 : 0;
