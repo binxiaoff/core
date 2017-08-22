@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
+use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,11 +14,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
 use Unilend\Bundle\CoreBusinessBundle\Repository\BankAccountRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\LenderValidationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager;
 
 class AutomaticLenderValidationCommand extends ContainerAwareCommand
 {
@@ -63,22 +62,19 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
     {
         /** @var EntityManagerSimulator $entityManagerSimulator */
         $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
         /** @var LoggerInterface $logger */
         $logger = $this->getContainer()->get('monolog.logger.console');
         /** @var \clients_adresses $clientAddress */
         $clientAddress = $entityManagerSimulator->getRepository('clients_adresses');
         /** @var \users_history $userHistory */
         $userHistory = $entityManagerSimulator->getRepository('users_history');
-        /** @var \clients_status_history $clientStatusHistory */
-        $clientStatusHistory = $entityManagerSimulator->getRepository('clients_status_history');
-        /** @var WelcomeOfferManager $welcomeOfferManager */
-        $welcomeOfferManager = $this->getContainer()->get('unilend.service.welcome_offer_manager');
-        /** @var MailerManager $mailerManager */
-        $mailerManager = $this->getContainer()->get('unilend.service.email_manager');
         /** @var TaxManager $taxManager */
         $taxManager = $this->getContainer()->get('unilend.service.tax_manager');
-        /** @var ClientStatusManager $clientStatusManager */
-        $clientStatusManager = $this->getContainer()->get('unilend.service.client_status_manager');
+        /** @var LenderValidationManager $lenderValidationManager */
+        $lenderValidationManager = $this->getContainer()->get('unilend.service.lender_validation_manager');
+        $user                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
 
         /** @var BankAccountRepository $bankAccountRepository */
         $bankAccountRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount');
@@ -97,27 +93,18 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
                 throw new \Exception('Lender has no valid bank account and could not be validated');
             }
         }
-        $existingClient = $client->getDuplicates($client->nom, $client->prenom, $client->naissance);
-        $existingClient = array_shift($existingClient);
 
-        if (false === empty($existingClient) && $existingClient['id_client'] != $client->id_client) {
-            $logger->warning('Processing client id: ' . $client->id_client . ' - Duplicate client found: ' . json_encode($existingClient), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
+        $validation = $lenderValidationManager->validateClient($client, $user);
+        if (true !== $validation) {
+            $logger->warning('Processing client id: ' . $client->id_client . ' - Duplicate client found: ' . json_encode($validation), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
             return;
-        } elseif ($welcomeOfferManager->clientIsEligibleForWelcomeOffer($client)) {
-            $welcomeOfferManager->payOutWelcomeOffer($client);
         }
-        $clientAddress->get($client->id_client, 'id_client');
-        $clientStatusManager->addClientStatus($client, Users::USER_ID_CRON, ClientsStatus::VALIDATED, 'Validation automatique basée sur Green Point');
+
         $serialize = serialize(['id_client' => $client->id_client, 'attachment_data' => $attachment]);
         $userHistory->histo(\users_history::FORM_ID_LENDER, 'validation auto preteur', '0', $serialize);
 
-        if ($clientStatusHistory->counter('id_client = ' . $client->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . ClientsStatus::MODIFICATION . ')') > 0) {
-            $mailerManager->sendClientValidationEmail($client, 'preteur-validation-modification-compte');
-        } else {
-            $mailerManager->sendClientValidationEmail($client, 'preteur-confirmation-activation');
-        }
-
-        $clientEntity = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        $clientAddress->get($client->id_client, 'id_client');
+        $clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
         $taxManager->addTaxToApply($clientEntity, $clientAddress, Users::USER_ID_CRON);
     }
 }

@@ -309,12 +309,16 @@ class preteursController extends bootstrap
         $attachmentManager = $this->get('unilend.service.attachment_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
         $clientStatusManager = $this->get('unilend.service.client_status_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderValidationManager $lenderValidationManager */
+        $lenderValidationManager = $this->get('unilend.service.lender_validation_manager');
         /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
         $translationManager       = $this->get('unilend.service.translation_manager');
         $this->completude_wording = $translationManager->getAllTranslationsForSection('lender-completeness');
 
         $this->settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
         $this->conseil_externe = json_decode($this->settings->value, true);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users $user */
+        $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
         if (
             $this->params[0]
@@ -398,7 +402,7 @@ class preteursController extends bootstrap
 
             if (isset($_POST['send_completude'])) {
                 $this->sendCompletenessRequest();
-                $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::COMPLETENESS, $_SESSION['content_email_completude'][$this->clients->id_client]);
+                $clientStatusManager->addClientStatus($this->clients, $user->getIdUser(), \clients_status::COMPLETENESS, $_SESSION['content_email_completude'][$this->clients->id_client]);
 
                 unset($_SESSION['content_email_completude'][$this->clients->id_client]);
                 $_SESSION['email_completude_confirm'] = true;
@@ -406,10 +410,6 @@ class preteursController extends bootstrap
                 header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->clients->id_client);
                 die;
             } elseif (isset($_POST['send_edit_preteur'])) {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
-                $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
-                $mailerManager = $this->get('unilend.service.email_manager');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager $taxManager */
                 $taxManager = $this->get('unilend.service.tax_manager');
 
@@ -508,7 +508,7 @@ class preteursController extends bootstrap
                                 $oLenderTaxExemption->id_lender   = $wallet->getId();
                                 $oLenderTaxExemption->iso_country = 'FR';
                                 $oLenderTaxExemption->year        = $iExemptionYear;
-                                $oLenderTaxExemption->id_user     = $_SESSION['user']['id_user'];
+                                $oLenderTaxExemption->id_user     = $user->getIdUser();
                                 $oLenderTaxExemption->create();
                                 $taxExemptionHistory[] = ['year' => $oLenderTaxExemption->year, 'action' => 'adding'];
                             }
@@ -522,7 +522,7 @@ class preteursController extends bootstrap
                     }
 
                     if (false === empty($taxExemptionHistory)) {
-                        $this->users_history->histo(\users_history::FORM_ID_LENDER, \users_history::FORM_NAME_TAX_EXEMPTION, $_SESSION['user']['id_user'], serialize([
+                        $this->users_history->histo(\users_history::FORM_ID_LENDER, \users_history::FORM_NAME_TAX_EXEMPTION, $user->getIdUser(), serialize([
                             'id_client'     => $this->clients->id_client,
                             'modifications' => $taxExemptionHistory
                         ]));
@@ -531,37 +531,23 @@ class preteursController extends bootstrap
                     $this->clients_adresses->update();
 
                     $serialize = serialize(['id_client' => $this->clients->id_client, 'post'  => $_POST, 'files' => $_FILES]);
-                    $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur', $_SESSION['user']['id_user'], $serialize);
+                    $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur', $user->getIdUser(), $serialize);
 
                     if (isset($_POST['statut_valider_preteur']) && 1 == $_POST['statut_valider_preteur']) {
-                        $aExistingClient       = $this->clients->getDuplicates($this->clients->nom, $this->clients->prenom, $this->clients->naissance);
-                        $aExistingClient       = array_shift($aExistingClient);
-                        $iOriginForUserHistory = 3;
-
-                        if (false === empty($aExistingClient) && $aExistingClient['id_client'] != $this->clients->id_client) {
-                            $this->changeClientStatus($this->clients, Clients::STATUS_OFFLINE, $iOriginForUserHistory);
-                            $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND, 'Doublon avec client ID : ' . $aExistingClient['id_client']);
+                        $validation = $lenderValidationManager->validateClient($this->clients, $user);
+                        if (true !== $validation) {
+                            $this->changeClientStatus($this->clients, Clients::STATUS_OFFLINE, \users_history::FORM_ID_LENDER);
                             header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->clients->id_client);
                             die;
-                        } elseif ($welcomeOfferManager->clientIsEligibleForWelcomeOffer($this->clients)) {
-                            $welcomeOfferManager->payOutWelcomeOffer($this->clients);
                         }
 
                         $this->validateBankAccount($_POST['id_bank_account']);
-                        $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::VALIDATED);
-
-                        if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) {
-                            $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
-                        } else {
-                            $mailerManager->sendClientValidationEmail($this->clients, 'preteur-confirmation-activation');
-                        }
-
                         $_SESSION['compte_valide'] = true;
                         $applyTaxCountry           = true;
                     }
 
                     if (true === $applyTaxCountry) {
-                        $taxManager->addTaxToApply($wallet->getIdClient(), $this->clients_adresses, $_SESSION['user']['id_user']);
+                        $taxManager->addTaxToApply($wallet->getIdClient(), $this->clients_adresses, $user->getIdUser());
                     }
                     header('location:' . $this->lurl . '/preteurs/edit_preteur/' . $this->clients->id_client);
                     die;
@@ -661,19 +647,11 @@ class preteursController extends bootstrap
                     $this->clients_adresses->update();
 
                     $serialize = serialize(['id_client' => $this->clients->id_client, 'post'      => $_POST, 'files'     => $_FILES ]);
-                    $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur personne morale', $_SESSION['user']['id_user'], $serialize);
+                    $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur personne morale', $user->getIdUser(), $serialize);
 
                     if (isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1) {
+                        $lenderValidationManager->validateClient($this->clients, $user);
                         $this->validateBankAccount($_POST['id_bank_account']);
-                        $clientStatusManager->addClientStatus($this->clients, $_SESSION['user']['id_user'], \clients_status::VALIDATED);
-
-                        if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')') > 1) {
-                            $mailerManager->sendClientValidationEmail($this->clients, 'preteur-validation-modification-compte');
-                        } else {
-                            $welcomeOfferManager->payOutWelcomeOffer($this->clients);;
-                            $mailerManager->sendClientValidationEmail($this->clients, 'preteur-confirmation-activation');
-                        }
-
                         $_SESSION['compte_valide'] = true;
                     }
 
@@ -874,7 +852,7 @@ class preteursController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+        $user          = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
         $start     = $this->request->request->get('start');
         $amount    = $this->request->request->getInt('amount');

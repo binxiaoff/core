@@ -18,6 +18,10 @@ class LenderManager
     /** @var EntityManager */
     private $entityManager;
 
+    /**
+     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param EntityManager          $entityManager
+     */
     public function __construct
     (
         EntityManagerSimulator $entityManagerSimulator,
@@ -169,25 +173,5 @@ class LenderManager
         $lossRate = $sumOfLoans > 0 ? bcmul(round(bcdiv($remainingDueCapital, $sumOfLoans, 3), 2), 100) : null ;
 
         return $lossRate;
-    }
-
-    public function validateClient($client)
-    {
-        if ($client instanceof \clients) {
-            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
-        }
-
-
-
-        //todo check if its first Validation
-
-            // check if eligible to sponsorship && check if client has no welcome offer
-                //todo attribute sponsorship
-
-            //check if eligible to welcome offer
-                //todo attribute welcome offer
-
-        // else
-            //todo validate client
     }
 }

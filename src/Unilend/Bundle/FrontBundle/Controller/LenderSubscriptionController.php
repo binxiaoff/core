@@ -76,10 +76,6 @@ class LenderSubscriptionController extends Controller
             if (false === isset($landingPageData['sponsor_code']) && $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage()) {
                 $this->get('session')->set('originLandingPage', true);
             }
-
-            if ($this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage()) {
-                $this->get('session')->set('originLandingPage', true);
-            }
         }
 
         if (
@@ -91,7 +87,6 @@ class LenderSubscriptionController extends Controller
         if ($this->get('session')->get('originLandingPage')) {
             $client->setOrigine(Clients::ORIGIN_WELCOME_OFFER_LP);
         }
-
 
         $formManager         = $this->get('unilend.frontbundle.service.form_manager');
         $identityForm        = $formManager->getLenderSubscriptionPersonIdentityForm($client, $clientAddress);

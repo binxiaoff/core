@@ -557,4 +557,44 @@ class ClientsRepository extends EntityRepository
             ->executeQuery($query)
             ->fetchAll(\PDO::FETCH_ASSOC);
     }
+
+    /**
+     * @param           $lastName
+     * @param           $firstName
+     * @param \DateTime $birthdate
+     *
+     * @return array
+     */
+    public function getDuplicates($lastName, $firstName, \DateTime $birthdate)
+    {
+        $charactersToReplace = [' ', '-', '_', '*', ',', '^', '`', ':', ';', ',', '.', '!', '&', '"', '\'', '<', '>', '(', ')', '@'];
+
+        $firstName     = str_replace($charactersToReplace, '', htmlspecialchars_decode($firstName));
+        $lastName      = str_replace($charactersToReplace, '', htmlspecialchars_decode($lastName));
+
+        $replaceCharacters = '';
+        foreach ($charactersToReplace as $character) {
+            $replaceCharacters .= ',\'' . addslashes($character) . '\', \'\')';
+        }
+
+        $sql = 'SELECT *
+                FROM clients c
+                WHERE ' . str_repeat('REPLACE(', count($charactersToReplace)) . '`nom`' . $replaceCharacters . ' LIKE :lastName
+                            AND ' . str_repeat('REPLACE(', count($charactersToReplace)) . '`prenom`' . $replaceCharacters . ' LIKE :firstName
+                            AND naissance = :birthdate
+                            AND status = ' . Clients::STATUS_ONLINE . '
+                            AND
+                                (SELECT cs.status
+                                FROM clients_status cs
+                                    LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status)
+                                WHERE csh.id_client = c.id_client
+                                    ORDER BY csh.added DESC LIMIT 1) IN (' . \clients_status::VALIDATED . ')';
+
+        $result = $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery($sql, ['lastName' => '%' . $lastName . '%', 'firstName' => '%' . $firstName . '%', 'birthdate' => $birthdate->format('Y-m-d')])
+            ->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $result;
+    }
 }

@@ -23,6 +23,8 @@ class SponsorshipManager
     private $entityManager;
     /** @var OperationManager  */
     private $operationManager;
+    /** @var ClientStatusManager */
+    private $clientStatusManager;
     /** @var \NumberFormatter */
     private $numberFormatter;
     /** @var TemplateMessageProvider */
@@ -37,6 +39,7 @@ class SponsorshipManager
     /**
      * @param EntityManager           $entityManager
      * @param OperationManager        $operationManager
+     * @param ClientStatusManager     $clientStatusManager
      * @param \NumberFormatter        $numberFormatter
      * @param TemplateMessageProvider $messageProvider
      * @param \Swift_Mailer           $mailer
@@ -48,6 +51,7 @@ class SponsorshipManager
     public function __construct(
         EntityManager $entityManager,
         OperationManager $operationManager,
+        ClientStatusManager $clientStatusManager,
         \NumberFormatter $numberFormatter,
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,
@@ -56,14 +60,15 @@ class SponsorshipManager
         $schema,
         $frontHost
     ) {
-        $this->operationManager = $operationManager;
-        $this->entityManager    = $entityManager;
-        $this->numberFormatter  = $numberFormatter;
-        $this->messageProvider  = $messageProvider;
-        $this->mailer           = $mailer;
-        $this->logger           = $logger;
-        $this->surl             = $assetsPackages->getUrl('');
-        $this->furl             = $schema . '://' . $frontHost;
+        $this->operationManager    = $operationManager;
+        $this->entityManager       = $entityManager;
+        $this->clientStatusManager = $clientStatusManager;
+        $this->numberFormatter     = $numberFormatter;
+        $this->messageProvider     = $messageProvider;
+        $this->mailer              = $mailer;
+        $this->logger              = $logger;
+        $this->surl                = $assetsPackages->getUrl('');
+        $this->furl                = $schema . '://' . $frontHost;
     }
 
     public function createSponsorshipCampaign()
@@ -93,7 +98,7 @@ class SponsorshipManager
      */
     public function attributeSponsorReward(Clients $sponsee)
     {
-        if (false === $this->canSponsorBeRewarded($sponsee)) {
+        if (false === $this->isEligibleForSponsorReward($sponsee)) {
             return false;
         }
 
@@ -125,7 +130,7 @@ class SponsorshipManager
             throw new \Exception('Client ' . $sponsee->getIdClient() . ' has no sponsor');
         }
 
-        if (Sponsorship::STATUS_ONGOING !== $sponsorship->getStatus()) {
+        if (Sponsorship::STATUS_ONGOING != $sponsorship->getStatus()) {
             throw new \Exception('Sponsorship for client ' . $sponsee->getIdClient() . ' has already been paid');
         }
 
@@ -184,17 +189,20 @@ class SponsorshipManager
      */
     public function createSponsorship(Clients $sponsee, $sponsorCode)
     {
-        $sponsor  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['sponsorCode' => $sponsorCode]);
-        $campaign = $this->getCurrentSponsorshipCampaign();
+        $sponsor = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['sponsorCode' => $sponsorCode]);
 
-        $sponsorship = new Sponsorship();
-        $sponsorship->setIdClientSponsor($sponsor)
-            ->setIdClientSponsee($sponsee)
-            ->setIdSponsorshipCampaign($campaign)
-            ->setStatus(Sponsorship::STATUS_ONGOING);
+        if ($this->clientStatusManager->hasBeenValidatedAtLeastOnce($sponsor)) {
+            $campaign = $this->getCurrentSponsorshipCampaign();
 
-        $this->entityManager->persist($sponsorship);
-        $this->entityManager->flush($sponsorship);
+            $sponsorship = new Sponsorship();
+            $sponsorship->setIdClientSponsor($sponsor)
+                ->setIdClientSponsee($sponsee)
+                ->setIdSponsorshipCampaign($campaign)
+                ->setStatus(Sponsorship::STATUS_ONGOING);
+
+            $this->entityManager->persist($sponsorship);
+            $this->entityManager->flush($sponsorship);
+        }
     }
 
     /**
@@ -202,7 +210,7 @@ class SponsorshipManager
      *
      * @return bool
      */
-    public function canSponsorBeRewarded(Clients $sponsee)
+    public function isEligibleForSponsorReward(Clients $sponsee)
     {
         $sponsorship = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $sponsee]);
         if (null === $sponsorship) {
@@ -222,6 +230,25 @@ class SponsorshipManager
         $amountAlreadyReceivedRewards = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')
             ->getSumRewardAmountByCampaign(OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR, $sponsorship->getIdSponsorshipCampaign());
         if ($amountAlreadyReceivedRewards >= bcmul($sponsorship->getIdSponsorshipCampaign()->getAmountSponsor(), $sponsorship->getIdSponsorshipCampaign()->getMaxNumberSponsee(), 2)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @return bool
+     */
+    public function isEligibleForSponseeReward(Clients $client)
+    {
+        $sponsorship = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $client]);
+        if (null === $sponsorship) {
+            return false;
+        }
+
+        if (Sponsorship::STATUS_ONGOING < $sponsorship->getStatus()) {
             return false;
         }
 

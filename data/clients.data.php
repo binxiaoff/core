@@ -497,41 +497,6 @@ class clients extends clients_crud
         return (false !== strpos($pattern, $lenderPattern));
     }
 
-    public function getDuplicates($sLastName, $sFirstName, $sBirthdate)
-    {
-        $aCharactersToReplace = array(' ', '-', '_', '*', ',', '^', '`', ':', ';', ',', '.', '!', '&', '"', '\'', '<', '>', '(', ')', '@');
-
-        $sFirstName     = str_replace($aCharactersToReplace, '', htmlspecialchars_decode($sFirstName));
-        $sLastName      = str_replace($aCharactersToReplace, '', htmlspecialchars_decode($sLastName));
-
-        $sReplaceCharacters = '';
-        foreach ($aCharactersToReplace as $sCharacter) {
-            $sReplaceCharacters .= ',\'' . addslashes($sCharacter) . '\', \'\')';
-        }
-
-        $sql = 'SELECT *
-                FROM clients c
-                WHERE ' . str_repeat('REPLACE(', count($aCharactersToReplace)) . '`nom`' . $sReplaceCharacters . ' LIKE "%' . $sLastName. '%"
-                            AND ' . str_repeat('REPLACE(', count($aCharactersToReplace)) . '`prenom`' . $sReplaceCharacters . ' LIKE "%' . $sFirstName . '%"
-                            AND naissance = "' . $sBirthdate . '"
-                            AND status = 1
-                            AND
-                                (SELECT cs.status
-                                FROM clients_status cs
-                                    LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status)
-                                WHERE csh.id_client = c.id_client
-                                    ORDER BY csh.added DESC LIMIT 1) IN (' . \clients_status::VALIDATED . ')';
-
-        $rQuery = $this->bdd->query($sql);
-        $result = array();
-
-        while ($record = $this->bdd->fetch_array($rQuery)) {
-            $result[] = $record;
-        }
-
-        return $result;
-    }
-
     public function getClientsWithNoWelcomeOffer($iClientId = null, $sStartDate = null, $sEndDate = null)
     {
         if (null === $sStartDate) {

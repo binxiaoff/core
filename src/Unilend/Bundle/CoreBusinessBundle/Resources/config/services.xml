@@ -382,6 +382,21 @@
         <service id="unilend.service.sponsorship_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.operation_manager"/>
+            <argument type="service" id="unilend.service.client_status_manager"/>
+            <argument type="service" id="number_formatter"/>
+            <argument type="service" id="unilend.swiftmailer.message_provider"/>
+            <argument type="service" id="mailer" />
+            <argument type="service" id="logger" />
+            <argument type="service" id="assets.packages"/>
+            <argument>%router.request_context.scheme%</argument>
+            <argument>%url.host_default%</argument>
+        </service>
+
+        <service id="unilend.service.lender_validation_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LenderValidationManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.client_status_manager"/>
+            <argument type="service" id="unilend.service.welcome_offer_manager"/>
+            <argument type="service" id="unilend.service.sponsorship_manager"/>
             <argument type="service" id="number_formatter"/>
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
             <argument type="service" id="mailer" />

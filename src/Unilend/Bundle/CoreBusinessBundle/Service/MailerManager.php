@@ -1953,34 +1953,6 @@ class MailerManager
     }
 
     /**
-     * @param \clients $client
-     * @param string   $mailType
-     */
-    public function sendClientValidationEmail(\clients $client, $mailType)
-    {
-        $varMail = [
-            'surl'    => $this->sSUrl,
-            'url'     => $this->sFUrl,
-            'prenom'  => $client->prenom,
-            'projets' => $this->sFUrl . '/projets-a-financer',
-            'lien_fb' => $this->getFacebookLink(),
-            'lien_tw' => $this->getTwitterLink(),
-        ];
-
-        /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage($mailType, $varMail);
-        try {
-            $message->setTo($client->email);
-            $this->mailer->send($message);
-        } catch (\Exception $exception){
-            $this->oLogger->warning(
-                'Could not send email: ' . $mailType . ' - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
-        }
-    }
-
-    /**
      * @param ProjectsPouvoir $proxy
      * @param ClientsMandats  $mandate
      */
