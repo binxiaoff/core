@@ -30,14 +30,21 @@
         <div id="sidebar-scroll">
             <div class="sidebar-content">
                 <div class="side-header side-content">
-                    <a class="h5 text-white" href="<?= $this->lurl ?>">
+                    <?php if ('prod' !== $this->getParameter('kernel.environment')) : ?>
+                        <div class="environment bg-primary text-uppercase">
+                            <span class="fa fa-info-circle"></span>
+                            <span class="font-w300">Environnement:</span>
+                            <span class="font-w600"><?= $this->getParameter('kernel.environment') ?></span>
+                        </div>
+                    <?php endif; ?>
+
+                    <a class="h5 text-white pull-left" href="<?= $this->lurl ?>">
                         <img src="<?= $this->surl ?>/assets/images/logo/logo-unilend-52x52-purple.png" srcset="<?= $this->surl ?>/assets/images/logo/logo-unilend-52x52-purple@2x.png 2x" alt="Unilend">
                     </a>
                 </div>
                 <div class="side-content side-content-full">
                     <ul class="nav-main">
                         <?php
-
                         $menuHtml = '';
                         foreach (static::MENU as $item) {
                             $zone  = $item['zone'];
@@ -70,8 +77,8 @@
                                 $menuHtml .= '</li>';
                             }
                         }
-
                         ?>
+
                         <?= $menuHtml ?>
                     </ul>
                 </div>
@@ -87,33 +94,18 @@
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-right">
-                        <li class="dropdown-header">Profile</li>
                         <li>
-                            <a tabindex="-1" href="base_pages_inbox.php">
-                                <i class="si si-envelope-open pull-right"></i>
-                                <span class="badge badge-primary pull-right">3</span>Inbox
+                            <a data-toggle="modal" data-target="#modal-profile-settings" type="button">
+                                <i class="si si-settings pull-right"></i>Profil
                             </a>
                         </li>
                         <li>
-                            <a tabindex="-1" href="base_pages_profile.php">
-                                <i class="si si-user pull-right"></i>
-                                <span class="badge badge-success pull-right">1</span>Profile
+                            <a href="https://admin.local.unilend.fr/users/edit_password/">
+                                <i class="si si-lock pull-right"></i>Mot de passe
                             </a>
                         </li>
                         <li>
-                            <a tabindex="-1" href="javascript:void(0)">
-                                <i class="si si-settings pull-right"></i>Settings
-                            </a>
-                        </li>
-                        <li class="divider"></li>
-                        <li class="dropdown-header">Actions</li>
-                        <li>
-                            <a tabindex="-1" href="base_pages_lock.php">
-                                <i class="si si-lock pull-right"></i>Lock Account
-                            </a>
-                        </li>
-                        <li>
-                            <a tabindex="-1" href="<?= $this->lurl ?>/logout">
+                            <a href="<?= $this->lurl ?>/logout">
                                 <i class="si si-logout pull-right"></i>Se déconnecter
                             </a>
                         </li>
@@ -122,16 +114,11 @@
             </li>
         </ul>
         <ul class="nav-header pull-left">
-            <li class="visible-xs">
-                <button class="btn btn-default" data-toggle="class-toggle" data-target=".js-header-search" data-class="header-search-xs-visible" type="button">
-                    <i class="fa fa-search"></i>
-                </button>
-            </li>
-            <li class="js-header-search header-search">
-                <form class="form-horizontal" action="base_pages_search.php" method="post">
+            <li class="header-search">
+                <form class="form-horizontal" action="" method="post">
                     <div class="input-group remove-margin-t remove-margin-b">
                         <input class="form-control" type="text" id="quick-search" name="quick-search" placeholder="Recherche ...">
-                        <span class="input-group-addon"><i class="si si-magnifier"></i></span>
+                        <span class="input-group-addon"><i class="fa fa-search"></i></span>
                     </div>
                 </form>
             </li>
@@ -140,6 +127,42 @@
     <main id="main-container">
         <?php $this->fireView(); ?>
     </main>
+</div>
+
+<!--Modals-->
+<div class="modal fade in" id="modal-profile-settings" role="dialog" aria-hidden="true">
+    <form class="modal-dialog modal-sm" method="post" name="mod_users" id="mod_users" enctype="multipart/form-data" action="<?= $this->lurl ?>/users/edit_perso_user/<?= $this->users->id_user ?>" target="_parent" data-formvalidate>
+        <div class="modal-content">
+            <div class="block block-themed block-transparent remove-margin-b">
+                <div class="block-header bg-primary-light">
+                    <h3 class="block-title">Modifier <?= $this->users->firstname ?> <?= $this->users->name ?></h3>
+                </div>
+                <div class="block-content">
+                    <div class="form-group">
+                        <label>Pr&eacute;nom</label>
+                        <input type="text" name="firstname" value="<?= $this->users->firstname ?>" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Nom</label>
+                        <input type="text" name="name" value="<?= $this->users->name ?>" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>T&eacute;l&eacute;phone</label>
+                        <input type="text" name="phone" value="<?= $this->users->phone ?>" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" name="email" value="<?= $this->users->phone ?>" class="form-control required">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <input type="hidden" name="form_mod_users" id="form_mod_users">
+                <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+            </div>
+        </div>
+    </form>
 </div>
 
 <!-- OneUI Core JS: jQuery, Bootstrap, slimScroll, scrollLock, Placeholder, Cookie and App.js -->
@@ -171,64 +194,34 @@
 <script>
     $(function(){
         // Form Validation
-        $('.js-validation').validate({
-            ignore: [],
-            errorClass: 'help-block',
-            errorElement: 'div',
-            errorPlacement: function(error, e) {
-                $(e).parents('.form-group').append(error);
-            },
-            highlight: function(e) {
-                var elem = $(e);
-
-                elem.closest('.form-group').removeClass('has-error').addClass('has-error');
-                elem.closest('.help-block').remove();
-            },
-            success: function(e) {
-                var elem = $(e);
-
-                elem.closest('.form-group').removeClass('has-error');
-                elem.closest('.help-block').remove();
-            },
-            rules: {
-                'val-name': {
-                    required: true,
-                    minlength: 3
-                },
-                'val-email': {
-                    required: true,
-                    email: true
-                },
-                'val-message': {
-                    required: true,
-                    minlength: 50
-                },
-                'val-select': {
-                    required: true
-                },
-                'val-select2': {
-                    required: true
-                },
-                'val-select2-multiple': {
-                    required: true,
-                    minlength: 2
+        // Generic form validation - to be further developed
+        $('[data-formvalidate]').submit(function(e){
+            var valid = true
+            $(this).find('.required').each(function(){
+                var $input = $(this)
+                if ($input.is('input[type=text]') || $input.is('input[type=number]') || $input.is('input[type=email]') || $input.is('textarea')) {
+                    if (!$input.val() || $input.val() === '') {
+                        $input.closest('.form-group').removeClass('has-error').addClass('has-error')
+                        valid = false
+                    } else {
+                        $input.closest('.form-group').removeClass('has-error')
+                        valid = true
+                    }
                 }
-            },
-            messages: {
-                'val-name': {
-                    required: 'Please enter a username',
-                    minlength: 'Your username must consist of at least 3 characters'
-                },
-                'val-email': 'Please enter a valid email address',
-                'val-message': {
-                    required: 'Please write a message',
-                    minlength: 'Message should be at least 50 characters'
-                },
-                'val-select2': 'Please select a value!',
-                'val-select': 'Please select a value!',
-                'val-select2-multiple': 'Please select at least 2 values!'
-            }
-        });
+                if ($input.is('select')) {
+                    if ($input.val() === '' || $input.val() === '0' || $input.val() === 'Selectionner') {
+                        $input.closest('.form-group').removeClass('has-error').addClass('has-error')
+                        valid = false
+                    } else {
+                        $input.closest('.form-group').removeClass('has-error')
+                        valid = true
+                    }
+                }
+                if (!valid) {
+                    e.preventDefault()
+                }
+            })
+        })
 
         // jQuery AutoComplete example, for more examples you can check out https://github.com/Pixabay/jQuery-autoComplete
         $('.js-autocomplete').autoComplete({
