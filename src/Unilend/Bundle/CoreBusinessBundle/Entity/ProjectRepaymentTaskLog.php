@@ -60,14 +60,12 @@ class ProjectRepaymentTaskLog
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask", inversedBy="taskLogs")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_task", referencedColumnName="id")
      * })
      */
     private $idTask;
-
-
 
     /**
      * Set sequence

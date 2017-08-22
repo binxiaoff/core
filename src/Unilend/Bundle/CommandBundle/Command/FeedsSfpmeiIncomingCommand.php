@@ -294,7 +294,7 @@ EOF
                     $operationManager->provisionBorrowerWallet($reception);
 
                     $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
-                    $repaymentManager->pay($project, $reception, $user);
+                    $repaymentManager->pay($reception, $user);
                 }
             }
         }
@@ -350,7 +350,7 @@ EOF
         $operationManager->provisionBorrowerWallet($reception);
 
         $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
-        $repaymentManager->pay($project, $reception, $user);
+        $repaymentManager->pay($reception, $user);
     }
 
     /**
@@ -469,30 +469,30 @@ EOF
             $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find((int) $matches[1]);
 
             if (1 === preg_match('#^RCNUNILEND/([0-9]{8})/([0-9]+)#', $aRow['libelleOpe4'], $matches)) {
-                $from                = \DateTime::createFromFormat('Ymd', $matches[1]);
+                $from                        = \DateTime::createFromFormat('Ymd', $matches[1]);
                 $originalRejectedDirectDebit = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->findOriginalDirectDebitByRejectedOne($reception, $from);
-            }
 
-            if ($project && false === empty($originalRejectedDirectDebit)) {
-                $project->setRembAuto(Projects::AUTO_REPAYMENT_OFF);
-                $entityManager->flush();
-
-                /** @var Wallet $wallet */
-                $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
-
-                if ($wallet) {
-                    $reception
-                        ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)
-                        ->setIdProject($project)
-                        ->setIdClient($wallet->getIdClient())
-                        ->setRemb(0)
-                        ->setIdReceptionRejected($originalRejectedDirectDebit);
+                if ($project && $originalRejectedDirectDebit) {
+                    $project->setRembAuto(Projects::AUTO_REPAYMENT_OFF);
                     $entityManager->flush();
 
-                    $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
-                    $operationManager->cancelProvisionBorrowerWallet($wallet, $amount, $reception);
-                    $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
-                    $repaymentManager->rejectPayment($project, $reception, $user);
+                    /** @var Wallet $wallet */
+                    $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+
+                    if ($wallet) {
+                        $reception
+                            ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)
+                            ->setIdProject($project)
+                            ->setIdClient($wallet->getIdClient())
+                            ->setRemb(0)
+                            ->setIdReceptionRejected($originalRejectedDirectDebit);
+                        $entityManager->flush();
+
+                        $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
+                        $operationManager->cancelProvisionBorrowerWallet($wallet, $amount, $reception);
+                        $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
+                        $repaymentManager->rejectPayment($reception, $user);
+                    }
                 }
             }
         }

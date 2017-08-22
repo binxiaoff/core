@@ -537,52 +537,62 @@ class ProjectRepaymentManager
     }
 
     /**
-     * @param Projects   $project
      * @param Receptions $reception
      * @param            $user
+     *
+     * @throws \Exception
      */
-    public function pay(Projects $project, Receptions $reception, $user)
+    public function pay(Receptions $reception, $user)
     {
         /** @var \echeanciers $echeanciers */
         $echeanciers                 = $this->entityManagerSimulator->getRepository('echeanciers');
         $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
 
-        $amount = round(bcdiv($reception->getMontant(), 100, 2));
+        $amount  = round(bcdiv($reception->getMontant(), 100, 4), 2);
+        $project = $reception->getIdProject();
 
         $unpaidPaymentSchedules = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')
             ->findBy(['idProject' => $project, 'statusEmprunteur' => EcheanciersEmprunteur::STATUS_PENDING], ['ordre' => 'ASC']);
 
-        foreach ($unpaidPaymentSchedules as $paymentSchedules) {
-            $monthlyAmount = round(bcdiv($paymentSchedules->getMontant(), 100, 2) + bcdiv($paymentSchedules->getCommission(), 100, 2) + bcdiv($paymentSchedules->getTva(), 100, 2), 2);
+        $this->entityManager->getConnection()->beginTransaction();
+        try {
+            foreach ($unpaidPaymentSchedules as $paymentSchedule) {
+                $monthlyAmount = round(bcadd(bcadd(bcdiv($paymentSchedule->getMontant(), 100, 4), bcdiv($paymentSchedule->getCommission(), 100, 4), 4), bcdiv($paymentSchedule->getTva(), 100, 4), 4),
+                    2);
 
-            if ($monthlyAmount <= $amount) {
-                $echeanciers->updateStatusEmprunteur($project->getIdProject(), $paymentSchedules->getOrdre());
+                if ($monthlyAmount <= $amount) {
+                    $echeanciers->updateStatusEmprunteur($project->getIdProject(), $paymentSchedule->getOrdre());
 
-                $paymentSchedules->setStatusEmprunteur(EcheanciersEmprunteur::STATUS_PAID)
-                    ->setDateEcheanceEmprunteurReel(new \DateTime());
-                $this->entityManager->flush($paymentSchedules);
+                    $paymentSchedule->setStatusEmprunteur(EcheanciersEmprunteur::STATUS_PAID)
+                        ->setDateEcheanceEmprunteurReel(new \DateTime());
+                    $this->entityManager->flush($paymentSchedule);
 
-                $repaymentSchedule = $repaymentScheduleRepository->findOneBy(['idProject' => $project, 'ordre' => $paymentSchedules->getOrdre()]);
-                $this->planRepaymentTask($project, $repaymentSchedule, $monthlyAmount, $reception, $user);
+                    $repaymentSchedule = $repaymentScheduleRepository->findOneBy(['idProject' => $project, 'ordre' => $paymentSchedule->getOrdre()]);
+                    $this->planRepaymentTask($project, $repaymentSchedule, $monthlyAmount, $reception, $user);
 
-                $amount = round(bcsub($amount, $monthlyAmount, 4), 2);
-            } else {
-                break;
+                    $amount = round(bcsub($amount, $monthlyAmount, 4), 2);
+                } else {
+                    break;
+                }
             }
+            $this->entityManager->getConnection()->commit();
+        } catch (\Exception $exception) {
+            $this->entityManager->getConnection()->rollBack();
+            throw $exception;
         }
     }
 
     /**
-     * @param Projects    $projects
+     * @param Projects    $project
      * @param Echeanciers $repaymentSchedule
      * @param float       $amount
      * @param Receptions  $reception
      * @param Users       $user
      */
-    private function planRepaymentTask(Projects $projects, Echeanciers $repaymentSchedule, $amount, $reception, $user)
+    private function planRepaymentTask(Projects $project, Echeanciers $repaymentSchedule, $amount, $reception, $user)
     {
         $projectRepaymentTask = new ProjectRepaymentTask();
-        $projectRepaymentTask->setIdProject($projects)
+        $projectRepaymentTask->setIdProject($project)
             ->setSequence($repaymentSchedule->getOrdre())
             ->setAmount($amount)
             ->setType(ProjectRepaymentTask::TYPE_REGULAR)
@@ -591,9 +601,13 @@ class ProjectRepaymentManager
             ->setIdUserCreation($user)
             ->setIdWireTransferIn($reception);
 
-        if (Projects::AUTO_REPAYMENT_ON === $projects->getRembAuto()) {
+        if (Projects::AUTO_REPAYMENT_ON === $project->getRembAuto()) {
             $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_READY)
                 ->setIdUserValidation($user);
+        }
+
+        if ($reception->getType() === Receptions::REPAYMENT_TYPE_REGULARISATION) {
+            $projectRepaymentTask->setType(ProjectRepaymentTask::TYPE_LATE);
         }
 
         $this->entityManager->persist($projectRepaymentTask);
@@ -601,9 +615,10 @@ class ProjectRepaymentManager
     }
 
     /**
-     *
      * @param Receptions $reception
      * @param Users      $user
+     *
+     * @throws \Exception
      */
     public function rejectPayment(Receptions $reception, Users $user)
     {
@@ -615,19 +630,28 @@ class ProjectRepaymentManager
         $repaymentTaskToCancel = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
             ->findBy(['idProject' => $project, 'idWireTransferIn' => $reception->getIdReceptionRejected()]);
 
-        foreach ($repaymentTaskToCancel as $task) {
-            $paymentSchedule = $paymentScheduleRepository->findOneBy(['idProject' => $project, 'ordre' => $task->getSequence()]);
+        $this->entityManager->getConnection()->beginTransaction();
+        try {
+            foreach ($repaymentTaskToCancel as $task) {
+                if (in_array($task->getStatus(), [ProjectRepaymentTask::STATUS_PENDING, ProjectRepaymentTask::STATUS_READY])) {
+                    $paymentSchedule = $paymentScheduleRepository->findOneBy(['idProject' => $project, 'ordre' => $task->getSequence()]);
 
-            $echeanciers->updateStatusEmprunteur($project->getIdProject(), $task->getSequence(), 'annuler');
+                    $echeanciers->updateStatusEmprunteur($project->getIdProject(), $task->getSequence(), 'annuler');
 
-            $paymentSchedule->setStatusEmprunteur(EcheanciersEmprunteur::STATUS_PENDING)
-                ->setDateEcheanceEmprunteurReel(null);
-            $this->entityManager->flush($paymentSchedule);
+                    $paymentSchedule->setStatusEmprunteur(EcheanciersEmprunteur::STATUS_PENDING)
+                        ->setDateEcheanceEmprunteurReel(null);
+                    $this->entityManager->flush($paymentSchedule);
 
-            $task->setStatus(ProjectRepaymentTask::STATUS_CANCELLED)
-                ->setRepayAt(null)
-                ->setIdUserCancellation($user);
-            $this->entityManager->flush($task);
+                    $task->setStatus(ProjectRepaymentTask::STATUS_CANCELLED)
+                        ->setRepayAt(null)
+                        ->setIdUserCancellation($user);
+                    $this->entityManager->flush($task);
+                }
+            }
+            $this->entityManager->getConnection()->commit();
+        } catch (\Exception $exception) {
+            $this->entityManager->getConnection()->rollBack();
+            throw $exception;
         }
     }
 
@@ -638,7 +662,7 @@ class ProjectRepaymentManager
      */
     public function planEarlyRepayment(Projects $project, Receptions $reception, Users $user)
     {
-        $receivedAmount = round(bcdiv($reception->getMontant(), 100, 2));
+        $receivedAmount = round(bcdiv($reception->getMontant(), 100, 4), 2);
 
         $projectRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
             ->findOneBy(['idProject' => $project, 'type' => ProjectRepaymentTask::TYPE_EARLY]);

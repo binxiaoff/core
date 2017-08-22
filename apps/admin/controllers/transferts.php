@@ -84,23 +84,28 @@ class transfertsController extends bootstrap
             $user             = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
             if (null !== $project && null !== $reception) {
-                $reception->setIdProject($project)
-                          ->setIdClient($client)
-                          ->setStatusBo(Receptions::STATUS_ASSIGNED_MANUAL)
-                          ->setRemb(1)
-                          ->setIdUser($user)
-                          ->setAssignmentDate(new \DateTime());
-                $operationManager->provisionBorrowerWallet($reception);
+                $entityManager->getConnection()->beginTransaction();
+                try {
+                    $reception->setIdProject($project)
+                        ->setIdClient($client)
+                        ->setStatusBo(Receptions::STATUS_ASSIGNED_MANUAL)
+                        ->setRemb(1)
+                        ->setIdUser($user)
+                        ->setAssignmentDate(new \DateTime());
+                    $operationManager->provisionBorrowerWallet($reception);
 
-                if ($_POST['type_remb'] === 'remboursement_anticipe') {
-                    $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_EARLY);
-                    $repaymentManager->planEarlyRepayment($project, $reception, $user);
-                } elseif ($_POST['type_remb'] === 'regularisation') {
-                    $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_REGULARISATION);
-                    $repaymentManager->pay($project, $reception, $user);
+                    if ($_POST['type_remb'] === 'remboursement_anticipe') {
+                        $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_EARLY);
+                        $repaymentManager->planEarlyRepayment($project, $reception, $user);
+                    } elseif ($_POST['type_remb'] === 'regularisation') {
+                        $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_REGULARISATION);
+                        $repaymentManager->pay($reception, $user);
+                    }
+                    $entityManager->flush();
+                    $entityManager->getConnection()->commit();
+                } catch (Exception $exception) {
+                    $entityManager->getConnection()->rollBack();
                 }
-
-                $entityManager->flush();
             }
 
             header('Location: ' . $this->lurl . '/transferts/emprunteurs');

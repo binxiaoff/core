@@ -174,6 +174,7 @@ class Receptions
      * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Receptions")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_reception_rejected", referencedColumnName="id_reception")
+     * })
      */
     private $idReceptionRejected;
 
