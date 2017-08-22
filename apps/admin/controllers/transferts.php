@@ -369,11 +369,28 @@ class transfertsController extends bootstrap
 
         $reception
             ->setStatusBo(Receptions::STATUS_IGNORED_MANUAL)
-            ->setIdUser($entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']));
+            ->setIdUser($entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']))
+            ->setComment($_POST['comment']);
 
         $entityManager->flush();
 
         echo 'ok';
+    }
+
+    public function _comment()
+    {
+        if (isset($_POST['reception']) && false !== filter_var($_POST['reception'], FILTER_VALIDATE_INT)) {
+            /** @var EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['reception'])->setComment($_POST['comment']);
+            $entityManager->flush();
+
+            header('Location: ' . $_POST['referer']);
+            exit;
+        }
+
+        header('Location: /');
+        exit;
     }
 
     public function _rattrapage_offre_bienvenue()

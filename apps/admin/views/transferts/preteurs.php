@@ -1,4 +1,23 @@
-<script type="text/javascript">
+<style>
+    @font-face {
+        font-family: 'FontAwesome';
+        src: url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.eot');
+        src: url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.eot?#iefix&v=4.7.0') format('embedded-opentype'),
+        url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.woff2') format('woff2'),
+        url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.woff') format('woff'),
+        url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.ttf') format('truetype'),
+        url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.svg#fontawesomeregular') format('svg');
+        font-weight: normal;
+        font-style: normal;
+    }
+
+    table.dataTable thead .sorting:after,
+    table.dataTable thead .sorting_asc:after,
+    table.dataTable thead .sorting_desc:after {
+        top: 7px !important;
+    }
+</style>
+<script>
     function annulerAttribution(id_client, id_reception) {
         if (confirm('Voulez vous vraiment annuler le virement ?')) {
             var val = {
@@ -15,21 +34,28 @@
     }
 
     $(function() {
-        jQuery.tablesorter.addParser({
-            id: "fancyNumber", is: function (s) {
-                return /[\-\+]?\s*[0-9]{1,3}(\.[0-9]{3})*,[0-9]+/.test(s);
-            }, format: function (s) {
-                return jQuery.tablesorter.formatFloat(s.replace(/,/g, '').replace(' €', '').replace(' ', ''));
-            }, type: "numeric"
-        });
+        $('#receptions-table').DataTable({
+            order: [[0, 'desc']],
+            pageLength: <?= $this->nb_lignes ?>,
+            bLengthChange: false,
+            columnDefs: [
+                {orderable: false, targets: [0, 1, 6]},
+                {searchable: false, targets: 6}
+            ],
+            language: {
+                url: '<?= $this->lurl ?>/oneui/js/plugins/datatables/localisation/fr_FR.json'
+            }
+        })
 
-        $(".tablesorter").tablesorter({headers: {6: {sorter: false}}});
+        $('.reception-line').tooltip({
+            position: {my: 'left top', at: 'right top'},
+            content: function () {
+                return $(this).prop('title')
+            }
+        })
 
-        <?php if ($this->nb_lignes != '') : ?>
-            $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
-        <?php endif; ?>
-
-        $(".inline").colorbox({inline: true, width: "50%"});
+        $('.inline').tooltip({disabled: true})
+        $('.inline').colorbox({inline: true})
     });
 </script>
 <div id="contenu">
@@ -41,7 +67,7 @@
             <a href="<?= $this->lurl ?>/transferts/preteurs/csv" class="btn-primary pull-right">Export CSV</a>
         </div>
     </div>
-    <table class="tablesorter">
+    <table id="receptions-table" class="table table-bordered table-striped">
         <thead>
             <tr>
                 <th style="width:50px">ID</th>
@@ -54,52 +80,54 @@
             </tr>
         </thead>
         <tbody>
-            <?php $i = 1; ?>
-            <?php
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions $reception */
-            foreach ($this->receptions as $reception) :
-            ?>
-                <tr<?= ($i++ % 2 == 1 ? '' : ' class="odd"') ?>>
+            <?php use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions; ?>
+            <?php /** @var Receptions $reception */ ?>
+            <?php foreach ($this->receptions as $reception) : ?>
+                <tr class="reception-line" title="<?= htmlspecialchars(nl2br($reception->getComment()), ENT_QUOTES) ?>">
                     <td><?= $reception->getIdReception() ?></td>
                     <td><?= $reception->getMotif() ?></td>
-                    <td style="text-align:right"><?= $this->ficelle->formatNumber($reception->getMontant() / 100) ?> €</td>
+                    <td style="text-align:right" data-order="<?= $reception->getMontant() ?>" data-search="<?= $reception->getMontant() ?>"><?= $this->ficelle->formatNumber($reception->getMontant() / 100) ?> €</td>
                     <td class="statut_operation_<?= $reception->getIdReception() ?>">
-                        <?php if (\Unilend\Bundle\CoreBusinessBundle\Entity\Receptions::STATUS_ASSIGNED_MANUAL == $reception->getstatusBo() && $reception->getIdUser()): ?>
-                            <?= $reception->getIdUser()->getFirstname() . ' ' . $reception->getIdUser()->getName() ?><br/>
+                        <?php if (Receptions::STATUS_ASSIGNED_MANUAL == $reception->getstatusBo() && $reception->getIdUser()): ?>
+                            <?= $reception->getIdUser()->getFirstname() . ' ' . $reception->getIdUser()->getName() ?><br>
                             <?= $reception->getAssignmentDate()->format('d/m/Y H:i:s') ?>
                         <?php else: ?>
                             <?= $this->statusOperations[$reception->getstatusBo()] ?>
                         <?php endif; ?>
                     </td>
-                    <td class="num_client_<?= $reception->getIdReception() ?>"><?= $reception->getIdClient()->getIdClient() ?></td>
-                    <td><?= $reception->getAdded()->format('d/m/Y') ?></td>
+                    <td class="num_client_<?= $reception->getIdReception() ?>"><a href="<?= $this->lurl ?>/preteurs/edit/<?= $reception->getIdClient()->getIdClient() ?>"><?= $reception->getIdClient()->getIdClient() ?></a></td>
+                    <td data-order="<?= $reception->getAdded()->getTimestamp() ?>"><?= $reception->getAdded()->format('d/m/Y') ?></td>
                     <td align="center">
-                        <img class="annuler_<?= $reception->getIdReception() ?>" style="cursor:pointer;" onclick="annulerAttribution(<?= $reception->getIdClient()->getIdClient() ?>, <?= $reception->getIdReception() ?>)" src="<?= $this->surl ?>/images/admin/delete.png" alt="Annuler"/>
-                        <a class="inline" href="#inline_content_<?= $reception->getIdReception() ?>">
-                            <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Afficher la ligne de réception"/>
+                        <img class="annuler_<?= $reception->getIdReception() ?>" style="cursor:pointer;" onclick="annulerAttribution(<?= $reception->getIdClient()->getIdClient() ?>, <?= $reception->getIdReception() ?>)" src="<?= $this->surl ?>/images/admin/delete.png" alt="Annuler">
+                        <a class="inline" href="#comment-line-<?= $reception->getIdReception() ?>"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Commenter l'opération"></a>
+                        <a class="inline" href="#inline-content-<?= $reception->getIdReception() ?>" title="Ligne de réception">
+                            <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Afficher l'opération">
                         </a>
-                        <div style="display:none;">
-                            <div id="inline_content_<?= $reception->getIdReception() ?>" style="white-space:nowrap; padding:10px; background:#fff;"><?= $reception->getLigne() ?></div>
-                        </div>
                     </td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
-    <?php if ($this->nb_lignes != '') : ?>
-        <table>
-            <tr>
-                <td id="pager">
-                    <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first"/>
-                    <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev"/>
-                    <input type="text" class="pagedisplay"/>
-                    <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
-                    <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
-                    <select class="pagesize">
-                        <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
-                    </select>
-                </td>
-            </tr>
-        </table>
-    <?php endif; ?>
+    <div class="hidden">
+        <?php foreach ($this->receptions as $reception) : ?>
+            <div id="inline-content-<?= $reception->getIdReception() ?>" style="white-space: nowrap; padding: 10px; background: #fff;"><?= $reception->getLigne() ?></div>
+            <div id="comment-line-<?= $reception->getIdReception() ?>" style="padding: 10px; min-width: 500px;">
+                <form id="comment-line-form-<?= $reception->getIdReception() ?>" class="comment-line-form" method="POST" action="<?= $this->lurl ?>/transferts/comment">
+                    <input type="hidden" name="reception" value="<?= $reception->getIdReception() ?>">
+                    <input type="hidden" name="referer" value="<?= $_SERVER['REQUEST_URI'] ?>">
+                    <h1>Commenter une opération</h1>
+                    <div class="form-group">
+                        <label for="comment-line-comment-<?= $reception->getIdReception() ?>" class="sr-only">Commentaire</label>
+                        <textarea id="comment-line-comment-<?= $reception->getIdReception() ?>" name="comment" rows="5" class="form-control"><?= $reception->getComment() ?></textarea>
+                    </div>
+                    <div class="text-right">
+                        <button type="button" class="btn-default" onclick="$.fn.colorbox.close()">Annuler</button>
+                        <button type="submit" class="btn-primary">Valider</button>
+                    </div>
+                </form>
+            </div>
+        <?php endforeach; ?>
+    </div>
 </div>
+<script src="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+<link type="text/css" rel="stylesheet" href="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.css">
