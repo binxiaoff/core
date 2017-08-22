@@ -2219,11 +2219,19 @@ class dossiersController extends bootstrap
 
                 if (1 === count($this->reception)) {
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions reception */
-                    $this->reception = $this->reception[0];
+                    $this->reception   = $this->reception[0];
+                    $lastPaidRepayment = $repaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND status = ' . \echeanciers::STATUS_REPAID, ' ordre DESC', 0, 1);
 
-                    if ($amountDifference == 0 && (bcdiv($this->reception->getMontant(), 100, 2)) >= $this->lenderOwedCapital) {
+                    $currentLenderOwedCapital   = $repaymentSchedule->getRemainingCapitalAtDue($this->projects->id_project, $lastPaidRepayment[0]['ordre'] + 1);
+                    $currentBorrowerOwedCapital = $paymentSchedule->reste_a_payer_ra($this->projects->id_project, $lastPaidRepayment[0]['ordre'] + 1);
+
+                    if (bcsub($currentLenderOwedCapital, $currentBorrowerOwedCapital, 2) == 0 && (bcdiv($this->reception->getMontant(), 100, 2)) >= $currentLenderOwedCapital) {
                         $this->wireTransferAmountOk = true;
                         $this->message              = '<div style="color:green;">Virement reçu conforme</div>';
+                    } elseif ($amountDifference == 0 && (bcdiv($this->reception->getMontant(), 100, 2)) >= $this->lenderOwedCapital) {
+                        $this->wireTransferAmountOk = true;
+                        $this->message              = '<div style="color:green;">Virement reçu conforme - Attente du remboursement de l\'échéance du ' . \DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance'])->format('d/m/Y') . '</div>';
+                        $this->displayActionButton  = false;
                     } elseif (bcdiv($this->reception->getMontant(), 100, 2) < $this->lenderOwedCapital) {
                         $this->wireTransferAmountOk = false;
                         $this->message              = '<div style="color:red;">Virement reçu - Probléme montant <br />(CRD Prêteurs :' . $this->lenderOwedCapital . '€ - Virement :' . ($this->reception->getMontant() / 100) . '€)</div>';

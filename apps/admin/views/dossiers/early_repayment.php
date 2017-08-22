@@ -40,12 +40,21 @@
                 <tr>
                     <th>Actions :</th>
                     <td>
-                        <form action="" method="post" name="action_remb_anticipe">
-                            <input type="hidden" name="id_reception" value="<?= $this->reception->getIdReception() ?>">
-                            <input type="hidden" name="montant_crd_preteur" value="<?= $this->lenderOwedCapital ?>">
-                            <input type="hidden" name="spy_remb_anticipe" value="ok">
-                            <input type="submit" value="Déclencher le remboursement anticipé" class="btn">
-                        </form>
+                        <a id="form-trigger" href="#" class="btn_link">Déclencher le remboursement anticipé</a>
+                        <div id="form-early-repayment" style="display: none">
+                            <div id="popup">
+                                <a onclick="parent.$.fn.colorbox.close();" class="closeBtn" title="Fermer"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"></a><br>
+                                <h3 style="white-space: nowrap;">Confirmer le remboursement anticipé</h3>
+                                <form action="" method="post" name="action_remb_anticipe">
+                                    <input type="hidden" name="id_reception" value="<?= $this->reception->getIdReception() ?>">
+                                    <input type="hidden" name="spy_remb_anticipe" value="ok">
+                                    <div style="text-align: center;">
+                                        <button type="button" class="btn btnDisabled" onclick="parent.$.fn.colorbox.close()">Annuler</button>
+                                        <input type="submit" id="btn-early-repayment" value="Valider" class="btn" data-prevent-doubleclick>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </td>
                 </tr>
             <?php endif; ?>
@@ -62,3 +71,13 @@
 <?php else: ?>
     <?= $this->message ?>
 <?php endif; ?>
+
+<script>
+    $(function() {
+        $('#form-trigger').click(function(event) {
+            event.preventDefault()
+            earlyRepaymentForm = $("#form-early-repayment").html()
+            $.colorbox({html: earlyRepaymentForm})
+        })
+    });
+</script>
