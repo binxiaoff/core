@@ -16,8 +16,6 @@ class Sponsorship
     const STATUS_ONGOING         = 0;
     const STATUS_SPONSEE_PAID    = 1;
     const STATUS_SPONSOR_PAID    = 2;
-    const STATUS_SPONSEE_EXPIRED = 3;
-    const STATUS_SPONSOR_EXPIRED = 4;
 
     /**
      * @var boolean

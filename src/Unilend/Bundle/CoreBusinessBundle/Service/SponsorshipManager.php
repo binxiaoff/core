@@ -9,7 +9,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Sponsorship;
+use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipBlacklist;
 use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
@@ -59,7 +61,8 @@ class SponsorshipManager
         Packages $assetsPackages,
         $schema,
         $frontHost
-    ) {
+    )
+    {
         $this->operationManager    = $operationManager;
         $this->entityManager       = $entityManager;
         $this->clientStatusManager = $clientStatusManager;
@@ -87,7 +90,6 @@ class SponsorshipManager
     public function getCurrentSponsorshipCampaign()
     {
         return $this->entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->findCurrentCampaign();
-
     }
 
     /**
@@ -140,7 +142,10 @@ class SponsorshipManager
         }
 
         $this->operationManager->newSponseeReward($sponseeWallet, $sponsorship);
-        $this->sendSponseeRewardEmail($sponsorship);
+
+        if (false === $this->isClientBlacklistedForSponsorship($sponsorship)) {
+            $this->sendSponseeRewardEmail($sponsorship);
+        }
     }
 
     private function sendSponsorRewardEmail(Sponsorship $sponsorship)
@@ -163,9 +168,23 @@ class SponsorshipManager
 
     }
 
-    public function blacklistClientAsSponsor()
+    /**
+     * @param Clients                  $client
+     * @param Users                    $user
+     * @param SponsorshipCampaign|null $campaign
+     */
+    public function blacklistClientAsSponsor(Clients $client, Users $user, SponsorshipCampaign $campaign = null)
     {
+        $blacklisted = new SponsorshipBlacklist();
+        $blacklisted->setIdClient($client)
+            ->setIdUser($user);
 
+        if (null !== $campaign) {
+            $blacklisted->setIdCampaign($campaign);
+        }
+
+        $this->entityManager->persist($blacklisted);
+        $this->entityManager->flush($blacklisted);
     }
 
     public function sendSponsorshipInvitation()
@@ -217,7 +236,11 @@ class SponsorshipManager
             return false;
         }
 
-        if (in_array($sponsorship->getStatus(), [Sponsorship::STATUS_SPONSOR_PAID, Sponsorship::STATUS_SPONSOR_EXPIRED])) {
+        if ($this->isClientBlacklistedForSponsorship($sponsorship)) {
+            return false;
+        }
+
+        if (Sponsorship::STATUS_SPONSOR_PAID == $sponsorship->getStatus()) {
             return false;
         }
 
@@ -229,6 +252,7 @@ class SponsorshipManager
 
         $amountAlreadyReceivedRewards = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')
             ->getSumRewardAmountByCampaign(OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR, $sponsorship->getIdSponsorshipCampaign());
+
         if ($amountAlreadyReceivedRewards >= bcmul($sponsorship->getIdSponsorshipCampaign()->getAmountSponsor(), $sponsorship->getIdSponsorshipCampaign()->getMaxNumberSponsee(), 2)) {
             return false;
         }
@@ -253,5 +277,32 @@ class SponsorshipManager
         }
 
         return true;
+    }
+
+    /**
+     * @param Sponsorship $sponsorship
+     *
+     * @return bool
+     */
+    public function isClientBlacklistedForSponsorship(Sponsorship $sponsorship)
+    {
+        $blacklistRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipBlacklist');
+        $blacklist           = $blacklistRepository->findBlacklistForClient($sponsorship->getIdClientSponsor(), $sponsorship->getIdSponsorshipCampaign());
+
+        return null !== $blacklist;
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @return bool
+     */
+    public function isClientCurrentlyBlacklisted(Clients $client)
+    {
+        $currentCampaign     = $this->getCurrentSponsorshipCampaign();
+        $blacklistRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipBlacklist');
+        $blacklist           = $blacklistRepository->findBlacklistForClient($client, $currentCampaign);
+
+        return null !== $blacklist;
     }
 }

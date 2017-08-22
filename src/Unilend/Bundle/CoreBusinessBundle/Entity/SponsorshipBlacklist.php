@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="sponsorship_blacklist", indexes={@ORM\Index(name="idx_sponsorship_blacklist_id_client", columns={"id_client"}), @ORM\Index(name="idx_sponsorship_blacklist_id_user", columns={"id_user"})})
  * @ORM\HasLifecycleCallbacks()
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\SponsorshipBlacklistRepository")
  */
 class SponsorshipBlacklist
 {
@@ -49,6 +49,15 @@ class SponsorshipBlacklist
      */
     private $idClient;
 
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_campaign", referencedColumnName="id")
+     * })
+     */
+    private $idCampaign;
 
 
     /**
@@ -131,6 +140,30 @@ class SponsorshipBlacklist
     public function getIdClient()
     {
         return $this->idClient;
+    }
+
+    /**
+     * Set idCampaign
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign $idCampaign
+     *
+     * @return SponsorshipBlacklist
+     */
+    public function setIdCampaign(\Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign $idCampaign = null)
+    {
+        $this->idCampaign = $idCampaign;
+
+        return $this;
+    }
+
+    /**
+     * Get idCampaign
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign
+     */
+    public function getIdCampaign()
+    {
+        return $this->idCampaign;
     }
 
     /**
