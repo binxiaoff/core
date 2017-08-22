@@ -112,6 +112,7 @@ class ExternalDataManager
 
                 if ($company->getSiren() === $siren) {
                     $company->setName($company->getName() ? : $identity->getCorporateName());
+                    $company->setLegalFormCode($company->getLegalFormCode() ? : $identity->getLegalFormCode());
                     $company->setForme($company->getForme() ? : $identity->getCompanyForm());
                     $company->setCapital($company->getCapital() ? : $identity->getCapital());
                     $company->setCodeNaf($company->getCodeNaf() ? : $identity->getNAFCode());

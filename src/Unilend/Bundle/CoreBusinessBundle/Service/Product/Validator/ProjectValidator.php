@@ -115,6 +115,9 @@ class ProjectValidator
             case ProductAttributeType::NO_INCIDENT_BLEND_PROJECT_DAYS:
                 $checkResult = $this->isEligibleForNoBlendProjectIncident($project->getIdCompany(), $product, $this->productAttributeManager, $this->entityManager);
                 break;
+            case ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_LEGAL_FORM_CODE:
+                $checkResult = $this->isEligibleForLegalFormCode($project->getIdCompany(), $product, $this->productAttributeManager);
+                break;
             default;
                 return true;
         }
