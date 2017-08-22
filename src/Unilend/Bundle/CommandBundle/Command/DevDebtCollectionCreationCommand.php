@@ -103,7 +103,7 @@ EOF
         $entityManager->getConnection()->beginTransaction();
         try {
             $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_RECOVERY)
-                      ->setStatusBo(Receptions::STATUS_MANUALLY_ASSIGNED)
+                      ->setStatusBo(Receptions::STATUS_ASSIGNED_MANUAL)
                       ->setIdClient($client)
                       ->setIdProject($project)
                       ->setAssignmentDate(new \DateTime());
