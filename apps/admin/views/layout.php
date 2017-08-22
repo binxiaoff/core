@@ -115,9 +115,9 @@
         </ul>
         <ul class="nav-header pull-left">
             <li class="header-search">
-                <form class="form-horizontal" action="" method="post">
+                <form class="form-horizontal" action="/dossiers" method="post">
                     <div class="input-group remove-margin-t remove-margin-b">
-                        <input class="form-control" type="text" id="quick-search" name="quick-search" placeholder="Recherche ...">
+                        <input class="form-control" type="text" id="quick-search" name="quick-search" placeholder="Raison Sociale, Siren ou ID Projet">
                         <span class="input-group-addon"><i class="fa fa-search"></i></span>
                     </div>
                 </form>
@@ -195,9 +195,9 @@
     $(function(){
         // Form Validation
         // Generic form validation - to be further developed
-        $('[data-formvalidate]').submit(function(e){
+        $('[data-formvalidate]').submit(function(e) {
             var valid = true
-            $(this).find('.required').each(function(){
+            $(this).find('.required').each(function() {
                 var $input = $(this)
                 if ($input.is('input[type=text]') || $input.is('input[type=number]') || $input.is('input[type=email]') || $input.is('textarea')) {
                     if (!$input.val() || $input.val() === '') {
@@ -227,29 +227,134 @@
         $('.js-autocomplete').autoComplete({
             minChars: 1,
             source: function(term, suggest){
-                term = term.toLowerCase();
+                term = term.toLowerCase()
 
-                var $countriesList  = ['Afghanistan','Albania','Algeria','Andorra','Angola','Anguilla','Antigua &amp; Barbuda','Argentina','Armenia','Aruba','Australia','Austria','Azerbaijan','Bahamas','Bahrain','Bangladesh','Barbados','Belarus','Belgium','Belize','Benin','Bermuda','Bhutan','Bolivia','Bosnia &amp; Herzegovina','Botswana','Brazil','British Virgin Islands','Brunei','Bulgaria','Burkina Faso','Burundi','Cambodia','Cameroon','Cape Verde','Cayman Islands','Chad','Chile','China','Colombia','Congo','Cook Islands','Costa Rica','Cote D Ivoire','Croatia','Cruise Ship','Cuba','Cyprus','Czech Republic','Denmark','Djibouti','Dominica','Dominican Republic','Ecuador','Egypt','El Salvador','Equatorial Guinea','Estonia','Ethiopia','Falkland Islands','Faroe Islands','Fiji','Finland','France','French Polynesia','French West Indies','Gabon','Gambia','Georgia','Germany','Ghana','Gibraltar','Greece','Greenland','Grenada','Guam','Guatemala','Guernsey','Guinea','Guinea Bissau','Guyana','Haiti','Honduras','Hong Kong','Hungary','Iceland','India','Indonesia','Iran','Iraq','Ireland','Isle of Man','Israel','Italy','Jamaica','Japan','Jersey','Jordan','Kazakhstan','Kenya','Kuwait','Kyrgyz Republic','Laos','Latvia','Lebanon','Lesotho','Liberia','Libya','Liechtenstein','Lithuania','Luxembourg','Macau','Macedonia','Madagascar','Malawi','Malaysia','Maldives','Mali','Malta','Mauritania','Mauritius','Mexico','Moldova','Monaco','Mongolia','Montenegro','Montserrat','Morocco','Mozambique','Namibia','Nepal','Netherlands','Netherlands Antilles','New Caledonia','New Zealand','Nicaragua','Niger','Nigeria','Norway','Oman','Pakistan','Palestine','Panama','Papua New Guinea','Paraguay','Peru','Philippines','Poland','Portugal','Puerto Rico','Qatar','Reunion','Romania','Russia','Rwanda','Saint Pierre &amp; Miquelon','Samoa','San Marino','Satellite','Saudi Arabia','Senegal','Serbia','Seychelles','Sierra Leone','Singapore','Slovakia','Slovenia','South Africa','South Korea','Spain','Sri Lanka','St Kitts &amp; Nevis','St Lucia','St Vincent','St. Lucia','Sudan','Suriname','Swaziland','Sweden','Switzerland','Syria','Taiwan','Tajikistan','Tanzania','Thailand','Timor L\'Este','Togo','Tonga','Trinidad &amp; Tobago','Tunisia','Turkey','Turkmenistan','Turks &amp; Caicos','Uganda','Ukraine','United Arab Emirates','United Kingdom','United States','Uruguay','Uzbekistan','Venezuela','Vietnam','Virgin Islands (US)','Yemen','Zambia','Zimbabwe'];
-                var $suggestions    = [];
+                var $countriesList  = ['Afghanistan','Albania','Algeria','Andorra','Angola','Anguilla','Antigua &amp Barbuda','Argentina','Armenia','Aruba','Australia','Austria','Azerbaijan','Bahamas','Bahrain','Bangladesh','Barbados','Belarus','Belgium','Belize','Benin','Bermuda','Bhutan','Bolivia','Bosnia &amp Herzegovina','Botswana','Brazil','British Virgin Islands','Brunei','Bulgaria','Burkina Faso','Burundi','Cambodia','Cameroon','Cape Verde','Cayman Islands','Chad','Chile','China','Colombia','Congo','Cook Islands','Costa Rica','Cote D Ivoire','Croatia','Cruise Ship','Cuba','Cyprus','Czech Republic','Denmark','Djibouti','Dominica','Dominican Republic','Ecuador','Egypt','El Salvador','Equatorial Guinea','Estonia','Ethiopia','Falkland Islands','Faroe Islands','Fiji','Finland','France','French Polynesia','French West Indies','Gabon','Gambia','Georgia','Germany','Ghana','Gibraltar','Greece','Greenland','Grenada','Guam','Guatemala','Guernsey','Guinea','Guinea Bissau','Guyana','Haiti','Honduras','Hong Kong','Hungary','Iceland','India','Indonesia','Iran','Iraq','Ireland','Isle of Man','Israel','Italy','Jamaica','Japan','Jersey','Jordan','Kazakhstan','Kenya','Kuwait','Kyrgyz Republic','Laos','Latvia','Lebanon','Lesotho','Liberia','Libya','Liechtenstein','Lithuania','Luxembourg','Macau','Macedonia','Madagascar','Malawi','Malaysia','Maldives','Mali','Malta','Mauritania','Mauritius','Mexico','Moldova','Monaco','Mongolia','Montenegro','Montserrat','Morocco','Mozambique','Namibia','Nepal','Netherlands','Netherlands Antilles','New Caledonia','New Zealand','Nicaragua','Niger','Nigeria','Norway','Oman','Pakistan','Palestine','Panama','Papua New Guinea','Paraguay','Peru','Philippines','Poland','Portugal','Puerto Rico','Qatar','Reunion','Romania','Russia','Rwanda','Saint Pierre &amp Miquelon','Samoa','San Marino','Satellite','Saudi Arabia','Senegal','Serbia','Seychelles','Sierra Leone','Singapore','Slovakia','Slovenia','South Africa','South Korea','Spain','Sri Lanka','St Kitts &amp Nevis','St Lucia','St Vincent','St. Lucia','Sudan','Suriname','Swaziland','Sweden','Switzerland','Syria','Taiwan','Tajikistan','Tanzania','Thailand','Timor L\'Este','Togo','Tonga','Trinidad &amp Tobago','Tunisia','Turkey','Turkmenistan','Turks &amp Caicos','Uganda','Ukraine','United Arab Emirates','United Kingdom','United States','Uruguay','Uzbekistan','Venezuela','Vietnam','Virgin Islands (US)','Yemen','Zambia','Zimbabwe']
+                var $suggestions = []
 
-                for ($i = 0; $i < $countriesList.length; $i++) {
-                    if (~ $countriesList[$i].toLowerCase().indexOf(term)) $suggestions.push($countriesList[$i]);
+                for (var $i = 0; $i < $countriesList.length; $i++) {
+                    if (~ $countriesList[$i].toLowerCase().indexOf(term)) $suggestions.push($countriesList[$i])
                 }
 
-                suggest($suggestions);
+                suggest($suggestions)
             }
-        });
+        })
+        
+        var $headerSearch = $('#quick-search')
+        var $headerSearchForm = $headerSearch.closest('form')
+        $headerSearch.autoComplete({
+            minChars: 2,
+            // Source must be updated later when using an ajax request instead of an array
+            // source: function(term, response){
+                // $.getJSON('/some/ajax/url/', {q: term}, function(data){ response(data) })
+            // },
+            source: function(term, suggest) {
+                term = term.toLowerCase()
+                
+                var projects = [
+                    {
+                        company: 'Truquet Julien',
+                        siren: 523774586,
+                        projectId: 81663,
+                        status: 'Remboursement',
+                        amount: 35000,
+                        period: 60
+                    },
+                    {
+                        company: 'J.B. Hair Development',
+                        siren: 443140587,
+                        projectId: 81074,
+                        status: 'Remboursement',
+                        amount: 40000,
+                        period: 36
+                    },
+                    {
+                        company: 'Pharmacie Druel',
+                        siren: 507479889,
+                        projectId: 80241,
+                        status: 'Remboursement Remboursement',
+                        amount: 140000,
+                        period: 36
+                    },
+                    {
+                        company: 'Pharmacie Druel',
+                        siren: 507479889,
+                        projectId: 80241,
+                        status: 'Remboursement',
+                        amount: 60000,
+                        period: 36
+                    },
+                    {
+                        company: 'Macmatériel',
+                        siren: 789874690,
+                        projectId: 79515,
+                        status: 'Remboursement',
+                        amount: 40000,
+                        period: 12
+                    }
+                ]
+
+                var suggestions = []
+                for (var i = 0; i < projects.length; i++) {
+                    if ( ~ (projects[i].company + ' ' + projects[i].siren + ' ' + projects[i].projectId).toLowerCase().indexOf(term)) {
+                        suggestions.push(projects[i])
+                    }
+                }
+                suggest(suggestions)
+            },
+            renderItem: function (item, search) {
+                return '<div class="autocomplete-suggestion" data-project-id="' + item.projectId + '">' +
+                        '<p>' + item.company + '</p>' +
+                        '<div class="list">' +
+                            '<dl><dt>Siren</dt> <dd>' + item.siren + '</dd></dl>' +
+                            '<dl><dt>Amount</dt> <dd>' + item.amount + ' €</dd></dl>' +
+                            '<dl><dt>Duration</dt> <dd>' + item.period + ' mois</dd></dl>' +
+                            '<dl><dt>Status</dt> <dd>' + item.status + '</dd></dl>' +
+                        '</div>' +
+                    '</div>'
+            },
+            onSelect: function(e, term, item){
+                var company = item.find('p').text()
+                var projectId = item.data('project-id')
+                var redirectUrl = 'https://admin.local.unilend.fr' + '/dossiers/edit/' + projectId
+
+                $headerSearch.val(company)
+                window.location.href = redirectUrl
+            }
+        })
+
+        $headerSearchForm.find('.input-group-addon').click(function(){
+            $headerSearchForm.submit()
+        })
+
+        $headerSearchForm.submit(function() {
+            var $form = $(this)
+            var search = $headerSearch.val()
+
+            $form.append('<input type="hidden" name="form_search_dossier" value="1">')
+
+            if ($.isNumeric(search)) {
+                if (search.length < 9) {
+                    window.location.replace('/dossiers/edit/' + search)
+                } else {
+                    $form.append('<input type="hidden" name="siren" value="' + search + '">')
+                }
+            } else {
+                $form.append('<input type="hidden" name="raison-sociale" value="' + search + '">')
+            }
+        })
+
 
         // jQuery MaskedInput example
         // a - Represents an alpha character (A-Z,a-z)
         // 9 - Represents a numeric character (0-9)
         // * - Represents an alphanumeric character (A-Z,a-z,0-9)
-        $("#example-masked-iban").mask("aa99 9999 9999 9999 9999 9999 9999");
+        $("#example-masked-iban").mask("aa99 9999 9999 9999 9999 9999 9999")
 
         // Data Tables
         // DataTables Bootstrap integration
         var bsDataTables = function() {
-            var $DataTable = $.fn.dataTable;
+            var $DataTable = $.fn.dataTable
 
             // Set the defaults for DataTables init
             $.extend( true, $DataTable.defaults, {
@@ -266,72 +371,72 @@
                         sNext: '<i class="fa fa-angle-right"></i>'
                     }
                 }
-            });
+            })
 
             // Default class modification
             $.extend($DataTable.ext.classes, {
                 sWrapper: "dataTables_wrapper form-inline dt-bootstrap",
                 sFilterInput: "form-control",
                 sLengthSelect: "form-control"
-            });
+            })
 
             // Bootstrap paging button renderer
             $DataTable.ext.renderer.pageButton.bootstrap = function (settings, host, idx, buttons, page, pages) {
-                var api     = new $DataTable.Api(settings);
-                var classes = settings.oClasses;
-                var lang    = settings.oLanguage.oPaginate;
-                var btnDisplay, btnClass;
+                var api     = new $DataTable.Api(settings)
+                var classes = settings.oClasses
+                var lang    = settings.oLanguage.oPaginate
+                var btnDisplay, btnClass
 
                 var attach = function (container, buttons) {
-                    var i, ien, node, button;
+                    var i, ien, node, button
                     var clickHandler = function (e) {
-                        e.preventDefault();
+                        e.preventDefault()
                         if (!jQuery(e.currentTarget).hasClass('disabled')) {
-                            api.page(e.data.action).draw(false);
+                            api.page(e.data.action).draw(false)
                         }
-                    };
+                    }
 
                     for (i = 0, ien = buttons.length; i < ien; i++) {
-                        button = buttons[i];
+                        button = buttons[i]
 
                         if ($.isArray(button)) {
-                            attach(container, button);
+                            attach(container, button)
                         }
                         else {
-                            btnDisplay = '';
-                            btnClass = '';
+                            btnDisplay = ''
+                            btnClass = ''
 
                             switch (button) {
                                 case 'ellipsis':
-                                    btnDisplay = '&hellip;';
-                                    btnClass = 'disabled';
-                                    break;
+                                    btnDisplay = '&hellip'
+                                    btnClass = 'disabled'
+                                    break
 
                                 case 'first':
-                                    btnDisplay = lang.sFirst;
-                                    btnClass = button + (page > 0 ? '' : ' disabled');
-                                    break;
+                                    btnDisplay = lang.sFirst
+                                    btnClass = button + (page > 0 ? '' : ' disabled')
+                                    break
 
                                 case 'previous':
-                                    btnDisplay = lang.sPrevious;
-                                    btnClass = button + (page > 0 ? '' : ' disabled');
-                                    break;
+                                    btnDisplay = lang.sPrevious
+                                    btnClass = button + (page > 0 ? '' : ' disabled')
+                                    break
 
                                 case 'next':
-                                    btnDisplay = lang.sNext;
-                                    btnClass = button + (page < pages - 1 ? '' : ' disabled');
-                                    break;
+                                    btnDisplay = lang.sNext
+                                    btnClass = button + (page < pages - 1 ? '' : ' disabled')
+                                    break
 
                                 case 'last':
-                                    btnDisplay = lang.sLast;
-                                    btnClass = button + (page < pages - 1 ? '' : ' disabled');
-                                    break;
+                                    btnDisplay = lang.sLast
+                                    btnClass = button + (page < pages - 1 ? '' : ' disabled')
+                                    break
 
                                 default:
-                                    btnDisplay = button + 1;
+                                    btnDisplay = button + 1
                                     btnClass = page === button ?
-                                        'active' : '';
-                                    break;
+                                        'active' : ''
+                                    break
                             }
 
                             if (btnDisplay) {
@@ -348,21 +453,21 @@
                                         })
                                             .html(btnDisplay)
                                     )
-                                    .appendTo(container);
+                                    .appendTo(container)
 
                                 settings.oApi._fnBindAction(
                                     node, {action: button}, clickHandler
-                                );
+                                )
                             }
                         }
                     }
-                };
+                }
 
                 attach(
                     jQuery(host).empty().html('<ul class="pagination"/>').children('ul'),
                     buttons
-                );
-            };
+                )
+            }
 
             // TableTools Bootstrap compatibility - Required TableTools 2.1+
             if ($DataTable.TableTools) {
@@ -386,7 +491,7 @@
                     "select": {
                         "row": "active"
                     }
-                });
+                })
 
                 // Have the collection use a bootstrap compatible drop down
                 $.extend(true, $DataTable.TableTools.DEFAULTS.oTags, {
@@ -395,9 +500,9 @@
                         "button": "li",
                         "liner": "a"
                     }
-                });
+                })
             }
-        };
+        }
         bsDataTables()
 
         // Simple
@@ -408,13 +513,13 @@
             dom:
             "<'row'<'col-sm-12'tr>>" +
             "<'row'<'col-sm-6'i><'col-sm-6'p>>"
-        });
+        })
 
         $('.js-dataTable-advanced').dataTable({
             columnDefs: [ { orderable: false } ],
             pageLength: 4,
             lengthMenu: [[5, 10], [5, 10]]
-        });
+        })
 
         // TREEVIEW
         var $treeData = [
@@ -471,7 +576,7 @@
                 text: 'Marketing',
                 href: '#parent5'
             }
-        ];
+        ]
 
         $('.js-tree-simple').treeview({
             data: $treeData,
@@ -483,7 +588,7 @@
             selectedBackColor: '#f1f1f1',
             showBorder: false,
             levels: 1
-        });
+        })
 
         $('.js-tree-badges').treeview({
             data: $treeData,
@@ -496,7 +601,7 @@
             selectedBackColor: '#f1f1f1',
             showTags: true,
             levels: 1
-        });
+        })
     })
 </script>
 </body>

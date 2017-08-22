@@ -10,3 +10,38 @@
     color: #fff;
     cursor: default;
 }
+.autocomplete-suggestion {
+    padding: 5px 10px;
+    border-bottom: 1px solid #eee;
+    background: #f9f9f9;
+    clear: both;
+}
+.autocomplete-suggestion p {
+    margin: 0;
+    font-weight: 600;
+}
+.autocomplete-suggestion .list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.autocomplete-suggestion dl {
+    font-size: 12px;
+    line-height: 17.5px;
+    margin-right: 10px;
+    margin-bottom: 2.5px;
+    float: left;
+    max-width: 100px;
+}
+.autocomplete-suggestion dl:last-child {
+    margin-right: 0;
+}
+.autocomplete-suggestion dd {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.autocomplete-suggestion dt {
+    font-size: 12px;
+    color: #a8a8a8;
+    font-weight: normal;
+}
