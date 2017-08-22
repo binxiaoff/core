@@ -128,6 +128,7 @@ monolog:
             type: fingers_crossed
             action_level: error
             handler: error_handler
+            channels: ['!translation']
         error_handler:
             type: group
             members: [error_file]
@@ -168,7 +169,7 @@ monolog:
             type: filter
             handler: site_handler
             max_level: warning
-            channels: ['!console', '!mongodb', '!wsclient']
+            channels: ['!console', '!translation', '!mongodb', '!wsclient']
         site_handler:
             type: rotating_file
             level: warning
