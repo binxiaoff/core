@@ -10,8 +10,6 @@ class usersController extends bootstrap
     {
         parent::initialize();
 
-        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
-
         $this->catchAll   = true;
         $this->menu_admin = 'admin';
 
@@ -22,6 +20,8 @@ class usersController extends bootstrap
 
     public function _default()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
+
         if (isset($_POST['form_add_users'])) {
             if (false === isset($_POST['email'])) {
                 $_SESSION['freeow']['title']   = 'Ajout d\'un utilisateur';
@@ -116,6 +116,8 @@ class usersController extends bootstrap
 
     public function _edit()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
+
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
@@ -125,6 +127,8 @@ class usersController extends bootstrap
 
     public function _edit_perso()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
+
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
@@ -133,6 +137,8 @@ class usersController extends bootstrap
 
     public function _add()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
+
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
@@ -143,7 +149,7 @@ class usersController extends bootstrap
     {
         $_SESSION['request_url'] = $this->url;
 
-        if (isset($_POST['form_edit_pass_user']) && isset($_SESSION['user']['id_user']) && $this->users->get($_SESSION['user']['id_user'])) {
+        if (isset($_POST['form_edit_pass_user'], $_SESSION['user']['id_user']) && $this->users->get($_SESSION['user']['id_user'])) {
             /** @var \previous_passwords $previousPasswords */
             $previousPasswords = $this->loadData('previous_passwords');
 
@@ -188,6 +194,8 @@ class usersController extends bootstrap
 
     public function _logs()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
+
         /** @var EntityManager $entityManager */
         $entityManager   = $this->get('doctrine.orm.entity_manager');
         $this->loginLogs = $entityManager->getRepository('UnilendCoreBusinessBundle:LoginConnectionAdmin')->findBy([], ['added' => 'DESC'], 500);
@@ -195,6 +203,8 @@ class usersController extends bootstrap
 
     public function _generate_new_password()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
+
         if (isset($this->params[0]) && $this->users->get($this->params[0], 'id_user')) {
             $newPassword = $this->ficelle->generatePassword(10);
             $this->users->changePassword($newPassword, $this->users, true);

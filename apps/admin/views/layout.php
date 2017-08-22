@@ -99,7 +99,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href="https://admin.local.unilend.fr/users/edit_password/">
+                            <a href="<?= $this->lurl ?>/users/edit_password">
                                 <i class="si si-lock pull-right"></i>Mot de passe
                             </a>
                         </li>
