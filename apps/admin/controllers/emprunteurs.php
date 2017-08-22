@@ -55,6 +55,7 @@ class emprunteursController extends bootstrap
         $companySector = $this->loadData('company_sector');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager           = $this->get('doctrine.orm.entity_manager');
+        $this->currencyFormatter = $this->get('currency_formatter');
 
         /** @var \Symfony\Component\Translation\TranslatorInterface translator */
         $this->translator = $this->get('translator');
@@ -122,13 +123,8 @@ class emprunteursController extends bootstrap
                 die;
             }
             $this->aMoneyOrders = $this->clients_mandats->getMoneyOrderHistory($this->companies->id_company);
-
-            if ($client->isBorrower()) {
-                $this->operations = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')
-                    ->getBorrowerOperations($client->getWallets()[0]->getId());
-            } else {
-                $this->operations = [];
-            }
+            $this->operations   = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')
+                ->getBorrowerOperations($client->getWallets()[0]->getId());
         } else {
             header('Location: ' . $this->lurl . '/emprunteurs/gestion/');
             die;

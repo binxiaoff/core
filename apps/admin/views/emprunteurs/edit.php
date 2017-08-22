@@ -270,8 +270,8 @@
                     <?php else : ?>
                         <td>Prélèvement</td>
                     <?php endif; ?>
-                    <td>-<?= $this->ficelle->formatNumber($operation['amount']) ?>&nbsp;€</td>
-                    <td><?= $this->ficelle->formatNumber($operation['availableBalance']) ?>&nbsp;€</td>
+                    <td><?= $this->currencyFormatter->formatCurrency($operation['amount'], 'EUR') ?></td>
+                    <td><?= $this->currencyFormatter->formatCurrency($operation['availableBalance'], 'EUR') ?></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>
