@@ -22,41 +22,60 @@
     <link rel="stylesheet" href="<?= $this->url ?>/oneui/css/bootstrap.min.css">
     <link rel="stylesheet" href="<?= $this->url ?>/oneui/css/oneui.css">
     <link rel="stylesheet" href="<?= $this->url ?>/oneui/css/unilend.min.css">
+    <link rel="stylesheet" href="<?= $this->url ?>/oneui/css/edits.css">
 </head>
 <body>
 <div id="page-container" class="sidebar-l side-scroll header-navbar-fixed sidebar-o">
     <nav id="sidebar">
-        <div class="slimScrollDiv">
-            <div id="sidebar-scroll">
-                <div class="sidebar-content">
-                    <div class="side-header side-content">
-                        <a class="h5 text-white" href="<?= $this->lurl ?>">
-                            <img src="<?= $this->surl ?>/assets/images/logo/logo-unilend-52x52-purple.png" srcset="<?= $this->surl ?>/assets/images/logo/logo-unilend-52x52-purple@2x.png 2x" alt="Unilend">
-                        </a>
-                    </div>
-                    <div class="side-content side-content-full">
-                        <ul class="nav-main">
-                            <li>
-                                <a href="base_pages_dashboard.php"><i class="si si-speedometer"></i><span class="sidebar-mini-hide">Dashboard</span></a>
-                            </li>
-                            <li class="nav-main-heading"><span class="sidebar-mini-hide">Prêteurs</span></li>
-                            <li>
-                                <a href="#"><i class="si si-badge"></i><span class="sidebar-mini-hide">UI Elements</span></a>
-                                <a href="#"><i class="si si-badge"></i><span class="sidebar-mini-hide">UI Elements</span></a>
-                                <a href="#"><i class="si si-badge"></i><span class="sidebar-mini-hide">UI Elements</span></a>
-                            </li>
-                            <li class="nav-main-heading"><span class="sidebar-mini-hide">Emprunteurs</span></li>
-                            <li>
-                                <a href="#"><i class="si si-badge"></i><span class="sidebar-mini-hide">UI Elements</span></a>
-                                <a href="#"><i class="si si-badge"></i><span class="sidebar-mini-hide">UI Elements</span></a>
-                                <a href="#"><i class="si si-badge"></i><span class="sidebar-mini-hide">UI Elements</span></a>
-                            </li>
-                        </ul>
-                    </div>
+        <div id="sidebar-scroll">
+            <div class="sidebar-content">
+                <div class="side-header side-content">
+                    <a class="h5 text-white" href="<?= $this->lurl ?>">
+                        <img src="<?= $this->surl ?>/assets/images/logo/logo-unilend-52x52-purple.png" srcset="<?= $this->surl ?>/assets/images/logo/logo-unilend-52x52-purple@2x.png 2x" alt="Unilend">
+                    </a>
+                </div>
+                <div class="side-content side-content-full">
+                    <ul class="nav-main">
+                        <?php
+
+                        $menuHtml = '';
+                        foreach (static::MENU as $item) {
+                            $zone  = $item['zone'];
+                            $title = $item['title'];
+
+                            // Item visibility
+                            if (in_array($zone, $this->lZonesHeader)) {
+                                // Check user and adjust title for Dashboard item
+                                if ($title === 'Dashboard') {
+                                    if (in_array($_SESSION['user']['id_user_type'], [\users_types::TYPE_RISK, \users_types::TYPE_COMMERCIAL]) || in_array($_SESSION['user']['id_user'], [23, 26])) {
+                                        $title = 'Mon flux';
+                                    }
+                                }
+                                $active = $this->menu_admin === $zone ? ' class="open"' : '';
+                                $submenu = empty($item['children']) ? '' : ' class="nav-submenu" data-toggle="nav-submenu"';
+
+                                $menuHtml .= '<li'. $active .'>';
+                                $menuHtml .= empty($item['uri']) ? '<a'. $submenu .'>' . $title . '</a>' : '<a href="' . $this->lurl . '/' . $item['uri'] . '"'. $submenu .'>' . $title . '</a>';
+
+                                if (false === empty($item['children'])) {
+                                    $menuHtml .= '<ul>';
+                                    foreach ($item['children'] as $subItem) {
+                                        if (false === isset($subItem['zone']) || in_array($subItem['zone'], $this->lZonesHeader)) {
+                                            $menuHtml .= '<li><a href="' . $this->lurl . '/' . $subItem['uri'] . '">' . $subItem['title'] . '</a></li>';
+                                        }
+                                    }
+                                    $menuHtml .= '</ul>';
+                                }
+
+                                $menuHtml .= '</li>';
+                            }
+                        }
+
+                        ?>
+                        <?= $menuHtml ?>
+                    </ul>
                 </div>
             </div>
-            <div class="slimScrollBar"></div>
-            <div class="slimScrollRail"></div>
         </div>
     </nav>
     <header id="header-navbar" class="content-mini content-mini-full">
@@ -127,6 +146,7 @@
 <script src="<?= $this->url ?>/oneui/js/core/jquery.min.js"></script>
 <script src="<?= $this->url ?>/oneui/js/core/bootstrap.min.js"></script>
 <script src="<?= $this->url ?>/oneui/js/core/jquery.scrollLock.min.js"></script>
+<script src="<?= $this->url ?>/oneui/js/core/jquery.slimscroll.min.js"></script>
 <script src="<?= $this->url ?>/oneui/js/core/jquery.placeholder.min.js"></script>
 <script src="<?= $this->url ?>/oneui/js/core/js.cookie.min.js"></script>
 <script src="<?= $this->url ?>/oneui/js/app.js"></script>

@@ -141,6 +141,7 @@ var App = function() {
 
                 // If sidebar scrolling does not exist init it..
                 if ($lSidebarScroll.length && (!$lSidebarScroll.parent('.slimScrollDiv').length)) {
+
                     $lSidebarScroll.slimScroll({
                         height: $lSidebar.outerHeight(),
                         color: '#fff',
