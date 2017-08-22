@@ -28,6 +28,7 @@ class ProductAttributeType
     const NO_INCIDENT_BLEND_PROJECT_DAYS                = 'product_no_incident_blend_project_days';
     const MIN_PRE_SCORE                                 = 'product_min_pre_score';
     const MAX_PRE_SCORE                                 = 'product_max_pre_score';
+    const ELIGIBLE_BORROWER_COMPANY_LEGAL_FORM_CODE     = 'product_eligible_borrower_legal_form_code';
 
     /**
      * @var string
