@@ -132,14 +132,14 @@ class LenderOperationsManager
                 if (false == in_array($historyLine['label'], [OperationType::CAPITAL_REPAYMENT_REGULARIZATION, OperationType::CAPITAL_REPAYMENT])) {
                     continue;
                 } else {
+                    $regularization = false;
+                    $type           = self::OP_REPAYMENT;
                     if (OperationType::CAPITAL_REPAYMENT_REGULARIZATION == $historyLine['label']) {
-                        $repaymentDetail = $operationRepository->getRegularizationDetailByRepaymentScheduleId($historyLine['id_repayment_schedule']);
-                        $historyLine     = $this->formatRepaymentOperation($wallet, $repaymentDetail, $historyLine, self::OP_REPAYMENT_REGULARIZATION);
-                    } else {
-                        $repaymentDetailsWithLog = $operationRepository->getDetailByRepaymentScheduleIdAndRepaymentLog($historyLine['id_repayment_schedule']);
-                        $historyLine             = $this->formatRepaymentOperation($wallet, $repaymentDetailsWithLog, $historyLine, self::OP_REPAYMENT);
+                        $regularization = true;
+                        $type           = self::OP_REPAYMENT_REGULARIZATION;
                     }
-
+                    $repaymentDetails = $operationRepository->getDetailByRepaymentScheduleAndRepaymentLog($historyLine['id_repayment_schedule'], $historyLine['id_repayment_task_log'], $regularization);
+                    $historyLine      = $this->formatRepaymentOperation($wallet, $repaymentDetails, $historyLine, $type);
                 }
             }
 

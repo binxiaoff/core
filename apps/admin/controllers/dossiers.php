@@ -834,6 +834,10 @@ class dossiersController extends bootstrap
     {
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $projectManager = $this->get('unilend.service.project_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRepaymentManager $projectRepaymentManager */
+        $projectRepaymentManager = $this->get('unilend.service.project_repayment_manager');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
         $projectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['problematic_status'], $this->projects);
 
         $this->projects_status_history->loadLastProjectHistory($this->projects->id_project);
@@ -847,20 +851,9 @@ class dossiersController extends bootstrap
         $projectStatusHistoryDetails->site_content              = isset($_POST['site_content']) ? $_POST['site_content'] : '';
         $projectStatusHistoryDetails->create();
 
-        // Disable automatic refund
-        $this->projects->remb_auto = 1;
-        $this->projects->update();
-        /** @var \projects_remb $projects_remb */
-        $projects_remb        = $this->loadData('projects_remb');
-        $aAutomaticRepayments = $projects_remb->select('status = 0 AND id_project = ' . $this->projects->id_project);
-
-        if (is_array($aAutomaticRepayments)) {
-            foreach ($aAutomaticRepayments as $aAutomaticRepayment) {
-                $projects_remb->get($aAutomaticRepayment['id_project_remb'], 'id_project_remb');
-                $projects_remb->status = \projects_remb::STATUS_AUTOMATIC_REFUND_DISABLED;
-                $projects_remb->update();
-            }
-        }
+        // Disable automatic repayment
+        $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
+        $projectRepaymentManager->disableAutomaticRepayment($project);
 
         // Disable automatic debits
         if (in_array($iStatus, array(ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE, ProjectsStatus::DEFAUT))) {
@@ -1758,7 +1751,6 @@ class dossiersController extends bootstrap
         $this->echeanciers                   = $this->loadData('echeanciers');
         $this->echeanciers_emprunteur        = $this->loadData('echeanciers_emprunteur');
         $this->notifications                 = $this->loadData('notifications');
-        $this->projects_remb                 = $this->loadData('projects_remb');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
         $this->settings                      = $this->loadData('settings');
