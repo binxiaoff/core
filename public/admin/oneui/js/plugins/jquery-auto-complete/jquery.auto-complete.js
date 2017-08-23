@@ -134,10 +134,32 @@
                 if ((e.which == 40 || e.which == 38) && that.sc.html()) {
                     var next, sel = $('.autocomplete-suggestion.selected', that.sc);
                     if (!sel.length) {
-                        next = (e.which == 40) ? $('.autocomplete-suggestion', that.sc).first() : $('.autocomplete-suggestion', that.sc).last();
+                        if (e.which == 40) {
+                            next = $('.autocomplete-suggestion', that.sc).first()
+                        }
                         that.val(next.addClass('selected').data('val'));
                     } else {
-                        next = (e.which == 40) ? sel.next('.autocomplete-suggestion') : sel.prev('.autocomplete-suggestion');
+                        if (e.which == 40) {
+                            if (sel.next('.autocomplete-suggestion').length) {
+                                next = sel.next('.autocomplete-suggestion')
+                            } else {
+                                if (sel.parent().next('.autocomplete-section').length) {
+                                    next = sel.parent().next('.autocomplete-section').find('.autocomplete-suggestion').first()
+                                } else {
+                                    next = 0;
+                                }
+                            }
+                        } else {
+                            if (sel.prev('.autocomplete-suggestion').length) {
+                                next = sel.prev('.autocomplete-suggestion')
+                            } else {
+                                if (sel.parent().prev('.autocomplete-section').length) {
+                                    next = sel.parent().prev('.autocomplete-section').find('.autocomplete-suggestion').last()
+                                } else {
+                                    next = 0;
+                                }
+                            }
+                        }
                         if (next.length) { sel.removeClass('selected'); that.val(next.addClass('selected').data('val')); }
                         else { sel.removeClass('selected'); that.val(that.last_val); next = 0; }
                     }

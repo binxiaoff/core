@@ -288,9 +288,10 @@
                 suggest(suggestions)
             },
             renderItem: function (item, search, section) {
-                var html = '<div class="autocomplete-suggestion">'
+                var html = ''
                 if (section === 'projects') {
-                    html += '<p>' + item.company + ' <span class="id">( ' + item.projectId + ' )</span></p>' +
+                    html += '<div class="autocomplete-suggestion" data-val="'+item.company+'">' +
+                            '<p>' + item.company + ' <span class="id">( ' + item.projectId + ' )</span></p>' +
                             '<div class="details">' +
                             '<dl><dt>Siren</dt> <dd>' + item.siren + '</dd></dl>' +
                             '<dl><dt>Amount</dt> <dd>' + item.amount + ' €</dd></dl>' +
@@ -299,7 +300,8 @@
                             '</div>'
                 }
                 if (section === 'lenders') {
-                    html += '<p>' + item.lenderName + ' <span class="id">' + item.lenderId + ' </span></p>' +
+                    html += '<div class="autocomplete-suggestion" data-val="'+item.lenderName+'">' +
+                            '<p>' + item.lenderName + ' <span class="id">' + item.lenderId + ' </span></p>' +
                             '<div class="details">' +
                             '<dl><dd>' + item.lenderType + '</dd></dl>' +
                             '</div>'
@@ -335,12 +337,17 @@
                 return html
             },
             onSelect: function(e, term, item){
-                var company = item.find('p').text()
-                var projectId = item.find('id').text()
-                var redirectUrl = 'https://admin.local.unilend.fr' + '/dossiers/edit/' + projectId
+                var title = item.find('p').text()
+                var id = item.find('.id').text().match(/\d+/)
+                var section = item.parent().attr('class')
 
-                $headerSearch.val(company)
-                window.location.href = redirectUrl
+                $headerSearch.val(title)
+
+                if (~section.indexOf('projects')) {
+                    window.location.replace('/dossiers/edit/' + id)
+                } else if (~section.indexOf('lenders')) {
+                    window.location.replace('/preteurs/edit/' + id)
+                }
             }
         })
 
