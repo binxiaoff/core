@@ -32,16 +32,16 @@
             </div>
         </div>
         <div id="retards" class="block block-rounded">
-            <?php $this->fireView('details_impayes/retards'); ?>
+            <?php $this->fireView('blocs/details_impayes/retards'); ?>
         </div>
         <div id="debt-colletion" class="block block-rounded">
-            <?php $this->fireView('details_impayes/recouvrements'); ?>
+            <?php $this->fireView('blocs/details_impayes/recouvrements'); ?>
         </div>
         <div id="fees-honoraries" class="block block-rounded">
-            <?php $this->fireView('details_impayes/frais_honoraires') ?>
+            <?php $this->fireView('blocs/details_impayes/frais_honoraires') ?>
         </div>
         <div id="receptions" class="block block-rounded">
-            <?php $this->fireView('details_impayes/receptions') ?>
+            <?php $this->fireView('blocs/details_impayes/receptions') ?>
         </div>
     </div>
 </div>

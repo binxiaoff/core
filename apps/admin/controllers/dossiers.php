@@ -3429,4 +3429,24 @@ class dossiersController extends bootstrap
             die;
         }
     }
+
+    public function _details_impayes()
+    {
+        $this->useOneUi();
+        /** @var \users $user */
+        $user = $this->loadData('users');
+        $user->get($_SESSION['user']['id_user']);
+
+        if (\users_types::TYPE_RISK == $user->id_user_type
+            || $user->id_user == 28
+            || isset($this->params[0]) && 'risk' == $this->params[0] && in_array($user->id_user_type, [\users_types::TYPE_ADMIN, \users_types::TYPE_IT])
+        ) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+
+            if (false === empty($this->params[0])) {
+                // Get details for all blocks
+            }
+        }
+    }
 }
