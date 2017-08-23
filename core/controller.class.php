@@ -19,8 +19,6 @@ abstract class Controller implements ContainerAwareInterface
     public $autoFireView = true;
     /** @var bool */
     public $autoFireFooter = true;
-    /** @var bool */
-    public $catchAll = false;
     /** @var \Unilend\Bridge\Doctrine\DBAL\Connection */
     public $bdd;
     /** @var string */
@@ -115,26 +113,12 @@ abstract class Controller implements ContainerAwareInterface
     {
         $this->initialize();
 
-        $FunctionToCall = $this->Command->getFunction();
-
-        if (false === is_callable([$this, '_' . $FunctionToCall])) {
-            if ($this->catchAll == true) {
-                $current_params = $this->Command->getParameters();
-                $arr            = [0 => $FunctionToCall];
-                $arr            = array_merge($arr, $current_params);
-                $this->Command->setParameters($arr);
-                $FunctionToCall = 'default';
-            } else {
-                $FunctionToCall = 'error';
-            }
-        }
-
         $this->params = $this->Command->getParameters();
 
-        call_user_func([$this, '_' . $FunctionToCall]);
+        call_user_func([$this, '_' . $this->Command->getFunction()]);
 
         if (false === $this->useOneUi) {
-            $this->setView($FunctionToCall);
+            $this->setView($this->Command->getFunction());
 
             if ($this->autoFireHead) {
                 $this->fireHead();

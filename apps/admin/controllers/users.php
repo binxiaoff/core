@@ -10,9 +10,7 @@ class usersController extends bootstrap
     {
         parent::initialize();
 
-        $this->catchAll   = true;
-        $this->menu_admin = 'admin';
-
+        $this->menu_admin        = 'admin';
         $this->users_zones       = $this->loadData('users_zones');
         $this->users_types       = $this->loadData('users_types');
         $this->users_types_zones = $this->loadData('users_types_zones');

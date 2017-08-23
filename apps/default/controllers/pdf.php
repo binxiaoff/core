@@ -52,8 +52,6 @@ class pdfController extends bootstrap
             $this->params = $this->Command->getParameters();
         }
 
-        $this->catchAll = true;
-
         $this->hideDecoration();
 
         $this->oSnapPdf = new Pdf('/usr/local/bin/wkhtmltopdf');

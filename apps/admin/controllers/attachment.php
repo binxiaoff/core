@@ -12,7 +12,6 @@ class attachmentController extends bootstrap
         $this->hideDecoration();
 
         $this->autoFireView = false;
-        $this->catchAll = true;
 
         $this->users->checkAccess();
     }
@@ -39,6 +38,6 @@ class attachmentController extends bootstrap
                 }
             }
         }
-        header('location: ' . $this->url . '/protected/document_not_found');
+        header('Location: ' . $this->url . '/protected/document_not_found');
     }
 }

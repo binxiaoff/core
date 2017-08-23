@@ -14,9 +14,7 @@ class zonesController extends bootstrap
 
         $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
 
-        $this->catchAll   = true;
         $this->menu_admin = 'admin';
-
         $this->userZone   = $this->loadData('users_zones');
     }
 
