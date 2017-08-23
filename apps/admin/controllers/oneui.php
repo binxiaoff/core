@@ -8,9 +8,13 @@ class oneuiController extends bootstrap
 
         $this->users->checkAccess();
 
-        $this->catchAll   = true;
         $this->menu_admin = 'oneui';
+    }
 
+    public function _default()
+    {
         $this->useOneUi();
+
+        $this->render();
     }
 }
