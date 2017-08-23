@@ -209,22 +209,12 @@ abstract class Controller implements ContainerAwareInterface
             $template = '404.html.twig';
         }
 
-        $user = null;
-        if (false === empty($_SESSION['user'])) {
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
-            $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
-        }
-
         $context += [
             'environment' => $this->getParameter('kernel.environment'),
-            'url'         => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_' . $this->App),
             'adminUrl'    => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_admin'),
             'frontUrl'    => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
             'staticUrl'   => $this->get('assets.packages')->getUrl(''),
-            'parameters'  => $this->Command->getParameters(),
-            'menu'        => isset($this->menu_admin) ? $this->menu_admin : '',
-            'user'        => $user,
+            'parameters'  => $this->Command->getParameters()
         ];
 
         echo $this->twigEnvironment->render($template, $context);

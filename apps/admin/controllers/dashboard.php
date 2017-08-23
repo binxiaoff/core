@@ -1,6 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
@@ -36,17 +37,17 @@ class dashboardController extends bootstrap
 
         if (
             \users_types::TYPE_RISK == $user->id_user_type
-            || $user->id_user == 28
+            || $user->id_user == Users::USER_ID_ALAIN_ELKAIM
             || isset($this->params[0]) && 'risk' == $this->params[0] && in_array($user->id_user_type, [\users_types::TYPE_ADMIN, \users_types::TYPE_IT])
-        ) { // Risk team or Alain
+        ) {
             $this->template     = 'risk';
             $this->userProjects = $this->getRiskUserProjects($user);
             $this->teamProjects = $this->getRiskTeamProjects($user);
         } elseif (
             \users_types::TYPE_COMMERCIAL == $user->id_user_type
-            || $user->id_user == 23
+            || $user->id_user == Users::USER_ID_ARNAUD_SCHWARTZ
             || isset($this->params[0]) && 'sales' == $this->params[0] && in_array($user->id_user_type, [\users_types::TYPE_ADMIN, \users_types::TYPE_IT])
-        ) { // Sales team or Arnaud
+        ) {
             $this->template                     = 'sale';
             $this->userProjects                 = $this->getSaleUserProjects($user);
             $this->teamProjects                 = $this->getSaleTeamProjects($user);
