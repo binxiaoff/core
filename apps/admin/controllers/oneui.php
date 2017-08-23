@@ -6,8 +6,15 @@ class oneuiController extends bootstrap
     {
         parent::initialize();
 
-        $this->catchAll   = true;
+        $this->users->checkAccess();
+
         $this->menu_admin = 'oneui';
+    }
+
+    public function _default()
+    {
         $this->useOneUi();
+
+        $this->render();
     }
 }

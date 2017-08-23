@@ -35,6 +35,8 @@ abstract class Controller implements ContainerAwareInterface
     public $current_template = '';
     /** @var \Symfony\Component\HttpFoundation\Request */
     public $request;
+    /** @var Twig_Environment */
+    private $twigEnvironment;
     /** @var bool */
     public $useOneUi = false;
 
@@ -115,10 +117,6 @@ abstract class Controller implements ContainerAwareInterface
 
         $FunctionToCall = $this->Command->getFunction();
 
-        if ($FunctionToCall == '') {
-            $FunctionToCall = 'default';
-        }
-
         if (false === is_callable([$this, '_' . $FunctionToCall])) {
             if ($this->catchAll == true) {
                 $current_params = $this->Command->getParameters();
@@ -131,14 +129,13 @@ abstract class Controller implements ContainerAwareInterface
             }
         }
 
-        $this->setView($FunctionToCall);
         $this->params = $this->Command->getParameters();
 
         call_user_func([$this, '_' . $FunctionToCall]);
 
-        if ($this->useOneUi) {
-            include $this->path . 'apps/' . $this->App . '/views/layout.php';
-        } else {
+        if (false === $this->useOneUi) {
+            $this->setView($FunctionToCall);
+
             if ($this->autoFireHead) {
                 $this->fireHead();
             }
@@ -208,6 +205,62 @@ abstract class Controller implements ContainerAwareInterface
         $this->is_view_template = $is_template;
     }
 
+    /**
+     * @param string $template
+     * @param array  $context
+     *
+     * @return string
+     */
+    public function render($template = null, array $context = [])
+    {
+        $this->initializeTwig();
+
+        if (null === $template) {
+            $template = $this->Command->getControllerName() . '/' . $this->Command->getFunction() . '.html.twig';
+        }
+
+        try {
+            $this->twigEnvironment->loadTemplate($template);
+        } catch (\Twig_Error_Loader $exception) {
+            $template = '404.html.twig';
+        }
+
+        $user = null;
+        if (false === empty($_SESSION['user'])) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+        }
+
+        $context += [
+            'environment' => $this->getParameter('kernel.environment'),
+            'url'         => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_' . $this->App),
+            'adminUrl'    => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_admin'),
+            'frontUrl'    => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
+            'staticUrl'   => $this->get('assets.packages')->getUrl(''),
+            'parameters'  => $this->Command->getParameters(),
+            'menu'        => isset($this->menu_admin) ? $this->menu_admin : '',
+            'user'        => $user,
+        ];
+
+        echo $this->twigEnvironment->render($template, $context);
+        exit;
+    }
+
+    /**
+     * @internal
+     */
+    private function initializeTwig()
+    {
+        $kernel                = $this->get('kernel');
+        $loader                = new Twig_Loader_Filesystem($kernel->getRootDir() . '/../apps/' . $this->App . '/views');
+        $this->twigEnvironment = new Twig_Environment($loader, [
+            'autoescape' => false,
+            'cache'      => $kernel->getCacheDir() . '/twig',
+            'debug'      => 'prod' !== $this->get('kernel')->getEnvironment()
+        ]);
+        $this->twigEnvironment->addExtension(new Twig_Extension_Debug());
+    }
 
     protected function loadData($object, $params = [])
     {
@@ -216,9 +269,11 @@ abstract class Controller implements ContainerAwareInterface
 
     /**
      * @deprecated Each lib will be declared as a service.
+     *
      * @param string $library
      * @param array  $params
      * @param bool   $instanciate
+     *
      * @return bool|object
      */
     protected function loadLib($library, $params = [], $instanciate = true)

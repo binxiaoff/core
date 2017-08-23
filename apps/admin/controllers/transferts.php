@@ -1,5 +1,6 @@
 <?php
 
+use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatisticQueue;
@@ -22,13 +23,14 @@ class transfertsController extends bootstrap
         $this->catchAll   = true;
         $this->menu_admin = 'transferts';
 
-        $this->statusOperations = array(
-            0 => 'Reçu',
-            1 => 'Manu',
-            2 => 'Auto',
-            3 => 'Rejeté',
-            4 => 'Rejet'
-        );
+        $this->statusOperations = [
+            Receptions::STATUS_PENDING         => 'En attente',
+            Receptions::STATUS_ASSIGNED_MANUAL => 'Manu',
+            Receptions::STATUS_ASSIGNED_AUTO   => 'Auto',
+            Receptions::STATUS_IGNORED_MANUAL  => 'Ignoré manu',
+            Receptions::STATUS_IGNORED_AUTO    => 'Ignoré auto'
+        ];
+
         /** @var \Symfony\Component\Translation\TranslatorInterface translator */
         $this->translator = $this->get('translator');
     }
@@ -68,7 +70,8 @@ class transfertsController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        $this->nonAttributedReceptions = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->findNonAttributed();
+        $this->nonAttributedReceptions = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')
+            ->findBy(['statusBo' => Receptions::STATUS_PENDING], ['added' => 'ASC', 'idReception' => 'ASC']);
 
         if (isset($_POST['id_project'], $_POST['id_reception'])) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
@@ -81,7 +84,7 @@ class transfertsController extends bootstrap
             if (null !== $project && null !== $reception) {
                 $reception->setIdProject($project)
                           ->setIdClient($client)
-                          ->setStatusBo(Receptions::STATUS_MANUALLY_ASSIGNED)
+                          ->setStatusBo(Receptions::STATUS_ASSIGNED_MANUAL)
                           ->setRemb(1)
                           ->setIdUser($user)
                           ->setAssignmentDate(new \DateTime());
@@ -238,11 +241,12 @@ class transfertsController extends bootstrap
             if (null !== $reception && null !== $wallet) {
                 $user  = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
-                $reception->setIdClient($wallet->getIdClient())
-                          ->setStatusBo(Receptions::STATUS_MANUALLY_ASSIGNED)
-                          ->setRemb(1)
-                          ->setIdUser($user)
-                          ->setAssignmentDate(new \DateTime());
+                $reception
+                    ->setIdClient($wallet->getIdClient())
+                    ->setStatusBo(Receptions::STATUS_ASSIGNED_MANUAL)
+                    ->setRemb(1)
+                    ->setIdUser($user)
+                    ->setAssignmentDate(new \DateTime());
                 $entityManager->flush();
 
                 $result = $this->get('unilend.service.operation_manager')->provisionLenderWallet($wallet, $reception);
@@ -344,155 +348,49 @@ class transfertsController extends bootstrap
         }
     }
 
-    public function _annuler_attribution_projet()
+    public function _ignore()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
-
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        /** @var \echeanciers $echeanciers */
-        $echeanciers = $this->loadData('echeanciers');
-        /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
-        $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-        /** @var \projects_remb $projects_remb */
-        $projects_remb = $this->loadData('projects_remb');
-
-        if ($_POST['id_reception']) {
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
-            $reception     = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
-            if ($reception) {
-                $projectId = $reception->getIdProject()->getIdProject();
-                $wallet    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
-                if ($wallet) {
-                    $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
-                    $operationManager = $this->get('unilend.service.operation_manager');
-
-                    $operationType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\OperationType::BORROWER_PROVISION]);
-                    $operation     = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy([
-                        'idWireTransferIn' => $reception->getIdReception(),
-                        'idWalletCreditor' => $wallet,
-                        'idType'           => $operationType
-                    ]);
-                    if (null === $operation) {
-                        return false;
-                    }
-
-                    $operationManager->cancelProvisionBorrowerWallet($wallet, $amount, $reception);
-
-                    $reception->setIdClient(null)
-                              ->setIdProject(null)
-                              ->setStatusBo(Receptions::STATUS_PENDING)
-                              ->setRemb(0); // todo: delete the field
-                    $entityManager->flush();
-
-                    $eche   = $echeanciers_emprunteur->select('id_project = ' . $projectId . ' AND status_emprunteur = 1', 'ordre DESC');
-                    $newsum = round(bcdiv($reception->getMontant(), 100, 4), 2);
-
-                    foreach ($eche as $e) {
-                        $montantDuMois = round($e['montant'] / 100 + $e['commission'] / 100 + $e['tva'] / 100, 2);
-
-                        if ($montantDuMois <= $newsum) {
-                            $echeanciers->updateStatusEmprunteur($projectId, $e['ordre'], 'annuler');
-                            $echeanciers_emprunteur->get($projectId, 'ordre = ' . $e['ordre'] . ' AND id_project');
-                            $echeanciers_emprunteur->status_emprunteur             = 0;
-                            $echeanciers_emprunteur->date_echeance_emprunteur_reel = '0000-00-00 00:00:00';
-                            $echeanciers_emprunteur->update();
-
-                            // et on retire du wallet unilend
-                            $newsum = $newsum - $montantDuMois;
-
-                            if ($projects_remb->counter('id_project = "' . $projectId . '" AND ordre = "' . $e['ordre'] . '" AND status = 0') > 0) {
-                                $projects_remb->delete($e['ordre'], 'status = 0 AND id_project = "' . $projectId . '" AND ordre');
-                            }
-                        } else {
-                            break;
-                        }
-                    }
-                    echo 'supp';
-                    return;
-                }
-            }
+        if (empty($_POST['reception']) || false === filter_var($_POST['reception'], FILTER_VALIDATE_INT)) {
+            echo 'ID opération manquant';
+            return;
         }
-        echo 'nok';
-        return;
+
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $reception     = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['reception']);
+
+        if (null === $reception) {
+            echo 'Opération inconnue';
+            return;
+        }
+
+        $reception
+            ->setStatusBo(Receptions::STATUS_IGNORED_MANUAL)
+            ->setIdUser($entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']))
+            ->setComment($_POST['comment']);
+
+        $entityManager->flush();
+
+        echo 'ok';
     }
 
-    public function _rejeter_prelevement_projet()
+    public function _comment()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
+        if (isset($_POST['reception']) && false !== filter_var($_POST['reception'], FILTER_VALIDATE_INT)) {
+            /** @var EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['reception'])->setComment($_POST['comment']);
+            $entityManager->flush();
 
-        $this->hideDecoration();
-        $this->autoFireView = false;
-
-        /** @var \echeanciers $echeanciers */
-        $echeanciers = $this->loadData('echeanciers');
-        /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
-        $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-        /** @var \projects_remb $projects_remb */
-        $projects_remb = $this->loadData('projects_remb');
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-
-        if (isset($_POST['id_reception'])) {
-            /** @var Receptions $reception */
-            $reception = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
-            if (null !== $reception && null != $reception->getIdProject() && in_array($reception->getStatusBo(), [Receptions::STATUS_MANUALLY_ASSIGNED, Receptions::STATUS_AUTO_ASSIGNED])) {
-                $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::BORROWER);
-                if ($wallet) {
-                    $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
-
-                    $operationType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\OperationType::BORROWER_PROVISION]);
-                    $operation     = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy([
-                        'idWireTransferIn' => $reception->getIdReception(),
-                        'idWalletCreditor' => $wallet,
-                        'idType'           => $operationType
-                    ]);
-                    if (null === $operation) {
-                        return false;
-                    }
-
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
-                    $operationManager = $this->get('unilend.service.operation_manager');
-                    $operationManager->cancelProvisionBorrowerWallet($wallet, $amount, $reception);
-
-                    $reception->setStatusBo(Receptions::STATUS_REJECTED);
-                    $reception->setRemb(0);
-                    $entityManager->flush();
-
-                    $eche   = $echeanciers_emprunteur->select('id_project = ' . $reception->getIdProject()->getIdProject() . ' AND status_emprunteur = 1', 'ordre DESC');
-                    $newsum = round(bcdiv($reception->getMontant(), 100, 4), 2);
-
-                    foreach ($eche as $e) {
-                        $montantDuMois = round($e['montant'] / 100 + $e['commission'] / 100 + $e['tva'] / 100, 2);
-
-                        if ($montantDuMois <= $newsum) {
-                            $echeanciers->updateStatusEmprunteur($reception->getIdProject()->getIdProject(), $e['ordre'], 'annuler');
-
-                            $echeanciers_emprunteur->get($reception->getIdProject()->getIdProject(), 'ordre = ' . $e['ordre'] . ' AND id_project');
-                            $echeanciers_emprunteur->status_emprunteur             = 0;
-                            $echeanciers_emprunteur->date_echeance_emprunteur_reel = '0000-00-00 00:00:00';
-                            $echeanciers_emprunteur->update();
-
-                            // et on retire du wallet unilend
-                            $newsum = $newsum - $montantDuMois;
-
-                            // On met a jour le remb emprunteur rejete
-                            if ($projects_remb->counter('id_project = "' . $reception->getIdProject()->getIdProject() . '" AND ordre = "' . $e['ordre'] . '" AND status = 0') > 0) {
-                                $projects_remb->get($e['ordre'], 'status = 0 AND id_project = "' . $reception->getIdProject()->getIdProject() . '" AND ordre');
-                                $projects_remb->status = \projects_remb::STATUS_REJECTED;
-                                $projects_remb->update();
-                            }
-                        } else {
-                            break;
-                        }
-                    }
-                    echo 'ok';
-                }
-            }
+            header('Location: ' . $_POST['referer']);
+            exit;
         }
+
+        header('Location: /');
+        exit;
     }
 
     public function _rattrapage_offre_bienvenue()

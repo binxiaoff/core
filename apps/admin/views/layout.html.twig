@@ -6,23 +6,23 @@
     <meta name="description" content="Unilend's administration back office">
     <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="icon" type="image/png" href="<?= $this->surl ?>/images/admin/favicon.png">
+    <link rel="icon" type="image/png" href="{{ staticUrl }}/images/admin/favicon.png">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400italic,600,700%7COpen+Sans:300,400,400italic,600,700">
 
     <!-- Plugins CSS -->
-    <link rel="stylesheet" href="<?= $this->url ?>/oneui/js/plugins/select2/select2.min.css">
-    <link rel="stylesheet" href="<?= $this->url ?>/oneui/js/plugins/select2/select2-bootstrap.min.css">
-    <link rel="stylesheet" href="<?= $this->url ?>/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
-    <link rel="stylesheet" href="<?= $this->url ?>/oneui/js/plugins/jquery-auto-complete/jquery.auto-complete.min.css">
-    <link rel="stylesheet" href="<?= $this->url ?>/oneui/js/plugins/datatables/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="<?= $this->url ?>/oneui/js/plugins/summernote/summernote.min.css">
-    <link rel="stylesheet" href="<?= $this->url ?>/oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/select2/select2.min.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/select2/select2-bootstrap.min.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/jquery-auto-complete/jquery.auto-complete.min.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/summernote/summernote.min.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.css">
 
     <!-- Core CSS -->
-    <link rel="stylesheet" href="<?= $this->url ?>/oneui/css/bootstrap.min.css">
-    <link rel="stylesheet" href="<?= $this->url ?>/oneui/css/oneui.css">
-    <link rel="stylesheet" href="<?= $this->url ?>/oneui/css/unilend.min.css">
-    <link rel="stylesheet" href="<?= $this->url ?>/oneui/css/edits.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/css/oneui.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/css/unilend.min.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/css/edits.css">
 </head>
 <body>
 <div id="page-container" class="sidebar-l side-scroll header-navbar-fixed sidebar-o">
@@ -30,57 +30,20 @@
         <div id="sidebar-scroll">
             <div class="sidebar-content">
                 <div class="side-header side-content">
-                    <?php if ('prod' !== $this->getParameter('kernel.environment')) : ?>
-                        <div class="environment bg-primary text-uppercase">
-                            <span class="fa fa-info-circle"></span>
-                            <span class="font-w300">Environnement:</span>
-                            <span class="font-w600"><?= $this->getParameter('kernel.environment') ?></span>
-                        </div>
-                    <?php endif; ?>
-
-                    <a class="h5 text-white pull-left" href="<?= $this->lurl ?>">
-                        <img src="<?= $this->surl ?>/assets/images/logo/logo-unilend-52x52-purple.png" srcset="<?= $this->surl ?>/assets/images/logo/logo-unilend-52x52-purple@2x.png 2x" alt="Unilend">
+                    <a class="h5 text-white pull-left" href="{{ adminUrl }}">
+                        <img src="{{ staticUrl }}/assets/images/logo/logo-unilend-52x52-purple.png" srcset="{{ staticUrl }}/assets/images/logo/logo-unilend-52x52-purple@2x.png 2x" alt="Unilend">
                     </a>
+                    <div class="clearfix"></div>
+                    {% if 'prod' != environment %}
+                        <div class="environment bg-primary text-uppercase">
+                            <a href="https://unilend.atlassian.net/wiki/pages/viewpage.action?pageId=46694427" target="_blank"><span class="fa fa-info-circle"></span></a>
+                            <span class="font-w300">Environnement :</span>
+                            <span class="font-w600">{{ environment }}</span>
+                        </div>
+                    {% endif %}
                 </div>
                 <div class="side-content side-content-full">
-                    <ul class="nav-main">
-                        <?php
-                        $menuHtml = '';
-                        foreach (static::MENU as $item) {
-                            $zone  = $item['zone'];
-                            $title = $item['title'];
-
-                            // Item visibility
-                            if (in_array($zone, $this->lZonesHeader)) {
-                                // Check user and adjust title for Dashboard item
-                                if ($title === 'Dashboard') {
-                                    if (in_array($_SESSION['user']['id_user_type'], [\users_types::TYPE_RISK, \users_types::TYPE_COMMERCIAL]) || in_array($_SESSION['user']['id_user'], [23, 26])) {
-                                        $title = 'Mon flux';
-                                    }
-                                }
-                                $active = $this->menu_admin === $zone ? ' class="open"' : '';
-                                $submenu = empty($item['children']) ? '' : ' class="nav-submenu" data-toggle="nav-submenu"';
-
-                                $menuHtml .= '<li'. $active .'>';
-                                $menuHtml .= empty($item['uri']) ? '<a'. $submenu .'>' . $title . '</a>' : '<a href="' . $this->lurl . '/' . $item['uri'] . '"'. $submenu .'>' . $title . '</a>';
-
-                                if (false === empty($item['children'])) {
-                                    $menuHtml .= '<ul>';
-                                    foreach ($item['children'] as $subItem) {
-                                        if (false === isset($subItem['zone']) || in_array($subItem['zone'], $this->lZonesHeader)) {
-                                            $menuHtml .= '<li><a href="' . $this->lurl . '/' . $subItem['uri'] . '">' . $subItem['title'] . '</a></li>';
-                                        }
-                                    }
-                                    $menuHtml .= '</ul>';
-                                }
-
-                                $menuHtml .= '</li>';
-                            }
-                        }
-                        ?>
-
-                        <?= $menuHtml ?>
-                    </ul>
+                    {% include 'navigation.html.twig' %}
                 </div>
             </div>
         </div>
@@ -90,7 +53,7 @@
             <li>
                 <div class="btn-group">
                     <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button">
-                        <?= $_SESSION['user']['firstname'] ?> <?= $_SESSION['user']['name'] ?>
+                        {{ user.firstname }} {{ user.name }}
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-right">
@@ -100,12 +63,12 @@
                             </a>
                         </li>
                         <li>
-                            <a href="https://admin.local.unilend.fr/users/edit_password/">
+                            <a href="{{ adminUrl }}/users/edit_password">
                                 <i class="si si-lock pull-right"></i>Mot de passe
                             </a>
                         </li>
                         <li>
-                            <a href="<?= $this->lurl ?>/logout">
+                            <a href="{{ adminUrl }}/logout">
                                 <i class="si si-logout pull-right"></i>Se déconnecter
                             </a>
                         </li>
@@ -125,65 +88,67 @@
         </ul>
     </header>
     <main id="main-container">
-        <?php $this->fireView(); ?>
+        {% block content %} {% endblock %}
     </main>
 </div>
 
 <!--Modals-->
 <div class="modal fade in" id="modal-profile-settings" role="dialog" aria-hidden="true">
-    <form class="modal-dialog modal-sm" method="post" name="mod_users" id="mod_users" enctype="multipart/form-data" action="<?= $this->lurl ?>/users/edit_perso_user/<?= $this->users->id_user ?>" target="_parent" data-formvalidate>
+    <form class="modal-dialog modal-sm">
         <div class="modal-content">
             <div class="block block-themed block-transparent remove-margin-b">
                 <div class="block-header bg-primary-light">
-                    <h3 class="block-title">Modifier <?= $this->users->firstname ?> <?= $this->users->name ?></h3>
+                    <h3 class="block-title">Vos informations</h3>
                 </div>
                 <div class="block-content">
                     <div class="form-group">
-                        <label>Pr&eacute;nom</label>
-                        <input type="text" name="firstname" value="<?= $this->users->firstname ?>" class="form-control">
+                        <label>Prénom</label>
+                        <input type="text" name="firstname" value="{{ user.firstname }}" class="form-control">
                     </div>
                     <div class="form-group">
                         <label>Nom</label>
-                        <input type="text" name="name" value="<?= $this->users->name ?>" class="form-control">
+                        <input type="text" name="name" value="{{ user.name }}" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label>T&eacute;l&eacute;phone</label>
-                        <input type="text" name="phone" value="<?= $this->users->phone ?>" class="form-control">
+                        <label>Email</label>
+                        <input type="email" name="email" value="{{ user.email }}" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label>Email *</label>
-                        <input type="email" name="email" value="<?= $this->users->phone ?>" class="form-control required">
+                        <label>Téléphone</label>
+                        <input type="text" name="phone" value="{{ user.phone }}" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Slack</label>
+                        <input type="text" name="slack" value="{{ user.slack }}" class="form-control">
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <input type="hidden" name="form_mod_users" id="form_mod_users">
-                <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
-                <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+                <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Fermer</button>
             </div>
         </div>
     </form>
 </div>
 
 <!-- OneUI Core JS: jQuery, Bootstrap, slimScroll, scrollLock, Placeholder, Cookie and App.js -->
-<script src="<?= $this->url ?>/oneui/js/core/jquery.min.js"></script>
-<script src="<?= $this->url ?>/oneui/js/core/bootstrap.min.js"></script>
-<script src="<?= $this->url ?>/oneui/js/core/jquery.scrollLock.min.js"></script>
-<script src="<?= $this->url ?>/oneui/js/core/jquery.slimscroll.min.js"></script>
-<script src="<?= $this->url ?>/oneui/js/core/jquery.placeholder.min.js"></script>
-<script src="<?= $this->url ?>/oneui/js/core/js.cookie.min.js"></script>
-<script src="<?= $this->url ?>/oneui/js/app.js"></script>
+<script src="{{ adminUrl }}/oneui/js/core/jquery.min.js"></script>
+<script src="{{ adminUrl }}/oneui/js/core/bootstrap.min.js"></script>
+<script src="{{ adminUrl }}/oneui/js/core/jquery.scrollLock.min.js"></script>
+<script src="{{ adminUrl }}/oneui/js/core/jquery.slimscroll.min.js"></script>
+<script src="{{ adminUrl }}/oneui/js/core/jquery.placeholder.min.js"></script>
+<script src="{{ adminUrl }}/oneui/js/core/js.cookie.min.js"></script>
+<script src="{{ adminUrl }}/oneui/js/app.js"></script>
 
 <!-- OneUI Plugins -->
-<script src="<?= $this->url ?>/oneui/js/plugins/select2/select2.min.js"></script>
-<script src="<?= $this->url ?>/oneui/js/plugins/jquery-validation/jquery.validate.min.js"></script>
-<script src="<?= $this->url ?>/oneui/js/plugins/select2/select2.full.min.js"></script>
-<script src="<?= $this->url ?>/oneui/js/plugins/jquery-auto-complete/jquery.auto-complete.min.js"></script>
-<script src="<?= $this->url ?>/oneui/js/plugins/masked-inputs/jquery.maskedinput.min.js"></script>
-<script src="<?= $this->url ?>/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
-<script src="<?= $this->url ?>/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="<?= $this->url ?>/oneui/js/plugins/summernote/summernote.min.js"></script>
-<script src="<?= $this->url ?>/oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.js"></script>
+<script src="{{ adminUrl }}/oneui/js/plugins/select2/select2.min.js"></script>
+<script src="{{ adminUrl }}/oneui/js/plugins/jquery-validation/jquery.validate.min.js"></script>
+<script src="{{ adminUrl }}/oneui/js/plugins/select2/select2.full.min.js"></script>
+<script src="{{ adminUrl }}/oneui/js/plugins/jquery-auto-complete/jquery.auto-complete.min.js"></script>
+<script src="{{ adminUrl }}/oneui/js/plugins/masked-inputs/jquery.maskedinput.min.js"></script>
+<script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
+<script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="{{ adminUrl }}/oneui/js/plugins/summernote/summernote.min.js"></script>
+<script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.js"></script>
 
 <script>
     jQuery(function () {

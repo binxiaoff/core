@@ -1,0 +1,134 @@
+{#
+<?php
+$menuHtml = '';
+foreach (static::MENU as $item) {
+    $zone  = $item['zone'];
+    $title = $item['title'];
+
+    // Item visibility
+    if (in_array($zone, $this->lZonesHeader)) {
+        // Check user and adjust title for Dashboard item
+        if ($title === 'Dashboard') {
+            if (in_array($_SESSION['user']['id_user_type'], [\users_types::TYPE_RISK, \users_types::TYPE_COMMERCIAL]) || in_array($_SESSION['user']['id_user'], [23, 26])) {
+                $title = 'Mon flux';
+            }
+        }
+        $active = $this->menu_admin === $zone ? ' class="open"' : '';
+        $submenu = empty($item['children']) ? '' : ' class="nav-submenu" data-toggle="nav-submenu"';
+
+        $menuHtml .= '<li' . $active . '>';
+        $menuHtml .= empty($item['uri']) ? '<a' . $submenu . '>' . $title . '</a>' : '<a href="' . $this->lurl . '/' . $item['uri'] . '"' . $submenu .'>' . $title . '</a>';
+
+        if (false === empty($item['children'])) {
+            $menuHtml .= '<ul>';
+            foreach ($item['children'] as $subItem) {
+                if (false === isset($subItem['zone']) || in_array($subItem['zone'], $this->lZonesHeader)) {
+                    $menuHtml .= '<li><a href="' . $this->lurl . '/' . $subItem['uri'] . '">' . $subItem['title'] . '</a></li>';
+                }
+            }
+            $menuHtml .= '</ul>';
+        }
+
+        $menuHtml .= '</li>';
+    }
+}
+?>
+<?= $menuHtml ?>
+#}
+<ul class="nav-main">
+    <li><a href="https://admin.local.unilend.fr/dashboard">Dashboard</a></li>
+    <li><a href="https://admin.local.unilend.fr/tree" class="nav-submenu" data-toggle="nav-submenu">Edition</a>
+        <ul>
+            <li><a href="https://admin.local.unilend.fr/tree">Arborescence</a></li>
+            <li><a href="https://admin.local.unilend.fr/blocs">Blocs</a></li>
+            <li><a href="https://admin.local.unilend.fr/menus">Menus</a></li>
+            <li><a href="https://admin.local.unilend.fr/templates">Templates</a></li>
+            <li><a href="https://admin.local.unilend.fr/traductions">Traductions</a></li>
+            <li><a href="https://admin.local.unilend.fr/mails">Mails</a></li>
+        </ul>
+    </li>
+    <li>
+        <a href="https://admin.local.unilend.fr/settings" class="nav-submenu" data-toggle="nav-submenu">Configuration</a>
+        <ul>
+            <li><a href="https://admin.local.unilend.fr/settings">Paramètres</a></li>
+            <li><a href="https://admin.local.unilend.fr/mails/emailhistory">Historique des Mails</a></li>
+            <li><a href="https://admin.local.unilend.fr/partenaires">Campagnes</a></li>
+            <li><a href="https://admin.local.unilend.fr/partenaires/types">Types de campagnes</a></li>
+            <li><a href="https://admin.local.unilend.fr/project_rate_settings">Grille de taux</a></li>
+        </ul>
+    </li>
+    <li><a href="https://admin.local.unilend.fr/queries" class="nav-submenu" data-toggle="nav-submenu">Statistiques</a>
+        <ul>
+            <li><a href="https://admin.local.unilend.fr/queries">Requêtes</a></li>
+            <li><a href="https://admin.local.unilend.fr/stats/etape_inscription">Etape d'inscription</a></li>
+            <li><a href="https://admin.local.unilend.fr/stats/requete_source_emprunteurs">Sources emprunteurs</a></li>
+            <li><a href="https://admin.local.unilend.fr/stats/requete_revenus_download">Revenus</a></li>
+            <li><a href="https://admin.local.unilend.fr/stats/requete_beneficiaires_csv">Bénéficiaires</a></li>
+            <li><a href="https://admin.local.unilend.fr/stats/requete_infosben">Infosben</a></li>
+            <li><a href="https://admin.local.unilend.fr/stats/requete_encheres">Toutes les enchères</a></li>
+            <li><a href="https://admin.local.unilend.fr/stats/tous_echeanciers_pour_projet">Echeanciers projet</a></li>
+            <li><a href="https://admin.local.unilend.fr/stats/autobid_statistic">Statistiques Autolend</a></li>
+            <li><a href="https://admin.local.unilend.fr/stats/declarations_bdf">Déclarations BDF</a></li>
+            <li><a href="https://admin.local.unilend.fr/stats/requete_crs_cac">CRS CAC</a></li>
+            <li><a href="https://admin.local.unilend.fr/stats/projects_eligibility">Éligibilité des dossiers</a></li>
+            <li><a href="https://admin.local.unilend.fr/stats/logs_webservices">Logs webservices</a></li>
+            <li><a href="https://admin.local.unilend.fr/stats/reporting_sfpmei">Reporting Mensuel SFPMEI</a></li>
+            <li><a href="https://admin.local.unilend.fr/stats/loi_eckert">Loi Eckert</a></li>
+        </ul>
+    </li>
+    <li>
+        <a href="https://admin.local.unilend.fr/preteurs/search" class="nav-submenu" data-toggle="nav-submenu">Prêteurs</a>
+        <ul>
+            <li><a href="https://admin.local.unilend.fr/preteurs/search">Recherche prêteurs</a></li>
+            <li><a href="https://admin.local.unilend.fr/preteurs/activation ">Activation prêteurs</a></li>
+            <li><a href="https://admin.local.unilend.fr/preteurs/offres_de_bienvenue">Offre de bienvenue</a></li>
+            <li><a href="https://admin.local.unilend.fr/preteurs/control_fiscal_city">Matching ville fiscale</a></li>
+            <li><a href="https://admin.local.unilend.fr/preteurs/control_birth_city">Matching ville de naissance</a>
+            </li>
+            <li><a href="https://admin.local.unilend.fr/preteurs/notifications">Notifications</a></li>
+            <li>
+                <a href="https://admin.local.unilend.fr/transferts/rattrapage_offre_bienvenue">Rattrapage offre de bienvenue</a>
+            </li>
+            <li><a href="https://admin.local.unilend.fr/client_atypical_operation">Opérations atypiques</a></li>
+        </ul>
+    </li>
+    <li><a class="nav-submenu" data-toggle="nav-submenu">Emprunteurs</a>
+        <ul>
+            <li><a href="https://admin.local.unilend.fr/dossiers">Dossiers</a></li>
+            <li><a href="https://admin.local.unilend.fr/emprunteurs/gestion">Emprunteurs</a></li>
+            <li><a href="https://admin.local.unilend.fr/prescripteurs/gestion">Prescripteurs</a></li>
+            <li><a href="https://admin.local.unilend.fr/dossiers/funding ">Dossiers en funding</a></li>
+            <li><a href="https://admin.local.unilend.fr/dossiers/remboursements">Remboursements</a></li>
+            <li><a href="https://admin.local.unilend.fr/dossiers/no_remb">Erreurs remboursements</a></li>
+            <li><a href="https://admin.local.unilend.fr/dossiers/status">Suivi statuts projets</a></li>
+            <li><a href="https://admin.local.unilend.fr/product">Produits</a></li>
+            <li><a href="https://admin.local.unilend.fr/company">Sociétés</a></li>
+            <li><a href="https://admin.local.unilend.fr/partner">Partenaires</a></li>
+            <li><a href="https://admin.local.unilend.fr/risk_monitoring">Monitoring données risque</a></li>
+        </ul>
+    </li>
+    <li>
+        <a href="https://admin.local.unilend.fr/transferts" class="nav-submenu" data-toggle="nav-submenu">Dépôt de fonds</a>
+        <ul>
+            <li><a href="https://admin.local.unilend.fr/transferts/preteurs">Prêteurs</a></li>
+            <li><a href="https://admin.local.unilend.fr/transferts/emprunteurs">Emprunteurs</a></li>
+            <li><a href="https://admin.local.unilend.fr/transferts/non_attribues">Non attribués</a></li>
+            <li>
+                <a href="https://admin.local.unilend.fr/transferts/rattrapage_offre_bienvenue">Rattrapage offre de bienvenue</a>
+            </li>
+            <li><a href="https://admin.local.unilend.fr/transferts/deblocage">Déblocage des fonds</a></li>
+            <li>
+                <a href="https://admin.local.unilend.fr/transferts/succession">Succession (Transfert de solde et prêts)</a>
+            </li>
+            <li><a href="https://admin.local.unilend.fr/client_atypical_operation">Opérations atypiques</a></li>
+            <li><a href="https://admin.local.unilend.fr/transferts/virement_emprunteur">Transfert des fonds</a></li>
+        </ul>
+    </li>
+    <li><a href="https://admin.local.unilend.fr/users" class="nav-submenu" data-toggle="nav-submenu">Administration</a>
+        <ul>
+            <li><a href="https://admin.local.unilend.fr/users">Utilisateurs</a></li>
+            <li><a href="https://admin.local.unilend.fr/zones">Droits d'accès</a></li>
+            <li><a href="https://admin.local.unilend.fr/users/logs">Logs connexions</a></li>
+        </ul>
+    </li>
+</ul>

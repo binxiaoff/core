@@ -7,26 +7,27 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Receptions
  *
- * @ORM\Table(name="receptions", indexes={@ORM\Index(name="idx_receptions_type", columns={"type"}), @ORM\Index(name="idx_receptions_added", columns={"added"}), @ORM\Index(name="type", columns={"type"}), @ORM\Index(name="status_virement", columns={"status_virement"}), @ORM\Index(name="status_prelevement", columns={"status_prelevement"}), @ORM\Index(name="status_bo", columns={"status_bo"}), @ORM\Index(name="remb", columns={"remb"}), @ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_project", columns={"id_project"})})
- * @ORM\Entity
+ * @ORM\Table(name="receptions", indexes={@ORM\Index(name="idx_receptions_type", columns={"type"}), @ORM\Index(name="idx_receptions_added", columns={"added"}), @ORM\Index(name="type", columns={"type"}), @ORM\Index(name="status_virement", columns={"status_virement"}), @ORM\Index(name="status_prelevement", columns={"status_prelevement"}), @ORM\Index(name="status_bo", columns={"status_bo"}), @ORM\Index(name="remb", columns={"remb"}), @ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="id_user", columns={"id_user"})})
  * @ORM\HasLifecycleCallbacks
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ReceptionsRepository")
  */
 class Receptions
 {
-    const STATUS_PENDING           = 0;
-    const STATUS_MANUALLY_ASSIGNED = 1;
-    const STATUS_AUTO_ASSIGNED     = 2;
-    const STATUS_REJECTED          = 3;
+    const STATUS_PENDING         = 0;
+    const STATUS_ASSIGNED_MANUAL = 1;
+    const STATUS_ASSIGNED_AUTO   = 2;
+    const STATUS_IGNORED_MANUAL  = 3;
+    const STATUS_IGNORED_AUTO    = 4;
+
+    const TYPE_DIRECT_DEBIT  = 1;
+    const TYPE_WIRE_TRANSFER = 2;
+    const TYPE_CHEQUE        = 3;
+    const TYPE_UNKNOWN       = 4;
 
     const REPAYMENT_TYPE_NORMAL         = 0;
     const REPAYMENT_TYPE_EARLY          = 1;
     const REPAYMENT_TYPE_REGULARISATION = 2;
     const REPAYMENT_TYPE_RECOVERY       = 3;
-
-    const TYPE_DIRECT_DEBIT  = 1;
-    const TYPE_WIRE_TRANSFER = 2;
-    const TYPE_CHEQUE        = 3;
 
     const WIRE_TRANSFER_STATUS_RECEIVED = 1;
     const WIRE_TRANSFER_STATUS_SENT     = 2;
@@ -136,6 +137,13 @@ class Receptions
      * @ORM\Column(name="assignment_date", type="datetime", nullable=false)
      */
     private $assignmentDate;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="comment", type="text")
+     */
+    private $comment;
 
     /**
      * @var \DateTime
@@ -470,6 +478,30 @@ class Receptions
     public function getAssignmentDate()
     {
         return $this->assignmentDate;
+    }
+
+    /**
+     * Set comment
+     *
+     * @param string $comment
+     *
+     * @return Receptions
+     */
+    public function setComment($comment)
+    {
+        $this->comment = $comment;
+
+        return $this;
+    }
+
+    /**
+     * Get comment
+     *
+     * @return string
+     */
+    public function getComment()
+    {
+        return $this->comment;
     }
 
     /**

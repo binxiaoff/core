@@ -75,6 +75,13 @@ class Companies
     /**
      * @var string
      *
+     * @ORM\Column(name="legal_form_code", type="string", length=10, nullable=true)
+     */
+    private $legalFormCode;
+
+    /**
+     * @var string
+     *
      * @ORM\Column(name="siren", type="string", length=15, nullable=true)
      */
     private $siren;
@@ -1230,6 +1237,22 @@ class Companies
     public function getIdParentCompany()
     {
         return $this->idParentCompany;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getLegalFormCode()
+    {
+        return $this->legalFormCode;
+    }
+
+    /**
+     * @param string $legalFormCode
+     */
+    public function setLegalFormCode($legalFormCode = null)
+    {
+        $this->legalFormCode = $legalFormCode;
     }
 
     /**
