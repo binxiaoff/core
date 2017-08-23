@@ -23,7 +23,7 @@ class CompanyStatusHistory
     private $id;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies
+     * @var Companies
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Companies")
      * @ORM\JoinColumns({
@@ -33,16 +33,22 @@ class CompanyStatusHistory
     private $idCompany;
 
     /**
-     * @var integer
+     * @var CompanyStatus
      *
-     * @ORM\Column(name="id_status", type="smallint", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_status", referencedColumnName="id")
+     * })
      */
     private $idStatus;
 
     /**
-     * @var integer
+     * @var Users
      *
-     * @ORM\Column(name="id_user", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user")
+     * })
      */
     private $idUser;
 
@@ -59,13 +65,6 @@ class CompanyStatusHistory
      * @ORM\Column(name="added", type="datetime", nullable=false)
      */
     private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=true)
-     */
-    private $updated;
 
     /**
      * @return int
@@ -89,7 +88,7 @@ class CompanyStatusHistory
      *
      * @return CompanyStatusHistory
      */
-    public function setIdCompany($idCompany)
+    public function setIdCompany(Companies $idCompany)
     {
         $this->idCompany = $idCompany;
 
@@ -97,7 +96,7 @@ class CompanyStatusHistory
     }
 
     /**
-     * @return int
+     * @return CompanyStatus
      */
     public function getIdStatus()
     {
@@ -105,11 +104,11 @@ class CompanyStatusHistory
     }
 
     /**
-     * @param int $idStatus
+     * @param CompanyStatus $idStatus
      *
      * @return CompanyStatusHistory
      */
-    public function setIdStatus($idStatus)
+    public function setIdStatus(CompanyStatus $idStatus)
     {
         $this->idStatus = $idStatus;
 
@@ -117,7 +116,7 @@ class CompanyStatusHistory
     }
 
     /**
-     * @return int
+     * @return Users
      */
     public function getIdUser()
     {
@@ -125,11 +124,11 @@ class CompanyStatusHistory
     }
 
     /**
-     * @param int $idUser
+     * @param Users $idUser
      *
      * @return CompanyStatusHistory
      */
-    public function setIdUser($idUser)
+    public function setIdUser(Users $idUser)
     {
         $this->idUser = $idUser;
 
@@ -169,29 +168,9 @@ class CompanyStatusHistory
      *
      * @return CompanyStatusHistory
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added)
     {
         $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getUpdated()
-    {
-        return $this->updated;
-    }
-
-    /**
-     * @param \DateTime $updated
-     *
-     * @return CompanyStatusHistory
-     */
-    public function setUpdated($updated)
-    {
-        $this->updated = $updated;
 
         return $this;
     }
@@ -204,13 +183,5 @@ class CompanyStatusHistory
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function setUpdatedValue()
-    {
-        $this->updated = new \DateTime();
     }
 }
