@@ -1160,16 +1160,21 @@ class OperationRepository extends EntityRepository
      *
      * @return mixed
      */
-    public function getSumRewardAmountByCampaign($subTypeLabel, SponsorshipCampaign $sponsorshipCampaign)
+    public function getSumRewardAmountByCampaign($subTypeLabel, SponsorshipCampaign $sponsorshipCampaign, Wallet $wallet = null)
     {
         $queryBuilder = $this->createQueryBuilder('o');
         $queryBuilder->select('SUM(o.amount)')
             ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'ost.id = o.idSubType')
             ->innerJoin('UnilendCoreBusinessBundle:Sponsorship', 'ss', Join::WITH, 'ss.id = o.idSponsorship')
             ->where('ost.label = :subTypeLabel')
-            ->andWhere('ss.idCampaign = :idCampaign')
+            ->andWhere('ss.idSponsorshipCampaign = :idCampaign')
             ->setParameter('subTypeLabel', $subTypeLabel)
             ->setParameter('idCampaign', $sponsorshipCampaign);
+
+        if (null !== $wallet) {
+            $queryBuilder->andWhere('o.idWalletCreditor = :idWallet')
+                ->setParameter('idWallet', $wallet);
+        }
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }

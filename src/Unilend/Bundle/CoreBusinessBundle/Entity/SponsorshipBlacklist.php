@@ -52,7 +52,7 @@ class SponsorshipBlacklist
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_campaign", referencedColumnName="id")
      * })

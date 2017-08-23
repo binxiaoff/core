@@ -15,7 +15,7 @@ class SponsorshipCampaignRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('sc');
         $queryBuilder->where('sc.status = :valid')
             ->andWhere('sc.start <= :now')
-            ->andWhere('sc.end IS NULL')
+            ->andWhere('sc.end >= :now')
             ->setParameter('valid', SponsorshipCampaign::STATUS_VALID)
             ->setParameter('now', new \DateTime('now'));
 
