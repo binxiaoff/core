@@ -1,3 +1,4 @@
+/* Sidebar Navigation */
 .nav-main ul {
     padding-left: 30px;
 }
@@ -13,25 +14,31 @@
 .environment a {
     color: #fff;
 }
+
+/* Header Search */
+/*.nav-header .header-search {*/
+    /*width: 400px;*/
+/*}*/
+.nav-header .input-group {
+    width: 100%;
+}
+.autocomplete-suggestions.header-autocomplete {
+    position: fixed;
+    top: 55px!important;
+    max-height: 300px;
+}
 .autocomplete-suggestion {
     padding: 5px 10px;
-    border-bottom: 1px solid #eee;
-    background: #f9f9f9;
     clear: both;
 }
 .autocomplete-suggestion p {
     margin: 0;
     font-weight: 600;
 }
-.autocomplete-suggestion .list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
 .autocomplete-suggestion dl {
     font-size: 12px;
     line-height: 17.5px;
-    margin-right: 10px;
+    margin-right: 20px;
     margin-bottom: 2.5px;
     float: left;
     max-width: 100px;
@@ -47,4 +54,30 @@
     font-size: 12px;
     color: #a8a8a8;
     font-weight: normal;
+}
+.autocomplete-section {
+    background: #f9f9f9;
+    border-bottom: 1px solid #eee;
+}
+.autocomplete-section .title, .autocomplete-section .show-more {
+    display: block;
+    padding: 10px;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+.autocomplete-suggestion .id {
+    font-weight: normal;
+    font-size: 13px;
+}
+.autocomplete-section .title {
+    font-weight: 600;
+    color: #999;
+}
+.autocomplete-section .show-more .btn {
+    width: 100%;
+}
+.autocomplete-section .show-more .fa {
+    font-size: 8px;
+    position: relative;
+    top: -1px;
 }

@@ -78,12 +78,7 @@
         </ul>
         <ul class="nav-header pull-left">
             <li class="header-search">
-                <form class="form-horizontal" action="/dossiers" method="post">
-                    <div class="input-group remove-margin-t remove-margin-b">
-                        <input class="form-control" type="text" id="quick-search" name="quick-search" placeholder="Raison Sociale, Siren ou ID Projet">
-                        <span class="input-group-addon"><i class="fa fa-search"></i></span>
-                    </div>
-                </form>
+                <input class="form-control" type="text" id="quick-search" name="quick-search" placeholder="Recherche ...">
             </li>
         </ul>
     </header>
@@ -143,7 +138,7 @@
 <script src="{{ adminUrl }}/oneui/js/plugins/select2/select2.min.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/jquery-validation/jquery.validate.min.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/select2/select2.full.min.js"></script>
-<script src="{{ adminUrl }}/oneui/js/plugins/jquery-auto-complete/jquery.auto-complete.min.js"></script>
+<script src="{{ adminUrl }}/oneui/js/plugins/jquery-auto-complete/jquery.auto-complete.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/masked-inputs/jquery.maskedinput.min.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
@@ -160,9 +155,9 @@
     $(function(){
         // Form Validation
         // Generic form validation - to be further developed
-        $('[data-formvalidate]').submit(function(e) {
+        $('[data-formvalidate]').submit(function(e){
             var valid = true
-            $(this).find('.required').each(function() {
+            $(this).find('.required').each(function(){
                 var $input = $(this)
                 if ($input.is('input[type=text]') || $input.is('input[type=number]') || $input.is('input[type=email]') || $input.is('textarea')) {
                     if (!$input.val() || $input.val() === '') {
@@ -213,6 +208,9 @@
             // source: function(term, response){
                 // $.getJSON('/some/ajax/url/', {q: term}, function(data){ response(data) })
             // },
+            maxResults: 2,
+            cache: 0, // Doesn't work with any other value (when using sections in suggestions)
+            menuClass: 'header-autocomplete',
             source: function(term, suggest) {
                 term = term.toLowerCase()
                 
@@ -223,7 +221,10 @@
                         projectId: 81663,
                         status: 'Remboursement',
                         amount: 35000,
-                        period: 60
+                        period: 60,
+                        lenderName: 'Truquet',
+                        lenderId: '223929',
+                        lenderType: 'physical person'
                     },
                     {
                         company: 'J.B. Hair Development',
@@ -231,7 +232,10 @@
                         projectId: 81074,
                         status: 'Remboursement',
                         amount: 40000,
-                        period: 36
+                        period: 36,
+                        lenderName: 'Trigodet',
+                        lenderId: '583929',
+                        lenderType: 'physical person'
                     },
                     {
                         company: 'Pharmacie Druel',
@@ -239,7 +243,10 @@
                         projectId: 80241,
                         status: 'Remboursement Remboursement',
                         amount: 140000,
-                        period: 36
+                        period: 36,
+                        lenderName: 'Webster',
+                        lenderId: '2383929',
+                        lenderType: 'moral person'
                     },
                     {
                         company: 'Pharmacie Druel',
@@ -247,7 +254,10 @@
                         projectId: 80241,
                         status: 'Remboursement',
                         amount: 60000,
-                        period: 36
+                        period: 36,
+                        lenderName: 'Druel',
+                        lenderId: '783929',
+                        lenderType: 'moral person'
                     },
                     {
                         company: 'Macmatériel',
@@ -255,60 +265,84 @@
                         projectId: 79515,
                         status: 'Remboursement',
                         amount: 40000,
-                        period: 12
+                        period: 12,
+                        lenderName: 'Druel',
+                        lenderId: '183929',
+                        lenderType: 'moral person'
                     }
                 ]
 
-                var suggestions = []
+                var suggestions = {
+                    projects: [],
+                    lenders: []
+                }
+
                 for (var i = 0; i < projects.length; i++) {
                     if ( ~ (projects[i].company + ' ' + projects[i].siren + ' ' + projects[i].projectId).toLowerCase().indexOf(term)) {
-                        suggestions.push(projects[i])
+                        suggestions.projects.push(projects[i])
+                    }
+                    if ( ~ (projects[i].lenderName + projects[i].lenderId).toLowerCase().indexOf(term)) {
+                        suggestions.lenders.push(projects[i])
                     }
                 }
                 suggest(suggestions)
             },
-            renderItem: function (item, search) {
-                return '<div class="autocomplete-suggestion" data-project-id="' + item.projectId + '">' +
-                        '<p>' + item.company + '</p>' +
-                        '<div class="list">' +
+            renderItem: function (item, search, section) {
+                var html = '<div class="autocomplete-suggestion">'
+                if (section === 'projects') {
+                    html += '<p>' + item.company + ' <span class="id">( ' + item.projectId + ' )</span></p>' +
+                            '<div class="details">' +
                             '<dl><dt>Siren</dt> <dd>' + item.siren + '</dd></dl>' +
                             '<dl><dt>Amount</dt> <dd>' + item.amount + ' €</dd></dl>' +
                             '<dl><dt>Duration</dt> <dd>' + item.period + ' mois</dd></dl>' +
                             '<dl><dt>Status</dt> <dd>' + item.status + '</dd></dl>' +
-                        '</div>' +
-                    '</div>'
+                            '</div>'
+                }
+                if (section === 'lenders') {
+                    html += '<p>' + item.lenderName + ' <span class="id">' + item.lenderId + ' </span></p>' +
+                            '<div class="details">' +
+                            '<dl><dd>' + item.lenderType + '</dd></dl>' +
+                            '</div>'
+                }
+                html += '</div>'
+                return html
+            },
+            showMore: function(section, term) {
+                var html = '<form class="show-more" method="post" action="'
+                if (section === 'projects') {
+                    html += '/dossiers">'
+                    html += '<input type="hidden" name="form_search_dossier" value="1">'
+
+                    if ($.isNumeric(term)) {
+                        html += '<input type="hidden" name="siren" value="' + term + '">'
+                    } else {
+                        html += '<input type="hidden" name="raison-sociale" value="' + term + '">'
+                    }
+                }
+                if (section === 'lenders') {
+                    html += '/preteurs/gestion">'
+                    html += '<input type="hidden" name="form_search_preteur" value="1">'
+
+                    if ($.isNumeric(term)) {
+                        html += '<input type="hidden" name="id" value="' + term + '">'
+                    } else {
+                        html += '<input type="hidden" name="nom" value="' + term + '">'
+                    }
+                }
+                html += '<button type="submit" class="btn btn-default btn-sm">Voir tous les ' + section + ' <span class="fa fa-chevron-right"></span></button>'
+                html += '</form>'
+                console.log(html)
+                return html
             },
             onSelect: function(e, term, item){
                 var company = item.find('p').text()
-                var projectId = item.data('project-id')
+                var projectId = item.find('id').text()
                 var redirectUrl = 'https://admin.local.unilend.fr' + '/dossiers/edit/' + projectId
 
                 $headerSearch.val(company)
                 window.location.href = redirectUrl
             }
         })
-
-        $headerSearchForm.find('.input-group-addon').click(function(){
-            $headerSearchForm.submit()
-        })
-
-        $headerSearchForm.submit(function() {
-            var $form = $(this)
-            var search = $headerSearch.val()
-
-            $form.append('<input type="hidden" name="form_search_dossier" value="1">')
-
-            if ($.isNumeric(search)) {
-                if (search.length < 9) {
-                    window.location.replace('/dossiers/edit/' + search)
-                } else {
-                    $form.append('<input type="hidden" name="siren" value="' + search + '">')
-                }
-            } else {
-                $form.append('<input type="hidden" name="raison-sociale" value="' + search + '">')
-            }
-        })
-
 
         // jQuery MaskedInput example
         // a - Represents an alpha character (A-Z,a-z)

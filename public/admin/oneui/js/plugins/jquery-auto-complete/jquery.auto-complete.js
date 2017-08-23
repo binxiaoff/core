@@ -95,6 +95,7 @@
             function suggest(data){
                 var val = that.val();
                 that.cache[val] = data;
+
                 if (val.length >= o.minChars) {
                     var s = '';
 
@@ -106,17 +107,18 @@
                         for (var key in data) {
                             var values = data[key]
                             if (values.length) {
-                                s += '<section class="autocomplete-suggestion-section ' + key + '">';
-                                s += '<span class="autocomplete-suggestion-section-title">' + key +  '</span>';
-
-                                for (var i=0;i<o.maxResults;i++) {
-                                    s += o.renderItem(values[i], val);
-                                    if (i === o.maxResults - 1) {
-                                        o.showMore(key)
-                                    }
+                                s += '<section class="autocomplete-section autocomplete-' + key + '">';
+                                s += '<span class="title">' + key +  '</span>';
+                                for (var i=0;i<values.length;i++) {
+                                    if (i < o.maxResults)
+                                        s += o.renderItem(values[i], val, key);
                                 }
+                                if (values.length >= o.maxResults)
+                                    s += o.showMore(key, val);
+
                                 s += '</section>';
-                            }
+                            } else
+                                that.sc.hide();
                         }
                     }
 
@@ -181,13 +183,13 @@
         source: 0,
         minChars: 3,
         delay: 150,
-        cache: 0,
+        cache: 1,
         menuClass: '',
         maxResults: 5,
         showMore: function(section){
             console.log('Show more ' + section + '| Add showMore() as a parameter in the init options.')
         },
-        renderItem: function (item, search){
+        renderItem: function (item, search, section){
             // escape special characters
             search = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
             var re = new RegExp("(" + search.split(' ').join('|') + ")", "gi");
