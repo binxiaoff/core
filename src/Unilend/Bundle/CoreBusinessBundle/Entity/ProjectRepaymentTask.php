@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -142,6 +143,18 @@ class ProjectRepaymentTask
      * })
      */
     private $idProject;
+
+    /**
+     * @var ProjectRepaymentTaskLog[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog", mappedBy="idTask")
+     */
+    private $taskLogs;
+
+    public function __construct()
+    {
+        $this->taskLogs = new ArrayCollection();
+    }
 
     /**
      * Set amount
@@ -481,5 +494,13 @@ class ProjectRepaymentTask
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * @return ProjectRepaymentTaskLog[]
+     */
+    public function getTaskLogs()
+    {
+        return $this->taskLogs;
     }
 }

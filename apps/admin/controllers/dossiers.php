@@ -1764,6 +1764,8 @@ class dossiersController extends bootstrap
         $this->settings                      = $this->loadData('settings');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
         $operationManager                    = $this->get('unilend.service.operation_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRepaymentManager $projectRepaymentManager */
+        $projectRepaymentManager             = $this->get('unilend.service.project_repayment_manager');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager                       = $this->get('doctrine.orm.entity_manager');
 
@@ -1774,6 +1776,7 @@ class dossiersController extends bootstrap
 
         $taxRate   = $taxType->getTaxRateByCountry('fr');
         $this->tva = $taxRate[\Unilend\Bundle\CoreBusinessBundle\Entity\TaxType::TYPE_VAT] / 100;
+        $project   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->companies->get($this->projects->id_company, 'id_company');
@@ -1831,25 +1834,13 @@ class dossiersController extends bootstrap
             // activer/desactiver remb auto (eclatement)
             if (isset($_POST['send_remb_auto'])) {
                 if ($_POST['remb_auto'] == 1) {
-                    $listdesRembauto = $this->projects_remb->select('id_project = ' . $this->projects->id_project . ' AND status = ' . \projects_remb::STATUS_PENDING . ' AND DATE(date_remb_preteurs) >= "' . date('Y-m-d') . '"');
-
-                    foreach ($listdesRembauto as $rembauto) {
-                        $this->projects_remb->get($rembauto['id_project_remb'], 'id_project_remb');
-                        $this->projects_remb->status = \projects_remb::STATUS_AUTOMATIC_REFUND_DISABLED;
-                        $this->projects_remb->update();
-                    }
+                    $projectRepaymentManager->disableAutomaticRepayment($project);
                 } elseif ($_POST['remb_auto'] == 0) {
-                    $listdesRembauto = $this->projects_remb->select('id_project = ' . $this->projects->id_project . ' AND status = ' . \projects_remb::STATUS_AUTOMATIC_REFUND_DISABLED . ' AND DATE(date_remb_preteurs) >= "' . date('Y-m-d') . '" AND date_remb_preteurs_reel = "0000-00-00 00:00:00"');
-
-                    foreach ($listdesRembauto as $rembauto) {
-                        $this->projects_remb->get($rembauto['id_project_remb'], 'id_project_remb');
-                        $this->projects_remb->status = \projects_remb::STATUS_PENDING;
-                        $this->projects_remb->update();
-                    }
+                    $projectRepaymentManager->enableAutomaticRepayment($project);
                 }
 
-                $this->projects->remb_auto = $_POST['remb_auto'];
-                $this->projects->update();
+                header('Location: ' . $this->lurl . '/dossiers/detail_remb/' . $this->params[0]);
+                die;
             }
 
             if (isset($this->params[1]) && $this->params[1] == 'remb') {
@@ -1971,7 +1962,7 @@ class dossiersController extends bootstrap
                     foreach ($this->echeanciers->get_liste_preteur_on_project($this->projects->id_project) as $item) {
                         try {
                             $loan = $loanRepository->find($item['id_loan']);
-                            $operationManager->earlyRepayment($loan);
+                            $operationManager->earlyRepayment($loan, $repaymentTaskLog);
 
                             $repaidAmount = round(bcadd($repaidAmount, bcdiv($loan->getAmount(), 100, 4), 4), 2);
                             $repaidLoanNb++;

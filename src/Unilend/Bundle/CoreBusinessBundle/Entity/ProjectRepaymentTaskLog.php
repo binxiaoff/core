@@ -9,17 +9,9 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="project_repayment_task_log", indexes={@ORM\Index(name="idx_project_repayment_task_log_id_task", columns={"id_task"})})
  * @ORM\Entity
- * @ORM\HasLifecycleCallbacks
  */
 class ProjectRepaymentTaskLog
 {
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="sequence", type="smallint", nullable=true)
-     */
-    private $sequence;
-
     /**
      * @var string
      *
@@ -58,38 +50,14 @@ class ProjectRepaymentTaskLog
     private $id;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask
+     * @var ProjectRepaymentTask
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask", inversedBy="taskLogs")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_task", referencedColumnName="id")
      * })
      */
     private $idTask;
-
-    /**
-     * Set sequence
-     *
-     * @param integer $sequence
-     *
-     * @return ProjectRepaymentTaskLog
-     */
-    public function setSequence($sequence)
-    {
-        $this->sequence = $sequence;
-
-        return $this;
-    }
-
-    /**
-     * Get sequence
-     *
-     * @return integer
-     */
-    public function getSequence()
-    {
-        return $this->sequence;
-    }
 
     /**
      * Set repaidAmount
@@ -200,11 +168,11 @@ class ProjectRepaymentTaskLog
     /**
      * Set idTask
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask $idTask
+     * @param ProjectRepaymentTask $idTask
      *
      * @return ProjectRepaymentTaskLog
      */
-    public function setIdTask(\Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask $idTask = null)
+    public function setIdTask(ProjectRepaymentTask $idTask = null)
     {
         $this->idTask = $idTask;
 
@@ -214,20 +182,10 @@ class ProjectRepaymentTaskLog
     /**
      * Get idTask
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask
+     * @return ProjectRepaymentTask
      */
     public function getIdTask()
     {
         return $this->idTask;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setStartedValue()
-    {
-        if (! $this->started instanceof \DateTime || 1 > $this->getStarted()->getTimestamp()) {
-            $this->started = new \DateTime();
-        }
     }
 }

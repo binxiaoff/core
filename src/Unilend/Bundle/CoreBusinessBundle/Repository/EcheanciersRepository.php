@@ -118,11 +118,11 @@ class EcheanciersRepository extends EntityRepository
                 ->setParameter('client', $client);
         }
 
-        if (false === empty($status)) {
+        if (0 < count($status)) {
             if (false === is_array($status)) {
                 $status = [$status];
             }
-            $qb->andWhere('e.status in :status')
+            $qb->andWhere('e.status in (:status)')
                 ->setParameter('status', $status);
         }
 
@@ -143,6 +143,7 @@ class EcheanciersRepository extends EntityRepository
         if (null !== $limit) {
             $qb->setMaxResults($limit);
         }
+
         return $qb->getQuery()->getResult();
     }
 

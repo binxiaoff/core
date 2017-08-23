@@ -5,9 +5,8 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-
 
 class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
 {
@@ -26,20 +25,30 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
         $logger                  = $this->getContainer()->get('monolog.logger.console');
         $stopWatch               = $this->getContainer()->get('debug.stopwatch');
 
-        /** @var ProjectRepaymentTask[] $projectsToRepay */
-        $projectsToRepay = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->getProjectsToRepay(new \DateTime(), 1);
+        $repaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
 
-        foreach ($projectsToRepay as $projectRepayment) {
+        $repaymentDate = new \DateTime();
+        /** @var ProjectRepaymentTask[] $projectRepaymentTask */
+        $projectRepaymentTask = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->getProjectsToRepay($repaymentDate, 1);
+
+        foreach ($projectRepaymentTask as $task) {
             try {
                 $stopWatch->start('autoRepayment');
-                $project        = $projectRepayment->getIdProject();
-                $taskLog        = $projectRepaymentManager->repay($projectRepayment, Users::USER_ID_CRON);
+                $project = $task->getIdProject();
+                if ($task->getSequence()) {
+                    /** @var Echeanciers $repaymentSchedule */
+                    $repaymentSchedule = $repaymentScheduleRepository->findOneBy(['idProject' => $project, 'ordre' => $task->getSequence()]);
+                    if ($repaymentSchedule->getDateEcheance()->setTime(0, 0, 0) > $repaymentDate) {
+                        continue;
+                    }
+                }
+                $taskLog        = $projectRepaymentManager->repay($task);
                 $stopWatchEvent = $stopWatch->stop('autoRepayment');
 
                 if ($taskLog) {
                     $message = $slackManager->getProjectName($project) .
                         ' - Remboursement effectué en '
-                        . round($stopWatchEvent->getDuration() / 1000, 1) . ' secondes (' . $taskLog->getRepaymentNb() . ' prêts, échéance #' . $taskLog->getSequence() . ').';
+                        . round($stopWatchEvent->getDuration() / 1000, 1) . ' secondes (' . $taskLog->getRepaymentNb() . ' prêts, échéance #' . $task->getSequence() . ').';
                 } else {
                     $message = $slackManager->getProjectName($project) .
                         ' - Remboursement non effectué. Veuille voir avec l\'équipe technique pour en savoir plus.';

@@ -17,12 +17,10 @@ class ProjectRepaymentTaskRepository extends EntityRepository
     public function getProjectsToRepay(\DateTime $repaymentDate, $limit)
     {
         $qb = $this->createQueryBuilder('prt');
-        $qb->select('prt, IFNULL(prt.repayAt, e.dateEcheance) AS HIDDEN repaymentDate')
-            ->innerJoin('UnilendCoreBusinessBundle:Echeanciers', 'e', Join::WITH, 'prt.idProject = e.idProject AND prt.sequence = e.ordre')
-            ->where('prt.status = :ready')
-            ->having('DATE(repaymentDate) <= :repaymentDate')
+        $qb->where('prt.status = :ready')
+            ->andWhere('prt.repayAt <= :repaymentDate')
             ->setParameter('ready', ProjectRepaymentTask::STATUS_READY)
-            ->setParameter('repaymentDate', $repaymentDate->format('Y-m-d'))
+            ->setParameter('repaymentDate', $repaymentDate)
             ->setMaxResults($limit);
 
         return $qb->getQuery()->getResult();

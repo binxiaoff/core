@@ -12,6 +12,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
@@ -293,8 +294,10 @@ EOF
 
                     $operationManager->provisionBorrowerWallet($reception);
 
-                    $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
-                    $repaymentManager->pay($reception, $user);
+                    if ($project->getStatus() < ProjectsStatus::PROBLEME) {
+                        $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
+                        $repaymentManager->pay($reception, $user);
+                    }
                 }
             }
         }
