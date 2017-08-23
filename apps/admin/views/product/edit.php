@@ -100,6 +100,19 @@
             </td>
         </tr>
         <tr>
+            <th>Codes Forme Juridique éligible</th>
+            <td>
+                <?php if (empty($this->legalFormCode)) : ?>
+                    <em>Pas de contrôle</em>
+                <?php else : ?>
+                    <?php foreach ($this->legalFormCode as $code) : ?>
+                        <?= $code ?>
+                    <?php endforeach; ?>
+                <? endif ?>
+            </td>
+        </tr>
+
+        <tr>
             <th>ID prêteur</th>
             <td>
                 <?php if (empty($this->lenderId)) : ?>

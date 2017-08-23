@@ -84,6 +84,7 @@ class productController extends bootstrap
         $this->noIncidentUnilendDays = $productManager->getAttributesByType($this->product, ProductAttributeType::NO_INCIDENT_UNILEND_PROJECT_DAYS);
         $this->minPreScore           = $productManager->getAttributesByType($this->product, ProductAttributeType::MIN_PRE_SCORE);
         $this->maxPreScore           = $productManager->getAttributesByType($this->product, ProductAttributeType::MAX_PRE_SCORE);
+        $this->legalFormCode         = $productManager->getAttributesByType($this->product, ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_LEGAL_FORM_CODE);
     }
 
     public function _contract_details()

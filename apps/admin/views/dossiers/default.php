@@ -56,17 +56,6 @@
             $('#nb-ligne-pagination').val(0);
             $('#page-active').val(1);
         });
-
-        <?php if (
-            false === isset($_SESSION['project_search_page_disclaimer'])
-            && (
-                in_array($this->userEntity->getIdUserType()->getIdUserType(), [\users_types::TYPE_COMMERCIAL, \users_types::TYPE_RISK])
-                || in_array($this->userEntity->getIdUser(), [23, 28])
-            )
-        ) : ?>
-            $.colorbox({html: $('#deprecated-page-disclaimer').html(), overlayClose: false, escKey: false});
-            <?php $_SESSION['project_search_page_disclaimer'] = true; ?>
-        <?php endif; ?>
     });
 
     function paginationDossiers(directionPagination) {
@@ -115,19 +104,7 @@
         color: #b1adb2;
     }
 </style>
-<div id="deprecated-page-disclaimer" style="display:none;">
-    <div style="padding:10px;">
-        <h1>Cette fonctionnalité va bientôt être supprimée</h1>
-        <p>Le <a href="<?php $this->lurl ?>/dashboard">flux</a> doit maintenant constituer le point d'entrée vers un dossier.</p>
-        <p>S'il manque des fonctionnalités qui ne vous permettent pas de vous passer de cette page de recherche, merci d'en faire part à Oliver afin de trouver une solution.</p>
-        <div style="text-align:center; margin-top:30px;">
-            <a role="button" class="btn_link" onclick="parent.$.fn.colorbox.close();">Accéder à la recherche</a>
-            <a href="<?php $this->lurl ?>/dashboard" class="btn_link">Accéder à mon flux</a>
-        </div>
-    </div>
-</div>
 <div id="contenu">
-
     <div class="row">
         <div class="col-md-12">
             <a href="<?= $this->lurl ?>/dossiers/add/create" class="btn-primary pull-right">Créer un dossier</a>
