@@ -35,6 +35,8 @@ abstract class Controller implements ContainerAwareInterface
     public $current_template = '';
     /** @var \Symfony\Component\HttpFoundation\Request */
     public $request;
+    /** @var Twig_Environment */
+    private $twigEnvironment;
     /** @var bool */
     public $useOneUi = false;
 
@@ -131,10 +133,11 @@ abstract class Controller implements ContainerAwareInterface
             }
         }
 
-        $this->setView($FunctionToCall);
         $this->params = $this->Command->getParameters();
 
         call_user_func([$this, '_' . $FunctionToCall]);
+
+        $this->setView($FunctionToCall);
 
         if ($this->useOneUi) {
             include $this->path . 'apps/' . $this->App . '/views/layout.php';
@@ -152,6 +155,31 @@ abstract class Controller implements ContainerAwareInterface
                 $this->fireFooter();
             }
         }
+    }
+
+    private function initializeTwig()
+    {
+        $kernel                = $this->get('kernel');
+        $loader                = new Twig_Loader_Filesystem($kernel->getRootDir() . '/../apps/admin/twig');
+        $this->twigEnvironment = new Twig_Environment($loader, [
+            'autoescape' => false,
+            'cache'      => $kernel->getCacheDir() . '/twig',
+            'debug'      => 'prod' !== $this->get('kernel')->getEnvironment()
+        ]);
+    }
+
+    /**
+     * @param string $name
+     * @param array  $context
+     *
+     * @return string
+     */
+    public function render($name, array $context = [])
+    {
+        $this->initializeTwig();
+
+        echo $this->twigEnvironment->render($name, $context);
+        exit;
     }
 
     public function fireHead()
