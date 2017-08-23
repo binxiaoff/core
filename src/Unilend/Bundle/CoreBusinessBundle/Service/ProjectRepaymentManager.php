@@ -515,35 +515,6 @@ class ProjectRepaymentManager
     }
 
     /**
-     * Find repayment schedules to repay. When a repayment task is ready to be treated, the borrow payment schedule should already been paid.
-     * So, we take the paid payment schedules and search for each payment sequence until we find a non-repaid repayment sequence.
-     * The function returns all non-repaid loans in the same repayment sequence.
-     *
-     * @param ProjectRepaymentTask $projectRepaymentTask
-     *
-     * @return Echeanciers[]|null
-     */
-    private function findRepaymentSchedulesToRepay(ProjectRepaymentTask $projectRepaymentTask)
-    {
-        $paidPaymentSchedules = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findBy(
-            ['idProject' => $projectRepaymentTask->getIdProject(), 'statusEmprunteur' => EcheanciersEmprunteur::STATUS_PAID],
-            ['ordre' => 'ASC']
-        );
-
-        $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-
-        foreach ($paidPaymentSchedules as $paidPaymentSchedule) {
-            $repaymentSchedules = $repaymentScheduleRepository->findByProject($projectRepaymentTask->getIdProject(), $paidPaymentSchedule->getOrdre(), null, Echeanciers::STATUS_PENDING);
-
-            if (0 < count($repaymentSchedules)) {
-                return $repaymentSchedules;
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * @param ProjectRepaymentTask $projectRepaymentTask
      *
      * @return float
