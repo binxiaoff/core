@@ -72,6 +72,5 @@
 <?php endif; ?>
 
 <script>
-    $('.inline').tooltip({disabled: true})
     $('.inline').colorbox({inline: true})
 </script>
