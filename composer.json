@@ -15,7 +15,7 @@
     ]
   },
   "require": {
-    "php": ">=5.5.9",
+    "php": ">=5.6.30",
     "knplabs/knp-snappy": "0.4.*",
     "knplabs/knp-snappy-bundle": "^1.4",
     "phpxmlrpc/phpxmlrpc": "4.0.*",

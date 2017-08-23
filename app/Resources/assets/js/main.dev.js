@@ -112,7 +112,6 @@ require('./app/controllers/NewPasswordRequest')
 require('./app/controllers/BorrowerOperations')
 require('./app/controllers/LenderSubscription')
 require('./app/controllers/LenderDashboard')
-require('./app/controllers/LenderWallet')
 require('./app/controllers/LenderOperations')
 require('./app/controllers/LenderProfile')
 require('./app/controllers/Projects')
@@ -130,6 +129,11 @@ $doc.ready(function ($) {
 
   // Remove HTML
   $html.removeClass('no-js')
+
+  // Detect Safari
+  if (navigator.userAgent.indexOf('Safari') > -1 && navigator.userAgent.indexOf('Chrome') == -1) {
+    $body.addClass('ua-safari')
+  }
 
   // TWBS setup
   // @todo refactor into General controller

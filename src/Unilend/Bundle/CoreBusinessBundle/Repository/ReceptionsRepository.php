@@ -37,11 +37,6 @@ class ReceptionsRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('r');
         $queryBuilder->andWhere('r.idProject IS NOT NULL')
-            ->andWhere('r.type = :directDebit AND r.statusPrelevement = :directDebitSent OR r.type = :wireTransfer AND r.statusVirement = :wireTransferReceived')
-            ->setParameter('directDebit', Receptions::TYPE_DIRECT_DEBIT)
-            ->setParameter('directDebitSent', Receptions::DIRECT_DEBIT_STATUS_SENT)
-            ->setParameter('wireTransfer', Receptions::TYPE_WIRE_TRANSFER)
-            ->setParameter('wireTransferReceived', Receptions::WIRE_TRANSFER_STATUS_RECEIVED)
             ->orderBy('r.idReception', 'DESC');
 
         return $queryBuilder->getQuery()->getResult();
@@ -81,7 +76,7 @@ class ReceptionsRepository extends EntityRepository
             ->andWhere('r.type = :wireTransfer')
             ->andWhere('r.statusVirement = :wireTransferReceived')
             ->setParameter('projectId', $project)
-            ->setParameter('assignmentType', [Receptions::STATUS_MANUALLY_ASSIGNED, Receptions::STATUS_AUTO_ASSIGNED], Connection::PARAM_INT_ARRAY)
+            ->setParameter('assignmentType', [Receptions::STATUS_ASSIGNED_MANUAL, Receptions::STATUS_ASSIGNED_AUTO], Connection::PARAM_INT_ARRAY)
             ->setParameter('earlyRepayment', Receptions::REPAYMENT_TYPE_EARLY)
             ->setParameter('wireTransfer', Receptions::TYPE_WIRE_TRANSFER)
             ->setParameter('wireTransferReceived', Receptions::WIRE_TRANSFER_STATUS_RECEIVED);
@@ -90,22 +85,47 @@ class ReceptionsRepository extends EntityRepository
     }
 
     /**
-     * @return Receptions[]
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return array
      */
-    public function findNonAttributed()
+    public function getRejectedDirectDebitIndicatorsBetweenDates(\DateTime $start, \DateTime $end)
     {
-        $qb = $this->createQueryBuilder('r');
-        $qb->where('r.idClient IS NULL')
-           ->andWhere('r.idProject IS NULL')
-           ->andWhere('r.type IN (:types)')
-           ->andWhere(
-               $qb->expr()->orX(
-                   'r.type = ' . Receptions::TYPE_DIRECT_DEBIT . ' AND r.statusPrelevement = ' . Receptions::DIRECT_DEBIT_STATUS_SENT,
-                   'r.type = ' . Receptions::TYPE_WIRE_TRANSFER . ' AND r.statusVirement = ' . Receptions::WIRE_TRANSFER_STATUS_RECEIVED
-               ))
-            ->orderBy('r.idReception', 'DESC')
-            ->setParameter('types', [Receptions::TYPE_DIRECT_DEBIT, Receptions::TYPE_WIRE_TRANSFER], Connection::PARAM_INT_ARRAY);
+        $queryBuilder = $this->createQueryBuilder('r');
+        $queryBuilder->select('COUNT(r.idReception) AS number')
+            ->addSelect('ROUND(SUM(r.montant) / 100, 2) AS amount')
+            ->where('r.type = :directDebit')
+            ->andWhere('r.statusPrelevement = :rejected')
+            ->andWhere('r.added BETWEEN :start AND :end')
+            ->setParameter('directDebit', Receptions::TYPE_DIRECT_DEBIT)
+            ->setParameter('rejected', Receptions::DIRECT_DEBIT_STATUS_REJECTED)
+            ->setParameter('start', $start->format('Y-m-d H:i:s'))
+            ->setParameter('end', $end->format('Y-m-d H:i:s'));
 
-        return $qb->getQuery()->getResult();
+        return $queryBuilder->getQuery()->getArrayResult()[0];
+    }
+
+    /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return mixed
+     */
+    public function getBorrowerProvisionRegularizationIndicatorsBetweenDates(\DateTime $start, \DateTime $end)
+    {
+        $queryBuilder = $this->createQueryBuilder('r');
+        $queryBuilder->select('COUNT(r.idReception) AS number')
+            ->addSelect('ROUND(SUM(r.montant) / 100, 2) AS amount')
+            ->where('r.type != :directDebit')
+            ->andWhere('r.typeRemb = :regularization')
+            ->andWhere('r.added BETWEEN :start AND :end')
+            ->setParameter('directDebit', Receptions::TYPE_DIRECT_DEBIT)
+            ->setParameter('regularization', Receptions::REPAYMENT_TYPE_REGULARISATION)
+            ->setParameter('start', $start->format('Y-m-d H:i:s'))
+            ->setParameter('end', $end->format('Y-m-d H:i:s'));
+
+        return $queryBuilder->getQuery()->getArrayResult()[0];
     }
 }
+

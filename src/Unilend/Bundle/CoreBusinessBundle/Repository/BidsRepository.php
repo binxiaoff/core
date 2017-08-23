@@ -2,9 +2,9 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
-use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use \Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 
 class BidsRepository extends EntityRepository
@@ -28,17 +28,23 @@ class BidsRepository extends EntityRepository
         return $query->getSingleScalarResult();
     }
 
+    /**
+     * @param \DateTime $from
+     * @param \DateTime $to
+     * @param int       $clientId
+     *
+     * @return mixed
+     */
     public function countByClientInPeriod(\DateTime $from, \DateTime $to, $clientId)
     {
         $qb = $this->createQueryBuilder('b')
             ->select('COUNT(b.idBid) AS bidNumber')
-            ->innerJoin('UnilendCoreBusinessBundle:LendersAccounts', 'la', Join::WITH, 'la.idLenderAccount = b.idLenderAccount')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = b.idLenderAccount')
             ->where('b.added BETWEEN :fromDate AND :toDate')
-            ->andWhere('la.idClientOwner = :idClientOwner')
-            ->setParameters(['fromDate' => $from, 'toDate' => $to, 'idClientOwner' => $clientId]);
+            ->andWhere('w.idClient = :idClient')
+            ->setParameters(['fromDate' => $from, 'toDate' => $to, 'idClient' => $clientId]);
 
-        $bidCount =  $qb->getQuery()
-            ->getResult(AbstractQuery::HYDRATE_SINGLE_SCALAR);
+        $bidCount =  $qb->getQuery()->getScalarResult();
 
         return $bidCount;
     }
@@ -51,13 +57,33 @@ class BidsRepository extends EntityRepository
     public function getManualBidByDateAndWallet(Wallet $wallet, \DateTime $date)
     {
         $queryBuilder = $this->createQueryBuilder('b');
-        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:AccountMatching', 'am', Join::WITH, 'am.idWallet = :walletId')
-            ->where('b.idLenderAccount = am.idLenderAccount')
+        $queryBuilder->where('b.idLenderAccount = :walletId')
             ->andWhere('b.idAutobid IS NULL')
             ->andWhere('b.added > :date')
             ->setParameter('walletId', $wallet->getId())
             ->setParameter('date', $date);
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * @param Wallet|int   $wallet
+     * @param Projects|int $project
+     * @param int          $status
+     *
+     * @return mixed
+     */
+    public function getSumByWalletAndProjectAndStatus($wallet, $project, $status)
+    {
+        $qb = $this->createQueryBuilder('b');
+        $qb->select('SUM(b.amount) / 100')
+            ->where('b.idProject = :project')
+            ->andWhere('b.idLenderAccount = :wallet')
+            ->andWhere('b.status = :status')
+            ->setParameter('wallet', $wallet)
+            ->setParameter('project', $project)
+            ->setParameter('status', $status);
+
+        return $qb->getQuery()->getSingleScalarResult();
     }
 }

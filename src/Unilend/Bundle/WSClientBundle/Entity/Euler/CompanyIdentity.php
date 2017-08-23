@@ -19,6 +19,11 @@ class CompanyIdentity
     private $companyName;
 
     /**
+     * @JMS\Type("integer")
+     */
+    private $code;
+
+    /**
      * @return string
      */
     public function getSingleInvoiceId()
@@ -32,5 +37,10 @@ class CompanyIdentity
     public function getCompanyName()
     {
         return $this->companyName;
+    }
+
+    public function getCode()
+    {
+        return $this->code;
     }
 }

@@ -229,21 +229,6 @@ function loadTradTexte(nom, section) {
     }
 }
 
-/* Activer un utilisateur sur une zone */
-function activeUserZone(id_user, id_zone, zone) {
-    xhr_object = AjaxObject();
-    var param = no_cache();
-
-    xhr_object.onreadystatechange = function () {
-        if (xhr_object.readyState == 4 && xhr_object.status == 200) {
-            var reponse = xhr_object.responseText;
-            document.getElementById(zone).src = reponse;
-        }
-    };
-    xhr_object.open('GET', add_url + '/ajax/activeUserZone/' + id_user + '/' + id_zone + '/' + param, true);
-    xhr_object.send(null);
-}
-
 function editMemo(projectId, commentId) {
     $.ajax({
         url: add_url + '/dossiers/memo',
@@ -290,6 +275,21 @@ function deleteMemo(projectId, commentId) {
             }
         })
     }
+}
+
+/* Activer un utilisateur sur une zone */
+function activeUserZone(id_user, id_zone, zone) {
+    xhr_object = AjaxObject();
+    var param = no_cache();
+
+    xhr_object.onreadystatechange = function () {
+        if (xhr_object.readyState == 4 && xhr_object.status == 200) {
+            var reponse = xhr_object.responseText;
+            document.getElementById(zone).src = reponse;
+        }
+    };
+    xhr_object.open('GET', add_url + '/ajax/activeUserZone/' + id_user + '/' + id_zone + '/' + param, true);
+    xhr_object.send(null);
 }
 
 function valid_etape1(id_project) {
@@ -411,15 +411,14 @@ function generer_le_mdp(id_client) {
     var val = {
         id_client: id_client
     };
-    $.post(add_url + '/ajax/generer_mdp', val).done(function (data) {
-        if (data != 'nok') {
+    $.post(add_url + '/ajax/generer_mdp', val).done(function (status) {
+        $reponse = $('.' + status);
+        $reponse.slideDown();
 
-            $(".reponse").slideDown();
+        setTimeout(function () {
+            $reponse.slideUp();
+        }, 3000);
 
-            setTimeout(function () {
-                $(".reponse").slideUp();
-            }, 3000);
-        }
     });
 }
 
@@ -621,7 +620,7 @@ function valid_rejete_etape7(status, id_project) {
             indicateur_risque_dynamique   = parseFloat($('#indicateur_risque_dynamique_comite').val().replace(',', '.')),
             avis_comite                   = ckedAvis_comite.getData(),
             rejection_reason              = $('#rejection_reason option:selected').val(),
-            suspensive_conditions_comment = $('#comment').length ? $('#comment').val() : '',
+            suspensive_conditions_comment = $('#suspensive-conditions-memo-textarea').length ? $('#suspensive-conditions-memo-textarea').val() : '',
             form_ok = true;
 
         if (isNaN(structure) != false || isNaN(rentabilite) != false || isNaN(tresorerie) != false || isNaN(performance_fianciere) != false || isNaN(individuel) != false || isNaN(global) != false || isNaN(marche_opere) != false || isNaN(dirigeance) != false || isNaN(indicateur_risque_dynamique) != false) {

@@ -1,13 +1,13 @@
 <?php
+
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
-use Unilend\core\Loader;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 
 class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
 {
@@ -20,123 +20,64 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
-        /** @var \echeanciers $echeanciers */
-        $echeanciers = $entityManager->getRepository('echeanciers');
-        /** @var \transactions $transactions */
-        $transactions = $entityManager->getRepository('transactions');
-        /** @var \lenders_accounts $lenders */
-        $lenders = $entityManager->getRepository('lenders_accounts');
-        /** @var \clients $clients */
-        $clients = $entityManager->getRepository('clients');
-        /** @var \companies $companies */
-        $companies = $entityManager->getRepository('companies');
+        $entityManagerSimulator  = $this->getContainer()->get('unilend.service.entity_manager');
+        $entityManager           = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $projectRepaymentManager = $this->getContainer()->get('unilend.service.project_repayment_manager');
+
+        $operationRepository            = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $walletBalanceHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
         /** @var \notifications $notifications */
-        $notifications = $entityManager->getRepository('notifications');
-        /** @var \loans $loans */
-        $loans = $entityManager->getRepository('loans');
-        /** @var \projects_status_history $projects_status_history */
-        $projects_status_history = $entityManager->getRepository('projects_status_history');
-        /** @var \projects $projects */
-        $projects = $entityManager->getRepository('projects');
+        $notifications = $entityManagerSimulator->getRepository('notifications');
         /** @var \clients_gestion_notifications $clients_gestion_notifications */
-        $clients_gestion_notifications = $entityManager->getRepository('clients_gestion_notifications');
+        $clients_gestion_notifications = $entityManagerSimulator->getRepository('clients_gestion_notifications');
         /** @var \clients_gestion_mails_notif $clients_gestion_mails_notif */
-        $clients_gestion_mails_notif = $entityManager->getRepository('clients_gestion_mails_notif');
-        /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
-        /** @var \dates $dates */
-        $dates = Loader::loadLib('dates');
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
+        $clients_gestion_mails_notif = $entityManagerSimulator->getRepository('clients_gestion_mails_notif');
+        /** @var Echeanciers[] $repaymentSchedules */
+        $repaymentSchedules = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->findBy([
+            'status'          => Echeanciers::STATUS_REPAID,
+            'statusEmailRemb' => Echeanciers::STATUS_REPAYMENT_EMAIL_NOT_SENT
+        ]);
 
-        $lEcheances = $echeanciers->getRepaidRepaymentToNotify(0, 300);
-        $settings->get('Facebook', 'type');
-        $sFB      = $settings->value;
+        $emailNB = 0;
 
-        $settings->get('Twitter', 'type');
-        $sTwitter = $settings->value;
+        foreach ($repaymentSchedules as $repaymentSchedule) {
+            $grossRepayment = $operationRepository->getGrossAmountByRepaymentScheduleId($repaymentSchedule);
+            $tax            = $operationRepository->getTaxAmountByRepaymentScheduleId($repaymentSchedule);
+            $netRepayment   = bcsub($grossRepayment, $tax, 2);
 
-        foreach ($lEcheances as $e) {
-            if (
-                $echeanciers->get($e['id_echeancier'], 'id_echeancier')
-                && $loans->get($echeanciers->id_loan)
-                && $lenders->get($loans->id_lender, 'id_lender_account')
-                && $clients->get($lenders->id_client_owner, 'id_client')
-            ) {
-                $rembNet = bcdiv($transactions->sum(' id_echeancier = ' . $echeanciers->id_echeancier, 'montant'), 100, 2);
-                $transactions->get($echeanciers->id_echeancier, 'type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ' AND id_echeancier');
+            $wallet = $repaymentSchedule->getIdLoan()->getIdLender();
+            if (null !== $wallet && Clients::STATUS_ONLINE == $wallet->getIdClient()->getStatus()) {
+                $notifications->type       = Notifications::TYPE_REPAYMENT;
+                $notifications->id_lender  = $wallet->getId();
+                $notifications->id_project = $repaymentSchedule->getIdLoan()->getProject()->getIdProject();
+                $notifications->amount     = bcmul($netRepayment, 100);
+                $notifications->create();
 
-                if (1 == $clients->status) {
-                    $projects->get($echeanciers->id_project, 'id_project');
-                    $companies->get($projects->id_company, 'id_company');
+                $repaymentOperation   = $operationRepository->findOneBy(['idRepaymentSchedule' => $repaymentSchedule]);
+                $walletBalanceHistory = $walletBalanceHistoryRepository->findOneBy(['idOperation' => $repaymentOperation, 'idWallet' => $wallet]);
 
-                    $lastRepaymentLender = (0 == $echeanciers->counter('id_project = ' . $projects->id_project . ' AND id_loan = ' . $loans->id_loan . ' AND status = 0 AND id_lender = ' . $echeanciers->id_lender));
+                $clients_gestion_mails_notif->id_client                 = $wallet->getIdClient()->getIdClient();
+                $clients_gestion_mails_notif->id_notif                  = \clients_gestion_type_notif::TYPE_REPAYMENT;
+                $clients_gestion_mails_notif->date_notif                = $repaymentSchedule->getDateEcheanceReel()->format('Y-m-d H:i:s');
+                $clients_gestion_mails_notif->id_notification           = $notifications->id_notification;
+                $clients_gestion_mails_notif->id_wallet_balance_history = $walletBalanceHistory->getId();
+                $clients_gestion_mails_notif->create();
 
-                    $dernierStatut     = $projects_status_history->select('id_project = ' . $projects->id_project, 'added DESC, id_project_status_history DESC', 0, 1);
-                    $dateDernierStatut = $dernierStatut[0]['added'];
-                    $timeAdd           = strtotime($dateDernierStatut);
-                    $day               = date('d', $timeAdd);
-                    $month             = $dates->tableauMois['fr'][date('n', $timeAdd)];
-                    $year              = date('Y', $timeAdd);
-                    $euros             = ($rembNet >= 2) ? ' euros' : ' euro';
-                    $rembNetEmail      = $ficelle->formatNumber($rembNet) . $euros;
-                    $getsolde          = $transactions->getSolde($clients->id_client);
-                    $euros             = ($getsolde >= 2) ? ' euros' : ' euro';
-                    $solde             = $ficelle->formatNumber($getsolde) . $euros;
+                if (true === $clients_gestion_notifications->getNotif($wallet->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_REPAYMENT, 'immediatement')) {
+                    $clients_gestion_mails_notif->get($clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
+                    $clients_gestion_mails_notif->immediatement = 1;
+                    $clients_gestion_mails_notif->update();
 
-                    $notifications->type       = Notifications::TYPE_REPAYMENT;
-                    $notifications->id_lender  = $echeanciers->id_lender;
-                    $notifications->id_project = $echeanciers->id_project;
-                    $notifications->amount     = bcmul($rembNet, 100);
-                    $notifications->create();
-
-                    $clients_gestion_mails_notif->id_client       = $lenders->id_client_owner;
-                    $clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_REPAYMENT;
-                    $clients_gestion_mails_notif->date_notif      = $echeanciers->date_echeance_reel;
-                    $clients_gestion_mails_notif->id_notification = $notifications->id_notification;
-                    $clients_gestion_mails_notif->id_transaction  = $transactions->id_transaction;
-                    $clients_gestion_mails_notif->create();
-
-                    if (true === $clients_gestion_notifications->getNotif($clients->id_client, \clients_gestion_type_notif::TYPE_REPAYMENT, 'immediatement')) {
-                        $clients_gestion_mails_notif->get($clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
-                        $clients_gestion_mails_notif->immediatement = 1;
-                        $clients_gestion_mails_notif->update();
-
-                        $sUrl    = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-                        $varMail = array(
-                            'surl'                  => $sUrl,
-                            'url'                   => $sUrl,
-                            'prenom_p'              => $clients->prenom,
-                            'mensualite_p'          => $rembNetEmail,
-                            'mensualite_avantfisca' => bcdiv($echeanciers->montant, 100, 2),
-                            'nom_entreprise'        => $companies->name,
-                            'date_bid_accepte'      => $day . ' ' . $month . ' ' . $year,
-                            'solde_p'               => $solde,
-                            'motif_virement'        => $clients->getLenderPattern($clients->id_client),
-                            'lien_fb'               => $sFB,
-                            'lien_tw'               => $sTwitter,
-                            'annee'                 => date('Y'),
-                            'date_pret'             => $dates->formatDateComplete($loans->added)
-                        );
-
-                        if ($lastRepaymentLender) {
-                            /** @var TemplateMessage $message */
-                            $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dernier-remboursement', $varMail);
-                        } else {
-                            /** @var TemplateMessage $message */
-                            $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement', $varMail);
-                        }
-
-                        $message->setTo($clients->email);
-                        $mailer = $this->getContainer()->get('mailer');
-                        $mailer->send($message);
-                    }
+                    $projectRepaymentManager->sendRepaymentMailToLender($repaymentSchedule);
                 }
-                $echeanciers->status_email_remb = 1;
-                $echeanciers->update();
+            }
+            $repaymentSchedule->setStatusEmailRemb(Echeanciers::STATUS_REPAYMENT_EMAIL_SENT);
+            $emailNB++;
+
+            if (0 === $emailNB % 50) {
+                $entityManager->flush();
             }
         }
+        $entityManager->flush();
     }
 }

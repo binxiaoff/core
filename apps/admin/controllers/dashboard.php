@@ -1,9 +1,9 @@
 <?php
 
-use \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
-use \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 
 class dashboardController extends bootstrap
 {
@@ -23,7 +23,7 @@ class dashboardController extends bootstrap
     {
         parent::initialize();
 
-        $this->users->checkAccess('dashboard');
+        $this->users->checkAccess(Zones::ZONE_LABEL_DASHBOARD);
 
         $this->catchAll   = true;
         $this->menu_admin = 'dashboard';
@@ -217,6 +217,8 @@ class dashboardController extends bootstrap
             if (isset($project['memo_datetime'])) {
                 $project['memo_datetime'] = \DateTime::createFromFormat('Y-m-d H:i:s', $project['memo_datetime']);
             }
+
+            $project['hasMonitoringEvent'] = $this->get('unilend.service.risk_data_monitoring_manager')->hasMonitoringEvent($project['siren']);
 
             $formattedProjects[$project['status']]['count']++;
             $formattedProjects[$project['status']]['projects'][] = $project;

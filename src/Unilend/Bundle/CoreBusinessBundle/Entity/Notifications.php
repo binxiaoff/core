@@ -30,16 +30,10 @@ class Notifications
     const TYPE_AUTOBID_BALANCE_LOW            = 16;
     const TYPE_AUTOBID_BALANCE_INSUFFICIENT   = 17;
     const TYPE_AUTOBID_FIRST_ACTIVATION       = 18;
+    const TYPE_REPAYMENT_REGULARIZATION       = 19;
 
     const STATUS_READ   = 1;
     const STATUS_UNREAD = 0;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_lender", type="integer", nullable=false)
-     */
-    private $idLender;
 
     /**
      * @var integer
@@ -99,31 +93,17 @@ class Notifications
      */
     private $idNotification;
 
-
-
     /**
-     * Set idLender
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
      *
-     * @param integer $idLender
-     *
-     * @return Notifications
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_lender", referencedColumnName="id")
+     * })
      */
-    public function setIdLender($idLender)
-    {
-        $this->idLender = $idLender;
+    private $idLender;
 
-        return $this;
-    }
 
-    /**
-     * Get idLender
-     *
-     * @return integer
-     */
-    public function getIdLender()
-    {
-        return $this->idLender;
-    }
 
     /**
      * Set type
@@ -301,5 +281,29 @@ class Notifications
     public function getIdNotification()
     {
         return $this->idNotification;
+    }
+
+    /**
+     * Set idLender
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender
+     *
+     * @return Notifications
+     */
+    public function setIdLender(Wallet $idLender)
+    {
+        $this->idLender = $idLender;
+
+        return $this;
+    }
+
+    /**
+     * Get idLender
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     */
+    public function getIdLender()
+    {
+        return $this->idLender;
     }
 }

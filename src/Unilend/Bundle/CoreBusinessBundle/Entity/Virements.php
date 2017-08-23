@@ -20,9 +20,10 @@ class Virements
     const STATUS_VALIDATED        = 25;
     const STATUS_SENT             = 30;
 
-    const TYPE_LENDER   = 1;
-    const TYPE_BORROWER = 2;
-    const TYPE_UNILEND  = 4;
+    const TYPE_LENDER         = 1;
+    const TYPE_BORROWER       = 2;
+    const TYPE_UNILEND        = 4;
+    const TYPE_DEBT_COLLECTOR = 5;
 
     /**
      * @var Clients
@@ -43,13 +44,6 @@ class Virements
      * })
      */
     private $idProject;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_transaction", type="integer", nullable=false)
-     */
-    private $idTransaction = 0;
 
     /**
      * @var integer
@@ -206,30 +200,6 @@ class Virements
     public function getProject()
     {
         return $this->idProject;
-    }
-
-    /**
-     * Set idTransaction
-     *
-     * @param integer $idTransaction
-     *
-     * @return Virements
-     */
-    public function setIdTransaction($idTransaction)
-    {
-        $this->idTransaction = $idTransaction;
-
-        return $this;
-    }
-
-    /**
-     * Get idTransaction
-     *
-     * @return integer
-     */
-    public function getIdTransaction()
-    {
-        return $this->idTransaction;
     }
 
     /**

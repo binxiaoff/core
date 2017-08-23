@@ -26,7 +26,7 @@
         <tr id="row-<?= $atypicalOperation->getId() ?>" <?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
             <td >
                 <span style="font-weight: bold; font-size: 14px" class="vigilance-status-<?= $currentStatus->getVigilanceStatus() ?>">
-                    <a target="_blank" href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lendersAccount->findOneBy(['idClientOwner' => $atypicalOperation->getClient()->getIdClient()])->getIdLenderAccount() ?>">
+                    <a target="_blank" href="<?= $this->lurl ?>/preteurs/edit/<?= $atypicalOperation->getClient()->getIdClient() ?>">
                         <?= $atypicalOperation->getClient()->getIdClient() ?>
                     </a>
                 </span>
@@ -48,11 +48,11 @@
                     <?= $user->getName() . ' ' . $user->getFirstname() ?>
                 <? endif; ?>
             </td>
-            <td><?= $atypicalOperation->getAdded()->format('d/m/Y - H\hi') ?></td>
+            <td><?= $atypicalOperation->getAdded()->format('d/m/Y H:i') ?></td>
             <?php if ($this->showUpdated) : ?>
             <td>
                 <?php if (false === empty($atypicalOperation->getUpdated())) : ?>
-                    <?= $atypicalOperation->getUpdated()->format('d/m/Y - H\hi') ?>
+                    <?= $atypicalOperation->getUpdated()->format('d/m/Y H:i') ?>
                 <?php endif; ?>
             </td>
             <?php endif; ?>

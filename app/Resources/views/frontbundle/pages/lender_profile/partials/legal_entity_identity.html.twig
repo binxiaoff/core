@@ -96,13 +96,15 @@
     <dl class="list-2col">
         <dt>{% trans %} lender-profile_information-tab-identity-section-company-other-attachments-label {% endtrans %}</dt>
         <dd id="profile-info-fichier-domicile-output">
-            {% for attachment in companyOtherAttachments  %}
-                {% set attachmentDate = attachment.updated|default(attachment.added)|localizeddate('short', 'none', app.request.locale) %}
-                <span id="form-profile-address-file-domicile-1-output" class="file-justificatif file-domicile"
-                      title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.type.id }"|trans({'%date%' : attachmentDate}) }}"
-                      data-toggle="tooltip">
-                    <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.type.id }"|trans({'%date%' : attachmentDate}) }}</span>
-                </span>
+            {% for attachment in companyOtherAttachments %}
+                {% if attachement is defined and attachment is not null %}
+                    {% set attachmentDate = attachment.updated|default(attachment.added)|localizeddate('short', 'none', app.request.locale) %}
+                    <span id="form-profile-address-file-domicile-1-output" class="file-justificatif file-domicile"
+                          title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.type.id }"|trans({'%date%' : attachmentDate}) }}"
+                          data-toggle="tooltip">
+                        <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.type.id }"|trans({'%date%' : attachmentDate}) }}</span>
+                    </span>
+                {% endif %}
             {% endfor %}
         </dd>
     </dl>

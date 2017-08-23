@@ -134,14 +134,12 @@ class rootController extends bootstrap
 
             $this->settings->get('Date nouvelles CGV avec 2 mandats', 'type');
             $sNewTermsOfServiceDate = $this->settings->value;
-
-            /** @var \lenders_accounts $oLenderAccount */
-            $oLenderAccount = $this->loadData('lenders_accounts');
-            $oLenderAccount->get($this->clients->id_client, 'id_client_owner');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
+            $wallet = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->clients->id_client, \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::LENDER);
 
             /** @var \loans $oLoans */
             $oLoans      = $this->loadData('loans');
-            $iLoansCount = $oLoans->counter('id_lender = ' . $oLenderAccount->id_lender_account . ' AND added < "' . $sNewTermsOfServiceDate . '"');
+            $iLoansCount = $oLoans->counter('id_lender = ' . $wallet->getId() . ' AND added < "' . $sNewTermsOfServiceDate . '"');
 
             if (in_array($this->clients->type, array(Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER))) {
                 $this->clients_adresses->get($this->clients->id_client, 'id_client');
@@ -299,9 +297,20 @@ class rootController extends bootstrap
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('demande-de-contact', $varMail);
-            $message->setTo($_POST['email']);
-            $mailer = $this->get('mailer');
-            $mailer->send($message);
+            try {
+                $message->setTo($_POST['email']);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
+            } catch (\Exception $exception) {
+                $this->get('logger')->warning(
+                    'Could not send email : demande-de-contact - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'email address' => $_POST['email'], 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+                $this->form_ok     = false;
+                $this->error_email = 'nok';
+
+                return;
+            }
 
             if ($this->demande_contact->demande == 1) {
                 $this->settings->get('Adresse presse', 'type');
@@ -332,7 +341,7 @@ class rootController extends bootstrap
             $infos .= '<li>Message : ' . $this->ficelle->speChar2HtmlEntities($this->demande_contact->message) . '</li>';
             $infos .= '</ul>';
 
-            $variablesInternalMail = array(
+            $variablesInternalMail = [
                 '$surl'   => $this->surl,
                 '$url'    => $this->lurl,
                 '$email'  => $this->demande_contact->email,
@@ -340,14 +349,21 @@ class rootController extends bootstrap
                 '$prenom' => $this->demande_contact->prenom,
                 '$objet'  => $objets[$this->demande_contact->demande],
                 '$infos'  => $infos
-            );
+            ];
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact', $variablesInternalMail, false);
-            $message->setTo($destinataire);
-            $message->setReplyTo(array($this->demande_contact->email => $this->demande_contact->prenom . ' ' . $this->demande_contact->nom));
-            $mailer = $this->get('mailer');
-            $mailer->send($message);
+            try {
+                $message->setTo($destinataire);
+                $message->setReplyTo([$this->demande_contact->email => $this->demande_contact->prenom . ' ' . $this->demande_contact->nom]);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
+            } catch (\Exception $exception) {
+                $this->get('logger')->warning(
+                    'Could not send email : notification-demande-de-contact - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'email address' => $destinataire, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
 
             $this->demande_contact->demande   = '';
             $this->demande_contact->preciser  = '';

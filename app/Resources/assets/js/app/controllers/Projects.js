@@ -69,7 +69,7 @@ $doc.on('ready', function () {
 
   // Set different update/complete function for these time counters
   // @note this also includes time counters on the single project details page (project-single)
-  $('.project .ui-has-timecount, .project-list-item .ui-has-timecount, .project-single .ui-has-timecount').uiTimeCount({
+  $('.project .ui-has-timecount, .project-list-item .ui-has-timecount, .project-single .ui-has-timecount, .myoffer .ui-has-timecount').uiTimeCount({
     // @note DEV-949 using relative time now always
     onupdate: function (timeDiff) {
       var elemTimeCount = this

@@ -6,36 +6,38 @@ use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class ClientStatusManager
 {
     /** @var  EntityManagerSimulator */
-    private $entityManager;
+    private $entityManagerSimulator;
     /** @var  NotificationManager */
     private $notificationManager;
     /** @var  AutoBidSettingsManager */
     private $autoBidSettingsManager;
     /** @var  EntityManager */
-    private $em;
+    private $entityManager;
 
     /**
      * ClientStatusManager constructor.
-     * @param EntityManagerSimulator $entityManager
+     * @param EntityManagerSimulator $entityManagerSimulator
      * @param NotificationManager    $notificationManager
      * @param AutoBidSettingsManager $autoBidSettingsManager
-     * @param EntityManager          $em
+     * @param EntityManager          $entityManager
      */
     public function __construct(
-        EntityManagerSimulator $entityManager,
+        EntityManagerSimulator $entityManagerSimulator,
         NotificationManager $notificationManager,
         AutoBidSettingsManager $autoBidSettingsManager,
-        EntityManager $em
-    ) {
-        $this->entityManager          = $entityManager;
+        EntityManager $entityManager
+    )
+    {
+        $this->entityManagerSimulator = $entityManagerSimulator;
         $this->notificationManager    = $notificationManager;
         $this->autoBidSettingsManager = $autoBidSettingsManager;
-        $this->em                     = $em;
+        $this->entityManager          = $entityManager;
     }
 
     /**
@@ -47,64 +49,22 @@ class ClientStatusManager
      */
     public function closeAccount(\clients $client, $userId, $comment)
     {
-        /** @var \transactions $transactions */
-        $transactions = $this->entityManager->getRepository('transactions');
-        if ($transactions->getSolde($client->id_client) > 0) {
+        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
+        if ($wallet->getAvailableBalance() > 0) {
             throw new \Exception('The client still has money in his account');
         }
 
         $this->notificationManager->deactivateAllNotificationSettings($client);
-        $lenderAccount = $this->entityManager->getRepository('lenders_accounts');
-        $lenderAccount->get($client->id_client, 'id_client_owner');
-
-        $this->autoBidSettingsManager->off($lenderAccount);
+        $this->autoBidSettingsManager->off($wallet->getIdClient());
 
         $client->changePassword($client->email, mt_rand());
 
-        if ($client->status == Clients::STATUS_ONLINE) {
+        if (Clients::STATUS_ONLINE == $client->status) {
             $client->status = Clients::STATUS_OFFLINE;
             $client->update();
         }
 
         $this->addClientStatus($client, $userId, \clients_status::CLOSED_DEFINITELY, $comment);
-    }
-
-    /**
-     * @param \clients|Clients $client
-     *
-     * @return mixed
-     */
-    public function getLastClientStatus($client)
-    {
-        if ($client instanceof \clients) {
-            return $this->getLastClientStatusLegacy($client);
-        }
-
-        /** @var ClientsStatus $clientStatusEntity */
-        $clientStatusEntity = $this->em->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->getLastClientStatus($client->getIdClient());
-        if (null !== $clientStatusEntity) {
-            return $clientStatusEntity->getLabel();
-        }
-
-        return null;
-    }
-
-    /**
-     * @param \clients $client
-     *
-     * @return mixed
-     */
-    private function getLastClientStatusLegacy(\clients $client)
-    {
-        /** @var \clients_status $clientsStatus */
-        $clientsStatus        = $this->entityManager->getRepository('clients_status');
-        $currentClientsStatus = $clientsStatus->getLastStatut($client->id_client);
-
-        if (is_object($currentClientsStatus) && $currentClientsStatus instanceof \clients_status) {
-            return $currentClientsStatus->status;
-        }
-
-        return $clientsStatus->status;
     }
 
     /**
@@ -114,24 +74,25 @@ class ClientStatusManager
     public function changeClientStatusTriggeredByClientAction(\clients $client, $content)
     {
         /** @var \clients_status_history $clientStatusHistory */
-        $clientStatusHistory = $this->entityManager->getRepository('clients_status_history');
-        /** @var \clients_status $lastClientStatus */
-        $lastClientStatus = $this->entityManager->getRepository('clients_status');
-        $lastClientStatus->getLastStatut($client->id_client);
+        $clientStatusHistory    = $this->entityManagerSimulator->getRepository('clients_status_history');
+        $clientStatusRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
+        /** @var ClientsStatus $clientStatusEntity */
+        $clientStatusEntity = $clientStatusRepository->getLastClientStatus($client->id_client);
+        $lastStatus         = (empty($clientStatusEntity)) ? null : $clientStatusEntity->getStatus();
 
-        switch ($lastClientStatus->status) {
-            case \clients_status::COMPLETENESS:
-            case \clients_status::COMPLETENESS_REMINDER:
-            case \clients_status::COMPLETENESS_REPLY:
-                $clientStatusHistory->addStatus(Users::USER_ID_FRONT, \clients_status::COMPLETENESS_REPLY, $client->id_client, $content);
+        switch ($lastStatus) {
+            case ClientsStatus::COMPLETENESS:
+            case ClientsStatus::COMPLETENESS_REMINDER:
+            case ClientsStatus::COMPLETENESS_REPLY:
+                $clientStatusHistory->addStatus(Users::USER_ID_FRONT, ClientsStatus::COMPLETENESS_REPLY, $client->id_client, $content);
                 break;
-            case \clients_status::VALIDATED:
-            case \clients_status::MODIFICATION:
-                $clientStatusHistory->addStatus(Users::USER_ID_FRONT, \clients_status::MODIFICATION, $client->id_client, $content);
+            case ClientsStatus::VALIDATED:
+            case ClientsStatus::MODIFICATION:
+                $clientStatusHistory->addStatus(Users::USER_ID_FRONT, ClientsStatus::MODIFICATION, $client->id_client, $content);
                 break;
-            case \clients_status::TO_BE_CHECKED:
+            case ClientsStatus::TO_BE_CHECKED:
             default:
-                $clientStatusHistory->addStatus(Users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $client->id_client, $content);
+                $clientStatusHistory->addStatus(Users::USER_ID_FRONT, ClientsStatus::TO_BE_CHECKED, $client->id_client, $content);
                 break;
         }
     }
@@ -146,7 +107,7 @@ class ClientStatusManager
     public function addClientStatus($client, $userId, $clientStatus, $comment = null, $reminder = null)
     {
         /** @var \clients_status_history $clientStatusHistory */
-        $clientStatusHistory = $this->entityManager->getRepository('clients_status_history');
+        $clientStatusHistory = $this->entityManagerSimulator->getRepository('clients_status_history');
 
         if ($client instanceof Clients) {
             $clientStatusHistory->addStatus($userId, $clientStatus, $client->getIdClient(), $comment, $reminder);

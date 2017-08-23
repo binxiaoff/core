@@ -14,6 +14,7 @@ use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder;
 use Unilend\core\Loader;
 
@@ -142,9 +143,18 @@ class SecurityController extends Controller
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $varMail);
-                $message->setTo($clients->email);
-                $mailer = $this->get('mailer');
-                $mailer->send($message);
+                try {
+                    $message->setTo($clients->email);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
+                } catch (\Exception $exception) {
+                    $this->get('logger')->warning(
+                        'Could not send email : mot-de-passe-oublie - Exception: ' . $exception->getMessage(),
+                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $clients->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    );
+
+                    return new JsonResponse('nok');
+                }
 
                 return new JsonResponse('ok');
             } else {
@@ -248,12 +258,18 @@ class SecurityController extends Controller
             $client->password = $password;
             $client->update();
 
-            $this->sendPasswordModificationEmail($client);
+            try {
+                $this->sendPasswordModificationEmail($client);
+            } catch (\Exception $exception) {
+                $this->get('logger')->error(
+                    'Could not send password modification email - Exception: ' . $exception->getMessage(),
+                    ['id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
             $this->addFlash('passwordSuccess', $translator->trans('password-forgotten_new-password-form-success-message'));
 
-            /** @var \clients_history_actions $clientHistoryActions */
-            $clientHistoryActions = $entityManager->getRepository('clients_history_actions');
-            $clientHistoryActions->histo(7, 'mdp oublié', $client->id_client, serialize(['id_client' => $client->id_client, 'newmdp' => md5($request->request->get('client_new_password'))]));
+            $formManager = $this->get('unilend.frontbundle.service.form_manager');
+            $formManager->saveFormSubmission($client, ClientsHistoryActions::CHANGE_PASSWORD, serialize(['id_client' => $client->id_client, 'newmdp' => md5($request->request->get('client_new_password'))]), $request->getClientIp());
         }
 
         return $this->redirectToRoute('define_new_password', ['token' => $token]);

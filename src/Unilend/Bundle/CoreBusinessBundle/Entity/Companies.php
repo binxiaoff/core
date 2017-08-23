@@ -75,6 +75,13 @@ class Companies
     /**
      * @var string
      *
+     * @ORM\Column(name="legal_form_code", type="string", length=10, nullable=true)
+     */
+    private $legalFormCode;
+
+    /**
+     * @var string
+     *
      * @ORM\Column(name="siren", type="string", length=15, nullable=true)
      */
     private $siren;
@@ -1233,6 +1240,22 @@ class Companies
     }
 
     /**
+     * @return string|null
+     */
+    public function getLegalFormCode()
+    {
+        return $this->legalFormCode;
+    }
+
+    /**
+     * @param string $legalFormCode
+     */
+    public function setLegalFormCode($legalFormCode = null)
+    {
+        $this->legalFormCode = $legalFormCode;
+    }
+
+    /**
      * @ORM\PrePersist
      */
     public function setAddedValue()
@@ -1352,6 +1375,16 @@ class Companies
 
         if (in_array(substr($this->codeNaf, 0, 2), ['05', '06', '07', '08', '09', '12', '37', '38', '39', '64', '72', '84', '85', '87', '88', '92', '93', '94', '98', '99'])) {
             $this->sector = 15;
+        }
+    }
+
+    /**
+     * @ORM\PreFlush
+     */
+    public function checkCompanyNameCreation()
+    {
+        if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
+            trigger_error('An invalid company name "' . $this->name . '" detected for siren : ' . $this->siren . '- trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5)), E_USER_WARNING);
         }
     }
 }

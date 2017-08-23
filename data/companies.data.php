@@ -1,5 +1,7 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+
 class companies extends companies_crud
 {
 
@@ -13,7 +15,7 @@ class companies extends companies_crud
         $this->setSectorAccordingToNaf();
 
         if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
-            trigger_error('TMA-749 : ' . __CLASS__ . '.' . __FUNCTION__ . ' wrong company name - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
+            trigger_error('An invalid company name "' . $this->name . '" detected for siren : ' . $this->siren . ' during the creation - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
         }
 
         return parent::create($cs);
@@ -24,7 +26,7 @@ class companies extends companies_crud
         $this->setSectorAccordingToNaf();
 
         if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
-            trigger_error('TMA-749 : ' . __CLASS__ . '.' . __FUNCTION__ . ' wrong company name - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
+            trigger_error('An invalid company name "' . $this->name . '" detected for siren : ' . $this->siren . ' during the updating - trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), E_USER_WARNING);
         }
 
         parent::update($cs);
@@ -122,14 +124,14 @@ class companies extends companies_crud
      */
     public function getLastYearReleasedFundsBySIREN($siren)
     {
-        $query = '
-            SELECT IFNULL(ROUND(SUM(t.montant_unilend - t.montant) / 100, 2), 0)
-            FROM transactions t
-            INNER JOIN projects p ON t.id_project = p.id_project
-            INNER JOIN companies c ON p.id_company = c.id_company
-            WHERE t.date_transaction > DATE_SUB(NOW(), INTERVAL 1 YEAR) 
-                AND c.siren = :siren 
-                AND t.type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT;
+        $query     = '
+            SELECT IFNULL(SUM(o.amount), 0)
+            FROM operation o
+              INNER JOIN wallet w ON w.id = o.id_wallet_creditor
+              INNER JOIN companies c ON c.id_client_owner = w.id_client
+            WHERE o.added > DATE_SUB(NOW(), INTERVAL 1 YEAR)
+                  AND c.siren = :siren
+                  AND o.id_type = (SELECT id FROM operation_type WHERE label = \'' . OperationType::LENDER_LOAN . '\')';
         $statement = $this->bdd->executeQuery($query, ['siren' => $siren]);
         return (float) $statement->fetchColumn();
     }

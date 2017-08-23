@@ -1,5 +1,7 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+
 class queriesController extends bootstrap
 {
     /** @var \queries */
@@ -9,9 +11,9 @@ class queriesController extends bootstrap
     {
         parent::initialize();
 
-        $this->catchAll = true;
+        $this->users->checkAccess(Zones::ZONE_LABEL_STATISTICS);
 
-        $this->users->checkAccess('stats');
+        $this->catchAll   = true;
         $this->menu_admin = 'stats';
     }
 

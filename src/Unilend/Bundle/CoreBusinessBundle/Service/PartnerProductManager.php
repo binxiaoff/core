@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 
 class PartnerProductManager extends ProductManager
@@ -17,7 +18,7 @@ class PartnerProductManager extends ProductManager
             $where = 'id_partner = ' . $partnerId;
         }
         /** @var \partner_product $partnerProduct */
-        $partnerProduct = $this->entityManager->getRepository('partner_product');
+        $partnerProduct = $this->entityManagerSimulator->getRepository('partner_product');
 
         return $this->filterProductByStatus($partnerProduct->select($where), $includeInactiveProduct);
     }
@@ -50,15 +51,15 @@ class PartnerProductManager extends ProductManager
     private function filterProductByStatus(array $productList, $includeInactiveProduct = false)
     {
         /** @var \product $product */
-        $product           = $this->entityManager->getRepository('product');
+        $product           = $this->entityManagerSimulator->getRepository('product');
         $availableProducts = [];
 
         foreach ($productList as $oneProduct) {
             $product->get($oneProduct['id_product']);
 
             if (
-                $product->status != \product::STATUS_ARCHIVED
-                && ($includeInactiveProduct || $product->status == \product::STATUS_ONLINE)
+                $product->status != Product::STATUS_ARCHIVED
+                && ($includeInactiveProduct || $product->status == Product::STATUS_ONLINE)
             ) {
                 $availableProduct    = clone $product;
                 $availableProducts[] = $availableProduct;

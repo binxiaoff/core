@@ -37,6 +37,8 @@ abstract class Controller implements ContainerAwareInterface
     public $request;
     /** @var Twig_Environment */
     private $twigEnvironment;
+    /** @var bool */
+    public $useOneUi = false;
 
     /**
      * Controller constructor.
@@ -137,17 +139,21 @@ abstract class Controller implements ContainerAwareInterface
 
         $this->setView($FunctionToCall);
 
-        if ($this->autoFireHead) {
-            $this->fireHead();
-        }
-        if ($this->autoFireHeader) {
-            $this->fireHeader();
-        }
-        if ($this->autoFireView) {
-            $this->fireView();
-        }
-        if ($this->autoFireFooter) {
-            $this->fireFooter();
+        if ($this->useOneUi) {
+            include $this->path . 'apps/' . $this->App . '/views/layout.php';
+        } else {
+            if ($this->autoFireHead) {
+                $this->fireHead();
+            }
+            if ($this->autoFireHeader) {
+                $this->fireHeader();
+            }
+            if ($this->autoFireView) {
+                $this->fireView();
+            }
+            if ($this->autoFireFooter) {
+                $this->fireFooter();
+            }
         }
     }
 
@@ -302,5 +308,10 @@ abstract class Controller implements ContainerAwareInterface
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
+    }
+
+    protected function useOneUi()
+    {
+        $this->useOneUi = true;
     }
 }

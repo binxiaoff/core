@@ -24,8 +24,7 @@ class CacheKeys
     /**
      * constant for product
      */
-    const PRODUCT_ATTRIBUTE_BY_TYPE          = 'product_attribute_by_type';
-    const PRODUCT_CONTRACT_ATTRIBUTE_BY_TYPE = 'product_contract_attribute_by_type';
+    const PRODUCT_ATTRIBUTE_BY_TYPE = 'product_attribute_by_type';
 
     /**
      * constant for underlying contract
@@ -40,6 +39,17 @@ class CacheKeys
     /**
      * constant for statistics
      */
-    const UNILEND_STATISTICS = 'unilend_front_statistics';
+    const UNILEND_STATISTICS        = 'unilend_front_statistics';
+    const LENDER_STAT_QUEUE_UPDATED = 'lender_stat_queue_updated';
+
+    /**
+     * constant for IFU
+     */
+    const IFU_WALLETS = 'ifu_wallets';
+
+    /**
+     * const for API keys
+     */
+    const EULER_HERMES_MONITORING_API_KEY = 'euler_hermes_monitoring_api_key';
 
 }

@@ -61,7 +61,7 @@ class DevDoBorrowerRegularisationCommand extends ContainerAwareCommand
 
             $output->writeln('Created wire transfer out ID: ' . $wireTransferOut->getIdVirement());
 
-            $operationManager->withdrawBorrowerWallet($borrowerWallet, $wireTransferOut, -1 * $amount);
+            $operationManager->withdraw($wireTransferOut);
             $entityManager->getConnection()->commit();
 
             $output->writeln('regularization done. Remains to do: update the factures table and generate the correct invoice pdf. -Insert a line in the table regularization_operation_history');

@@ -3,7 +3,10 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\ORM\Query\Expr\Join;
+use PDO;
+use Unilend\librairies\CacheKeys;
 use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -15,9 +18,34 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 class ProjectsRepository extends EntityRepository
 {
     /**
+     * @param int $lenderId
+     *
+     * @return int
+     */
+    public function countCompaniesLenderInvestedIn($lenderId)
+    {
+        $query = '
+            SELECT COUNT(DISTINCT p.id_company)
+            FROM projects p
+            INNER JOIN loans l ON p.id_project = l.id_project
+            WHERE p.status >= :status AND l.id_lender = :lenderId';
+
+        $statement = $this->getEntityManager()->getConnection()->executeCacheQuery(
+            $query,
+            ['lenderId' => $lenderId, 'status' => \projects_status::REMBOURSEMENT],
+            ['lenderId' => PDO::PARAM_INT, 'status' => PDO::PARAM_INT],
+            new QueryCacheProfile(CacheKeys::SHORT_TIME, md5(__METHOD__))
+        );
+        $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return (int) current($result[0]);
+    }
+
+    /**
      * @param \DateTime $dateTime
      *
-     * @return Projects[];
+     * @return Projects[]
      */
     public function findPartiallyReleasedProjects(\DateTime $dateTime)
     {
@@ -230,5 +258,132 @@ class ProjectsRepository extends EntityRepository
             ->setParameter('from', $from);
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param string $siren
+     * @param array  $status
+     *
+     * @return mixed
+     */
+    public function getCountProjectsBySirenAndNotInStatus($siren, array $status)
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+        $queryBuilder->select('COUNT(p.idProject)')
+            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'co.idCompany = p.idCompany')
+            ->where('p.status IN (:status)')
+            ->andWhere('co.siren = :siren')
+            ->setParameter('siren', $siren)
+            ->setParameter('status', $status);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param $siren
+     *
+     * @return Projects[]
+     */
+    public function findBySiren($siren)
+    {
+        $qb = $this->createQueryBuilder('p');
+        $qb->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'p.idCompany = c.idCompany')
+            ->where('c.siren = :siren')
+            ->setParameter('siren', $siren);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @param string    $select
+     * @param \DateTime $start
+     * @param \DateTime $end
+     * @param int       $projectStatus
+     *
+     * @return array
+     */
+    public function getIndicatorBetweenDates($select, \DateTime $start, \DateTime $end, $projectStatus)
+    {
+        $start->setTime(0, 0, 0);
+        $end->setTime(23, 59, 59);
+
+        $query = 'SELECT ' . $select . ' 
+                  FROM (SELECT MIN(id_project_status_history), added, id_project 
+                        FROM projects_status_history psh
+                          INNER JOIN projects_status ps  ON psh.id_project_status = ps.id_project_status
+                        WHERE ps.status = :status
+                        GROUP BY id_project) AS t
+                      INNER JOIN projects p ON p.id_project = t.id_project
+                    WHERE t.added BETWEEN :start AND :end';
+
+        $result = $this->getEntityManager()->getConnection()->executeQuery($query, [
+            'status' => $projectStatus,
+            'start'  => $start->format('Y-m-d H:i:s'),
+            'end'    => $end->format('Y-m-d H:i:s')
+        ])->fetchAll(PDO::FETCH_ASSOC);
+
+        return $result[0];
+    }
+
+    /**
+     * @param array     $status
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return array
+     */
+    public function findProjectsHavingHadStatusBetweenDates(array $status, \DateTime $start, \DateTime $end)
+    {
+        $start->setTime(0, 0, 0);
+        $end->setTime(23, 59, 59);
+
+        $query = 'SELECT
+                      *
+                    FROM (SELECT MAX(id_project_status_history) AS max_id_projects_status_history
+                          FROM projects_status_history psh_max
+                          GROUP BY id_project) AS psh_max
+                      INNER JOIN projects_status_history psh ON psh_max.max_id_projects_status_history = psh.id_project_status_history
+                      INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                      INNER JOIN projects p ON p.id_project = psh.id_project
+                    WHERE
+                      ps.status IN (:status)
+                      AND psh.added BETWEEN :start AND :end';
+
+        $result = $this->getEntityManager()->getConnection()
+            ->executeQuery($query, [
+            'status' => $status,
+            'start'  => $start->format('Y-m-d H:i:s'),
+            'end'    => $end->format('Y-m-d H:i:s')
+        ], [
+            'status' => Connection::PARAM_INT_ARRAY,
+            'start'  => PDO::PARAM_STR,
+            'end'    => PDO::PARAM_STR
+        ])->fetchAll();
+
+        return $result;
+    }
+
+    /**
+     * @param \DateTime $end
+     *
+     * @return array
+     */
+    public function findProjectsInRepaymentAtDate(\DateTime $end)
+    {
+        $end->setTime(23, 59, 59);
+
+        $query = 'SELECT p.*
+                    FROM projects p
+                      INNER JOIN projects_status_history psh ON psh.id_project = p.id_project
+                      INNER JOIN (SELECT MAX(id_project_status_history) AS max_id_project_status_history
+                                  FROM projects_status_history psh_max
+                                  GROUP BY id_project) t ON t.max_id_project_status_history = psh.id_project_status_history
+                      INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                    WHERE psh.added <= :end AND ps.status >= ' . ProjectsStatus::REMBOURSEMENT . '
+                    AND ps.status NOT IN (' . implode(',', [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::DEFAUT]) . ')';
+
+        $result = $this->getEntityManager()->getConnection()->executeQuery($query, ['end' => $end->format('Y-m-d H:i:s')])->fetchAll();
+
+        return $result;
     }
 }

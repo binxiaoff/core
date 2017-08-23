@@ -86,17 +86,32 @@ class autobid extends autobid_crud
         return $this->bdd->result($rResult, 0, 0);
     }
 
-    public function sumAmount($sEvaluation, $iDuration)
+    /**
+     * @param string $evaluation
+     * @param int    $duration
+     *
+     * @return mixed
+     */
+    public function sumAmount($evaluation, $duration)
     {
-        $sQuery  = 'SELECT SUM(`amount`)
-                   FROM `autobid` a
-                   INNER JOIN project_period ap ON ap.id_period = a.id_period
-                   WHERE ' . $iDuration . ' BETWEEN ap.min AND ap.max
-                   AND ap.status = ' . \project_period::STATUS_ACTIVE . '
-                   AND a.status = ' . self::STATUS_ACTIVE . '
-                   AND a.evaluation = "' . $sEvaluation . '"';
-        $rResult = $this->bdd->query($sQuery);
-        return $this->bdd->result($rResult, 0, 0);
+        $query = '
+            SELECT SUM(amount)
+            FROM autobid a
+              INNER JOIN project_period pp ON pp.id_period = a.id_period
+              INNER JOIN project_rate_settings prs ON pp.id_period = prs.id_period
+              INNER JOIN wallet w ON a.id_lender = w.id
+            WHERE ' . $duration . ' BETWEEN pp.min AND pp.max
+                AND a.status = ' . self::STATUS_ACTIVE . '
+                AND pp.status = ' . \project_period::STATUS_ACTIVE . '
+                AND prs.status = ' . \project_rate_settings::STATUS_ACTIVE . '
+                AND a.evaluation = "' . $evaluation . '"
+                AND prs.evaluation = "' . $evaluation . '"
+                AND a.rate_min <= prs.rate_max
+                AND w.available_balance >= a.amount';
+
+        $result = $this->bdd->query($query);
+
+        return $this->bdd->result($result);
     }
 
     public function getSettings($lenderId = null, $evaluation = null, $periodId = null, $status = array(self::STATUS_ACTIVE), $order = ['pp.min' => 'ASC', 'a.evaluation' => 'DESC'], $limit = null, $offset = null)
@@ -104,10 +119,10 @@ class autobid extends autobid_crud
         $queryBuilder = $this->bdd->createQueryBuilder();
 
         $queryBuilder
-            ->select('a.*, pp.id_period as id_period, pp.min as period_min, pp.max as period_max, pp.status as period_status, la.id_client_owner AS id_client')
+            ->select('a.*, pp.id_period as id_period, pp.min as period_min, pp.max as period_max, pp.status as period_status, w.id_client AS id_client')
             ->from('autobid','a')
             ->innerJoin('a', 'project_period', 'pp', 'pp.id_period = a.id_period and pp.status = :pp_status')
-            ->innerJoin('a', 'lenders_accounts', 'la', 'la.id_lender_account = a.id_lender')
+            ->innerJoin('a', 'wallet', 'w', 'w.id = a.id_lender')
             ->setParameter('pp_status', project_period::STATUS_ACTIVE);
 
         if ($lenderId !== null) {

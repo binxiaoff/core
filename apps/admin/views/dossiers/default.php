@@ -56,17 +56,6 @@
             $('#nb-ligne-pagination').val(0);
             $('#page-active').val(1);
         });
-
-        <?php if (
-            false === isset($_SESSION['project_search_page_disclaimer'])
-            && (
-                in_array($this->userEntity->getIdUserType()->getIdUserType(), [\users_types::TYPE_COMMERCIAL, \users_types::TYPE_RISK])
-                || in_array($this->userEntity->getIdUser(), [23, 28])
-            )
-        ) : ?>
-            $.colorbox({html: $('#deprecated-page-disclaimer').html(), overlayClose: false, escKey: false});
-            <?php $_SESSION['project_search_page_disclaimer'] = true; ?>
-        <?php endif; ?>
     });
 
     function paginationDossiers(directionPagination) {
@@ -115,30 +104,9 @@
         color: #b1adb2;
     }
 </style>
-<div id="deprecated-page-disclaimer" style="display:none;">
-    <div style="padding:10px;">
-        <h1>Cette fonctionnalité va bientôt être supprimée</h1>
-        <p>Le <a href="<?php $this->lurl ?>/dashboard">flux</a> doit maintenant constituer le point d'entrée vers un dossier.</p>
-        <p>S'il manque des fonctionnalités qui ne vous permettent pas de vous passer de cette page de recherche, merci d'en faire part à Oliver afin de trouver une solution.</p>
-        <div style="text-align:center; margin-top:30px;">
-            <a role="button" class="btn_link" onclick="parent.$.fn.colorbox.close();">Accéder à la recherche</a>
-            <a href="<?php $this->lurl ?>/dashboard" class="btn_link">Accéder à mon flux</a>
-        </div>
-    </div>
-</div>
 <div id="contenu">
-
     <div class="row">
-        <div class="col-md-6">
-            <?php if (isset($this->iCountProjects) && $this->iCountProjects == 0) : ?>
-                <h1>Aucun dossier trouvé</h1>
-            <?php elseif (isset($this->iCountProjects) && $this->iCountProjects == 1) : ?>
-                <h1>1 dossier trouvé</h1>
-            <?php elseif (isset($this->iCountProjects) && $this->iCountProjects > 0) : ?>
-                <h1><?= $this->ficelle->formatNumber($this->iCountProjects, 0) ?> dossiers trouvés</h1>
-            <?php endif; ?>
-        </div>
-        <div class="col-md-6">
+        <div class="col-md-12">
             <a href="<?= $this->lurl ?>/dossiers/add/create" class="btn-primary pull-right">Créer un dossier</a>
         </div>
     </div>
@@ -183,7 +151,7 @@
             </div>
             <div class="col-md-2">
                 <div class="form-group">
-                    <label for="status">Status</label>
+                    <label for="status">Statut</label>
                     <select name="status" id="status" class="form-control">
                         <option value=""></option>
                         <?php foreach ($this->lProjects_status as $s) : ?>
@@ -250,70 +218,83 @@
         </div>
     </form>
 
-    <?php if (isset($this->lProjects) && count($this->lProjects) > 0) : ?>
-        <table class="tablesorter table table-hover table-striped">
-            <thead>
-                <tr>
-                    <th style="width:4%">ID</th>
-                    <th style="width:6%">SIREN</th>
-                    <th style="width:22%">Raison sociale</th>
-                    <th style="width:9%">Demande</th>
-                    <th style="width:8%">Montant</th>
-                    <th style="width:8%">Durée</th>
-                    <th style="width:12%">Statut</th>
-                    <th style="width:12%">Commercial</th>
-                    <th style="width:9%">Analyste</th>
-                    <th style="width:4%">Presc.</th>
-                    <th style="width:4%">Comment.</th>
-                    <th style="width:2%"></th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php $i = 1; ?>
-                <?php foreach ($this->lProjects as $p) : ?>
-                    <?php
-                        $this->oUserAnalyst->get($p['id_analyste'], 'id_user');
-                        $this->oUserSalesPerson->get($p['id_commercial'], 'id_user');
-                    ?>
-                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> data-project="<?= $p['id_project'] ?>">
-                        <td><?= $p['id_project'] ?></td>
-                        <td><?= $p['siren'] ?></td>
-                        <td><?= $p['name'] ?></td>
-                        <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
-                        <td><?= $this->ficelle->formatNumber($p['amount'], 0) ?> €</td>
-                        <td><?= ($p['period'] == 1000000 || $p['period'] == 0) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
-                        <td><?= $p['label'] ?></td>
-                        <td><?= $this->oUserSalesPerson->firstname ?> <?= $this->oUserSalesPerson->name ?></td>
-                        <td><?= $this->oUserAnalyst->firstname ?> <?= $this->oUserAnalyst->name ?></td>
-                        <td><?= ($p['id_prescripteur']) ? '<img src="'. $this->surl .'/images/admin/check.png" alt="a prescripteur">' : '' ?></td>
-                        <td data-toggle="tooltip" class="tooltip" title="<?= $p['comments'] && $p['comments'] != '' ? $p['comments'] : '' ?>"><?= $p['comments'] && $p['comments'] != '' ? 'oui' : 'non' ?></td>
-                        <td align="center">
-                            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
-                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['title'] ?>">
-                            </a>
+    <?php if (isset($this->lProjects)) : ?>
+        <div class="row">
+            <div class="col-md-12">
+                <?php if ($this->iCountProjects == 0) : ?>
+                    <h1>Aucun dossier trouvé</h1>
+                <?php elseif ($this->iCountProjects == 1) : ?>
+                    <h1>1 dossier trouvé</h1>
+                <?php elseif ($this->iCountProjects > 0) : ?>
+                    <h1><?= $this->ficelle->formatNumber($this->iCountProjects, 0) ?> dossiers trouvés</h1>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php if (count($this->lProjects) > 0) : ?>
+            <table class="tablesorter table table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th style="width:4%">ID</th>
+                        <th style="width:6%">SIREN</th>
+                        <th style="width:22%">Raison sociale</th>
+                        <th style="width:9%">Demande</th>
+                        <th style="width:8%">Montant</th>
+                        <th style="width:8%">Durée</th>
+                        <th style="width:12%">Statut</th>
+                        <th style="width:12%">Commercial</th>
+                        <th style="width:9%">Analyste</th>
+                        <th style="width:4%">Presc.</th>
+                        <th style="width:4%">Comment.</th>
+                        <th style="width:2%"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $i = 1; ?>
+                    <?php foreach ($this->lProjects as $p) : ?>
+                        <?php
+                            $this->oUserAnalyst->get($p['id_analyste'], 'id_user');
+                            $this->oUserSalesPerson->get($p['id_commercial'], 'id_user');
+                        ?>
+                        <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> data-project="<?= $p['id_project'] ?>">
+                            <td><?= $p['id_project'] ?></td>
+                            <td><?= $p['siren'] ?></td>
+                            <td><?= $p['name'] ?></td>
+                            <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
+                            <td><?= $this->ficelle->formatNumber($p['amount'], 0) ?> €</td>
+                            <td><?= ($p['period'] == 1000000 || $p['period'] == 0) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
+                            <td><?= $p['label'] ?></td>
+                            <td><?= $this->oUserSalesPerson->firstname ?> <?= $this->oUserSalesPerson->name ?></td>
+                            <td><?= $this->oUserAnalyst->firstname ?> <?= $this->oUserAnalyst->name ?></td>
+                            <td><?= ($p['id_prescripteur']) ? '<img src="'. $this->surl .'/images/admin/check.png" alt="a prescripteur">' : '' ?></td>
+                            <td data-toggle="tooltip" class="tooltip" title="<?= $p['comments'] && $p['comments'] != '' ? $p['comments'] : '' ?>"><?= $p['comments'] && $p['comments'] != '' ? 'oui' : 'non' ?></td>
+                            <td align="center">
+                                <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
+                                    <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['title'] ?>">
+                                </a>
+                            </td>
+                        </tr>
+                        <?php $i++; ?>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+            <?php if ($this->nb_lignes != '') : ?>
+                <table>
+                    <tr>
+                        <td id="pager">
+                            <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first" onclick="paginationDossiers('first');">
+                            <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev" onclick="paginationDossiers('prev');">
+                            <span id="displayPager"></span>
+                            <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next" onclick="paginationDossiers('next');">
+                            <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last" onclick="paginationDossiers('last');">
+                            <select class="pagesize">
+                                <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
+                            </select>
                         </td>
                     </tr>
-                    <?php $i++; ?>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-        <?php if ($this->nb_lignes != '') : ?>
-            <table>
-                <tr>
-                    <td id="pager">
-                        <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first" onclick="paginationDossiers('first');">
-                        <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev" onclick="paginationDossiers('prev');">
-                        <span id="displayPager"></span>
-                        <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next" onclick="paginationDossiers('next');">
-                        <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last" onclick="paginationDossiers('last');">
-                        <select class="pagesize">
-                            <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
-                        </select>
-                    </td>
-                </tr>
-            </table>
+                </table>
+            <?php endif; ?>
+        <?php else : ?>
+            <p>Il n'y a aucun dossier pour cette recherche.</p>
         <?php endif; ?>
-    <?php elseif (isset($_POST['form_search_emprunteur'])) : ?>
-        <p>Il n'y a aucun dossier pour cette recherche.</p>
     <?php endif; ?>
 </div>

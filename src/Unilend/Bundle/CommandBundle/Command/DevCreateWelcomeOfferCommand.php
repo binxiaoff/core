@@ -5,6 +5,8 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager;
 
 class DevCreateWelcomeOfferCommand extends ContainerAwareCommand
@@ -40,22 +42,27 @@ class DevCreateWelcomeOfferCommand extends ContainerAwareCommand
 
         /** @var \clients $client */
         $client = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('clients');
-        /** @var \transactions $transactions */
-        $transactions = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('transactions');
+
+        $entityManager       = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $walletRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
 
         $distributedOffers = 0;
 
         foreach ($clients as $clientId) {
-            if (
-                $client->get($clientId)
-                && 0 == $transactions->sum('id_client = ' . $clientId . ' AND type_transaction IN (' . implode(',', [\transactions_types::TYPE_WELCOME_OFFER, \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION]) . ')', 'montant')
-            ) {
-                $return = $welcomeOfferManager->createWelcomeOffer($client);
-                if (0 == $return['code']) {
-                    $distributedOffers += 1;
-                    $output->writeln(' Client ' . $clientId . ' : ' . $return['message']);
-                } else {
-                    $output->writeln('Client ' . $clientId . ' : Welcome Offer not distributed - ' . $return['message']);
+            if ($client->get($clientId)) {
+                $wallet               = $walletRepository->getWalletByType($clientId, WalletType::LENDER);
+                $welcomeOffer         = $operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION]);
+                $welcomeOfferCanceled = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL]);
+
+                if (0 == bcsub($welcomeOffer, $welcomeOfferCanceled, 2)) {
+                    $return = $welcomeOfferManager->createWelcomeOffer($client);
+                    if (0 == $return['code']) {
+                        $distributedOffers += 1;
+                        $output->writeln(' Client ' . $clientId . ' : ' . $return['message']);
+                    } else {
+                        $output->writeln('Client ' . $clientId . ' : Welcome Offer not distributed - ' . $return['message']);
+                    }
                 }
             } else {
                 $output->writeln(' Client ' . $clientId . ' : Welcome Offer already distributed');

@@ -1,6 +1,6 @@
 <div id="popup" style="width:800px;">
     <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"/></a>
-    <form action="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->lenders_accounts->id_lender_account ?>" method="post">
+    <form action="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->clients->id_client ?>" method="post">
         <table class="formMail">
             <tr>
                 <th>From : "<?= $this->mail_template->sender_name ?>" <?= $this->mail_template->sender_email ?></th>

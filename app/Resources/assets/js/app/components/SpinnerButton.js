@@ -162,7 +162,6 @@ SpinnerButton.prototype.init = function () {
   $doc.on(self.settings.targetStartEvents, self.$target, function (event) {
     // @debug
     // console.log('spinnerButton start loading', self.settings.targetStartEvents)
-
     self.startLoading()
   })
 

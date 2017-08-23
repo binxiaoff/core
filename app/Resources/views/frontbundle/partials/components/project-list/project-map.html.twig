@@ -35,7 +35,7 @@
 
                 <li class="project{% if project.finished %} ui-project-expired{% endif %}{% if project.lender is defined and project.lender.bids.count > 0 %} ui-current-user-involved{% endif %}"{% if mapviewItem is defined %} data-mapview-markerid="{{ mapviewItem.id }}" data-mapview-item='{{ mapviewItem|json_encode|escape('html_attr') }}'{% endif %}>
                     <div class="project-name">
-                        <a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}">{{ project.title }}</a>
+                        <a href="{{ path('project_detail', {'projectSlug' : project.slug}) }}">{{ project.title }}</a>
                     </div>
                     <div class="project-location">{{ project.company.city }}, {{ project.company.zip }}</div>
                     <div class="project-cost">{{ project.amount|localizednumber }}&nbsp;€</div>
@@ -46,9 +46,9 @@
                     <div class="project-period">
                         {% if project.finished %}
                             {% trans with {
-                                '%fundingDuration%' : ('project-list_funding-duration-' ~ project.fundingDuration.translation)|transchoice(project.fundingDuration.choice, project.fundingDuration.values),
-                                '%date%' : project.endDate|localizeddate('medium', 'none', app.request.locale)}
-                            %} project-list_project-finished {% endtrans %}
+                                '%fundingDuration%': ('project-list_funding-duration-' ~ project.fundingDuration.translation)|transchoice(project.fundingDuration.choice, project.fundingDuration.values),
+                                '%date%': project.endDate|localizeddate('medium', 'none', app.request.locale)
+                            } %} project-list_project-finished {% endtrans %}
                         {% elseif project.daysLeft <= 2 %}
                             <span class="ui-has-timecount" data-timecount-to="{{ project.endDate|date('c') }}"></span>
                         {% else %}

@@ -48,7 +48,7 @@
             <h1>Rattrapage offre de bienvenue</h1>
         </div>
         <div class="col-md-6">
-            <a href="<?= $this->lurl ?>/transferts/csv_rattrapage_offre_bienvenue/" class="btn-primary pull-right thickbox">Recuperation du CSV</a>
+            <a href="<?= $this->lurl ?>/transferts/csv_rattrapage_offre_bienvenue" class="btn-primary pull-right">Recuperation du CSV</a>
         </div>
     </div>
     <div class="datepicker_table">

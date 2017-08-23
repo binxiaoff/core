@@ -23,7 +23,7 @@
 <style>
     .form th {width: 125px;}
     .form2 th {width: auto;}
-    .manual_repayment_action {display: block; margin: auto; width: 225px;}
+    .manual_repayment_action {display: block; margin: auto; width: 325px;}
     #popup-content {display: none;}
 </style>
 <div id="popup-content">
@@ -32,7 +32,7 @@
         <h3 style="white-space: nowrap;">Confirmer le remboursement</h3>
         <div style="text-align: center;">
             <button type="button" class="btn btnDisabled" onclick="parent.$.fn.colorbox.close()">Annuler</button>
-            <a href="javascript:;" class="btn_link validate">Valider</a>
+            <a role="button" class="btn_link validate" data-prevent-doubleclick>Valider</a>
         </div>
     </div>
 </div>

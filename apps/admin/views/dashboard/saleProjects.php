@@ -4,7 +4,7 @@
     <table class="tablesorter projects">
         <thead>
         <tr>
-            <th style="width:14px;"></th>
+            <th style="width:50px;"></th>
             <th style="width:40px">ID</th>
             <th>Raison sociale</th>
             <th style="width:70px">Montant</th>
@@ -31,6 +31,9 @@
                         <?php if (false === empty($project['partner_logo'])) : ?>
                             <img src="<?= $this->surl ?>/images/admin/partner/<?= $project['partner_logo'] ?>" alt="<?= $project['partner_logo'] ?>">
                         <?php endif; ?>
+                        <?php if (true === $project['hasMonitoringEvent']) : ?>
+                            <span class="e-change-warning"></span>
+                        <?php endif; ?>
                     </td>
                     <td data-project="<?= $project['id_project'] ?>"><?= $project['id_project'] ?></td>
                     <td data-project="<?= $project['id_project'] ?>"><?= $project['company_name'] ?></td>
@@ -47,7 +50,7 @@
                     <?php else : ?>
                         <td data-toggle="tooltip" class="tooltip" title="<?= (empty($project['memo_author']) ? '' : $project['memo_author'] . '<br>') . $project['memo_datetime']->format('d/m/Y - H\hi') . '<hr>' . nl2br(htmlentities($project['memo_content'], ENT_QUOTES)) ?>" style="text-align: center"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Mémo" /></td>
                     <?php endif; ?>
-                    <td style="text-align: center"><?= 10 == $project['priority'] ? '' : $project['priority'] ?></td>
+                    <td style="text-align: center"><?= -1 == $project['priority'] ? '' : $project['priority'] ?></td>
                 </tr>
                 <?php ++$i; ?>
             <?php endforeach; ?>

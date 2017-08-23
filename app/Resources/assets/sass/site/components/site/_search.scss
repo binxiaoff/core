@@ -353,7 +353,7 @@
         }
       }
       @include devices('lg') {
-        width: $width-site-header-search-full-lg - 80px;
+        width: $width-site-header-search-full-lg - 75px;
         &>.input-field {
           padding-left: 38px;
         }

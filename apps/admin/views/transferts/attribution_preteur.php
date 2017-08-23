@@ -67,7 +67,7 @@
                     }
                 }
             ?>
-            <tr class="<?= ($i++ % 2 == 1 ? '' : 'odd') ?> leLender<?= $c['id_lender_account'] ?>">
+            <tr class="<?= ($i++ % 2 == 1 ? '' : 'odd') ?> leLender<?= $c['id_client'] ?>">
                 <td><?= $c['id_client'] ?></td>
                 <td><?= $c['nom_ou_societe'] ?></td>
                 <td><?= $c['prenom_ou_dirigeant'] ?></td>
@@ -89,5 +89,14 @@
         <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
     </div>
 <?php else : ?>
-    <p>Il n'y a aucun prêteur pour le moment.</p>
+    <?php if (isset($_SESSION['search_lender_attribution_error'])) : ?>
+        <div class="attention">
+            <?php foreach ($_SESSION['search_lender_attribution_error'] as $error ) : ?>
+                <?= $error ?><br>
+            <?php endforeach; ?>
+            <?php unset($_SESSION['search_lender_attribution_error']); ?>
+        </div>
+    <?php else: ?>
+        <p>Il n'y a aucun prêteur pour le moment.</p>
+    <?php endif; ?>
 <?php endif; ?>

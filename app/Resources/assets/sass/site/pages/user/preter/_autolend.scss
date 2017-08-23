@@ -478,6 +478,14 @@ $height-autolend-cell-header: 50px;
     position: relative;
     text-align: center;
 
+    .custom-input-switch > .label {
+      background-position: 0 -25px;
+    }
+
+    .custom-input-switch-sm > .label {
+      background-position: 0 -20px;
+    }
+
     @include devices('sm', 'md', 'lg') {
       height: $height-autolend-cell * 5;
     }

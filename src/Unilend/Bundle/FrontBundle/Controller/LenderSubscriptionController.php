@@ -23,6 +23,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
@@ -36,7 +38,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
-use Unilend\Bundle\FrontBundle\Service\ContentManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
 use Unilend\core\Loader;
@@ -121,7 +122,7 @@ class LenderSubscriptionController extends Controller
             $form->get('client')->get('naissance')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-age')));
         }
 
-        if (\pays_v2::COUNTRY_FRANCE == $clientAddress->getIdPaysFiscal() && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $clientAddress->getCpFiscal()])) {
+        if (PaysV2::COUNTRY_FRANCE == $clientAddress->getIdPaysFiscal() && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $clientAddress->getCpFiscal()])) {
             $form->get('fiscalAddress')->get('cpFiscal')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-fiscal-address-wrong-zip')));
         }
 
@@ -135,13 +136,13 @@ class LenderSubscriptionController extends Controller
             $form->get('client')->get('idNationalite')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-wrong-birth-country')));
         }
 
-        if (\pays_v2::COUNTRY_FRANCE == $client->getIdPaysNaissance() && empty($client->getInseeBirth())) {
+        if (PaysV2::COUNTRY_FRANCE == $client->getIdPaysNaissance() && empty($client->getInseeBirth())) {
             $countryCheck = false;
             $form->get('client')->get('villeNaissance')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-wrong-birth-place')));
         }
 
         if ($countryCheck) {
-            if (\pays_v2::COUNTRY_FRANCE == $client->getIdPaysNaissance() && false === empty($client->getInseeBirth())) {
+            if (PaysV2::COUNTRY_FRANCE == $client->getIdPaysNaissance() && false === empty($client->getInseeBirth())) {
                 /** @var Villes $cityByInsee */
                 $cityByInsee = $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneByInsee($client->getInseeBirth());
 
@@ -274,7 +275,7 @@ class LenderSubscriptionController extends Controller
 
         if (
             false === empty($company->getIdPays())
-            && \pays_v2::COUNTRY_FRANCE == $company->getIdPays()
+            && PaysV2::COUNTRY_FRANCE == $company->getIdPays()
             && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneByCp($company->getZip())
         ) {
             $form->get('fiscalAddress')->get('zip')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-fiscal-address-wrong-zip')));
@@ -375,9 +376,16 @@ class LenderSubscriptionController extends Controller
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur', $varMail);
-        $message->setTo($client->getEmail());
-        $mailer = $this->get('mailer');
-        $mailer->send($message);
+        try {
+            $message->setTo($client->getEmail());
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->get('logger')->warning(
+                'Could not send email: confirmation-inscription-preteur - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     /**
@@ -457,7 +465,7 @@ class LenderSubscriptionController extends Controller
 
         $template = [
             'client'         => $client,
-            'isLivingAbroad' => $clientAddress->getIdPaysFiscal() > \pays_v2::COUNTRY_FRANCE,
+            'isLivingAbroad' => $clientAddress->getIdPaysFiscal() > PaysV2::COUNTRY_FRANCE,
             'fundsOrigin'    => $this->getFundsOrigin($client->getType()),
             'form'           => $form->createView()
         ];
@@ -553,7 +561,7 @@ class LenderSubscriptionController extends Controller
             AttachmentType::CNI_PASSPORTE_VERSO => $fileBag->get('id_verso'),
             AttachmentType::JUSTIFICATIF_DOMICILE => $fileBag->get('housing-certificate'),
         ];
-        if ($clientAddress->getIdPaysFiscal() > \pays_v2::COUNTRY_FRANCE) {
+        if ($clientAddress->getIdPaysFiscal() > PaysV2::COUNTRY_FRANCE) {
             $files[AttachmentType::JUSTIFICATIF_FISCAL] = $fileBag->get('tax-certificate');
         }
         if (false === empty($form->get('housedByThirdPerson')->getData())){
@@ -662,17 +670,11 @@ class LenderSubscriptionController extends Controller
         /** @var \clients $client */
         $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
         $client->get($clientHash, 'hash');
-
-        /** @var \lenders_accounts $lenderAccount */
-        $lenderAccount = $this->get('unilend.service.entity_manager')->getRepository('lenders_accounts');
-        $lenderAccount->get($client->id_client, 'id_client_owner');
-
         $client->etape_inscription_preteur = Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT;
         $client->update();
 
         $template = [
             'client'           => $client->select('id_client = ' . $client->id_client)[0],
-            'lenderAccount'    => $lenderAccount->select('id_lender_account = ' . $lenderAccount->id_lender_account)[0],
             'maxDepositAmount' => LenderWalletController::MAX_DEPOSIT_AMOUNT,
             'minDepositAmount' => LenderWalletController::MIN_DEPOSIT_AMOUNT,
             'lenderBankMotif'  => $client->getLenderPattern($client->id_client)
@@ -711,6 +713,9 @@ class LenderSubscriptionController extends Controller
                 $cancelUrl = $this->generateUrl('lender_subscription_money_deposit', ['clientHash' => $wallet->getIdClient()->getHash()], UrlGeneratorInterface::ABSOLUTE_URL);
 
                 $redirectUrl = $this->get('unilend.service.payline_manager')->pay($amount, $wallet, $successUrl, $cancelUrl);
+
+                $formManager = $this->get('unilend.frontbundle.service.form_manager');
+                $formManager->saveFormSubmission($client, ClientsHistoryActions::LENDER_PROVISION_BY_CREDIT_CARD, serialize(['id_client' => $client->getIdClient(), 'post' => $request->request->all()]), $request->getClientIp());
 
                 if (false !== $redirectUrl) {
                     return $this->redirect($redirectUrl);
@@ -896,12 +901,12 @@ class LenderSubscriptionController extends Controller
             }
 
             if ($authorizationChecker->isGranted('ROLE_LENDER')) {
-                /** @var Clients $clientEntity */
-                $clientEntity = $clientRepository->find($this->getUser()->getClientId());
-                /** @var ClientStatusManager $clientStatusManager */
-                $clientStatusManager = $this->get('unilend.service.client_status_manager');
-                $lastStatus = $clientStatusManager->getLastClientStatus($clientEntity);
-                if (false === empty($lastStatus) && $lastStatus >= \clients_status::MODIFICATION){
+                $clientEntity           = $clientRepository->find($this->getUser()->getClientId());
+                $clientStatusRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
+                /** @var ClientsStatus $lastStatus */
+                $lastStatus = $clientStatusRepository->getLastClientStatus($clientEntity);
+
+                if (null !== $lastStatus && $lastStatus->getStatus() >= ClientsStatus::MODIFICATION) {
                     return $this->redirectToRoute('lender_dashboard');
                 }
             } else {
@@ -935,37 +940,24 @@ class LenderSubscriptionController extends Controller
      */
     private function saveClientHistoryAction(Clients $client, Request $request, $step)
     {
-        $formId     = '';
-        $clientType = in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 'particulier' : 'entreprise';
-
         $formManager = $this->get('unilend.frontbundle.service.form_manager');
         $post        = $formManager->cleanPostData($request->request->all());
         $files       = $request->files;
 
-        switch ($step) {
-            case 1:
-                $post['form']['client']['password']['first']  = md5($post['form']['client']['password']['first']);
-                $post['form']['client']['password']['second'] = md5($post['form']['client']['password']['second']);
-                $post['form']['security']['secreteReponse']   = md5($post['form']['security']['secreteReponse']);
-                $formId                                       = 14;
-                break;
-            case 2:
-                $formId = in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 17 : 19;
-                break;
+        if (1 == $step) {
+            $post['form']['client']['password']['first']  = md5($post['form']['client']['password']['first']);
+            $post['form']['client']['password']['second'] = md5($post['form']['client']['password']['second']);
+            $post['form']['security']['secreteReponse']   = md5($post['form']['security']['secreteReponse']);
+            $formType = in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? ClientsHistoryActions::LENDER_PERSON_SUBSCRIPTION_PERSONAL_INFORMATION : ClientsHistoryActions::LENDER_LEGAL_ENTITY_SUBSCRIPTION_PERSONAL_INFORMATION;
+        } else {
+            $formType = in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? ClientsHistoryActions::LENDER_PERSON_SUBSCRIPTION_BANK_DOCUMENTS : ClientsHistoryActions::LENDER_LEGAL_ENTITY_SUBSCRIPTION_BANK_DOCUMENTS;
         }
-
 
         if (false === empty($files)) {
             $post = array_merge($post, $formManager->getNamesOfFiles($files));
         }
 
-        /** @var \clients_history_actions $clientHistoryActions */
-        $clientHistoryActions = $this->get('unilend.service.entity_manager')->getRepository('clients_history_actions');
-        $clientHistoryActions->histo(
-            $formId,
-            'inscription etape ' . $step . ' ' . $clientType,
-            $client->getIdClient(), serialize(['id_client' => $client->getIdClient(), 'post' => $post])
-        );
+        $formManager->saveFormSubmission($client, $formType, serialize(['id_client' => $client->getIdClient(), 'post' => $post]), $request->getClientIp());
     }
 
     /**
@@ -1083,9 +1075,16 @@ class LenderSubscriptionController extends Controller
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur-etape-3', $varMail);
-        $message->setTo($client->getEmail());
-        $mailer = $this->get('mailer');
-        $mailer->send($message);
+        try {
+            $message->setTo($client->getEmail());
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->get('logger')->warning(
+                'Could not send email: confirmation-inscription-preteur-etape-3 - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
     }
 
     /**
@@ -1097,7 +1096,7 @@ class LenderSubscriptionController extends Controller
         if ($request->isXmlHttpRequest()) {
             $get = $request->query->all();
 
-            if (false === empty($get['country']) && \pays_v2::COUNTRY_FRANCE != $get['country']) {
+            if (false === empty($get['country']) && PaysV2::COUNTRY_FRANCE != $get['country']) {
                 return $this->json(['status' => true]);
             }
 
@@ -1127,7 +1126,7 @@ class LenderSubscriptionController extends Controller
             $country = $request->query->get('country');
             $inseeCode = $request->query->get('insee');
 
-            if (false === empty($country) && \pays_v2::COUNTRY_FRANCE != $country) {
+            if (false === empty($country) && PaysV2::COUNTRY_FRANCE != $country) {
                 return $this->json(['status' => true]);
             }
 

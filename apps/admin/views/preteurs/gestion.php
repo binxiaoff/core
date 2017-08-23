@@ -25,27 +25,27 @@
             </thead>
             <tbody>
             <?php $i = 1; ?>
-            <?php foreach ($this->lPreteurs as $c) : ?>
+            <?php foreach ($this->lPreteurs as $client) : ?>
                 <tr class="<?= ($i++ % 2 == 1 ? '' : 'odd') ?> ">
-                    <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['id_client'] ?></td>
-                    <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['nom_ou_societe'] ?></td>
-                    <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['nom_usage'] ?></td>
-                    <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['prenom_ou_dirigeant'] ?></td>
-                    <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['email'] ?></td>
-                    <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['telephone'] ?></td>
-                    <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['status'] == 1 ? 'en ligne' : 'hors ligne' ?></td>
+                    <td class="leLender<?= $client['id_client'] ?>"><?= $client['id_client'] ?></td>
+                    <td class="leLender<?= $client['id_client'] ?>"><?= $client['nom_ou_societe'] ?></td>
+                    <td class="leLender<?= $client['id_client'] ?>"><?= $client['nom_usage'] ?></td>
+                    <td class="leLender<?= $client['id_client'] ?>"><?= $client['prenom_ou_dirigeant'] ?></td>
+                    <td class="leLender<?= $client['id_client'] ?>"><?= $client['email'] ?></td>
+                    <td class="leLender<?= $client['id_client'] ?>"><?= $client['telephone'] ?></td>
+                    <td class="leLender<?= $client['id_client'] ?>"><?= $client['status'] == 1 ? 'en ligne' : 'hors ligne' ?></td>
                     <td align="center">
-                        <?php if (1 == $c['novalid']) : ?>
-                            <a href="<?= $this->lurl ?>/preteurs/edit/<?= $c['id_lender_account'] ?>">
-                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $c['nom_ou_societe'] . ' ' . $c['prenom_ou_dirigeant'] ?>"/>
+                        <?php if (1 == $client['novalid']) : ?>
+                            <a href="<?= $this->lurl ?>/preteurs/edit/<?= $client['id_client'] ?>">
+                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $client['nom_ou_societe'] . ' ' . $client['prenom_ou_dirigeant'] ?>"/>
                             </a>
                         <?php else: ?>
-                            <a href="<?= $this->lurl ?>/preteurs/edit/<?= $c['id_lender_account'] ?>">
-                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $c['nom_ou_societe'] . ' ' . $c['prenom_ou_dirigeant'] ?>"/>
+                            <a href="<?= $this->lurl ?>/preteurs/edit/<?= $client['id_client'] ?>">
+                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $client['nom_ou_societe'] . ' ' . $client['prenom_ou_dirigeant'] ?>"/>
                             </a>
                             <script>
-                                $(".leLender<?= $c['id_lender_account'] ?>").click(function() {
-                                    $(location).attr('href', '<?= $this->lurl ?>/preteurs/edit/<?= $c['id_lender_account'] ?>');
+                                $(".leLender<?= $client['id_client'] ?>").click(function() {
+                                    $(location).attr('href', '<?= $this->lurl ?>/preteurs/edit/<?= $client['id_client'] ?>');
                                 });
                             </script>
                         <?php endif; ?>
