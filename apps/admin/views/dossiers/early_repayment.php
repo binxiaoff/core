@@ -40,17 +40,16 @@
                 <tr>
                     <th>Actions :</th>
                     <td>
-                        <a id="form-trigger" href="#" class="btn_link">Déclencher le remboursement anticipé</a>
-                        <div id="form-early-repayment" style="display: none">
-                            <div id="popup">
-                                <a onclick="parent.$.fn.colorbox.close();" class="closeBtn" title="Fermer"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"></a><br>
-                                <h3 style="white-space: nowrap;">Confirmer le remboursement anticipé</h3>
+                        <a class="inline btn_link" href="#early-repayment">Déclencher le remboursement anticipé</a>
+                        <div class="hidden">
+                            <div id="early-repayment" style="padding: 10px; min-width: 300px;">
+                                <h3 class="text-center">Confirmer le remboursement anticipé</h3>
                                 <form action="" method="post" name="action_remb_anticipe">
                                     <input type="hidden" name="id_reception" value="<?= $this->reception->getIdReception() ?>">
                                     <input type="hidden" name="spy_remb_anticipe" value="ok">
-                                    <div style="text-align: center;">
+                                    <div class="text-center"><br>
                                         <button type="button" class="btn btnDisabled" onclick="parent.$.fn.colorbox.close()">Annuler</button>
-                                        <input type="submit" id="btn-early-repayment" value="Valider" class="btn" data-prevent-doubleclick>
+                                        <input type="submit" value="Valider" class="btn" data-prevent-doubleclick>
                                     </div>
                                 </form>
                             </div>
@@ -73,11 +72,6 @@
 <?php endif; ?>
 
 <script>
-    $(function() {
-        $('#form-trigger').click(function(event) {
-            event.preventDefault()
-            earlyRepaymentForm = $("#form-early-repayment").html()
-            $.colorbox({html: earlyRepaymentForm})
-        })
-    });
+    $('.inline').tooltip({disabled: true})
+    $('.inline').colorbox({inline: true})
 </script>
