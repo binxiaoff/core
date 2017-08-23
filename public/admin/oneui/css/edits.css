@@ -6,7 +6,10 @@
 }
 .environment {
     padding: 10px 20px;
-    margin: -6px -20px 40px;
+    margin: 20px -20px -15px;
     color: #fff;
     cursor: default;
+}
+.environment a {
+    color: #fff;
 }

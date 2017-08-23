@@ -30,17 +30,17 @@
         <div id="sidebar-scroll">
             <div class="sidebar-content">
                 <div class="side-header side-content">
-                    <?php if ('prod' !== $this->getParameter('kernel.environment')) : ?>
-                        <div class="environment bg-primary text-uppercase">
-                            <span class="fa fa-info-circle"></span>
-                            <span class="font-w300">Environnement:</span>
-                            <span class="font-w600"><?= $this->getParameter('kernel.environment') ?></span>
-                        </div>
-                    <?php endif; ?>
-
                     <a class="h5 text-white pull-left" href="<?= $this->lurl ?>">
                         <img src="<?= $this->surl ?>/assets/images/logo/logo-unilend-52x52-purple.png" srcset="<?= $this->surl ?>/assets/images/logo/logo-unilend-52x52-purple@2x.png 2x" alt="Unilend">
                     </a>
+                    <div class="clearfix"></div>
+                    <?php if ('prod' !== $this->getParameter('kernel.environment')) : ?>
+                        <div class="environment bg-primary text-uppercase">
+                            <a href="https://unilend.atlassian.net/wiki/pages/viewpage.action?pageId=46694427" target="_blank"><span class="fa fa-info-circle"></span></a>
+                            <span class="font-w300">Environnement :</span>
+                            <span class="font-w600"><?= $this->getParameter('kernel.environment') ?></span>
+                        </div>
+                    <?php endif; ?>
                 </div>
                 <div class="side-content side-content-full">
                     <ul class="nav-main">
