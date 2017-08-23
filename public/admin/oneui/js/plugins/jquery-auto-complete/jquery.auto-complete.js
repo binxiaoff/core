@@ -57,6 +57,7 @@
                         }
                 }
             }
+            that.show
             $(window).on('resize.autocomplete', that.updateSC);
 
             that.sc.appendTo('body');
@@ -94,9 +95,31 @@
             function suggest(data){
                 var val = that.val();
                 that.cache[val] = data;
-                if (data.length && val.length >= o.minChars) {
+                if (val.length >= o.minChars) {
                     var s = '';
-                    for (var i=0;i<data.length;i++) s += o.renderItem(data[i], val);
+
+                    if (data.length) {
+                        for (var i=0;i<data.length;i++) {
+                            s += o.renderItem(data[i], val);
+                        }
+                    } else {
+                        for (var key in data) {
+                            var values = data[key]
+                            if (values.length) {
+                                s += '<section class="autocomplete-suggestion-section ' + key + '">';
+                                s += '<span class="autocomplete-suggestion-section-title">' + key +  '</span>';
+
+                                for (var i=0;i<o.maxResults;i++) {
+                                    s += o.renderItem(values[i], val);
+                                    if (i === o.maxResults - 1) {
+                                        o.showMore(key)
+                                    }
+                                }
+                                s += '</section>';
+                            }
+                        }
+                    }
+
                     that.sc.html(s);
                     that.updateSC(0);
                 }
@@ -158,8 +181,12 @@
         source: 0,
         minChars: 3,
         delay: 150,
-        cache: 1,
+        cache: 0,
         menuClass: '',
+        maxResults: 5,
+        showMore: function(section){
+            console.log('Show more ' + section + '| Add showMore() as a parameter in the init options.')
+        },
         renderItem: function (item, search){
             // escape special characters
             search = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
