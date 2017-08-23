@@ -12,20 +12,21 @@
             size: <?= $this->nb_lignes ?>});
         $(".mandats").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
         <?php endif; ?>
-        operationTable = $(".operation-table");
-        operationTable.tablesorter({headers: {2: {sorter: false}, 3: {sorter: false}}});
 
-        $('.operation-tooltip').tooltip({
-            show: false,
-            position: {
-                at: 'right center',
-                my: 'right center',
-            },
-            content: function () {
-                var content = $(this).attr('title')
-                return content
-            }
-        })
+        $("#operation-date-form").submit(function(e) {
+            e.preventDefault()
+            var val = {
+                id_client: <?= $this->clients->id_client ?>,
+                year: $(this).find('select').val()
+            };
+            $("#filter-button").prop("disabled", true)
+            $.post(add_url + '/emprunteurs/loadBorrowerOperationAjax', val).done(function(data) {
+                $("#filter-button").prop("disabled", false)
+                if (data != 'nok') {
+                    $(".borrower-operation-table").html(data);
+                }
+            });
+        });
     });
 </script>
 
@@ -249,34 +250,19 @@
     </table>
     <p>&nbsp;</p>
     <h2>Relevé des opérations</h2>
-    <?php if (false === empty($this->operations)) : ?>
-        <table class="tablesorter operation-table">
-            <thead>
-            <tr>
-                <th>Date</th>
-                <th>Type d'opération</th>
-                <th>Montant</th>
-                <th>Solde</th>
-            </tr>
-            </thead>
-            <tbody>
-            <?php foreach ($this->operations as $operation) : ?>
-                <tr>
-                    <td><?= $operation['added']->format('d/m/Y') ?></td>
-                    <?php if (OperationType::BORROWER_PROVISION_CANCEL === $operation['operationLabel']) : ?>
-                        <td <?= (false === empty($operation['rejectionIsoCode'])) ? 'class="operation-tooltip" title="' . $operation['rejectionIsoCode'] . ' - ' . $operation['rejectionReasonLabel'] . '"' : '' ?>>
-                            Rejet <?= (false === empty($operation['rejectionIsoCode'])) ? '<img src="' . $this->surl . '/images/admin/info.png">' : '' ?>
-                        </td>
-                    <?php else : ?>
-                        <td>Prélèvement</td>
-                    <?php endif; ?>
-                    <td><?= $this->currencyFormatter->formatCurrency($operation['amount'], 'EUR') ?></td>
-                    <td><?= $this->currencyFormatter->formatCurrency($operation['availableBalance'], 'EUR') ?></td>
-                </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
-    <?php else : ?>
-        Aucune opération
-    <?php endif; ?>
+    <div style="float: left">
+        <form method="post" id="operation-date-form" action="">
+            <div class="form-group">
+                <select name="operation-date-filter" id="operation-date-filter" class="select">
+                    <?php for ($i = date('Y'); $i >= 2013; $i--) : ?>
+                        <option value="<?= $i ?>"><?= $i ?></option>
+                    <?php endfor; ?>
+                </select>
+                <input type="submit" value="Filtrer" name="filter" class="btn-primary" id="filter-button"/>
+            </div>
+        </form>
+    </div>
+    <div class="borrower-operation-table">
+        <?php $this->fireView('operations'); ?>
+    </div>
 </div>

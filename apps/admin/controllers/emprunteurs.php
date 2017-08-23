@@ -123,8 +123,11 @@ class emprunteursController extends bootstrap
                 die;
             }
             $this->aMoneyOrders = $this->clients_mandats->getMoneyOrderHistory($this->companies->id_company);
-            $this->operations   = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')
-                ->getBorrowerOperations($client->getWallets()[0]->getId());
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerOperationsManager $borrowerOperationsManager */
+            $borrowerOperationsManager = $this->get('unilend.service.borrower_operations_manager');
+            $start                     = new \DateTime('First day of january this year');
+            $end                       = new \DateTime('NOW');
+            $this->operations          = $borrowerOperationsManager->getBorrowerOperations($this->clients, $start, $end);
         } else {
             header('Location: ' . $this->lurl . '/emprunteurs/gestion/');
             die;
@@ -186,5 +189,29 @@ class emprunteursController extends bootstrap
                 }
             }
         }
+    }
+
+    public function _loadBorrowerOperationAjax()
+    {
+        $this->hideDecoration();
+        if (isset($_POST['year'], $_POST['id_client'])) {
+            $this->currencyFormatter = $this->get('currency_formatter');
+            /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
+            $this->translator = $this->get('translator');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerOperationsManager $borrowerOperationsManager */
+            $borrowerOperationsManager = $this->get('unilend.service.borrower_operations_manager');
+
+            $year     = filter_var($_POST['year'], FILTER_VALIDATE_INT);
+            $idClient = filter_var($_POST['id_client'], FILTER_VALIDATE_INT);
+            /** @var \clients $clientData */
+            $clientData = $this->loadData('clients');
+            $clientData->get($idClient);
+            $start = new \DateTime();
+            $start->setDate($year, 1, 1);
+            $end = new \DateTime();
+            $end->setDate($year, 12, 31);
+            $this->operations = $borrowerOperationsManager->getBorrowerOperations($clientData, $start, $end);
+        }
+        $this->setView('../emprunteurs/operations');
     }
 }
