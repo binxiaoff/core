@@ -299,12 +299,100 @@
 </script>
 {% endblock %}
 
+ {% block modals %}
+     <!-- Normal Modal -->
+     <div class="modal" id="modal-normal" tabindex="-1" role="dialog" aria-hidden="true">
+         <div class="modal-dialog">
+             <div class="modal-content">
+                 <div class="block block-themed block-transparent remove-margin-b">
+                     <div class="block-header bg-primary-light">
+                         <h3 class="block-title">Terms &amp; Conditions</h3>
+                     </div>
+                     <div class="block-content">
+                         <p>Dolor posuere proin blandit accumsan senectus netus nullam curae, ornare laoreet adipiscing luctus mauris adipiscing pretium eget fermentum, tristique lobortis est ut metus lobortis tortor tincidunt himenaeos habitant quis dictumst proin odio sagittis purus mi, nec taciti vestibulum quis in sit varius lorem sit metus mi.</p>
+                         <p>Dolor posuere proin blandit accumsan senectus netus nullam curae, ornare laoreet adipiscing luctus mauris adipiscing pretium eget fermentum, tristique lobortis est ut metus lobortis tortor tincidunt himenaeos habitant quis dictumst proin odio sagittis purus mi, nec taciti vestibulum quis in sit varius lorem sit metus mi.</p>
+                     </div>
+                 </div>
+                 <div class="modal-footer">
+                     <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Close</button>
+                     <button class="btn btn-sm btn-primary" type="button" data-dismiss="modal"><i class="fa fa-check"></i> Ok</button>
+                 </div>
+             </div>
+         </div>
+     </div>
+     <!-- END Normal Modal -->
+     <!-- Small Modal -->
+     <div class="modal" id="modal-small" tabindex="-1" role="dialog" aria-hidden="true">
+         <div class="modal-dialog modal-sm">
+             <div class="modal-content">
+                 <div class="block block-themed block-transparent remove-margin-b">
+                     <div class="block-header bg-primary-light">
+                         <h3 class="block-title">Terms &amp; Conditions</h3>
+                     </div>
+                     <div class="block-content">
+                         <p>Dolor posuere proin blandit accumsan senectus netus nullam curae, ornare laoreet adipiscing luctus mauris adipiscing pretium eget fermentum, tristique lobortis est ut metus lobortis tortor tincidunt himenaeos habitant quis dictumst proin odio sagittis purus mi, nec taciti vestibulum quis in sit varius lorem sit metus mi.</p>
+                         <p>Dolor posuere proin blandit accumsan senectus netus nullam curae, ornare laoreet adipiscing luctus mauris adipiscing pretium eget fermentum, tristique lobortis est ut metus lobortis tortor tincidunt himenaeos habitant quis dictumst proin odio sagittis purus mi, nec taciti vestibulum quis in sit varius lorem sit metus mi.</p>
+                     </div>
+                 </div>
+                 <div class="modal-footer">
+                     <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Close</button>
+                     <button class="btn btn-sm btn-primary" type="button" data-dismiss="modal"><i class="fa fa-check"></i> Ok</button>
+                 </div>
+             </div>
+         </div>
+     </div>
+     <!-- END Small Modal -->
+     <!-- Large Modal -->
+     <div class="modal" id="modal-large" tabindex="-1" role="dialog" aria-hidden="true">
+         <div class="modal-dialog modal-lg">
+             <div class="modal-content">
+                 <div class="block block-themed block-transparent remove-margin-b">
+                     <div class="block-header bg-primary-light">
+                         <h3 class="block-title">Terms &amp; Conditions</h3>
+                     </div>
+                     <div class="block-content">
+                         <p>Dolor posuere proin blandit accumsan senectus netus nullam curae, ornare laoreet adipiscing luctus mauris adipiscing pretium eget fermentum, tristique lobortis est ut metus lobortis tortor tincidunt himenaeos habitant quis dictumst proin odio sagittis purus mi, nec taciti vestibulum quis in sit varius lorem sit metus mi.</p>
+                         <p>Dolor posuere proin blandit accumsan senectus netus nullam curae, ornare laoreet adipiscing luctus mauris adipiscing pretium eget fermentum, tristique lobortis est ut metus lobortis tortor tincidunt himenaeos habitant quis dictumst proin odio sagittis purus mi, nec taciti vestibulum quis in sit varius lorem sit metus mi.</p>
+                     </div>
+                 </div>
+                 <div class="modal-footer">
+                     <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Close</button>
+                     <button class="btn btn-sm btn-primary" type="button" data-dismiss="modal"><i class="fa fa-check"></i> Ok</button>
+                 </div>
+             </div>
+         </div>
+     </div>
+     <!-- END Large Modal -->
+     <!-- Fade In Modal -->
+     <div class="modal fade" id="modal-fadein" tabindex="-1" role="dialog" aria-hidden="true">
+         <div class="modal-dialog">
+             <div class="modal-content">
+                 <div class="block block-themed block-transparent remove-margin-b">
+                     <div class="block-header bg-primary-light">
+                         <h3 class="block-title">Terms &amp; Conditions</h3>
+                     </div>
+                     <div class="block-content">
+                         <p>Dolor posuere proin blandit accumsan senectus netus nullam curae, ornare laoreet adipiscing luctus mauris adipiscing pretium eget fermentum, tristique lobortis est ut metus lobortis tortor tincidunt himenaeos habitant quis dictumst proin odio sagittis purus mi, nec taciti vestibulum quis in sit varius lorem sit metus mi.</p>
+                         <p>Dolor posuere proin blandit accumsan senectus netus nullam curae, ornare laoreet adipiscing luctus mauris adipiscing pretium eget fermentum, tristique lobortis est ut metus lobortis tortor tincidunt himenaeos habitant quis dictumst proin odio sagittis purus mi, nec taciti vestibulum quis in sit varius lorem sit metus mi.</p>
+                     </div>
+                 </div>
+                 <div class="modal-footer">
+                     <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Close</button>
+                     <button class="btn btn-sm btn-primary" type="button" data-dismiss="modal"><i class="fa fa-check"></i> Ok</button>
+                 </div>
+             </div>
+         </div>
+     </div>
+     <!-- END Fade In Modal -->
+ {% endblock %}
+
+{% block pageHeader %}
+    <h1 class="page-heading push">
+        OneUI <small>Interface examples</small>
+    </h1>
+{% endblock %}
+
 {% block content %}
-    <div class="content bg-gray-lighter">
-        <h1 class="page-heading push">
-            OneUI <small>Interface examples</small>
-        </h1>
-    </div>
     <div class="content bg-white">
         <!-- Typography -->
         <section id="typography">
@@ -588,27 +676,6 @@
                                 <button class="btn btn-primary" data-toggle="modal" data-target="#modal-normal" type="button">Launch Modal</button>
                             </div>
                         </div>
-                        <!-- Normal Modal -->
-                        <div class="modal" id="modal-normal" tabindex="-1" role="dialog" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="block block-themed block-transparent remove-margin-b">
-                                        <div class="block-header bg-primary-light">
-                                            <h3 class="block-title">Terms &amp; Conditions</h3>
-                                        </div>
-                                        <div class="block-content">
-                                            <p>Dolor posuere proin blandit accumsan senectus netus nullam curae, ornare laoreet adipiscing luctus mauris adipiscing pretium eget fermentum, tristique lobortis est ut metus lobortis tortor tincidunt himenaeos habitant quis dictumst proin odio sagittis purus mi, nec taciti vestibulum quis in sit varius lorem sit metus mi.</p>
-                                            <p>Dolor posuere proin blandit accumsan senectus netus nullam curae, ornare laoreet adipiscing luctus mauris adipiscing pretium eget fermentum, tristique lobortis est ut metus lobortis tortor tincidunt himenaeos habitant quis dictumst proin odio sagittis purus mi, nec taciti vestibulum quis in sit varius lorem sit metus mi.</p>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Close</button>
-                                        <button class="btn btn-sm btn-primary" type="button" data-dismiss="modal"><i class="fa fa-check"></i> Ok</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- END Normal Modal -->
                     </div>
                     <div class="col-sm-6 col-lg-3">
                         <h2 class="content-heading">Small</h2>
@@ -617,27 +684,6 @@
                                 <button class="btn btn-primary" data-toggle="modal" data-target="#modal-small" type="button">Launch Modal</button>
                             </div>
                         </div>
-                        <!-- Small Modal -->
-                        <div class="modal" id="modal-small" tabindex="-1" role="dialog" aria-hidden="true">
-                            <div class="modal-dialog modal-sm">
-                                <div class="modal-content">
-                                    <div class="block block-themed block-transparent remove-margin-b">
-                                        <div class="block-header bg-primary-light">
-                                            <h3 class="block-title">Terms &amp; Conditions</h3>
-                                        </div>
-                                        <div class="block-content">
-                                            <p>Dolor posuere proin blandit accumsan senectus netus nullam curae, ornare laoreet adipiscing luctus mauris adipiscing pretium eget fermentum, tristique lobortis est ut metus lobortis tortor tincidunt himenaeos habitant quis dictumst proin odio sagittis purus mi, nec taciti vestibulum quis in sit varius lorem sit metus mi.</p>
-                                            <p>Dolor posuere proin blandit accumsan senectus netus nullam curae, ornare laoreet adipiscing luctus mauris adipiscing pretium eget fermentum, tristique lobortis est ut metus lobortis tortor tincidunt himenaeos habitant quis dictumst proin odio sagittis purus mi, nec taciti vestibulum quis in sit varius lorem sit metus mi.</p>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Close</button>
-                                        <button class="btn btn-sm btn-primary" type="button" data-dismiss="modal"><i class="fa fa-check"></i> Ok</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- END Small Modal -->
                     </div>
                     <div class="col-sm-6 col-lg-3">
                         <h2 class="content-heading">Large</h2>
@@ -646,27 +692,6 @@
                                 <button class="btn btn-primary" data-toggle="modal" data-target="#modal-large" type="button">Launch Modal</button>
                             </div>
                         </div>
-                        <!-- Large Modal -->
-                        <div class="modal" id="modal-large" tabindex="-1" role="dialog" aria-hidden="true">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                    <div class="block block-themed block-transparent remove-margin-b">
-                                        <div class="block-header bg-primary-light">
-                                            <h3 class="block-title">Terms &amp; Conditions</h3>
-                                        </div>
-                                        <div class="block-content">
-                                            <p>Dolor posuere proin blandit accumsan senectus netus nullam curae, ornare laoreet adipiscing luctus mauris adipiscing pretium eget fermentum, tristique lobortis est ut metus lobortis tortor tincidunt himenaeos habitant quis dictumst proin odio sagittis purus mi, nec taciti vestibulum quis in sit varius lorem sit metus mi.</p>
-                                            <p>Dolor posuere proin blandit accumsan senectus netus nullam curae, ornare laoreet adipiscing luctus mauris adipiscing pretium eget fermentum, tristique lobortis est ut metus lobortis tortor tincidunt himenaeos habitant quis dictumst proin odio sagittis purus mi, nec taciti vestibulum quis in sit varius lorem sit metus mi.</p>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Close</button>
-                                        <button class="btn btn-sm btn-primary" type="button" data-dismiss="modal"><i class="fa fa-check"></i> Ok</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- END Large Modal -->
                     </div>
                     <div class="col-sm-6 col-lg-3">
                         <h2 class="content-heading">Fade In</h2>
@@ -675,27 +700,6 @@
                                 <button class="btn btn-primary" data-toggle="modal" data-target="#modal-fadein" type="button">Launch Modal</button>
                             </div>
                         </div>
-                        <!-- Fade In Modal -->
-                        <div class="modal fade" id="modal-fadein" tabindex="-1" role="dialog" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="block block-themed block-transparent remove-margin-b">
-                                        <div class="block-header bg-primary-light">
-                                            <h3 class="block-title">Terms &amp; Conditions</h3>
-                                        </div>
-                                        <div class="block-content">
-                                            <p>Dolor posuere proin blandit accumsan senectus netus nullam curae, ornare laoreet adipiscing luctus mauris adipiscing pretium eget fermentum, tristique lobortis est ut metus lobortis tortor tincidunt himenaeos habitant quis dictumst proin odio sagittis purus mi, nec taciti vestibulum quis in sit varius lorem sit metus mi.</p>
-                                            <p>Dolor posuere proin blandit accumsan senectus netus nullam curae, ornare laoreet adipiscing luctus mauris adipiscing pretium eget fermentum, tristique lobortis est ut metus lobortis tortor tincidunt himenaeos habitant quis dictumst proin odio sagittis purus mi, nec taciti vestibulum quis in sit varius lorem sit metus mi.</p>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Close</button>
-                                        <button class="btn btn-sm btn-primary" type="button" data-dismiss="modal"><i class="fa fa-check"></i> Ok</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- END Fade In Modal -->
                     </div>
                 </div>
             </article>
