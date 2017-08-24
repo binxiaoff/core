@@ -2195,11 +2195,10 @@ class dossiersController extends bootstrap
                 $this->nextScheduledRepaymentDate = \DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance']);
                 $this->lenderOwedCapital          = $repaymentSchedule->getRemainingCapitalAtDue($this->projects->id_project, $nextRepayment[0]['ordre'] + 1);
                 $this->borrowerOwedCapital        = $paymentSchedule->reste_a_payer_ra($this->projects->id_project, $nextRepayment[0]['ordre'] + 1);
-                $amountDifference                 = bcsub($this->lenderOwedCapital, $this->borrowerOwedCapital, 2);
 
-                if ($amountDifference == 0) {
+                if (0 === bccomp($this->lenderOwedCapital, $this->borrowerOwedCapital, 2)) {
                     $this->message = '<div style="color:green;">Remboursement possible</div>';
-                } elseif ($amountDifference < 0) {
+                } elseif (-1 === bccomp($this->lenderOwedCapital, $this->borrowerOwedCapital, 2)) {
                     $this->message = '<div style="color:orange;">Remboursement possible <br />(CRD Prêteurs :' . $this->lenderOwedCapital . '€ - CRD Emprunteur :' . $this->borrowerOwedCapital . '€)</div>';
                 } else {
                     $this->earlyRepaymentPossible = false;
@@ -2218,11 +2217,19 @@ class dossiersController extends bootstrap
 
                 if (1 === count($this->reception)) {
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions reception */
-                    $this->reception = $this->reception[0];
+                    $this->reception   = $this->reception[0];
+                    $lastPaidRepayment = $repaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND status = ' . Echeanciers::STATUS_REPAID, ' ordre DESC', 0, 1);
 
-                    if ($amountDifference == 0 && (bcdiv($this->reception->getMontant(), 100, 2)) >= $this->lenderOwedCapital) {
+                    $currentLenderOwedCapital   = $repaymentSchedule->getRemainingCapitalAtDue($this->projects->id_project, $lastPaidRepayment[0]['ordre'] + 1);
+                    $currentBorrowerOwedCapital = $paymentSchedule->reste_a_payer_ra($this->projects->id_project, $lastPaidRepayment[0]['ordre'] + 1);
+
+                    if (0 === bccomp($currentLenderOwedCapital, $currentBorrowerOwedCapital, 2) && (bcdiv($this->reception->getMontant(), 100, 2)) >= $currentLenderOwedCapital) {
                         $this->wireTransferAmountOk = true;
                         $this->message              = '<div style="color:green;">Virement reçu conforme</div>';
+                    } elseif (0 === bccomp($this->lenderOwedCapital, $this->borrowerOwedCapital, 2) && (bcdiv($this->reception->getMontant(), 100, 2)) >= $this->lenderOwedCapital) {
+                        $this->wireTransferAmountOk = true;
+                        $this->message              = '<div style="color:green;">Virement reçu conforme - Attente du remboursement de l\'échéance du ' . \DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance'])->format('d/m/Y') . '</div>';
+                        $this->displayActionButton  = false;
                     } elseif (bcdiv($this->reception->getMontant(), 100, 2) < $this->lenderOwedCapital) {
                         $this->wireTransferAmountOk = false;
                         $this->message              = '<div style="color:red;">Virement reçu - Probléme montant <br />(CRD Prêteurs :' . $this->lenderOwedCapital . '€ - Virement :' . ($this->reception->getMontant() / 100) . '€)</div>';
@@ -3426,6 +3433,26 @@ class dossiersController extends bootstrap
                 header('Location: ' . $this->lurl . '/transferts/virement_emprunteur/');
             }
             die;
+        }
+    }
+
+    public function _details_impayes()
+    {
+        $this->useOneUi();
+        /** @var \users $user */
+        $user = $this->loadData('users');
+        $user->get($_SESSION['user']['id_user']);
+
+        if (\users_types::TYPE_RISK == $user->id_user_type
+            || $user->id_user == 28
+            || isset($this->params[0]) && 'risk' == $this->params[0] && in_array($user->id_user_type, [\users_types::TYPE_ADMIN, \users_types::TYPE_IT])
+        ) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+
+            if (false === empty($this->params[0])) {
+                // Get details for all blocks
+            }
         }
     }
 }

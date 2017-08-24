@@ -310,12 +310,12 @@ class bootstrap extends Controller
                     'uri'   => 'sfpmei/transferts/preteurs',
                 ],
                 [
-                    'title' => 'Transferts de fonds prêteurs',
+                    'title' => 'Transferts de fonds emprunteurs',
                     'uri'   => 'sfpmei/transferts/emprunteurs',
                 ],
                 [
-                    'title' => 'Requêtes',
-                    'uri'   => 'sfpmei/requetes',
+                    'title' => 'Exports',
+                    'uri'   => 'sfpmei/exports',
                 ]
             ]
         ]

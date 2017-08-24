@@ -40,12 +40,20 @@
                 <tr>
                     <th>Actions :</th>
                     <td>
-                        <form action="" method="post" name="action_remb_anticipe">
-                            <input type="hidden" name="id_reception" value="<?= $this->reception->getIdReception() ?>">
-                            <input type="hidden" name="montant_crd_preteur" value="<?= $this->lenderOwedCapital ?>">
-                            <input type="hidden" name="spy_remb_anticipe" value="ok">
-                            <input type="submit" value="Déclencher le remboursement anticipé" class="btn">
-                        </form>
+                        <a class="inline btn_link" href="#early-repayment">Déclencher le remboursement anticipé</a>
+                        <div class="hidden">
+                            <div id="early-repayment" style="padding: 10px; min-width: 300px;">
+                                <h3 class="text-center">Confirmer le remboursement anticipé</h3>
+                                <form action="" method="post" name="action_remb_anticipe">
+                                    <input type="hidden" name="id_reception" value="<?= $this->reception->getIdReception() ?>">
+                                    <input type="hidden" name="spy_remb_anticipe" value="ok">
+                                    <div class="text-center"><br>
+                                        <button type="button" class="btn btnDisabled" onclick="parent.$.fn.colorbox.close()">Annuler</button>
+                                        <input type="submit" value="Valider" class="btn" data-prevent-doubleclick>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </td>
                 </tr>
             <?php endif; ?>
@@ -62,3 +70,7 @@
 <?php else: ?>
     <?= $this->message ?>
 <?php endif; ?>
+
+<script>
+    $('.inline').colorbox({inline: true})
+</script>
