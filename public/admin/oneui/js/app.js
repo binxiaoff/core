@@ -369,13 +369,14 @@ var App = function() {
                 var id = item.find('.id').text()
                 var section = item.parent().attr('class')
 
-                $headerSearch.val(title.replace(id, ''))
+                $lSearch.val(title.replace(id, ''))
 
                 if (~section.indexOf('projects')) {
                     window.location.replace('/dossiers/edit/' + id.match(/\d+/))
                 } else if (~section.indexOf('lenders')) {
                     window.location.replace('/preteurs/edit/' + id.match(/\d+/))
                 }
+                $('.autocomplete-suggestions').hide()
             },
             sections: true,
             sectionMaxResults: 5,
@@ -402,7 +403,7 @@ var App = function() {
                         html += '<input type="hidden" name="nom" value="' + term + '">'
                     }
                 }
-                html += '<button type="submit" class="btn btn-default btn-sm">Plus de ' + btnText + ' <span class="fa fa-chevron-right"></span></button>'
+                html += '<button type="submit" class="btn btn-default btn-sm"><span class="fa fa-search"></span> Plus de ' + btnText + '</button>'
                 html += '</form>'
                 return html
             }
@@ -1183,7 +1184,7 @@ var App = function() {
             var valid = true
             $(this).find('.required').each(function(){
                 var $input = $(this)
-                if ($input.is('input[type=text]') || $input.is('input[type=number]') || $input.is('input[type=email]') || $input.is('textarea')) {
+                if ($input.is('input[type=text]') || $input.is('input[type=number]') || $input.is('input[type=email]') || $input.is('textarea') || $input.is('input[type=password]')) {
                     if (!$input.val() || $input.val() === '') {
                         $input.closest('.form-group').removeClass('has-error').addClass('has-error')
                         valid = false

@@ -22,11 +22,10 @@
 
 {% block pageScripts %}
 <script>
-    jQuery(function () {
+    $(function(){
         // Page helpers are initialised in app.js and can be called quickly using their name
         App.initHelpers(['validation', 'select2', 'datepicker', 'masked-inputs', 'summernote', 'table-tools', 'easy-pie-chart']);
-    });
-    $(function(){
+
         // jQuery AutoComplete example, for more examples you can check out https://github.com/Pixabay/jQuery-autoComplete
         $('.js-autocomplete').autoComplete({
             minChars: 1,

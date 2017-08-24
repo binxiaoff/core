@@ -9,10 +9,12 @@
 .autocomplete-suggestion.selected { background: #f0f0f0; }
 
 
-.autocomplete-suggestions.header-autocomplete {
+.header-autocomplete {
+    background: #f1f1f1;
     position: fixed;
     top: 55px!important;
-    max-height: 300px;
+    min-height: 600px;
+    max-height: 600px;
 }
 .autocomplete-suggestion {
     padding: 5px 10px;
@@ -54,6 +56,7 @@
     color: #a8a8a8;
 }
 .autocomplete-section .title {
+    background: #f0f0f0;
     font-weight: 600;
     color: #999;
 }

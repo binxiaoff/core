@@ -22,3 +22,9 @@
 .nav-header .input-group {
     width: 100%;
 }
+
+.alert-danger {
+    background: #f0cce0;
+    color: #b20066;
+    box-shadow: 0 2px #b23a81;
+}

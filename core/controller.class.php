@@ -205,7 +205,7 @@ abstract class Controller implements ContainerAwareInterface
             $template = '404.html.twig';
         }
 
-        $context += [
+        $context['app'] += [
             'environment' => $this->getParameter('kernel.environment'),
             'adminUrl'    => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_admin'),
             'frontUrl'    => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),

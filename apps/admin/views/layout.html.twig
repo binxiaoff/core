@@ -6,18 +6,18 @@
     <meta name="description" content="Unilend's administration back office">
     <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="icon" type="image/png" href="{{ staticUrl }}/images/admin/favicon.png">
+    <link rel="icon" type="image/png" href="{{ app.staticUrl }}/images/admin/favicon.png">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400italic,600,700%7COpen+Sans:300,400,400italic,600,700">
 
     <!-- Plugins CSS -->
     {% block pluginsCSS %} {% endblock %}
 
     <!-- Core CSS -->
-    <link rel="stylesheet" href="{{ adminUrl }}/oneui/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{{ adminUrl }}/oneui/css/oneui.css">
-    <link rel="stylesheet" href="{{ adminUrl }}/oneui/css/unilend.min.css">
-    <link rel="stylesheet" href="{{ adminUrl }}/oneui/css/autocomplete.css">
-    <link rel="stylesheet" href="{{ adminUrl }}/oneui/css/edits.css">
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/css/oneui.css">
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/css/unilend.min.css">
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/css/autocomplete.css">
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/css/edits.css">
 </head>
 <body>
 <div id="page-container" class="sidebar-l side-scroll header-navbar-fixed sidebar-o">
@@ -28,15 +28,15 @@
                     <button class="btn btn-link text-gray pull-right hidden-md hidden-lg" type="button" data-toggle="layout" data-action="sidebar_close">
                         <i class="fa fa-times"></i>
                     </button>
-                    <a class="h5 text-white pull-left" href="{{ adminUrl }}">
-                        <img src="{{ staticUrl }}/assets/images/logo/logo-unilend-52x52-purple.png" srcset="{{ staticUrl }}/assets/images/logo/logo-unilend-52x52-purple@2x.png 2x" alt="Unilend">
+                    <a class="h5 text-white pull-left" href="{{ app.adminUrl }}">
+                        <img src="{{ app.staticUrl }}/assets/images/logo/logo-unilend-52x52-purple.png" srcset="{{ app.staticUrl }}/assets/images/logo/logo-unilend-52x52-purple@2x.png 2x" alt="Unilend">
                     </a>
                     <div class="clearfix"></div>
-                    {% if 'prod' != environment %}
+                    {% if 'prod' != app.environment %}
                         <div class="environment bg-primary text-uppercase">
                             <a href="https://unilend.atlassian.net/wiki/pages/viewpage.action?pageId=46694427" target="_blank"><span class="fa fa-info-circle"></span></a>
                             <span class="font-w300">Environnement :</span>
-                            <span class="font-w600">{{ environment }}</span>
+                            <span class="font-w600">{{ app.environment }}</span>
                         </div>
                     {% endif %}
                 </div>
@@ -51,7 +51,7 @@
             <li>
                 <div class="btn-group">
                     <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button">
-                        {{ user.firstname }} {{ user.name }}
+                        {{ app.user.firstname }} {{ app.user.name }}
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-right">
@@ -61,12 +61,12 @@
                             </a>
                         </li>
                         <li>
-                            <a href="{{ adminUrl }}/users/edit_password">
+                            <a href="{{ app.adminUrl }}/users/edit_password">
                                 <i class="si si-lock pull-right"></i>Mot de passe
                             </a>
                         </li>
                         <li>
-                            <a href="{{ adminUrl }}/logout">
+                            <a href="{{ app.adminUrl }}/logout">
                                 <i class="si si-logout pull-right"></i>Se déconnecter
                             </a>
                         </li>
@@ -105,26 +105,26 @@
                 <div class="block-content">
                     <div class="form-group">
                         <label>Prénom</label>
-                        <div class="form-control-static">{{ user.firstname }}</div>
+                        <div class="form-control-static">{{ app.user.firstname }}</div>
                     </div>
                     <div class="form-group">
                         <label>Nom</label>
-                        <div class="form-control-static">{{ user.name }}</div>
+                        <div class="form-control-static">{{ app.user.name }}</div>
                     </div>
                     <div class="form-group">
                         <label>Email</label>
-                        <div class="form-control-static">{{ user.email }}</div>
+                        <div class="form-control-static">{{ app.user.email }}</div>
                     </div>
-                    {% if user.phone is not empty %}
+                    {% if app.user.phone is not empty %}
                         <div class="form-group">
                             <label>Téléphone</label>
-                            <div class="form-control-static">{{ user.phone }}</div>
+                            <div class="form-control-static">{{ app.user.phone }}</div>
                         </div>
                     {% endif %}
-                    {% if user.slack is not empty %}
+                    {% if app.user.slack is not empty %}
                         <div class="form-group">
                             <label>Slack</label>
-                            <div class="form-control-static">{{ user.slack }}</div>
+                            <div class="form-control-static">{{ app.user.slack }}</div>
                         </div>
                     {% endif %}
                 </div>
@@ -139,20 +139,19 @@
 
 
 <!-- OneUI Core JS -->
-<script src="{{ adminUrl }}/oneui/js/core/jquery.min.js"></script>
-<script src="{{ adminUrl }}/oneui/js/core/bootstrap.min.js"></script>
-<script src="{{ adminUrl }}/oneui/js/core/jquery.auto-complete.js"></script>
-<script src="{{ adminUrl }}/oneui/js/core/jquery.scrollLock.min.js"></script>
-<script src="{{ adminUrl }}/oneui/js/core/jquery.slimscroll.min.js"></script>
-<script src="{{ adminUrl }}/oneui/js/core/jquery.placeholder.min.js"></script>
-<script src="{{ adminUrl }}/oneui/js/core/js.cookie.min.js"></script>
-<script src="{{ adminUrl }}/oneui/js/app.js"></script>
+<script src="{{ app.adminUrl }}/oneui/js/core/jquery.min.js"></script>
+<script src="{{ app.adminUrl }}/oneui/js/core/bootstrap.min.js"></script>
+<script src="{{ app.adminUrl }}/oneui/js/core/jquery.auto-complete.js"></script>
+<script src="{{ app.adminUrl }}/oneui/js/core/jquery.scrollLock.min.js"></script>
+<script src="{{ app.adminUrl }}/oneui/js/core/jquery.slimscroll.min.js"></script>
+<script src="{{ app.adminUrl }}/oneui/js/core/jquery.placeholder.min.js"></script>
+<script src="{{ app.adminUrl }}/oneui/js/core/js.cookie.min.js"></script>
+<script src="{{ app.adminUrl }}/oneui/js/app.js"></script>
 
 <!-- Page Specific Plugins -->
 {% block pluginsJS %} {% endblock %}
 
 <!-- Page Specific JS Scripts -->
 {% block pageScripts %} {% endblock %}
-
 </body>
 </html>

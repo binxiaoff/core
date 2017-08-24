@@ -567,9 +567,10 @@ class bootstrap extends Controller
             $navigation[0]['title'] = 'Mon flux';
         }
 
-        $context += [
+        $context['app'] = [
             'navigation' => $navigation,
             'activeMenu' => isset($this->menu_admin) ? $this->menu_admin : '',
+            'session'    => $_SESSION,
             'user'       => $user,
             'userZones'  => isset($this->lZonesHeader) ? $this->lZonesHeader : []
         ];
