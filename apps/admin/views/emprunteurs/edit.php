@@ -13,14 +13,14 @@
         $(".mandats").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
         <?php endif; ?>
 
-        $("#operation-date-form").submit(function(e) {
+        $("#operation-date-form").submit(function (e) {
             e.preventDefault()
             var val = {
                 id_client: <?= $this->clients->id_client ?>,
                 year: $(this).find('select').val()
             };
             $("#filter-button").prop("disabled", true)
-            $.post(add_url + '/emprunteurs/loadBorrowerOperationAjax', val).done(function(data) {
+            $.post(add_url + '/emprunteurs/loadBorrowerOperationAjax', val).done(function (data) {
                 $("#filter-button").prop("disabled", false)
                 if (data != 'nok') {
                     $(".borrower-operation-table").html(data);
@@ -248,21 +248,25 @@
         <?php endforeach; ?>
         </tbody>
     </table>
-    <p>&nbsp;</p>
+    <br>
     <h2>Relevé des opérations</h2>
-    <div style="float: left">
-        <form method="post" id="operation-date-form" action="">
-            <div class="form-group">
-                <select name="operation-date-filter" id="operation-date-filter" class="select">
-                    <?php for ($i = date('Y'); $i >= 2013; $i--) : ?>
-                        <option value="<?= $i ?>"><?= $i ?></option>
-                    <?php endfor; ?>
-                </select>
-                <input type="submit" value="Filtrer" name="filter" class="btn-primary" id="filter-button"/>
-            </div>
-        </form>
-    </div>
-    <div class="borrower-operation-table">
-        <?php $this->fireView('operations'); ?>
-    </div>
+    <?php if (count($this->operations) > 0) : ?>
+        <div style="float: left">
+            <form method="post" id="operation-date-form" action="" class="form-inline">
+                <div class="form-group">
+                    <select name="operation-date-filter" class="select">
+                        <?php for ($i = date('Y'); $i >= 2013; $i--) : ?>
+                            <option value="<?= $i ?>"><?= $i ?></option>
+                        <?php endfor; ?>
+                    </select>
+                    <input type="submit" value="Filtrer" name="filter" class="btn-primary" id="filter-button">
+                </div>
+            </form>
+        </div>
+        <div class="borrower-operation-table">
+            <?php $this->fireView('operations'); ?>
+        </div>
+    <?php else : ?>
+        <p>Aucune opération</p>
+    <?php endif; ?>
 </div>
