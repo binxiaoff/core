@@ -10,22 +10,28 @@ Les campagnes en cours doivent etre modifiables par soumission de formulaire
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
-    <form method="post" name="form_create_campaign" id="form_create_campaign" enctype="multipart/form-data" action="<?= $this->lurl ?>/parrainage/create_new_campaign">
+    <form method="post" enctype="multipart/form-data" action="<?= $this->lurl ?>/parrainage/create_new_campaign">
         <fieldset>
-            <label for="start">Début de l'offre :</label>
-            <input type="text" name="start" id="start" value=""/>
-            <label for="end">Fin de l'offre :</label>
-            <input type="text" name="end" id="end"/>
-            <label for="amount_sponsee">Montant pour le filleul :</label>
-            <input type="number" name="amount_sponsee" id="amount_sponsee"/>
-            <label for="amount_sponsor">Montant pour le parrain :</label>
-            <input type="number" name="amount_sponsor" id="amount_sponsor"/>
-            <label for="max_number_sponsee">Nombre maximum de filleuls :</label>
-            <input type="number" name="max_number_sponsee" id="max_number_sponsee"/>
-            <label for="validity_days">Jours de validité</label>
-            <input type="number" name="validity_days" id="validity_days"/>
-            <input type="hidden" name="id_campaign" id="id_campaign" value=""/>
-            <input type="hidden" name="create_new_campaign" value=""/>
+            <label>Début de l'offre :
+                <input type="text" name="start" value="">
+            </label>
+            <label>Fin de l'offre :
+                <input type="text" name="end">
+            </label>
+            <label>Montant pour le filleul :
+                <input type="number" name="amount_sponsee">
+            </label>
+            <label>Montant pour le parrain :
+                <input type="number" name="amount_sponsor">
+            </label>
+            <label>Nombre maximum de filleuls :
+                <input type="number" name="max_number_sponsee">
+            </label>
+            <label>Jours de validité
+                <input type="number" name="validity_days">
+            </label>
+            <input type="hidden" name="id_campaign" value="">
+            <input type="hidden" name="create_new_campaign" value="">
             <button type="submit" class="btn-primary">Créer</button>
         </fieldset>
     </form>
@@ -49,17 +55,17 @@ Les campagnes en cours doivent etre modifiables par soumission de formulaire
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
-    <form method="post" name="form_blacklist" id="form_blacklist" enctype="multipart/form-data" action="<?= $this->lurl ?>/parrainage/blacklist">
+    <form method="post" enctype="multipart/form-data" action="<?= $this->lurl ?>/parrainage/blacklist">
         <fieldset>
-            <label for="id_client">Client</label>
-            <input type="number" name="id_client" id="id_client"/>
-
-            <select id="campaign" name="campaign">
+            <label>Client
+                <input type="number" name="id_client">
+            </label>
+            <select name="campaign">
                 <option value=""></option>
                 <option value="0">Toutes les campagnes</option>
                 <option value="<?= $this->ongoingCampaign->getId() ?>">Campagne en cours</option>
             </select>
-            <input type="hidden" name="blacklist_client" value=""/>
+            <input type="hidden" name="blacklist_client" value="">
             <button type="submit" class="btn-primary">Créer</button>
         </fieldset>
     </form>
@@ -80,12 +86,11 @@ Les campagnes en cours doivent etre modifiables par soumission de formulaire
     <?php endif; ?>
     <form method="post" name="search_sponsorship">
         <fieldset>
-            <label for="id_client">Client</label>
-            <input type="number" name="id_client" id="id_client"/>
+            <label>Client<input type="number" name="id_client"></label>
             <input type="radio" name="type" value="sponsor"> Parrain<br>
             <input type="radio" name="type" value="sponsee"> Filleul<br>
             <input type="hidden" name="search_sponsorship" value="">
-            <button type="submit" class="btn-primary" id="search_sponsorship">Rechercher</button>
+            <button type="submit" class="btn-primary">Rechercher</button>
         </fieldset>
     </form>
     <div id="sponsorship_detail"> <!-- info call by ajax, confirmation will eventually submit the form -->
@@ -107,8 +112,8 @@ Les campagnes en cours doivent etre modifiables par soumission de formulaire
                 Statut (en attente, prime filleul versée, prime parrain versé)
                 <form method="post" name="pay_out_reward" enctype="multipart/form-data" action="<?= $this->lurl ?>/parrainage/pay_out_reward">
                     <fieldset>
-                    <input type="hidden" name="id_sponsorship" value="<?= $sponsorship->getId() ?>"/>
-                    <input type="hidden" name="pay_out_reward" value=""/>
+                    <input type="hidden" name="id_sponsorship" value="<?= $sponsorship->getId() ?>">
+                    <input type="hidden" name="pay_out_reward" value="">
                         <?php if (\Unilend\Bundle\CoreBusinessBundle\Entity\Sponsorship::STATUS_ONGOING == $sponsorship->getStatus()) : ?>
                             <input type="hidden" name="type_reward" value="<?= \Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSEE ?>">
                             <button type="submit" class="btn-primary">Verser prime filleul</button>
@@ -149,14 +154,12 @@ Les campagnes en cours doivent etre modifiables par soumission de formulaire
         </div>
     <?php endif; ?>
 
-    <form method="post" name="create_sponsorship" enctype="multipart/form-data" action="<?= $this->lurl ?>/parrainage/create_sponsorship">
+    <form method="post" enctype="multipart/form-data" action="<?= $this->lurl ?>/parrainage/create_sponsorship">
         <fieldset>
-            <label for="id_client_sponsor">ID Client parrain</label>
-            <input type="number" name="id_client_sponsor" id="id_client_sponsor"/>
-            <label for="id_client_sponsee">ID Client filleul</label>
-            <input type="number" name="id_client_sponsee" id="id_client_sponsee"/>
+            <label>ID Client parrain<input type="number" name="id_client_sponsor"></label>
+            <label>ID Client filleul<input type="number" name="id_client_sponsee"></label>
             <input type="hidden" name="create_sponsorship" value="">
-            <button type="submit" class="btn-primary" id="create_sponsorship">Créer</button>
+            <button type="submit" class="btn-primary">Créer</button>
         </fieldset>
     </form>
     <?php if (isset($this->createSponsorshipData)) : ?>
@@ -169,12 +172,12 @@ Les campagnes en cours doivent etre modifiables par soumission de formulaire
         ID client Parrain
         Nom Parrain
         Prénom Parrain
-        <form method="post" name="create_sponsorship" enctype="multipart/form-data" action="<?= $this->lurl ?>/parrainage/create_sponsorship">
+        <form method="post" enctype="multipart/form-data" action="<?= $this->lurl ?>/parrainage/create_sponsorship">
             <fieldset>
                 <input type="hidden" name="create_sponsorship_confirm" value="">
-                <input type="hidden" name="id_client_sponsor" id="id_client_sponsor" value="<?= $this->createSponsorshipData['idClientSponsor'] ?>"/>
-                <input type="hidden" name="id_client_sponsee" id="id_client_sponsee" value="<?= $this->createSponsorshipData['idClientSponsee'] ?>"/>
-                <button type="submit" class="btn-primary" id="create_sponsorship_confirm">Valider la création</button>
+                <input type="hidden" name="id_client_sponsor" value="<?= $this->createSponsorshipData['idClientSponsor'] ?>">
+                <input type="hidden" name="id_client_sponsee" value="<?= $this->createSponsorshipData['idClientSponsee'] ?>">
+                <button type="submit" class="btn-primary">Valider la création</button>
             </fieldset>
         </form>
     <?php endif; ?>
