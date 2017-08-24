@@ -30,6 +30,9 @@
         <div id="sidebar-scroll">
             <div class="sidebar-content">
                 <div class="side-header side-content">
+                    <button class="btn btn-link text-gray pull-right hidden-md hidden-lg" type="button" data-toggle="layout" data-action="sidebar_close">
+                        <i class="fa fa-times"></i>
+                    </button>
                     <a class="h5 text-white pull-left" href="{{ adminUrl }}">
                         <img src="{{ staticUrl }}/assets/images/logo/logo-unilend-52x52-purple.png" srcset="{{ staticUrl }}/assets/images/logo/logo-unilend-52x52-purple@2x.png 2x" alt="Unilend">
                     </a>
@@ -79,6 +82,12 @@
         <ul class="nav-header pull-left">
             <li class="header-search">
                 <input class="form-control" type="text" id="quick-search" name="quick-search" placeholder="Recherche ...">
+            </li>
+            <li class="hidden-md hidden-lg">
+                <!-- Layout API, functionality initialized in App() -> uiLayoutApi() -->
+                <button class="btn btn-default" data-toggle="layout" data-action="sidebar_toggle" type="button">
+                    <i class="fa fa-navicon"></i>
+                </button>
             </li>
         </ul>
     </header>
