@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ProjectCharge
  *
- * @ORM\Table(name="project_charge", indexes={@ORM\Index(name="fk_project_charge_id_project", columns={"id_project"}), @ORM\Index(name="idx_project_charge_id_type", columns={"id_type"})})
+ * @ORM\Table(name="project_charge", indexes={@ORM\Index(name="idx_project_charge_id_project", columns={"id_project"}), @ORM\Index(name="idx_project_charge_id_type", columns={"id_type"})})
  * @ORM\Entity
  *
  * @ORM\HasLifecycleCallbacks
@@ -24,9 +24,9 @@ class ProjectCharge
     /**
      * @var string
      *
-     * @ORM\Column(name="amount_excl_vat", type="decimal", precision=12, scale=2, nullable=false)
+     * @ORM\Column(name="amount_incl_vat", type="decimal", precision=12, scale=2, nullable=false)
      */
-    private $amountExclVat;
+    private $amountInclVat;
 
     /**
      * @var string
@@ -66,7 +66,7 @@ class ProjectCharge
     private $id;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectChargeType
+     * @var ProjectChargeType
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectChargeType")
      * @ORM\JoinColumns({
@@ -76,7 +76,7 @@ class ProjectCharge
     private $idType;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
+     * @var Projects
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
      * @ORM\JoinColumns({
@@ -108,19 +108,19 @@ class ProjectCharge
     /**
      * @return string
      */
-    public function getAmountExclVat()
+    public function getAmountInclVat()
     {
-        return $this->amountExclVat;
+        return $this->amountInclVat;
     }
 
     /**
-     * @param string $amountExclVat
+     * @param string $amountInclVat
      *
      * @return ProjectCharge
      */
-    public function setAmountExclVat($amountExclVat)
+    public function setAmountInclVat($amountInclVat)
     {
-        $this->amountExclVat = $amountExclVat;
+        $this->amountInclVat = $amountInclVat;
 
         return $this;
     }
