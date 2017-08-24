@@ -81,6 +81,16 @@ class Receptions
     private $statusPrelevement;
 
     /**
+     * @var SepaRejectionReason
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\SepaRejectionReason")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="rejection_iso_code", referencedColumnName="iso_code")
+     * })
+     */
+    private $rejectionIsoCode;
+
+    /**
      * @var integer
      *
      * @ORM\Column(name="status_bo", type="integer", nullable=false)
@@ -310,6 +320,26 @@ class Receptions
     public function getStatusPrelevement()
     {
         return $this->statusPrelevement;
+    }
+
+    /**
+     * @param SepaRejectionReason $rejectionIsoCode
+     *
+     * @return Receptions
+     */
+    public function setRejectionIsoCode(SepaRejectionReason $rejectionIsoCode)
+    {
+        $this->rejectionIsoCode = $rejectionIsoCode;
+
+        return $this;
+    }
+
+    /**
+     * @return SepaRejectionReason
+     */
+    public function getRejectionIsoCode()
+    {
+        return $this->rejectionIsoCode;
     }
 
     /**
