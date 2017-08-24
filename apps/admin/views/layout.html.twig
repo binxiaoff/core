@@ -199,109 +199,33 @@
                 suggest($suggestions)
             }
         })
-        
+
         var $headerSearch = $('#quick-search')
         $headerSearch.autoComplete({
             minChars: 2,
-            // Source must be updated later when using an ajax request instead of an array
-            // source: function(term, response){
-                // $.getJSON('/some/ajax/url/', {q: term}, function(response){ suggest(response) })
-            // },
             cache: 0, // Doesn't work with any other value (when using sections in suggestions)
             menuClass: 'header-autocomplete',
-            source: function(term, suggest) {
-                term = term.toLowerCase()
-                
-                var projects = [
-                    {
-                        company: 'Truquet Julien',
-                        siren: 523774586,
-                        projectId: 81663,
-                        status: 'Remboursement',
-                        amount: 35000,
-                        period: 60,
-                        lenderName: 'Truquet',
-                        lenderId: '223929',
-                        lenderType: 'physical person'
-                    },
-                    {
-                        company: 'J.B. Hair Development',
-                        siren: 443140587,
-                        projectId: 81074,
-                        status: 'Remboursement',
-                        amount: 40000,
-                        period: 36,
-                        lenderName: 'Trigodet',
-                        lenderId: '583929',
-                        lenderType: 'physical person'
-                    },
-                    {
-                        company: 'Pharmacie Druel',
-                        siren: 507479889,
-                        projectId: 80241,
-                        status: 'Conditions suspensive de mise en ligne',
-                        amount: 140000,
-                        period: 36,
-                        lenderName: 'Webster',
-                        lenderId: '2383929',
-                        lenderType: 'moral person'
-                    },
-                    {
-                        company: 'Pharmacie Druel',
-                        siren: 507479889,
-                        projectId: 80241,
-                        status: 'Remboursement',
-                        amount: 60000,
-                        period: 36,
-                        lenderName: 'Druel',
-                        lenderId: '783929',
-                        lenderType: 'moral person'
-                    },
-                    {
-                        company: 'Macmatériel',
-                        siren: 789874690,
-                        projectId: 79515,
-                        status: 'Remboursement',
-                        amount: 40000,
-                        period: 12,
-                        lenderName: 'Druel',
-                        lenderId: '183929',
-                        lenderType: 'moral person'
-                    }
-                ]
-
-                var suggestions = {
-                    projects: [],
-                    lenders: []
-                }
-
-                for (var i = 0; i < projects.length; i++) {
-                    if ( ~ (projects[i].company + ' ' + projects[i].siren + ' ' + projects[i].projectId).toLowerCase().indexOf(term)) {
-                        suggestions.projects.push(projects[i])
-                    }
-                    if ( ~ (projects[i].lenderName + projects[i].lenderId).toLowerCase().indexOf(term)) {
-                        suggestions.lenders.push(projects[i])
-                    }
-                }
-                suggest(suggestions)
+            // Source must be updated later when using an ajax request instead of an array
+            source: function(term, suggest){
+                $.getJSON('/ajax/quick_search/', {q: term}, function (response){ suggest(response) })
             },
             renderItem: function (item, search, section) {
                 var html = ''
                 if (section === 'projects') {
-                    html += '<div class="autocomplete-suggestion" data-val="' + item.company + '">' +
-                            '<p>' + item.company + ' <span class="id">( ' + item.projectId + ' )</span></p>' +
+                    html += '<div class="autocomplete-suggestion" data-val="' + item.title + '">' +
+                            '<p>' + item.title + ' <span class="id">' + item.id + '</span></p>' +
                             '<div class="details">' +
-                            '<dl><dt>Siren</dt> <dd>' + item.siren + '</dd></dl>' +
-                            '<dl><dt>Amount</dt> <dd>' + item.amount + ' €</dd></dl>' +
-                            '<dl><dt>Duration</dt> <dd>' + item.period + ' mois</dd></dl>' +
-                            '<dl><dt>Status</dt> <dd>' + item.status + '</dd></dl>' +
+                            '<dl><dt>SIREN</dt> <dd>' + item.siren + '</dd></dl>' +
+                            '<dl><dt>Montant</dt> <dd>' + item.amount + ' €</dd></dl>' +
+                            '<dl><dt>Durée</dt> <dd>' + item.duration + ' mois</dd></dl>' +
+                            '<dl><dt>Statut</dt> <dd>' + item.status + '</dd></dl>' +
                             '</div>'
                 }
                 if (section === 'lenders') {
-                    html += '<div class="autocomplete-suggestion" data-val="' + item.lenderName + '">' +
-                            '<p>' + item.lenderName + ' <span class="id">' + item.lenderId + ' </span></p>' +
+                    html += '<div class="autocomplete-suggestion" data-val="' + item.name + '">' +
+                            '<p>' + item.name + ' <span class="id">' + item.id + ' </span></p>' +
                             '<div class="details">' +
-                            '<dl><dd>' + item.lenderType + '</dd></dl>' +
+                            '<dl><dd>' + item.type + '</dd></dl>' +
                             '</div>'
                 }
                 html += '</div>'
