@@ -95,33 +95,30 @@
             function suggest(data){
                 var val = that.val();
                 that.cache[val] = data;
-
                 if (val.length >= o.minChars) {
                     var s = '';
-
-                    if (data.length) {
-                        for (var i=0;i<data.length;i++) {
-                            s += o.renderItem(data[i], val);
+                    if (!o.sections) {
+                        if (data.length) {
+                            for (var i=0;i<data.length;i++) {
+                                s += o.renderItem(data[i], val);
+                            }
                         }
                     } else {
                         for (var key in data) {
                             var values = data[key]
                             if (values.length) {
-                                s += '<section class="autocomplete-section autocomplete-' + key + '">';
+                                s += '<div class="autocomplete-section autocomplete-' + key + '">';
                                 s += '<span class="title">' + key +  '</span>';
                                 for (var i=0;i<values.length;i++) {
-                                    if (i < o.maxResults)
+                                    if (o.sectionMaxResults && o.sectionMaxResults != 0 && i < o.sectionMaxResults)
                                         s += o.renderItem(values[i], val, key);
                                 }
-                                if (values.length >= o.maxResults)
-                                    s += o.showMore(key, val);
-
-                                s += '</section>';
-                            } else
-                                that.sc.hide();
+                                if (values.length >= o.sectionMaxResults)
+                                    s += o.sectionShowMore(key, val);
+                                s += '</div>';
+                            }
                         }
                     }
-
                     that.sc.html(s);
                     that.updateSC(0);
                 }
@@ -136,6 +133,8 @@
                     if (!sel.length) {
                         if (e.which == 40) {
                             next = $('.autocomplete-suggestion', that.sc).first()
+                        } else {
+                            next = $('.autocomplete-suggestion', that.sc).last()
                         }
                         that.val(next.addClass('selected').data('val'));
                     } else {
@@ -207,9 +206,10 @@
         delay: 150,
         cache: 1,
         menuClass: '',
-        maxResults: 5,
-        showMore: function(section){
-            console.log('Show more ' + section + '| Add showMore() as a parameter in the init options.')
+        sections: false,
+        sectionMaxResults: 0,
+        sectionShowMore: function(section){
+            console.log('Show more ' + section + '| Add sectionShowMore() as a parameter in the init options.')
         },
         renderItem: function (item, search, section){
             // escape special characters

@@ -201,14 +201,12 @@
         })
         
         var $headerSearch = $('#quick-search')
-        var $headerSearchForm = $headerSearch.closest('form')
         $headerSearch.autoComplete({
             minChars: 2,
             // Source must be updated later when using an ajax request instead of an array
             // source: function(term, response){
                 // $.getJSON('/some/ajax/url/', {q: term}, function(response){ suggest(response) })
             // },
-            maxResults: 2,
             cache: 0, // Doesn't work with any other value (when using sections in suggestions)
             menuClass: 'header-autocomplete',
             source: function(term, suggest) {
@@ -290,7 +288,7 @@
             renderItem: function (item, search, section) {
                 var html = ''
                 if (section === 'projects') {
-                    html += '<div class="autocomplete-suggestion" data-val="'+item.company+'">' +
+                    html += '<div class="autocomplete-suggestion" data-val="' + item.company + '">' +
                             '<p>' + item.company + ' <span class="id">( ' + item.projectId + ' )</span></p>' +
                             '<div class="details">' +
                             '<dl><dt>Siren</dt> <dd>' + item.siren + '</dd></dl>' +
@@ -300,7 +298,7 @@
                             '</div>'
                 }
                 if (section === 'lenders') {
-                    html += '<div class="autocomplete-suggestion" data-val="'+item.lenderName+'">' +
+                    html += '<div class="autocomplete-suggestion" data-val="' + item.lenderName + '">' +
                             '<p>' + item.lenderName + ' <span class="id">' + item.lenderId + ' </span></p>' +
                             '<div class="details">' +
                             '<dl><dd>' + item.lenderType + '</dd></dl>' +
@@ -309,9 +307,26 @@
                 html += '</div>'
                 return html
             },
-            showMore: function(section, term) {
+            onSelect: function(e, term, item){
+                var title = item.find('p').text()
+                var id = item.find('.id').text()
+                var section = item.parent().attr('class')
+
+                $headerSearch.val(title.replace(id, ''))
+
+                if (~section.indexOf('projects')) {
+                    window.location.replace('/dossiers/edit/' + id.match(/\d+/))
+                } else if (~section.indexOf('lenders')) {
+                    window.location.replace('/preteurs/edit/' + id.match(/\d+/))
+                }
+            },
+            sections: true,
+            sectionMaxResults: 2,
+            sectionShowMore: function(section, term) {
+                var btnText = ''
                 var html = '<form class="show-more" method="post" action="'
                 if (section === 'projects') {
+                    btnText  = 'projets'
                     html += '/dossiers">'
                     html += '<input type="hidden" name="form_search_dossier" value="1">'
 
@@ -322,6 +337,7 @@
                     }
                 }
                 if (section === 'lenders') {
+                    btnText  = 'prêteurs'
                     html += '/preteurs/gestion">'
                     html += '<input type="hidden" name="form_search_preteur" value="1">'
 
@@ -331,23 +347,9 @@
                         html += '<input type="hidden" name="nom" value="' + term + '">'
                     }
                 }
-                html += '<button type="submit" class="btn btn-default btn-sm">Voir tous les ' + section + ' <span class="fa fa-chevron-right"></span></button>'
+                html += '<button type="submit" class="btn btn-default btn-sm">Plus de ' + btnText + ' <span class="fa fa-chevron-right"></span></button>'
                 html += '</form>'
-                console.log(html)
                 return html
-            },
-            onSelect: function(e, term, item){
-                var title = item.find('p').text()
-                var id = item.find('.id').text().match(/\d+/)
-                var section = item.parent().attr('class')
-
-                $headerSearch.val(title)
-
-                if (~section.indexOf('projects')) {
-                    window.location.replace('/dossiers/edit/' + id)
-                } else if (~section.indexOf('lenders')) {
-                    window.location.replace('/preteurs/edit/' + id)
-                }
             }
         })
 

@@ -30,6 +30,7 @@
 .autocomplete-suggestion {
     padding: 5px 10px;
     clear: both;
+    cursor: pointer;
 }
 .autocomplete-suggestion p {
     margin: 0;
