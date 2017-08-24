@@ -21,7 +21,7 @@ class parrainageController extends bootstrap
 
     public function _default()
     {
-        /** @var \NumberFormatter $currencyFormatter */
+        /** @var \NumberFormatter $numberFormatter */
         $this->numberFormatter = $this->get('number_formatter');
         /** @var \NumberFormatter $currencyFormatter */
         $this->currencyFormatter = $this->get('currency_formatter');
