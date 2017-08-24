@@ -35,12 +35,8 @@ abstract class Controller implements ContainerAwareInterface
     public $request;
     /** @var Twig_Environment */
     private $twigEnvironment;
-    /** @var bool */
-    public $useOneUi = false;
 
     /**
-     * Controller constructor.
-     *
      * @param Command $command
      * @param string  $app
      * @param \Symfony\Component\HttpFoundation\Request|null  $request
@@ -117,7 +113,7 @@ abstract class Controller implements ContainerAwareInterface
 
         call_user_func([$this, '_' . $this->Command->getFunction()]);
 
-        if (false === $this->useOneUi) {
+        if (null === $this->twigEnvironment) {
             $this->setView($this->Command->getFunction());
 
             if ($this->autoFireHead) {
@@ -309,10 +305,5 @@ abstract class Controller implements ContainerAwareInterface
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
-    }
-
-    protected function useOneUi()
-    {
-        $this->useOneUi = true;
     }
 }

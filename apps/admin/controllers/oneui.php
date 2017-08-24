@@ -13,8 +13,6 @@ class oneuiController extends bootstrap
 
     public function _default()
     {
-        $this->useOneUi();
-
         $this->render();
     }
 }

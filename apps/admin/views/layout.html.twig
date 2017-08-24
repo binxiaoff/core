@@ -78,12 +78,7 @@
         </ul>
         <ul class="nav-header pull-left">
             <li class="header-search">
-                <form class="form-horizontal" action="" method="post">
-                    <div class="input-group remove-margin-t remove-margin-b">
-                        <input class="form-control" type="text" id="quick-search" name="quick-search" placeholder="Recherche ...">
-                        <span class="input-group-addon"><i class="fa fa-search"></i></span>
-                    </div>
-                </form>
+                <input class="form-control" type="text" id="quick-search" name="quick-search" placeholder="Recherche ...">
             </li>
         </ul>
     </header>
@@ -143,7 +138,7 @@
 <script src="{{ adminUrl }}/oneui/js/plugins/select2/select2.min.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/jquery-validation/jquery.validate.min.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/select2/select2.full.min.js"></script>
-<script src="{{ adminUrl }}/oneui/js/plugins/jquery-auto-complete/jquery.auto-complete.min.js"></script>
+<script src="{{ adminUrl }}/oneui/js/plugins/jquery-auto-complete/jquery.auto-complete.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/masked-inputs/jquery.maskedinput.min.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
@@ -192,29 +187,104 @@
         $('.js-autocomplete').autoComplete({
             minChars: 1,
             source: function(term, suggest){
-                term = term.toLowerCase();
+                term = term.toLowerCase()
 
-                var $countriesList  = ['Afghanistan','Albania','Algeria','Andorra','Angola','Anguilla','Antigua &amp; Barbuda','Argentina','Armenia','Aruba','Australia','Austria','Azerbaijan','Bahamas','Bahrain','Bangladesh','Barbados','Belarus','Belgium','Belize','Benin','Bermuda','Bhutan','Bolivia','Bosnia &amp; Herzegovina','Botswana','Brazil','British Virgin Islands','Brunei','Bulgaria','Burkina Faso','Burundi','Cambodia','Cameroon','Cape Verde','Cayman Islands','Chad','Chile','China','Colombia','Congo','Cook Islands','Costa Rica','Cote D Ivoire','Croatia','Cruise Ship','Cuba','Cyprus','Czech Republic','Denmark','Djibouti','Dominica','Dominican Republic','Ecuador','Egypt','El Salvador','Equatorial Guinea','Estonia','Ethiopia','Falkland Islands','Faroe Islands','Fiji','Finland','France','French Polynesia','French West Indies','Gabon','Gambia','Georgia','Germany','Ghana','Gibraltar','Greece','Greenland','Grenada','Guam','Guatemala','Guernsey','Guinea','Guinea Bissau','Guyana','Haiti','Honduras','Hong Kong','Hungary','Iceland','India','Indonesia','Iran','Iraq','Ireland','Isle of Man','Israel','Italy','Jamaica','Japan','Jersey','Jordan','Kazakhstan','Kenya','Kuwait','Kyrgyz Republic','Laos','Latvia','Lebanon','Lesotho','Liberia','Libya','Liechtenstein','Lithuania','Luxembourg','Macau','Macedonia','Madagascar','Malawi','Malaysia','Maldives','Mali','Malta','Mauritania','Mauritius','Mexico','Moldova','Monaco','Mongolia','Montenegro','Montserrat','Morocco','Mozambique','Namibia','Nepal','Netherlands','Netherlands Antilles','New Caledonia','New Zealand','Nicaragua','Niger','Nigeria','Norway','Oman','Pakistan','Palestine','Panama','Papua New Guinea','Paraguay','Peru','Philippines','Poland','Portugal','Puerto Rico','Qatar','Reunion','Romania','Russia','Rwanda','Saint Pierre &amp; Miquelon','Samoa','San Marino','Satellite','Saudi Arabia','Senegal','Serbia','Seychelles','Sierra Leone','Singapore','Slovakia','Slovenia','South Africa','South Korea','Spain','Sri Lanka','St Kitts &amp; Nevis','St Lucia','St Vincent','St. Lucia','Sudan','Suriname','Swaziland','Sweden','Switzerland','Syria','Taiwan','Tajikistan','Tanzania','Thailand','Timor L\'Este','Togo','Tonga','Trinidad &amp; Tobago','Tunisia','Turkey','Turkmenistan','Turks &amp; Caicos','Uganda','Ukraine','United Arab Emirates','United Kingdom','United States','Uruguay','Uzbekistan','Venezuela','Vietnam','Virgin Islands (US)','Yemen','Zambia','Zimbabwe'];
-                var $suggestions    = [];
+                var $countriesList  = ['Afghanistan','Albania','Algeria','Andorra','Angola','Anguilla','Antigua &amp Barbuda','Argentina','Armenia','Aruba','Australia','Austria','Azerbaijan','Bahamas','Bahrain','Bangladesh','Barbados','Belarus','Belgium','Belize','Benin','Bermuda','Bhutan','Bolivia','Bosnia &amp Herzegovina','Botswana','Brazil','British Virgin Islands','Brunei','Bulgaria','Burkina Faso','Burundi','Cambodia','Cameroon','Cape Verde','Cayman Islands','Chad','Chile','China','Colombia','Congo','Cook Islands','Costa Rica','Cote D Ivoire','Croatia','Cruise Ship','Cuba','Cyprus','Czech Republic','Denmark','Djibouti','Dominica','Dominican Republic','Ecuador','Egypt','El Salvador','Equatorial Guinea','Estonia','Ethiopia','Falkland Islands','Faroe Islands','Fiji','Finland','France','French Polynesia','French West Indies','Gabon','Gambia','Georgia','Germany','Ghana','Gibraltar','Greece','Greenland','Grenada','Guam','Guatemala','Guernsey','Guinea','Guinea Bissau','Guyana','Haiti','Honduras','Hong Kong','Hungary','Iceland','India','Indonesia','Iran','Iraq','Ireland','Isle of Man','Israel','Italy','Jamaica','Japan','Jersey','Jordan','Kazakhstan','Kenya','Kuwait','Kyrgyz Republic','Laos','Latvia','Lebanon','Lesotho','Liberia','Libya','Liechtenstein','Lithuania','Luxembourg','Macau','Macedonia','Madagascar','Malawi','Malaysia','Maldives','Mali','Malta','Mauritania','Mauritius','Mexico','Moldova','Monaco','Mongolia','Montenegro','Montserrat','Morocco','Mozambique','Namibia','Nepal','Netherlands','Netherlands Antilles','New Caledonia','New Zealand','Nicaragua','Niger','Nigeria','Norway','Oman','Pakistan','Palestine','Panama','Papua New Guinea','Paraguay','Peru','Philippines','Poland','Portugal','Puerto Rico','Qatar','Reunion','Romania','Russia','Rwanda','Saint Pierre &amp Miquelon','Samoa','San Marino','Satellite','Saudi Arabia','Senegal','Serbia','Seychelles','Sierra Leone','Singapore','Slovakia','Slovenia','South Africa','South Korea','Spain','Sri Lanka','St Kitts &amp Nevis','St Lucia','St Vincent','St. Lucia','Sudan','Suriname','Swaziland','Sweden','Switzerland','Syria','Taiwan','Tajikistan','Tanzania','Thailand','Timor L\'Este','Togo','Tonga','Trinidad &amp Tobago','Tunisia','Turkey','Turkmenistan','Turks &amp Caicos','Uganda','Ukraine','United Arab Emirates','United Kingdom','United States','Uruguay','Uzbekistan','Venezuela','Vietnam','Virgin Islands (US)','Yemen','Zambia','Zimbabwe']
+                var $suggestions = []
 
-                for ($i = 0; $i < $countriesList.length; $i++) {
-                    if (~ $countriesList[$i].toLowerCase().indexOf(term)) $suggestions.push($countriesList[$i]);
+                for (var $i = 0; $i < $countriesList.length; $i++) {
+                    if (~ $countriesList[$i].toLowerCase().indexOf(term)) $suggestions.push($countriesList[$i])
                 }
 
-                suggest($suggestions);
+                suggest($suggestions)
             }
-        });
+        })
+
+        var $headerSearch = $('#quick-search')
+        $headerSearch.autoComplete({
+            minChars: 2,
+            cache: 0, // Doesn't work with any other value (when using sections in suggestions)
+            menuClass: 'header-autocomplete',
+            // Source must be updated later when using an ajax request instead of an array
+            source: function(term, suggest){
+                $.getJSON('/ajax/quick_search/', {q: term}, function (response){ suggest(response) })
+            },
+            renderItem: function (item, search, section) {
+                var html = ''
+                if (section === 'projects') {
+                    html += '<div class="autocomplete-suggestion" data-val="' + item.title + '">' +
+                            '<p>' + item.title + ' <span class="id">' + item.id + '</span></p>' +
+                            '<div class="details">' +
+                            '<dl><dt>SIREN</dt> <dd>' + item.siren + '</dd></dl>' +
+                            '<dl><dt>Montant</dt> <dd>' + item.amount + ' €</dd></dl>' +
+                            '<dl><dt>Durée</dt> <dd>' + item.duration + ' mois</dd></dl>' +
+                            '<dl><dt>Statut</dt> <dd>' + item.status + '</dd></dl>' +
+                            '</div>'
+                }
+                if (section === 'lenders') {
+                    html += '<div class="autocomplete-suggestion" data-val="' + item.name + '">' +
+                            '<p>' + item.name + ' <span class="id">' + item.id + ' </span></p>' +
+                            '<div class="details">' +
+                            '<dl><dd>' + item.type + '</dd></dl>' +
+                            '</div>'
+                }
+                html += '</div>'
+                return html
+            },
+            onSelect: function(e, term, item){
+                var title = item.find('p').text()
+                var id = item.find('.id').text()
+                var section = item.parent().attr('class')
+
+                $headerSearch.val(title.replace(id, ''))
+
+                if (~section.indexOf('projects')) {
+                    window.location.replace('/dossiers/edit/' + id.match(/\d+/))
+                } else if (~section.indexOf('lenders')) {
+                    window.location.replace('/preteurs/edit/' + id.match(/\d+/))
+                }
+            },
+            sections: true,
+            sectionMaxResults: 2,
+            sectionShowMore: function(section, term) {
+                var btnText = ''
+                var html = '<form class="show-more" method="post" action="'
+                if (section === 'projects') {
+                    btnText  = 'projets'
+                    html += '/dossiers">'
+                    html += '<input type="hidden" name="form_search_dossier" value="1">'
+                    if ($.isNumeric(term)) {
+                        html += '<input type="hidden" name="siren" value="' + term + '">'
+                    } else {
+                        html += '<input type="hidden" name="raison-sociale" value="' + term + '">'
+                    }
+                }
+                if (section === 'lenders') {
+                    btnText  = 'prêteurs'
+                    html += '/preteurs/gestion">'
+                    html += '<input type="hidden" name="form_search_preteur" value="1">'
+                    if ($.isNumeric(term)) {
+                        html += '<input type="hidden" name="id" value="' + term + '">'
+                    } else {
+                        html += '<input type="hidden" name="nom" value="' + term + '">'
+                    }
+                }
+                html += '<button type="submit" class="btn btn-default btn-sm">Plus de ' + btnText + ' <span class="fa fa-chevron-right"></span></button>'
+                html += '</form>'
+                return html
+            }
+        })
 
         // jQuery MaskedInput example
         // a - Represents an alpha character (A-Z,a-z)
         // 9 - Represents a numeric character (0-9)
         // * - Represents an alphanumeric character (A-Z,a-z,0-9)
-        $("#example-masked-iban").mask("aa99 9999 9999 9999 9999 9999 9999");
+        $("#example-masked-iban").mask("aa99 9999 9999 9999 9999 9999 9999")
 
         // Data Tables
         // DataTables Bootstrap integration
         var bsDataTables = function() {
-            var $DataTable = $.fn.dataTable;
+            var $DataTable = $.fn.dataTable
 
             // Set the defaults for DataTables init
             $.extend( true, $DataTable.defaults, {
@@ -231,72 +301,72 @@
                         sNext: '<i class="fa fa-angle-right"></i>'
                     }
                 }
-            });
+            })
 
             // Default class modification
             $.extend($DataTable.ext.classes, {
                 sWrapper: "dataTables_wrapper form-inline dt-bootstrap",
                 sFilterInput: "form-control",
                 sLengthSelect: "form-control"
-            });
+            })
 
             // Bootstrap paging button renderer
             $DataTable.ext.renderer.pageButton.bootstrap = function (settings, host, idx, buttons, page, pages) {
-                var api     = new $DataTable.Api(settings);
-                var classes = settings.oClasses;
-                var lang    = settings.oLanguage.oPaginate;
-                var btnDisplay, btnClass;
+                var api     = new $DataTable.Api(settings)
+                var classes = settings.oClasses
+                var lang    = settings.oLanguage.oPaginate
+                var btnDisplay, btnClass
 
                 var attach = function (container, buttons) {
-                    var i, ien, node, button;
+                    var i, ien, node, button
                     var clickHandler = function (e) {
-                        e.preventDefault();
+                        e.preventDefault()
                         if (!jQuery(e.currentTarget).hasClass('disabled')) {
-                            api.page(e.data.action).draw(false);
+                            api.page(e.data.action).draw(false)
                         }
-                    };
+                    }
 
                     for (i = 0, ien = buttons.length; i < ien; i++) {
-                        button = buttons[i];
+                        button = buttons[i]
 
                         if ($.isArray(button)) {
-                            attach(container, button);
+                            attach(container, button)
                         }
                         else {
-                            btnDisplay = '';
-                            btnClass = '';
+                            btnDisplay = ''
+                            btnClass = ''
 
                             switch (button) {
                                 case 'ellipsis':
-                                    btnDisplay = '&hellip;';
-                                    btnClass = 'disabled';
-                                    break;
+                                    btnDisplay = '&hellip'
+                                    btnClass = 'disabled'
+                                    break
 
                                 case 'first':
-                                    btnDisplay = lang.sFirst;
-                                    btnClass = button + (page > 0 ? '' : ' disabled');
-                                    break;
+                                    btnDisplay = lang.sFirst
+                                    btnClass = button + (page > 0 ? '' : ' disabled')
+                                    break
 
                                 case 'previous':
-                                    btnDisplay = lang.sPrevious;
-                                    btnClass = button + (page > 0 ? '' : ' disabled');
-                                    break;
+                                    btnDisplay = lang.sPrevious
+                                    btnClass = button + (page > 0 ? '' : ' disabled')
+                                    break
 
                                 case 'next':
-                                    btnDisplay = lang.sNext;
-                                    btnClass = button + (page < pages - 1 ? '' : ' disabled');
-                                    break;
+                                    btnDisplay = lang.sNext
+                                    btnClass = button + (page < pages - 1 ? '' : ' disabled')
+                                    break
 
                                 case 'last':
-                                    btnDisplay = lang.sLast;
-                                    btnClass = button + (page < pages - 1 ? '' : ' disabled');
-                                    break;
+                                    btnDisplay = lang.sLast
+                                    btnClass = button + (page < pages - 1 ? '' : ' disabled')
+                                    break
 
                                 default:
-                                    btnDisplay = button + 1;
+                                    btnDisplay = button + 1
                                     btnClass = page === button ?
-                                        'active' : '';
-                                    break;
+                                        'active' : ''
+                                    break
                             }
 
                             if (btnDisplay) {
@@ -313,21 +383,21 @@
                                         })
                                             .html(btnDisplay)
                                     )
-                                    .appendTo(container);
+                                    .appendTo(container)
 
                                 settings.oApi._fnBindAction(
                                     node, {action: button}, clickHandler
-                                );
+                                )
                             }
                         }
                     }
-                };
+                }
 
                 attach(
                     jQuery(host).empty().html('<ul class="pagination"/>').children('ul'),
                     buttons
-                );
-            };
+                )
+            }
 
             // TableTools Bootstrap compatibility - Required TableTools 2.1+
             if ($DataTable.TableTools) {
@@ -351,7 +421,7 @@
                     "select": {
                         "row": "active"
                     }
-                });
+                })
 
                 // Have the collection use a bootstrap compatible drop down
                 $.extend(true, $DataTable.TableTools.DEFAULTS.oTags, {
@@ -360,9 +430,9 @@
                         "button": "li",
                         "liner": "a"
                     }
-                });
+                })
             }
-        };
+        }
         bsDataTables()
 
         // Simple
@@ -373,13 +443,13 @@
             dom:
             "<'row'<'col-sm-12'tr>>" +
             "<'row'<'col-sm-6'i><'col-sm-6'p>>"
-        });
+        })
 
         $('.js-dataTable-advanced').dataTable({
             columnDefs: [ { orderable: false } ],
             pageLength: 4,
             lengthMenu: [[5, 10], [5, 10]]
-        });
+        })
 
         // TREEVIEW
         var $treeData = [
@@ -436,7 +506,7 @@
                 text: 'Marketing',
                 href: '#parent5'
             }
-        ];
+        ]
 
         $('.js-tree-simple').treeview({
             data: $treeData,
@@ -448,7 +518,7 @@
             selectedBackColor: '#f1f1f1',
             showBorder: false,
             levels: 1
-        });
+        })
 
         $('.js-tree-badges').treeview({
             data: $treeData,
@@ -461,7 +531,7 @@
             selectedBackColor: '#f1f1f1',
             showTags: true,
             levels: 1
-        });
+        })
     })
 </script>
 </body>
