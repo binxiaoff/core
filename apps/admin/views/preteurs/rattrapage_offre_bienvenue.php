@@ -19,29 +19,21 @@
         padding-left: 10px;
     }
 </style>
+<section>
 <div class="row">
-    <div class="col-md-6">
-        <h1>Rattrapage offre de bienvenue</h1>
+    <div class="col-md-12">
+        <h3>Rattrapage offre de bienvenue</h3>
     </div>
 </div>
-<div class="datepicker_table">
-    <form method="post" name="date_select">
-        <fieldset>
-            <table class="search_fields">
-                <tr>
-                    <td><label for="id">ID ou liste d'IDs (séparés par virgules):</label><br/>
-                        <input type="text" name="id_client" id="id_client" class="input_large"
-                               value="<?= (empty($_POST['dateStart']) && empty($_POST['dateEnd']) && false === empty($_POST['id_client'])) ? $_POST['id_client'] : '' ?>"/>
-                    </td>
-                    <td><br>
-                        <input type="hidden" name="spy_search" id="spy_search"/>
-                        <button type="submit" class="btn-primary">Rechercher</button>
-                    </td>
-                </tr>
-            </table>
-        </fieldset>
+    <form method="post" name="date_select" class="form-inline">
+        <input type="hidden" name="spy_search" id="spy_search">
+        <label>ID ou liste d'IDs (séparés par virgule)</label><br>
+        <div class="form-group">
+            <input type="text" name="id_client" class="form-control" value="<?= (empty($_POST['dateStart']) && empty($_POST['dateEnd']) && false === empty($_POST['id_client'])) ? $_POST['id_client'] : '' ?>">
+
+        </div>
+        <button type="submit" class="btn-primary">Rechercher</button>
     </form>
-</div>
 <!-- TODO add hide table button -->
 <?php if (empty($this->clientsWithoutWelcomeOffer)) : ?>
     <p>Il n'y a aucun utilisateur pour le moment.</p>
@@ -79,3 +71,4 @@
         </table>
     </div>
 <?php endif; ?>
+</section>

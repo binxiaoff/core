@@ -49,15 +49,39 @@
         border-radius: 10px 10px 10px 10px;
         padding: 5px;
     }
+    section {
+        margin-bottom: 20px;
+    }
+    .summary .label {
+        line-height: 20px;
+        margin-bottom: 5px;
+        color: #333;
+    }
 </style>
 <div id="contenu">
-    <div id="general_information">
-        <h1>Gestion offre de bienvenue</h1>
-        <h3>Somme des offres de bienvenue déjà donnée : <?= $this->currencyFormatter->format($this->alreadyPaidOutAllOffers) ?></h3>
-        <h3>Solde Reel disponible : <?= $this->currencyFormatter->format($this->sumDispoPourOffres) ?></h3>
-        <h3>Le macaron offre de bienvenue est affiché sur les home : <?= $this->offerIsDisplayedOnHome ? 'Oui' : 'Non' ?></h3>
-        <h3>Le macaron offre de bienvenue est affiché sur les landing pages : <?= $this->offerIsDisplayedOnLandingPage ? 'Oui' : 'Non' ?></h3>
+    <div class="row">
+        <div class="col-md-12">
+            <h1>Gestion offre de bienvenue</h1>
+        </div>
     </div>
+    <section class="row summary">
+        <div class="col-md-3">
+            <div class="label">Somme des offres donnée</div>
+            <h3><?= $this->currencyFormatter->format($this->alreadyPaidOutAllOffers) ?></h3>
+        </div>
+        <div class="col-md-3">
+            <div class="label">Solde réel disponible</div>
+            <h3><?= $this->currencyFormatter->format($this->sumDispoPourOffres) ?></h3>
+        </div>
+        <div class="col-md-3">
+            <div class="label">Macaron affiché sur page d'accueil</div>
+            <h3><?= $this->offerIsDisplayedOnHome ? 'Oui' : 'Non' ?></h3>
+        </div>
+        <div class="col-md-3">
+            <div class="label">Macaron affiché sur les LPs</div>
+            <h3><?= $this->offerIsDisplayedOnLandingPage ? 'Oui' : 'Non' ?></h3>
+        </div>
+    </section>
 
     <?php $this->fireView('rattrapage_offre_bienvenue'); ?>
 
