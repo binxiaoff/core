@@ -8,6 +8,8 @@ use Symfony\Component\Asset\Packages;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
@@ -222,5 +224,28 @@ class WelcomeOfferManager
                     'function'         => __FUNCTION__
                 ]);
         }
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public function clientHasReceivedWelcomeOffer(Clients $client)
+    {
+        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        if (null === $wallet) {
+            throw new \Exception('Client has no lender wallet');
+        }
+
+        $receivedWelcomeOffer = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')
+            ->sumCreditOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION], [OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER]);
+
+        if (null === $receivedWelcomeOffer) {
+             return true;
+        }
+
+        return false;
     }
 }

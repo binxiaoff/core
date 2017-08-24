@@ -21,4 +21,19 @@ class SponsorshipCampaignRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
     }
+
+    /**
+     * @param \DateTime $date
+     *
+     * @return mixed
+     */
+    public function findCampaignValidAtDate(\DateTime $date)
+    {
+        $queryBuilder = $this->createQueryBuilder('sc');
+        $queryBuilder->where('sc.start <= :date')
+            ->andWhere('sc.end >= :date')
+            ->setParameter('date', $date);
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
 }
