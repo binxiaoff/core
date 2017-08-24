@@ -115,14 +115,18 @@
                         <label>Email</label>
                         <div class="form-control-static">{{ user.email }}</div>
                     </div>
-                    <div class="form-group">
-                        <label>Téléphone</label>
-                        <div class="form-control-static">{{ user.phone }}</div>
-                    </div>
-                    <div class="form-group">
-                        <label>Slack</label>
-                        <div class="form-control-static">{{ user.slack }}</div>
-                    </div>
+                    {% if user.phone is not empty %}
+                        <div class="form-group">
+                            <label>Téléphone</label>
+                            <div class="form-control-static">{{ user.phone }}</div>
+                        </div>
+                    {% endif %}
+                    {% if user.slack is not empty %}
+                        <div class="form-group">
+                            <label>Slack</label>
+                            <div class="form-control-static">{{ user.slack }}</div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
             <div class="modal-footer">
