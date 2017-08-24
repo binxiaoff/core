@@ -16,9 +16,9 @@
 }
 
 /* Header Search */
-/*.nav-header .header-search {*/
-    /*width: 400px;*/
-/*}*/
+.nav-header .header-search {
+    width: 480px;
+}
 .nav-header .input-group {
     width: 100%;
 }
@@ -42,14 +42,9 @@
     margin-right: 20px;
     margin-bottom: 2.5px;
     float: left;
-    max-width: 100px;
 }
 .autocomplete-suggestion dl:last-child {
     margin-right: 0;
-}
-.autocomplete-suggestion dd {
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 .autocomplete-suggestion dt {
     font-size: 12px;
@@ -77,8 +72,15 @@
 .autocomplete-section .show-more .btn {
     width: 100%;
 }
-.autocomplete-section .show-more .fa {
-    font-size: 8px;
-    position: relative;
-    top: -1px;
+.autocomplete-projects .autocomplete-suggestion dl:first-child {
+    width: 60px;
+}
+.autocomplete-projects .autocomplete-suggestion dl:nth-child(2) {
+    width: 50px;
+}
+.autocomplete-projects .autocomplete-suggestion dl:nth-child(3) {
+    width: 50px;
+}
+.autocomplete-projects .autocomplete-suggestion dl:nth-child(4) {
+    width: 140px;
 }

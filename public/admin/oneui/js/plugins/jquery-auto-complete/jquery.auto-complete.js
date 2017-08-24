@@ -136,7 +136,10 @@
                         } else {
                             next = $('.autocomplete-suggestion', that.sc).last()
                         }
-                        that.val(next.addClass('selected').data('val'));
+                        next.addClass('selected')
+                        if (!o.sections) {
+                            that.val(next.data('val'));
+                        }
                     } else {
                         if (e.which == 40) {
                             if (sel.next('.autocomplete-suggestion').length) {
@@ -159,8 +162,20 @@
                                 }
                             }
                         }
-                        if (next.length) { sel.removeClass('selected'); that.val(next.addClass('selected').data('val')); }
-                        else { sel.removeClass('selected'); that.val(that.last_val); next = 0; }
+                        if (next.length) {
+                            sel.removeClass('selected');
+                            next.addClass('selected')
+                            if (!o.sections) {
+                                that.val(next.data('val'));
+                            }
+                        }
+                        else {
+                            sel.removeClass('selected');
+                            if (!o.sections) {
+                                that.val(that.last_val);
+                            }
+                            next = 0;
+                        }
                     }
                     that.updateSC(0, next);
                     return false;
