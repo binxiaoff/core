@@ -1175,6 +1175,7 @@ var App = function() {
      * Generic form validation init
      *
      * App.initHelper('validation');
+     * Requires '.validate' to be added to the form and class '.required' to the form field
      *
      */
     var uiHelperFormValidate = function(){
