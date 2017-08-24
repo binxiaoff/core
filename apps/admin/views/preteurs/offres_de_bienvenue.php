@@ -51,6 +51,8 @@
     }
     section {
         margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #E3E4E5;
     }
     .summary .label {
         line-height: 20px;
@@ -58,37 +60,40 @@
         color: #333;
     }
 </style>
-<div id="contenu">
+<section id="contenu">
     <div class="row">
         <div class="col-md-12">
             <h1>Gestion offre de bienvenue</h1>
         </div>
     </div>
-    <section class="row summary">
-        <div class="col-md-3">
-            <div class="label">Somme des offres donnée</div>
-            <h3><?= $this->currencyFormatter->format($this->alreadyPaidOutAllOffers) ?></h3>
-        </div>
-        <div class="col-md-3">
-            <div class="label">Solde réel disponible</div>
-            <h3><?= $this->currencyFormatter->format($this->sumDispoPourOffres) ?></h3>
-        </div>
-        <div class="col-md-3">
-            <div class="label">Macaron affiché sur page d'accueil</div>
-            <h3><?= $this->offerIsDisplayedOnHome ? 'Oui' : 'Non' ?></h3>
-        </div>
-        <div class="col-md-3">
-            <div class="label">Macaron affiché sur les LPs</div>
-            <h3><?= $this->offerIsDisplayedOnLandingPage ? 'Oui' : 'Non' ?></h3>
+    <section id="offer-summary">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="label">Somme des offres donnée</div>
+                <h3><?= $this->currencyFormatter->format($this->alreadyPaidOutAllOffers) ?></h3>
+            </div>
+            <div class="col-md-3">
+                <div class="label">Solde réel disponible</div>
+                <h3><?= $this->currencyFormatter->format($this->sumDispoPourOffres) ?></h3>
+            </div>
+            <div class="col-md-3">
+                <div class="label">Macaron affiché sur page d'accueil</div>
+                <h3><?= $this->offerIsDisplayedOnHome ? 'Oui' : 'Non' ?></h3>
+            </div>
+            <div class="col-md-3">
+                <div class="label">Macaron affiché sur les LPs</div>
+                <h3><?= $this->offerIsDisplayedOnLandingPage ? 'Oui' : 'Non' ?></h3>
+            </div>
         </div>
     </section>
 
     <?php $this->fireView('rattrapage_offre_bienvenue'); ?>
 
-    <div id="manage_offer_display"> <!-- I thought it would be nice to have those two offer div side by side -->
-        <h1>Gestion de la visibilité de l'offre de bienvenue</h1>
+    <section id="offer-visibility">
+        <h3>Gestion de la visibilité de l'offre de bienvenue</h3>
         <div class="row">
-            <div id="offer_hp">Offre Home:
+            <div class="col-md-3">
+                <h4>Offre Home:</h4>
                 <?php if (null !== $this->currentOfferHomepage) : ?>
                     Montant : <?= $this->currencyFormatter->format($this->currentOfferHomepage->getMontant() / 100) ?><br>
                     Offre actif depuis : <?= $this->currentOfferHomepage->getDebut()->format('d/m/Y') ?><br>
@@ -105,7 +110,8 @@
                     <div class="button">Créer une offre</div> <!-- displays the div with the form in it -->
                 <?php endif; ?>
             </div>
-            <div id="offer_lp">Offre Landing Page:
+            <div class="col-md-3">
+                <h4>Offre Landing Page:</h4>
                 <?php if (null !== $this->currentOfferLandingPage) : ?>
                     Montant : <?= $this->currencyFormatter->format($this->currentOfferLandingPage->getMontant() / 100) ?><br>
                     Offre actif depuis : <?= $this->currentOfferLandingPage->getDebut()->format('d/m/Y') ?><br>
@@ -123,11 +129,10 @@
                 <?php endif; ?>
             </div>
         </div>
-    </div>
+    </section>
 
-<!--    @Dimitar: TODO  Faire un joli formulaire :) -->
-<!--    <div id="form_create_offer" style="display: none;">-->
-    <div id="form_create_offer">
+
+    <section id="offer-create">
         <?php if (isset($this->newWelcomeOfferFormErrors)) : ?>
             <div id="create_offer_errors">
                 <?php foreach ($this->newWelcomeOfferFormErrors as $error) : ?>
@@ -157,8 +162,7 @@
             </fieldset>
         </form>
     </div>
-
-<!--  @Dimitar: TODO  Va devenir un tableau de plusieurs lignes, bien que tu en a qu'un seul dans la base pour l'instant-->
+    </section>
     <div id="past_offers">
         <?php if (false === empty($this->allOffers)) : ?>
             <?php foreach ($this->allOffers as $offer) : ?><br>
