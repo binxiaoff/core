@@ -205,7 +205,7 @@
             minChars: 2,
             cache: 0, // Doesn't work with any other value (when using sections in suggestions)
             menuClass: 'header-autocomplete',
-            // Source must be updated later when using an ajax request instead of an array
+            delay: 500,
             source: function(term, suggest){
                 $.getJSON('/ajax/quick_search/', {q: term}, function (response){ suggest(response) })
             },
@@ -245,7 +245,7 @@
                 }
             },
             sections: true,
-            sectionMaxResults: 2,
+            sectionMaxResults: 5,
             sectionShowMore: function(section, term) {
                 var btnText = ''
                 var html = '<form class="show-more" method="post" action="'

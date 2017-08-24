@@ -108,7 +108,15 @@
                             var values = data[key]
                             if (values.length) {
                                 s += '<div class="autocomplete-section autocomplete-' + key + '">';
-                                s += '<span class="title">' + key +  '</span>';
+                                var title = '';
+                                if (key === 'projects') {
+                                    title = 'projets';
+                                } else if (key === 'lenders') {
+                                    title = 'prêteurs';
+                                } else {
+                                    title = key;
+                                }
+                                s += '<span class="title">' + title +  '</span>';
                                 for (var i=0;i<values.length;i++) {
                                     if (o.sectionMaxResults && o.sectionMaxResults != 0 && i < o.sectionMaxResults)
                                         s += o.renderItem(values[i], val, key);
