@@ -1,3 +1,4 @@
+<?php use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues; ?>
 <script type="text/javascript">
     $(function() {
         $.tablesorter.addParser({
@@ -167,7 +168,7 @@
                                 <td><?= $this->currencyFormatter->format($this->remainingAmountCurrentOfferHomepage) ?></td>
                             </tr>
                         </table>
-                   
+
                         <form method="post" name="form_deactivate_offer" id="form_create_offer" enctype="multipart/form-data" action="<?= $this->lurl ?>/preteurs/deactivate_welcome_offer">
                             <input type="hidden" name="welcome_offer_id" value="<?= $this->currentOfferHomepage->getIdOffreBienvenue() ?>">
                             <input type="hidden" name="deactivate_welcome_offer" value="true">
@@ -265,7 +266,7 @@
             <h3 class="block-title">Offres passés</h3>
         </div>
         <div class="block-content">
-            <?php if (false === empty($this->allOffers)) : ?>
+            <?php if (false === empty($this->pastOffers)) : ?>
                 <table id="offer-past-table" class="tablesorter table table-hover table-stripped">
                     <thead>
                     <tr>
@@ -277,13 +278,13 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <?php foreach ($this->allOffers as $offer) : ?>
+                    <?php foreach ($this->pastOffers as $offer) : ?>
                         <tr>
-                            <td><?= $offer->getType(); ?></td>
+                            <td><?= (false === in_array($offer->getType(), [OffresBienvenues::TYPE_HOME, OffresBienvenues::TYPE_LANDING_PAGE])) ? $offer->getType() : (OffresBienvenues::TYPE_LANDING_PAGE == $offer->getType()) ? 'Landing Page' : 'Home Page'; ?></td>
                             <td><?= $offer->getDebut()->format('d/m/Y') ?></td>
                             <td><?= null !== $offer->getFin() ? $offer->getFin()->format('d/m/Y') : '' ?></td>
                             <td><?= $this->currencyFormatter->format($offer->getMontant() / 100) ?></td>
-                            <td><?= \Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues::STATUS_OFFLINE == $offer->getStatus() ? 'Terminée' : 'En cours' ?></td>
+                            <td><?= OffresBienvenues::STATUS_OFFLINE == $offer->getStatus() ? 'Terminée' : 'En cours' ?></td>
                         </tr>
                     <? endforeach; ?>
                     </tbody>
