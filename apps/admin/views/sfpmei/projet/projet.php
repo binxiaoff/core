@@ -9,9 +9,11 @@
             <tbody>
             <tr>
                 <th>Raison sociale</th>
-                <td>
-                    <?= $this->companies->name ?>
-                </td>
+                <td><a href="<?= $this->lurl ?>/sfpmei/emprunteur/<?= $this->companies->id_client_owner ?>"><?= $this->companies->name ?></a></td>
+            </tr>
+            <tr>
+                <th>SIREN</th>
+                <td><?= $this->companies->siren ?></td>
             </tr>
             <tr>
                 <th>Forme juridique</th>
@@ -23,7 +25,7 @@
             </tr>
             <tr>
                 <th>Activité</th>
-                <td><?= empty($this->companies->activite) ? (empty($this->xerfi->naf) ? '' : $this->xerfi->label) : $this->companies->activite ?></td>
+                <td><?= empty($this->companies->activite) ? (empty($this->xerfi->naf) ? '' : $this->xerfi->label) : $this->companies->activite ?><?php if (false === empty($this->companies->code_naf)) : ?> (<?= $this->companies->code_naf ?>)<?php endif; ?></td>
             </tr>
             <tr>
                 <th>Secteur de la société</th>
@@ -47,20 +49,18 @@
                 <th>Adresse du siège social</th>
                 <td>
                     <?= $this->companies->adresse1 ?><br>
-                    <?= $this->companies->zip ?><br>
-                    <?= $this->companies->city ?><br>
+                    <?= $this->companies->zip ?> <?= $this->companies->city ?>
                 </td>
             </tr>
             <tr>
                 <th>Adresse de correspondance</th>
                 <td>
                     <?= $this->clients_adresses->adresse1 ?><br>
-                    <?= $this->clients_adresses->cp ?><br>
-                    <?= $this->clients_adresses->ville ?><br>
+                    <?= $this->clients_adresses->cp ?> <?= $this->clients_adresses->ville ?>
                 </td>
             </tr>
             <tr>
-                <th>Téléphone du ciège social</th>
+                <th>Téléphone du siège social</th>
                 <td><?= $this->companies->phone ?></td>
             </tr>
             <tr>
@@ -80,41 +80,13 @@
             </thead>
             <tbody>
             <tr>
-                <th>Lien web</th>
-                <td>
+                <td colspan="2">
                     <a href="<?= $this->furl ?>/projects/detail/<?= $this->projects->slug ?>" target="_blank"><?= $this->furl ?>/projects/detail/<?= $this->projects->slug ?></a>
                 </td>
             </tr>
             <tr>
-                <th>SIREN</th>
-                <td><?= $this->companies->siren ?><?php if ($this->isTakeover) : ?> - <?= $this->companies->name ?><?php endif; ?></td>
-            </tr>
-            <?php if ($this->isTakeover) : ?>
-                <tr>
-                    <th>SIREN cible</th>
-                    <td>
-                        <?php if (false === empty($this->targetCompany->id_company)) : ?>
-                            <?= $this->targetCompany->siren ?> - <?= $this->targetCompany->name ?>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-            <?php endif; ?>
-            <tr>
                 <th>Date de la demande</th>
                 <td><?= \DateTime::createFromFormat('Y-m-d H:i:s', $this->projects->added)->format('d/m/Y H:i') ?></td>
-            </tr>
-            <tr>
-                <th>Code NAF</th>
-                <td>
-                    <?php if (empty($this->companies->code_naf)) : ?>
-                        -
-                    <?php else : ?>
-                        <?= $this->companies->code_naf ?>
-                        <?php if (false === empty($this->xerfi->naf)) : ?>
-                            <?= ' - ' . $this->xerfi->label ?>
-                        <?php endif; ?>
-                    <?php endif; ?>
-                </td>
             </tr>
             <tr>
                 <th>Montant du prêt</th>
@@ -148,18 +120,18 @@
             </tr>
             <tr>
                 <th>Date de publication</th>
-                <td><?= ($this->projects->date_publication != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_publication, 'd/m/Y à H:i') : '') ?></td>
+                <td><?= ($this->projects->date_publication != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_publication, 'd/m/Y H:i') : '') ?></td>
             </tr>
             <tr>
                 <th>Date de retrait</th>
-                <td><?= ($this->projects->date_retrait != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') : '') ?></td>
+                <td><?= ($this->projects->date_retrait != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y H:i') : '') ?></td>
             </tr>
             <?php if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == 1) : ?>
                 <tr>
                     <th>Pouvoir</th>
                     <td>
                         <a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>"><?= $this->projects_pouvoir->name ?></a>
-                        <?php if ($this->projects_pouvoir->status_remb == '1') : ?>
+                        <?php if ($this->projects_pouvoir->status_remb == 1) : ?>
                             <span style="color:green;">&nbsp;Validé</span>
                         <?php endif; ?>
                     </td>
@@ -174,9 +146,7 @@
             <table class="table table-bordered table-striped">
                 <thead>
                 <tr>
-                    <th>
-                        CGV
-                    </th>
+                    <th>CGV</th>
                 </tr>
                 </thead>
                 <tbody>

@@ -488,6 +488,7 @@ EOF
                             ->setIdProject($project)
                             ->setIdClient($wallet->getIdClient())
                             ->setRemb(0)
+                            ->setRejectionIsoCode($this->getRejectionIsoCode($aRow))
                             ->setIdReceptionRejected($originalRejectedDirectDebit);
                         $entityManager->flush();
 
@@ -500,5 +501,19 @@ EOF
                 }
             }
         }
+    }
+
+    /**
+     * @param array $row
+     *
+     * @return null|string
+     */
+    private function getRejectionIsoCode(array $row)
+    {
+        if (false === empty($row['libelleOpe6']) && false !== ($isoCode = substr($row['libelleOpe6'], -4, 4))) {
+            return $isoCode;
+        }
+
+        return null;
     }
 }

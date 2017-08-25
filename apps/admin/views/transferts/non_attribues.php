@@ -98,22 +98,6 @@
             <?php endforeach; ?>
         </tbody>
     </table>
-    <?php if (count($this->nonAttributedReceptions) > $this->nb_lignes) : ?>
-        <table>
-            <tr>
-                <td id="pager">
-                    <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first">
-                    <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev">
-                    <input type="text" class="pagedisplay">
-                    <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next">
-                    <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last">
-                    <select class="pagesize">
-                        <option value="<?= $this->nb_lignes ?>" selected><?= $this->nb_lignes ?></option>
-                    </select>
-                </td>
-            </tr>
-        </table>
-    <?php endif; ?>
     <div class="hidden">
         <?php foreach ($this->nonAttributedReceptions as $reception) : ?>
             <div id="content-line-<?= $reception->getIdReception() ?>" style="white-space: nowrap; padding: 10px;"><?= $reception->getLigne() ?></div>

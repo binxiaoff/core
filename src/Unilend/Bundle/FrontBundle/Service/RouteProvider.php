@@ -56,6 +56,13 @@ class RouteProvider implements RouteProviderInterface
             $routeCollection->add($tree['slug'], new Route($tree['slug']));
         }
 
+        /** @var \redirects $redirections */
+        $redirects = $this->entityManager->getRepository('redirections');
+
+        foreach ($redirects->select('status = 1') as $redirect) {
+            $routeCollection->add($redirect['from_slug'], new Route($redirect['from_slug']));
+        }
+
         return $routeCollection;
     }
 
@@ -71,8 +78,15 @@ class RouteProvider implements RouteProviderInterface
         } else {
             /** @var \tree $tree */
             $tree = $this->entityManager->getRepository('tree');
+            /** @var \redirects $redirect */
+            $redirect = $this->entityManager->getRepository('redirections');
+
             if ($tree->get(['slug' => $name, 'status' => 1, 'prive' => 0])) {
                 $path = $tree->slug;
+                $cachedItem->set($path)->expiresAfter(CacheKeys::MEDIUM_TIME);
+                $this->cacheItemPool->save($cachedItem);
+            } elseif ($redirect->get(['from_slug' => $name, 'status' => 1])) {
+                $path = $redirect->from_slug;
                 $cachedItem->set($path)->expiresAfter(CacheKeys::MEDIUM_TIME);
                 $this->cacheItemPool->save($cachedItem);
             } else {

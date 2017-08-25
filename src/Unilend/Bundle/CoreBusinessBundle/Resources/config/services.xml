@@ -374,5 +374,11 @@
             <argument type="service" id="translator" />
         </service>
 
+        <service id="unilend.service.borrower_operations_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\BorrowerOperationsManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="translator.default"/>
+            <argument type="service" id="logger"/>
+        </service>
+
     </services>
 </container>
