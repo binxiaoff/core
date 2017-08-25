@@ -6,8 +6,6 @@ class thickboxController extends bootstrap
     {
         parent::initialize();
 
-        $this->catchAll = true;
-
         $this->hideDecoration();
 
         $_SESSION['request_url'] = $this->url;

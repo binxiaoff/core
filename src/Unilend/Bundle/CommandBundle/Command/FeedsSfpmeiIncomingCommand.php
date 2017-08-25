@@ -14,6 +14,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\SepaRejectionReason;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
@@ -506,12 +507,14 @@ EOF
     /**
      * @param array $row
      *
-     * @return null|string
+     * @return null|SepaRejectionReason
      */
     private function getRejectionIsoCode(array $row)
     {
         if (false === empty($row['libelleOpe6']) && false !== ($isoCode = substr($row['libelleOpe6'], -4, 4))) {
-            return $isoCode;
+            return $this->getContainer()->get('doctrine.orm.entity_manager')
+                ->getRepository('UnilendCoreBusinessBundle:SepaRejectionReason')
+                ->findOneBy(['isoCode', $isoCode]);
         }
 
         return null;

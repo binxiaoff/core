@@ -16,7 +16,6 @@ class client_atypical_operationController extends bootstrap
 
         $this->users->checkAccess(Zones::ZONE_LABEL_LENDERS);
 
-        $this->catchAll   = true;
         $this->menu_admin = isset($this->lZonesHeader) && in_array(Zones::ZONE_LABEL_TRANSFERS, $this->lZonesHeader) ? 'transferts' : 'preteurs';
 
         /** @var \Symfony\Component\Translation\Translator translator */

@@ -20,9 +20,7 @@ class transfertsController extends bootstrap
     {
         parent::initialize();
 
-        $this->catchAll   = true;
-        $this->menu_admin = 'transferts';
-
+        $this->menu_admin       = 'transferts';
         $this->statusOperations = [
             Receptions::STATUS_PENDING         => 'En attente',
             Receptions::STATUS_ASSIGNED_MANUAL => 'Manu',

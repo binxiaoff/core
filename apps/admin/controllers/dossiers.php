@@ -64,7 +64,6 @@ class dossiersController extends bootstrap
 
         $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
 
-        $this->catchAll   = true;
         $this->menu_admin = 'emprunteurs';
 
         /** @var \Symfony\Component\Translation\TranslatorInterface translator */
