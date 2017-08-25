@@ -1,6 +1,9 @@
 {# Projects Index #}
 {% extends 'layouts/_layout.html.twig' %}
 
+{% set isSponsorship = true %}
+{% set sponsorCode = 'asdasda' %}
+
 {% block siteHeader %}
     {% embed 'partials/site/header.html.twig' %}
         {% block siteHeaderMobileMenuOpen %} {% endblock %}
@@ -12,15 +15,39 @@
 {% endblock %}
 
 {% block siteContent %}
-    <article id="devenir-preteur" class="page page-lp">
+    <article id="devenir-preteur" class="page page-lp{% if isSponsorship == true %} page-lp-sponsor{% endif %}">
         <div class="hero-wrap">
             <div class="page-content">
                 <div class="site-wrap">
                     <div class="row row-multi-col-computer">
                         <div class="col-lg-6 col-md-6">
-                            <h2 class="h3">{% trans %} lender-landing-page_text-section-title {% endtrans %}</h2>
-                            <div class="block-copy-lp">
-                                <p>{% trans %} lender-landing-page_text-section-text {% endtrans %}</p>
+                            {% if isSponsorship == true %}
+                                <div class="stamp show-xs" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
+                                    {% trans %} lender-landing-page_sponsorship-offer-text {% endtrans %}
+                                </div>
+                            {% endif %}
+
+                            <h2 class="h3">
+                                {% if isSponsorship == true %}
+                                    {% trans %} lender-landing-page_sponsorship-section-title {% endtrans %}
+                                {% else %}
+                                    {% trans %} lender-landing-page_text-section-title {% endtrans %}
+                                {% endif %}
+                            </h2>
+
+                            {% if isSponsorship == true %}
+                                <div class="stamp hide-xs ui-is-visible" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
+                                    {% trans %} lender-landing-page_sponsorship-offer-text {% endtrans %}
+                                </div>
+                            {% endif %}
+
+                            <div class="block-copy-lp" style="clear: both;">
+                                {% if isSponsorship == true %}
+                                    <p>{% trans %} lender-landing-page_sponsorship-section-text {% endtrans %}</p>
+                                {% else %}
+                                    <p>{% trans %} lender-landing-page_text-section-text {% endtrans %}</p>
+                                {% endif %}
+
                                 <p class="small">{% trans %} lender-landing-page_stats-section-IRR-text {% endtrans %}
                                     <span class="c-p1">{{ getStatistic('unilendIRR')|localizednumber }}%</span><br/>
                                     {% trans %} lender-landing-page_stats-section-amount-borrowed {% endtrans %}
