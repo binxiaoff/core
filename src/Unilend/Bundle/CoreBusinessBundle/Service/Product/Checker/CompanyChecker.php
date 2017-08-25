@@ -240,4 +240,26 @@ trait CompanyChecker
 
         return true;
     }
+
+    /**
+     * @param Companies               $company
+     * @param Product                 $product
+     * @param ProductAttributeManager $productAttributeManager
+     *
+     * @return bool|null
+     */
+    private function isEligibleForLegalFormCode(Companies $company, Product $product, ProductAttributeManager $productAttributeManager)
+    {
+        $legalFormCode = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_LEGAL_FORM_CODE);
+
+        if (empty($legalFormCode)) {
+            return true;
+        }
+
+        if (empty($company->getLegalFormCode())) {
+            return null;
+        }
+
+        return in_array($company->getLegalFormCode(), $legalFormCode);
+    }
 }

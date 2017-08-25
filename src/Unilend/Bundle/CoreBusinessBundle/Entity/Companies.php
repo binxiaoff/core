@@ -38,6 +38,16 @@ class Companies
     private $idClientOwner;
 
     /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_status", referencedColumnName="id")
+     * })
+     */
+    private $idStatus;
+
+    /**
      * @var integer
      *
      * @ORM\Column(name="id_partenaire", type="integer", nullable=true)
@@ -71,6 +81,13 @@ class Companies
      * @ORM\Column(name="forme", type="string", length=191, nullable=true)
      */
     private $forme;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="legal_form_code", type="string", length=10, nullable=true)
+     */
+    private $legalFormCode;
 
     /**
      * @var string
@@ -1233,6 +1250,22 @@ class Companies
     }
 
     /**
+     * @return string|null
+     */
+    public function getLegalFormCode()
+    {
+        return $this->legalFormCode;
+    }
+
+    /**
+     * @param string $legalFormCode
+     */
+    public function setLegalFormCode($legalFormCode = null)
+    {
+        $this->legalFormCode = $legalFormCode;
+    }
+
+    /**
      * @ORM\PrePersist
      */
     public function setAddedValue()
@@ -1248,6 +1281,26 @@ class Companies
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * @return null|CompanyStatus
+     */
+    public function getIdStatus()
+    {
+        return $this->idStatus;
+    }
+
+    /**
+     * @param CompanyStatus $idStatus
+     *
+     * @return Companies
+     */
+    public function setIdStatus(CompanyStatus $idStatus)
+    {
+        $this->idStatus = $idStatus;
+
+        return $this;
     }
 
     /**

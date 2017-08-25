@@ -9,7 +9,6 @@ class protectedController extends bootstrap
         $this->hideDecoration();
 
         $this->autoFireView = false;
-        $this->catchAll     = true;
 
         $this->users->checkAccess();
     }

@@ -510,7 +510,11 @@ class MailerManager
             $projectRates = $bidManager->getProjectRateRange($project);
 
             if ($bid->getAutobid()) {
-                if ($bid->getProject()->getDateFin() <= $now) {
+                /**
+                 * Using the projects.data object is a workaround while projects has not been completely migrated on Doctrine Entity
+                 * and date_fin can not be NULL
+                 */
+                if ('0000-00-00 00:00:00' != $project->date_fin && $bid->getProject()->getDateFin() <= $now) {
                     $mailTemplate = 'preteur-autobid-ko-apres-fin-de-periode-projet';
                 } elseif ($bids->getProjectMaxRate($project) > $projectRates['rate_min']) {
                     $mailTemplate = 'preteur-autobid-ko';
@@ -518,7 +522,7 @@ class MailerManager
                     $mailTemplate = 'preteur-autobid-ko-minimum-rate';
                 }
             } else {
-                if ($bid->getProject()->getDateFin() <= $now) {
+                if ('0000-00-00 00:00:00' != $project->date_fin && $bid->getProject()->getDateFin() <= $now) {
                     $mailTemplate = 'preteur-bid-ko-apres-fin-de-periode-projet';
                 } elseif ($bids->getProjectMaxRate($project) > $projectRates['rate_min']) {
                     $mailTemplate = 'preteur-bid-ko';

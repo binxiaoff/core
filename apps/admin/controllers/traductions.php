@@ -11,7 +11,6 @@ class traductionsController extends bootstrap
 
         $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
 
-        $this->catchAll   = true;
         $this->menu_admin = 'edition';
     }
 

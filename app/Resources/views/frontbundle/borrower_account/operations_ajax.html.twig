@@ -26,7 +26,7 @@
         <td class="table-myoperations-borrower-item-date">{{ op.date|localizeddate('short', 'none') }}</td>
         <td class="table-myoperations-borrower-item-amount">{{ op.amount|localizedcurrency('EUR') }}</td>
         <td class="table-myoperations-borrower-item-controls">
-            {% if op.label == constant('\\Unilend\\Bundle\\FrontBundle\\Controller\\BorrowerAccountController::OP_LENDER_MONTHLY_REPAYMENT')  %}
+            {% if op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\BorrowerOperationsManager::OP_LENDER_MONTHLY_REPAYMENT')  %}
                 <a href="{{ path('borrower_account_export_lender_details_csv', {'type': 'e', 'projectId': op.idProject, 'repaymentOrder': op.ordre}) }}" class="btn-export" title="Exporter"><span class="icon fa-excel-u16"></span></a>
             {% elseif op.label == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationType::LENDER_LOAN')  %}
                 <a href="{{ path('borrower_account_export_lender_details_csv', {'type': 'l', 'projectId': op.idProject}) }}" class="btn-export" title="Exporter"><span class="icon fa-excel-u16"></span></a>

@@ -1,5 +1,6 @@
 <?php
 
+use Doctrine\ORM\EntityManager;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
@@ -7,6 +8,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
@@ -20,7 +22,6 @@ class sfpmeiController extends bootstrap
 
         $this->users->checkAccess(Zones::ZONE_LABEL_SFPMEI);
 
-        $this->catchAll   = true;
         $this->menu_admin = 'sfpmei';
         $this->pagination = 25;
     }
@@ -186,7 +187,7 @@ class sfpmeiController extends bootstrap
         $this->contract        = $this->loadData('underlying_contract');
         /** @var TranslatorInterface translator */
         $this->translator = $this->get('translator');
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (
@@ -367,7 +368,7 @@ class sfpmeiController extends bootstrap
         $this->projects_pouvoir = $this->loadData('projects_pouvoir');
         /** @var \company_sector $companySector */
         $companySector = $this->loadData('company_sector');
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2 $paysV2Repository */
         $paysV2Repository = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2');
@@ -435,19 +436,11 @@ class sfpmeiController extends bootstrap
 
     public function _transferts()
     {
-        $this->statusOperations = [
-            0 => 'Reçu',
-            1 => 'Manu',
-            2 => 'Auto',
-            3 => 'Rejeté',
-            4 => 'Rejet'
-        ];
-
         if (empty($this->params[0])) {
             header('Location: ' . $this->lurl . '/sfpmei/default');
             die;
         }
-        $this->type = $this->params[0];
+
         switch ($this->params[0]) {
             case 'preteurs':
                 $method = 'getLenderAttributions';
@@ -455,13 +448,22 @@ class sfpmeiController extends bootstrap
                 break;
             case 'emprunteurs':
                 $method = 'getBorrowerAttributions';
-                $this->setView('transferts/preteurs');
+                $this->setView('transferts/emprunteurs');
                 break;
             default:
                 header('Location: ' . $this->lurl . '/sfpmei/default');
                 die;
         }
-        $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->{$method}();
+
+        $this->type             = $this->params[0];
+        $this->receptions       = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->{$method}();
+        $this->statusOperations = [
+            Receptions::STATUS_PENDING         => 'Reçu',
+            Receptions::STATUS_ASSIGNED_MANUAL => 'Manu',
+            Receptions::STATUS_ASSIGNED_AUTO   => 'Auto',
+            Receptions::STATUS_IGNORED_MANUAL  => 'Ignoré manu',
+            Receptions::STATUS_IGNORED_AUTO    => 'Ignoré auto'
+        ];
 
         if (isset($this->params[1]) && 'csv' === $this->params[1]) {
             $this->hideDecoration();
@@ -500,7 +502,7 @@ class sfpmeiController extends bootstrap
         $this->projects_pouvoir        = $this->loadData('projects_pouvoir');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var TranslatorInterface translator */
         $this->translator = $this->get('translator');
@@ -556,11 +558,10 @@ class sfpmeiController extends bootstrap
             }
 
             /** @var \project_need $projectNeed */
-            $projectNeed      = $this->loadData('project_need');
-            $needs            = $projectNeed->getTree();
-            $this->needs      = $needs;
-            $this->isTakeover = $this->isTakeover();
-            $this->xerfi      = $this->loadData('xerfi');
+            $projectNeed = $this->loadData('project_need');
+            $needs       = $projectNeed->getTree();
+            $this->needs = $needs;
+            $this->xerfi = $this->loadData('xerfi');
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
             $attachmentManager = $this->get('unilend.service.attachment_manager');
@@ -573,145 +574,11 @@ class sfpmeiController extends bootstrap
                 'idType'   => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DERNIERE_LIASSE_FISCAL
             ]);
 
-            if ($this->isTakeover) {
-                $this->loadTargetCompany();
-            }
             $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Tree');
         } else {
             header('Location: ' . $this->lurl . '/sfpmei');
             die;
         }
-    }
-
-    /**
-     * @return bool
-     */
-    private function isTakeover()
-    {
-        if (false === empty($this->needs)) {
-            $needs = $this->needs;
-        } else {
-            /** @var \project_need $projectNeed */
-            $projectNeed = $this->loadData('project_need');
-            $needs       = $projectNeed->getTree();
-        }
-
-        return in_array(
-            $this->projects->id_project_need,
-            array_column($needs[\project_need::PARENT_TYPE_TRANSACTION]['children'], 'id_project_need')
-        );
-    }
-
-    /**
-     * @param \companies  $company
-     * @param int|null    $companyRatingHistoryId
-     * @param \xerfi|null $xerfi
-     *
-     * @return array
-     */
-    private function loadRatings(\companies &$company, $companyRatingHistoryId = null, \xerfi &$xerfi = null)
-    {
-        $return = [];
-
-        if (null === $companyRatingHistoryId) {
-            /** @var \company_rating_history $companyRatingHistory */
-            $companyRatingHistory = $this->loadData('company_rating_history');
-            $companyRatingHistory = $companyRatingHistory->select('id_company = ' . $company->id_company, 'added DESC', 0, 1);
-
-            if (isset($companyRatingHistory[0]['id_company_rating_history'])) {
-                $companyRatingHistoryId = $companyRatingHistory[0]['id_company_rating_history'];
-            }
-        }
-
-        if (null === $xerfi) {
-            /** @var \xerfi $xerfi */
-            $xerfi = $this->loadData('xerfi');
-        }
-
-        if (false === empty($company->code_naf)) {
-            $xerfi->get($company->code_naf, 'naf');
-        }
-
-        if (false === empty($companyRatingHistoryId)) {
-            $return['id_company_rating_history'] = $companyRatingHistoryId;
-
-            /** @var \company_rating $companyRating */
-            $companyRating = $this->loadData('company_rating');
-            $ratings       = $companyRating->getHistoryRatingsByType($companyRatingHistoryId, true);
-
-            if (
-                (false === isset($ratings['xerfi']) || false === isset($ratings['xerfi_unilend']))
-                && false === empty($company->code_naf)
-            ) {
-                if (empty($xerfi->naf)) {
-                    $xerfiScore   = 'N/A';
-                    $xerfiUnilend = 'PAS DE DONNEES';
-                } elseif ('' === $xerfi->score) {
-                    $xerfiScore   = 'N/A';
-                    $xerfiUnilend = $xerfi->unilend_rating;
-                } else {
-                    $xerfiScore   = $xerfi->score;
-                    $xerfiUnilend = $xerfi->unilend_rating;
-                }
-
-                if (false === isset($ratings['xerfi'])) {
-                    $companyRating->id_company_rating_history = $companyRatingHistoryId;
-                    $companyRating->type                      = 'xerfi';
-                    $companyRating->value                     = $xerfiScore;
-                    $companyRating->create();
-                }
-
-                if (false === isset($ratings['xerfi_unilend'])) {
-                    $companyRating->id_company_rating_history = $companyRatingHistoryId;
-                    $companyRating->type                      = 'xerfi_unilend';
-                    $companyRating->value                     = $xerfiUnilend;
-                    $companyRating->create();
-                }
-
-                $ratings = $companyRating->getHistoryRatingsByType($companyRatingHistoryId, true);
-            }
-
-            foreach ($ratings as $ratingType => $rating) {
-                switch ($rating['action']) {
-                    case \company_rating_history::ACTION_WS:
-                        $action = 'Webservice';
-                        $user   = '';
-                        break;
-                    case \company_rating_history::ACTION_XERFI:
-                        $action = 'Automatique';
-                        $user   = '';
-                        break;
-                    case \company_rating_history::ACTION_USER:
-                    default:
-                        $action = 'Manuel';
-                        $user   = $rating['user'];
-                        break;
-                }
-
-                $return[$ratingType] = [
-                    'value'  => $rating['value'],
-                    'date'   => $rating['added']->format('d/m/Y H:i'),
-                    'action' => $action,
-                    'user'   => $user
-                ];
-            }
-        }
-
-        return $return;
-    }
-
-    /**
-     * @return bool
-     */
-    private function loadTargetCompany()
-    {
-        if (empty($this->projects->id_target_company) || false === $this->targetCompany->get($this->projects->id_target_company)) {
-            return false;
-        }
-
-        $this->targetRatings = $this->loadRatings($this->targetCompany);
-
-        return true;
     }
 
     /**
@@ -758,7 +625,7 @@ class sfpmeiController extends bootstrap
     private function factures($projectId)
     {
         $this->hideDecoration();
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager     = $this->get('doctrine.orm.entity_manager');
         $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $clientRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
@@ -802,7 +669,7 @@ class sfpmeiController extends bootstrap
      */
     private function getLenderStatusMessage()
     {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus $currentStatus */
         $currentStatus       = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->getLastClientStatus($this->clients->id_client);
@@ -848,7 +715,7 @@ class sfpmeiController extends bootstrap
 
     private function setVigilanceStatusData()
     {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        /** @var EntityManager $entityManager */
         $entityManager                = $this->get('doctrine.orm.entity_manager');
         $this->vigilanceStatusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findBy(['client' => $this->clients->id_client], ['id' => 'DESC']);
 
@@ -960,39 +827,42 @@ class sfpmeiController extends bootstrap
         echo json_encode($companies);
     }
 
-    public function _requetes()
+    public function _exports()
     {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-
-        $settingsEntity    = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')
+        /** @var EntityManager $entityManager */
+        $entityManager  = $this->get('doctrine.orm.entity_manager');
+        $settingsEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')
             ->findOneBy([
                 'type' => 'Requetes acessibles a SFPMEI'
             ]);
+
         if (null === $settingsEntity) {
             header('Location: ' . $this->lurl . '/sfpmei');
             die;
         }
+
         $allowedQueries    = explode(',', str_replace(' ', '', $settingsEntity->getValue()));
         $this->queriesList = [];
 
-        if (isset($this->params[0])) {
+        if (isset($this->params[0], $this->params[1]) && in_array($this->params[1], $allowedQueries)) {
             switch ($this->params[0]) {
-                case 'export':
-                    if (isset($this->params[1]) && in_array($this->params[1], $allowedQueries)) {
-                        $this->autoFireView = false;
-                        $this->exportResult($this->params[1]);
-                    }
+                case 'csv':
+                    $this->hideDecoration();
+                    $this->autoFireview = false;
+
+                    $this->exportResult($this->params[1]);
                     break;
+                case 'html':
                 default:
-                    $this->executeQuery($this->params[0]);
-                    $this->setView('requetes/resultats');
+                    $this->executeQuery($this->params[1]);
+                    $this->setView('exports/resultats');
                     break;
             }
         } else {
             /** @var queries $queries */
             $queries = $this->loadData('queries');
-            $this->queriesList = $queries->select('id_query IN (' . $settingsEntity->getValue() . ')', 'executed DESC');
+            $this->queriesList = $queries->select('id_query IN (' . $settingsEntity->getValue() . ')', 'name ASC');
+            $this->setView('exports/liste');
         }
     }
 
@@ -1006,7 +876,7 @@ class sfpmeiController extends bootstrap
 
         $this->queries = $this->loadData('queries');
         if (false === $this->queries->get($queryId, 'id_query')) {
-            header('Location: ' . $this->lurl . '/sfpmei/requetes');
+            header('Location: ' . $this->lurl . '/sfpmei/exports');
             die;
         }
         $this->queries->sql = trim(str_replace(
@@ -1065,10 +935,6 @@ class sfpmeiController extends bootstrap
      */
     private function exportDocument($queryId)
     {
-        $this->hideDecoration();
-
-        $this->autoFireview = false;
-
         $this->executeQuery($queryId);
 
         PHPExcel_Settings::setCacheStorageMethod(

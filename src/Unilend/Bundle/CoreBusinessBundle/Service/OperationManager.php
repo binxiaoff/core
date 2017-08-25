@@ -222,6 +222,9 @@ class OperationManager
             case Virements::TYPE_UNILEND:
                 $this->withdrawUnilendWallet($wireTransferOut);
                 break;
+            case Virements::TYPE_DEBT_COLLECTOR:
+                $this->withdrawDebtCollectorWallet($wireTransferOut);
+                break;
             default :
                 throw new \InvalidArgumentException('Wire transfer out type ' . $wireTransferOut->getType() . ' is not supported.');
         }
@@ -264,6 +267,20 @@ class OperationManager
     {
         $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_WITHDRAW]);
         $wallet        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($wireTransferOut->getClient(), WalletType::BORROWER);
+        $amount        = round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2);
+
+        $this->newOperation($amount, $operationType, null, $wallet, null, $wireTransferOut);
+    }
+
+    /**
+     * @param Virements $wireTransferOut
+     *
+     * @throws \Exception
+     */
+    private function withdrawDebtCollectorWallet(Virements $wireTransferOut)
+    {
+        $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::DEBT_COLLECTOR_WITHDRAW]);
+        $wallet        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($wireTransferOut->getClient(), WalletType::DEBT_COLLECTOR);
         $amount        = round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2);
 
         $this->newOperation($amount, $operationType, null, $wallet, null, $wireTransferOut);
@@ -580,11 +597,8 @@ class OperationManager
         if ($collector->getIdType()->getLabel() !== WalletType::DEBT_COLLECTOR) {
             return false;
         }
-        $amount        = round(bcdiv($reception->getMontant(), 100, 4), 2);
         $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::COLLECTION_COMMISSION_PROVISION]);
         $this->newOperation($commission, $operationType, null, $collector, $borrower, $reception);
-        $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_PROVISION]);
-        $this->newOperation($amount, $operationType, null, null, $borrower, $reception);
 
         return true;
     }

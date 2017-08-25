@@ -2,7 +2,7 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-6">
-                <h1>Virements prêteurs</h1>
+                <h1>Transferts de fonds prêteurs</h1>
             </div>
             <div class="col-md-6">
                 <a href="<?= $this->lurl ?>/sfpmei/transferts/preteurs/csv" class="btn-primary pull-right">Export CSV</a>

@@ -19,8 +19,6 @@ abstract class Controller implements ContainerAwareInterface
     public $autoFireView = true;
     /** @var bool */
     public $autoFireFooter = true;
-    /** @var bool */
-    public $catchAll = false;
     /** @var \Unilend\Bridge\Doctrine\DBAL\Connection */
     public $bdd;
     /** @var string */
@@ -35,12 +33,10 @@ abstract class Controller implements ContainerAwareInterface
     public $current_template = '';
     /** @var \Symfony\Component\HttpFoundation\Request */
     public $request;
-    /** @var bool */
-    public $useOneUi = false;
+    /** @var Twig_Environment */
+    private $twigEnvironment;
 
     /**
-     * Controller constructor.
-     *
      * @param Command $command
      * @param string  $app
      * @param \Symfony\Component\HttpFoundation\Request|null  $request
@@ -113,32 +109,13 @@ abstract class Controller implements ContainerAwareInterface
     {
         $this->initialize();
 
-        $FunctionToCall = $this->Command->getFunction();
-
-        if ($FunctionToCall == '') {
-            $FunctionToCall = 'default';
-        }
-
-        if (false === is_callable([$this, '_' . $FunctionToCall])) {
-            if ($this->catchAll == true) {
-                $current_params = $this->Command->getParameters();
-                $arr            = [0 => $FunctionToCall];
-                $arr            = array_merge($arr, $current_params);
-                $this->Command->setParameters($arr);
-                $FunctionToCall = 'default';
-            } else {
-                $FunctionToCall = 'error';
-            }
-        }
-
-        $this->setView($FunctionToCall);
         $this->params = $this->Command->getParameters();
 
-        call_user_func([$this, '_' . $FunctionToCall]);
+        call_user_func([$this, '_' . $this->Command->getFunction()]);
 
-        if ($this->useOneUi) {
-            include $this->path . 'apps/' . $this->App . '/views/layout.php';
-        } else {
+        if (null === $this->twigEnvironment) {
+            $this->setView($this->Command->getFunction());
+
             if ($this->autoFireHead) {
                 $this->fireHead();
             }
@@ -208,6 +185,52 @@ abstract class Controller implements ContainerAwareInterface
         $this->is_view_template = $is_template;
     }
 
+    /**
+     * @param string $template
+     * @param array  $context
+     *
+     * @return string
+     */
+    public function render($template = null, array $context = [])
+    {
+        $this->initializeTwig();
+
+        if (null === $template) {
+            $template = $this->Command->getControllerName() . '/' . $this->Command->getFunction() . '.html.twig';
+        }
+
+        try {
+            $this->twigEnvironment->loadTemplate($template);
+        } catch (\Twig_Error_Loader $exception) {
+            $template = '404.html.twig';
+        }
+
+        $context['app'] += [
+            'environment' => $this->getParameter('kernel.environment'),
+            'adminUrl'    => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_admin'),
+            'frontUrl'    => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
+            'staticUrl'   => $this->get('assets.packages')->getUrl(''),
+            'parameters'  => $this->Command->getParameters()
+        ];
+
+        echo $this->twigEnvironment->render($template, $context);
+        exit;
+    }
+
+    /**
+     * @internal
+     */
+    private function initializeTwig()
+    {
+        $kernel                = $this->get('kernel');
+        $loader                = new Twig_Loader_Filesystem($kernel->getRootDir() . '/../apps/' . $this->App . '/views');
+        $this->twigEnvironment = new Twig_Environment($loader, [
+            'autoescape' => false,
+            'cache'      => $kernel->getCacheDir() . '/twig',
+            'debug'      => 'prod' !== $this->get('kernel')->getEnvironment()
+        ]);
+        $this->twigEnvironment->addExtension(new Twig_Extension_Debug());
+    }
 
     protected function loadData($object, $params = [])
     {
@@ -216,9 +239,11 @@ abstract class Controller implements ContainerAwareInterface
 
     /**
      * @deprecated Each lib will be declared as a service.
+     *
      * @param string $library
      * @param array  $params
      * @param bool   $instanciate
+     *
      * @return bool|object
      */
     protected function loadLib($library, $params = [], $instanciate = true)
@@ -280,10 +305,5 @@ abstract class Controller implements ContainerAwareInterface
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
-    }
-
-    protected function useOneUi()
-    {
-        $this->useOneUi = true;
     }
 }

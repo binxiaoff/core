@@ -597,4 +597,44 @@ class ClientsRepository extends EntityRepository
 
         return $result;
     }
+
+    /**
+     * @param string   $search
+     * @param int|null $limit
+     *
+     * @return array
+     */
+    public function findLendersByAutocomplete($search, $limit = null)
+    {
+        $search       = trim(filter_var($search, FILTER_SANITIZE_STRING));
+        $queryBuilder = $this->createQueryBuilder('c');
+        $queryBuilder
+            ->select('c.idClient')
+            ->addSelect('c.type')
+            ->addSelect('IFNULL (CASE WHEN c.type IN (:companyType) THEN co.name ELSE c.nom END, \' \') AS name')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType= wt.id AND wt.label = :lenderWalletType')
+            ->leftJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'c.idClient = co.idClientOwner AND c.type IN (:companyType)')
+            ->setParameter('lenderWalletType', WalletType::LENDER)
+            ->setParameter('companyType', [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER], Connection::PARAM_INT_ARRAY)
+            ->orderBy('c.added', 'DESC')
+            ->addOrderBy('c.status', 'DESC');
+
+        if (filter_var($search, FILTER_VALIDATE_INT)) {
+            $queryBuilder
+                ->where('c.idClient = :search')
+                ->setParameter('search', $search . '%');
+        } else {
+            $queryBuilder
+                ->where('c.nom LIKE :search')
+                ->orWhere('co.name LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
+        }
+
+        if (is_int($limit)) {
+            $queryBuilder->setMaxResults($limit);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
 }

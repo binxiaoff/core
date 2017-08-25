@@ -1,70 +1,138 @@
-<script type="text/javascript">
+<style>
+    @font-face {
+        font-family: 'FontAwesome';
+        src: url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.eot');
+        src: url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.eot?#iefix&v=4.7.0') format('embedded-opentype'),
+             url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.woff2') format('woff2'),
+             url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.woff') format('woff'),
+             url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.ttf') format('truetype'),
+             url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.svg#fontawesomeregular') format('svg');
+        font-weight: normal;
+        font-style: normal;
+    }
+
+    table.dataTable thead .sorting:after,
+    table.dataTable thead .sorting_asc:after,
+    table.dataTable thead .sorting_desc:after {
+        top: 7px !important;
+    }
+</style>
+<script>
     $(function() {
-        jQuery.tablesorter.addParser({
-            id: "fancyNumber", is: function (s) {
-                return /[\-\+]?\s*[0-9]{1,3}(\.[0-9]{3})*,[0-9]+/.test(s);
-            }, format: function (s) {
-                return jQuery.tablesorter.formatFloat(s.replace(/,/g, '').replace(' €', '').replace(' ', ''));
-            }, type: "numeric"
-        });
+        $('#receptions-table').DataTable({
+            order: [[0, 'asc']],
+            pageLength: <?= $this->nb_lignes ?>,
+            bLengthChange: false,
+            columnDefs: [
+                {orderable: false, targets: [0, 1, 4]},
+                {searchable: false, targets: 4}
+            ],
+            language: {
+                url: '<?= $this->lurl ?>/oneui/js/plugins/datatables/localisation/fr_FR.json'
+            }
+        })
 
-        $(".tablesorter").tablesorter({headers: {5: {sorter: false}}});
+        $('.ignore-line-form').on('submit', function (event) {
+            event.preventDefault()
 
-        <?php if ($this->nb_lignes != '') : ?>
-            $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
-        <?php endif; ?>
+            var $form = $(this)
+            var $reception = $form.find('[name=reception]')
 
-        $(".inline").colorbox({inline: true, width: "50%"});
+            $.ajax({
+                url: $form.attr('action'),
+                method: $form.attr('method'),
+                data: $form.serialize(),
+                success: function (response) {
+                    $.colorbox.close()
+                    if (response === 'ok') {
+                        $('tr[data-reception-id=' + $reception.val() + ']').fadeOut()
+                    } else {
+                        alert('Une erreur est survenue')
+                    }
+                },
+                error: function () {
+                    $.colorbox.close()
+                    alert('Une erreur est survenue')
+                }
+            })
+        })
+
+        $('.reception-line').tooltip({
+            position: {my: 'left top', at: 'right top'},
+            content: function () {
+                return $(this).prop('title')
+            }
+        })
+
+        $('.inline').tooltip({disabled: true})
+        $('.inline').colorbox({inline: true})
     });
 </script>
 <div id="contenu">
-    <h1>Liste des mouvements non affectés</h1>
-    <table class="tablesorter">
+    <h1>Opérations non affectées (<?= count($this->nonAttributedReceptions) ?>)</h1>
+    <table id="receptions-table" class="table table-bordered table-striped">
         <thead>
             <tr>
                 <th>ID</th>
                 <th>Motif</th>
                 <th>Montant</th>
-                <th>Statut</th>
                 <th>Date</th>
                 <th>&nbsp;</th>
             </tr>
         </thead>
         <tbody>
-            <?php $i = 1;
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions $reception */
-            foreach ($this->nonAttributedReceptions as $reception) : ?>
-                <tr<?= ($i++ % 2 == 1 ? '' : ' class="odd"') ?>>
+            <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions $reception */ ?>
+            <?php foreach ($this->nonAttributedReceptions as $reception) : ?>
+                <tr data-reception-id="<?= $reception->getIdReception() ?>" class="reception-line" title="<?= htmlspecialchars(nl2br($reception->getComment()), ENT_QUOTES) ?>">
                     <td><?= $reception->getIdReception() ?></td>
                     <td><?= $reception->getMotif() ?></td>
-                    <td><?= $this->ficelle->formatNumber($reception->getMontant() / 100) ?> €</td>
-                    <td class="statut_operation_<?= $reception->getIdReception() ?>"><?= $this->statusOperations[$reception->getStatusBo()] ?></td>
-                    <td><?= $reception->getAdded()->format('d/m/Y') ?></td>
-                    <td align="center">
-                        <a class="thickbox ajouter_<?= $reception->getIdReception() ?>" href="<?= $this->lurl ?>/transferts/attribution/<?= $reception->getIdReception() ?>"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Attribuer"/></a>
-                        <a class="inline" href="#inline_content_<?= $reception->getIdReception() ?>"><img src="<?= $this->surl ?>/images/admin/modif.png" alt="Afficher la ligne de réception"/></a>
-                        <div style="display:none;">
-                            <div id="inline_content_<?= $reception->getIdReception() ?>" style="white-space: nowrap; padding:10px; background:#fff;"><?= $reception->getLigne() ?></div>
-                        </div>
+                    <td class="text-right" data-order="<?= $reception->getMontant() ?>" data-search="<?= $reception->getMontant() ?>"><?= $this->ficelle->formatNumber($reception->getMontant() / 100) ?> €</td>
+                    <td class="text-center" data-order="<?= $reception->getAdded()->getTimestamp() ?>"><?= $reception->getAdded()->format('d/m/Y') ?></td>
+                    <td class="text-center">
+                        <a class="thickbox ajouter_<?= $reception->getIdReception() ?>" href="<?= $this->lurl ?>/transferts/attribution/<?= $reception->getIdReception() ?>"><img src="<?= $this->surl ?>/images/admin/check.png" alt="Attribuer l'opération"></a>
+                        <a class="inline" href="#ignore-line-<?= $reception->getIdReception() ?>"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Ignorer l'opération"></a>
+                        <a class="inline" href="#comment-line-<?= $reception->getIdReception() ?>"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Commenter l'opération"></a>
+                        <a class="inline" href="#content-line-<?= $reception->getIdReception() ?>" title="Ligne de réception"><img src="<?= $this->surl ?>/images/admin/modif.png" alt="Afficher l'opération"></a>
                     </td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
-    <?php if ($this->nb_lignes != '') : ?>
-        <table>
-            <tr>
-                <td id="pager">
-                    <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first"/>
-                    <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev"/>
-                    <input type="text" class="pagedisplay"/>
-                    <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
-                    <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
-                    <select class="pagesize">
-                        <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
-                    </select>
-                </td>
-            </tr>
-        </table>
-    <?php endif; ?>
+    <div class="hidden">
+        <?php foreach ($this->nonAttributedReceptions as $reception) : ?>
+            <div id="content-line-<?= $reception->getIdReception() ?>" style="white-space: nowrap; padding: 10px;"><?= $reception->getLigne() ?></div>
+            <div id="comment-line-<?= $reception->getIdReception() ?>" style="padding: 10px; min-width: 500px;">
+                <form id="comment-line-form-<?= $reception->getIdReception() ?>" class="comment-line-form" method="POST" action="<?= $this->lurl ?>/transferts/comment">
+                    <input type="hidden" name="reception" value="<?= $reception->getIdReception() ?>">
+                    <input type="hidden" name="referer" value="<?= $_SERVER['REQUEST_URI'] ?>">
+                    <h1>Commenter une opération</h1>
+                    <div class="form-group">
+                        <label for="comment-line-comment-<?= $reception->getIdReception() ?>" class="sr-only">Commentaire</label>
+                        <textarea id="comment-line-comment-<?= $reception->getIdReception() ?>" name="comment" rows="5" class="form-control"><?= $reception->getComment() ?></textarea>
+                    </div>
+                    <div class="text-right">
+                        <button type="button" class="btn-default" onclick="$.fn.colorbox.close()">Annuler</button>
+                        <button type="submit" class="btn-primary">Valider</button>
+                    </div>
+                </form>
+            </div>
+            <div id="ignore-line-<?= $reception->getIdReception() ?>" style="padding: 10px; min-width: 500px;">
+                <form id="ignore-line-form-<?= $reception->getIdReception() ?>" class="ignore-line-form" method="POST" action="<?= $this->lurl ?>/transferts/ignore">
+                    <input type="hidden" name="reception" value="<?= $reception->getIdReception() ?>">
+                    <h1>Ignorer une opération</h1>
+                    <div class="form-group">
+                        <label for="ignore-line-comment-<?= $reception->getIdReception() ?>">Commentaire</label>
+                        <textarea id="ignore-line-comment-<?= $reception->getIdReception() ?>" name="comment" rows="5" class="form-control"><?= $reception->getComment() ?></textarea>
+                    </div>
+                    <div class="text-right">
+                        <button type="button" class="btn-default" onclick="$.fn.colorbox.close()">Annuler</button>
+                        <button type="submit" class="btn-primary">Valider</button>
+                    </div>
+                </form>
+            </div>
+            <div id="comment-<?= $reception->getIdReception() ?>"><?= nl2br($reception->getComment()) ?></div>
+        <?php endforeach; ?>
+    </div>
 </div>
+<script src="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+<link type="text/css" rel="stylesheet" href="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.css">
