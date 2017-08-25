@@ -227,7 +227,7 @@ class EcheanciersRepository extends EntityRepository
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
                 WHERE ot.label = \'' . OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_REGULARIZATION . '\' AND id_repayment_schedule = e.id_echeancier
-              ), 0) as prelevements_obligatoires,
+              ), 0) AS prelevements_obligatoires,
               IFNULL((
                SELECT SUM(amount)
                FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
@@ -236,7 +236,7 @@ class EcheanciersRepository extends EntityRepository
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
                 WHERE ot.label = \'' . OperationType::TAX_FR_RETENUES_A_LA_SOURCE_REGULARIZATION . '\' AND id_repayment_schedule = e.id_echeancier
-              ), 0) as retenues_source,
+              ), 0) AS retenues_source,
               IFNULL((
                SELECT SUM(amount)
                FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
@@ -245,7 +245,7 @@ class EcheanciersRepository extends EntityRepository
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
                 WHERE ot.label = \'' . OperationType::TAX_FR_CSG_REGULARIZATION . '\' AND id_repayment_schedule = e.id_echeancier
-              ), 0) as csg,
+              ), 0) AS csg,
               IFNULL((
                SELECT SUM(amount)
                FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
@@ -254,7 +254,7 @@ class EcheanciersRepository extends EntityRepository
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
                 WHERE ot.label = \'' . OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_REGULARIZATION . '\' AND id_repayment_schedule = e.id_echeancier
-              ), 0) as prelevements_sociaux,
+              ), 0) AS prelevements_sociaux,
               IFNULL((
                SELECT SUM(amount)
                FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
@@ -263,7 +263,7 @@ class EcheanciersRepository extends EntityRepository
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
                 WHERE ot.label = \'' . OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_REGULARIZATION . '\' AND id_repayment_schedule = e.id_echeancier
-              ), 0) as contributions_additionnelles,
+              ), 0) AS contributions_additionnelles,
               IFNULL((
                SELECT SUM(amount)
                FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
@@ -272,7 +272,7 @@ class EcheanciersRepository extends EntityRepository
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
                 WHERE ot.label = \'' . OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_REGULARIZATION . '\' AND id_repayment_schedule = e.id_echeancier
-              ), 0) as prelevements_de_solidarite,
+              ), 0) AS prelevements_de_solidarite,
               IFNULL((
                SELECT SUM(amount)
                FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
@@ -281,7 +281,7 @@ class EcheanciersRepository extends EntityRepository
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
                 WHERE ot.label = \'' . OperationType::TAX_FR_CRDS_REGULARIZATION . '\' AND id_repayment_schedule = e.id_echeancier
-              ), 0) as crds,
+              ), 0) AS crds,
               e.date_echeance,
               e.date_echeance_reel,
               e.status,
@@ -336,7 +336,7 @@ class EcheanciersRepository extends EntityRepository
                  YEAR(o.added) AS year,
                  SUM(IF(ot.label = \'' . OperationType::CAPITAL_REPAYMENT_REGULARIZATION . '\', -amount, IF(ot.label = \'' . OperationType::CAPITAL_REPAYMENT . '\', amount, 0))) AS capital,
                  SUM(IF(ot.label = \'' . OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION . '\', -amount, IF(ot.label= \'' . OperationType::GROSS_INTEREST_REPAYMENT . '\', amount, 0))) AS grossInterests,
-                 SUM(IF(ot.label in (:frenchTaxRegularisation), -amount, IF(ot.label in (:frenchTax), amount, 0))) AS repaidTaxes,
+                 SUM(IF(ot.label IN (:frenchTaxRegularisation), -amount, IF(ot.label IN (:frenchTax), amount, 0))) AS repaidTaxes,
                  0 upcomingTaxes
                FROM operation o USE INDEX (idx_id_wallet_creditor_type, idx_id_wallet_debitor_type)
                  INNER JOIN operation_type ot ON ot.id = o.id_type
@@ -384,7 +384,8 @@ class EcheanciersRepository extends EntityRepository
                     AND e.status = 0
                     AND e.date_echeance >= NOW()
                     AND IF(
-                        (p.status IN (' . implode(',', [ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE, ProjectsStatus::DEFAUT]) . ')
+                        (p.status IN (' . implode(',',
+                [ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE, ProjectsStatus::DEFAUT]) . ')
                         OR (p.status >= ' . ProjectsStatus::PROBLEME . '
                         AND DATEDIFF(NOW(), (
                         SELECT psh2.added

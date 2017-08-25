@@ -493,6 +493,7 @@ EOF
 
                         $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
                         $operationManager->cancelProvisionBorrowerWallet($wallet, $amount, $reception);
+
                         $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
                         $repaymentManager->rejectPayment($reception, $user);
                     }
