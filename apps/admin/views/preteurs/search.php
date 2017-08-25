@@ -45,6 +45,10 @@
                     <td><input type="text" name="raison_sociale" id="raison_sociale" class="input_large" /></td>
                 </tr>
                 <tr>
+                    <th><label for="siren">Siren :</label></th>
+                    <td><input type="text" name="siren" id="siren" class="input_large" /></td>
+                </tr>
+                <tr>
                     <td>&nbsp;</td>
                     <th style="text-align: left">
                         <input type="hidden" name="form_search_preteur" id="form_search_preteur" />

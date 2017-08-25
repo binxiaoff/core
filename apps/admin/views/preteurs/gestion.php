@@ -33,22 +33,11 @@
                     <td class="leLender<?= $client['id_client'] ?>"><?= $client['prenom_ou_dirigeant'] ?></td>
                     <td class="leLender<?= $client['id_client'] ?>"><?= $client['email'] ?></td>
                     <td class="leLender<?= $client['id_client'] ?>"><?= $client['telephone'] ?></td>
-                    <td class="leLender<?= $client['id_client'] ?>"><?= $client['status'] == 1 ? 'en ligne' : 'hors ligne' ?></td>
+                    <td class="leLender<?= $client['id_client'] ?>"><?= $client['status'] == \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_ONLINE ? 'en ligne' : 'hors ligne' ?></td>
                     <td align="center">
-                        <?php if (1 == $client['novalid']) : ?>
-                            <a href="<?= $this->lurl ?>/preteurs/edit/<?= $client['id_client'] ?>">
-                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $client['nom_ou_societe'] . ' ' . $client['prenom_ou_dirigeant'] ?>"/>
-                            </a>
-                        <?php else: ?>
-                            <a href="<?= $this->lurl ?>/preteurs/edit/<?= $client['id_client'] ?>">
-                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $client['nom_ou_societe'] . ' ' . $client['prenom_ou_dirigeant'] ?>"/>
-                            </a>
-                            <script>
-                                $(".leLender<?= $client['id_client'] ?>").click(function() {
-                                    $(location).attr('href', '<?= $this->lurl ?>/preteurs/edit/<?= $client['id_client'] ?>');
-                                });
-                            </script>
-                        <?php endif; ?>
+                        <a href="<?= $this->lurl ?>/preteurs/edit/<?= $client['id_client'] ?>">
+                            <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $client['nom_ou_societe'] . ' ' . $client['prenom_ou_dirigeant'] ?>"/>
+                        </a>
                     </td>
                 </tr>
             <?php endforeach; ?>
