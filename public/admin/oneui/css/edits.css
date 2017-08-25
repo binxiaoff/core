@@ -23,8 +23,42 @@
     width: 100%;
 }
 
+/* Colors & Alerts */
+.alert, .alert-info, .alert-warning {
+    color: #444;
+    background: #fdf4fa;
+    box-shadow: 0 2px #CA9FAF;
+}
 .alert-danger {
-    background: #f0cce0;
-    color: #b20066;
-    box-shadow: 0 2px #b23a81;
+    background: #ffcbcc;
+    box-shadow: 0 2px #BA7E7F;
+}
+.alert-success {
+    background: #eaf4ea;
+    box-shadow: 0 2px #b0c3b5;
+}
+.bg-success {
+    background: #eaf4ea;
+}
+.bg-info {
+    background: #d0e7f2;
+}
+.bg-warning {
+    background: #fdf5cb;
+}
+.bg-darker {
+    background: #353847;
+    color: #979ca3;
+}
+.bg-muted {
+    background: #b6babe;
+}
+.text-success {
+    color: #75bc88;
+}
+.text-info {
+    color: #55b2c8;
+}
+.text-warning {
+    color: #ddaf34;
 }
