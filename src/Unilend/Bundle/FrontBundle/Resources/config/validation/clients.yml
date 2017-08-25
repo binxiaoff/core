@@ -5,7 +5,7 @@ Unilend\Bundle\CoreBusinessBundle\Entity\Clients:
             - Length:
                 min: 2
             - Regex:
-                pattern: '/[^A-zÀ-ÿ\s\-]+/i'
+                pattern: '/[^A-zÀ-ÿ\s\-\'']+/i'
                 match: false
         nomUsage:
             - Regex:
