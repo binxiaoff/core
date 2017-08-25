@@ -1,25 +1,14 @@
 <script type="text/javascript">
     $(function() {
-        jQuery.tablesorter.addParser({
+        $.tablesorter.addParser({
             id: "fancyNumber", is: function (s) {
                 return /[\-\+]?\s*[0-9]{1,3}(\.[0-9]{3})*,[0-9]+/.test(s);
             }, format: function (s) {
                 return jQuery.tablesorter.formatFloat(s.replace(/,/g, '').replace(' €', '').replace(' ', ''));
             }, type: "numeric"
         });
-
-        $(".tablesorter").tablesorter();
-
         $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
         $("#datepik_1").datepicker({
-            showOn: 'both',
-            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
-            buttonImageOnly: true,
-            changeMonth: true,
-            changeYear: true,
-            yearRange: '<?=(date('Y') - 10)?>:<?=(date('Y') + 10)?>'
-        });
-        $("#datepik_2").datepicker({
             showOn: 'both',
             buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
             buttonImageOnly: true,
@@ -40,6 +29,56 @@
                 $('#type_offer').val('landing_page')
             else if ($(this).is('.hp'))
                 $('#type_offer').val('home_page')
+        })
+
+
+        // Rattrapage tablesorter (Search Lenders by ID)
+        var $header = $('#offer-search-table-header')
+        var $results = $('#offer-search-table')
+        $results.tablesorter()
+        $header.find('th').click(function () {
+            if ($(this).is('.header')) {
+                var $th = $(this),
+                    thIndex = $th.index(),
+                    sortDirection = 1, // headerSortUp
+                    sorting
+
+                if (!$th.is('.sort-active')) {
+                    $th.siblings().removeClass('sort-active')
+                    $th.addClass('sort-active headerSortUp')
+                }
+
+                if ($th.is('.sort-active')) {
+                    if ($th.is('.headerSortDown')) {
+                        $th.removeClass('headerSortDown').addClass('headerSortUp')
+                        sortDirection = 1
+                    } else {
+                        $th.removeClass('headerSortUp').addClass('headerSortDown')
+                        sortDirection = 0
+                    }
+                }
+
+                sorting = [[thIndex, sortDirection]]
+                $results.trigger("sorton", [sorting]);
+            }
+        })
+
+        // Past offers tablesorter
+        $('#offer-past-table').tablesorter()
+
+        // Toggle Rattrapage results
+        $('#toggle-trigger').click(function(e){
+            e.preventDefault()
+
+            var $this = $(this)
+            var $target = $($(this).attr('href'))
+
+            if (!$target.is(':visible'))
+                $this.html('Hide Table [x]')
+            else
+                $this.html('Expand Table [+]')
+
+            $target.slideToggle()
         })
     });
 </script>
@@ -121,11 +160,11 @@
                             </tr>
                             <tr>
                                 <td>Déjà distribué</td>
-                                <td><?= $this->currencyFormatter->format($this->alreadyPaidOutCurrentOfferLandingPage) ?></td>
+                                <td><?= $this->currencyFormatter->format($this->alreadyPaidOutCurrentOfferHomepage) ?></td>
                             </tr>
                             <tr>
                                 <td>Encore disponible</td>
-                                <td><?= $this->currencyFormatter->format($this->remainingAmountCurrentOfferLandingPage) ?></td>
+                                <td><?= $this->currencyFormatter->format($this->remainingAmountCurrentOfferHomepage) ?></td>
                             </tr>
                         </table>
                    
@@ -227,35 +266,28 @@
         </div>
         <div class="block-content">
             <?php if (false === empty($this->allOffers)) : ?>
-                <div class="row">
-                <?php $i = 1; foreach ($this->allOffers as $offer) : ?>
-                    <div class="col-md-3">
-                        <h4><?= $offer->getType(); ?></h4>
-                        <table class="table table-condensed">
-                            <tr>
-                                <td>Début</td>
-                                <td><?= $offer->getDebut()->format('d/m/Y') ?></td>
-                            </tr>
-                            <tr>
-                                <td>Fin</td>
-                                <td><?= null !== $offer->getFin() ? $offer->getFin()->format('d/m/Y') : '' ?></td>
-                            </tr>
-                            <tr>
-                                <td>Montant</td>
-                                <td><?= $this->currencyFormatter->format($offer->getMontant() / 100) ?></td>
-                            </tr>
-                            <tr>
-                                <td>Statut</td>
-                                <td><?= \Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues::STATUS_OFFLINE == $offer->getStatus() ? 'offre terminée' : 'offre en cours' ?></td>
-                            </tr>
-                        </table>
-                    </div>
-                    <?php if ($i % 4 === 0) : ?>
-                        </div> <!-- /.row -->
-                        <div class="row">
-                    <? endif; ?>
-                <? $i++; endforeach; ?>
-                </div>
+                <table id="offer-past-table" class="tablesorter table table-hover table-stripped">
+                    <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Début</th>
+                        <th>Fin</th>
+                        <th>Montant</th>
+                        <th>Statut</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($this->allOffers as $offer) : ?>
+                        <tr>
+                            <td><?= $offer->getType(); ?></td>
+                            <td><?= $offer->getDebut()->format('d/m/Y') ?></td>
+                            <td><?= null !== $offer->getFin() ? $offer->getFin()->format('d/m/Y') : '' ?></td>
+                            <td><?= $this->currencyFormatter->format($offer->getMontant() / 100) ?></td>
+                            <td><?= \Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues::STATUS_OFFLINE == $offer->getStatus() ? 'Terminée' : 'En cours' ?></td>
+                        </tr>
+                    <? endforeach; ?>
+                    </tbody>
+                </table>
             <?php endif; ?>
         </div>
     </div>
