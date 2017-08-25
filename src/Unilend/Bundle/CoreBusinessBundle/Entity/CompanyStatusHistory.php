@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * CompanyStatusHistory
  *
- * @ORM\Table(name="company_status_history", indexes={@ORM\Index(name="fk_company_status_history_id_company", columns={"id_company"}), @ORM\Index(name="idx_company_status_history_id_status", columns={"id_status"})})
+ * @ORM\Table(name="company_status_history", indexes={@ORM\Index(name="fk_company_status_history_id_company", columns={"id_company"}), @ORM\Index(name="idx_company_status_history_id_status", columns={"id_status"}), @ORM\Index(name="idx_company_status_history", columns={"changed_on"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
@@ -51,6 +51,20 @@ class CompanyStatusHistory
      * })
      */
     private $idUser;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="changed_on", type="date", nullable=true)
+     */
+    private $changedOn;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="receiver", type="text", length=16777215, nullable=true)
+     */
+    private $receiver;
 
     /**
      * @var string
@@ -131,6 +145,46 @@ class CompanyStatusHistory
     public function setIdUser(Users $idUser)
     {
         $this->idUser = $idUser;
+
+        return $this;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getChangedOn()
+    {
+        return $this->changedOn;
+    }
+
+    /**
+     * @param \DateTime $changedOn
+     *
+     * @return CompanyStatusHistory
+     */
+    public function setChangedOn(\DateTime $changedOn)
+    {
+        $this->changedOn = $changedOn;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getReceiver()
+    {
+        return $this->receiver;
+    }
+
+    /**
+     * @param string $receiver
+     *
+     * @return CompanyStatusHistory
+     */
+    public function setReceiver($receiver)
+    {
+        $this->receiver = $receiver;
 
         return $this;
     }
