@@ -68,10 +68,6 @@ class bootstrap extends Controller
                     'uri'   => 'partenaires/types'
                 ],
                 [
-                    'title' => 'Medias de campagnes',
-                    'uri'   => 'partenaires/medias'
-                ],
-                [
                     'title' => 'Grille de taux',
                     'uri'   => 'project_rate_settings',
                     'zone'  => Zones::ZONE_LABEL_ADMINISTRATION
@@ -541,5 +537,44 @@ class bootstrap extends Controller
             $entityManager->persist($userAccessEntity);
             $entityManager->flush($userAccessEntity);
         }
+    }
+
+    /**
+     * @param string $template
+     * @param array  $context
+     *
+     * @return string
+     */
+    public function render($template = null, array $context = [])
+    {
+        $user = null;
+        if (false === empty($_SESSION['user'])) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+        }
+
+        $navigation = self::MENU;
+
+        if (
+            isset($_SESSION['user'])
+            && 'Dashboard' === $navigation[0]['title']
+            && (
+                in_array($_SESSION['user']['id_user_type'], [\users_types::TYPE_RISK, \users_types::TYPE_COMMERCIAL])
+                || in_array($_SESSION['user']['id_user'], [Users::USER_ID_ALAIN_ELKAIM, Users::USER_ID_ARNAUD_SCHWARTZ])
+            )
+        ) {
+            $navigation[0]['title'] = 'Mon flux';
+        }
+
+        $context['app'] = [
+            'navigation' => $navigation,
+            'activeMenu' => isset($this->menu_admin) ? $this->menu_admin : '',
+            'session'    => $_SESSION,
+            'user'       => $user,
+            'userZones'  => isset($this->lZonesHeader) ? $this->lZonesHeader : []
+        ];
+
+        parent::render($template, $context);
     }
 }

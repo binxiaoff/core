@@ -13,7 +13,6 @@ class queriesController extends bootstrap
 
         $this->users->checkAccess(Zones::ZONE_LABEL_STATISTICS);
 
-        $this->catchAll   = true;
         $this->menu_admin = 'stats';
     }
 

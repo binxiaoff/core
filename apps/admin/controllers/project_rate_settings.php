@@ -12,7 +12,6 @@ class project_rate_settingsController extends bootstrap
 
         $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
 
-        $this->catchAll   = true;
         $this->menu_admin = 'configuration';
     }
 

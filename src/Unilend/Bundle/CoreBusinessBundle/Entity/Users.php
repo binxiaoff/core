@@ -14,6 +14,9 @@ class Users
 {
     const USER_ID_CRON  = -1;
     const USER_ID_FRONT = -2;
+    // @todo useful because users can't belong to several groups for the moment
+    const USER_ID_ALAIN_ELKAIM    = 28;
+    const USER_ID_ARNAUD_SCHWARTZ = 23;
 
     const STATUS_ONLINE  = 1;
     const STATUS_OFFLINE = 0;

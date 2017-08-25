@@ -22,7 +22,6 @@ class sfpmeiController extends bootstrap
 
         $this->users->checkAccess(Zones::ZONE_LABEL_SFPMEI);
 
-        $this->catchAll   = true;
         $this->menu_admin = 'sfpmei';
         $this->pagination = 25;
     }

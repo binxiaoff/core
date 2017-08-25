@@ -10,9 +10,7 @@ class menusController extends bootstrap
 
         $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
 
-        $this->catchAll   = true;
-        $this->menu_admin = 'edition';
-
+        $this->menu_admin    = 'edition';
         $this->typesElements = ['L' => 'Lien Interne', 'LX' => 'Lien Externe'];
     }
 
