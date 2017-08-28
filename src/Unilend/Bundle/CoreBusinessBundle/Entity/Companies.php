@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Companies
  *
- * @ORM\Table(name="companies", indexes={@ORM\Index(name="id_client_owner", columns={"id_client_owner"}), @ORM\Index(name="fk_companies_id_parent_company", columns={"id_parent_company"})})
+ * @ORM\Table(name="companies", indexes={@ORM\Index(name="id_client_owner", columns={"id_client_owner"}), @ORM\Index(name="fk_companies_id_parent_company", columns={"id_parent_company"}), @ORM\Index(name="idx_companies_id_status", columns={"id_status"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\CompaniesRepository")
  * @ORM\HasLifecycleCallbacks
  */
