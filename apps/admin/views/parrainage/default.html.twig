@@ -179,12 +179,6 @@
                 "<'row'<'col-sm-12'tr>>" +
                 "<'row'<'col-sm-6'i><'col-sm-6'p>>"
             })
-
-            $('.js-dataTable-advanced').dataTable({
-                columnDefs: [ { orderable: false } ],
-                pageLength: 4,
-                lengthMenu: [[5, 10], [5, 10]]
-            })
         })
     </script>
 {% endblock %}
@@ -299,49 +293,169 @@
             </div>
             <div class="block-content block-content-full">
                 <!-- @TODO Dynamisation de la table -->
-                <table class="table table-bordered table-striped table-hover js-dataTable-simple">
+                <table class="table table-bordered table-striped table-hover table-header-bg js-dataTable-simple">
                     <thead>
-                    <tr>
-                        <th>Début de l'offre</th>
-                        <th>Durée de validité</th>
-                        <th>Montant (Filleul)</th>
-                        <th>Montant (Parrain)</th>
-                        <th>Max. filleuls</th>
-                        <th>Statut</th>
-                        <td>Action</td>
-                    </tr>
+                        <tr>
+                            <th>Début de l'offre</th>
+                            <th>Durée de validité</th>
+                            <th>Montant (Filleul)</th>
+                            <th>Montant (Parrain)</th>
+                            <th>Max. filleuls</th>
+                            <th>Statut</th>
+                            <td>Action</td>
+                        </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td>14/07/2017</td>
-                        <td>3 semaines</td>
-                        <td>14 000 €</td>
-                        <td>5 000 €</td>
-                        <td>200</td>
-                        <td>En cours</td>
-                        <td>
-                            <form action="" method="post">
-                                <input type="hidden" name="campaing-id" value="">
-                                <input type="hidden" name="action" class="modify">
-                                <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Modifier"><span class="fa fa-pencil"></span></button>
-                            </form>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>14/02/2017</td>
-                        <td>3 semaines</td>
-                        <td>14 000 €</td>
-                        <td>5 000 €</td>
-                        <td>200</td>
-                        <td>Expirée</td>
-                        <td>
-                            <form action="" method="post">
-                                <input type="hidden" name="campaing-id" value="">
-                                <input type="hidden" name="action" class="reactivate">
-                                <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Réactiver"><span class="fa fa-refresh"></span></button>
-                            </form>
-                        </td>
-                    </tr>
+                        <tr>
+                            <td>14/07/2017</td>
+                            <td>3 semaines</td>
+                            <td>14 000 €</td>
+                            <td>5 000 €</td>
+                            <td>200</td>
+                            <td>En cours</td>
+                            <td>
+                                <form action="" method="post">
+                                    <input type="hidden" name="campaing-id" value="">
+                                    <input type="hidden" name="action" class="modify">
+                                    <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Modifier"><span class="fa fa-pencil"></span></button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>14/02/2017</td>
+                            <td>3 semaines</td>
+                            <td>14 000 €</td>
+                            <td>5 000 €</td>
+                            <td>200</td>
+                            <td>Expirée</td>
+                            <td>
+                                <form action="" method="post">
+                                    <input type="hidden" name="campaing-id" value="">
+                                    <input type="hidden" name="action" class="reactivate">
+                                    <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Réactiver"><span class="fa fa-refresh"></span></button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>14/07/2017</td>
+                            <td>3 semaines</td>
+                            <td>14 000 €</td>
+                            <td>5 000 €</td>
+                            <td>200</td>
+                            <td>En cours</td>
+                            <td>
+                                <form action="" method="post">
+                                    <input type="hidden" name="campaing-id" value="">
+                                    <input type="hidden" name="action" class="modify">
+                                    <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Modifier"><span class="fa fa-pencil"></span></button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>14/02/2017</td>
+                            <td>3 semaines</td>
+                            <td>14 000 €</td>
+                            <td>5 000 €</td>
+                            <td>200</td>
+                            <td>Expirée</td>
+                            <td>
+                                <form action="" method="post">
+                                    <input type="hidden" name="campaing-id" value="">
+                                    <input type="hidden" name="action" class="reactivate">
+                                    <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Réactiver"><span class="fa fa-refresh"></span></button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>14/07/2017</td>
+                            <td>3 semaines</td>
+                            <td>14 000 €</td>
+                            <td>5 000 €</td>
+                            <td>200</td>
+                            <td>En cours</td>
+                            <td>
+                                <form action="" method="post">
+                                    <input type="hidden" name="campaing-id" value="">
+                                    <input type="hidden" name="action" class="modify">
+                                    <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Modifier"><span class="fa fa-pencil"></span></button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>14/02/2017</td>
+                            <td>3 semaines</td>
+                            <td>14 000 €</td>
+                            <td>5 000 €</td>
+                            <td>200</td>
+                            <td>Expirée</td>
+                            <td>
+                                <form action="" method="post">
+                                    <input type="hidden" name="campaing-id" value="">
+                                    <input type="hidden" name="action" class="reactivate">
+                                    <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Réactiver"><span class="fa fa-refresh"></span></button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>14/07/2017</td>
+                            <td>3 semaines</td>
+                            <td>14 000 €</td>
+                            <td>5 000 €</td>
+                            <td>200</td>
+                            <td>En cours</td>
+                            <td>
+                                <form action="" method="post">
+                                    <input type="hidden" name="campaing-id" value="">
+                                    <input type="hidden" name="action" class="modify">
+                                    <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Modifier"><span class="fa fa-pencil"></span></button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>14/02/2017</td>
+                            <td>3 semaines</td>
+                            <td>14 000 €</td>
+                            <td>5 000 €</td>
+                            <td>200</td>
+                            <td>Expirée</td>
+                            <td>
+                                <form action="" method="post">
+                                    <input type="hidden" name="campaing-id" value="">
+                                    <input type="hidden" name="action" class="reactivate">
+                                    <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Réactiver"><span class="fa fa-refresh"></span></button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>14/07/2017</td>
+                            <td>3 semaines</td>
+                            <td>14 000 €</td>
+                            <td>5 000 €</td>
+                            <td>200</td>
+                            <td>En cours</td>
+                            <td>
+                                <form action="" method="post">
+                                    <input type="hidden" name="campaing-id" value="">
+                                    <input type="hidden" name="action" class="modify">
+                                    <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Modifier"><span class="fa fa-pencil"></span></button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>14/02/2017</td>
+                            <td>3 semaines</td>
+                            <td>14 000 €</td>
+                            <td>5 000 €</td>
+                            <td>200</td>
+                            <td>Expirée</td>
+                            <td>
+                                <form action="" method="post">
+                                    <input type="hidden" name="campaing-id" value="">
+                                    <input type="hidden" name="action" class="reactivate">
+                                    <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Réactiver"><span class="fa fa-refresh"></span></button>
+                                </form>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -382,7 +496,7 @@
                     </div>
                 </form>
 
-                <table class="table table-bordered table-striped table-hover js-dataTable-simple">
+                <table class="table table-bordered table-striped table-hover table-header-bg js-dataTable-simple">
                     <thead>
                     <tr>
                         <th>ID Client</th>
@@ -553,20 +667,48 @@
                 <h3 class="block-title">Primes déjà distribués</h3>
             </div>
             <div class="block-content">
-                <table class="table table-bordered table-striped table-hover js-dataTable-simple">
+                <style>
+                    .helper {
+                        margin: 0 -10px;
+                    }
+                    .helper .col {
+                        float: left;
+                        width: 44.5%;
+                        padding: 0 10px;
+                    }
+                    .helper .col:first-child {
+                        width: 9%;
+                    }
+                    .helper .col span {
+                        display: block;
+                        height: 2px;
+                    }
+                </style>
+                <div class="row helper">
+                    <div class="col">&nbsp;</div>
+                    <div class="col">
+                        <p><b>Filleul</b></p>
+                        <span class="bg-primary"></span>
+                    </div>
+                    <div class="col">
+                        <p><b>Parrain</b></p>
+                        <span class="bg-primary"></span>
+                    </div>
+                </div>
+                <table class="table table-bordered table-striped table-hover table-header-bg js-dataTable-simple">
                     <thead>
                     <tr>
-                        <th>Code</th>
-                        <th>Filleul ID</th>
-                        <th>Nom/Prénom</th>
-                        <th>Email</th>
-                        <th>Prime</th>
-                        <th style="border-right: 1px solid #fff;">Date Versement</th>
-                        <th>Parrain ID</th>
-                        <th>Nom/Prénom</th>
-                        <th>Email</th>
-                        <th>Prime</th>
-                        <th>Date Versement</th>
+                        <th style="width: 10%">Code</th>
+                        <th style="width: 9%">Filleul ID</th>
+                        <th style="width: 9%">Nom/Prénom</th>
+                        <th style="width: 9%">Email</th>
+                        <th style="width: 9%">Prime</th>
+                        <th style="width: 9%">Date Versement</th>
+                        <th style="width: 9%">Parrain ID</th>
+                        <th style="width: 9%">Nom/Prénom</th>
+                        <th style="width: 9%">Email</th>
+                        <th style="width: 9%">Prime</th>
+                        <th style="width: 9%">Date Versement</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -586,7 +728,7 @@
                         <td>
                             20 E
                         </td>
-                        <td style="border-right: 1px solid #ddd;">
+                        <td>
                             20/08/2017
                         </td>
                         <td>
