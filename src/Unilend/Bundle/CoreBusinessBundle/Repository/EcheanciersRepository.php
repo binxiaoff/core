@@ -540,4 +540,24 @@ class EcheanciersRepository extends EntityRepository
 
         return $resultRepaymentSchedule;
     }
+
+    /**
+     * @param \DateTime $date
+     * @param Projects|int  $project
+     *
+     * @return null|Echeanciers
+     */
+    public function findNextPendingScheduleAfter(\DateTime $date, $project)
+    {
+        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder->where('e.idProject = :project')
+            ->andWhere('e.status = :pending')
+            ->andWhere('e.dateEcheance >= :date')
+            ->setParameter('project', $project)
+            ->setParameter('date', $date)
+            ->setParameter('pending', Echeanciers::STATUS_PENDING)
+            ->orderBy('e.ordre', 'ASC')
+            ->setMaxResults(1);
+        return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
 }

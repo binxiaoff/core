@@ -279,8 +279,8 @@ EOF
             $bankDirectDebit = $entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements')
                 ->findOneBy(['idProject' => $projectId, 'numPrelevement' => $nextPayment->getOrdre()]);
             if ($nextPayment && $bankDirectDebit && false !== strpos($motif, $bankDirectDebit->getMotif())) {
-                $operationManager        = $this->getContainer()->get('unilend.service.operation_manager');
-                $projectRepaymentManager = $this->getContainer()->get('unilend.service_repayment.project_repayment_manager');
+                $operationManager                = $this->getContainer()->get('unilend.service.operation_manager');
+                $projectRepaymentScheduleManager = $this->getContainer()->get('unilend.service_repayment.project_repayment_schedule_manager');
 
                 $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
                 $client  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
@@ -297,7 +297,7 @@ EOF
 
                     if ($project->getStatus() < ProjectsStatus::PROBLEME) {
                         $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
-                        $projectRepaymentManager->pay($reception, $user);
+                        $projectRepaymentScheduleManager->pay($reception, $user);
                     }
                 }
             }
@@ -336,9 +336,9 @@ EOF
      */
     private function processRegulation($motif, Receptions $reception, Projects $project)
     {
-        $entityManager           = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $operationManager        = $this->getContainer()->get('unilend.service.operation_manager');
-        $projectRepaymentManager = $this->getContainer()->get('unilend.service_repayment.project_repayment_manager');
+        $entityManager                   = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $operationManager                = $this->getContainer()->get('unilend.service.operation_manager');
+        $projectRepaymentScheduleManager = $this->getContainer()->get('unilend.service_repayment.project_repayment_schedule_manager');
 
         $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
 
@@ -354,7 +354,7 @@ EOF
         $operationManager->provisionBorrowerWallet($reception);
 
         $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
-        $projectRepaymentManager->pay($reception, $user);
+        $projectRepaymentScheduleManager->pay($reception, $user);
     }
 
     /**
@@ -464,9 +464,9 @@ EOF
      */
     private function processBorrowerRepaymentRejection(array $aRow, Receptions $reception)
     {
-        $entityManager           = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $operationManager        = $this->getContainer()->get('unilend.service.operation_manager');
-        $projectRepaymentManager = $this->getContainer()->get('unilend.service_repayment.project_repayment_manager');
+        $entityManager                   = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $operationManager                = $this->getContainer()->get('unilend.service.operation_manager');
+        $projectRepaymentScheduleManager = $this->getContainer()->get('unilend.service_repayment.project_repayment_schedule_manager');
 
         if (1 === preg_match('#^RUM[^0-9]*([0-9]+)#', $aRow['libelleOpe3'], $matches)) {
             /** @var Projects $project */
@@ -497,7 +497,7 @@ EOF
                         $operationManager->cancelProvisionBorrowerWallet($wallet, $amount, $reception);
 
                         $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
-                        $projectRepaymentManager->rejectPayment($reception, $user);
+                        $projectRepaymentScheduleManager->rejectPayment($reception, $user);
                     }
                 }
             }

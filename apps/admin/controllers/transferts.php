@@ -74,8 +74,8 @@ class transfertsController extends bootstrap
         if (isset($_POST['id_project'], $_POST['id_reception'])) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
             $operationManager = $this->get('unilend.service.operation_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentManager $projectRepaymentManager */
-            $projectRepaymentManager = $this->get('unilend.service_repayment.project_repayment_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentScheduleManager $projectRepaymentScheduleManager */
+            $projectRepaymentScheduleManager = $this->get('unilend.service_repayment.project_repayment_schedule_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager $projectRepaymentTaskManager */
             $projectRepaymentTaskManager = $this->get('unilend.service_repayment.project_repayment_task_manager');
 
@@ -100,7 +100,7 @@ class transfertsController extends bootstrap
                         $projectRepaymentTaskManager->planEarlyRepaymentTask($project, $reception, $user);
                     } elseif ($_POST['type_remb'] === 'regularisation') {
                         $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_REGULARISATION);
-                        $projectRepaymentManager->pay($reception, $user);
+                        $projectRepaymentScheduleManager->pay($reception, $user);
                     }
                     $entityManager->flush();
                     $entityManager->getConnection()->commit();

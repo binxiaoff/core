@@ -15,7 +15,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
 use \Psr\Log\LoggerInterface;
 
@@ -1754,7 +1753,7 @@ class dossiersController extends bootstrap
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
         $this->settings                      = $this->loadData('settings');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager $projectRepaymentTaskManager */
-        $projectRepaymentTaskManager             = $this->get('unilend.service_repayment.project_repayment_task_manager');
+        $projectRepaymentTaskManager         = $this->get('unilend.service_repayment.project_repayment_task_manager');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager                       = $this->get('doctrine.orm.entity_manager');
 
@@ -2090,7 +2089,17 @@ class dossiersController extends bootstrap
                     $currentLenderOwedCapital   = $repaymentSchedule->getRemainingCapitalAtDue($this->projects->id_project, $lastPaidRepayment[0]['ordre'] + 1);
                     $currentBorrowerOwedCapital = $paymentSchedule->reste_a_payer_ra($this->projects->id_project, $lastPaidRepayment[0]['ordre'] + 1);
 
-                    if (0 === bccomp($currentLenderOwedCapital, $currentBorrowerOwedCapital, 2) && (bcdiv($this->reception->getMontant(), 100, 2)) >= $currentLenderOwedCapital) {
+                    $projectRepaymentTask = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
+                        'idProject' => $this->projects->id_project,
+                        'type'      => ProjectRepaymentTask::TYPE_EARLY,
+                        'status'    => ProjectRepaymentTask::STATUS_READY
+                    ]);
+
+                    if ($projectRepaymentTask) {
+                        $this->wireTransferAmountOk = true;
+                        $this->message              = '<div style="color:green;">Virement reçu conforme - Le remboursement a été planifié.</div>';
+                        $this->displayActionButton  = false;
+                    } elseif (0 === bccomp($currentLenderOwedCapital, $currentBorrowerOwedCapital, 2) && (bcdiv($this->reception->getMontant(), 100, 2)) >= $currentLenderOwedCapital) {
                         $this->wireTransferAmountOk = true;
                         $this->message              = '<div style="color:green;">Virement reçu conforme</div>';
                     } elseif (0 === bccomp($this->lenderOwedCapital, $this->borrowerOwedCapital, 2) && (bcdiv($this->reception->getMontant(), 100, 2)) >= $this->lenderOwedCapital) {

@@ -33,7 +33,7 @@ class RemboursementAnticipeMailAEnvoyer
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_envoi", type="datetime", nullable=false)
+     * @ORM\Column(name="date_envoi", type="datetime", nullable=true)
      */
     private $dateEnvoi;
 

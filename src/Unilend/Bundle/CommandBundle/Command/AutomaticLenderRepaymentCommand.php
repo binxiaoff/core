@@ -20,7 +20,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $entityManager                = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $projectRepaymentManager      = $this->getContainer()->get('unilend.service.project_repayment_manager');
+        $projectRepaymentManager      = $this->getContainer()->get('unilend.service_repayment.project_repayment_manager');
         $projectEarlyRepaymentManager = $this->getContainer()->get('unilend.service_repayment.project_early_repayment_manager');
         $slackManager                 = $this->getContainer()->get('unilend.service.slack_manager');
         $logger                       = $this->getContainer()->get('monolog.logger.console');
@@ -39,13 +39,6 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 switch ($task->getType()) {
                     case ProjectRepaymentTask::TYPE_REGULAR:
                     case ProjectRepaymentTask::TYPE_LATE:
-                        if ($task->getSequence()) {
-                            /** @var Echeanciers $repaymentSchedule */
-                            $repaymentSchedule = $repaymentScheduleRepository->findOneBy(['idProject' => $project, 'ordre' => $task->getSequence()]);
-                            if ($repaymentSchedule->getDateEcheance()->setTime(0, 0, 0) > $repaymentDate) {
-                                continue 2;
-                            }
-                        }
                         $taskLog = $projectRepaymentManager->repay($task);
                         break;
                     case ProjectRepaymentTask::TYPE_EARLY:

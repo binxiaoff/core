@@ -398,7 +398,7 @@ class ProjectRepaymentNotificationSender
     {
         /** @var \remboursement_anticipe_mail_a_envoyer $earlyRepaymentEmail */
         $earlyRepaymentEmail = new RemboursementAnticipeMailAEnvoyer();
-        $earlyRepaymentEmail->setIdReception($reception)
+        $earlyRepaymentEmail->setIdReception($reception->getIdReception())
             ->setStatut(RemboursementAnticipeMailAEnvoyer::STATUS_PENDING);
         $this->entityManager->persist($earlyRepaymentEmail);
         $this->entityManager->flush($earlyRepaymentEmail);

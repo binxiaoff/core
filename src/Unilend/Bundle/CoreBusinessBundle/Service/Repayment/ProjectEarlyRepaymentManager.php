@@ -83,7 +83,7 @@ class ProjectEarlyRepaymentManager
             return null;
         }
 
-        if ($this->projectRepaymentTaskManager->checkTask($projectRepaymentTask)) {
+        if (false === $this->projectRepaymentTaskManager->isReady($projectRepaymentTask)) {
             return null;
         }
 
@@ -97,7 +97,8 @@ class ProjectEarlyRepaymentManager
         $projectRepaymentTaskLog = new ProjectRepaymentTaskLog();
         $projectRepaymentTaskLog->setIdTask($projectRepaymentTask)
             ->setRepaidAmount($repaidAmount)
-            ->setRepaymentNb($repaidLoanNb);
+            ->setRepaymentNb($repaidLoanNb)
+            ->setStarted(new \DateTime());
         $this->entityManager->persist($projectRepaymentTaskLog);
         $this->entityManager->flush();
 

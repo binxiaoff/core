@@ -12,6 +12,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\core\Loader;
 
 class ProjectRepaymentTaskManager
 {
@@ -27,6 +28,9 @@ class ProjectRepaymentTaskManager
 
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
+
+    /** @var \jours_ouvres */
+    private $businessDays;
 
     /**
      * ProjectRepaymentTaskManager constructor.
@@ -47,6 +51,7 @@ class ProjectRepaymentTaskManager
         $this->entityManagerSimulator             = $entityManagerSimulator;
         $this->logger                             = $logger;
         $this->projectRepaymentNotificationSender = $projectRepaymentNotificationSender;
+        $this->businessDays                       = Loader::loadLib('jours_ouvres');
     }
 
     /**
@@ -131,12 +136,16 @@ class ProjectRepaymentTaskManager
             $amount = round(bcAdd($projectRepaymentTask->getAmount(), $receivedAmount, 4), 2);
             $projectRepaymentTask->setAmount($amount);
         } else {
+            $limitDate = $this->getLimitDate(new \DateTime('today midnight'));
+
+            $nextRepayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->findNextPendingScheduleAfter($limitDate, $project);
+
             $projectRepaymentTask = new ProjectRepaymentTask();
             $projectRepaymentTask->setAmount($receivedAmount)
                 ->setIdProject($project)
                 ->setType(ProjectRepaymentTask::TYPE_EARLY)
                 ->setStatus(ProjectRepaymentTask::STATUS_PENDING)
-                ->setRepayAt(new \DateTime())
+                ->setRepayAt($nextRepayment->getDateEcheance())
                 ->setIdUserCreation($user)
                 ->setIdWireTransferIn($reception);
             $this->entityManager->persist($projectRepaymentTask);
@@ -188,11 +197,11 @@ class ProjectRepaymentTaskManager
      *
      * @return bool
      */
-    public function checkTask(ProjectRepaymentTask $projectRepaymentTask)
+    public function isReady(ProjectRepaymentTask $projectRepaymentTask)
     {
         if ($projectRepaymentTask->getRepayAt() > new \DateTime()) {
             $this->logger->warning(
-                'The projects repayment task (id: ' . $projectRepaymentTask->getId() . ') is planed for a future date, or the date is null.',
+                'The projects repayment task (id: ' . $projectRepaymentTask->getId() . ') is planed for a future date.',
                 ['method' => __METHOD__]
             );
 
@@ -243,13 +252,27 @@ class ProjectRepaymentTaskManager
             return false;
         }
 
-        if (in_array($projectRepaymentTask->getType(), [ProjectRepaymentTask::TYPE_REGULAR, ProjectRepaymentTask::TYPE_LATE]) && null === $projectRepaymentTask->getSequence()) {
-            $this->logger->warning(
-                'The sequence of projects repayment task (id: ' . $projectRepaymentTask->getId() . ') is null. It is not supported by a regular or late repayment.',
-                ['method' => __METHOD__]
-            );
+        if (in_array($projectRepaymentTask->getType(), [ProjectRepaymentTask::TYPE_REGULAR, ProjectRepaymentTask::TYPE_LATE])) {
+            if (null === $projectRepaymentTask->getSequence()) {
+                $this->logger->warning(
+                    'The sequence of projects repayment task (id: ' . $projectRepaymentTask->getId() . ') is null. It is not supported by a regular or late repayment.',
+                    ['method' => __METHOD__]
+                );
 
-            return false;
+                return false;
+            }
+
+            /** @var Echeanciers $repaymentSchedule */
+            $repaymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->findOneBy(['idProject' => $project, 'ordre' => $projectRepaymentTask->getSequence()]);
+            if ($repaymentSchedule->getDateEcheance()->setTime(0, 0, 0) > new \DateTime()) {
+
+                $this->logger->warning(
+                    'The repayment schedule date of projects repayment task (id: ' . $projectRepaymentTask->getId() . ') is in the future.',
+                    ['method' => __METHOD__]
+                );
+
+                return false;
+            }
         }
 
         if (ProjectRepaymentTask::TYPE_EARLY === $projectRepaymentTask->getType()) {
@@ -257,20 +280,22 @@ class ProjectRepaymentTaskManager
             $paymentScheduleDate = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
 
             $nextPayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')
-                ->findOneBy(['idProject' => $projectRepaymentTask->getIdProject(), 'statusEmprunteur' => EcheanciersEmprunteur::STATUS_PENDING], ['ordre', 'ASC']);
+                ->findOneBy(['idProject' => $projectRepaymentTask->getIdProject(), 'statusEmprunteur' => EcheanciersEmprunteur::STATUS_PENDING], ['ordre' => 'ASC']);
 
-            $borrowerOwedCapital = $paymentScheduleDate->reste_a_payer_ra($projectRepaymentTask->getIdProject()->getIdProject(), $nextPayment->getOrdre());
+            if ($nextPayment) {
+                $borrowerOwedCapital = $paymentScheduleDate->reste_a_payer_ra($projectRepaymentTask->getIdProject()->getIdProject(), $nextPayment->getOrdre());
 
-            if ($borrowerOwedCapital !== $projectRepaymentTask->getAmount()) {
-                $$projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_ERROR);
-                $this->entityManager->flush($projectRepaymentTask);
+                if ($borrowerOwedCapital != $projectRepaymentTask->getAmount()) {
+                    $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_ERROR);
+                    $this->entityManager->flush($projectRepaymentTask);
 
-                $this->logger->error(
-                    'The repayment task (id: ' . $projectRepaymentTask->getId() . ') has not enough amount for an early repayment.',
-                    ['method' => __METHOD__]
-                );
+                    $this->logger->error(
+                        'The repayment task (id: ' . $projectRepaymentTask->getId() . ') has not enough amount for an early repayment.',
+                        ['method' => __METHOD__]
+                    );
 
-                return false;
+                    return false;
+                }
             }
         }
 
@@ -292,5 +317,31 @@ class ProjectRepaymentTaskManager
         }
 
         return $amount;
+    }
+
+    /**
+     * @param \DateTime $date
+     * @param bool      $countDown
+     *
+     * @return \DateTime
+     */
+    private function getLimitDate(\DateTime $date, $countDown = false)
+    {
+        $interval = new \DateInterval('P1D');
+
+        if ($countDown) {
+            $interval->invert = 1;
+        }
+        $workingDays = 1;
+
+        while ($workingDays <= 5) {
+            $date->add($interval);
+
+            if ($this->businessDays->isHoliday($date->getTimestamp())) {
+                $workingDays++;
+            }
+        }
+
+        return $date;
     }
 }
