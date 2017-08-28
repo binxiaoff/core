@@ -35,7 +35,9 @@ class MonitoringController extends Controller
         try {
             $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
             $siren               = '790766034';
-            $altaresManager      = $this->get('unilend.service.ws_client.altares_manager')->setUseCache(false);
+            $altaresManager      = $this->get('unilend.service.ws_client.altares_manager');
+            $altaresManager->setUseResultCache(false);
+            $altaresManager->setUseStorageCache(false);
             $altaresManager->getCompanyIdentity($siren);
             $altaresManager->getScore($siren);
 
@@ -88,7 +90,9 @@ class MonitoringController extends Controller
         try {
             $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
             $siren               = '790766034';
-            $eulerManager        = $this->get('unilend.service.ws_client.euler_manager')->setUseCache(false);
+            $eulerManager        = $this->get('unilend.service.ws_client.euler_manager');
+            $eulerManager->setUseResultCache(false);
+            $eulerManager->setUseStorageCache(false);
             $eulerManager->searchCompany($siren, 'fr');
 
             $response = $wsMonitoringManager->sendNotifications($wsMonitoringManager->getRateByCallStatus(EulerHermesManager::RESOURCE_SEARCH_COMPANY), self::PINGDOM_FREQUENCY);
@@ -169,7 +173,9 @@ class MonitoringController extends Controller
         try {
             $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
             $siren               = '790766034';
-            $ellisphereManager   = $this->get('unilend.service.ws_client.ellisphere_manager')->setUseCache(false);
+            $ellisphereManager   = $this->get('unilend.service.ws_client.ellisphere_manager');
+            $ellisphereManager->setUseResultCache(false);
+            $ellisphereManager->setUseStorageCache(false);
             $ellisphereManager->searchBySiren($siren);
 
             $response = $wsMonitoringManager->sendNotifications($wsMonitoringManager->getRateByCallStatus(EllisphereManager::RESOURCE_SEARCH), self::PINGDOM_FREQUENCY);
