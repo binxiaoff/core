@@ -102,6 +102,8 @@ class parrainageController extends bootstrap
             }
 
         }
+
+        $this->render();
     }
 
     private function getAdditionalCampaignData(array $campaigns)

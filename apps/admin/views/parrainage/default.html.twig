@@ -1,0 +1,705 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block pluginsJS %}
+    <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
+    <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+{% endblock %}
+
+{% block pageScripts %}
+    <script>
+        $(function(){
+            // Page helpers are initialised in app.js and can be called quickly using their name
+            App.initHelpers(['validation', 'datepicker', 'table-tools']);
+
+            // Data Tables
+            // DataTables Bootstrap integration
+            var bsDataTables = function() {
+                var $DataTable = $.fn.dataTable
+
+                // Set the defaults for DataTables init
+                $.extend( true, $DataTable.defaults, {
+                    dom:
+                    "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
+                    "<'row'<'col-sm-12'tr>>" +
+                    "<'row'<'col-sm-6'i><'col-sm-6'p>>",
+                    renderer: 'bootstrap',
+                    oLanguage: {
+                        sLengthMenu: "_MENU_",
+                        sInfo: "Showing <strong>_START_</strong>-<strong>_END_</strong> of <strong>_TOTAL_</strong>",
+                        oPaginate: {
+                            sPrevious: '<i class="fa fa-angle-left"></i>',
+                            sNext: '<i class="fa fa-angle-right"></i>'
+                        }
+                    }
+                })
+
+                // Default class modification
+                $.extend($DataTable.ext.classes, {
+                    sWrapper: "dataTables_wrapper form-inline dt-bootstrap",
+                    sFilterInput: "form-control",
+                    sLengthSelect: "form-control"
+                })
+
+                // Bootstrap paging button renderer
+                $DataTable.ext.renderer.pageButton.bootstrap = function (settings, host, idx, buttons, page, pages) {
+                    var api     = new $DataTable.Api(settings)
+                    var classes = settings.oClasses
+                    var lang    = settings.oLanguage.oPaginate
+                    var btnDisplay, btnClass
+
+                    var attach = function (container, buttons) {
+                        var i, ien, node, button
+                        var clickHandler = function (e) {
+                            e.preventDefault()
+                            if (!jQuery(e.currentTarget).hasClass('disabled')) {
+                                api.page(e.data.action).draw(false)
+                            }
+                        }
+
+                        for (i = 0, ien = buttons.length; i < ien; i++) {
+                            button = buttons[i]
+
+                            if ($.isArray(button)) {
+                                attach(container, button)
+                            }
+                            else {
+                                btnDisplay = ''
+                                btnClass = ''
+
+                                switch (button) {
+                                    case 'ellipsis':
+                                        btnDisplay = '&hellip'
+                                        btnClass = 'disabled'
+                                        break
+
+                                    case 'first':
+                                        btnDisplay = lang.sFirst
+                                        btnClass = button + (page > 0 ? '' : ' disabled')
+                                        break
+
+                                    case 'previous':
+                                        btnDisplay = lang.sPrevious
+                                        btnClass = button + (page > 0 ? '' : ' disabled')
+                                        break
+
+                                    case 'next':
+                                        btnDisplay = lang.sNext
+                                        btnClass = button + (page < pages - 1 ? '' : ' disabled')
+                                        break
+
+                                    case 'last':
+                                        btnDisplay = lang.sLast
+                                        btnClass = button + (page < pages - 1 ? '' : ' disabled')
+                                        break
+
+                                    default:
+                                        btnDisplay = button + 1
+                                        btnClass = page === button ?
+                                                'active' : ''
+                                        break
+                                }
+
+                                if (btnDisplay) {
+                                    node = jQuery('<li>', {
+                                        'class': classes.sPageButton + ' ' + btnClass,
+                                        'aria-controls': settings.sTableId,
+                                        'tabindex': settings.iTabIndex,
+                                        'id': idx === 0 && typeof button === 'string' ?
+                                        settings.sTableId + '_' + button :
+                                                null
+                                    })
+                                            .append(jQuery('<a>', {
+                                                        'href': '#'
+                                                    })
+                                                            .html(btnDisplay)
+                                            )
+                                            .appendTo(container)
+
+                                    settings.oApi._fnBindAction(
+                                            node, {action: button}, clickHandler
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    attach(
+                            jQuery(host).empty().html('<ul class="pagination"/>').children('ul'),
+                            buttons
+                    )
+                }
+
+                // TableTools Bootstrap compatibility - Required TableTools 2.1+
+                if ($DataTable.TableTools) {
+                    // Set the classes that TableTools uses to something suitable for Bootstrap
+                    $.extend(true, $DataTable.TableTools.classes, {
+                        "container": "DTTT btn-group",
+                        "buttons": {
+                            "normal": "btn btn-default",
+                            "disabled": "disabled"
+                        },
+                        "collection": {
+                            "container": "DTTT_dropdown dropdown-menu",
+                            "buttons": {
+                                "normal": "",
+                                "disabled": "disabled"
+                            }
+                        },
+                        "print": {
+                            "info": "DTTT_print_info"
+                        },
+                        "select": {
+                            "row": "active"
+                        }
+                    })
+
+                    // Have the collection use a bootstrap compatible drop down
+                    $.extend(true, $DataTable.TableTools.DEFAULTS.oTags, {
+                        "collection": {
+                            "container": "ul",
+                            "button": "li",
+                            "liner": "a"
+                        }
+                    })
+                }
+            }
+            bsDataTables()
+
+            // Simple
+            $('.js-dataTable-simple').dataTable({
+                pageLength: 5,
+                lengthMenu: [[5, 10], [15, 20]],
+                searching: false,
+                dom:
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-6'i><'col-sm-6'p>>"
+            })
+
+            $('.js-dataTable-advanced').dataTable({
+                columnDefs: [ { orderable: false } ],
+                pageLength: 4,
+                lengthMenu: [[5, 10], [5, 10]]
+            })
+        })
+    </script>
+{% endblock %}
+
+ {% block modals %}
+     <div class="modal" id="modal-normal" tabindex="-1" role="dialog" aria-hidden="true">
+         <div class="modal-dialog">
+             <div class="modal-content">
+                 <div class="block block-themed block-transparent remove-margin-b">
+                     <div class="block-header bg-primary-light">
+                         <h3 class="block-title">Terms &amp; Conditions</h3>
+                     </div>
+                     <div class="block-content">
+                         <p>Dolor posuere proin blandit accumsan senectus netus nullam curae, ornare laoreet adipiscing luctus mauris adipiscing pretium eget fermentum, tristique lobortis est ut metus lobortis tortor tincidunt himenaeos habitant quis dictumst proin odio sagittis purus mi, nec taciti vestibulum quis in sit varius lorem sit metus mi.</p>
+                         <p>Dolor posuere proin blandit accumsan senectus netus nullam curae, ornare laoreet adipiscing luctus mauris adipiscing pretium eget fermentum, tristique lobortis est ut metus lobortis tortor tincidunt himenaeos habitant quis dictumst proin odio sagittis purus mi, nec taciti vestibulum quis in sit varius lorem sit metus mi.</p>
+                     </div>
+                 </div>
+                 <div class="modal-footer">
+                     <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Close</button>
+                     <button class="btn btn-sm btn-primary" type="button" data-dismiss="modal"><i class="fa fa-check"></i> Ok</button>
+                 </div>
+             </div>
+         </div>
+     </div>
+ {% endblock %}
+
+{% block pageHeader %}
+    <h1 class="page-heading push">
+        Gestion des parrainages
+    </h1>
+{% endblock %}
+
+{% block content %}
+    <div id="parrainage-summary" class="content bg-white border-b">
+        <div class="row items-push">
+            <div class="col-md-2">
+                <div class="font-w600 text-gray-darker">Parrains</div>
+                <div class="h2 font-w300 text-primary">15</div>
+            </div>
+            <div class="col-md-2">
+                <div class="font-w600 text-gray-darker">Filleuls</div>
+                <div class="h2 font-w300 text-primary">34</div>
+            </div>
+            <div class="col-md-2">
+                <div class="font-w600 text-gray-darker">Distribué aux parrains</div>
+                <div class="h2 font-w300 text-primary">1200 €</div>
+            </div>
+            <div class="col-md-2">
+                <div class="font-w600 text-gray-darker">Distribué aux Filleuls</div>
+                <div class="h2 font-w300 text-primary">3000 €</div>
+            </div>
+            <div class="col-md-3">
+                <div class="font-w600 text-gray-darker">Encore disponible * </div>
+                <div class="h2 font-w300 text-primary">3000 €</div>
+                * <small>(Attention, argent partagé avec les offres de bienvenue)</small>
+            </div>
+        </div>
+    </div><!-- /#parrainage-summary -->
+    <div class="content">
+        <div id="parrainage-create-campaign" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Créer une campagne de parrainage</h3>
+            </div>
+            <div class="block-content block-content-full">
+                {%  if newCampaignFormErrors is defined %}
+                    <div class="alert alert-error">
+                        <p>
+                            {% for error in newCampaignFormErrors %}
+                                <span>{{ error }}</span> <br>
+                            {% endfor %}
+                        </p>
+                    </div>
+                {% endif %}
+        
+                <form method="post" action="{{ app.adminUrl }}/parrainage/create_new_campaign" class="form-inline">
+                    <div class="form-group">
+                        <label>Début de l'offre</label> <br>
+                        <input type="text" name="start" value="" class="js-datepicker form-control required" data-date-format="mm/dd/yy">
+                    </div>
+                    <div class="form-group" style="margin-left: 5px;">
+                        <label>Fin de l'offre</label> <br>
+                        <input type="text" name="end" value="" class="js-datepicker form-control required" data-date-format="mm/dd/yy">
+                    </div>
+                    <div class="form-group" style="margin-left: 5px;">
+                        <label>Montant  (Filleul)</label> <br>
+                        <input type="number" name="amount_sponsee" class="form-control required">
+                    </div>
+                    <div class="form-group" style="margin-left: 5px;">
+                        <label>Montant (Parrain)</label> <br>
+                        <input type="number" name="amount_sponsor" class="form-control required">
+                    </div>
+                    <div class="form-group" style="margin-left: 5px;">
+                        <label>Max. filleuls</label> <br>
+                        <input type="number" name="max_number_sponsee" class="form-control required">
+                    </div>
+                    <div class="form-group" style="margin-left: 5px;">
+                        <label>Durée de validité (semaines)</label> <br>
+                        <input type="number" name="validity_days" class="form-control required">
+                    </div>
+                    <div class="form-group" style="margin-left: 5px;">
+                        <input type="hidden" name="id_campaign" value="">
+                        <input type="hidden" name="create_new_campaign" value="">
+                       
+                        <button type="submit" class="btn btn-primary" style="width: 120px;">Créer</button>
+                    </div>
+                </form>
+            </div>
+        </div><!-- /#parrainage-create-campaign -->
+        <div id="parrainage-list-campaign" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Liste des campagnes</h3>
+            </div>
+            <div class="block-content block-content-full">
+                <!-- @TODO Dynamisation de la table -->
+                <table class="table table-bordered table-striped table-hover js-dataTable-simple">
+                    <thead>
+                    <tr>
+                        <th>Début de l'offre</th>
+                        <th>Durée de validité</th>
+                        <th>Montant (Filleul)</th>
+                        <th>Montant (Parrain)</th>
+                        <th>Max. filleuls</th>
+                        <th>Statut</th>
+                        <td>Action</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>14/07/2017</td>
+                        <td>3 semaines</td>
+                        <td>14 000 €</td>
+                        <td>5 000 €</td>
+                        <td>200</td>
+                        <td>En cours</td>
+                        <td>
+                            <form action="" method="post">
+                                <input type="hidden" name="campaing-id" value="">
+                                <input type="hidden" name="action" class="modify">
+                                <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Modifier"><span class="fa fa-pencil"></span></button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>14/02/2017</td>
+                        <td>3 semaines</td>
+                        <td>14 000 €</td>
+                        <td>5 000 €</td>
+                        <td>200</td>
+                        <td>Expirée</td>
+                        <td>
+                            <form action="" method="post">
+                                <input type="hidden" name="campaing-id" value="">
+                                <input type="hidden" name="action" class="reactivate">
+                                <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Réactiver"><span class="fa fa-refresh"></span></button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div><!-- /#parrainage-list-campaign -->
+        <div id="parrainage-blacklist" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">
+                    Blacklist (Liste des clients exclus)
+                </h3>
+            </div>
+            <div class="block-content">
+                {%  if blacklistFormErrors is defined %}
+                    <div class="alert alert-error">
+                        <p>
+                            {% for error in blacklistFormErrors %}
+                                <span>{{ error }}</span> <br>
+                            {% endfor %}
+                        </p>
+                    </div>
+                {% endif %}
+
+                <form method="post" action="{{ app.adminUrl }}/parrainage/blacklist" class="form-inline push">
+                    <div class="form-group">
+                        <label>ID Client</label> <br>
+                        <input type="number" name="id_client" class="form-control required">
+                    </div>
+                    <div class="form-group">
+                        <label>Campagne</label> <br>
+                        <select name="campaign" class="form-control required" style="margin-left: 5px;">
+                            <option value="">Selectionner</option>
+                            <option value="0">Toutes les campagnes</option>
+                            <option value="<?php // $this->ongoingCampaign->getId(); ?>">Campagne en cours</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-left: 5px;">
+                        <input type="hidden" name="blacklist_client" value="">
+                        <button type="submit" class="btn btn-primary">Valider</button>
+                    </div>
+                </form>
+
+                <table class="table table-bordered table-striped table-hover js-dataTable-simple">
+                    <thead>
+                    <tr>
+                        <th>ID Client</th>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Date d'exclusion</th>
+                        <th>campagne</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>43242342</td>
+                        <td>Baptiste</td>
+                        <td>Jean</td>
+                        <td>14/04/2017</td>
+                        <td>Expirée</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div><!-- /#parrainage-blacklist -->
+        <div id="parrainage-adjust-prime" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Attribution manuelle de la prime de parrainage</h3>
+            </div>
+            <div class="block-content">
+                {%  if searchSponsorshipErrors is defined %}
+                    <div class="alert alert-error">
+                        <p>
+                            {% for error in searchSponsorshipErrors %}
+                                <span>{{ error }}</span> <br>
+                            {% endfor %}
+                        </p>
+                    </div>
+                {% endif %}
+
+                <form method="post" action="{{ app.adminUrl }}/parrainage/search_campaign" class="form-inline push">
+                    <div class="form-group">
+                        <label>ID Client</label> <br>
+                        <input type="text" name="id_client" class="form-control required">
+                    </div>
+                    <div class="form-group push-20-l">
+                        <label>Type client</label> <br>
+                        <label class="css-input css-radio css-radio-default">
+                            <input type="radio" name="type" value="sponsor" class="form-control required" checked><span></span> Parrain
+                        </label>
+                        <label class="css-input css-radio css-radio-default push-10-l">
+                            <input type="radio" name="type" value="sponsee" class="form-control required"><span></span> Filleul
+                        </label>
+                    </div>
+                    <div class="form-group push-20-l">
+                        <input type="hidden" name="search_sponsorship" value="">
+                        <button type="submit" class="btn btn-primary">Rechercher</button>
+                    </div>
+                </form>
+
+                {%  if payOutRewardErrors is defined %}
+                    <div class="alert alert-error">
+                        <p>
+                            {% for error in payOutRewardErrors %}
+                                <span>{{ error }}</span> <br>
+                            {% endfor %}
+                        </p>
+                    </div>
+                {% endif %}
+
+                {% if sponsorships|length > 0 %}
+
+                    {% set clientType = 'sponsor' %}
+
+                    <div class="row">
+                        <div class="col-md-4">
+
+                            {% if clientType == 'sponsor' %}
+                                <p><b>Parrain trouvé :</b></p>
+                            {% elseif clientType == 'sponsee' %}
+                                <p><b>Filleul trouvé :</b></p>
+                            {% endif %}
+
+                            <table class="table table-condensed table-bordered">
+                                <thead>
+                                <tr>
+                                    <th colspan="2">
+                                        Client ID (878874)
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>Nom</td>
+                                    <td>Baptiste</td>
+                                </tr>
+                                <tr>
+                                    <td>Prénom</td>
+                                    <td>Jean</td>
+                                </tr>
+                                {% if clientType == 'sponsor' %}
+                                    <tr>
+                                        <td>Lien parrainage</td>
+                                        <td>http://unilend.fr/parrainage/ueyrksi109</td>
+                                    </tr>
+                                    <tr>
+                                        <td>N. de Filleuls</td>
+                                        <td>2</td>
+                                    </tr>
+                                {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-8">
+                            {% if clientType == 'sponsor' %}
+                                <p><b>Liste de ces filleuls :</b></p>
+                            {% elseif clientType == 'sponsee' %}
+                                <p><b>Parrainé par :</b></p>
+                            {% endif %}
+
+                            <table class="table table-striped table-hover table-condensed">
+                                <thead>
+                                <tr>
+                                    <th>Client ID</th>
+                                    <th>Nom</th>
+                                    <th>Prénom</th>
+                                    <th>Prime Filleul</th>
+                                    <th>Prime Parrain</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for sponsorship in sponsorships %}
+                                <tr>
+                                    <td>12322</td>
+                                    <td>Hollande</td>
+                                    <td>Greg</td>
+                                    <td>
+                                        {%  if '\Unilend\Bundle\CoreBusinessBundle\Entity\Sponsorship::STATUS_SPONSEE_PAID' == sponsorship.status %}
+                                            Versée
+                                        {% elseif '\Unilend\Bundle\CoreBusinessBundle\Entity\Sponsorship::STATUS_ONGOING' == sponsorship.status %}
+                                            <form method="post" action="{{ app.adminUrl }}/parrainage/pay_out_reward">
+                                                <input type="hidden" name="id_sponsorship" value="<?= $sponsorship->getId() ?>">
+                                                <input type="hidden" name="pay_out_reward" value="">
+                                                <input type="hidden" name="type_reward" value="{{ '\Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSEE' }}">
+                                                <button type="submit" class="btn-primary btn-sm">Verser</button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {%  if '\Unilend\Bundle\CoreBusinessBundle\Entity\Sponsorship::STATUS_ONGOING' == sponsorship.status %}
+                                            Versée
+                                        {% else %}
+                                        <form method="post" action="{{ app.adminUrl }}/parrainage/pay_out_reward">
+                                            <input type="hidden" name="id_sponsorship" value="{{ sponsorship.id }}">
+                                            <input type="hidden" name="pay_out_reward" value="">
+                                            <input type="hidden" name="type_reward" value="{{ '\Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR' }}">
+                                            <button type="submit" class="btn-primary btn-sm">Verser</button>
+                                        </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div><!-- /#parrainage-adjust-prime -->
+        <div id="parrainage-history" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Primes déjà distribués</h3>
+            </div>
+            <div class="block-content">
+                <table class="table table-bordered table-striped table-hover js-dataTable-simple">
+                    <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Filleul ID</th>
+                        <th>Nom/Prénom</th>
+                        <th>Email</th>
+                        <th>Prime</th>
+                        <th style="border-right: 1px solid #fff;">Date Versement</th>
+                        <th>Parrain ID</th>
+                        <th>Nom/Prénom</th>
+                        <th>Email</th>
+                        <th>Prime</th>
+                        <th>Date Versement</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>
+                            726JDY
+                        </td>
+                        <td>
+                            8322687
+                        </td>
+                        <td>
+                            <span class="text-uppercase">BAPTISTE</span> Jean
+                        </td>
+                        <td>
+                            jean@baptiste.com
+                        </td>
+                        <td>
+                            20 E
+                        </td>
+                        <td style="border-right: 1px solid #ddd;">
+                            20/08/2017
+                        </td>
+                        <td>
+                            239223
+                        </td>
+                        <td>
+                            <span class="text-uppercase">TRIGODET</span> Sylvain
+                        </td>
+                        <td>
+                            sylvain@gmail.com
+                        </td>
+                        <td>
+                            20 E
+                        </td>
+                        <td>
+                            24/08/2017
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div><!-- /#parrainage-history -->
+        <div id="parrainage-establish-link" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">parrain <span class="fa fa-arrows-h"></span> filleul — Créer une association</h3>
+            </div>
+            <div class="block-content block-content-full">
+                {%  if createSponsorshipErrors is defined %}
+                    <div class="alert alert-error">
+                        <p>
+                            {% for error in createSponsorshipErrors %}
+                                <span>{{ error }}</span> <br>
+                            {% endfor %}
+                        </p>
+                    </div>
+                {% endif %}
+        
+                <form method="post" action="{{ app.adminUrl }}/parrainage/create_sponsorship" class="form-inline push">
+                    <div class="form-group">
+                        <label>ID Client Parrain</label> <br>
+                        <input type="number" name="id_client_sponsor" class="form-control">
+                    </div>
+                    <div class="form-group push-5-l">
+                        <label>ID Client Filleul</label> <br>
+                        <input type="number" name="id_client_sponsee" class="form-control">
+                    </div>
+                    <div class="form-group push-5-l">
+                        <input type="hidden" name="create_sponsorship" value="">
+                        <button type="submit" class="btn btn-primary">Rechercher</button>
+                    </div>
+                </form>
+        
+                {% if createSponsorshipData is defined %}
+                    <div class="row">
+                        <div class="col-md-3">
+                            <p><b>Filleul</b></p>
+                            <table class="table table-condensed table-bordered" style="max-width: 300px">
+                                <tr>
+                                    <td>ID Client</td>
+                                    <td>43424</td>
+                                </tr>
+                                <tr>
+                                    <td>Nom</td>
+                                    <td>Gerard</td>
+                                </tr>
+                                <tr>
+                                    <td>Prénom</td>
+                                    <td>Christopher</td>
+                                </tr>
+                                <tr>
+                                    <td>Date d'inscription</td>
+                                    <td>14/08/2017</td>
+                                </tr>
+                                <tr>
+                                    <td>Date de validation</td>
+                                    <td>15/08/2017</td>
+                                </tr>
+                            </table>
+        
+                            <div class="alert alert-info">
+                                <p>Filleul a reçu l'offre de bienvenue et ne recevra donc pas de prime de parrainage</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <p><b>Parrain</b></p>
+                            <table class="table table-condensed" style="max-width: 300px">
+                                <tr>
+                                    <td>ID Client</td>
+                                    <td>43424</td>
+                                </tr>
+                                <tr>
+                                    <td>Nom</td>
+                                    <td>BAPTISTE</td>
+                                </tr>
+                                <tr>
+                                    <td>Prénom</td>
+                                    <td>Jean</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 text-center">
+                            <form method="post" action="{{ app.adminUrl }}/parrainage/create_sponsorship">
+                                <input type="hidden" name="create_sponsorship_confirm" value="">
+                                <input type="hidden" name="id_client_sponsor" value="{{ createSponsorshipData.idClientSponsor }}">
+                                <input type="hidden" name="id_client_sponsee" value="{{ createSponsorshipData.idClientSponsee }}">
+                                <button type="submit" class="btn-primary">Confirmer l'association</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div><!-- /#parrainage-establish-link -->
+    </div><!-- /.content -->
+{% endblock %}

@@ -65,3 +65,8 @@
 .text-darker {
     color: #353847;
 }
+
+.form-inline > .form-group > button[type=submit] {
+    margin-top: 23px;
+    min-width: 120px;
+}
