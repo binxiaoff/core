@@ -27,31 +27,24 @@ class EllisphereManager
 
     /** @var int */
     private $contractId;
-
     /** @var string */
     private $userPrefix;
-
     /** @var string */
     private $userId;
-
     /** @var string */
     private $password;
-
     /** @var LoggerInterface */
     private $logger;
-
     /** @var ClientInterface */
     private $client;
-
     /** @var CallHistoryManager */
     private $callHistoryManager;
-
     /** @var bool */
-    private $useCache = true;
-
+    private $useStorageCache = true;
+    /** @var bool  */
+    private $useResultCache = true;
     /** @var EntityManager */
     private $entityManager;
-
     /** @var SerializerInterface */
     private $serializer;
 
@@ -89,6 +82,30 @@ class EllisphereManager
         $this->callHistoryManager = $callHistoryManager;
         $this->entityManager      = $entityManager;
         $this->serializer         = $serializer;
+    }
+
+    /**
+     * @param bool $useStorageCache
+     *
+     * @return EllisphereManager
+     */
+    public function setUseStorageCache($useStorageCache)
+    {
+        $this->useStorageCache = $useStorageCache;
+
+        return $this;
+    }
+
+    /**
+     * @param bool $useResultCache
+     *
+     * @return EllisphereManager
+     */
+    public function setUseResultCache($useResultCache)
+    {
+        $this->useStorageCache = $useResultCache;
+
+        return $this;
     }
 
     /**
@@ -143,7 +160,7 @@ class EllisphereManager
                 }
             }
 
-            $callback = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
+            $callback = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useStorageCache);
         }
 
         $headers = ['Content-type' => 'application/xml'];
@@ -256,7 +273,7 @@ class EllisphereManager
         $storedResponse = $this->callHistoryManager->getStoredResponse($resource, $siren);
 
         if (
-            $this->useCache
+            $this->useResultCache
             && false !== $storedResponse
             && false !== simplexml_load_string($storedResponse)
         ) {
@@ -264,18 +281,6 @@ class EllisphereManager
         }
 
         return false;
-    }
-
-    /**
-     * @param bool $useCache
-     *
-     * @return $this
-     */
-    public function setUseCache($useCache)
-    {
-        $this->useCache = $useCache;
-
-        return $this;
     }
 
     /**
