@@ -74,12 +74,15 @@ class transfertsController extends bootstrap
         if (isset($_POST['id_project'], $_POST['id_reception'])) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
             $operationManager = $this->get('unilend.service.operation_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRepaymentManager $repaymentManager */
-            $repaymentManager = $this->get('unilend.service.project_repayment_manager');
-            $project          = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);
-            $reception        = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
-            $client           = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
-            $user             = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentManager $projectRepaymentManager */
+            $projectRepaymentManager = $this->get('unilend.service_repayment.project_repayment_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager $projectRepaymentTaskManager */
+            $projectRepaymentTaskManager = $this->get('unilend.service_repayment.project_repayment_task_manager');
+
+            $project   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);
+            $reception = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
+            $client    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+            $user      = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
             if (null !== $project && null !== $reception) {
                 $entityManager->getConnection()->beginTransaction();
@@ -94,10 +97,10 @@ class transfertsController extends bootstrap
 
                     if ($_POST['type_remb'] === 'remboursement_anticipe') {
                         $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_EARLY);
-                        $repaymentManager->planEarlyRepayment($project, $reception, $user);
+                        $projectRepaymentTaskManager->planEarlyRepaymentTask($project, $reception, $user);
                     } elseif ($_POST['type_remb'] === 'regularisation') {
                         $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_REGULARISATION);
-                        $repaymentManager->pay($reception, $user);
+                        $projectRepaymentManager->pay($reception, $user);
                     }
                     $entityManager->flush();
                     $entityManager->getConnection()->commit();

@@ -516,4 +516,28 @@ class EcheanciersRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }
+
+    /**
+     * @param Loans $loan
+     *
+     * @return int
+     */
+    public function earlyRepayAllPendingSchedules(Loans $loan)
+    {
+        $updateRepaymentSchedule = 'UPDATE echeanciers
+                    SET capital_rembourse = capital, status = :paid, date_echeance_reel = NOW(), status_email_remb = :sent, updated = NOW()
+                    WHERE id_loan = :loan AND status = :pending';
+
+        $resultRepaymentSchedule = $this->getEntityManager()->getConnection()->executeUpdate(
+            $updateRepaymentSchedule,
+            [
+                'loan'    => $loan->getIdLoan(),
+                'sent'    => Echeanciers::STATUS_REPAYMENT_EMAIL_SENT,
+                'paid'    => Echeanciers::STATUS_REPAID,
+                'pending' => Echeanciers::STATUS_PENDING,
+            ]
+        );
+
+        return $resultRepaymentSchedule;
+    }
 }

@@ -505,6 +505,7 @@ class OperationManager
      * @param Loans                   $loan
      * @param ProjectRepaymentTaskLog $projectRepaymentTaskLog
      *
+     * @return string
      */
     public function earlyRepayment(Loans $loan, ProjectRepaymentTaskLog $projectRepaymentTaskLog)
     {
@@ -517,6 +518,8 @@ class OperationManager
         $operationSubType   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_EARLY]);
 
         $this->repaymentGeneric($borrowerWallet, $lenderWallet, $outstandingCapital, 0, $operationSubType, [$loan, $projectRepaymentTaskLog]);
+
+        return $outstandingCapital;
     }
 
     /**

@@ -1,0 +1,46 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <service id="unilend.service_repayment.project_repayment_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.service.operation_manager"/>
+            <argument type="service" id="unilend.service.project_manager"/>
+            <argument type="service" id="unilend.service_repayment.project_repayment_task_manager"/>
+            <argument type="service" id="unilend.service_repayment.project_repayment_notification_sender"/>
+            <argument type="service" id="logger"/>
+        </service>
+
+        <service id="unilend.service_repayment.project_early_repayment_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectEarlyRepaymentManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.service.operation_manager"/>
+            <argument type="service" id="unilend.service.project_manager"/>
+            <argument type="service" id="unilend.service_repayment.project_repayment_task_manager"/>
+            <argument type="service" id="unilend.service_repayment.project_repayment_notification_sender"/>
+            <argument type="service" id="logger"/>
+        </service>
+
+        <service id="unilend.service_repayment.project_repayment_notification_sender" class="Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentNotificationSender">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.swiftmailer.message_provider"/>
+            <argument type="service" id="mailer"/>
+            <argument type="service" id="number_formatter"/>
+            <argument type="service" id="currency_formatter"/>
+            <argument type="service" id="router"/>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="assets.packages"/>
+            <argument>%router.request_context.scheme%://%url.host_default%</argument>
+        </service>
+
+        <service id="unilend.service_repayment.project_repayment_task_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.service_repayment.project_repayment_notification_sender"/>
+            <argument type="service" id="logger"/>
+        </service>
+    </services>
+</container>

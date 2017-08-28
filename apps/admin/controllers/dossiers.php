@@ -833,8 +833,8 @@ class dossiersController extends bootstrap
     {
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $projectManager = $this->get('unilend.service.project_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRepaymentManager $projectRepaymentManager */
-        $projectRepaymentManager = $this->get('unilend.service.project_repayment_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager $projectRepaymentTaskManager */
+        $projectRepaymentTaskManager = $this->get('unilend.service_repayment.project_repayment_task_manager');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $projectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['problematic_status'], $this->projects);
@@ -852,7 +852,7 @@ class dossiersController extends bootstrap
 
         // Disable automatic repayment
         $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
-        $projectRepaymentManager->disableAutomaticRepayment($project);
+        $projectRepaymentTaskManager->disableAutomaticRepayment($project);
 
         // Disable automatic debits
         if (in_array($iStatus, array(ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE, ProjectsStatus::DEFAUT))) {
@@ -1753,10 +1753,8 @@ class dossiersController extends bootstrap
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
         $this->settings                      = $this->loadData('settings');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
-        $operationManager                    = $this->get('unilend.service.operation_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRepaymentManager $projectRepaymentManager */
-        $projectRepaymentManager             = $this->get('unilend.service.project_repayment_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager $projectRepaymentTaskManager */
+        $projectRepaymentTaskManager             = $this->get('unilend.service_repayment.project_repayment_task_manager');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager                       = $this->get('doctrine.orm.entity_manager');
 
@@ -1825,9 +1823,9 @@ class dossiersController extends bootstrap
             // activer/desactiver remb auto (eclatement)
             if (isset($_POST['send_remb_auto'])) {
                 if ($_POST['remb_auto'] == 1) {
-                    $projectRepaymentManager->disableAutomaticRepayment($project);
+                    $projectRepaymentTaskManager->disableAutomaticRepayment($project);
                 } elseif ($_POST['remb_auto'] == 0) {
-                    $projectRepaymentManager->enableAutomaticRepayment($project);
+                    $projectRepaymentTaskManager->enableAutomaticRepayment($project);
                 }
 
                 header('Location: ' . $this->lurl . '/dossiers/detail_remb/' . $this->params[0]);
@@ -1866,124 +1864,53 @@ class dossiersController extends bootstrap
                 $this->projects               = $this->loadData('projects');
                 /** @var \echeanciers echeanciers */
                 $this->echeanciers            = $this->loadData('echeanciers');
-                $this->receptions             = $this->loadData('receptions');
                 $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
                 $this->clients                = $this->loadData('clients');
                 $this->mail_template          = $this->loadData('mail_templates');
                 $this->companies              = $this->loadData('companies');
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
-                $oProjectManager = $this->get('unilend.service.project_manager');
-                $loanRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
 
-                $this->receptions->get($id_reception);
-                $this->projects->get($this->receptions->id_project);
+                $reception = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($id_reception);
+                $this->projects->get($reception->getIdProject()->getIdProject());
                 $this->companies->get($this->projects->id_company, 'id_company');
 
                 //in difference of the due capital displayed for the sales people to tell the client, the check on the amount is on all not yet paid by the borrower.
-                $nextRepayment = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND status = ' . \echeanciers::STATUS_PENDING . ' AND date_echeance >= "' . $this->getLimitDate(new \DateTime('today midnight'))->format('Y-m-d H:i:s') . '"', ' ordre ASC', 0, 1);
+                $nextRepayment = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND status = ' . \echeanciers::STATUS_PENDING . ' AND date_echeance >= "' . $this->getLimitDate(new \DateTime('today midnight'))
+                        ->format('Y-m-d H:i:s') . '"', ' ordre ASC', 0, 1);
 
                 if (empty($nextRepayment)) {
                     header('Location: ' . $this->lurl . '/dossiers/detail_remb/' . $this->projects->id_project);
                     die;
                 }
 
+                $projectRepaymentTask = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
+                    'idProject' => $this->projects->id_project,
+                    'type'      => ProjectRepaymentTask::TYPE_EARLY
+                ]);
+
+                $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+
+                // Backward compatibility code.
+                if (null === $projectRepaymentTask) {
+                    $project              = $reception->getIdProject();
+                    $projectRepaymentTask = $projectRepaymentTaskManager->planEarlyRepaymentTask($project, $reception, $user);
+                }
+
                 $borrowerOwedCapital = $this->echeanciers_emprunteur->reste_a_payer_ra($this->projects->id_project, $nextRepayment[0]['ordre']);
 
-                if (bcmul($borrowerOwedCapital, 100) == $this->receptions->montant) {
-                    $projectRepaymentTask = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
-                        'idProject' => $this->projects->id_project,
-                        'type'      => ProjectRepaymentTask::TYPE_EARLY
-                    ]);
-                    $reception            = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($id_reception);
-                    $project              = $reception->getIdProject();
-                    $user                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
-                    $repaidAmount         = 0;
-                    $repaidLoanNb         = 0;
-                    if (null === $projectRepaymentTask) {
-                        $projectRepaymentTask = new ProjectRepaymentTask();
-                        $projectRepaymentTask->setAmount($borrowerOwedCapital)
-                            ->setIdProject($project)
-                            ->setType(ProjectRepaymentTask::TYPE_EARLY)
-                            ->setStatus(ProjectRepaymentTask::STATUS_IN_PROGRESS)
-                            ->setRepayAt(new \DateTime())
-                            ->setIdUserCreation($user)
-                            ->setIdWireTransferIn($reception);
-                        $entityManager->persist($projectRepaymentTask);
-                    }
-                    $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_IN_PROGRESS);
+                if ($borrowerOwedCapital == $projectRepaymentTask->getAmount()) {
 
-                    $repaymentTaskLog = new ProjectRepaymentTaskLog();
-                    $repaymentTaskLog->setIdTask($projectRepaymentTask)
-                        ->setRepaidAmount($repaidAmount)
-                        ->setRepaymentNb($repaidLoanNb)
-                        ->setStarted(new DateTime());
-                    $entityManager->persist($repaymentTaskLog);
-                    $entityManager->flush();
+                    $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_READY)->setIdUserValidation($user);
+                    $entityManager->flush($projectRepaymentTask);
 
-                    $this->bdd->query('
-                        UPDATE echeanciers_emprunteur SET
-                            status_emprunteur = 1,
-                            status_ra = 1,
-                            updated = NOW(),
-                            date_echeance_emprunteur_reel = NOW()
-                        WHERE id_project = ' . $this->projects->id_project . ' AND status_emprunteur = 0'
-                    );
-                    $this->bdd->query('
-                        UPDATE echeanciers SET
-                            status_emprunteur = 1,
-                            updated = NOW(),
-                            status_ra = 1,
-                            date_echeance_emprunteur_reel = NOW()
-                        WHERE id_project = ' . $this->projects->id_project . ' AND status_emprunteur = 0'
-                    );
-
-                    $oLogger->info('Manual Anticipated repayment, echeanciers and echeanciers_emprunteur update. Project id: ' . $this->projects->id_project, ['class' => __CLASS__, 'function' => __FUNCTION__]);
-
-                    $this->prelevements = $this->loadData('prelevements');
-                    $this->prelevements->delete($this->projects->id_project, 'type_prelevement = 1 AND type = 2 AND status = 0 AND id_project');
-
-                    /** @var \remboursement_anticipe_mail_a_envoyer $earlyRepaymentEmail */
-                    $earlyRepaymentEmail               = $this->loadData('remboursement_anticipe_mail_a_envoyer');
-                    $earlyRepaymentEmail->id_reception = $id_reception;
-                    $earlyRepaymentEmail->statut       = 0;
-                    $earlyRepaymentEmail->create();
-
-                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::REMBOURSEMENT_ANTICIPE, $this->projects);
-
-                    foreach ($this->echeanciers->get_liste_preteur_on_project($this->projects->id_project) as $item) {
-                        try {
-                            $loan = $loanRepository->find($item['id_loan']);
-                            $operationManager->earlyRepayment($loan, $repaymentTaskLog);
-
-                            $repaidAmount = round(bcadd($repaidAmount, bcdiv($loan->getAmount(), 100, 4), 4), 2);
-                            $repaidLoanNb++;
-                        } catch (Exception $exception){
-                            $oLogger->info('Early repayment error on loan (id: ' . $item['id_loan'] . ') Error message : ' . $exception->getMessage());
-                            break;
-                        }
-                    }
-
-                    $repaymentTaskLog->setRepaymentNb($repaidLoanNb)->setRepaidAmount($repaidAmount);
-                    $entityManager->flush();
-
-                    $this->bdd->query('
-                        UPDATE echeanciers SET
-                            status = 1,
-                            capital_rembourse = capital,
-                            updated = NOW(),
-                            date_echeance_reel = NOW(),
-                            date_echeance_emprunteur_reel = NOW(),
-                            status_email_remb = 1
-                        WHERE id_project = ' . $this->projects->id_project . ' AND status = 0'
-                    );
-
-                    $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_REPAID);
-                    $repaymentTaskLog->setEnded(new DateTime());
-                    $entityManager->flush();
-
-                    header('Location: ' . $this->lurl . '/dossiers/detail_remb/' . $this->projects->id_project);
-                    die;
+                    $_SESSION['freeow']['title']   = 'Remboursement prêteur';
+                    $_SESSION['freeow']['message'] = "Le remboursement anticipé a été bien pris en compte !";
+                } else {
+                    $_SESSION['freeow']['title']   = 'Remboursement prêteur';
+                    $_SESSION['freeow']['message'] = "Aucun remboursement n'a été effectué aux prêteurs !";
                 }
+
+                header('Location: ' . $this->lurl . '/dossiers/detail_remb/' . $this->projects->id_project);
+                die;
             }
             $this->loadEarlyRepaymentInformation(true);
         }

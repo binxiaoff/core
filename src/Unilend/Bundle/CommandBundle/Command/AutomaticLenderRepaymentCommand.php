@@ -19,11 +19,12 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $entityManager           = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $projectRepaymentManager = $this->getContainer()->get('unilend.service.project_repayment_manager');
-        $slackManager            = $this->getContainer()->get('unilend.service.slack_manager');
-        $logger                  = $this->getContainer()->get('monolog.logger.console');
-        $stopWatch               = $this->getContainer()->get('debug.stopwatch');
+        $entityManager                = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $projectRepaymentManager      = $this->getContainer()->get('unilend.service.project_repayment_manager');
+        $projectEarlyRepaymentManager = $this->getContainer()->get('unilend.service_repayment.project_early_repayment_manager');
+        $slackManager                 = $this->getContainer()->get('unilend.service.slack_manager');
+        $logger                       = $this->getContainer()->get('monolog.logger.console');
+        $stopWatch                    = $this->getContainer()->get('debug.stopwatch');
 
         $repaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
 
@@ -35,23 +36,46 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
             try {
                 $stopWatch->start('autoRepayment');
                 $project = $task->getIdProject();
-                if ($task->getSequence()) {
-                    /** @var Echeanciers $repaymentSchedule */
-                    $repaymentSchedule = $repaymentScheduleRepository->findOneBy(['idProject' => $project, 'ordre' => $task->getSequence()]);
-                    if ($repaymentSchedule->getDateEcheance()->setTime(0, 0, 0) > $repaymentDate) {
-                        continue;
-                    }
+                switch ($task->getType()) {
+                    case ProjectRepaymentTask::TYPE_REGULAR:
+                    case ProjectRepaymentTask::TYPE_LATE:
+                        if ($task->getSequence()) {
+                            /** @var Echeanciers $repaymentSchedule */
+                            $repaymentSchedule = $repaymentScheduleRepository->findOneBy(['idProject' => $project, 'ordre' => $task->getSequence()]);
+                            if ($repaymentSchedule->getDateEcheance()->setTime(0, 0, 0) > $repaymentDate) {
+                                continue 2;
+                            }
+                        }
+                        $taskLog = $projectRepaymentManager->repay($task);
+                        break;
+                    case ProjectRepaymentTask::TYPE_EARLY:
+                        $taskLog = $projectEarlyRepaymentManager->repay($task);
+                        break;
+                    default:
+                        continue 2;
                 }
-                $taskLog        = $projectRepaymentManager->repay($task);
+
                 $stopWatchEvent = $stopWatch->stop('autoRepayment');
 
                 if ($taskLog) {
-                    $message = $slackManager->getProjectName($project) .
-                        ' - Remboursement effectué en '
-                        . round($stopWatchEvent->getDuration() / 1000, 1) . ' secondes (' . $taskLog->getRepaymentNb() . ' prêts, échéance #' . $task->getSequence() . ').';
+                    switch ($task->getType()) {
+                        case ProjectRepaymentTask::TYPE_REGULAR:
+                        case ProjectRepaymentTask::TYPE_LATE:
+                            $message = $slackManager->getProjectName($project)
+                                . ' - Remboursement effectué en '
+                                . round($stopWatchEvent->getDuration() / 1000, 1) . ' secondes (' . $taskLog->getRepaymentNb() . ' prêts, échéance #' . $task->getSequence() . ').';
+                            break;
+                        case ProjectRepaymentTask::TYPE_EARLY:
+                            $message = $slackManager->getProjectName($project)
+                                . ' - Remboursement anticipé effectué en '
+                                . round($stopWatchEvent->getDuration() / 1000, 1) . ' secondes (' . $taskLog->getRepaymentNb() . ' prêts.';
+                            break;
+                        default:
+                            continue 2;
+                    }
                 } else {
                     $message = $slackManager->getProjectName($project) .
-                        ' - Remboursement non effectué. Veuille voir avec l\'équipe technique pour en savoir plus.';
+                        ' - Remboursement non effectué. Veuille contacter l\'équipe technique pour en savoir plus.';
                 }
                 $slackManager->sendMessage($message);
             } catch (\Exception $exception) {
