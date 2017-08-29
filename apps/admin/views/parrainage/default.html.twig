@@ -194,6 +194,7 @@
 
                     var startIndex = $table.find('th.start').index()
                     var endIndex = $table.find('th.end').index()
+                    var validityIndex = $table.find('th.validity').index()
                     var amountSponseeIndex = $table.find('th.amount-sponsee').index()
                     var amountSponsorIndex = $table.find('th.amount-sponsor').index()
                     var maxSponsee = $table.find('th.max-sponsee').index()
@@ -202,6 +203,7 @@
                     $modal.find('.block-title').text('Modifier la campagne')
                     $modal.find('input[name="start"]').val($row.find('td').eq(startIndex).text())
                     $modal.find('input[name="end"]').val($row.find('td').eq(endIndex).text())
+                    $modal.find('input[name="validite_days"]').val(parseFloat($row.find('td').eq(validityIndex).text()))
                     $modal.find('input[name="amount_sponsee"]').val(parseFloat($row.find('td').eq(amountSponseeIndex).text()))
                     $modal.find('input[name="amount_sponsor"]').val(parseFloat($row.find('td').eq(amountSponsorIndex).text()))
                     $modal.find('input[name="max_number_sponsee"]').val($row.find('td').eq(maxSponsee).text())
@@ -426,6 +428,10 @@
                              <input type="text" name="end" class="js-datepicker form-control required" data-date-format="dd/mm/yy">
                          </div>
                          <div class="form-group">
+                             <label>Durée de validité (Jours)</label> <br>
+                             <input type="number" name="validite_days" class="form-control required">
+                         </div>
+                         <div class="form-group">
                              <label>Montant  (Filleul)</label> <br>
                              <input type="number" name="amount_sponsee" class="form-control required">
                          </div>
@@ -603,6 +609,10 @@
                         <input type="text" name="end" class="js-datepicker form-control required" data-date-format="dd/mm/yy">
                     </div>
                     <div class="form-group push-5-l">
+                        <label>Durée de validité (Jours)</label> <br>
+                        <input type="number" name="validite_days" class="form-control required">
+                    </div>
+                    <div class="form-group push-5-l">
                         <label>Montant  (Filleul)</label> <br>
                         <input type="number" name="amount_sponsee" class="form-control required">
                     </div>
@@ -634,6 +644,7 @@
                         <tr>
                             <th class="start">Début de l'offre</th>
                             <th class="end">Fin de l'offre</th>
+                            <th class="validity">Validité</th>
                             <th class="amount-sponsee">Montant (Filleul)</th>
                             <th class="amount-sponsor">Montant (Parrain)</th>
                             <th class="max-sponsee">Max. filleuls</th>
@@ -645,6 +656,7 @@
                         <tr>
                             <td>14/07/2017</td>
                             <td></td>
+                            <td>14 jours</td>
                             <td>14 000 €</td>
                             <td>5 000 €</td>
                             <td>200</td>
@@ -656,6 +668,7 @@
                         <tr>
                             <td>14/02/2017</td>
                             <td>15/08/2017</td>
+                            <td>14 jours</td>
                             <td>14 000 €</td>
                             <td>5 000 €</td>
                             <td>200</td>
@@ -667,6 +680,7 @@
                         <tr>
                             <td>14/07/2017</td>
                             <td>15/08/2017</td>
+                            <td>14 jours</td>
                             <td>14 000 €</td>
                             <td>5 000 €</td>
                             <td>200</td>
@@ -678,6 +692,55 @@
                         <tr>
                             <td>14/02/2017</td>
                             <td>15/08/2017</td>
+                            <td>14 jours</td>
+                            <td>14 000 €</td>
+                            <td>5 000 €</td>
+                            <td>200</td>
+                            <td>Expirée</td>
+                            <td>
+                                <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-parrainage-list" data-campaign-id="23231"><span class="fa fa-pencil"></span></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>14/07/2017</td>
+                            <td>15/08/2017</td>
+                            <td>14 jours</td>
+                            <td>14 000 €</td>
+                            <td>5 000 €</td>
+                            <td>200</td>
+                            <td>En cours</td>
+                            <td>
+                                <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-parrainage-list" data-campaign-id="23231"><span class="fa fa-pencil"></span></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>14/02/2017</td>
+                            <td>15/08/2017</td>
+                            <td>14 jours</td>
+                            <td>14 000 €</td>
+                            <td>5 000 €</td>
+                            <td>200</td>
+                            <td>Expirée</td>
+                            <td>
+                                <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-parrainage-list" data-campaign-id="23231"><span class="fa fa-pencil"></span></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>14/07/2017</td>
+                            <td>15/08/2017</td>
+                            <td>14 jours</td>
+                            <td>14 000 €</td>
+                            <td>5 000 €</td>
+                            <td>200</td>
+                            <td>En cours</td>
+                            <td>
+                                <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-parrainage-list" data-campaign-id="23231"><span class="fa fa-pencil"></span></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>14/02/2017</td>
+                            <td>15/08/2017</td>
+                            <td>14 jours</td>
                             <td>14 000 €</td>
                             <td>5 000 €</td>
                             <td>200</td>
@@ -690,6 +753,7 @@
                             <td>14/07/2017</td>
                             <td>15/08/2017</td>
                             <td>14 000 €</td>
+                            <td>14 jours</td>
                             <td>5 000 €</td>
                             <td>200</td>
                             <td>En cours</td>
@@ -700,50 +764,7 @@
                         <tr>
                             <td>14/02/2017</td>
                             <td>15/08/2017</td>
-                            <td>14 000 €</td>
-                            <td>5 000 €</td>
-                            <td>200</td>
-                            <td>Expirée</td>
-                            <td>
-                                <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-parrainage-list" data-campaign-id="23231"><span class="fa fa-pencil"></span></button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>14/07/2017</td>
-                            <td>15/08/2017</td>
-                            <td>14 000 €</td>
-                            <td>5 000 €</td>
-                            <td>200</td>
-                            <td>En cours</td>
-                            <td>
-                                <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-parrainage-list" data-campaign-id="23231"><span class="fa fa-pencil"></span></button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>14/02/2017</td>
-                            <td>15/08/2017</td>
-                            <td>14 000 €</td>
-                            <td>5 000 €</td>
-                            <td>200</td>
-                            <td>Expirée</td>
-                            <td>
-                                <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-parrainage-list" data-campaign-id="23231"><span class="fa fa-pencil"></span></button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>14/07/2017</td>
-                            <td>15/08/2017</td>
-                            <td>14 000 €</td>
-                            <td>5 000 €</td>
-                            <td>200</td>
-                            <td>En cours</td>
-                            <td>
-                                <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-parrainage-list" data-campaign-id="23231"><span class="fa fa-pencil"></span></button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>14/02/2017</td>
-                            <td>15/08/2017</td>
+                            <td>14 jours</td>
                             <td>14 000 €</td>
                             <td>5 000 €</td>
                             <td>200</td>
