@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * DebtCollectionMission
  *
- * @ORM\Table(name="debt_collection_mission", indexes={@ORM\Index(name="fk_dc_mission_id_project", columns={"id_project"}), @ORM\Index(name="fk_dc_mission_id_client", columns={"id_client_debt_collector"}), @ORM\Index(name="idx_dc_mission_id_status", columns={"status"})})
+ * @ORM\Table(name="debt_collection_mission", indexes={@ORM\Index(name="idx_dc_mission_id_project", columns={"id_project"}), @ORM\Index(name="idx_dc_mission_id_client", columns={"id_client_debt_collector"}), @ORM\Index(name="idx_dc_mission_id_status", columns={"status"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
