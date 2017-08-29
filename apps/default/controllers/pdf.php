@@ -34,11 +34,6 @@ class pdfController extends bootstrap
     public $oLoans;
 
     /**
-     * @var echeanciers_emprunteur
-     */
-    private $oEcheanciersEmprunteur;
-
-    /**
      * @desc contains html returns ($this->execute())
      * @var    string $sDisplay
      */
@@ -223,9 +218,7 @@ class pdfController extends bootstrap
 
     private function GenerateWarrantyHtml($mandates)
     {
-        $this->pays             = $this->loadData('pays');
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager          = $this->get('doctrine.orm.entity_manager');
+        $this->pays = $this->loadData('pays');
         $this->clients_adresses->get($this->clients->id_client, 'id_client');
         $this->pays->get($this->clients->id_langue, 'id_langue');
 
@@ -345,7 +338,16 @@ class pdfController extends bootstrap
                         $this->WritePdf($path . $fileName, 'authority');
                         $instantCreate = true;
                     }
-                    $this->generateProxyUniversign($instantCreate);
+
+                    if (date('Y-m-d', strtotime($this->oProjectsPouvoir->updated)) == date('Y-m-d') && false === $instantCreate && false === empty($this->oProjectsPouvoir->url_universign)) {
+                        $regenerationUniversign = '/NoUpdateUniversign';
+                    } else {
+                        $regenerationUniversign = '';
+                        $this->oProjectsPouvoir->update();
+                    }
+
+                    header('Location: ' . $this->url . '/universign/pouvoir/' . $this->oProjectsPouvoir->id_pouvoir . $regenerationUniversign);
+                    exit;
                 } else {
                     $this->ReadPdf($path . $fileName, $namePdfClient);
                 }
@@ -358,6 +360,73 @@ class pdfController extends bootstrap
             header('Location: ' . $this->lurl);
             die;
         }
+    }
+
+    private function GenerateProxyHtml()
+    {
+        $this->lng['pdf-pouvoir'] = $this->ln->selectFront('pdf-pouvoir', $this->language, $this->App);
+
+        // Update repayment schedule dates based on proxy generation date
+        // Once proxy has been generated, do not update repayment schedule anymore
+        $this->updateRepaymentSchedules();
+
+        /** @var product $product */
+        $product = $this->loadData('product');
+        $product->get($this->projects->id_product);
+        $template = $product->proxy_template;
+
+        if (false === empty($product->proxy_block_slug)) {
+            $this->blocs->get($product->proxy_block_slug, 'slug');
+            $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
+            foreach ($lElements as $b_elt) {
+                $this->elements->get($b_elt['id_element']);
+                $this->bloc_pouvoir[$this->elements->slug]           = $b_elt['value'];
+                $this->bloc_pouvoirComplement[$this->elements->slug] = $b_elt['complement'];
+            }
+        }
+
+        $this->companies_actif_passif = $this->loadData('companies_actif_passif');
+        $this->companies_bilans       = $this->loadData('companies_bilans');
+        $this->echeanciers            = $this->loadData('echeanciers');
+        $this->oLoans                 = $this->loadData('loans');
+        /** @var underlying_contract $contract */
+        $contract                     = $this->loadData('underlying_contract');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
+        $this->walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+
+        $contract->get(\underlying_contract::CONTRACT_BDC, 'label');
+        $BDCContractId = $contract->id_contract;
+
+        $contract->get(\underlying_contract::CONTRACT_IFP, 'label');
+        $IFPContractId = $contract->id_contract;
+
+        $contract->get(\underlying_contract::CONTRACT_MINIBON, 'label');
+        $minibonContractId = $contract->id_contract;
+
+        $this->montantPrete     = $this->projects->amount;
+        $this->taux             = $this->projects->getAverageInterestRate();
+        $this->nbLoansBDC       = $this->oLoans->counter('id_type_contract = ' . $BDCContractId . ' AND id_project = ' . $this->projects->id_project);
+        $this->nbLoansIFP       = $this->oLoans->counter('id_type_contract = ' . $IFPContractId . ' AND id_project = ' . $this->projects->id_project);
+        $this->nbLoansMinibon   = $this->oLoans->counter('id_type_contract = ' . $minibonContractId . ' AND id_project = ' . $this->projects->id_project);
+        $this->lRemb            = $this->loadData('echeanciers_emprunteur')->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
+        $this->rembByMonth      = bcdiv($this->lRemb[0]['montant'] + $this->lRemb[0]['commission'] + $this->lRemb[0]['tva'], 100, 2);
+        $this->dateLastEcheance = $this->echeanciers->getDateDerniereEcheancePreteur($this->projects->id_project);
+
+        $this->capital = 0;
+        foreach ($this->lRemb as $r) {
+            $this->capital += $r['capital'];
+        }
+
+        $this->companies_bilans->get($this->projects->id_dernier_bilan, 'id_bilan');
+        $this->l_AP             = $this->companies_actif_passif->select('id_bilan = ' . $this->projects->id_dernier_bilan);
+        $this->totalActif       = $this->l_AP[0]['immobilisations_corporelles'] + $this->l_AP[0]['immobilisations_incorporelles'] + $this->l_AP[0]['immobilisations_financieres'] + $this->l_AP[0]['stocks'] + $this->l_AP[0]['creances_clients'] + $this->l_AP[0]['disponibilites'] + $this->l_AP[0]['valeurs_mobilieres_de_placement'] + $this->l_AP[0]['comptes_regularisation_actif'];
+        $this->totalPassif      = $this->l_AP[0]['capitaux_propres'] + $this->l_AP[0]['provisions_pour_risques_et_charges'] + $this->l_AP[0]['amortissement_sur_immo'] + $this->l_AP[0]['dettes_financieres'] + $this->l_AP[0]['dettes_fournisseurs'] + $this->l_AP[0]['autres_dettes'] + $this->l_AP[0]['comptes_regularisation_passif'];
+        $this->lLenders         = $this->oLoans->select('id_project = ' . $this->projects->id_project, 'rate ASC');
+        $this->dateRemb         = date('d/m/Y');
+        $this->dateDernierBilan = date('d/m/Y', strtotime($this->companies_bilans->cloture_exercice_fiscal)); // @todo Intl
+
+        $this->setDisplay($template);
     }
 
     public function _cgv_emprunteurs()
@@ -419,85 +488,43 @@ class pdfController extends bootstrap
         header('Location: ' . $this->url . '/universign/cgv_emprunteurs/' . $oProjectCgv->id . '/' . $oProjectCgv->name);
     }
 
-    private function generateProxyUniversign($bInstantCreate = false)
+    // Mise a jour des dates echeances preteurs et emprunteur (utilisé pour se baser sur la date de creation du pouvoir)
+    private function updateRepaymentSchedules()
     {
-        if (date('Y-m-d', strtotime($this->oProjectsPouvoir->updated)) == date('Y-m-d') && false === $bInstantCreate && false === empty($this->oProjectsPouvoir->url_universign)) {
-            $regenerationUniversign = '/NoUpdateUniversign';
-        } else {
-            $regenerationUniversign = '';
-            $this->oProjectsPouvoir->update();
-        }
+        ini_set('max_execution_time', 300);
 
-        header('Location: ' . $this->url . '/universign/pouvoir/' . $this->oProjectsPouvoir->id_pouvoir . $regenerationUniversign);
-        exit;
-    }
+        if ($this->projects->status == \projects_status::FUNDE) {
+            /** @var \echeanciers $lenderRepaymentSchedule */
+            $lenderRepaymentSchedule = $this->loadData('echeanciers');
+            /** @var \echeanciers_emprunteur $borrowerRepaymentSchedule */
+            $borrowerRepaymentSchedule = $this->loadData('echeanciers_emprunteur');
+            /** @var \jours_ouvres $jo */
+            $jo = $this->loadLib('jours_ouvres');
 
-    private function GenerateProxyHtml()
-    {
-        $this->lng['pdf-pouvoir'] = $this->ln->selectFront('pdf-pouvoir', $this->language, $this->App);
+            $this->settings->get('Nombre jours avant remboursement pour envoyer une demande de prelevement', 'type');
+            $daysOffset        = $this->settings->value;
+            $repaymentBaseDate = date('Y-m-d H:i:00');
 
-        // Update repayment schedule dates based on proxy generation date
-        // Once proxy has been generated, do not update repayment schedule anymore
-        $this->updateRepaymentSchedules();
+            for ($order = 1; $order <= $this->projects->period; $order++) {
+                $currentLenderRepaymentDates   = $lenderRepaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND ordre = ' . $order, '', 0, 1)[0];
+                $currentBorrowerRepaymentDates = $borrowerRepaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND ordre = ' . $order, '', 0, 1)[0];
 
-        /** @var product $product */
-        $product = $this->loadData('product');
-        $product->get($this->projects->id_product);
-        $template = $product->proxy_template;
+                $lenderRepaymentDate   = date('Y-m-d H:i:s', $this->dates->dateAddMoisJoursV3($repaymentBaseDate, $order));
+                $borrowerRepaymentDate = $this->dates->dateAddMoisJoursV3($repaymentBaseDate, $order);
+                $borrowerRepaymentDate = date('Y-m-d H:i:s', $jo->display_jours_ouvres($borrowerRepaymentDate, $daysOffset));
 
-        if (false === empty($product->proxy_block_slug)) {
-            $this->blocs->get($product->proxy_block_slug, 'slug');
-            $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
-            foreach ($lElements as $b_elt) {
-                $this->elements->get($b_elt['id_element']);
-                $this->bloc_pouvoir[$this->elements->slug]           = $b_elt['value'];
-                $this->bloc_pouvoirComplement[$this->elements->slug] = $b_elt['complement'];
+                if (
+                    substr($currentLenderRepaymentDates['date_echeance'], 0, 10) !== substr($lenderRepaymentDate, 0, 10)
+                    || substr($currentLenderRepaymentDates['date_echeance_emprunteur'], 0, 10) !== substr($borrowerRepaymentDate, 0, 10)
+                ) {
+                    $lenderRepaymentSchedule->onMetAjourLesDatesEcheances($this->projects->id_project, $order, $lenderRepaymentDate, $borrowerRepaymentDate);
+                }
+
+                if (substr($currentBorrowerRepaymentDates['date_echeance_emprunteur'], 0, 10) !== substr($borrowerRepaymentDate, 0, 10)) {
+                    $borrowerRepaymentSchedule->onMetAjourLesDatesEcheancesE($this->projects->id_project, $order, $borrowerRepaymentDate);
+                }
             }
         }
-
-        $this->companies_actif_passif = $this->loadData('companies_actif_passif');
-        $this->companies_bilans       = $this->loadData('companies_bilans');
-        $this->echeanciers            = $this->loadData('echeanciers');
-        $this->oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
-        $this->oLoans                 = $this->loadData('loans');
-        /** @var underlying_contract $contract */
-        $contract                     = $this->loadData('underlying_contract');
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager          = $this->get('doctrine.orm.entity_manager');
-        $this->walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-
-        $contract->get(\underlying_contract::CONTRACT_BDC, 'label');
-        $BDCContractId = $contract->id_contract;
-
-        $contract->get(\underlying_contract::CONTRACT_IFP, 'label');
-        $IFPContractId = $contract->id_contract;
-
-        $contract->get(\underlying_contract::CONTRACT_MINIBON, 'label');
-        $minibonContractId = $contract->id_contract;
-
-        $this->montantPrete     = $this->projects->amount;
-        $this->taux             = $this->projects->getAverageInterestRate();
-        $this->nbLoansBDC       = $this->oLoans->counter('id_type_contract = ' . $BDCContractId . ' AND id_project = ' . $this->projects->id_project);
-        $this->nbLoansIFP       = $this->oLoans->counter('id_type_contract = ' . $IFPContractId . ' AND id_project = ' . $this->projects->id_project);
-        $this->nbLoansMinibon   = $this->oLoans->counter('id_type_contract = ' . $minibonContractId . ' AND id_project = ' . $this->projects->id_project);
-        $this->lRemb            = $this->oEcheanciersEmprunteur->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
-        $this->rembByMonth      = bcdiv($this->lRemb[0]['montant'] + $this->lRemb[0]['commission'] + $this->lRemb[0]['tva'], 100, 2);
-        $this->dateLastEcheance = $this->echeanciers->getDateDerniereEcheancePreteur($this->projects->id_project);
-
-        $this->capital = 0;
-        foreach ($this->lRemb as $r) {
-            $this->capital += $r['capital'];
-        }
-
-        $this->companies_bilans->get($this->projects->id_dernier_bilan, 'id_bilan');
-        $this->l_AP             = $this->companies_actif_passif->select('id_bilan = ' . $this->projects->id_dernier_bilan);
-        $this->totalActif       = $this->l_AP[0]['immobilisations_corporelles'] + $this->l_AP[0]['immobilisations_incorporelles'] + $this->l_AP[0]['immobilisations_financieres'] + $this->l_AP[0]['stocks'] + $this->l_AP[0]['creances_clients'] + $this->l_AP[0]['disponibilites'] + $this->l_AP[0]['valeurs_mobilieres_de_placement'] + $this->l_AP[0]['comptes_regularisation_actif'];
-        $this->totalPassif      = $this->l_AP[0]['capitaux_propres'] + $this->l_AP[0]['provisions_pour_risques_et_charges'] + $this->l_AP[0]['amortissement_sur_immo'] + $this->l_AP[0]['dettes_financieres'] + $this->l_AP[0]['dettes_fournisseurs'] + $this->l_AP[0]['autres_dettes'] + $this->l_AP[0]['comptes_regularisation_passif'];
-        $this->lLenders         = $this->oLoans->select('id_project = ' . $this->projects->id_project, 'rate ASC');
-        $this->dateRemb         = date('d/m/Y');
-        $this->dateDernierBilan = date('d/m/Y', strtotime($this->companies_bilans->cloture_exercice_fiscal)); // @todo Intl
-
-        $this->setDisplay($template);
     }
 
     public function _contrat()
@@ -713,45 +740,6 @@ class pdfController extends bootstrap
             }
 
             $this->setDisplay('declarationContratPret_html');
-        }
-    }
-
-    // Mise a jour des dates echeances preteurs et emprunteur (utilisé pour se baser sur la date de creation du pouvoir)
-    private function updateRepaymentSchedules()
-    {
-        ini_set('max_execution_time', 300);
-
-        if ($this->projects->status == \projects_status::FUNDE) {
-            /** @var \echeanciers $lenderRepaymentSchedule */
-            $lenderRepaymentSchedule = $this->loadData('echeanciers');
-            /** @var \echeanciers_emprunteur $borrowerRepaymentSchedule */
-            $borrowerRepaymentSchedule = $this->loadData('echeanciers_emprunteur');
-            /** @var \jours_ouvres $jo */
-            $jo = $this->loadLib('jours_ouvres');
-
-            $this->settings->get('Nombre jours avant remboursement pour envoyer une demande de prelevement', 'type');
-            $daysOffset        = $this->settings->value;
-            $repaymentBaseDate = date('Y-m-d H:i:00');
-
-            for ($order = 1; $order <= $this->projects->period; $order++) {
-                $currentLenderRepaymentDates   = $lenderRepaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND ordre = ' . $order, '', 0, 1)[0];
-                $currentBorrowerRepaymentDates = $borrowerRepaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND ordre = ' . $order, '', 0, 1)[0];
-
-                $lenderRepaymentDate   = date('Y-m-d H:i:s', $this->dates->dateAddMoisJoursV3($repaymentBaseDate, $order));
-                $borrowerRepaymentDate = $this->dates->dateAddMoisJoursV3($repaymentBaseDate, $order);
-                $borrowerRepaymentDate = date('Y-m-d H:i:s', $jo->display_jours_ouvres($borrowerRepaymentDate, $daysOffset));
-
-                if (
-                    substr($currentLenderRepaymentDates['date_echeance'], 0, 10) !== substr($lenderRepaymentDate, 0, 10)
-                    || substr($currentLenderRepaymentDates['date_echeance_emprunteur'], 0, 10) !== substr($borrowerRepaymentDate, 0, 10)
-                ) {
-                    $lenderRepaymentSchedule->onMetAjourLesDatesEcheances($this->projects->id_project, $order, $lenderRepaymentDate, $borrowerRepaymentDate);
-                }
-
-                if (substr($currentBorrowerRepaymentDates['date_echeance_emprunteur'], 0, 10) !== substr($borrowerRepaymentDate, 0, 10)) {
-                    $borrowerRepaymentSchedule->onMetAjourLesDatesEcheancesE($this->projects->id_project, $order, $borrowerRepaymentDate);
-                }
-            }
         }
     }
 
