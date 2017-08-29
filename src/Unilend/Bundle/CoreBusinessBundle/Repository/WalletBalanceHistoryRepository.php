@@ -178,26 +178,28 @@ class WalletBalanceHistoryRepository extends EntityRepository
         $endDate->setTime(23, 59, 59);
 
         $qb = $this->createQueryBuilder('wbh');
-        $qb->select('o.id,
-                            CASE 
-                                WHEN(o.idWalletDebtor = wbh.idWallet)  
-                                THEN -SUM(o.amount) 
-                                ELSE SUM(o.amount)
-                            END AS amount, 
-                            CASE 
-                                WHEN o.idSubType IS NULL
-                                THEN ot.label
-                                ELSE ost.label
-                            END AS label, 
-                            IDENTITY(o.idProject) AS idProject, 
-                            IDENTITY(o.idPaymentSchedule) AS idPaymentSchedule, 
-                            DATE(o.added) AS date,
-                            -ROUND((f.montantHt/100), 2) AS netCommission,
-                            -ROUND((f.tva/100), 2) AS vat,
-                            e.ordre,
-                            r.rejectionIsoCode,
-                            srr.label as rejectionReasonLabel,
-                            wbh.availableBalance')
+        $qb->select('
+                o.id,
+                CASE 
+                    WHEN(o.idWalletDebtor = wbh.idWallet)  
+                    THEN -SUM(o.amount) 
+                    ELSE SUM(o.amount)
+                END AS amount, 
+                CASE 
+                    WHEN o.idSubType IS NULL
+                    THEN ot.label
+                    ELSE ost.label
+                END AS label, 
+                IDENTITY(o.idProject) AS idProject, 
+                IDENTITY(o.idPaymentSchedule) AS idPaymentSchedule, 
+                DATE(o.added) AS date,
+                -ROUND((f.montantHt/100), 2) AS netCommission,
+                -ROUND((f.tva/100), 2) AS vat,
+                e.ordre,
+                IDENTITY(r.rejectionIsoCode),
+                srr.label as rejectionReasonLabel,
+                wbh.availableBalance'
+            )
             ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.id = wbh.idOperation')
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
             ->leftJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
