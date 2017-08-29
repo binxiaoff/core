@@ -347,6 +347,8 @@
                 var $form = $(this)
                 var $sponsorTable = $('#link-sponsor-table')
                 var $sponseeTable = $('#link-sponsor-table')
+                var $submit = $('#link-submit')
+                var $container = $('#establish-link-results')
 
                 if (!$form.is('.has-errors')) {
                     $.ajax({
@@ -361,27 +363,29 @@
                                 sponsor: {
                                     id: 382732,
                                     firstName: "Frank",
-                                    lastName: "Albert",
-                                    inscriptionDate: "14/02/2017",
-                                    validationDate: "16/02/2017"
+                                    lastName: "Albert"
                                 },
                                 sponsee: {
                                     id: 392933,
                                     firstName: "Dyke",
-                                    lastName: "Robert"
+                                    lastName: "Robert",
+                                    inscriptionDate: "14/02/2017",
+                                    validationDate: "16/02/2017"
                                 }
                             }
                             $sponsorTable.find('.sponsor-id').text(response.sponsor.id)
                             $sponsorTable.find('.sponsor-first-name').text(response.sponsor.firstName)
                             $sponsorTable.find('.sponsor-last-name').text(response.sponsor.lastName)
-                            $sponsorTable.find('.sponsor-date-inscription').text(response.sponsor.inscriptionDate)
-                            $sponsorTable.find('.sponsor-date-validate').text(response.sponsor.validationDate)
-                            $sponsorTable.show()
 
                             $sponseeTable.find('.sponsee-id').text(response.sponsee.id)
                             $sponseeTable.find('.sponsee-first-name').text(response.sponsee.firstName)
                             $sponseeTable.find('.sponsee-last-name').text(response.sponsee.lastName)
-                            $sponseeTable.show()
+                            $sponseeTable.find('.sponsee-date-inscription').text(response.sponsee.inscriptionDate)
+                            $sponseeTable.find('.sponsee-date-validation').text(response.sponsee.validationDate)
+
+                            $submit.data('sponsee-id', response.sponsee.id).data('sponsor-id', response.sponsor.id)
+
+                            $container.removeClass('hide')
                         },
                         error: function() {
                             alert('Server error :(')
@@ -390,7 +394,17 @@
                 }
             })
 
-            idClientSponsor
+            // Dynamic modal for Adjust Prime
+            $('#modal-establish-link').on('show.bs.modal', function (e) {
+                if (e.namespace === 'bs.modal') {
+                    var $modal = $(this)
+                    var $button = $(e.relatedTarget)
+
+                    $modal.find('input[name="id_client_sponsor"]').val($button.data('sponsor-id'))
+                    $modal.find('input[name="id_client_sponsee"]').val($button.data('sponsee-id'))
+                }
+            })
+
 
         })
     </script>
@@ -500,6 +514,28 @@
                          <input type="hidden" name="pay_out_reward">
                          <input type="hidden" name="id_client">
                          <input type="hidden" name="type_reward">
+                     </div>
+                 </div>
+                 <div class="modal-footer">
+                     <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                     <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+                 </div>
+             </div>
+         </form>
+     </div>
+     <div class="modal" id="modal-establish-link" tabindex="-1" role="dialog" aria-hidden="true">
+         <form class="modal-dialog validate" action="{{ app.adminUrl }}/parrainage/create_sponsorship" method="post">
+             <div class="modal-content">
+                 <div class="block block-themed block-transparent remove-margin-b">
+                     <div class="block-header bg-primary-light">
+                         <h3 class="block-title">Release prime</h3>
+                     </div>
+                     <div class="block-content">
+                         <p>Êtes-vous sür de vouloir associer les clients ?</p>
+
+                         <input type="hidden" name="create_sponsorship_confirm">
+                         <input type="hidden" name="id_client_sponsor">
+                         <input type="hidden" name="id_client_sponsee">
                      </div>
                  </div>
                  <div class="modal-footer">
@@ -942,14 +978,14 @@
                     </div>
                 {% endif %}
 
-                <form id="parrainage-establish-link-search" method="post" action="{{ app.adminUrl }}/parrainage/create_sponsorship" class="form-inline push">
+                <form id="parrainage-establish-link-search" method="post" action="{{ app.adminUrl }}/parrainage/create_sponsorship" class="form-inline push validate">
                     <div class="form-group">
                         <label>ID Client Parrain</label> <br>
-                        <input type="number" name="id_client_sponsor" class="form-control">
+                        <input type="number" name="id_client_sponsor" class="form-control required">
                     </div>
                     <div class="form-group push-5-l">
                         <label>ID Client Filleul</label> <br>
-                        <input type="number" name="id_client_sponsee" class="form-control">
+                        <input type="number" name="id_client_sponsee" class="form-control required">
                     </div>
                     <div class="form-group push-5-l">
                         <input type="hidden" name="create_sponsorship">
@@ -957,7 +993,8 @@
                     </div>
                 </form>
 
-                <div class="row">
+                <div id="establish-link-results" class="hide">
+                    <div class="row">
                     <div class="col-md-2">
                         <p><b>Parrain</b></p>
                         <table id="link-sponsee-table" class="table table-condensed" style="max-width: 300px">
@@ -976,19 +1013,14 @@
                         </table>
                     </div>
                     <div class="col-md-2">
-                        <form method="post" action="{{ app.adminUrl }}/parrainage/create_sponsorship">
-                            <input type="hidden" name="create_sponsorship_confirm">
-                            <input type="hidden" name="id_client_sponsor">
-                            <input type="hidden" name="id_client_sponsee">
-                            <div class="form-group text-center push-20-t">
-                                <span class="fa fa-chevron-left push-10-r"></span>
-                                <button type="submit" class="btn btn-primary">Confirmer l'association</button> <span class="fa fa-chevron-right push-10-l"></span>
-                            </div>
-                        </form>
+                        <div class="form-group text-center push-20-t">
+                            <span class="fa fa-chevron-left push-10-r"></span>
+                            <button id="link-submit" type="submit" class="btn btn-primary" data-toggle="modal" data-target="#modal-establish-link" data-sponsor-id="" data-sponsee-id="">Confirmer l'association</button> <span class="fa fa-chevron-right push-10-l"></span>
+                        </div>
                     </div>
                     <div class="col-md-2">
                         <p><b>Filleul</b></p>
-                        <table id="link-sponsor-table" class="table table-condensed table-bordered hide" style="max-width: 300px">
+                        <table id="link-sponsor-table" class="table table-condensed table-bordered" style="max-width: 300px">
                             <tr>
                                 <td>ID Client</td>
                                 <td class="sponsee-id"></td>
@@ -999,7 +1031,7 @@
                             </tr>
                             <tr>
                                 <td>Prénom</td>
-                                <td class="sponsee-firs-name"></td>
+                                <td class="sponsee-first-name"></td>
                             </tr>
                             <tr>
                                 <td>Date d'inscription</td>
@@ -1015,6 +1047,7 @@
                             <p>Filleul a reçu l'offre de bienvenue et ne recevra donc pas de prime de parrainage</p>
                         </div>
                     </div>
+                </div>
                 </div>
             </div>
         </div><!-- /#parrainage-establish-link -->
