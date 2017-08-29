@@ -607,15 +607,15 @@ class OperationManager
     }
 
     /**
-     * @param Wallet   $lender
-     * @param Wallet   $collector
-     * @param          $commission
-     * @param Projects $project
+     * @param Wallet       $lender
+     * @param Wallet       $collector
+     * @param              $commission
+     * @param array|object $origins
      */
-    public function payCollectionCommissionByLender(Wallet $lender, Wallet $collector, $commission, Projects $project)
+    public function payCollectionCommissionByLender(Wallet $lender, Wallet $collector, $commission, $origins = [])
     {
         $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::COLLECTION_COMMISSION_LENDER]);
-        $this->newOperation($commission, $operationType, null, $lender, $collector, $project);
+        $this->newOperation($commission, $operationType, null, $lender, $collector, $origins);
     }
 
     /**

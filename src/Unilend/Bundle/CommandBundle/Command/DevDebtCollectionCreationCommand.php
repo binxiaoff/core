@@ -231,7 +231,7 @@ EOF
                     }
                     $operationManager->repaymentCollection($lender, $project, $amount, $projectRepaymentTaskLog);
                     if ($fundReleaseDate < $dateOfChange && false === empty($aRow[2])) {
-                        $operationManager->payCollectionCommissionByLender($lender, $collector, $commissionLender, $project);
+                        $operationManager->payCollectionCommissionByLender($lender, $collector, $commissionLender, [$project, $projectRepaymentTaskLog]);
                     }
                 }
                 $repaidAmount = round(bcadd($repaidAmount, $amount, 4), 2);
