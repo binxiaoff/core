@@ -15,8 +15,6 @@
 
 {% block pageScripts %}
     <script>
-        var editor;
-
         $(function(){
             // Page helpers are initialised in app.js and can be called quickly using their name
             App.initHelpers(['validation', 'datepicker', 'table-tools']);
@@ -274,7 +272,7 @@
                         dataType : 'json',
 
                         // @TODO Must change to success when backend is ready
-                        complete : function(sponsorships){
+                        success : function(sponsorships){
                             // @TODO must remove the response object below when backend is ready
                             var sponsorships = [
                                 {
@@ -341,6 +339,58 @@
                     $modal.find('input[name="type_reward"]').val(type)
                 }
             })
+
+            // Adjust Prime Search
+            $('#parrainage-establish-link-search').submit(function(e){
+                e.preventDefault()
+
+                var $form = $(this)
+                var $sponsorTable = $('#link-sponsor-table')
+                var $sponseeTable = $('#link-sponsor-table')
+
+                if (!$form.is('.has-errors')) {
+                    $.ajax({
+                        url : $form.attr('action'),
+                        type : 'post',
+                        dataType : 'json',
+
+                        // @TODO Must change to success when backend is ready
+                        complete: function(response){
+                            // @TODO must remove the response object below when backend is ready
+                            var response = {
+                                sponsor: {
+                                    id: 382732,
+                                    firstName: "Frank",
+                                    lastName: "Albert",
+                                    inscriptionDate: "14/02/2017",
+                                    validationDate: "16/02/2017"
+                                },
+                                sponsee: {
+                                    id: 392933,
+                                    firstName: "Dyke",
+                                    lastName: "Robert"
+                                }
+                            }
+                            $sponsorTable.find('.sponsor-id').text(response.sponsor.id)
+                            $sponsorTable.find('.sponsor-first-name').text(response.sponsor.firstName)
+                            $sponsorTable.find('.sponsor-last-name').text(response.sponsor.lastName)
+                            $sponsorTable.find('.sponsor-date-inscription').text(response.sponsor.inscriptionDate)
+                            $sponsorTable.find('.sponsor-date-validate').text(response.sponsor.validationDate)
+                            $sponsorTable.show()
+
+                            $sponseeTable.find('.sponsee-id').text(response.sponsee.id)
+                            $sponseeTable.find('.sponsee-first-name').text(response.sponsee.firstName)
+                            $sponseeTable.find('.sponsee-last-name').text(response.sponsee.lastName)
+                            $sponseeTable.show()
+                        },
+                        error: function() {
+                            alert('Server error :(')
+                        }
+                    });
+                }
+            })
+
+            idClientSponsor
 
         })
     </script>
@@ -891,8 +941,8 @@
                         </p>
                     </div>
                 {% endif %}
-        
-                <form method="post" action="{{ app.adminUrl }}/parrainage/create_sponsorship" class="form-inline push">
+
+                <form id="parrainage-establish-link-search" method="post" action="{{ app.adminUrl }}/parrainage/create_sponsorship" class="form-inline push">
                     <div class="form-group">
                         <label>ID Client Parrain</label> <br>
                         <input type="number" name="id_client_sponsor" class="form-control">
@@ -906,67 +956,66 @@
                         <button type="submit" class="btn btn-primary">Rechercher</button>
                     </div>
                 </form>
-        
-                {% if createSponsorshipData is defined %}
-                    <div class="row">
-                        <div class="col-md-3">
-                            <p><b>Filleul</b></p>
-                            <table class="table table-condensed table-bordered" style="max-width: 300px">
-                                <tr>
-                                    <td>ID Client</td>
-                                    <td>43424</td>
-                                </tr>
-                                <tr>
-                                    <td>Nom</td>
-                                    <td>Gerard</td>
-                                </tr>
-                                <tr>
-                                    <td>Prénom</td>
-                                    <td>Christopher</td>
-                                </tr>
-                                <tr>
-                                    <td>Date d'inscription</td>
-                                    <td>14/08/2017</td>
-                                </tr>
-                                <tr>
-                                    <td>Date de validation</td>
-                                    <td>15/08/2017</td>
-                                </tr>
-                            </table>
-        
-                            <div class="alert alert-info">
-                                <p>Filleul a reçu l'offre de bienvenue et ne recevra donc pas de prime de parrainage</p>
+
+                <div class="row">
+                    <div class="col-md-2">
+                        <p><b>Parrain</b></p>
+                        <table id="link-sponsee-table" class="table table-condensed" style="max-width: 300px">
+                            <tr>
+                                <td>ID Client</td>
+                                <td class="sponsor-id"></td>
+                            </tr>
+                            <tr>
+                                <td>Nom</td>
+                                <td class="sponsor-last-name text-uppercase"></td>
+                            </tr>
+                            <tr>
+                                <td>Prénom</td>
+                                <td class="sponsor-first-name"></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-2">
+                        <form method="post" action="{{ app.adminUrl }}/parrainage/create_sponsorship">
+                            <input type="hidden" name="create_sponsorship_confirm">
+                            <input type="hidden" name="id_client_sponsor">
+                            <input type="hidden" name="id_client_sponsee">
+                            <div class="form-group text-center push-20-t">
+                                <span class="fa fa-chevron-left push-10-r"></span>
+                                <button type="submit" class="btn btn-primary">Confirmer l'association</button> <span class="fa fa-chevron-right push-10-l"></span>
                             </div>
-                        </div>
-                        <div class="col-md-3">
-                            <p><b>Parrain</b></p>
-                            <table class="table table-condensed" style="max-width: 300px">
-                                <tr>
-                                    <td>ID Client</td>
-                                    <td>43424</td>
-                                </tr>
-                                <tr>
-                                    <td>Nom</td>
-                                    <td>BAPTISTE</td>
-                                </tr>
-                                <tr>
-                                    <td>Prénom</td>
-                                    <td>Jean</td>
-                                </tr>
-                            </table>
+                        </form>
+                    </div>
+                    <div class="col-md-2">
+                        <p><b>Filleul</b></p>
+                        <table id="link-sponsor-table" class="table table-condensed table-bordered hide" style="max-width: 300px">
+                            <tr>
+                                <td>ID Client</td>
+                                <td class="sponsee-id"></td>
+                            </tr>
+                            <tr>
+                                <td>Nom</td>
+                                <td class="sponsee-last-name"></td>
+                            </tr>
+                            <tr>
+                                <td>Prénom</td>
+                                <td class="sponsee-firs-name"></td>
+                            </tr>
+                            <tr>
+                                <td>Date d'inscription</td>
+                                <td class="sponsee-date-inscription"></td>
+                            </tr>
+                            <tr>
+                                <td>Date de validation</td>
+                                <td class="sponsee-date-validation"></td>
+                            </tr>
+                        </table>
+
+                        <div class="alert alert-info">
+                            <p>Filleul a reçu l'offre de bienvenue et ne recevra donc pas de prime de parrainage</p>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6 text-center">
-                            <form method="post" action="{{ app.adminUrl }}/parrainage/create_sponsorship">
-                                <input type="hidden" name="create_sponsorship_confirm">
-                                <input type="hidden" name="id_client_sponsor" value="{{ createSponsorshipData.idClientSponsor }}">
-                                <input type="hidden" name="id_client_sponsee" value="{{ createSponsorshipData.idClientSponsee }}">
-                                <button type="submit" class="btn-primary">Confirmer l'association</button>
-                            </form>
-                        </div>
-                    </div>
-                {% endif %}
+                </div>
             </div>
         </div><!-- /#parrainage-establish-link -->
     </div><!-- /.content -->
