@@ -4,6 +4,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -41,6 +43,7 @@ class ProjectRepaymentScheduleManager
      * @param Receptions $reception
      * @param            $user
      *
+     * @return bool
      * @throws \Exception
      */
     public function pay(Receptions $reception, $user)
@@ -52,16 +55,19 @@ class ProjectRepaymentScheduleManager
         $amount  = round(bcdiv($reception->getMontant(), 100, 4), 2);
         $project = $reception->getIdProject();
 
+        $netRepaymentAmount = $this->getNetRepaymentAmount($project);
+        $monthlyAmount      = $this->getMonthlyAmount($project);
+
+        if ($project->getStatus() >= ProjectsStatus::PROBLEME) {
+            return true;
+        }
+
         $unpaidPaymentSchedules = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')
             ->findBy(['idProject' => $project, 'statusEmprunteur' => EcheanciersEmprunteur::STATUS_PENDING], ['ordre' => 'ASC']);
 
         $this->entityManager->getConnection()->beginTransaction();
         try {
             foreach ($unpaidPaymentSchedules as $paymentSchedule) {
-                $netRepaymentAmount = round(bcdiv($paymentSchedule->getMontant(), 100, 4), 2);
-                $monthlyAmount      = round(bcadd(bcadd($netRepaymentAmount, bcdiv($paymentSchedule->getCommission(), 100, 4), 4), bcdiv($paymentSchedule->getTva(), 100, 4), 4),
-                    2);
-
                 if ($monthlyAmount <= $amount) {
                     $echeanciers->updateStatusEmprunteur($project->getIdProject(), $paymentSchedule->getOrdre());
 
@@ -79,6 +85,8 @@ class ProjectRepaymentScheduleManager
                 }
             }
             $this->entityManager->getConnection()->commit();
+
+            return true;
         } catch (\Exception $exception) {
             $this->entityManager->getConnection()->rollBack();
             throw $exception;
@@ -118,5 +126,27 @@ class ProjectRepaymentScheduleManager
             $this->entityManager->getConnection()->rollBack();
             throw $exception;
         }
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @return float
+     */
+    private function getMonthlyAmount(Projects $project)
+    {
+        $paymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy(['idProject' => $project]);
+        return round(bcdiv(bcadd(bcadd($paymentSchedule->getMontant(), $paymentSchedule->getCommission()), $paymentSchedule->getTva()), 100, 4), 2);
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @return float
+     */
+    private function getNetRepaymentAmount(Projects $project)
+    {
+        $paymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy(['idProject' => $project]);
+        return round(bcdiv($paymentSchedule->getMontant(), 100, 4), 2);
     }
 }

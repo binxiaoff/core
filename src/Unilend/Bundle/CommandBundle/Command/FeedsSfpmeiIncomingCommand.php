@@ -295,10 +295,8 @@ EOF
 
                     $operationManager->provisionBorrowerWallet($reception);
 
-                    if ($project->getStatus() < ProjectsStatus::PROBLEME) {
-                        $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
-                        $projectRepaymentScheduleManager->pay($reception, $user);
-                    }
+                    $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
+                    $projectRepaymentScheduleManager->pay($reception, $user);
                 }
             }
         }
