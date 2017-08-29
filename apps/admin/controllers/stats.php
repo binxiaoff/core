@@ -859,7 +859,7 @@ class statsController extends bootstrap
         $this->exportCSV($extraction, 'projects_eligibility-' . date('YmdHi'), $header);
     }
 
-    public function _requete_crs_cac()
+    public function _requete_crs_dac()
     {
         $this->autoFireView = false;
         $this->hideDecoration();
