@@ -202,8 +202,8 @@
                     $modal.find('.block-title').text('Modifier la campagne')
                     $modal.find('input[name="start"]').val($row.find('td').eq(startIndex).text())
                     $modal.find('input[name="end"]').val($row.find('td').eq(endIndex).text())
-                    $modal.find('input[name="amount_sponsee"]').val($row.find('td').eq(amountSponseeIndex).text().replace(/[^0-9]/g, ''))
-                    $modal.find('input[name="amount_sponsor"]').val($row.find('td').eq(amountSponsorIndex).text().replace(/[^0-9]/g, ''))
+                    $modal.find('input[name="amount_sponsee"]').val(parseFloat($row.find('td').eq(amountSponseeIndex).text()))
+                    $modal.find('input[name="amount_sponsor"]').val(parseFloat($row.find('td').eq(amountSponsorIndex).text()))
                     $modal.find('input[name="max_number_sponsee"]').val($row.find('td').eq(maxSponsee).text())
                     $modal.find('input[name="id_campaign"]').val(campaignId)
                 }
@@ -404,8 +404,6 @@
                     $modal.find('input[name="id_client_sponsee"]').val($button.data('sponsee-id'))
                 }
             })
-
-
         })
     </script>
 {% endblock %}
@@ -421,11 +419,11 @@
                      <div class="block-content">
                          <div class="form-group">
                              <label>Début de l'offre</label>
-                             <input type="text" name="start" class="js-datepicker form-control required" data-date-format="mm/dd/yy">
+                             <input type="text" name="start" class="js-datepicker form-control required" data-date-format="dd/mm/yy">
                          </div>
                          <div class="form-group">
                              <label>Fin de l'offre</label>
-                             <input type="text" name="end" class="js-datepicker form-control required" data-date-format="mm/dd/yy">
+                             <input type="text" name="end" class="js-datepicker form-control required" data-date-format="dd/mm/yy">
                          </div>
                          <div class="form-group">
                              <label>Montant  (Filleul)</label> <br>
@@ -524,7 +522,7 @@
          </form>
      </div>
      <div class="modal" id="modal-establish-link" tabindex="-1" role="dialog" aria-hidden="true">
-         <form class="modal-dialog validate" action="{{ app.adminUrl }}/parrainage/create_sponsorship" method="post">
+         <form class="modal-dialog" action="{{ app.adminUrl }}/parrainage/create_sponsorship" method="post">
              <div class="modal-content">
                  <div class="block block-themed block-transparent remove-margin-b">
                      <div class="block-header bg-primary-light">
@@ -598,11 +596,11 @@
                 <form method="post" action="{{ app.adminUrl }}/parrainage/create_new_campaign" class="form-inline validate">
                     <div class="form-group">
                         <label>Début de l'offre</label> <br>
-                        <input type="text" name="start" class="js-datepicker form-control required" data-date-format="mm/dd/yy">
+                        <input type="text" name="start" class="js-datepicker form-control required" data-date-format="dd/mm/yy">
                     </div>
                     <div class="form-group push-5-l">
                         <label>Fin de l'offre</label> <br>
-                        <input type="text" name="end" class="js-datepicker form-control required" data-date-format="mm/dd/yy">
+                        <input type="text" name="end" class="js-datepicker form-control required" data-date-format="dd/mm/yy">
                     </div>
                     <div class="form-group push-5-l">
                         <label>Montant  (Filleul)</label> <br>
