@@ -74,72 +74,43 @@ class transfertsController extends bootstrap
         if (isset($_POST['id_project'], $_POST['id_reception'])) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
             $operationManager = $this->get('unilend.service.operation_manager');
-            $project          = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);
-            $reception        = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
-            $client           = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
-            $user             = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentScheduleManager $projectRepaymentScheduleManager */
+            $projectRepaymentScheduleManager = $this->get('unilend.service_repayment.project_repayment_schedule_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager $projectRepaymentTaskManager */
+            $projectRepaymentTaskManager = $this->get('unilend.service_repayment.project_repayment_task_manager');
+
+            $project   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);
+            $reception = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
+            $client    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+            $user      = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
             if (null !== $project && null !== $reception) {
-                $reception->setIdProject($project)
-                          ->setIdClient($client)
-                          ->setStatusBo(Receptions::STATUS_ASSIGNED_MANUAL)
-                          ->setRemb(1)
-                          ->setIdUser($user)
-                          ->setAssignmentDate(new \DateTime());
-                $operationManager->provisionBorrowerWallet($reception);
+                $entityManager->getConnection()->beginTransaction();
+                try {
+                    $reception->setIdProject($project)
+                        ->setIdClient($client)
+                        ->setStatusBo(Receptions::STATUS_ASSIGNED_MANUAL)
+                        ->setRemb(1)
+                        ->setIdUser($user)
+                        ->setAssignmentDate(new \DateTime());
+                    $operationManager->provisionBorrowerWallet($reception);
 
-                if ($_POST['type_remb'] === 'remboursement_anticipe') {
-                    $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_EARLY);
-                } elseif ($_POST['type_remb'] === 'regularisation') {
-                    $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_REGULARISATION);
-                    $this->updateEcheances($project->getIdProject(), $reception->getMontant());
+                    if ($_POST['type_remb'] === 'remboursement_anticipe') {
+                        $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_EARLY);
+                        $projectRepaymentTaskManager->planEarlyRepaymentTask($project, $reception, $user);
+                    } elseif ($_POST['type_remb'] === 'regularisation') {
+                        $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_REGULARISATION);
+                        $projectRepaymentScheduleManager->pay($reception, $user);
+                    }
+                    $entityManager->flush();
+                    $entityManager->getConnection()->commit();
+                } catch (Exception $exception) {
+                    $entityManager->getConnection()->rollBack();
                 }
-
-                $entityManager->flush();
             }
 
             header('Location: ' . $this->lurl . '/transferts/emprunteurs');
             die;
-        }
-    }
-
-    private function updateEcheances($id_project, $montant)
-    {
-        $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-        $echeanciers            = $this->loadData('echeanciers');
-        $projects_remb          = $this->loadData('projects_remb');
-
-        $eche   = $echeanciers_emprunteur->select('id_project = ' . $id_project . ' AND status_emprunteur = 0', 'ordre ASC');
-        $newsum = $montant / 100;
-
-        foreach ($eche as $e) {
-            $ordre         = $e['ordre'];
-            $montantDuMois = round($e['montant'] / 100 + $e['commission'] / 100 + $e['tva'] / 100, 2);
-
-            if ($montantDuMois <= $newsum) {
-                $echeanciers->updateStatusEmprunteur($id_project, $ordre);
-
-                $echeanciers_emprunteur->get($id_project, 'ordre = ' . $ordre . ' AND id_project');
-                $echeanciers_emprunteur->status_emprunteur             = 1;
-                $echeanciers_emprunteur->date_echeance_emprunteur_reel = date('Y-m-d H:i:s');
-                $echeanciers_emprunteur->update();
-
-                $newsum = $newsum - $montantDuMois;
-
-                if ($projects_remb->counter('id_project = "' . $id_project . '" AND ordre = "' . $ordre . '" AND status IN(0, 1)') <= 0) {
-                    $date_echeance_preteur = $echeanciers->select('id_project = "' . $id_project . '" AND ordre = "' . $ordre . '"', '', 0, 1);
-
-                    $projects_remb->id_project                = $id_project;
-                    $projects_remb->ordre                     = $ordre;
-                    $projects_remb->date_remb_emprunteur_reel = date('Y-m-d H:i:s');
-                    $projects_remb->date_remb_preteurs        = $date_echeance_preteur[0]['date_echeance'];
-                    $projects_remb->date_remb_preteurs_reel   = '0000-00-00 00:00:00';
-                    $projects_remb->status                    = \projects_remb::STATUS_PENDING;
-                    $projects_remb->create();
-                }
-            } else {
-                break;
-            }
         }
     }
 

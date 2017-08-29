@@ -127,5 +127,23 @@ class ReceptionsRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getArrayResult()[0];
     }
+
+    public function findOriginalDirectDebitByRejectedOne(Receptions $reception, \DateTime $from)
+    {
+        $queryBuilder = $this->createQueryBuilder('r');
+        $queryBuilder->where('r.idProject = :project')
+            ->andWhere('r.statusBo in (:affected)')
+            ->andWhere('r.statusPrelevement = :sent')
+            ->andWhere('r.type = :directDebit')
+            ->andWhere('r.added >= :from')
+            ->setParameter('project', $reception->getIdProject())
+            ->setParameter('affected', [Receptions::STATUS_AUTO_ASSIGNED, Receptions::STATUS_MANUALLY_ASSIGNED])
+            ->setParameter('sent', Receptions::DIRECT_DEBIT_STATUS_SENT)
+            ->setParameter('directDebit', Receptions::TYPE_DIRECT_DEBIT)
+            ->setParameter('from', $from)
+            ->setMaxResults(1);
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
 }
 
