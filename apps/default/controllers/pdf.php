@@ -161,9 +161,10 @@ class pdfController extends bootstrap
             && $project->id_company == $company->id_company
             && $project->status != \projects_status::PRET_REFUSE
         ) {
+            /** @var \clients_mandats $mandates */
+            $mandates        = $this->loadData('clients_mandats');
             $path            = $this->path . 'protected/pdf/mandat/';
             $namePDFClient   = 'MANDAT-UNILEND-' . $project->slug . '-' . $this->clients->id_client;
-            $mandates        = $this->loadData('clients_mandats');
             $projectMandates = $mandates->select(
                 'id_project = ' . $project->id_project . ' AND id_client = ' . $this->clients->id_client . ' AND status IN (' . UniversignEntityInterface::STATUS_PENDING . ',' . UniversignEntityInterface::STATUS_SIGNED . ')',
                 'id_mandat DESC'

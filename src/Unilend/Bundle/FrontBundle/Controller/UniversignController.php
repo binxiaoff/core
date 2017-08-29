@@ -5,7 +5,6 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
@@ -20,12 +19,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\WireTransferOutUniversign;
 
 class UniversignController extends Controller
 {
-
-    const DOCUMENT_TYPE_PROXY             = 'pouvoir';
-    const DOCUMENT_TYPE_MANDATE           = 'mandat';
-    const DOCUMENT_TYPE_TERM_OF_USER      = 'cgv-emprunteurs';
-    const DOCUMENT_TYPE_WIRE_TRANSFER_OUT = 'virement-emprunteurs';
-
     /**
      * As the status has been removed from the URL, we need this redirection action for the old callback url.
      * It can be delete in the next release after the "deblocage progressif" project.
@@ -74,19 +67,19 @@ class UniversignController extends Controller
         $entityManager     = $this->get('doctrine.orm.entity_manager');
 
         switch ($documentType) {
-            case self::DOCUMENT_TYPE_PROXY:
+            case ProjectsPouvoir::DOCUMENT_TYPE:
                 $repository = 'UnilendCoreBusinessBundle:ProjectsPouvoir';
                 break;
-            case self::DOCUMENT_TYPE_MANDATE:
+            case ClientsMandats::DOCUMENT_TYPE:
                 $repository = 'UnilendCoreBusinessBundle:ClientsMandats';
                 break;
-            case self::DOCUMENT_TYPE_TERM_OF_USER:
+            case ProjectCgv::DOCUMENT_TYPE:
                 $repository = 'UnilendCoreBusinessBundle:ProjectCgv';
                 break;
-            case self::DOCUMENT_TYPE_WIRE_TRANSFER_OUT:
+            case WireTransferOutUniversign::DOCUMENT_TYPE:
                 $repository = 'UnilendCoreBusinessBundle:WireTransferOutUniversign';
                 break;
-            default :
+            default:
                 return $this->redirectToRoute('home');
         }
 
@@ -94,6 +87,7 @@ class UniversignController extends Controller
         $universign         = $entityManager->getRepository($repository)->find($documentId);
         $client             = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
         $clientIdUniversign = null;
+
         switch (get_class($universign)) {
             case ProjectsPouvoir::class:
             case ProjectCgv::class:
@@ -101,7 +95,7 @@ class UniversignController extends Controller
                     $clientIdUniversign = $universign->getIdProject()->getIdCompany()->getIdClientOwner();
                 }
                 break;
-            case ClientsMandats::class :
+            case ClientsMandats::class:
                 if ($universign->getIdClient() instanceof Clients) {
                     $clientIdUniversign = $universign->getIdClient()->getIdClient();
                 }

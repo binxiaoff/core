@@ -81,6 +81,7 @@ class UniversignManager
     public function sign(UniversignEntityInterface $universign)
     {
         $this->updateSignature($universign);
+
         if (UniversignEntityInterface::STATUS_SIGNED === $universign->getStatus()) {
             switch (get_class($universign)) {
                 case ProjectsPouvoir::class:
@@ -89,7 +90,7 @@ class UniversignManager
                 case ClientsMandats::class:
                     $this->signMandate($universign);
                     break;
-                case ProjectCgv::class :
+                case ProjectCgv::class:
                     // nothing else to do;
                     break;
                 case WireTransferOutUniversign::class:
@@ -113,7 +114,7 @@ class UniversignManager
         }
 
         $soapClient  = new Client($this->universignURL);
-        $soapRequest = new Request('requester.requestTransaction', [new Value($pdfParameters, "struct")]);
+        $soapRequest = new Request('requester.requestTransaction', [new Value($pdfParameters, 'struct')]);
         $soapResult  = $soapClient->send($soapRequest);
 
         if ($soapResult->faultCode()) {
@@ -121,10 +122,12 @@ class UniversignManager
 
             return false;
         }
+
         $resultValue = $soapResult->value();
-        $proxy->setIdUniversign($resultValue['id']->scalarVal())
-              ->setUrlUniversign($resultValue['url']->scalarVal())
-              ->setStatus(ProjectsPouvoir::STATUS_PENDING);
+        $proxy
+            ->setIdUniversign($resultValue['id']->scalarVal())
+            ->setUrlUniversign($resultValue['url']->scalarVal())
+            ->setStatus(ProjectsPouvoir::STATUS_PENDING);
         $this->entityManager->flush($proxy);
 
         return true;
@@ -139,6 +142,7 @@ class UniversignManager
             'idProject' => $proxy->getIdProject(),
             'status'    => UniversignEntityInterface::STATUS_SIGNED
         ]);
+
         if ($mandate) {
             $this->mailerManager->sendProxyAndMandateSigned($proxy, $mandate);
         }
@@ -158,7 +162,7 @@ class UniversignManager
         }
 
         $soapClient  = new Client($this->universignURL);
-        $soapRequest = new Request('requester.requestTransaction', [new Value($pdfParameters, "struct")]);
+        $soapRequest = new Request('requester.requestTransaction', [new Value($pdfParameters, 'struct')]);
         $soapResult  = $soapClient->send($soapRequest);
 
         if ($soapResult->faultCode()) {
@@ -178,11 +182,12 @@ class UniversignManager
             return false;
         }
 
-        $mandate->setIdUniversign($id)
-                ->setUrlUniversign($url)
-                ->setStatus(UniversignEntityInterface::STATUS_PENDING)
-                ->setBic($bankAccount->getBic())
-                ->setIban($bankAccount->getIban());
+        $mandate
+            ->setIdUniversign($id)
+            ->setUrlUniversign($url)
+            ->setStatus(UniversignEntityInterface::STATUS_PENDING)
+            ->setBic($bankAccount->getBic())
+            ->setIban($bankAccount->getIban());
         $this->entityManager->flush($mandate);
 
         return true;
@@ -193,8 +198,6 @@ class UniversignManager
      */
     private function signMandate(ClientsMandats $mandate)
     {
-        $this->updateSignature($mandate);
-
         $archivedMandate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->findBy([
             'idProject' => $mandate->getIdProject(),
             'status'    => UniversignEntityInterface::STATUS_ARCHIVED
@@ -208,8 +211,9 @@ class UniversignManager
 
             if (false === empty($futureDirectDebits)) {
                 foreach ($futureDirectDebits as $futureDebit) {
-                    $futureDebit->setIban($mandate->getIban())
-                                ->setBic($mandate->getbic());
+                    $futureDebit
+                        ->setIban($mandate->getIban())
+                        ->setBic($mandate->getbic());
                 }
                 $this->entityManager->flush();
             }
@@ -219,6 +223,7 @@ class UniversignManager
             'idProject' => $mandate->getIdProject(),
             'status'    => UniversignEntityInterface::STATUS_SIGNED
         ]);
+
         if ($proxy) {
             $this->mailerManager->sendProxyAndMandateSigned($proxy, $mandate);
         }
@@ -238,7 +243,7 @@ class UniversignManager
         }
 
         $soapClient  = new Client($this->universignURL);
-        $soapRequest = new Request('requester.requestTransaction', [new Value($pdfParameters, "struct")]);
+        $soapRequest = new Request('requester.requestTransaction', [new Value($pdfParameters, 'struct')]);
         $soapResult  = $soapClient->send($soapRequest);
 
         if ($soapResult->faultCode()) {
@@ -270,7 +275,7 @@ class UniversignManager
         }
 
         $soapClient  = new Client($this->universignURL);
-        $soapRequest = new Request('requester.requestTransaction', [new Value($pdfParameters, "struct")]);
+        $soapRequest = new Request('requester.requestTransaction', [new Value($pdfParameters, 'struct')]);
         $soapResult  = $soapClient->send($soapRequest);
 
         if ($soapResult->faultCode()) {
@@ -280,8 +285,9 @@ class UniversignManager
         }
 
         $resultValue = $soapResult->value();
-        $universign->setIdUniversign($resultValue['id']->scalarVal())
-                   ->setUrlUniversign($resultValue['url']->scalarVal());
+        $universign
+            ->setIdUniversign($resultValue['id']->scalarVal())
+            ->setUrlUniversign($resultValue['url']->scalarVal());
         $this->entityManager->flush($universign);
 
         return true;
@@ -292,8 +298,8 @@ class UniversignManager
      */
     private function signWireTransferOut(WireTransferOutUniversign $wireTransferOutUniversign)
     {
-        $this->updateSignature($wireTransferOutUniversign);
         $wireTransferOut = $wireTransferOutUniversign->getIdWireTransferOut();
+
         if ($wireTransferOut) {
             switch ($wireTransferOutUniversign->getStatus()) {
                 case UniversignEntityInterface::STATUS_CANCELED:
@@ -315,15 +321,18 @@ class UniversignManager
     private function updateSignature(UniversignEntityInterface $universign)
     {
         $soapClient            = new Client($this->universignURL);
-        $signatureStatusResult = $soapClient->send(new Request('requester.getTransactionInfo', [new Value($universign->getIdUniversign(), "string")]));
+        $signatureStatusResult = $soapClient->send(new Request('requester.getTransactionInfo', [new Value($universign->getIdUniversign(), 'string')]));
+
         if ($signatureStatusResult->faultCode()) {
             $this->notifyError($universign->getId(), get_class($universign), $signatureStatusResult);
         } else {
             $status = $signatureStatusResult->value()['status']->scalarVal();
+
             switch ($status) {
-                case UniversignEntityInterface::STATUS_LABEL_SIGNED :
+                case UniversignEntityInterface::STATUS_LABEL_SIGNED:
                     $soapClient     = new Client($this->universignURL);
-                    $documentResult = $soapClient->send(new Request('requester.getDocumentsByTransactionId', [new Value($universign->getIdUniversign(), "string")]));
+                    $documentResult = $soapClient->send(new Request('requester.getDocumentsByTransactionId', [new Value($universign->getIdUniversign(), 'string')]));
+
                     if ($documentResult->faultCode()) {
                         $this->notifyError($universign->getId(), get_class($universign), $documentResult);
                     } else {
@@ -334,10 +343,10 @@ class UniversignManager
                         $universign->setStatus(UniversignEntityInterface::STATUS_SIGNED);
                     }
                     break;
-                case UniversignEntityInterface::STATUS_LABEL_CANCELED :
+                case UniversignEntityInterface::STATUS_LABEL_CANCELED:
                     $universign->setStatus(UniversignEntityInterface::STATUS_CANCELED);
                     break;
-                case UniversignEntityInterface::STATUS_LABEL_PENDING :
+                case UniversignEntityInterface::STATUS_LABEL_PENDING:
                     //nothing to do
                     break;
                 default :
@@ -357,21 +366,18 @@ class UniversignManager
     {
         $documentName = $universign->getName();
         $documentId   = $universign->getId();
+
         switch (get_class($universign)) {
             case ClientsMandats::class:
-                /** @var ClientsMandats $universign */
                 $documentFullPath = $this->rootDir . '/../protected/pdf/mandat/' . $documentName;
                 break;
             case ProjectsPouvoir::class:
-                /** @var ProjectsPouvoir $universign */
                 $documentFullPath = $this->rootDir . '/../protected/pdf/pouvoir/' . $documentName;
                 break;
             case ProjectCgv::class:
-                /** @var ProjectCgv $universign */
-                $documentFullPath = $this->rootDir . '/../protected/pdf/cgv_emprunteurs/' . $documentName;
+                $documentFullPath = $this->rootDir . '/../' . ProjectCgv::BASE_PATH . $documentName;
                 break;
             case WireTransferOutUniversign::class:
-                /** @var WireTransferOutUniversign $universign */
                 $documentFullPath = $this->rootDir . '/../protected/pdf/wire_transfer_out/' . $documentName;
                 break;
             default:
@@ -385,42 +391,52 @@ class UniversignManager
     /**
      * @param UniversignEntityInterface $universign
      *
+     * @return string
+     * @throws \Exception
+     */
+    private function getDocumentType(UniversignEntityInterface $universign)
+    {
+        $reflectionObject = new \ReflectionObject($universign);
+        $type             = $reflectionObject->getConstant('DOCUMENT_TYPE');
+
+        if (false === $type) {
+            $this->logger->error('Unknown Universign document type : ' . get_class($universign) . '  id : ' . $universign->getId(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
+            throw new \Exception('Unknown Universign document type : ' . get_class($universign) . '  id : ' . $universign->getId());
+        }
+
+        return $type;
+    }
+
+    /**
+     * @param UniversignEntityInterface $universign
+     *
      * @return array
      * @throws \Exception
      */
     private function getParameters(UniversignEntityInterface $universign)
     {
-        $documentName     = $universign->getName();
-        $documentId       = $universign->getId();
-        $documentFullPath = $this->getDocumentFullPath($universign);
-        $signPositionX    = 255;
-        $signPositionY    = 314;
+        $documentId   = $universign->getId();
+        $documentType = $this->getDocumentType($universign);
 
         switch (get_class($universign)) {
             case ClientsMandats::class:
                 /** @var ClientsMandats $universign */
-                $client       = $universign->getIdClient();
-                $documentType = UniversignController::DOCUMENT_TYPE_MANDATE;
+                $client = $universign->getIdClient();
                 break;
             case ProjectsPouvoir::class:
                 /** @var ProjectsPouvoir $universign */
-                $clientId     = $universign->getIdProject()->getIdCompany()->getIdClientOwner();
-                $client       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
-                $documentType = UniversignController::DOCUMENT_TYPE_PROXY;
+                $clientId = $universign->getIdProject()->getIdCompany()->getIdClientOwner();
+                $client   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
                 break;
             case ProjectCgv::class:
                 /** @var ProjectCgv $universign */
-                $clientId      = $universign->getIdProject()->getIdCompany()->getIdClientOwner();
-                $client        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
-                $documentType  = UniversignController::DOCUMENT_TYPE_TERM_OF_USER;
-                $signPositionX = 430;
-                $signPositionY = 750;
+                $clientId = $universign->getIdProject()->getIdCompany()->getIdClientOwner();
+                $client   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
                 break;
             case WireTransferOutUniversign::class:
                 /** @var WireTransferOutUniversign $universign */
-                $clientId     = $universign->getIdWireTransferOut()->getProject()->getIdCompany()->getIdClientOwner();
-                $client       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
-                $documentType = UniversignController::DOCUMENT_TYPE_WIRE_TRANSFER_OUT;
+                $clientId = $universign->getIdWireTransferOut()->getProject()->getIdCompany()->getIdClientOwner();
+                $client   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
                 break;
             default:
                 $this->logger->error('Unknown Universign document type : ' . get_class($universign) . '  id : ' . $documentId, ['class' => __CLASS__, 'function' => __FUNCTION__]);
@@ -433,14 +449,6 @@ class UniversignManager
             'cancel'  => $this->router->generate('universign_signature_status', ['documentType' => $documentType, 'documentId' => $documentId, 'clientHash' => $client->getHash()], 0)
         ];
 
-        $docSignatureField = [
-            'page'        => new Value(1, 'int'),
-            'x'           => new Value($signPositionX, 'int'),
-            'y'           => new Value($signPositionY, 'int'),
-            'signerIndex' => new Value(0, 'int'),
-            'label'       => new Value('Unilend', 'string')
-        ];
-
         $signer = [
             'firstname'    => new Value($client->getPrenom(), 'string'),
             'lastname'     => new Value($client->getNom(), 'string'),
@@ -448,14 +456,12 @@ class UniversignManager
             'emailAddress' => new Value($client->getEmail(), 'string')
         ];
 
-        $doc = [
-            'content'         => new Value(file_get_contents($documentFullPath), 'base64'),
-            'name'            => new Value($documentName, 'string'),
-            'signatureFields' => new Value([new Value($docSignatureField, 'struct')], 'array')
+        $docs = [
+            new Value($this->getDocumentParameters($universign), 'struct')
         ];
 
         return [
-            'documents'          => new Value([new Value($doc, 'struct')], 'array'),
+            'documents'          => new Value($docs, 'array'),
             'signers'            => new Value([new Value($signer, 'struct')], 'array'),
             'successURL'         => new Value($returnPage['success'], 'string'),
             'failURL'            => new Value($returnPage['fail'], 'string'),
@@ -468,7 +474,57 @@ class UniversignManager
     }
 
     /**
-     * @param string              $documentId
+     * @param UniversignEntityInterface $universign
+     *
+     * @return array
+     * @throws \Exception
+     */
+    private function getDocumentParameters(UniversignEntityInterface $universign)
+    {
+        $documentName     = $universign->getName();
+        $documentId       = $universign->getId();
+        $documentType     = $this->getDocumentType($universign);
+        $documentFullPath = $this->getDocumentFullPath($universign);
+        $signPositionX    = 255;
+        $signPositionY    = 314;
+
+        switch (get_class($universign)) {
+            case ProjectCgv::class:
+                $signPositionX = 430;
+                $signPositionY = 750;
+                break;
+            case ClientsMandats::class:
+            case ProjectsPouvoir::class:
+            case WireTransferOutUniversign::class:
+                break;
+            default:
+                $this->logger->error('Unknown Universign document type : ' . get_class($universign) . '  id : ' . $documentId, ['class' => __CLASS__, 'function' => __FUNCTION__]);
+                throw new \Exception('Unknown Universign document type : ' . get_class($universign) . '  id : ' . $documentId);
+        }
+
+        $docSignatureField = [
+            'page'        => new Value(1, 'int'),
+            'x'           => new Value($signPositionX, 'int'),
+            'y'           => new Value($signPositionY, 'int'),
+            'signerIndex' => new Value(0, 'int'),
+            'label'       => new Value('Unilend', 'string') // @todo readable name of document, displayed in list "La signature vous engage sur :" of Universign page
+        ];
+
+        $metaData = [
+            'docType' => new Value($documentType, 'string'),
+            'docId'   => new Value($documentId, 'int')
+        ];
+
+        return [
+            'content'         => new Value(file_get_contents($documentFullPath), 'base64'),
+            'name'            => new Value($documentName, 'string'),
+            'signatureFields' => new Value([new Value($docSignatureField, 'struct')], 'array'),
+            'metaData'        => new Value($metaData, 'struct')
+        ];
+    }
+
+    /**
+     * @param int                 $documentId
      * @param string              $documentType
      * @param \PhpXmlRpc\Response $soapResult
      */
@@ -497,7 +553,9 @@ class UniversignManager
             );
         }
 
-        $this->logger->error('Return Universign ' . $documentType . ' NOK (id: ' . $documentId . ') - Error code : ' . $soapResult->faultCode() . ' - Error Message : ' . $soapResult->faultString(),
-            ['class' => __CLASS__, 'function' => __FUNCTION__]);
+        $this->logger->error(
+            'Return Universign ' . $documentType . ' NOK (id: ' . $documentId . ') - Error code : ' . $soapResult->faultCode() . ' - Error Message : ' . $soapResult->faultString(),
+            ['class' => __CLASS__, 'function' => __FUNCTION__]
+        );
     }
 }
