@@ -320,7 +320,7 @@ class EcheanciersEmprunteur
      *
      * @return EcheanciersEmprunteur
      */
-    public function setDateEcheanceEmprunteurReel($dateEcheanceEmprunteurReel = null)
+    public function setDateEcheanceEmprunteurReel(\DateTime $dateEcheanceEmprunteurReel = null)
     {
         $this->dateEcheanceEmprunteurReel = $dateEcheanceEmprunteurReel;
 

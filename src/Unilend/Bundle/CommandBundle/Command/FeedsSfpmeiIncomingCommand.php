@@ -283,9 +283,9 @@ EOF
                 $projectRepaymentScheduleManager = $this->getContainer()->get('unilend.service_repayment.project_repayment_schedule_manager');
 
                 $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
-                $client  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
 
                 if ($project instanceof Projects) {
+                    $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
                     $reception->setIdProject($project)
                         ->setIdClient($client)
                         ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)

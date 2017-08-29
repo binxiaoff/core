@@ -23,7 +23,8 @@ class ProjectRepaymentTaskRepository extends EntityRepository
             ->setParameter('ready', ProjectRepaymentTask::STATUS_READY)
             ->setParameter('repaymentDate', $repaymentDate)
             ->setParameter('supportedType', [ProjectRepaymentTask::TYPE_REGULAR, ProjectRepaymentTask::TYPE_LATE, ProjectRepaymentTask::TYPE_EARLY])
-            ->setMaxResults($limit);
+            ->setMaxResults($limit)
+            ->orderBy('prt.repayAt', 'ASC');
 
         return $qb->getQuery()->getResult();
     }
