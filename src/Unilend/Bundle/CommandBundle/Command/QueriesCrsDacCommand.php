@@ -119,7 +119,7 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
             }
 
             $activeSheet->setCellValue('A' . $row, $client->getIdClient());
-            $activeSheet->setCellValueExplicit('B' . $row, \PHPExcel_Shared_Date::PHPToExcel($client->getNaissance()), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValue('B' . $row, $client->getNaissance()->format('Y-m-d'));
             $activeSheet->setCellValue('C' . $row, $client->getVilleNaissance());
             $activeSheet->setCellValue('D' . $row, null !== $nationalityCountry ? $nationalityCountry->getCodePays() : '');
             $activeSheet->setCellValue('E' . $row, $firstValidation->getAdded()->format('Y-m-d'));
@@ -141,7 +141,6 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
             $row+=1;
         }
 
-        $activeSheet->getStyle('B' . $row)->getNumberFormat()->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_DATE_YYYYMMDD2);
         $activeSheet->getStyle('P' . 2 . ':' . 'S' . $row)
             ->getNumberFormat()->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 
