@@ -866,7 +866,7 @@ class statsController extends bootstrap
 
         $year     = date('Y') - 1;
         $fileName = 'preteurs_crs_dac' . $year . '.xlsx';
-        $filePath = $this->getParameter('path.protected') . '/' . $fileName;
+        $filePath = $this->getParameter('path.protected') . '/queries/' . $fileName;
 
         if (file_exists($filePath)) {
            $this->download($filePath);
