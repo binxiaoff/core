@@ -1,5 +1,8 @@
 {% extends 'layout.html.twig' %}
 
+{% set currentCampaign = {id: 12323} %}
+
+
 {% block pluginsCSS %}
     <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
     <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
@@ -12,6 +15,8 @@
 
 {% block pageScripts %}
     <script>
+        var editor;
+
         $(function(){
             // Page helpers are initialised in app.js and can be called quickly using their name
             App.initHelpers(['validation', 'datepicker', 'table-tools']);
@@ -179,29 +184,280 @@
                 "<'row'<'col-sm-12'tr>>" +
                 "<'row'<'col-sm-6'i><'col-sm-6'p>>"
             })
+
+            // Dynamic modal for Campaign Edit
+            $('#modal-parrainage-list').on('show.bs.modal', function (e) {
+                if (e.namespace === 'bs.modal') {
+                    var $modal = $(this)
+                    var $button = $(e.relatedTarget)
+                    var $row = $button.closest('tr')
+                    var $table = $row.closest('table')
+                    var campaignId = $button.data('campaing-id')
+
+                    var startIndex = $table.find('th.start').index()
+                    var endIndex = $table.find('th.end').index()
+                    var amountSponseeIndex = $table.find('th.amount-sponsee').index()
+                    var amountSponsorIndex = $table.find('th.amount-sponsor').index()
+                    var maxSponsee = $table.find('th.max-sponsee').index()
+
+
+                    $modal.find('.block-title').text('Modifier la campagne')
+                    $modal.find('input[name="start"]').val($row.find('td').eq(startIndex).text())
+                    $modal.find('input[name="end"]').val($row.find('td').eq(endIndex).text())
+                    $modal.find('input[name="amount_sponsee"]').val($row.find('td').eq(amountSponseeIndex).text().replace(/[^0-9]/g, ''))
+                    $modal.find('input[name="amount_sponsor"]').val($row.find('td').eq(amountSponsorIndex).text().replace(/[^0-9]/g, ''))
+                    $modal.find('input[name="max_number_sponsee"]').val($row.find('td').eq(maxSponsee).text())
+                    $modal.find('input[name="id_campaign"]').val(campaignId)
+                }
+            })
+
+            // Blacklist Search Results
+            $('#parrainage-blacklist-search').submit(function(e){
+                e.preventDefault()
+
+                console.log('sdsds')
+
+                var $form = $(this)
+                var $modal = $('#modal-blacklist-search')
+
+                if (!$form.is('.has-errors')) {
+                    $.ajax({
+                        url: $form.attr('action'),
+                        type: 'post',
+                        dataType: 'json',
+
+                        // @TODO Must change to success when backend is ready
+                        complete: function (response) {
+                            // @TODO must remove the response object below when backend is ready
+                            var response = {
+                                id: '34343',
+                                nom: 'pierre',
+                                prenom: 'Jack'
+                            }
+                            $modal.find('.client-id').text(response.id)
+                            $modal.find('input[name="id_client"]').val(response.id)
+                            $modal.find('.nom').text(response.nom)
+                            $modal.find('.prenom').text(response.prenom)
+
+                            $modal.show()
+                        },
+                        error: function () {
+                            alert('Server error :(')
+                        }
+                    })
+                }
+            })
+
+            // Remove from blacklist
+            $('#modal-blacklist-remove').on('show.bs.modal', function (e) {
+                if (e.namespace === 'bs.modal') {
+                    var $modal = $(this)
+                    var $button = $(e.relatedTarget)
+                    var clientId = $button.data('client-id')
+
+                    $modal.find('input[name="id_client"]').val(clientId)
+                }
+            })
+
+            // Adjust Prime Search
+            $('#parrainage-adjust-prime-search').submit(function(e){
+                e.preventDefault()
+
+                var $form = $(this)
+                var modal = '#modal-prime-release'
+                var $table = $('#parrainage-adjust-prime-table')
+
+                if (!$form.is('.has-errors')) {
+                    $.ajax({
+                        url : $form.attr('action'),
+                        type : 'post',
+                        dataType : 'json',
+
+                        // @TODO Must change to success when backend is ready
+                        complete : function(sponsorships){
+                            // @TODO must remove the response object below when backend is ready
+                            var sponsorships = [
+                                {
+                                    sponsor: {
+                                        id: 382732,
+                                        firstName: "Frank",
+                                        lastName: "Albert",
+                                        primeReceived: false
+                                    },
+                                    sponsee: {
+                                        id: 392933,
+                                        firstName: "Dyke",
+                                        lastName: "Robert",
+                                        primeReceived: true
+                                    }
+                                }
+                            ]
+
+                            var html = '';
+
+                            for (i = 0; i < sponsorships.length; i++) {
+                                var s = sponsorships[i];
+                                var sponsorReceived = 'versée'
+                                var sponseeReceived = 'versée'
+
+                                if (!s.sponsor.primeReceived) {
+                                    sponsorReceived = '<button class="btn btn-primary btn-xs" data-toggle="modal" data-target="'+modal+'" data-client-id="' + s.sponsor.id + '" data-type="sponsor">Débloquer</button>'
+                                }
+
+                                if (!s.sponsee.primeReceived) {
+                                    sponsorReceived = '<button class="btn btn-primary btn-xs" data-toggle="modal" data-target="'+modal+'" data-client-id="' + s.sponsee.id + '" data-type="sponsee">Débloquer</button>'
+                                }
+
+                                html += '<tr>' +
+                                        '<th class="sponsor-id">' + s.sponsor.id + '</th>' +
+                                        '<th class="sponsor-first-name">' + s.sponsor.firstName + '</th> ' +
+                                        '<th class="sponsor-last-name">' + s.sponsor.lastName + '</th> ' +
+                                        '<th class="sponsor-prime">' + sponsorReceived + '</th> ' +
+                                        '<th class="sponsee-id">' + s.sponsee.id + '</th> ' +
+                                        '<th class="sponsee-first-name">' + s.sponsee.firstName + '</th> ' +
+                                        '<th class="sponsee-last-name">' + s.sponsee.lastName + '</th>' +
+                                        '<th class="sponsee-prime">' + sponseeReceived + '</th>'
+                                '</tr>'
+                                $table.find('tbody').append(html)
+                            }
+                            $table.removeClass('hide')
+                        },
+                        error: function() {
+                            alert('Server error :(')
+                        }
+                    });
+                }
+            })
+
+            // Dynamic modal for Adjust Prime
+            $('#modal-prime-release').on('show.bs.modal', function (e) {
+                if (e.namespace === 'bs.modal') {
+                    var $modal = $(this)
+                    var $button = $(e.relatedTarget)
+                    var clientId = $button.data('client-id')
+                    var type = $button.data('type')
+
+                    $modal.find('input[name="id_client"]').val(clientId)
+                    $modal.find('input[name="type_reward"]').val(type)
+                }
+            })
+
         })
     </script>
 {% endblock %}
 
  {% block modals %}
-     <div class="modal" id="modal-normal" tabindex="-1" role="dialog" aria-hidden="true">
-         <div class="modal-dialog">
+     <div class="modal" id="modal-parrainage-list" tabindex="-1" role="dialog" aria-hidden="true">
+         <form class="modal-dialog validate" action="" method="post">
              <div class="modal-content">
                  <div class="block block-themed block-transparent remove-margin-b">
                      <div class="block-header bg-primary-light">
-                         <h3 class="block-title">Terms &amp; Conditions</h3>
+                         <h3 class="block-title"></h3>
                      </div>
                      <div class="block-content">
-                         <p>Dolor posuere proin blandit accumsan senectus netus nullam curae, ornare laoreet adipiscing luctus mauris adipiscing pretium eget fermentum, tristique lobortis est ut metus lobortis tortor tincidunt himenaeos habitant quis dictumst proin odio sagittis purus mi, nec taciti vestibulum quis in sit varius lorem sit metus mi.</p>
-                         <p>Dolor posuere proin blandit accumsan senectus netus nullam curae, ornare laoreet adipiscing luctus mauris adipiscing pretium eget fermentum, tristique lobortis est ut metus lobortis tortor tincidunt himenaeos habitant quis dictumst proin odio sagittis purus mi, nec taciti vestibulum quis in sit varius lorem sit metus mi.</p>
+                         <div class="form-group">
+                             <label>Début de l'offre</label>
+                             <input type="text" name="start" class="js-datepicker form-control required" data-date-format="mm/dd/yy">
+                         </div>
+                         <div class="form-group">
+                             <label>Fin de l'offre</label>
+                             <input type="text" name="end" class="js-datepicker form-control required" data-date-format="mm/dd/yy">
+                         </div>
+                         <div class="form-group">
+                             <label>Montant  (Filleul)</label> <br>
+                             <input type="number" name="amount_sponsee" class="form-control required">
+                         </div>
+                         <div class="form-group">
+                             <label>Montant (Parrain)</label> <br>
+                             <input type="number" name="amount_sponsor" class="form-control required">
+                         </div>
+                         <div class="form-group">
+                             <label>Max. filleuls</label> <br>
+                             <input type="number" name="max_number_sponsee" class="form-control required">
+                         </div>
+
+                         <input type="hidden" name="id_campaign">
+                         <input type="hidden" name="modify_campaign">
                      </div>
                  </div>
                  <div class="modal-footer">
-                     <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Close</button>
-                     <button class="btn btn-sm btn-primary" type="button" data-dismiss="modal"><i class="fa fa-check"></i> Ok</button>
+                     <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                     <button class="btn btn-sm btn-primary" type="submit">Modifier</button>
                  </div>
              </div>
-         </div>
+         </form>
+     </div>
+     <div class="modal" id="modal-blacklist-search" tabindex="-1" role="dialog" aria-hidden="true">
+         <form class="modal-dialog validate" action="{{ app.adminUrl }}/parrainage/blacklist" method="post">
+             <div class="modal-content">
+                 <div class="block block-themed block-transparent remove-margin-b">
+                     <div class="block-header bg-primary-light">
+                         <h3 class="block-title">Client trouvé</h3>
+                     </div>
+                     <div class="block-content">
+                         <p>Êtes-vous sür de vouloir ajouter le client <span class="nom text-uppercase"></span> <span class="prenom"></span> dans la blacklist ?</p>
+
+                         <div class="form-group">
+                             <label>Selectionner une campagne</label>
+                             <select name="campaign" class="form-control required">
+                                 <option></option>
+                                 <option value="all">Toutes les campagnes</option>
+                                 <option value="{{ currentCampaign.id }}">Campagne en cours</option>
+                             </select>
+                         </div>
+                         <input type="hidden" name="id_client">
+                         <input type="hidden" name="blacklist_client">
+                     </div>
+                 </div>
+                 <div class="modal-footer">
+                     <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                     <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+                 </div>
+             </div>
+         </form>
+     </div>
+     <div class="modal" id="modal-blacklist-remove" tabindex="-1" role="dialog" aria-hidden="true">
+         <form class="modal-dialog validate" action="{{ app.adminUrl }}/parrainage/blacklist" method="post">
+             <div class="modal-content">
+                 <div class="block block-themed block-transparent remove-margin-b">
+                     <div class="block-header bg-primary-light">
+                         <h3 class="block-title">Retirer de la blacklist</h3>
+                     </div>
+                     <div class="block-content">
+                         <p>Êtes-vous sür de vouloir retirer le client de la blacklist ?</p>
+
+                         <input type="hidden" name="id_client">
+                         <input type="hidden" name="remove_blacklist_client">
+                     </div>
+                 </div>
+                 <div class="modal-footer">
+                     <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                     <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+                 </div>
+             </div>
+         </form>
+     </div>
+     <div class="modal" id="modal-prime-release" tabindex="-1" role="dialog" aria-hidden="true">
+         <form class="modal-dialog validate" action="{{ app.adminUrl }}/parrainage/pay_out_reward" method="post">
+             <div class="modal-content">
+                 <div class="block block-themed block-transparent remove-margin-b">
+                     <div class="block-header bg-primary-light">
+                         <h3 class="block-title">Release prime</h3>
+                     </div>
+                     <div class="block-content">
+                         <p>Êtes-vous sür de vouloir débloquez le prime <span class="type"></span> ?</p>
+
+                         <input type="hidden" name="pay_out_reward">
+                         <input type="hidden" name="id_client">
+                         <input type="hidden" name="type_reward">
+                     </div>
+                 </div>
+                 <div class="modal-footer">
+                     <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                     <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+                 </div>
+             </div>
+         </form>
      </div>
  {% endblock %}
 
@@ -253,207 +509,163 @@
                     </div>
                 {% endif %}
         
-                <form method="post" action="{{ app.adminUrl }}/parrainage/create_new_campaign" class="form-inline">
+                <form method="post" action="{{ app.adminUrl }}/parrainage/create_new_campaign" class="form-inline validate">
                     <div class="form-group">
                         <label>Début de l'offre</label> <br>
-                        <input type="text" name="start" value="" class="js-datepicker form-control required" data-date-format="mm/dd/yy">
+                        <input type="text" name="start" class="js-datepicker form-control required" data-date-format="mm/dd/yy">
                     </div>
-                    <div class="form-group" style="margin-left: 5px;">
+                    <div class="form-group push-5-l">
                         <label>Fin de l'offre</label> <br>
-                        <input type="text" name="end" value="" class="js-datepicker form-control required" data-date-format="mm/dd/yy">
+                        <input type="text" name="end" class="js-datepicker form-control required" data-date-format="mm/dd/yy">
                     </div>
-                    <div class="form-group" style="margin-left: 5px;">
+                    <div class="form-group push-5-l">
                         <label>Montant  (Filleul)</label> <br>
                         <input type="number" name="amount_sponsee" class="form-control required">
                     </div>
-                    <div class="form-group" style="margin-left: 5px;">
+                    <div class="form-group push-5-l">
                         <label>Montant (Parrain)</label> <br>
                         <input type="number" name="amount_sponsor" class="form-control required">
                     </div>
-                    <div class="form-group" style="margin-left: 5px;">
+                    <div class="form-group push-5-l">
                         <label>Max. filleuls</label> <br>
                         <input type="number" name="max_number_sponsee" class="form-control required">
                     </div>
-                    <div class="form-group" style="margin-left: 5px;">
-                        <label>Durée de validité (semaines)</label> <br>
-                        <input type="number" name="validity_days" class="form-control required">
-                    </div>
-                    <div class="form-group" style="margin-left: 5px;">
-                        <input type="hidden" name="id_campaign" value="">
-                        <input type="hidden" name="create_new_campaign" value="">
+                    <div class="form-group push-5-l">
+                        <input type="hidden" name="id_campaign">
+                        <input type="hidden" name="create_new_campaign">
                        
-                        <button type="submit" class="btn btn-primary" style="width: 120px;">Créer</button>
+                        <button type="submit" class="btn btn-primary">Créer</button>
                     </div>
                 </form>
             </div>
         </div><!-- /#parrainage-create-campaign -->
-        <div id="parrainage-list-campaign" class="block block-bordered">
+        <div id="parrainage-list" class="block block-bordered">
             <div class="block-header">
                 <h3 class="block-title">Liste des campagnes</h3>
             </div>
             <div class="block-content block-content-full">
                 <!-- @TODO Dynamisation de la table -->
-                <table class="table table-bordered table-striped table-hover table-header-bg js-dataTable-simple">
+                <table id="parrainage-list-campaign-table" class="table table-bordered table-striped table-hover table-header-bg js-dataTable-simple">
                     <thead>
                         <tr>
-                            <th>Début de l'offre</th>
-                            <th>Durée de validité</th>
-                            <th>Montant (Filleul)</th>
-                            <th>Montant (Parrain)</th>
-                            <th>Max. filleuls</th>
-                            <th>Statut</th>
-                            <td>Action</td>
+                            <th class="start">Début de l'offre</th>
+                            <th class="end">Fin de l'offre</th>
+                            <th class="amount-sponsee">Montant (Filleul)</th>
+                            <th class="amount-sponsor">Montant (Parrain)</th>
+                            <th class="max-sponsee">Max. filleuls</th>
+                            <th class="status">Statut</th>
+                            <td class="action">Action</td>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td>14/07/2017</td>
-                            <td>3 semaines</td>
+                            <td></td>
                             <td>14 000 €</td>
                             <td>5 000 €</td>
                             <td>200</td>
                             <td>En cours</td>
                             <td>
-                                <form action="" method="post">
-                                    <input type="hidden" name="campaing-id" value="">
-                                    <input type="hidden" name="action" class="modify">
-                                    <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Modifier"><span class="fa fa-pencil"></span></button>
-                                </form>
+                                <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-parrainage-list"><span class="fa fa-pencil"></span></button>
                             </td>
                         </tr>
                         <tr>
                             <td>14/02/2017</td>
-                            <td>3 semaines</td>
+                            <td>15/08/2017</td>
                             <td>14 000 €</td>
                             <td>5 000 €</td>
                             <td>200</td>
                             <td>Expirée</td>
                             <td>
-                                <form action="" method="post">
-                                    <input type="hidden" name="campaing-id" value="">
-                                    <input type="hidden" name="action" class="reactivate">
-                                    <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Réactiver"><span class="fa fa-refresh"></span></button>
-                                </form>
+                                <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-parrainage-list"><span class="fa fa-pencil"></span></button>
                             </td>
                         </tr>
                         <tr>
                             <td>14/07/2017</td>
-                            <td>3 semaines</td>
+                            <td>15/08/2017</td>
                             <td>14 000 €</td>
                             <td>5 000 €</td>
                             <td>200</td>
                             <td>En cours</td>
                             <td>
-                                <form action="" method="post">
-                                    <input type="hidden" name="campaing-id" value="">
-                                    <input type="hidden" name="action" class="modify">
-                                    <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Modifier"><span class="fa fa-pencil"></span></button>
-                                </form>
+                                <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-parrainage-list" data-campaign-id="23231"><span class="fa fa-pencil"></span></button>
                             </td>
                         </tr>
                         <tr>
                             <td>14/02/2017</td>
-                            <td>3 semaines</td>
+                            <td>15/08/2017</td>
                             <td>14 000 €</td>
                             <td>5 000 €</td>
                             <td>200</td>
                             <td>Expirée</td>
                             <td>
-                                <form action="" method="post">
-                                    <input type="hidden" name="campaing-id" value="">
-                                    <input type="hidden" name="action" class="reactivate">
-                                    <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Réactiver"><span class="fa fa-refresh"></span></button>
-                                </form>
+                                <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-parrainage-list" data-campaign-id="23231"><span class="fa fa-pencil"></span></button>
                             </td>
                         </tr>
                         <tr>
                             <td>14/07/2017</td>
-                            <td>3 semaines</td>
+                            <td>15/08/2017</td>
                             <td>14 000 €</td>
                             <td>5 000 €</td>
                             <td>200</td>
                             <td>En cours</td>
                             <td>
-                                <form action="" method="post">
-                                    <input type="hidden" name="campaing-id" value="">
-                                    <input type="hidden" name="action" class="modify">
-                                    <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Modifier"><span class="fa fa-pencil"></span></button>
-                                </form>
+                                <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-parrainage-list" data-campaign-id="23231"><span class="fa fa-pencil"></span></button>
                             </td>
                         </tr>
                         <tr>
                             <td>14/02/2017</td>
-                            <td>3 semaines</td>
+                            <td>15/08/2017</td>
                             <td>14 000 €</td>
                             <td>5 000 €</td>
                             <td>200</td>
                             <td>Expirée</td>
                             <td>
-                                <form action="" method="post">
-                                    <input type="hidden" name="campaing-id" value="">
-                                    <input type="hidden" name="action" class="reactivate">
-                                    <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Réactiver"><span class="fa fa-refresh"></span></button>
-                                </form>
+                                <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-parrainage-list" data-campaign-id="23231"><span class="fa fa-pencil"></span></button>
                             </td>
                         </tr>
                         <tr>
                             <td>14/07/2017</td>
-                            <td>3 semaines</td>
+                            <td>15/08/2017</td>
                             <td>14 000 €</td>
                             <td>5 000 €</td>
                             <td>200</td>
                             <td>En cours</td>
                             <td>
-                                <form action="" method="post">
-                                    <input type="hidden" name="campaing-id" value="">
-                                    <input type="hidden" name="action" class="modify">
-                                    <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Modifier"><span class="fa fa-pencil"></span></button>
-                                </form>
+                                <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-parrainage-list" data-campaign-id="23231"><span class="fa fa-pencil"></span></button>
                             </td>
                         </tr>
                         <tr>
                             <td>14/02/2017</td>
-                            <td>3 semaines</td>
+                            <td>15/08/2017</td>
                             <td>14 000 €</td>
                             <td>5 000 €</td>
                             <td>200</td>
                             <td>Expirée</td>
                             <td>
-                                <form action="" method="post">
-                                    <input type="hidden" name="campaing-id" value="">
-                                    <input type="hidden" name="action" class="reactivate">
-                                    <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Réactiver"><span class="fa fa-refresh"></span></button>
-                                </form>
+                                <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-parrainage-list" data-campaign-id="23231"><span class="fa fa-pencil"></span></button>
                             </td>
                         </tr>
                         <tr>
                             <td>14/07/2017</td>
-                            <td>3 semaines</td>
+                            <td>15/08/2017</td>
                             <td>14 000 €</td>
                             <td>5 000 €</td>
                             <td>200</td>
                             <td>En cours</td>
                             <td>
-                                <form action="" method="post">
-                                    <input type="hidden" name="campaing-id" value="">
-                                    <input type="hidden" name="action" class="modify">
-                                    <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Modifier"><span class="fa fa-pencil"></span></button>
-                                </form>
+                                <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-parrainage-list" data-campaign-id="23231"><span class="fa fa-pencil"></span></button>
                             </td>
                         </tr>
                         <tr>
                             <td>14/02/2017</td>
-                            <td>3 semaines</td>
+                            <td>15/08/2017</td>
                             <td>14 000 €</td>
                             <td>5 000 €</td>
                             <td>200</td>
                             <td>Expirée</td>
                             <td>
-                                <form action="" method="post">
-                                    <input type="hidden" name="campaing-id" value="">
-                                    <input type="hidden" name="action" class="reactivate">
-                                    <button type="submit" class="btn btn-primary btn-xs" data-toggle="tooltip" data-original-title="Réactiver"><span class="fa fa-refresh"></span></button>
-                                </form>
+                                <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-parrainage-list" data-campaign-id="23231"><span class="fa fa-pencil"></span></button>
                             </td>
                         </tr>
                     </tbody>
@@ -477,33 +689,26 @@
                     </div>
                 {% endif %}
 
-                <form method="post" action="{{ app.adminUrl }}/parrainage/blacklist" class="form-inline push">
+                <form id="parrainage-blacklist-search" method="post" action="{{ app.adminUrl }}/parrainage/blacklist" class="form-inline push validate">
                     <div class="form-group">
                         <label>ID Client</label> <br>
                         <input type="number" name="id_client" class="form-control required">
                     </div>
-                    <div class="form-group">
-                        <label>Campagne</label> <br>
-                        <select name="campaign" class="form-control required" style="margin-left: 5px;">
-                            <option value="">Selectionner</option>
-                            <option value="0">Toutes les campagnes</option>
-                            <option value="<?php // $this->ongoingCampaign->getId(); ?>">Campagne en cours</option>
-                        </select>
-                    </div>
-                    <div class="form-group" style="margin-left: 5px;">
-                        <input type="hidden" name="blacklist_client" value="">
-                        <button type="submit" class="btn btn-primary">Valider</button>
+                    <div class="form-group push-5-l">
+                        <input type="hidden" name="search_client">
+                        <button type="submit" class="btn btn-primary">Rechercher</button>
                     </div>
                 </form>
 
-                <table class="table table-bordered table-striped table-hover table-header-bg js-dataTable-simple">
+                <table id="parrainage-blacklist-table" class="table table-bordered table-striped table-hover table-header-bg js-dataTable-simple">
                     <thead>
                     <tr>
                         <th>ID Client</th>
                         <th>Nom</th>
                         <th>Prénom</th>
                         <th>Date d'exclusion</th>
-                        <th>campagne</th>
+                        <th>Campagne</th>
+                        <th>Retirer</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -513,6 +718,9 @@
                         <td>Jean</td>
                         <td>14/04/2017</td>
                         <td>Expirée</td>
+                        <td>
+                            <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-blacklist-remove" data-client-id="23231"><span class="fa fa-close"></span></button>
+                        </td>
                     </tr>
                     </tbody>
                 </table>
@@ -533,7 +741,7 @@
                     </div>
                 {% endif %}
 
-                <form method="post" action="{{ app.adminUrl }}/parrainage/search_campaign" class="form-inline push">
+                <form id="parrainage-adjust-prime-search" method="post" action="{{ app.adminUrl }}/parrainage/search_campaign" class="form-inline push validate">
                     <div class="form-group">
                         <label>ID Client</label> <br>
                         <input type="text" name="id_client" class="form-control required">
@@ -548,7 +756,7 @@
                         </label>
                     </div>
                     <div class="form-group push-20-l">
-                        <input type="hidden" name="search_sponsorship" value="">
+                        <input type="hidden" name="search_sponsorship">
                         <button type="submit" class="btn btn-primary">Rechercher</button>
                     </div>
                 </form>
@@ -563,103 +771,21 @@
                     </div>
                 {% endif %}
 
-                {% if sponsorships|length > 0 %}
-
-                    {% set clientType = 'sponsor' %}
-
-                    <div class="row">
-                        <div class="col-md-4">
-
-                            {% if clientType == 'sponsor' %}
-                                <p><b>Parrain trouvé :</b></p>
-                            {% elseif clientType == 'sponsee' %}
-                                <p><b>Filleul trouvé :</b></p>
-                            {% endif %}
-
-                            <table class="table table-condensed table-bordered">
-                                <thead>
-                                <tr>
-                                    <th colspan="2">
-                                        Client ID (878874)
-                                    </th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr>
-                                    <td>Nom</td>
-                                    <td>Baptiste</td>
-                                </tr>
-                                <tr>
-                                    <td>Prénom</td>
-                                    <td>Jean</td>
-                                </tr>
-                                {% if clientType == 'sponsor' %}
-                                    <tr>
-                                        <td>Lien parrainage</td>
-                                        <td>http://unilend.fr/parrainage/ueyrksi109</td>
-                                    </tr>
-                                    <tr>
-                                        <td>N. de Filleuls</td>
-                                        <td>2</td>
-                                    </tr>
-                                {% endif %}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="col-md-8">
-                            {% if clientType == 'sponsor' %}
-                                <p><b>Liste de ces filleuls :</b></p>
-                            {% elseif clientType == 'sponsee' %}
-                                <p><b>Parrainé par :</b></p>
-                            {% endif %}
-
-                            <table class="table table-striped table-hover table-condensed">
-                                <thead>
-                                <tr>
-                                    <th>Client ID</th>
-                                    <th>Nom</th>
-                                    <th>Prénom</th>
-                                    <th>Prime Filleul</th>
-                                    <th>Prime Parrain</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for sponsorship in sponsorships %}
-                                <tr>
-                                    <td>12322</td>
-                                    <td>Hollande</td>
-                                    <td>Greg</td>
-                                    <td>
-                                        {%  if '\Unilend\Bundle\CoreBusinessBundle\Entity\Sponsorship::STATUS_SPONSEE_PAID' == sponsorship.status %}
-                                            Versée
-                                        {% elseif '\Unilend\Bundle\CoreBusinessBundle\Entity\Sponsorship::STATUS_ONGOING' == sponsorship.status %}
-                                            <form method="post" action="{{ app.adminUrl }}/parrainage/pay_out_reward">
-                                                <input type="hidden" name="id_sponsorship" value="<?= $sponsorship->getId() ?>">
-                                                <input type="hidden" name="pay_out_reward" value="">
-                                                <input type="hidden" name="type_reward" value="{{ '\Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSEE' }}">
-                                                <button type="submit" class="btn-primary btn-sm">Verser</button>
-                                            </form>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {%  if '\Unilend\Bundle\CoreBusinessBundle\Entity\Sponsorship::STATUS_ONGOING' == sponsorship.status %}
-                                            Versée
-                                        {% else %}
-                                        <form method="post" action="{{ app.adminUrl }}/parrainage/pay_out_reward">
-                                            <input type="hidden" name="id_sponsorship" value="{{ sponsorship.id }}">
-                                            <input type="hidden" name="pay_out_reward" value="">
-                                            <input type="hidden" name="type_reward" value="{{ '\Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR' }}">
-                                            <button type="submit" class="btn-primary btn-sm">Verser</button>
-                                        </form>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                {% endif %}
+                <table id="parrainage-adjust-prime-table" class="table table-striped table-hover table-header-bg hide">
+                    <thead>
+                        <tr>
+                            <th class="sponsor-id">ID (Parrain)</th>
+                            <th class="sponsor-first-name">Nom (Parrain)</th>
+                            <th class="sponsor-last-name">Prénom (Parrain)</th>
+                            <th class="sponsor-prime">Prime (Parrain)</th>
+                            <th class="sponsee-id">Client ID (Filleul)</th>
+                            <th class="sponsee-first-name">Nom (Filleul)</th>
+                            <th class="sponsee-last-name">Prénom (Filleul)</th>
+                            <th class="sponsee-prime">Prime (Filleul)</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
         </div><!-- /#parrainage-adjust-prime -->
         <div id="parrainage-history" class="block block-bordered">
@@ -776,7 +902,7 @@
                         <input type="number" name="id_client_sponsee" class="form-control">
                     </div>
                     <div class="form-group push-5-l">
-                        <input type="hidden" name="create_sponsorship" value="">
+                        <input type="hidden" name="create_sponsorship">
                         <button type="submit" class="btn btn-primary">Rechercher</button>
                     </div>
                 </form>
@@ -833,7 +959,7 @@
                     <div class="row">
                         <div class="col-md-6 text-center">
                             <form method="post" action="{{ app.adminUrl }}/parrainage/create_sponsorship">
-                                <input type="hidden" name="create_sponsorship_confirm" value="">
+                                <input type="hidden" name="create_sponsorship_confirm">
                                 <input type="hidden" name="id_client_sponsor" value="{{ createSponsorshipData.idClientSponsor }}">
                                 <input type="hidden" name="id_client_sponsee" value="{{ createSponsorshipData.idClientSponsee }}">
                                 <button type="submit" class="btn-primary">Confirmer l'association</button>

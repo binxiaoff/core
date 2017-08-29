@@ -1181,6 +1181,7 @@ var App = function() {
      */
     var uiHelperFormValidate = function(){
         $('form.validate').submit(function(e){
+            var $form = $(this)
             var valid = true
             $(this).find('.required').each(function(){
                 var $input = $(this)
@@ -1204,6 +1205,9 @@ var App = function() {
                 }
                 if (!valid) {
                     e.preventDefault()
+                    $form.addClass('has-errors')
+                } else {
+                    $form.removeClass('has-errors')
                 }
             })
         })
