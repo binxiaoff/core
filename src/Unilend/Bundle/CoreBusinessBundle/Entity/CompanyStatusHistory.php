@@ -69,9 +69,16 @@ class CompanyStatusHistory
     /**
      * @var string
      *
-     * @ORM\Column(name="content", type="text", length=16777215, nullable=true)
+     * @ORM\Column(name="mail_content", type="text", length=16777215, nullable=true)
      */
-    private $content;
+    private $mailContent;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="site_content", type="text", length=16777215, nullable=true)
+     */
+    private $siteContent;
 
     /**
      * @var \DateTime
@@ -192,19 +199,39 @@ class CompanyStatusHistory
     /**
      * @return string
      */
-    public function getContent()
+    public function getMailContent()
     {
-        return $this->content;
+        return $this->mailContent;
     }
 
     /**
-     * @param string $content
+     * @param string $mailContent
      *
      * @return CompanyStatusHistory
      */
-    public function setContent($content)
+    public function setMailContent($mailContent)
     {
-        $this->content = $content;
+        $this->mailContent = $mailContent;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSiteContent()
+    {
+        return $this->siteContent;
+    }
+
+    /**
+     * @param string $siteContent
+     *
+     * @return CompanyStatusHistory
+     */
+    public function setSiteContent($siteContent)
+    {
+        $this->siteContent = $siteContent;
 
         return $this;
     }
