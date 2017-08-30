@@ -222,10 +222,10 @@
 
                 if (!$form.is('.has-errors')) {
                     $.ajax({
-                        url: $form.attr('action'),
-                        type: 'post',
+                        url: '/',
+                        type: 'POST',
+                        data: $form.serialize(),
                         dataType: 'json',
-
                         // @TODO Must change to success when backend is ready
                         complete: function (response) {
                             // @TODO must remove the response object below when backend is ready
@@ -272,7 +272,7 @@
                         url : $form.attr('action'),
                         type : 'post',
                         dataType : 'json',
-
+                        data: $form.serialize(),
                         // @TODO Must change to success when backend is ready
                         success : function(sponsorships){
                             // @TODO must remove the response object below when backend is ready
@@ -357,7 +357,7 @@
                         url : $form.attr('action'),
                         type : 'post',
                         dataType : 'json',
-
+                        data: $form.serialize(),
                         // @TODO Must change to success when backend is ready
                         complete: function(response){
                             // @TODO must remove the response object below when backend is ready
