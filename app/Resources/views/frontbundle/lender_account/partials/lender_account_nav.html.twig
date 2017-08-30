@@ -45,6 +45,12 @@
                     </a>
                 </li>
             {%  endif %}
+            <li role="presentation" class="dashboard-nav-parrainge {% if route == 'parrainage' %}active{% else %}complete{% endif %}">
+                <a href="{{ path('parrainage') }}">
+                    <span class="icon fa-network-u"></span>
+                    <span class="label">Parrainage</span>
+                </a>
+            </li>
         </ul>
     {% endblock %}
 </nav>

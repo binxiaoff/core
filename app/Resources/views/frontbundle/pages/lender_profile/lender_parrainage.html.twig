@@ -1,0 +1,45 @@
+{% extends 'layouts/_layout_lender.html.twig' %}
+
+{% set page = {
+id: 'user-preter-profile',
+classNames: 'user-preter-profile'
+} %}
+
+{% block dashboardContent %}
+    <div class="dashboard-tabs tabs">
+
+        {% include('pages/lender_profile/partials/tab_navigation.html.twig') %}
+
+        <div class="dashboard-tabs-content tab-content">
+            <div role="tabpanel" class="dashboard-tab-pane tab-pane">
+                <article class="panel">
+                    <header class="panel-header">
+                        <h3>Devenez Parrain</h3>
+
+                        <div id="form-profile-parrainage-notifications">
+                            <div class="message-success">
+                                <span>Error 1</span>
+                                <span>Error 2</span>
+                            </div>
+                        </div>
+                    </header><!-- .panel-header -->
+
+                    <p>Blah blah blah</p>
+                    <p>Blah blah blah</p>
+
+                    <a>Conditions de l'offre</a>
+
+                    <div class="form-container">
+                        <form action="">
+
+                        </form>
+                    </div>
+
+
+
+                </article><!-- /.panel -->
+
+            </div><!-- /.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </div><!-- /.dashboard-tabs -->
+{% endblock %}
