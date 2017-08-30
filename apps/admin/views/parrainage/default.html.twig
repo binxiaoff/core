@@ -333,7 +333,7 @@
                                             '<th class="sponsee-last-name">' + s.sponsee.lastName + '</th>' +
                                             '<th class="sponsee-prime">' + sponseeReceived + '</th>'
                                     '</tr>'
-                                    $table.find('tbody').append(html)
+                                    $table.find('tbody').html(html)
                                 }
                                 $table.removeClass('hide')
                             } else {
