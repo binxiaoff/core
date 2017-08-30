@@ -11,13 +11,17 @@
 {% block pluginsJS %}
     <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
     <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-notify/bootstrap-notify.min.js"></script>
 {% endblock %}
 
 {% block pageScripts %}
     <script>
         $(function(){
             // Page helpers are initialised in app.js and can be called quickly using their name
-            App.initHelpers(['validation', 'datepicker', 'table-tools']);
+            App.initHelpers(['validation', 'datepicker', 'table-tools', 'notify']);
+
+            // Trigger element for all allerts
+            var alertTrigger = $('#js-alerts-trigger')
 
             // Data Tables
             // DataTables Bootstrap integration
@@ -215,8 +219,6 @@
             $('#parrainage-blacklist-search').submit(function(e){
                 e.preventDefault()
 
-                console.log('sdsds')
-
                 var $form = $(this)
                 var $modal = $('#modal-blacklist-search')
 
@@ -230,19 +232,28 @@
                         complete: function (response) {
                             // @TODO must remove the response object below when backend is ready
                             var response = {
+                                success: false,
+                                error: ['ID is missing', 'Here another error'],
                                 id: '34343',
                                 nom: 'pierre',
                                 prenom: 'Jack'
                             }
-                            $modal.find('.client-id').text(response.id)
-                            $modal.find('input[name="id_client"]').val(response.id)
-                            $modal.find('.nom').text(response.nom)
-                            $modal.find('.prenom').text(response.prenom)
+                            if (response.success) {
+                                $modal.find('.client-id').text(response.id)
+                                $modal.find('input[name="id_client"]').val(response.id)
+                                $modal.find('.nom').text(response.nom)
+                                $modal.find('.prenom').text(response.prenom)
 
-                            $modal.show()
+                                $modal.show()
+                            } else {
+                                $.each( response.error, function(i, val){
+                                    alertTrigger.data('notify-message', val).trigger('click')
+                                });
+                            }
+
                         },
                         error: function () {
-                            alert('Server error :(')
+                            alertTrigger.data('notify-message', 'Server is not respondind').trigger('click')
                         }
                     })
                 }
@@ -274,53 +285,62 @@
                         dataType : 'json',
                         data: $form.serialize(),
                         // @TODO Must change to success when backend is ready
-                        success : function(sponsorships){
+                        success : function(response){
                             // @TODO must remove the response object below when backend is ready
-                            var sponsorships = [
-                                {
-                                    sponsor: {
-                                        id: 382732,
-                                        firstName: "Frank",
-                                        lastName: "Albert",
-                                        primeReceived: false
-                                    },
-                                    sponsee: {
-                                        id: 392933,
-                                        firstName: "Dyke",
-                                        lastName: "Robert",
-                                        primeReceived: true
+                            var response = {
+                                success: true,
+                                error: [],
+                                sponsorships: [
+                                    {
+                                        sponsor: {
+                                            id: 382732,
+                                            firstName: "Frank",
+                                            lastName: "Albert",
+                                            primeReceived: false
+                                        },
+                                        sponsee: {
+                                            id: 392933,
+                                            firstName: "Dyke",
+                                            lastName: "Robert",
+                                            primeReceived: true
+                                        }
                                     }
-                                }
-                            ]
-
-                            var html = '';
-
-                            for (i = 0; i < sponsorships.length; i++) {
-                                var s = sponsorships[i];
-                                var sponsorReceived = 'versée'
-                                var sponseeReceived = 'versée'
-
-                                if (!s.sponsor.primeReceived) {
-                                    sponsorReceived = '<button class="btn btn-primary btn-xs" data-toggle="modal" data-target="'+modal+'" data-client-id="' + s.sponsor.id + '" data-type="sponsor">Débloquer</button>'
-                                }
-
-                                if (!s.sponsee.primeReceived) {
-                                    sponsorReceived = '<button class="btn btn-primary btn-xs" data-toggle="modal" data-target="'+modal+'" data-client-id="' + s.sponsee.id + '" data-type="sponsee">Débloquer</button>'
-                                }
-
-                                html += '<tr>' +
-                                        '<th class="sponsor-id">' + s.sponsor.id + '</th>' +
-                                        '<th class="sponsor-first-name">' + s.sponsor.firstName + '</th> ' +
-                                        '<th class="sponsor-last-name">' + s.sponsor.lastName + '</th> ' +
-                                        '<th class="sponsor-prime">' + sponsorReceived + '</th> ' +
-                                        '<th class="sponsee-id">' + s.sponsee.id + '</th> ' +
-                                        '<th class="sponsee-first-name">' + s.sponsee.firstName + '</th> ' +
-                                        '<th class="sponsee-last-name">' + s.sponsee.lastName + '</th>' +
-                                        '<th class="sponsee-prime">' + sponseeReceived + '</th>'
-                                '</tr>'
-                                $table.find('tbody').append(html)
+                                ]
                             }
-                            $table.removeClass('hide')
+                            if (response.success) {
+                                var html = '';
+
+                                for (i = 0; i < response.sponsorships.length; i++) {
+                                    var s = response.sponsorships[i];
+                                    var sponsorReceived = 'versée'
+                                    var sponseeReceived = 'versée'
+
+                                    if (!s.sponsor.primeReceived) {
+                                        sponsorReceived = '<button class="btn btn-primary btn-xs" data-toggle="modal" data-target="'+modal+'" data-client-id="' + s.sponsor.id + '" data-type="sponsor">Débloquer</button>'
+                                    }
+
+                                    if (!s.sponsee.primeReceived) {
+                                        sponsorReceived = '<button class="btn btn-primary btn-xs" data-toggle="modal" data-target="'+modal+'" data-client-id="' + s.sponsee.id + '" data-type="sponsee">Débloquer</button>'
+                                    }
+
+                                    html += '<tr>' +
+                                            '<th class="sponsor-id">' + s.sponsor.id + '</th>' +
+                                            '<th class="sponsor-first-name">' + s.sponsor.firstName + '</th> ' +
+                                            '<th class="sponsor-last-name">' + s.sponsor.lastName + '</th> ' +
+                                            '<th class="sponsor-prime">' + sponsorReceived + '</th> ' +
+                                            '<th class="sponsee-id">' + s.sponsee.id + '</th> ' +
+                                            '<th class="sponsee-first-name">' + s.sponsee.firstName + '</th> ' +
+                                            '<th class="sponsee-last-name">' + s.sponsee.lastName + '</th>' +
+                                            '<th class="sponsee-prime">' + sponseeReceived + '</th>'
+                                    '</tr>'
+                                    $table.find('tbody').append(html)
+                                }
+                                $table.removeClass('hide')
+                            } else {
+                                $.each( response.error, function(i, val){
+                                    alertTrigger.data('notify-message', val).trigger('click')
+                                });
+                            }
                         },
                         error: function() {
                             alert('Server error :(')
@@ -362,6 +382,8 @@
                         complete: function(response){
                             // @TODO must remove the response object below when backend is ready
                             var response = {
+                                success: true,
+                                error: [],
                                 sponsor: {
                                     id: 382732,
                                     firstName: "Frank",
@@ -375,19 +397,25 @@
                                     validationDate: "16/02/2017"
                                 }
                             }
-                            $sponsorTable.find('.sponsor-id').text(response.sponsor.id)
-                            $sponsorTable.find('.sponsor-first-name').text(response.sponsor.firstName)
-                            $sponsorTable.find('.sponsor-last-name').text(response.sponsor.lastName)
+                            if (response.success) {
+                                $sponsorTable.find('.sponsor-id').text(response.sponsor.id)
+                                $sponsorTable.find('.sponsor-first-name').text(response.sponsor.firstName)
+                                $sponsorTable.find('.sponsor-last-name').text(response.sponsor.lastName)
 
-                            $sponseeTable.find('.sponsee-id').text(response.sponsee.id)
-                            $sponseeTable.find('.sponsee-first-name').text(response.sponsee.firstName)
-                            $sponseeTable.find('.sponsee-last-name').text(response.sponsee.lastName)
-                            $sponseeTable.find('.sponsee-date-inscription').text(response.sponsee.inscriptionDate)
-                            $sponseeTable.find('.sponsee-date-validation').text(response.sponsee.validationDate)
+                                $sponseeTable.find('.sponsee-id').text(response.sponsee.id)
+                                $sponseeTable.find('.sponsee-first-name').text(response.sponsee.firstName)
+                                $sponseeTable.find('.sponsee-last-name').text(response.sponsee.lastName)
+                                $sponseeTable.find('.sponsee-date-inscription').text(response.sponsee.inscriptionDate)
+                                $sponseeTable.find('.sponsee-date-validation').text(response.sponsee.validationDate)
 
-                            $submit.data('sponsee-id', response.sponsee.id).data('sponsor-id', response.sponsor.id)
+                                $submit.data('sponsee-id', response.sponsee.id).data('sponsor-id', response.sponsor.id)
 
-                            $container.removeClass('hide')
+                                $container.removeClass('hide')
+                            } else {
+                                $.each( response.error, function(i, val){
+                                    alertTrigger.data('notify-message', val).trigger('click')
+                                });
+                            }
                         },
                         error: function() {
                             alert('Server error :(')
@@ -411,6 +439,7 @@
 {% endblock %}
 
  {% block modals %}
+     <a id="js-alerts-trigger" class="js-notify" data-notify-type="alert" data-notify-message=""></a>
      <div class="modal" id="modal-parrainage-list" tabindex="-1" role="dialog" aria-hidden="true">
          <form class="modal-dialog validate" action="" method="post">
              <div class="modal-content">

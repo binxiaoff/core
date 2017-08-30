@@ -1063,7 +1063,7 @@ var App = function() {
                     offset: 20,
                     spacing: 10,
                     z_index: 1033,
-                    delay: 5000,
+                    delay: 0,
                     timer: 1000,
                     animate: {
                         enter: 'animated fadeIn',
