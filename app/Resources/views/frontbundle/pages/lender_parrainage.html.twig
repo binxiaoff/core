@@ -1,0 +1,138 @@
+{% extends 'layouts/_layout_lender.html.twig' %}
+
+{% set page = {
+id: 'user-preter-parrainage',
+classNames: 'user-preter-parrainage'
+} %}
+
+{% block dashboardContent %}
+    <div class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-content tab-content">
+            <div role="tabpanel" class="dashboard-tab-pane tab-pane active">
+                <article class="panel" id="user-preter-parrainage-intro">
+                    <header class="panel-header">
+                        <h3 class="margin-10-b">Devenez Parrain</h3>
+                    </header><!-- .panel-header -->
+                    <div class="row">
+                        <div class="col-md-10 col-lg-10">
+                            <p class="margin-10-b">... et offrez à votre filleul son premier prêt. Lorsqu'une personne s'inscrit sur Unilend en utilisant votre <a href="#user-preter-parrainage-social">lien parrain</a> et réalise un premier prêt d'un montant minimum de 20 €, vous recevrez tous les deux un montant de 20 € à prêter aux projets présentés par Unilend *.</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="panel" id="user-preter-parrainage-email">
+                    <h4 class="remove-margin-t">Envoyez l'invitation par email</h4>
+                    <div class="row">
+                        <div class="col-md-10 col-lg-10">
+                            <form id="form-dashboard-parrainage" action="" method="post" data-formvalidation>
+                                {#<div id="form-dashboard-parrainage-notifications">#}
+                                {#<div class="message-success">#}
+                                {#<span>Success</span>#}
+                                {#</div>#}
+                                {#<div class="message-error">#}
+                                {#<span>Error 1</span>#}
+                                {#<span>Error 2</span>#}
+                                {#</div>#}
+                                {#</div>#}
+                                <div class="row row-multi-col-computer">
+                                    <div class="col-md-6 col-lg-6">
+                                        <div class="form-field">
+                                            <label for="form-email">Email <span class="c-p1">*</span></label>
+                                            <div class="input-group set-left">
+                                                <div class="btn-group">
+                                                    <span class="icon fa-envelope-o"></span>
+                                                </div>
+                                                <input type="email" id="email" name="email" value="" placeholder="adresse@email.com" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                                            </div>
+                                            {#<div class="field-help">#}
+                                            {#<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam imperdiet ultricies felis et pulvinar.</p>#}
+                                            {#</div>#}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-lg-6">
+                                        <div class="form-field">
+                                            <label for="last-name">Nom</label>
+                                            <input type="text" id="last-name" name="last-name" value="" placeholder="Prénom et Nom" class="input-field">
+                                            {#<div class="field-help">#}
+                                            {#<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam imperdiet ultricies felis et pulvinar.</p>#}
+                                            {#</div>#}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-8 col-md-12 col-lg-12">
+                                        <div class="form-field">
+                                            <label for="form-message">Message personalisé</label>
+                                            <textarea id="form-message" class="input-field" rows="6">Message ajouté dans l'email</textarea>
+                                            {#<div class="field-help">#}
+                                            {#<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam imperdiet ultricies felis et pulvinar.</p>#}
+                                            {#</div>#}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p>
+                                    <button type="submit" class="btn-primary btn-shape-md" data-equal-width>Inviter</button>
+                                    <button type="button" class="btn-default btn-shape-md margin-10-l" data-equal-width data-modal-toggle="#preview-email-dialog">Prévisualiser</button>
+                                </p>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+                <article class="panel" id="user-preter-parrainage-social">
+                    <div class="row row-multi-col-computer">
+                        <div class="col-md-6 col-lg-6">
+                            <h4 class="remove-margin-t">Partagez votre lien parrain sur les réseaux sociaux</h4>
+
+                            <a role="button" class="btn-facebook" title="Facebook" data-socialshare data-socialshare-text="Check out Unilend" data-socialshare-url="https://unilend.fr/xcisjds9">
+                                <span class="sr-only">Facebook</span>
+                            </a>
+
+                            <a role="button" class="btn-twitter" title="Twitter" data-socialshare data-socialshare-text="Check out Unilend" data-socialshare-url="https://unilend.fr/xcisjds9">
+                                <span class="sr-only">Twitter</span>
+                            </a>
+
+                            <a role="button" class="btn-linkedin" title="LinkedIn" data-socialshare data-socialshare-text="Check out Unilend" data-socialshare-url="https://unilend.fr/xcisjds9">
+                                <span class="sr-only">LinkedIn</span>
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-lg-6">
+                            <h4 class="remove-margin-t">Votre lien personnel</h4>
+                            <p class="c-t3">https://unilend.fr/xy837x</p>
+                        </div>
+                    </div>
+                </article>
+                <article class="panel" id="user-preter-parrainage-conditions">
+                    <h5 class="remove-margin">Conditions de l'offre</h5>
+                    <div class="row">
+                        <div class="col-md-10 col-lg-10">
+                            <p class="c-t2 margin-10-b" style="line-height: 20px; text-align: justify;"><small>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam facilisis mauris et euismod porttitor. Pellentesque tempor facilisis massa, ut finibus massa aliquet et. Fusce vulputate hendrerit nibh, in commodo leo cursus id. Suspendisse potenti. Vestibulum et velit in lectus pharetra dictum id sed felis. Integer sem neque, hendrerit id justo at, rhoncus congue est. Maecenas at metus tristique mi dapibus bibendum. Nam nunc nisl, maximus ut purus non, tincidunt sollicitudin magna. Donec a pellentesque est. Nunc ac tincidunt nisi. Interdum et malesuada fames ac ante ipsum primis in faucibus. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec non ex iaculis, facilisis est sit amet, efficitur quam.</small></p>
+                        </div>
+                    </div>
+                </article>
+
+            </div><!-- /.dashboard-tab-pane -->
+        </div><!-- /.dashboard-tabs-content -->
+    </div><!-- /.dashboard-tabs -->
+{% endblock %}
+
+{% block modals %}
+    <div id="preview-email-dialog" data-modal data-modal-maxwidth="600">
+        <div class="modal-body">
+            <h3 class="dialog-title">
+                Texte de l'email
+            </h3>
+            <div class="dialog-message">
+                <div style="padding: 15px;" class="bg-bg2">
+                    <p>Bonjour <span class="sponsee-name c-p1">Sponsee Name</span></p>
+                    <p>Je vous recommende de vous inscrire sur Unilend en utilisant le lien personalise:</p>
+                    <p class="c-p1">https://unilend.fr/xusowe93</p>
+                    <p class="sponsor-message c-p1">Personal message from textarea comes here ...</p>
+                    <p>Cordialement, <span class="sponsor-first-name">Sponsor</span> <br> <span class="sponsor-last-name">Name</span></p>
+                </div>
+            </div>
+        </div>
+        <footer class="modal-footer">
+            <a href="javascript:;" class="btn-outline" data-modal-doactioncancel>Fermer</a>
+        </footer>
+    </div><!-- /.autolend-table-dialog -->
+{% endblock %}

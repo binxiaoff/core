@@ -27,14 +27,14 @@ class LenderDashboardController extends Controller
     const REPAYMENT_TIME_FRAME_YEAR    = 'year';
 
     /**
-     * @Route("profile/parrainage", name="parrainage")
+     * @Route("/dashboard/parrainage", name="parrainage")
      * @Security("has_role('ROLE_LENDER')")
      *
      * @return Response
      */
     public function parrainageAction()
     {
-        return $this->render('/pages/lender_dashboard/lender_parrainage.html.twig');
+        return $this->render('/pages/lender_parrainage.html.twig');
     }
 
     /**

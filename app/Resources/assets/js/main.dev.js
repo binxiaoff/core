@@ -848,4 +848,39 @@ $doc.ready(function ($) {
     }
   }
 
+  /* ==============================================
+   POST SHARE ICONS
+   =============================================== */
+
+  $('[data-socialshare]').click(function(e) {
+    e.preventDefault();
+    var $this = $(this)
+    var text = $(this).data('socialshare-text')
+    var url = $(this).data('socialshare-url')
+    var fbAppId = '1404030266571523'
+
+    if ($this.is('.btn-facebook'))
+      window.open( 'https://www.facebook.com/dialog/share?' +
+      'app_id=' + fbAppId +
+      '&display=popup' +
+      '&title=' + text +
+      '&description' + 'Description' +
+      '&quote' + 'Quote' +
+      '&caption=' + 'Caption' +
+      '&href=' + 'https://unilend.fr/sudsy88' +
+      '&redirect_uri=' + 'https://unilend.fr/parrainage',
+          'facebookWindow',
+          'width=650,height=350')
+    if ($this.is('.btn-twitter'))
+      window.open( 'http://twitter.com/home?status=' + text + ' ' + url,
+          "twitterWindow",
+          "width=650,height=350" )
+    if ($this.is('.btn-linkedin'))
+      window.open( 'http://www.linkedin.com/shareArticle?mini=true&url=' + url + '&title=' + text + '&source=' + 'https://unilend.fr',
+          'linkedinWindow',
+          'width=650,height=450, resizable=1')
+
+  });
+
+
 })
