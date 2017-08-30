@@ -144,7 +144,7 @@ class ProjectRepaymentScheduleManager
      *
      * @return float
      */
-    private function getNetRepaymentAmount(Projects $project)
+    public function getNetRepaymentAmount(Projects $project)
     {
         $paymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy(['idProject' => $project]);
         return round(bcdiv($paymentSchedule->getMontant(), 100, 4), 2);

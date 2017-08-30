@@ -7,6 +7,7 @@ use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
@@ -219,6 +220,9 @@ class ProjectRepaymentTaskManager
 
         $project = $projectRepaymentTask->getIdProject();
         if (null === $project) {
+            $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_ERROR);
+            $this->entityManager->flush($projectRepaymentTask);
+
             $this->logger->warning(
                 'The project of the repayment task (id: ' . $projectRepaymentTask->getId() . ') dose not exist',
                 ['method' => __METHOD__]
@@ -252,22 +256,38 @@ class ProjectRepaymentTaskManager
             return false;
         }
 
-        if (in_array($projectRepaymentTask->getType(), [ProjectRepaymentTask::TYPE_REGULAR, ProjectRepaymentTask::TYPE_LATE])) {
-            if (null === $projectRepaymentTask->getSequence()) {
+        if ($projectRepaymentTask->getSequence()) {
+            $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+
+            $repaymentSchedules = $repaymentScheduleRepository->findUnfinishedSchedule($projectRepaymentTask->getIdProject(), $projectRepaymentTask->getSequence());
+            if (0 === count($repaymentSchedules)) {
+                $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_ERROR);
+                $this->entityManager->flush($projectRepaymentTask);
+
                 $this->logger->warning(
-                    'The sequence of projects repayment task (id: ' . $projectRepaymentTask->getId() . ') is null. It is not supported by a regular or late repayment.',
+                    'Cannot find payment or repayment schedule to repay for the repayment task (id: ' . $projectRepaymentTask->getId() . '). Please check the data consistency.',
                     ['method' => __METHOD__]
                 );
 
                 return false;
             }
 
-            /** @var Echeanciers $repaymentSchedule */
-            $repaymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->findOneBy(['idProject' => $project, 'ordre' => $projectRepaymentTask->getSequence()]);
-            if ($repaymentSchedule->getDateEcheance()->setTime(0, 0, 0) > new \DateTime()) {
-
+            if ($repaymentSchedules[0]->getDateEcheance()->setTime(0, 0, 0) > new \DateTime()) {
                 $this->logger->warning(
                     'The repayment schedule date of projects repayment task (id: ' . $projectRepaymentTask->getId() . ') is in the future.',
+                    ['method' => __METHOD__]
+                );
+
+                return false;
+            }
+        }
+
+        if (in_array($projectRepaymentTask->getType(), [ProjectRepaymentTask::TYPE_REGULAR, ProjectRepaymentTask::TYPE_LATE])) {
+            if (null === $projectRepaymentTask->getSequence()) {
+                $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_ERROR);
+                $this->entityManager->flush($projectRepaymentTask);
+                $this->logger->warning(
+                    'The sequence of projects repayment task (id: ' . $projectRepaymentTask->getId() . ') is null. It is not supported by a regular or late repayment.',
                     ['method' => __METHOD__]
                 );
 
@@ -343,5 +363,46 @@ class ProjectRepaymentTaskManager
         }
 
         return $date;
+    }
+
+    /**
+     * @param ProjectRepaymentTask $projectRepaymentTask
+     * @param float                $repaidAmount
+     * @param int                  $repaidLoanNb
+     *
+     * @return ProjectRepaymentTaskLog
+     */
+    public function start(ProjectRepaymentTask $projectRepaymentTask, $repaidAmount = 0.00, $repaidLoanNb = 0)
+    {
+        $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_IN_PROGRESS);
+        $this->entityManager->flush($projectRepaymentTask);
+
+        $projectRepaymentTaskLog = new ProjectRepaymentTaskLog();
+        $projectRepaymentTaskLog->setIdTask($projectRepaymentTask)
+            ->setStarted(new \DateTime())
+            ->setRepaidAmount($repaidAmount)
+            ->setRepaymentNb($repaidLoanNb);
+        $this->entityManager->persist($projectRepaymentTaskLog);
+        $this->entityManager->flush($projectRepaymentTaskLog);
+
+        return $projectRepaymentTaskLog;
+    }
+
+    /**
+     * @param ProjectRepaymentTaskLog $projectRepaymentTaskLog
+     * @param float                   $repaidAmount
+     * @param int                     $repaidLoanNb
+     *
+     * @return ProjectRepaymentTaskLog
+     */
+    public function end(ProjectRepaymentTaskLog $projectRepaymentTaskLog, $repaidAmount, $repaidLoanNb)
+    {
+        $projectRepaymentTaskLog->setRepaidAmount($repaidAmount)
+            ->setRepaymentNb($repaidLoanNb)
+            ->setEnded(new \DateTime());
+
+        $this->entityManager->flush($projectRepaymentTaskLog);
+
+        return $projectRepaymentTaskLog;
     }
 }

@@ -542,8 +542,8 @@ class EcheanciersRepository extends EntityRepository
     }
 
     /**
-     * @param \DateTime $date
-     * @param Projects|int  $project
+     * @param \DateTime    $date
+     * @param Projects|int $project
      *
      * @return null|Echeanciers
      */
@@ -558,6 +558,26 @@ class EcheanciersRepository extends EntityRepository
             ->setParameter('pending', Echeanciers::STATUS_PENDING)
             ->orderBy('e.ordre', 'ASC')
             ->setMaxResults(1);
+
         return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * @param Projects|int $project
+     * @param int          $sequence
+     *
+     * @return Echeanciers[]
+     */
+    public function findUnfinishedSchedule($project, $sequence)
+    {
+        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder->where('e.idProject = :project')
+            ->andWhere('e.ordre = :sequence')
+            ->andWhere('e.status in (:unfinished)')
+            ->setParameter('project', $project)
+            ->setParameter('sequence', $sequence)
+            ->setParameter('unfinished', [Echeanciers::STATUS_PENDING, Echeanciers::STATUS_PARTIALLY_REPAID]);
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }

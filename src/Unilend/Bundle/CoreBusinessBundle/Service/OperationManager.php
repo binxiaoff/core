@@ -411,16 +411,17 @@ class OperationManager
     }
 
     /**
-     * @param Echeanciers $repaymentSchedule
+     * @param float                   $amountCapital
+     * @param float                   $amountInterestGross
+     * @param Echeanciers             $repaymentSchedule
+     * @param ProjectRepaymentTaskLog $projectRepaymentTaskLog
      */
-    public function repayment(Echeanciers $repaymentSchedule, ProjectRepaymentTaskLog $projectRepaymentTaskLog)
+    public function repayment($amountCapital, $amountInterestGross, Echeanciers $repaymentSchedule, ProjectRepaymentTaskLog $projectRepaymentTaskLog)
     {
-        $loan                = $repaymentSchedule->getIdLoan();
-        $lenderWallet        = $loan->getIdLender();
-        $borrowerClientId    = $loan->getProject()->getIdCompany()->getIdClientOwner();
-        $borrowerWallet      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($borrowerClientId, WalletType::BORROWER);
-        $amountInterestGross = round(bcdiv(bcsub($repaymentSchedule->getInterets(), $repaymentSchedule->getInteretsRembourses()), 100, 4), 2);
-        $amountCapital       = round(bcdiv(bcsub($repaymentSchedule->getCapital(), $repaymentSchedule->getCapitalRembourse()), 100, 4), 2);
+        $loan             = $repaymentSchedule->getIdLoan();
+        $lenderWallet     = $loan->getIdLender();
+        $borrowerClientId = $loan->getProject()->getIdCompany()->getIdClientOwner();
+        $borrowerWallet   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($borrowerClientId, WalletType::BORROWER);
 
         $this->repaymentGeneric($borrowerWallet, $lenderWallet, $amountCapital, $amountInterestGross, null, [$repaymentSchedule, $projectRepaymentTaskLog]);
     }
