@@ -94,6 +94,7 @@ class SponsorshipManager
                 throw new \Exception('The id does not match any campaign');
             }
             $campaign->setStatus(SponsorshipCampaign::STATUS_ARCHIVED);
+            $this->entityManager->flush($campaign);
             $start = new \DateTime('NOW');
         }
 
@@ -114,7 +115,7 @@ class SponsorshipManager
             ->setValidityDays($validityDays);
 
         $this->entityManager->persist($newCampaign);
-        $this->entityManager->flush();
+        $this->entityManager->flush($newCampaign);
     }
 
     public function modifySponsorshipCampaign()
@@ -144,7 +145,7 @@ class SponsorshipManager
         }
 
         if (false === $this->isEligibleForSponsorReward($sponsorship)) {
-            return false;
+            throw new \Exception('Client ' . $sponsee->getIdClient() . ' is not eligible for sponsor reward');
         }
 
         $sponsorWallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsorship->getIdClientSponsor(), WalletType::LENDER);

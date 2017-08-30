@@ -243,9 +243,9 @@ class WelcomeOfferManager
             ->sumCreditOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION], [OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER]);
 
         if (null === $receivedWelcomeOffer) {
-             return true;
+             return false;
         }
 
-        return false;
+        return true;
     }
 }
