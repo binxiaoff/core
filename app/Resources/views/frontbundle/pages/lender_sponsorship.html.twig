@@ -5,11 +5,10 @@ id: 'user-preter-sponsorship',
 classNames: 'user-preter-sponsorship'
 } %}
 
-{% set fbAppId = '34234234234' %}
+{% set fbAppId = '34234234234' %} {# to be provided by Thibaud #}
+
 {% set sponsorLink = 'https://unilend.fr/fdkfj24' %}
 {% set sponsorNames = 'John Malkovich' %}
-{% set shareText = 'Check out Unilend' %} 
-{% set shareTitle = 'Unilend - Crédit professionnel financé par les particuliers' %}
 
 {% block dashboardContent %}
     <div class="dashboard-tabs tabs">
@@ -36,8 +35,8 @@ classNames: 'user-preter-sponsorship'
                                 <span>{% trans %} lender-dashboard-sponsorship_section-send-success {% endtrans %}</span>
                                 </div>
                                 <div class="message-error">
-                                <span>Error 1</span>
-                                <span>Error 2</span>
+                                    <p>Server Error 1</p>
+                                    <p>Server Error 2</p>
                                 </div>
                                 </div>
                                 <div class="row row-multi-col-computer">
@@ -50,18 +49,18 @@ classNames: 'user-preter-sponsorship'
                                                 </div>
                                                 <input type="email" id="form-sponsorship-sponsee-email" name="sponsee-email" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true">
                                             </div>
-                                            {#<div class="field-help">#}
-                                            {#<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam imperdiet ultricies felis et pulvinar.</p>#}
-                                            {#</div>#}
+                                            <div class="field-help">
+                                                <p>Server Errors</p>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="col-md-6 col-lg-6">
                                         <div class="form-field">
                                             <label for="form-sponsorship-sponsee-names">{% trans %} lender-dashboard-sponsorship_section-send-label-names {% endtrans %} <span class="c-p1">*</span></label>
                                             <input type="text" id="form-sponsorship-sponsee-names" name="sponsee-names" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true">
-                                            {#<div class="field-help">#}
-                                            {#<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam imperdiet ultricies felis et pulvinar.</p>#}
-                                            {#</div>#}
+                                            <div class="field-help">
+                                                <p>Server Errors</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -70,9 +69,9 @@ classNames: 'user-preter-sponsorship'
                                         <div class="form-field">
                                             <label for="form-sponsorship-message">{% trans %} lender-dashboard-sponsorship_section-send-label-message {% endtrans %}</label>
                                             <textarea id="form-sponsorship-message" name="sponsor-message" class="input-field" rows="6"></textarea>
-                                            {#<div class="field-help">#}
-                                            {#<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam imperdiet ultricies felis et pulvinar.</p>#}
-                                            {#</div>#}
+                                            <div class="field-help">
+                                                <p>Server Errors</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -126,16 +125,16 @@ classNames: 'user-preter-sponsorship'
                     }
                 </script>
                 <article class="panel" id="user-preter-sponsorship-social">
-                    <h4 class="remove-margin-t">{% trans %} lender-dashboard-sponsorship_section-share-title {% endtrans %}</h4>
+                    <h4 class="remove-margin-t">{% trans %} lender-dashboard-sponsorship_section-share-share-title {% endtrans %}</h4>
                     <a role="button" class="btn-facebook" title="{% trans %} lender-dashboard-sponsorship_section-share-facebook {% endtrans %}" data-share="{{ sponsorLink }}" data-share-app-id="{{ fbAppId }}" onclick="share('facebook', this)">
                         <span class="sr-only">{% trans %} lender-dashboard-sponsorship_section-share-facebook {% endtrans %}</span>
                     </a>
 
-                    <a role="button" class="btn-twitter margin-5-l" title="{% trans %} lender-dashboard-sponsorship_section-share-twitter {% endtrans %}" data-share="{{ sponsorLink }}" data-share-text="{{ shareText }}" onclick="share('twitter', this)">
+                    <a role="button" class="btn-twitter margin-5-l" title="{% trans %} lender-dashboard-sponsorship_section-share-twitter {% endtrans %}" data-share="{{ sponsorLink }}" data-share-text="{% trans %} lender-dashboard-sponsorship_section-share-share-text {% endtrans %}" onclick="share('twitter', this)">
                         <span class="sr-only">{% trans %} lender-dashboard-sponsorship_section-share-twitter {% endtrans %}</span>
                     </a>
 
-                    <a role="button" class="btn-linkedin margin-5-l" title="{% trans %} lender-dashboard-sponsorship_section-share-linkedin {% endtrans %}" data-share="{{ sponsorLink }}"  data-share-text="{% trans %} lender-dashboard-sponsorship_section-share-text {% endtrans %}" data-share-title="{% trans %} lender-dashboard-sponsorship_section-share-title {% endtrans %}" onclick="share('linkedin', this)">
+                    <a role="button" class="btn-linkedin margin-5-l" title="{% trans %} lender-dashboard-sponsorship_section-share-linkedin {% endtrans %}" data-share="{{ sponsorLink }}"  data-share-text="{% trans %} lender-dashboard-sponsorship_section-share-share-text {% endtrans %}" data-share-title="{% trans %} lender-dashboard-sponsorship_section-share-share-title {% endtrans %}" onclick="share('linkedin', this)">
                         <span class="sr-only">{% trans %} lender-dashboard-sponsorship_section-share-linkedin {% endtrans %}</span>
                     </a>
                 </article>
