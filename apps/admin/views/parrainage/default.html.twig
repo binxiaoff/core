@@ -226,7 +226,6 @@
                         data: $form.serialize(),
                         dataType: 'json',
                         success: function (response) {
-                            console.log(response)
                             if (response.success) {
                             $modal.find('.client-id').text(response.client.idClient)
                             $modal.find('input[name="id_client"]').val(response.client.idClient)
@@ -339,8 +338,6 @@
                             if (response.success) {
 
                                 var sponsorshipData = response.sponsorshipData
-
-                                console.log(sponsorshipData.idClientSponsor)
 
                                 var welcomeOffer = ''
                                 if (sponsorshipData.sponseeHasReceivedWelcomeOffer) {
