@@ -462,4 +462,7 @@
 }
 #preview-email-container {
   padding: 20px 20px 1px;
+  height: 300px;
+  overflow-x: hidden;
+  overflow-y: scroll;
 }
