@@ -1896,8 +1896,7 @@ class dossiersController extends bootstrap
 
                 $borrowerOwedCapital = $this->echeanciers_emprunteur->reste_a_payer_ra($this->projects->id_project, $nextRepayment[0]['ordre']);
 
-                if ($borrowerOwedCapital == $projectRepaymentTask->getAmount()) {
-
+                if (0 === bccomp($borrowerOwedCapital, $projectRepaymentTask->getAmount(), 2)) {
                     $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_READY)->setIdUserValidation($user);
                     $entityManager->flush($projectRepaymentTask);
 

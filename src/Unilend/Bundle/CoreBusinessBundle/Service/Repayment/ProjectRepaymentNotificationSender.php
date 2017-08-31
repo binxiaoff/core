@@ -215,7 +215,7 @@ class ProjectRepaymentNotificationSender
             'projet-p'        => $this->frontUrl . $this->router->generate('project_detail', ['projectSlug' => $project->getSlug()]),
             'link_facture'    => $this->frontUrl . '/pdf/facture_ER/' . $borrower->getHash() . '/' . $project->getIdProject() . '/' . $paymentSchedule->getOrdre(),
             'datedelafacture' => strftime('%d %B %G', $lastProjectStatus->getAdded()->getTimestamp()),
-            'mois'            => strftime('%B', $lastProjectStatus->getAdded()->getTimestamp()),
+            'mois'            => strftime('%B', $paymentSchedule->getDateEcheanceEmprunteur()->getTimestamp()),
             'annee'           => date('Y'),
             'lien_fb'         => $facebook,
             'lien_tw'         => $twitter,
