@@ -337,14 +337,17 @@
                         data: $form.serialize(),
                         success: function(response){
                             if (response.success) {
+
                                 var sponsorshipData = response.sponsorshipData
+
+                                console.log(sponsorshipData.idClientSponsor)
 
                                 var welcomeOffer = ''
                                 if (sponsorshipData.sponseeHasReceivedWelcomeOffer) {
                                     welcomeOffer =+ '<div class="alert alert-info"><p>Filleul a reçu l\'offre de bienvenue et ne recevra donc pas de prime de parrainage</p></div>'
                                 }
 
-                                $sponsorTable.find('.sponsor-id').text(sponsorshipData.idClientSponsor)
+                                $sponsorTable.find('.sponsor-id').html(sponsorshipData.idClientSponsor)
                                 $sponsorTable.find('.sponsor-first-name').text(sponsorshipData.firstNameSponsor)
                                 $sponsorTable.find('.sponsor-last-name').text(sponsorshipData.lastNameSponsor)
 
@@ -899,7 +902,7 @@
                     <div class="row">
                     <div class="col-md-2">
                         <p><b>Parrain</b></p>
-                        <table id="link-sponsee-table" class="table table-condensed" style="max-width: 300px">
+                        <table id="link-sponsor-table" class="table table-condensed" style="max-width: 300px">
                             <tr>
                                 <td>ID Client</td>
                                 <td class="sponsor-id"></td>
@@ -922,7 +925,7 @@
                     </div>
                     <div class="col-md-2">
                         <p><b>Filleul</b></p>
-                        <table id="link-sponsor-table" class="table table-condensed table-bordered" style="max-width: 300px">
+                        <table id="link-sponsee-table" class="table table-condensed table-bordered" style="max-width: 300px">
                             <tr>
                                 <td>ID Client</td>
                                 <td class="sponsee-id"></td>
