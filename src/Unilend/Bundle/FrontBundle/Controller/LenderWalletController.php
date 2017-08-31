@@ -195,16 +195,16 @@ class LenderWalletController extends Controller
                     $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
                 } elseif (empty($bankAccount->getBic()) || empty($bankAccount->getIban())) {
                     $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
+                } elseif ($amount <= 0 || $amount > $this->getUser()->getBalance()) {
+                    $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
                 } else {
-                    $now                        = new \DateTime('now');
-                    $sumPromotionalOffers       = $operationRepository->sumCreditOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION], null, $now);
-                    $sumPromotionalOffersCancel = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL], null, $now);
-                    $sumLoans                   = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::LENDER_LOAN], null, $now);
-                    $promotionalOffers          = round(bcsub($sumPromotionalOffers, $sumPromotionalOffersCancel, 4), 2);
-                    $blockedAmount              = $sumLoans > $promotionalOffers ? 0 : round(bcsub($promotionalOffers, $sumLoans, 4), 2);
+                    $unusedWelcomeOfferAmount  = $this->get('unilend.service.welcome_offer_manager')->getUnusedWelcomeOfferAmount($client);
+                    $unusedSponseeRewardAmount = $this->get('unilend.service.sponsorship_manager')->getUnusedSponseeRewardAmount($client);
+                    $unusedSponsorRewardAmount = $this->get('unilend.service.sponsorship_manager')->getUnusedSponsorRewardAmount($client);
+                    $blockedAmount             = round(bcadd($unusedWelcomeOfferAmount, bcadd($unusedSponseeRewardAmount, $unusedSponsorRewardAmount, 4), 4), 2);
 
-                    if (round(bcadd($amount, $blockedAmount, 4), 2) > $this->getUser()->getBalance() || $amount <= 0) {
-                        $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
+                    if (round(bcadd($amount, $blockedAmount, 4), 2) > $this->getUser()->getBalance()) {
+                        $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message-blocked-amount'));
                     }
                 }
             }

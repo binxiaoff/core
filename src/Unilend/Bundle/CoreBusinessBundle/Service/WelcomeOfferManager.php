@@ -248,4 +248,32 @@ class WelcomeOfferManager
 
         return false;
     }
+
+    /**
+     * Returns true even when there is no welcome offer for client
+     * @param Clients $client
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public function getUnusedWelcomeOfferAmount(Clients $client)
+    {
+        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        if (null === $wallet) {
+            throw new \Exception('Client has no lender wallet');
+        }
+
+        $operationRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $welcomeOffer          = $operationRepository->sumCreditOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION], [OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER]);
+        $cancelledWelcomeOffer = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL], [OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_WELCOME_OFFER]);
+        $totalWelcomeOffer     = bcsub($welcomeOffer, $cancelledWelcomeOffer, 4);
+        $loans                 = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::LENDER_LOAN]);
+
+        $unusedAmount = round(bcsub($totalWelcomeOffer, $loans, 4), 2);
+        if ($unusedAmount <= 0 ) {
+            return 0;
+        }
+
+        return $unusedAmount;
+    }
 }

@@ -120,8 +120,8 @@ class bootstrap extends Controller
                     'uri'   => 'stats/declarations_bdf'
                 ],
                 [
-                    'title' => 'CRS CAC',
-                    'uri'   => 'stats/requete_crs_cac'
+                    'title' => 'CRS DAC',
+                    'uri'   => 'stats/requete_crs_dac'
                 ],
                 [
                     'title' => 'Éligibilité des dossiers',
