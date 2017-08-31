@@ -45,10 +45,10 @@
                     </a>
                 </li>
             {%  endif %}
-            <li role="presentation" class="dashboard-nav-parrainge {% if route == 'parrainage' %}active{% else %}complete{% endif %}">
-                <a href="{{ path('parrainage') }}">
+            <li role="presentation" class="dashboard-nav-sponsorship {% if route == 'sponsorship' %}active{% else %}complete{% endif %}">
+                <a href="{{ path('sponsorship') }}">
                     <span class="icon fa-network-u"></span>
-                    <span class="label">Parrainage</span>
+                    <span class="label">{% trans %} lender-dashboard-navigation_sponsorship-link {% endtrans %}</span>
                 </a>
             </li>
         </ul>
