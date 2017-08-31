@@ -324,8 +324,8 @@ class pdfController extends bootstrap
                     $this->oProjectsPouvoir->id_project = $this->projects->id_project;
                     $this->oProjectsPouvoir->url_pdf    = '/pdf/pouvoir/' . $this->params[0] . '/' . (isset($this->params[1]) ? $this->params[1] . '/' : '');
                     $this->oProjectsPouvoir->name       = $fileName;
-                    $this->oProjectsPouvoir->id_pouvoir = $this->oProjectsPouvoir->create();
-                    $this->oProjectsPouvoir->get($this->oProjectsPouvoir->id_pouvoir, 'id_pouvoir');
+                    $this->oProjectsPouvoir->create();
+
                     $instantCreate = true;
                 }
 
@@ -352,7 +352,6 @@ class pdfController extends bootstrap
                 } else {
                     $this->ReadPdf($path . $fileName, $namePdfClient);
                 }
-
             } else {
                 header('Location: ' . $this->lurl);
                 die;
