@@ -55,7 +55,7 @@ class ProjectRepaymentScheduleManager
         $amount  = round(bcdiv($reception->getMontant(), 100, 4), 2);
         $project = $reception->getIdProject();
 
-        $netRepaymentAmount = $this->getNetRepaymentAmount($project);
+        $netRepaymentAmount = $this->getNetMonthlyAmount($project);
         $monthlyAmount      = $this->getMonthlyAmount($project);
 
         if ($project->getStatus() >= ProjectsStatus::PROBLEME) {
@@ -144,7 +144,18 @@ class ProjectRepaymentScheduleManager
      *
      * @return float
      */
-    public function getNetRepaymentAmount(Projects $project)
+    public function getNetMonthlyAmount(Projects $project)
+    {
+        $paymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy(['idProject' => $project]);
+        return round(bcdiv($paymentSchedule->getMontant(), 100, 4), 2);
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @return float
+     */
+    public function getUnpaidNetMonthlyAmount(Projects $project)
     {
         $paymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy(['idProject' => $project]);
         return round(bcdiv($paymentSchedule->getMontant(), 100, 4), 2);

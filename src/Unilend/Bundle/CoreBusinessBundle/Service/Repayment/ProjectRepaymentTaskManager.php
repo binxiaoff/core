@@ -257,9 +257,8 @@ class ProjectRepaymentTaskManager
         }
 
         if ($projectRepaymentTask->getSequence()) {
-            $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-
-            $repaymentSchedules = $repaymentScheduleRepository->findUnfinishedSchedule($projectRepaymentTask->getIdProject(), $projectRepaymentTask->getSequence());
+            $repaymentSchedules = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')
+                ->findByProject($projectRepaymentTask->getIdProject(), $projectRepaymentTask->getSequence(), null, [Echeanciers::STATUS_PENDING, Echeanciers::STATUS_PARTIALLY_REPAID]);
             if (0 === count($repaymentSchedules)) {
                 $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_ERROR);
                 $this->entityManager->flush($projectRepaymentTask);
@@ -327,16 +326,34 @@ class ProjectRepaymentTaskManager
      *
      * @return float
      */
-    private function getAmountToRepay(ProjectRepaymentTask $projectRepaymentTask)
+    public function getRepaidAmount(ProjectRepaymentTask $projectRepaymentTask)
     {
-        $amount                   = $projectRepaymentTask->getAmount();
-        $projectRepaymentTaskLogs = $projectRepaymentTask->getTaskLogs();
+        $this->entityManager->refresh($projectRepaymentTask);
+        $taskLogs = $projectRepaymentTask->getTaskLogs();
 
-        foreach ($projectRepaymentTaskLogs as $taskLog) {
-            $amount = round(bcsub($amount, $taskLog->getRepaidAmount(), 4), 2);
+        if (empty($taskLogs)) {
+            return 0;
         }
 
-        return $amount;
+        $amount = 0;
+        foreach ($taskLogs as $log) {
+            $amount = bcadd($amount, $log->getRepaidAmount(), 4);
+        }
+
+        return round($amount, 2);
+    }
+
+    /**
+     * @param ProjectRepaymentTask $projectRepaymentTask
+     *
+     * @return float
+     */
+    private function getAmountToRepay(ProjectRepaymentTask $projectRepaymentTask)
+    {
+        $repaidAmount  = $this->getRepaidAmount($projectRepaymentTask);
+        $amountToRepay = $projectRepaymentTask->getAmount();
+
+        return round(bcsub($amountToRepay, $repaidAmount, 4), 2);
     }
 
     /**

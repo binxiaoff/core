@@ -40,6 +40,8 @@ class Echeanciers
     /**
      * @var integer
      *
+     * @deprecated This column will be deleted. Use the summary of EcheanciersEmprunteur::$capital and EcheanciersEmprunteur::$interets instead
+     *
      * @ORM\Column(name="montant", type="integer", nullable=false)
      */
     private $montant;
@@ -233,6 +235,8 @@ class Echeanciers
     /**
      * Set montant
      *
+     * @deprecated This column will be deleted. Use the summary of EcheanciersEmprunteur::$capital and EcheanciersEmprunteur::$interets instead
+     *
      * @param integer $montant
      *
      * @return Echeanciers
@@ -246,6 +250,9 @@ class Echeanciers
 
     /**
      * Get montant
+     *
+     * @deprecated This column will be deleted. Use the summary of EcheanciersEmprunteur::$capital and EcheanciersEmprunteur::$interets instead
+     *
      *
      * @return integer
      */

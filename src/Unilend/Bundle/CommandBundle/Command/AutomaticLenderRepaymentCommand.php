@@ -5,7 +5,6 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
 
 class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
@@ -25,8 +24,6 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
         $slackManager                 = $this->getContainer()->get('unilend.service.slack_manager');
         $logger                       = $this->getContainer()->get('monolog.logger.console');
         $stopWatch                    = $this->getContainer()->get('debug.stopwatch');
-
-        $repaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
 
         $repaymentDate = new \DateTime();
         /** @var ProjectRepaymentTask[] $projectRepaymentTask */

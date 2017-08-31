@@ -105,6 +105,16 @@ class ProjectRepaymentDetail
     private $idTask;
 
     /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers
+     *
+     * @ORM\ManyToOne(targetEntity="\Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_repayment_schedule", referencedColumnName="id_echeancier")
+     * })
+     */
+    private $idRepaymentSchedule;
+
+    /**
      * Set capital
      *
      * @param string $capital
@@ -300,6 +310,30 @@ class ProjectRepaymentDetail
     public function getIdWallet()
     {
         return $this->idWallet;
+    }
+
+    /**
+     * Set idRepaymentSchedule
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers $idRepaymentSchedule
+     *
+     * @return ProjectRepaymentDetail
+     */
+    public function setIdRepaymentSchedule(\Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers $idRepaymentSchedule = null)
+    {
+        $this->idRepaymentSchedule = $idRepaymentSchedule;
+
+        return $this;
+    }
+
+    /**
+     * Get idRepaymentSchedule
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers
+     */
+    public function getIdRepaymentSchedule()
+    {
+        return $this->idRepaymentSchedule;
     }
 
     /**
