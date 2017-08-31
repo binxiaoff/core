@@ -225,8 +225,8 @@
                         type: 'POST',
                         data: $form.serialize(),
                         dataType: 'json',
-                        complete: function (response) {
-
+                        success: function (response) {
+                            console.log(response)
                             if (response.success) {
                             $modal.find('.client-id').text(response.client.idClient)
                             $modal.find('input[name="id_client"]').val(response.client.idClient)
