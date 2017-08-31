@@ -304,7 +304,7 @@ class ProjectRepaymentTaskManager
             if ($nextPayment) {
                 $borrowerOwedCapital = $paymentScheduleDate->reste_a_payer_ra($projectRepaymentTask->getIdProject()->getIdProject(), $nextPayment->getOrdre());
 
-                if ($borrowerOwedCapital != $projectRepaymentTask->getAmount()) {
+                if (0 !== bccomp($borrowerOwedCapital, $projectRepaymentTask->getAmount(), 2)) {
                     $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_ERROR);
                     $this->entityManager->flush($projectRepaymentTask);
 

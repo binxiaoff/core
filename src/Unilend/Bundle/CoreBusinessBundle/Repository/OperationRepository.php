@@ -683,7 +683,6 @@ class OperationRepository extends EntityRepository
                   LEFT(o.added, 10) AS day,
                   MONTH(o.added) AS month,
                   SUM(o.amount) AS amount,
-                  IF(o.id_sub_type IS NULL,
                      CASE ot.label
                         WHEN "' . OperationType::LENDER_PROVISION . '" THEN
                           IF(o.id_backpayline IS NOT NULL,
@@ -692,8 +691,9 @@ class OperationRepository extends EntityRepository
                                 "lender_provision_wire_transfer_in",
                                 NULL)
                           )
-                     ELSE ot.label END,
-                     ost.label)  AS movement
+                          WHEN "'. OperationType::BORROWER_COMMISSION . '" THEN ost.label
+                          WHEN "'. OperationType::BORROWER_COMMISSION_REGULARIZATION . '" THEN ost.label
+                     ELSE ot.label END AS movement
                 FROM operation o USE INDEX (idx_operation_added)
                 INNER JOIN operation_type ot ON o.id_type = ot.id
                 LEFT JOIN operation_sub_type ost ON o.id_sub_type = ost.id';
@@ -762,6 +762,7 @@ class OperationRepository extends EntityRepository
     /**
      * @param \DateTime $start
      * @param \DateTime $end
+     * @param array     $operationTypes
      *
      * @return array
      */
