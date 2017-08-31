@@ -51,6 +51,8 @@ class parrainageController extends bootstrap
         $payOutRewardErrors = isset($_SESSION['pay_out_sponsorship']['errors']) ? $_SESSION['pay_out_sponsorship']['errors'] : [];
         unset($_SESSION['pay_out_sponsorship']['errors']);
 
+        $createSponsorshipErrors = isset($_SESSION['create_sponsorship']['errors']) ? $_SESSION['create_sponsorship']['errors'] : [];
+
         $this->render(null, [
             'unilendPromotionalBalance' => $unilendPromotionWallet->getAvailableBalance(),
             'totalSponsor'              => $sponsorshipRepository->getCountSponsorByCampaign(),
@@ -63,10 +65,11 @@ class parrainageController extends bootstrap
             'allSponsorshipRewards'     => $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->getPaidOutSponsorshipDetails(),
             'currentCampaign'           => $sponsorshipManager->getCurrentSponsorshipCampaign(),
             'formErrors'                => [
-                'modifyCampaign' => $modifyCampaignErrors,
-                'newCampaign'    => $newCampaignFormErrors,
-                'blacklist'      => $blacklistFormErrors,
-                'payOutReward'   => $payOutRewardErrors
+                'modifyCampaign'    => $modifyCampaignErrors,
+                'newCampaign'       => $newCampaignFormErrors,
+                'blacklist'         => $blacklistFormErrors,
+                'payOutReward'      => $payOutRewardErrors,
+                'createSponsorship' => $createSponsorshipErrors
             ]
         ]);
     }
@@ -100,11 +103,10 @@ class parrainageController extends bootstrap
 
     public function _create_new_campaign()
     {
-        if (null !== $this->request->request->get('create_new_campaign')) {
+        if (null !== $this->request->request->get('create_new_campaign') || null !== $this->request->request->get('modify_campaign')) {
             $start = $this->request->request->get('start');
             if (false === empty($start) && preg_match("#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#", $start)) {
                 $start = \DateTime::createFromFormat('d/m/Y', $start);
-                $start->setTime(0, 0, 0);
             } else {
                 $_SESSION['create_sponsorship_campaign']['errors'][] = 'La date de début n\'est pas valide';
             }
@@ -112,9 +114,12 @@ class parrainageController extends bootstrap
             $end = $this->request->request->get('end');
             if (false === empty($end) && preg_match("#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#", $end)) {
                 $end = \DateTime::createFromFormat('d/m/Y', $end);
-                $end->setTime(23, 59, 59);
             } else {
                 $_SESSION['create_sponsorship_campaign']['errors'][] = 'La date de fin n\'est pas valide';
+            }
+
+            if ($end < $start) {
+                $_SESSION['create_sponsorship_campaign']['errors'][] = 'La date de fin est antérieur à la date de début';
             }
 
             $amountSponsee = $this->request->request->getInt('amount_sponsee');
@@ -137,23 +142,23 @@ class parrainageController extends bootstrap
                 $_SESSION['create_sponsorship_campaign']['errors'][] = 'Le nombre de jours de validité n\'est pas valide';
             }
 
-            if (false == empty($_SESSION['create_sponsorship_campaign']['errors'])) {
+            if (false == empty($_SESSION['create_sponsorship_campaign']['errors']) && null === $this->request->request->get('modify_campaign')) {
                 header('Location: ' . $this->lurl . '/parrainage');
                 die;
             }
 
-            $idCampaign = $this->request->request->getInt('id_campaign', null);
+            $idCampaign = $this->request->request->get('id_campaign', null);
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager $sponsorshipManager */
             $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
 
             try {
                 $sponsorshipManager->saveSponsorshipCampaign($start, $end, $amountSponsee, $amountSponsor, $maxNumberSponsee, $validityDays, $idCampaign);
             } catch (\Exception $exception) {
-                $_SESSION['create_sponsorship_campaign']['errors'][] = 'Une erreur est survenue lors de l\'enregistrement de la campagne. La campagne se chevauche peut-être avec une déjà existante. Vérifier la saisie.';
+                $_SESSION['create_sponsorship_campaign']['errors'][] = 'Une erreur est survenue lors de l\'enregistrement de la campagne. La campagne se chevauche peut-être avec une déjà existante. Vérifier la saisie.';      //$_SESSION['create_sponsorship_campaign']['errors'][] = $exception->getMessage(); @TODO same as other places, check type of Exception and change display of Exception or do log
             }
         }
 
-        if (null !== $this->request->request->get('modify_campaign') && isset($_SESSION['create_sponsorship_campaign']['errors'])) {
+        if (null !== $this->request->request->get('modify_campaign') && false === empty($_SESSION['create_sponsorship_campaign']['errors'])) {
             $_SESSION['modify_sponsorship_campaign']['errors'] = $_SESSION['create_sponsorship_campaign']['errors'];
             unset($_SESSION['create_sponsorship_campaign']['errors']);
         }
@@ -340,68 +345,6 @@ class parrainageController extends bootstrap
         }
     }
 
-    public function _export()
-    {
-        $headers = [
-            'ID client du filleul',
-            'Nom Prenom du filleul',
-            'Email du filleul',
-            'Montant de la prime du filleul',
-            'Date de versement de la prime filleul',
-            'Code parrain utilisé',
-            'ID client du parrain',
-            'Nom Prenom du parrain',
-            'Email du parrain',
-            'Montant de la prime du parrain',
-            'Date de versement de la prime parrain'
-        ];
-
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        $details       = $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->getPaidOutSponsorshipDetails();
-
-        $document = new \PHPExcel();
-        $document->getDefaultStyle()->getFont()->setName('Arial');
-        $document->getDefaultStyle()->getFont()->setSize(11);
-        $activeSheet = $document->setActiveSheetIndex(0);
-
-        foreach ($headers as $column => $title) {
-            $activeSheet->setCellValueByColumnAndRow($column, 1, $title);
-        }
-
-        $row = 2;
-        foreach ($details as $detail) {
-            $activeSheet->setCellValue('A' . $row, $detail['id_client_sponsee']);
-            $activeSheet->setCellValue('B' . $row, $detail['sponsee_last_name'] . ' ' . $detail['sponsee_first_name']);
-            $activeSheet->setCellValue('C' . $row, $detail['sponsee_email']);
-            if (false === empty($detail['sponsee_amount'])) {
-                $activeSheet->setCellValueExplicit('D' . $row, $detail['sponsee_amount'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $activeSheet->setCellValueExplicit('E' . $row, \PHPExcel_Shared_Date::PHPToExcel(\DateTime::createFromFormat('Y-m-d H:i:s', $detail['sponsee_added'])), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $activeSheet->getStyle('E' . $row)->getNumberFormat()->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_DATE_DDMMYYYY);
-            }
-            $activeSheet->setCellValue('F' . $row, $detail['source2']);
-            $activeSheet->setCellValue('G' . $row, $detail['id_client_sponsor']);
-            $activeSheet->setCellValue('H' . $row, $detail['sponsor_last_name'] . ' ' . $detail['sponsor_first_name']);
-            $activeSheet->setCellValue('I' . $row, $detail['sponsor_email']);
-            if (false === empty($detail['sponsor_amount'])) {
-                $activeSheet->setCellValueExplicit('J' . $row, $detail['sponsor_amount'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $activeSheet->setCellValueExplicit('K' . $row, \PHPExcel_Shared_Date::PHPToExcel(\DateTime::createFromFormat('Y-m-d H:i:s', $detail['sponsor_added'])), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $activeSheet->getStyle('K' . $row)->getNumberFormat()->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_DATE_DDMMYYYY);
-            }
-            $row +=1;
-        }
-
-        header('Content-Type: text/csv');
-        header('Content-Disposition: attachment;filename=parrainage.xlsx');
-        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-        header('Expires: 0');
-
-        $writer = PHPExcel_IOFactory::createWriter($document, 'Excel2007');
-        $writer->save('php://output');
-
-        die;
-    }
-
     public function _create_sponsorship()
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
@@ -466,11 +409,17 @@ class parrainageController extends bootstrap
 
             if (null !== $this->request->request->get('create_sponsorship_confirm')) {
                 $campaign = $entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->findCampaignValidAtDate($sponsee->getAdded());
-                $status   = $sponsorshipData['sponseeHasReceivedWelcomeOffer'] ? Sponsorship::STATUS_SPONSEE_PAID : Sponsorship::STATUS_ONGOING;
 
+                if (null === $campaign) {
+                    $_SESSION['create_sponsorship']['errors'][] = 'Il n\'y a pas de campagne active au moment de l\'inscription du filleul';
+                    header('Location: ' . $this->lurl . '/parrainage');
+                    die;
+                }
+
+                $status   = $sponsorshipData['sponseeHasReceivedWelcomeOffer'] ? Sponsorship::STATUS_SPONSEE_PAID : Sponsorship::STATUS_ONGOING;
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager $sponsorshipManager */
                 $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
-                $sponsorshipManager->createSponsorship($sponsee, $sponsor->getSponsorCode());
+                $sponsorshipManager->createSponsorship($sponsee, $sponsor->getSponsorCode(), $campaign);
 
                 $sponsorship = $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $sponsee]);
                 $sponsorship->setIdSponsorshipCampaign($campaign)
@@ -481,6 +430,68 @@ class parrainageController extends bootstrap
         }
 
         header('Location: ' . $this->lurl . '/parrainage');
+        die;
+    }
+
+    public function _export()
+    {
+        $headers = [
+            'ID client du filleul',
+            'Nom Prenom du filleul',
+            'Email du filleul',
+            'Montant de la prime du filleul',
+            'Date de versement de la prime filleul',
+            'Code parrain utilisé',
+            'ID client du parrain',
+            'Nom Prenom du parrain',
+            'Email du parrain',
+            'Montant de la prime du parrain',
+            'Date de versement de la prime parrain'
+        ];
+
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $details       = $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->getPaidOutSponsorshipDetails();
+
+        $document = new \PHPExcel();
+        $document->getDefaultStyle()->getFont()->setName('Arial');
+        $document->getDefaultStyle()->getFont()->setSize(11);
+        $activeSheet = $document->setActiveSheetIndex(0);
+
+        foreach ($headers as $column => $title) {
+            $activeSheet->setCellValueByColumnAndRow($column, 1, $title);
+        }
+
+        $row = 2;
+        foreach ($details as $detail) {
+            $activeSheet->setCellValue('A' . $row, $detail['id_client_sponsee']);
+            $activeSheet->setCellValue('B' . $row, $detail['sponsee_last_name'] . ' ' . $detail['sponsee_first_name']);
+            $activeSheet->setCellValue('C' . $row, $detail['sponsee_email']);
+            if (false === empty($detail['sponsee_amount'])) {
+                $activeSheet->setCellValueExplicit('D' . $row, $detail['sponsee_amount'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $activeSheet->setCellValueExplicit('E' . $row, \PHPExcel_Shared_Date::PHPToExcel(\DateTime::createFromFormat('Y-m-d H:i:s', $detail['sponsee_added'])), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $activeSheet->getStyle('E' . $row)->getNumberFormat()->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_DATE_DDMMYYYY);
+            }
+            $activeSheet->setCellValue('F' . $row, $detail['source2']);
+            $activeSheet->setCellValue('G' . $row, $detail['id_client_sponsor']);
+            $activeSheet->setCellValue('H' . $row, $detail['sponsor_last_name'] . ' ' . $detail['sponsor_first_name']);
+            $activeSheet->setCellValue('I' . $row, $detail['sponsor_email']);
+            if (false === empty($detail['sponsor_amount'])) {
+                $activeSheet->setCellValueExplicit('J' . $row, $detail['sponsor_amount'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $activeSheet->setCellValueExplicit('K' . $row, \PHPExcel_Shared_Date::PHPToExcel(\DateTime::createFromFormat('Y-m-d H:i:s', $detail['sponsor_added'])), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $activeSheet->getStyle('K' . $row)->getNumberFormat()->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_DATE_DDMMYYYY);
+            }
+            $row +=1;
+        }
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment;filename=parrainage.xlsx');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Expires: 0');
+
+        $writer = PHPExcel_IOFactory::createWriter($document, 'Excel2007');
+        $writer->save('php://output');
+
         die;
     }
 }

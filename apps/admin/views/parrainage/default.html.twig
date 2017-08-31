@@ -204,7 +204,7 @@
                     $modal.find('.block-title').text('Modifier la campagne')
                     $modal.find('input[name="start"]').val($row.find('td').eq(startIndex).text())
                     $modal.find('input[name="end"]').val($row.find('td').eq(endIndex).text())
-                    $modal.find('input[name="validite_days"]').val(parseFloat($row.find('td').eq(validityIndex).text()))
+                    $modal.find('input[name="validity_days"]').val(parseFloat($row.find('td').eq(validityIndex).text()))
                     $modal.find('input[name="amount_sponsee"]').val(parseFloat($row.find('td').eq(amountSponseeIndex).text()))
                     $modal.find('input[name="amount_sponsor"]').val(parseFloat($row.find('td').eq(amountSponsorIndex).text()))
                     $modal.find('input[name="max_number_sponsee"]').val($row.find('td').eq(maxSponsee).text())
@@ -240,7 +240,7 @@
                             }
                         },
                         error: function () {
-                            alertTrigger.data('notify-message', 'Server is not respondind').trigger('click')
+                            alertTrigger.data('notify-message', 'Server is not responding').trigger('click')
                         }
                     })
                 }
@@ -271,11 +271,11 @@
                                     var sponseeReceived = 'versée'
 
                                     if ("false" == s.sponsor_reward_paid) {
-                                        sponsorReceived = '<button class="btn btn-primary btn-xs" data-toggle="modal" data-target="' + modal + '" data-type="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSEE') }}" data-sponsorship-id="' + s.id_sponsorship + '">Débloquer</button>'
+                                        sponsorReceived = '<button class="btn btn-primary btn-xs" data-toggle="modal" data-target="' + modal + '" data-type="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR') }}" data-sponsorship-id="' + s.id_sponsorship + '">Débloquer</button>'
                                     }
 
                                     if ("false" == s.sponsee_reward_paid) {
-                                        sponsorReceived = '<button class="btn btn-primary btn-xs" data-toggle="modal" data-target="' + modal + '" data-type="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR') }}" data-sponsorship-id="' + s.id_sponsorship + '">Débloquer</button>'
+                                        sponseeReceived = '<button class="btn btn-primary btn-xs" data-toggle="modal" data-target="' + modal + '" data-type="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSEE') }}" data-sponsorship-id="' + s.id_sponsorship + '">Débloquer</button>'
                                     }
 
                                     html += '<tr>' +
@@ -352,7 +352,7 @@
                                 $sponseeTable.find('.sponsee-first-name').text(sponsorshipData.firstNameSponsee)
                                 $sponseeTable.find('.sponsee-last-name').text(sponsorshipData.lastNameSponsee)
                                 $sponseeTable.find('.sponsee-date-inscription').text(sponsorshipData.subscriptionSponsee)
-                                $sponseeTable.find('.sponsee-date-validation').text(sponsorshipData.validationDateSponsee)
+                                $sponseeTable.find('.sponsee-date-validation').text(sponsorshipData.sponseeValidationDate)
                                 $sponseeTable.find('.sponsee-welcome-offer').text(welcomeOffer)
 
                                 $submit.data('sponsee-id', sponsorshipData.idClientSponsee).data('sponsor-id', sponsorshipData.idClientSponsor)
@@ -397,11 +397,11 @@
                      <div class="block-content">
                          <div class="form-group">
                              <label>Début de l'offre</label>
-                             <input type="text" name="start" class="js-datepicker form-control required" data-date-format="dd/mm/yy">
+                             <input type="text" name="start" class="js-datepicker form-control required" data-date-format="dd/mm/yyyy">
                          </div>
                          <div class="form-group">
                              <label>Fin de l'offre</label>
-                             <input type="text" name="end" class="js-datepicker form-control required" data-date-format="dd/mm/yy">
+                             <input type="text" name="end" class="js-datepicker form-control required" data-date-format="dd/mm/yyyy">
                          </div>
                          <div class="form-group">
                              <label>Durée de validité (Jours)</label> <br>
@@ -446,7 +446,11 @@
                              <select name="campaign" class="form-control required">
                                  <option></option>
                                  <option value="all">Toutes les campagnes</option>
-                                 <option value="{{ currentCampaign.id }}">Campagne en cours</option>
+                                 {% if validCampaigns is defined and validCampaigns is not empty %}
+                                     {% for campaign in validCampaigns %}
+                                        <option value="{{ campaign.campaign.id }}">Campagne N°{{ campaign.campaign.id }}</option>
+                                     {% endfor %}
+                                 {% endif %}
                              </select>
                          </div>
                          <input type="hidden" name="id_client">
@@ -465,11 +469,10 @@
              <div class="modal-content">
                  <div class="block block-themed block-transparent remove-margin-b">
                      <div class="block-header bg-primary-light">
-                         <h3 class="block-title">Release prime</h3>
+                         <h3 class="block-title">Attribuer la prime</h3>
                      </div>
                      <div class="block-content">
-                         <p>Êtes-vous sür de vouloir débloquez la prime <span class="type"></span> ?</p>
-
+                         <p>Êtes-vous sûr de vouloir débloquer la prime <span class="type"></span> ?</p>
                          <input type="hidden" name="pay_out_reward">
                          <input type="hidden" name="id_client">
                          <input type="hidden" name="type_reward">
@@ -488,7 +491,7 @@
              <div class="modal-content">
                  <div class="block block-themed block-transparent remove-margin-b">
                      <div class="block-header bg-primary-light">
-                         <h3 class="block-title">Release prime</h3>
+                         <h3 class="block-title">Créer un lien Parrain-Filleul</h3>
                      </div>
                      <div class="block-content">
                          <p>Êtes-vous sür de vouloir associer les clients ?</p>
@@ -545,10 +548,10 @@
                 <h3 class="block-title">Créer une campagne de parrainage</h3>
             </div>
             <div class="block-content block-content-full">
-                {%  if newCampaignFormErrors is defined %}
+                {% if formErrors.newCampaign is defined and formErrors.newCampaign is not empty %}
                     <div class="alert alert-error">
                         <p>
-                            {% for error in newCampaignFormErrors %}
+                            {% for error in formErrors.newCampaign %}
                                 <span>{{ error }}</span> <br>
                             {% endfor %}
                         </p>
@@ -557,11 +560,11 @@
                 <form method="post" action="{{ app.adminUrl }}/parrainage/create_new_campaign" class="form-inline validate">
                     <div class="form-group">
                         <label>Début de l'offre</label> <br>
-                        <input type="text" name="start" class="js-datepicker form-control required" data-date-format="dd/mm/yy">
+                        <input type="text" name="start" class="js-datepicker form-control required" data-date-format="dd/mm/yyyy">
                     </div>
                     <div class="form-group push-5-l">
                         <label>Fin de l'offre</label> <br>
-                        <input type="text" name="end" class="js-datepicker form-control required" data-date-format="dd/mm/yy">
+                        <input type="text" name="end" class="js-datepicker form-control required" data-date-format="dd/mm/yyyy">
                     </div>
                     <div class="form-group push-5-l">
                         <label>Durée de validité (Jours)</label> <br>
@@ -580,7 +583,6 @@
                         <input type="number" name="max_number_sponsee" class="form-control required">
                     </div>
                     <div class="form-group push-5-l">
-                        <input type="hidden" name="id_campaign">
                         <input type="hidden" name="create_new_campaign">
 
                         <button type="submit" class="btn btn-primary">Créer</button>
@@ -592,7 +594,7 @@
             <div class="block-header">
                 <h3 class="block-title">Liste des campagnes en cours</h3>
             </div>
-            {%  if formErrors.modifyCampaign is defined and formErrors.modifyCampaign is not empty%}
+            {% if formErrors.modifyCampaign is defined and formErrors.modifyCampaign is not empty %}
                 <div class="alert alert-error">
                     <p>
                         {% for error in formErrors.modifyCampaign %}
@@ -606,6 +608,7 @@
                 <table id="parrainage-list-campaign-table" class="table table-bordered table-striped table-hover table-header-bg js-dataTable-simple">
                     <thead>
                         <tr>
+                            <th class="id">N° de campagne</th>
                             <th class="start">Début de l'offre</th>
                             <th class="end">Fin de l'offre</th>
                             <th class="validity">Validité</th>
@@ -622,14 +625,15 @@
                     <tbody>
                         {% for campaignData in validCampaigns %}
                             <tr>
+                                <td>{{ campaignData.campaign.id }}</td>
                                 <td>{{ campaignData.campaign.start|date('d/m/Y') }}</td>
                                 <td>{{ campaignData.campaign.end|date('d/m/Y') }}</td>
                                 <td>{{ campaignData.campaign.validityDays }} jours</td>
                                 <td>{{ campaignData.campaign.amountSponsee|localizedcurrency('EUR') }}</td>
                                 <td>{{ campaignData.campaign.amountSponsor|localizedcurrency('EUR') }}</td>
-                                <td>{{ campaignData.campaign.maxNumberSponsee }}</td>
-                                <td>{{ campaignData.numberSponsee }}</td>
-                                <td>{{ campaignData.numberSponsor }}</td>
+                                <td>{{ campaignData.campaign.maxNumberSponsee|localizednumber }}</td>
+                                <td>{{ campaignData.numberSponsee|localizednumber }}</td>
+                                <td>{{ campaignData.numberSponsor|localizednumber }}</td>
                                 <td>{{ campaignData.paidOutRewardSponsee|localizedcurrency('EUR') }}</td>
                                 <td>{{ campaignData.paidOutRewardSponsor|localizedcurrency('EUR') }}</td>
                                 <td>
@@ -650,6 +654,7 @@
                 <table id="parrainage-list-expired-campaign-table" class="table table-bordered table-striped table-hover table-header-bg js-dataTable-simple">
                     <thead>
                     <tr>
+                        <th class="id">N° de campagne</th>
                         <th class="start">Début de l'offre</th>
                         <th class="end">Fin de l'offre</th>
                         <th class="validity">Validité</th>
@@ -665,14 +670,15 @@
                     <tbody>
                     {% for campaignData in archivedCampaigns %}
                     <tr>
+                        <td>{{ campaignData.campaign.id }}</td>
                         <td>{{ campaignData.campaign.start|date('d/m/Y') }}</td>
                         <td>{{ campaignData.campaign.end|date('d/m/Y') }}</td>
                         <td>{{ campaignData.campaign.validityDays }} jours</td>
                         <td>{{ campaignData.campaign.amountSponsee|localizedcurrency('EUR') }}</td>
                         <td>{{ campaignData.campaign.amountSponsor|localizedcurrency('EUR') }}</td>
-                        <td>{{ campaignData.campaign.maxNumberSponsee }}</td>
-                        <td>{{ campaignData.numberSponsee }}</td>
-                        <td>{{ campaignData.numberSponsor }}</td>
+                        <td>{{ campaignData.campaign.maxNumberSponsee|localizednumber }}</td>
+                        <td>{{ campaignData.numberSponsee|localizednumber }}</td>
+                        <td>{{ campaignData.numberSponsor|localizednumber }}</td>
                         <td>{{ campaignData.paidOutRewardSponsee|localizedcurrency('EUR') }}</td>
                         <td>{{ campaignData.paidOutRewardSponsor|localizedcurrency('EUR') }}</td>
                     </tr>
@@ -870,10 +876,10 @@
                 <h3 class="block-title">parrain <span class="fa fa-arrows-h"></span> filleul — Créer une association</h3>
             </div>
             <div class="block-content block-content-full">
-                {%  if createSponsorshipErrors is defined %}
+                {% if formErrors.createSponsorship is defined and formErrors.createSponsorship  is not empty %}
                     <div class="alert alert-error">
                         <p>
-                            {% for error in createSponsorshipErrors %}
+                            {% for error in formErrors.createSponsorship  %}
                                 <span>{{ error }}</span> <br>
                             {% endfor %}
                         </p>

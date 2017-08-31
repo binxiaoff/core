@@ -93,9 +93,13 @@ class SponsorshipManager
             if (null === $campaign) {
                 throw new \Exception('The id does not match any campaign');
             }
-            $campaign->setStatus(SponsorshipCampaign::STATUS_ARCHIVED);
+            $now = new \DateTime('NOW');
+            $campaign
+                ->setStatus(SponsorshipCampaign::STATUS_ARCHIVED)
+                ->setEnd($now);
             $this->entityManager->flush($campaign);
-            $start = new \DateTime('NOW');
+
+            $start = $now->getTimestamp() < $start->getTimestamp() ? $now : $start;
         }
 
         $validCampaigns = $this->entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->findBy(['status' => SponsorshipCampaign::STATUS_VALID]);
@@ -112,7 +116,8 @@ class SponsorshipManager
             ->setAmountSponsee($amountSponsee)
             ->setAmountSponsor($amountSponsor)
             ->setMaxNumberSponsee($maxNumberSponsee)
-            ->setValidityDays($validityDays);
+            ->setValidityDays($validityDays)
+            ->setStatus(SponsorshipCampaign::STATUS_VALID);
 
         $this->entityManager->persist($newCampaign);
         $this->entityManager->flush($newCampaign);
@@ -139,13 +144,14 @@ class SponsorshipManager
      */
     public function attributeSponsorReward(Clients $sponsee)
     {
-        $sponsorship = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $sponsee]);
+        $sponsorship = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsor' => $sponsee]);
         if (null === $sponsorship) {
-            throw new \Exception('Client ' . $sponsee->getIdClient() . ' has no sponsor');
+            throw new \Exception('Client ' . $sponsee->getIdClient() . ' has no sponsee');
         }
 
-        if (false === $this->isEligibleForSponsorReward($sponsorship)) {
-            throw new \Exception('Client ' . $sponsee->getIdClient() . ' is not eligible for sponsor reward');
+        $eligibility = $this->isEligibleForSponsorReward($sponsorship);
+        if (false === $eligibility['isEligible']) {
+            throw new \Exception('Client ' . $sponsee->getIdClient() . ' is not eligible for sponsor reward. Reason : ' . $eligibility['reason']);
         }
 
         $sponsorWallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsorship->getIdClientSponsor(), WalletType::LENDER);
@@ -181,8 +187,8 @@ class SponsorshipManager
         }
 
         $paidReward = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findBy(['idWalletCreditor' => $sponseeWallet, 'idSponsorship' => $sponsorship]);
-        if (null !== $paidReward) {
-            throw new \Exception('Client ' . $sponsorship->getIdClientSponsee()->getIdClient() . ' has already recieved the sponsee reward');
+        if (false === empty($paidReward)) {
+            throw new \Exception('Client ' . $sponsorship->getIdClientSponsee()->getIdClient() . ' has already received the sponsee reward');
         }
 
         $this->operationManager->newSponseeReward($sponseeWallet, $sponsorship);
@@ -292,12 +298,14 @@ class SponsorshipManager
      * @param Clients $sponsee
      * @param         $sponsorCode
      */
-    public function createSponsorship(Clients $sponsee, $sponsorCode)
+    public function createSponsorship(Clients $sponsee, $sponsorCode, SponsorshipCampaign $campaign = null)
     {
         $sponsor = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['sponsorCode' => $sponsorCode]);
 
         if ($this->clientStatusManager->hasBeenValidatedAtLeastOnce($sponsor)) {
-            $campaign = $this->getCurrentSponsorshipCampaign();
+            if (null === $campaign) {
+                $campaign = $this->getCurrentSponsorshipCampaign();
+            }
 
             $sponsorship = new Sponsorship();
             $sponsorship->setIdClientSponsor($sponsor)
@@ -313,16 +321,16 @@ class SponsorshipManager
     /**
      * @param Sponsorship $sponsorship
      *
-     * @return bool
+     * @return array
      */
     public function isEligibleForSponsorReward(Sponsorship $sponsorship)
     {
         if ($this->isClientBlacklistedForSponsorship($sponsorship)) {
-            return false;
+            return ['isEligible' => false, 'reason' => 'Client is blacklisted'];
         }
 
         if (Sponsorship::STATUS_SPONSOR_PAID == $sponsorship->getStatus()) {
-            return false;
+            return ['isEligible' => false, 'reason' => 'Sponsorship status is paid to sponsor'];
         }
 
         $walletRepository        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
@@ -330,7 +338,7 @@ class SponsorshipManager
         $sponseeWallet           = $walletRepository->getWalletByType($sponsorship->getIdClientSponsee(), WalletType::LENDER);
         $totalAmountAcceptedBids = $bidRepository->getSumBidsForLenderAndStatus($sponseeWallet, Bids::STATUS_BID_ACCEPTED);
         if ($totalAmountAcceptedBids <= $sponsorship->getIdSponsorshipCampaign()->getAmountSponsee()) {
-            return false;
+            return ['isEligible' => false, 'reason' => 'Sponsee has not enough accepted bids'];
         }
 
         $operationRepository          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
@@ -338,10 +346,10 @@ class SponsorshipManager
         $amountAlreadyReceivedRewards = $operationRepository->getSumRewardAmountByCampaign(OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR, $sponsorship->getIdSponsorshipCampaign(), $sponsorWallet);
 
         if ($amountAlreadyReceivedRewards >= bcmul($sponsorship->getIdSponsorshipCampaign()->getAmountSponsor(), $sponsorship->getIdSponsorshipCampaign()->getMaxNumberSponsee(), 2)) {
-            return false;
+            return ['isEligible' => false, 'reason' => 'Client has already too many sponsees'];
         }
 
-        return true;
+        return ['isEligible' => true];
     }
 
     /**
