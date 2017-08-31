@@ -14,6 +14,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipBlacklist;
 use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class SponsorshipManager
@@ -187,15 +188,42 @@ class SponsorshipManager
         $this->operationManager->newSponseeReward($sponseeWallet, $sponsorship);
         $sponsorship->setStatus(Sponsorship::STATUS_SPONSEE_PAID);
         $this->entityManager->flush($sponsorship);
+        $this->sendSponseeRewardEmail($sponsorship);
 
         if (false === $this->isClientBlacklistedForSponsorship($sponsorship)) {
-            $this->sendSponseeRewardEmail($sponsorship);
+            $this->informSponsorAboutSponsee($sponsorship);
         }
     }
 
+    /**
+     * @param Sponsorship $sponsorship
+     */
     private function sendSponsorRewardEmail(Sponsorship $sponsorship)
     {
+        $varMail = [
+            'surl'               => $this->surl,
+            'url'                => $this->furl,
+            'sponsor_first_name' => $sponsorship->getIdClientSponsor()->getPrenom(),
+            'sponsee_first_name' => $sponsorship->getIdClientSponsee()->getPrenom(),
+            'sponsee_last_name'  => $sponsorship->getIdClientSponsee()->getNom(),
+            'amount'             => $sponsorship->getIdSponsorshipCampaign()->getAmountSponsor(),
+            'lien_fb'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
+            'lien_tw'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
+        ];
 
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage('parrainage-versement-prime-parrain', $varMail);
+        try {
+            $message->setTo($sponsorship->getIdClientSponsor()->getEmail());
+            $this->mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->logger->warning('Could not send email: parrainage-versement-prime-parrain - Exception: ' . $exception->getMessage(), [
+                'id_mail_template' => $message->getTemplateId(),
+                'id_client'        => $sponsorship->getIdClientSponsor()->getIdClient(),
+                'class'            => __CLASS__,
+                'function'         => __FUNCTION__
+            ]);
+        }
     }
 
     private function sendSponseeRewardEmail(Sponsorship $sponsorship)
@@ -266,19 +294,128 @@ class SponsorshipManager
         $this->entityManager->flush($blacklisted);
     }
 
-    public function sendSponsorshipInvitation()
+    /**
+     * @param Clients $sponsor
+     * @param         $email
+     */
+    public function sendSponsorshipInvitation(Clients $sponsor, $email)
     {
+        $currentCampaign = $this->getCurrentSponsorshipCampaign();
 
+        $varMail = [
+            'surl'               => $this->surl,
+            'url'                => $this->furl,
+            'sponsor_first_name' => $sponsor->getPrenom(),
+            'sponsor_last_name'  => $sponsor->getNom(),
+            'link'               => $this->furl . '/p/' . $sponsor->getSponsorCode(),
+            'amount'             => $this->numberFormatter->format((float) $currentCampaign->getAmountSponsee()),
+            'lien_fb'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
+            'lien_tw'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
+        ];
+
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage('invitation-filleul', $varMail);
+        try {
+            $message->setTo($email);
+            $this->mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->logger->warning('Could not send email: invitation-filleul - Exception: ' . $exception->getMessage(), [
+                'id_mail_template' => $message->getTemplateId(),
+                'id_client'        => $sponsor->getIdClient(),
+                'class'            => __CLASS__,
+                'function'         => __FUNCTION__
+            ]);
+        }
     }
 
-    public function informSponsorAboutSponsee()
+    /**
+     * @param Sponsorship $sponsorship
+     */
+    public function informSponsorAboutSponsee(Sponsorship $sponsorship)
     {
+        $varMail = [
+            'surl'               => $this->surl,
+            'url'                => $this->furl,
+            'sponsor_first_name' => $sponsorship->getIdClientSponsor()->getPrenom(),
+            'sponsee_first_name' => $sponsorship->getIdClientSponsee()->getPrenom(),
+            'sponsee_last_name'  => $sponsorship->getIdClientSponsee()->getNom(),
+            'lien_fb'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
+            'lien_tw'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
+        ];
 
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage('parrainage-confirmation-validation-filleul', $varMail);
+        try {
+            $message->setTo($sponsorship->getIdClientSponsor()->getEmail());
+            $this->mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->logger->warning('Could not send email: parrainage-confirmation-validation-filleul - Exception: ' . $exception->getMessage(), [
+                'id_mail_template' => $message->getTemplateId(),
+                'id_client'        => $sponsorship->getIdClientSponsor()->getIdClient(),
+                'class'            => __CLASS__,
+                'function'         => __FUNCTION__
+            ]);
+        }
     }
 
-    public function sendInternalMaxSponseeNotification()
+    /**
+     * @param Clients $sponsor
+     */
+    public function sendMaxSponseeNotification(Clients $sponsor)
     {
+        $currentCampaign = $this->getCurrentSponsorshipCampaign();
 
+        $varMail = [
+            'surl'               => $this->surl,
+            'url'                => $this->furl,
+            'sponsor_first_name' => $sponsor->getPrenom(),
+            'end_campaign'       => $currentCampaign->getEnd()->format('d/m/Y'),
+            'lien_fb'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
+            'lien_tw'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
+        ];
+
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage('parrainage-plafond-filleuls', $varMail);
+        try {
+            $message->setTo($sponsor->getEmail());
+            $this->mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->logger->warning('parrainage-plafond-filleuls - Exception: ' . $exception->getMessage(), [
+                'id_mail_template' => $message->getTemplateId(),
+                'id_client'        => $sponsor->getIdClient(),
+                'class'            => __CLASS__,
+                'function'         => __FUNCTION__
+            ]);
+        }
+    }
+
+    /**
+     * @param Clients $sponsor
+     */
+    public function sendInternalMaxSponseeNotification(Clients $sponsor)
+    {
+        $varMail = [
+            'surl'               => $this->surl,
+            'url'                => $this->furl,
+            'sponsor_first_name' => $sponsor->getPrenom(),
+            'sponsor_last_name' => $sponsor->getNom(),
+            'sponsor_id_client' => $sponsor->getIdClient()
+        ];
+
+        $setting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse notification solde unilend promotion']);
+
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage('notification-parrainage-plafond-filleuls', $varMail);
+        try {
+            $message->setTo(explode(';', trim($setting->getValue())));
+            $this->mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->logger->warning('notification-parrainage-plafond-filleuls - Exception: ' . $exception->getMessage(), [
+                'id_mail_template' => $message->getTemplateId(),
+                'class'            => __CLASS__,
+                'function'         => __FUNCTION__
+            ]);
+        }
     }
 
     /**
@@ -308,7 +445,7 @@ class SponsorshipManager
      *
      * @return bool
      */
-    public function isEligibleForSponsorReward(Sponsorship $sponsorship)
+    private function isEligibleForSponsorReward(Sponsorship $sponsorship)
     {
         if ($this->isClientBlacklistedForSponsorship($sponsorship)) {
             return false;
@@ -326,11 +463,28 @@ class SponsorshipManager
             return false;
         }
 
+        if ($this->hasReachedMaxAmountSponsee($sponsorship)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param Sponsorship $sponsorship
+     *
+     * @return bool
+     */
+    public function hasReachedMaxAmountSponsee(Sponsorship $sponsorship)
+    {
+        $walletRepository             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         $operationRepository          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $sponsorWallet                = $walletRepository->getWalletByType($sponsorship->getIdClientSponsor(), WalletType::LENDER);
         $amountAlreadyReceivedRewards = $operationRepository->getSumRewardAmountByCampaign(OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR, $sponsorship->getIdSponsorshipCampaign(), $sponsorWallet);
 
         if ($amountAlreadyReceivedRewards >= bcmul($sponsorship->getIdSponsorshipCampaign()->getAmountSponsor(), $sponsorship->getIdSponsorshipCampaign()->getMaxNumberSponsee(), 2)) {
+            $this->sendMaxSponseeNotification($sponsorship->getIdClientSponsor());
+
             return false;
         }
 
