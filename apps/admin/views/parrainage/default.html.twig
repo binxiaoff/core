@@ -19,6 +19,7 @@
 
             // Trigger element for all allerts
             var alertTrigger = $('#js-alerts-trigger')
+            var modalTrigger = $('#js-modal-trigger')
 
             // Data Tables
             // DataTables Bootstrap integration
@@ -211,7 +212,7 @@
                     $modal.find('input[name="id_campaign"]').val(campaignId)
                 }
             })
-
+//            $('#modal-blacklist-search').show()
             // Blacklist Search Results
             $('#parrainage-blacklist-search').submit(function(e){
                 e.preventDefault()
@@ -232,7 +233,7 @@
                             $modal.find('.nom').text(response.client.lastName)
                             $modal.find('.prenom').text(response.client.firstName)
 
-                            $modal.show()
+                            modalTrigger.attr('data-target', '#' + $modal.attr('id')).trigger('click')
                         } else {
                             $.each( response.error, function(i, val){
                                 alertTrigger.data('notify-message', val).trigger('click')
@@ -386,7 +387,10 @@
 {% endblock %}
 
  {% block modals %}
+
      <a id="js-alerts-trigger" class="js-notify" data-notify-type="alert" data-notify-message=""></a>
+     <a id="js-modal-trigger" data-toggle="modal" data-target=""></a>
+
      <div class="modal" id="modal-parrainage-list" tabindex="-1" role="dialog" aria-hidden="true">
          <form class="modal-dialog validate" action="{{ app.adminUrl }}/parrainage/create_new_campaign" method="post">
              <div class="modal-content">
@@ -424,7 +428,7 @@
                          <input type="hidden" name="modify_campaign">
                      </div>
                  </div>
-                 <div class="modal-footer">¬
+                 <div class="modal-footer">
                      <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
                      <button class="btn btn-sm btn-primary" type="submit">Modifier</button>
                  </div>
@@ -822,7 +826,7 @@
                     }
                 </style>
 
-                <a href="{{ app.adminUrl }}/parrainage/export" target="_blank"><button class="btn btn-default pull-right">Export XLS <span class="fa fa-file-excel-o"></span></button></a>
+                <a href="{{ app.adminUrl }}/parrainage/export" class="btn btn-default pull-right">Export XLS <span class="fa fa-file-excel-o"></span></a>
 
                 <div class="row helper">
                     <div class="col">&nbsp;</div>
