@@ -49,6 +49,22 @@ tbody.collapse.in {
   margin-top: 0;
 }
 
+.margin-5-l {
+  margin-left: 5px;
+}
+
+.margin-5-r {
+  margin-right: 5px;
+}
+
+.margin-5-b {
+  margin-bottom: 5px;
+}
+
+.margin-5-t {
+  margin-top: 5px;
+}
+
 .margin-10-l {
   margin-left: 10px;
 }
@@ -79,4 +95,12 @@ tbody.collapse.in {
 
 .margin-20-t {
   margin-top: 20px;
+}
+
+.pull-left {
+  float: left;
+}
+
+.pull-right {
+  float: right;
 }

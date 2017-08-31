@@ -452,3 +452,11 @@
     vertical-align: middle;
   }
 }
+
+// Page Parrainage in Lender Dashboard
+// If one day there's more to it,
+// will create its own sass file
+#user-preter-parrainage-link-input {
+  max-width: 260px;
+  color: $c-t3;
+}
