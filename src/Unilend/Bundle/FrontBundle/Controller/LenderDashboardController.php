@@ -27,17 +27,6 @@ class LenderDashboardController extends Controller
     const REPAYMENT_TIME_FRAME_YEAR    = 'year';
 
     /**
-     * @Route("/dashboard/sponsorship", name="sponsorship")
-     * @Security("has_role('ROLE_LENDER')")
-     *
-     * @return Response
-     */
-    public function sponsorshipAction()
-    {
-        return $this->render('/pages/lender_sponsorship.html.twig');
-    }
-
-    /**
      * @Route("synthese", name="lender_dashboard")
      * @Security("has_role('ROLE_LENDER')")
      *

@@ -16,9 +16,11 @@ class LenderAccountController extends Controller
     public function lenderMenuAction($route)
     {
         $template = [
-            'route'              => $route,
-            'isAutobidQualified' => $this->get('unilend.service.autobid_settings_manager')->isQualified($this->getClient()),
-            'isValidatedClient'  => $this->getUser()->getClientStatus() >= \clients_status::VALIDATED
+            'route'                      => $route,
+            'isAutobidQualified'         => $this->get('unilend.service.autobid_settings_manager')->isQualified($this->getClient()),
+            'isValidatedClient'          => $this->getUser()->getClientStatus() >= \clients_status::VALIDATED,
+            'currentSponsorshipCampaign' => $this->get('unilend.service.sponsorship_manager')->getCurrentSponsorshipCampaign(),
+            'isBlacklisted'              => $this->get('unilend.service.sponsorship_manager')->isClientCurrentlyBlacklisted($this->getClient())
         ];
 
         return $this->render('frontbundle/lender_account/partials/lender_account_nav.html.twig', $template);

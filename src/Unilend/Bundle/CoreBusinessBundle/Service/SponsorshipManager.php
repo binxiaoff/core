@@ -19,9 +19,9 @@ use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class SponsorshipManager
 {
-    const UTM_SOURCE   = 'Parrainage';
-    const UTM_MEDIUM   = 'lien';
-    const UTM_CAMPAIGN = 'Parrainage';
+    const UTM_SOURCE      = 'Parrainage';
+    const UTM_MEDIUM      = 'lien';
+    const UTM_CAMPAIGN    = 'Parrainage';
 
     /** @var EntityManager  */
     private $entityManager;
@@ -298,7 +298,7 @@ class SponsorshipManager
      * @param Clients $sponsor
      * @param         $email
      */
-    public function sendSponsorshipInvitation(Clients $sponsor, $email)
+    public function sendSponsorshipInvitation(Clients $sponsor, $email, $sponseeNames, $sponseeMessage = null)
     {
         $currentCampaign = $this->getCurrentSponsorshipCampaign();
 
@@ -314,12 +314,12 @@ class SponsorshipManager
         ];
 
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('invitation-filleul', $varMail);
+        $message = $this->messageProvider->newMessage('parrainage-invitation-filleul', $varMail);
         try {
             $message->setTo($email);
             $this->mailer->send($message);
         } catch (\Exception $exception) {
-            $this->logger->warning('Could not send email: invitation-filleul - Exception: ' . $exception->getMessage(), [
+            $this->logger->warning('Could not send email: parrainage-invitation-filleul - Exception: ' . $exception->getMessage(), [
                 'id_mail_template' => $message->getTemplateId(),
                 'id_client'        => $sponsor->getIdClient(),
                 'class'            => __CLASS__,
