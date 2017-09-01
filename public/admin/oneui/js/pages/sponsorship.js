@@ -370,6 +370,4 @@ $(function(){
             $modal.find('input[name="id_client_sponsee"]').val($button.data('sponsee-id'))
         }
     })
-
-    alertTrigger.data('notify-message', 'test').trigger('click')
 })
