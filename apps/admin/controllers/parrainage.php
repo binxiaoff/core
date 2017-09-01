@@ -52,6 +52,7 @@ class parrainageController extends bootstrap
         unset($_SESSION['pay_out_sponsorship']['errors']);
 
         $createSponsorshipErrors = isset($_SESSION['create_sponsorship']['errors']) ? $_SESSION['create_sponsorship']['errors'] : [];
+        unset($_SESSION['create_sponsorship']['errors']);
 
         $this->render(null, [
             'unilendPromotionalBalance' => $unilendPromotionWallet->getAvailableBalance(),
@@ -154,7 +155,7 @@ class parrainageController extends bootstrap
             try {
                 $sponsorshipManager->saveSponsorshipCampaign($start, $end, $amountSponsee, $amountSponsor, $maxNumberSponsee, $validityDays, $idCampaign);
             } catch (\Exception $exception) {
-                $_SESSION['create_sponsorship_campaign']['errors'][] = 'Une erreur est survenue lors de l\'enregistrement de la campagne. La campagne se chevauche peut-être avec une déjà existante. Vérifier la saisie.';      //$_SESSION['create_sponsorship_campaign']['errors'][] = $exception->getMessage(); @TODO same as other places, check type of Exception and change display of Exception or do log
+                $_SESSION['create_sponsorship_campaign']['errors'][] = 'Une erreur est survenue lors de l\'enregistrement de la campagne. La campagne se chevauche peut-être avec une déjà existante. Vérifier la saisie.';      $_SESSION['create_sponsorship_campaign']['errors'][] = $exception->getMessage(); //@TODO same as other places, check type of Exception and change display of Exception or do log
             }
         }
 

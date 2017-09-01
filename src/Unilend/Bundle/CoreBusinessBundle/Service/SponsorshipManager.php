@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
+use Symfony\Component\Routing\RouterInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
@@ -37,6 +38,8 @@ class SponsorshipManager
     private $mailer;
     /** @var LoggerInterface */
     private $logger;
+    /** @var RouterInterface */
+    private $router;
     private $surl;
     private $furl;
 
@@ -48,6 +51,7 @@ class SponsorshipManager
      * @param TemplateMessageProvider $messageProvider
      * @param \Swift_Mailer           $mailer
      * @param LoggerInterface         $logger
+     * @param RouterInterface         $router
      * @param Packages                $assetsPackages
      * @param                         $schema
      * @param                         $frontHost
@@ -60,6 +64,7 @@ class SponsorshipManager
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,
         LoggerInterface $logger,
+        RouterInterface $router,
         Packages $assetsPackages,
         $schema,
         $frontHost
@@ -72,6 +77,7 @@ class SponsorshipManager
         $this->messageProvider     = $messageProvider;
         $this->mailer              = $mailer;
         $this->logger              = $logger;
+        $this->router              = $router;
         $this->surl                = $assetsPackages->getUrl('');
         $this->furl                = $schema . '://' . $frontHost;
     }
@@ -89,12 +95,13 @@ class SponsorshipManager
      */
     public function saveSponsorshipCampaign(\DateTime $start, \DateTime $end, $amountSponsee, $amountSponsor, $maxNumberSponsee, $validityDays, $idCampaign = null)
     {
+        $now = new \DateTime('NOW');
+
         if (null !== $idCampaign) {
             $campaign = $this->entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->find($idCampaign);
             if (null === $campaign) {
                 throw new \Exception('The id does not match any campaign');
             }
-            $now = new \DateTime('NOW');
             $campaign
                 ->setStatus(SponsorshipCampaign::STATUS_ARCHIVED)
                 ->setEnd($now);
@@ -103,11 +110,15 @@ class SponsorshipManager
             $start = $now->getTimestamp() < $start->getTimestamp() ? $now : $start;
         }
 
+        if ($now->getTimestamp() > $start->getTimestamp()) {
+            throw new \Exception('Campaign start can not be in the past');
+        }
+
         $validCampaigns = $this->entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->findBy(['status' => SponsorshipCampaign::STATUS_VALID]);
 
         foreach ($validCampaigns as $campaign) {
-            if ($campaign->getEnd() > $start) {
-                throw new \Exception('Campaign does overlap with exiting campaign');
+            if ($campaign->getEnd()->getTimestamp() < $start->getTimestamp()) {
+                throw new \Exception('Campaign does overlap with exiting campaign. Id campaign = ' . $campaign->getId());
             }
         }
 
@@ -208,9 +219,10 @@ class SponsorshipManager
             'sponsor_first_name' => $sponsorship->getIdClientSponsor()->getPrenom(),
             'sponsee_first_name' => $sponsorship->getIdClientSponsee()->getPrenom(),
             'sponsee_last_name'  => $sponsorship->getIdClientSponsee()->getNom(),
-            'amount'             => $sponsorship->getIdSponsorshipCampaign()->getAmountSponsor(),
+            'amount'             => $this->numberFormatter->format((float)$sponsorship->getIdSponsorshipCampaign()->getAmountSponsor()),
             'lien_fb'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
             'lien_tw'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
+            'year'               => date('Y')
         ];
 
         /** @var TemplateMessage $message */
@@ -237,10 +249,10 @@ class SponsorshipManager
             'surl'               => $this->surl,
             'url'                => $this->furl,
             'sponsee_first_name' => $sponsorship->getIdClientSponsee()->getPrenom(),
-            'sponsee_last_name'  => $sponsorship->getIdClientSponsee()->getNom(),
-            'amount'             => $sponsorship->getIdSponsorshipCampaign()->getAmountSponsee(),
+            'amount'             => $this->numberFormatter->format((float)$sponsorship->getIdSponsorshipCampaign()->getAmountSponsee()),
             'lien_fb'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
             'lien_tw'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
+            'year'               => date('Y')
         ];
 
         /** @var TemplateMessage $message */
@@ -324,9 +336,11 @@ class SponsorshipManager
 
     /**
      * @param Clients $sponsor
-     * @param         $email
+     * @param string  $email
+     * @param string  $sponseeNames
+     * @param string  $message
      */
-    public function sendSponsorshipInvitation(Clients $sponsor, $email)
+    public function sendSponsorshipInvitation(Clients $sponsor, $email, $sponseeNames, $message)
     {
         $currentCampaign = $this->getCurrentSponsorshipCampaign();
 
@@ -335,19 +349,22 @@ class SponsorshipManager
             'url'                => $this->furl,
             'sponsor_first_name' => $sponsor->getPrenom(),
             'sponsor_last_name'  => $sponsor->getNom(),
-            'link'               => $this->furl . '/p/' . $sponsor->getSponsorCode(),
+            'sponsee_names'      => $sponseeNames,
+            'sponsor_message'    => $message,
+            'link'               => $this->router->generate('lender_sponsorship_redirect', ['sponsorCode' => $sponsor->getSponsorCode()]),
             'amount'             => $this->numberFormatter->format((float) $currentCampaign->getAmountSponsee()),
             'lien_fb'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
             'lien_tw'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
+            'year'               => date('Y')
         ];
 
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('invitation-filleul', $varMail);
+        $message = $this->messageProvider->newMessage('parrainage-invitation-filleul', $varMail);
         try {
             $message->setTo($email);
             $this->mailer->send($message);
         } catch (\Exception $exception) {
-            $this->logger->warning('Could not send email: invitation-filleul - Exception: ' . $exception->getMessage(), [
+            $this->logger->warning('Could not send email: parrainage-invitation-filleul - Exception: ' . $exception->getMessage(), [
                 'id_mail_template' => $message->getTemplateId(),
                 'id_client'        => $sponsor->getIdClient(),
                 'class'            => __CLASS__,
@@ -369,6 +386,7 @@ class SponsorshipManager
             'sponsee_last_name'  => $sponsorship->getIdClientSponsee()->getNom(),
             'lien_fb'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
             'lien_tw'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
+            'year'               => date('Y')
         ];
 
         /** @var TemplateMessage $message */
@@ -400,6 +418,7 @@ class SponsorshipManager
             'end_campaign'       => $currentCampaign->getEnd()->format('d/m/Y'),
             'lien_fb'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
             'lien_tw'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
+            'year'               => date('Y')
         ];
 
         /** @var TemplateMessage $message */
@@ -426,8 +445,9 @@ class SponsorshipManager
             'surl'               => $this->surl,
             'url'                => $this->furl,
             'sponsor_first_name' => $sponsor->getPrenom(),
-            'sponsor_last_name' => $sponsor->getNom(),
-            'sponsor_id_client' => $sponsor->getIdClient()
+            'sponsor_last_name'  => $sponsor->getNom(),
+            'sponsor_id_client'  => $sponsor->getIdClient(),
+            'year'               => date('Y')
         ];
 
         $setting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse notification solde unilend promotion']);
@@ -489,15 +509,16 @@ class SponsorshipManager
         $bidRepository           = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
         $sponseeWallet           = $walletRepository->getWalletByType($sponsorship->getIdClientSponsee(), WalletType::LENDER);
         $totalAmountAcceptedBids = $bidRepository->getSumBidsForLenderAndStatus($sponseeWallet, Bids::STATUS_BID_ACCEPTED);
+
         if ($totalAmountAcceptedBids <= $sponsorship->getIdSponsorshipCampaign()->getAmountSponsee()) {
             return ['isEligible' => false, 'reason' => 'Sponsee has not enough accepted bids'];
         }
 
         if ($this->hasReachedMaxAmountSponsee($sponsorship)) {
-            return false;
+            return ['isEligible' => false, 'reason' => 'Client has already too many sponsees'];
         }
 
-        return true;
+        return ['isEligible' => true];
     }
 
     /**
@@ -514,11 +535,12 @@ class SponsorshipManager
 
         if ($amountAlreadyReceivedRewards >= bcmul($sponsorship->getIdSponsorshipCampaign()->getAmountSponsor(), $sponsorship->getIdSponsorshipCampaign()->getMaxNumberSponsee(), 2)) {
             $this->sendMaxSponseeNotification($sponsorship->getIdClientSponsor());
+            $this->sendInternalMaxSponseeNotification($sponsorship->getIdClientSponsor());
 
-            return ['isEligible' => false, 'reason' => 'Client has already too many sponsees'];
+            return true;
         }
 
-        return ['isEligible' => true];
+        return false;
     }
 
     /**
