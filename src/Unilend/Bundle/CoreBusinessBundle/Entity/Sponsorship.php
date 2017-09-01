@@ -18,9 +18,9 @@ class Sponsorship
     const STATUS_SPONSOR_PAID    = 2;
 
     /**
-     * @var boolean
+     * @var int
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -82,7 +82,7 @@ class Sponsorship
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param int $status
      *
      * @return Sponsorship
      */
@@ -96,7 +96,7 @@ class Sponsorship
     /**
      * Get status
      *
-     * @return boolean
+     * @return int
      */
     public function getStatus()
     {

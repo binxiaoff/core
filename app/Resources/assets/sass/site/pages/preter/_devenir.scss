@@ -288,7 +288,9 @@
       margin-bottom: 0;
     }
   }
-
+  .block-copy-lp {
+    clear: both;
+  }
   .block-copy-lp-footer {
     margin-bottom: 60px;
     color: $c-t3;
@@ -450,6 +452,46 @@
   .site-title {
     line-height: $height-fixed-menu;
     vertical-align: middle;
+  }
+}
+
+.page-lp-sponsor {
+  .stamp {
+    margin: 20px 0 0;
+  }
+  @include devices('sm', 'md', 'lg') {
+    .h3 {
+      float: left;
+    }
+    .stamp {
+      float: right;
+      margin: 25px 20px 0 0;
+    }
+  }
+  @include devices('sm') {
+    .h3 {
+      width: 75%;
+    }
+    .stamp .lg {
+      margin-top: 10px;
+    }
+  }
+  @include devices('tablet') {
+    .h3 {
+      float: left;
+      width: 60%;
+    }
+    .stamp .lg {
+      margin-top: 20px;
+    }
+  }
+  @include devices('laptop', 'desktop') {
+    .h3 {
+      width: 70%;
+    }
+    .stamp .lg {
+      margin-top: 20px;
+    }
   }
 }
 
