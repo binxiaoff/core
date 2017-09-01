@@ -30,8 +30,14 @@
     box-shadow: 0 2px #CA9FAF;
 }
 .alert-danger {
-    background: #ffcbcc;
-    box-shadow: 0 2px #BA7E7F;
+    background: rgba(178, 0, 102, 0.7);
+    box-shadow: 0 2px #b20066;
+    color: #fff;
+}
+.alert-danger .close {
+    color: #fff;
+    opacity: 1;
+    text-shadow: none;
 }
 .alert-success {
     background: #eaf4ea;

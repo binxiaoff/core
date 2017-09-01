@@ -1039,28 +1039,22 @@ var App = function() {
         jQuery('.js-notify').on('click', function(){
             var $notify         = jQuery(this);
             var $notifyMsg      = $notify.data('notify-message');
-            var $notifyType     = $notify.data('notify-type') ? $notify.data('notify-type') : 'info';
-            var $notifyFrom     = $notify.data('notify-from') ? $notify.data('notify-from') : 'top';
-            var $notifyAlign    = $notify.data('notify-align') ? $notify.data('notify-align') : 'right';
-            var $notifyIcon     = $notify.data('notify-icon') ? $notify.data('notify-icon') : '';
-            var $notifyUrl      = $notify.data('notify-url') ? $notify.data('notify-url') : '';
 
             jQuery.notify({
-                    icon: $notifyIcon,
                     message: $notifyMsg,
-                    url: $notifyUrl
+                    url: ''
                 },
                 {
                     element: 'body',
-                    type: $notifyType,
+                    type: 'danger',
                     allow_dismiss: true,
                     newest_on_top: true,
                     showProgressbar: false,
                     placement: {
-                        from: $notifyFrom,
-                        align: $notifyAlign
+                        from: 'top',
+                        align: 'right'
                     },
-                    offset: 20,
+                    offset: 100,
                     spacing: 10,
                     z_index: 1033,
                     delay: 0,
