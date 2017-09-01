@@ -89,6 +89,8 @@ class simulationController extends bootstrap
         } catch (\Exception $exception) {
             $this->result = 'Error code: ' . $exception->getCode() . '. Error message: ' . $exception->getMessage() . ' in file: ' . $exception->getFile() . ' at line: ' . $exception->getLine();
         }
+        $this->render();
+
     }
 
     public function _storedData()

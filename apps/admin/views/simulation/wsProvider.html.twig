@@ -1,0 +1,200 @@
+{% extends 'layout.html.twig' %}
+
+{% set resources = [
+    {
+        provider: 'altares',
+        services: [
+            {
+                name: 'getDerniersBilans',
+                fields: [
+                    {
+                        name: 'siren',
+                        label: 'Siren',
+                        type: 'text',
+                        mandatory: true
+                    },
+                    {
+                        name: 'balanceCount',
+                        label: 'Balances',
+                        type: 'number',
+                        mandatory: false
+                    }
+                ]
+            },
+            {
+                name: 'getBilans',
+                fields: [
+                    {
+                        name: 'siren',
+                        label: 'Siren',
+                        type: 'text',
+                        mandatory: true
+                    },
+                    {
+                        name: 'balanceCount',
+                        label: 'Balances',
+                        type: 'number',
+                        mandatory: false
+                    }
+                ]
+            }
+        ]
+    }
+] %}
+
+{% block pluginsCSS %}
+    <style>
+        .services-select, .service-fields, #submit-form {
+            display: none;
+        }
+    </style>
+{% endblock %}
+
+{% block pluginsJS %}
+
+{% endblock %}
+
+{% block pageScripts %}
+<script>
+    $(function () {
+
+        var $form = $('#submit-form')
+        var $submit = $form.find('button')
+
+        $('#provider').change(function(){
+            var provider = $(this).val()
+
+            $('.services-select').hide()
+            $('.service-fields').hide()
+            $('#submit').hide()
+
+            if (provider !== '0') {
+                $('.services-select-' + provider).show()
+            }
+        })
+        $('.services-select select').change(function(){
+            var service = $(this).val()
+            $('.service-fields').hide()
+            if (service !== '0') {
+                $('.service-fields-' + service).show()
+            }
+        })
+
+        $('.service-field').change(function(){
+            var $serviceFields = $(this).closest('.service-fields')
+            $serviceFields.find('.required').each(function(){
+                var valid = true
+                if (!$(this).val() || $(this).val() === '') {
+                    valid = false
+                }
+                if (valid) {
+                    if (!$form.is(':visible')) {
+                        $form.show()
+                    }
+                } else {
+                    $form.hide()
+                }
+            })
+        })
+
+        $form.submit(function(){
+            $('.service-field').each(function(){
+                if ($(this).is(':visible') && !$form.find('input[name='+ $(this).attr('name') +']')) {
+                    var $input
+                    if ($(this).attr('type') === 'checkbox') {
+                        if ($(this).is(':checked')) {
+                            $input = '<input type="hidden" name="' + $(this).attr('name') + '" value="' + $(this).val() + '">'
+                        }
+                    } else {
+                        $input = '<input type="hidden" name="' + $(this).attr('name') + '" value="' + $(this).val() + '">'
+                    }
+                    $form.append($input)
+                }
+            })
+        })
+    })
+</script>
+{% endblock %}
+
+{% block modals %}
+
+{% endblock %}
+
+{% block pageHeader %}
+<h1 class="page-heading push">
+    Simulation Web Services
+</h1>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="block block-bordered">
+        <div class="block-header">
+            <h3 class="block-title">Recherche</h3>
+        </div>
+        <div class="block-content block-content-full">
+
+            <div class="form-group">
+                <label>Provider</label> <br>
+                <select id="provider" name="resource_label" class="form-control">
+                    <option value="0">Sélectionner</option>
+                    {% for resource in resources %}
+                        <option value="{{ resource.provider }}">{{ resource.provider }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            {% for resource in resources %}
+                <div class="form-group services-select services-select-{{ resource.provider }}">
+                    <label>Select service</label>
+                    <select class="form-control">
+                        <option value="0">Sélectionner</option>
+                        {% for service in resource.services %}
+                            <option value="{{ service.name }}">{{ service.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                {% for service in resource.services %}
+                    <div class="service-fields service-fields-{{ service.name }}">
+                        {% for field in service.fields %}
+                            <div class="form-group service-field">
+                                <label>{{ field.label }}</label>
+                                {% if field.type != 'bool' %}
+                                    <input type="{{ field.type }}" name="{{ field.name }}"
+                                           class="form-control{% if field.mandatory %} required{% endif %}{% if field.type == 'date' %} js-datepicker{% endif %}"
+                                           value="{% if field.default is defined %}{{ field.default }}{% endif %}">
+                                {% else %}
+                                    <label>
+                                        True
+                                        <input type="checkbox" name="{{ field.name }}" value="true" class="form-control{% if field.mandatory %} required{% endif %}">
+                                    </label>
+                                    <label>
+                                        True
+                                        <input type="checkbox" name="{{ field.name }}" value="false" class="form-control{% if field.mandatory %} required{% endif %}">
+                                    </label>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+
+            <form id="submit-form" action="{{ adminUrl }}/simulation/wsProvider" method="post">
+                <button type="submit" class="btn btn-primary push">Valider</button>
+            </form>
+
+            {% if result is defined %}
+                {% if result|length > 0 %}
+                    <pre>{{ dump(result) }}</pre>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <p>Erreur du WS, voir les logs</p>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
