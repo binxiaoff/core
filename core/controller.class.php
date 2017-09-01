@@ -230,6 +230,7 @@ abstract class Controller implements ContainerAwareInterface
             'debug'      => 'prod' !== $this->get('kernel')->getEnvironment()
         ]);
         $this->twigEnvironment->addExtension(new Twig_Extension_Debug());
+        $this->twigEnvironment->addExtension(new Twig_Extensions_Extension_Intl());
     }
 
     protected function loadData($object, $params = [])
