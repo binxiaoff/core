@@ -321,58 +321,6 @@
                 </table>
             </div>
         </div><!-- /#parrainage-list-campaign -->
-        <div id="parrainage-blacklist" class="block block-bordered">
-            <div class="block-header">
-                <h3 class="block-title">
-                    Blacklist (Liste des clients exclus)
-                </h3>
-            </div>
-            <div class="block-content">
-                {%  if formErrors.blacklist is defined and formErrors.blacklist is not empty %}
-                    <div class="alert alert-error">
-                        <p>
-                            {% for error in formErrors.blacklist %}
-                                <span>{{ error }}</span> <br>
-                            {% endfor %}
-                        </p>
-                    </div>
-                {% endif %}
-
-                <form id="parrainage-blacklist-search" method="post" action="{{ app.adminUrl }}/parrainage/search_client" class="form-inline push validate">
-                    <div class="form-group">
-                        <label>ID Client</label> <br>
-                        <input type="number" name="id_client" class="form-control required">
-                    </div>
-                    <div class="form-group push-5-l">
-                        <input type="hidden" name="search_client">
-                        <button type="submit" class="btn btn-primary">Rechercher</button>
-                    </div>
-                </form>
-
-                <table id="parrainage-blacklist-table" class="table table-bordered table-striped table-hover table-header-bg js-dataTable-simple">
-                    <thead>
-                    <tr>
-                        <th>ID Client</th>
-                        <th>Nom</th>
-                        <th>Prénom</th>
-                        <th>Date d'exclusion</th>
-                        <th>Campagne</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for blacklist in blacklistedClients %}
-                        <tr>
-                            <td>{{ blacklist.idClient.idClient() }}</td>
-                            <td>{{ blacklist.idClient.prenom }}</td>
-                            <td>{{ blacklist.idClient.nom }}</td>
-                            <td>{{ blacklist.added|date('d/m/Y') }}</td>
-                            <td>{{ blacklist.idCampaign.id is null ? 'Global' : blacklist.idCampaign.id }}</td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div><!-- /#parrainage-blacklist -->
         <div id="parrainage-adjust-prime" class="block block-bordered">
             <div class="block-header">
                 <h3 class="block-title">Attribution manuelle de la prime de parrainage</h3>
@@ -593,5 +541,57 @@
                 </div>
             </div>
         </div><!-- /#parrainage-establish-link -->
+        <div id="parrainage-blacklist" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">
+                    Blacklist (Liste des clients exclus)
+                </h3>
+            </div>
+            <div class="block-content">
+                {%  if formErrors.blacklist is defined and formErrors.blacklist is not empty %}
+                    <div class="alert alert-error">
+                        <p>
+                            {% for error in formErrors.blacklist %}
+                                <span>{{ error }}</span> <br>
+                            {% endfor %}
+                        </p>
+                    </div>
+                {% endif %}
+
+                <form id="parrainage-blacklist-search" method="post" action="{{ app.adminUrl }}/parrainage/search_client" class="form-inline push validate">
+                    <div class="form-group">
+                        <label>ID Client</label> <br>
+                        <input type="number" name="id_client" class="form-control required">
+                    </div>
+                    <div class="form-group push-5-l">
+                        <input type="hidden" name="search_client">
+                        <button type="submit" class="btn btn-primary">Rechercher</button>
+                    </div>
+                </form>
+
+                <table id="parrainage-blacklist-table" class="table table-bordered table-striped table-hover table-header-bg js-dataTable-simple">
+                    <thead>
+                    <tr>
+                        <th>ID Client</th>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Date d'exclusion</th>
+                        <th>Campagne</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for blacklist in blacklistedClients %}
+                        <tr>
+                            <td>{{ blacklist.idClient.idClient() }}</td>
+                            <td>{{ blacklist.idClient.prenom }}</td>
+                            <td>{{ blacklist.idClient.nom }}</td>
+                            <td>{{ blacklist.added|date('d/m/Y') }}</td>
+                            <td>{{ blacklist.idCampaign.id is null ? 'Global' : blacklist.idCampaign.id }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div><!-- /#parrainage-blacklist -->
     </div><!-- /.content -->
 {% endblock %}
