@@ -95,14 +95,14 @@ class ProjectRepaymentDetail
     private $idWallet;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_task", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_task_log", referencedColumnName="id")
      * })
      */
-    private $idTask;
+    private $idTaskLog;
 
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers
@@ -337,27 +337,27 @@ class ProjectRepaymentDetail
     }
 
     /**
-     * Set idTask
+     * Set idTaskLog
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask $idTask
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog $idTaskLog
      *
      * @return ProjectRepaymentDetail
      */
-    public function setIdTask(\Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask $idTask = null)
+    public function setIdTaskLog(\Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog $idTaskLog = null)
     {
-        $this->idTask = $idTask;
+        $this->idTaskLog = $idTaskLog;
 
         return $this;
     }
 
     /**
-     * Get idTask
+     * Get idTaskLog
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog
      */
-    public function getIdTask()
+    public function getIdTaskLog()
     {
-        return $this->idTask;
+        return $this->idTaskLog;
     }
 
     /**

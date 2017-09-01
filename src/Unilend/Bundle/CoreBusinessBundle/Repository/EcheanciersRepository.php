@@ -566,18 +566,17 @@ class EcheanciersRepository extends EntityRepository
      * @param Projects|int $project
      * @param int          $sequence
      *
-     * @return Echeanciers[]
+     * @return float
      */
-    public function findUnfinishedSchedule($project, $sequence)
+    public function getUnpaidAmount($project, $sequence)
     {
         $queryBuilder = $this->createQueryBuilder('e');
-        $queryBuilder->where('e.idProject = :project')
+        $queryBuilder->select('SUM(e.capital + e.interets - e.capitalRembourse - e.interetsRembourses)')
+            ->where('e.idProject = :project')
             ->andWhere('e.ordre = :sequence')
-            ->andWhere('e.status in (:unfinished)')
             ->setParameter('project', $project)
-            ->setParameter('sequence', $sequence)
-            ->setParameter('unfinished', [Echeanciers::STATUS_PENDING, Echeanciers::STATUS_PARTIALLY_REPAID]);
+            ->setParameter('sequence', $sequence);
 
-        return $queryBuilder->getQuery()->getResult();
+        return round(bcdiv($queryBuilder->getQuery()->getSingleScalarResult(), 100, 4), 2);
     }
 }

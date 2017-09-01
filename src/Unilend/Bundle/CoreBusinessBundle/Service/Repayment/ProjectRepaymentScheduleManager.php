@@ -136,7 +136,7 @@ class ProjectRepaymentScheduleManager
     private function getMonthlyAmount(Projects $project)
     {
         $paymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy(['idProject' => $project]);
-        return round(bcdiv(bcadd(bcadd($paymentSchedule->getMontant(), $paymentSchedule->getCommission()), $paymentSchedule->getTva()), 100, 4), 2);
+        return round(bcdiv($paymentSchedule->getCapital() + $paymentSchedule->getInterets() + $paymentSchedule->getCommission() + $paymentSchedule->getTva(), 100, 4), 2);
     }
 
     /**
@@ -147,17 +147,19 @@ class ProjectRepaymentScheduleManager
     public function getNetMonthlyAmount(Projects $project)
     {
         $paymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy(['idProject' => $project]);
-        return round(bcdiv($paymentSchedule->getMontant(), 100, 4), 2);
+        return round(bcdiv($paymentSchedule->getCapital() + $paymentSchedule->getInterets(), 100, 4), 2);
     }
 
     /**
      * @param Projects $project
+     * @param int      $sequence
      *
      * @return float
      */
-    public function getUnpaidNetMonthlyAmount(Projects $project)
+    public function getUnpaidAmount(Projects $project, $sequence)
     {
-        $paymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy(['idProject' => $project]);
-        return round(bcdiv($paymentSchedule->getMontant(), 100, 4), 2);
+        $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+
+        return $repaymentScheduleRepository->getUnpaidAmount($project, $sequence);
     }
 }
