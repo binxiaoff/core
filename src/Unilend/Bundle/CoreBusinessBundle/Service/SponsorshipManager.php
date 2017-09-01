@@ -118,11 +118,6 @@ class SponsorshipManager
         $this->entityManager->flush();
     }
 
-    public function modifySponsorshipCampaign()
-    {
-
-    }
-
     /**
      * @return null|SponsorshipCampaign
      */
@@ -226,8 +221,34 @@ class SponsorshipManager
         }
     }
 
+    /**
+     * @param Sponsorship $sponsorship
+     */
     private function sendSponseeRewardEmail(Sponsorship $sponsorship)
     {
+        $varMail = [
+            'surl'               => $this->surl,
+            'url'                => $this->furl,
+            'sponsee_first_name' => $sponsorship->getIdClientSponsee()->getPrenom(),
+            'sponsee_last_name'  => $sponsorship->getIdClientSponsee()->getNom(),
+            'amount'             => $sponsorship->getIdSponsorshipCampaign()->getAmountSponsee(),
+            'lien_fb'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
+            'lien_tw'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
+        ];
+
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage('parrainage-versement-prime-filleul', $varMail);
+        try {
+            $message->setTo($sponsorship->getIdClientSponsor()->getEmail());
+            $this->mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->logger->warning('Could not send email: parrainage-versement-prime-filleul - Exception: ' . $exception->getMessage(), [
+                'id_mail_template' => $message->getTemplateId(),
+                'id_client'        => $sponsorship->getIdClientSponsor()->getIdClient(),
+                'class'            => __CLASS__,
+                'function'         => __FUNCTION__
+            ]);
+        }
 
     }
 
