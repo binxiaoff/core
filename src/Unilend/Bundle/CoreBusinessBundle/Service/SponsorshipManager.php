@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
@@ -343,6 +344,8 @@ class SponsorshipManager
     public function sendSponsorshipInvitation(Clients $sponsor, $email, $sponseeNames, $message)
     {
         $currentCampaign = $this->getCurrentSponsorshipCampaign();
+        $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')
+            ->findOneBy(['status' => \mail_templates::STATUS_ACTIVE, 'type' => 'parrainage-invitation-filleul']);
 
         $varMail = [
             'surl'               => $this->surl,
@@ -351,7 +354,7 @@ class SponsorshipManager
             'sponsor_last_name'  => $sponsor->getNom(),
             'sponsee_names'      => $sponseeNames,
             'sponsor_message'    => $message,
-            'link'               => $this->router->generate('lender_sponsorship_redirect', ['sponsorCode' => $sponsor->getSponsorCode()]),
+            'link'               => $this->router->generate('lender_sponsorship_redirect', ['sponsorCode' => $sponsor->getSponsorCode()], UrlGeneratorInterface::ABSOLUTE_URL),
             'amount'             => $this->numberFormatter->format((float) $currentCampaign->getAmountSponsee()),
             'lien_fb'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
             'lien_tw'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
@@ -362,6 +365,7 @@ class SponsorshipManager
         $message = $this->messageProvider->newMessage('parrainage-invitation-filleul', $varMail);
         try {
             $message->setTo($email);
+            $message->setSubject(str_replace('[EMV DYN]sponsor_names[EMV DYN]',  $sponsor->getPrenom() . ' ' . $sponsor->getNom(), $mailTemplate->getSubject()));
             $this->mailer->send($message);
         } catch (\Exception $exception) {
             $this->logger->warning('Could not send email: parrainage-invitation-filleul - Exception: ' . $exception->getMessage(), [

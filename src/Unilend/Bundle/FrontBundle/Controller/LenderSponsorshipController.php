@@ -2,11 +2,9 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Doctrine\ORM\EntityManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -14,7 +12,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
-
 
 class LenderSponsorshipController extends Controller
 {
@@ -39,33 +36,35 @@ class LenderSponsorshipController extends Controller
         $client             = $this->getClient();
         $sponsorLink        = $this->generateUrl('lender_sponsorship_redirect', ['sponsorCode' => $client->getSponsorCode()], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        $sponseeEmail = $request->request->get('sponsee-email');
-        if (
-            null === $sponseeEmail
-            || false === filter_var($sponseeEmail, FILTER_VALIDATE_EMAIL)
-        ) {
-            $this->addFlash('sponsorshipSendMailErrors', $translator->trans('lender-sponsorship_sponsee-email-not-valid'));
-        }
+        if (null !== $request->request->get('send-sponsorship-invitation')) {
+            $sponseeEmail = $request->request->get('sponsee-email');
+            if (
+                null === $sponseeEmail
+                || false === filter_var($sponseeEmail, FILTER_VALIDATE_EMAIL)
+            ) {
+                $this->addFlash('sponsorshipSendMailErrors', $translator->trans('lender-sponsorship_sponsee-email-not-valid'));
+            }
 
-        $sponseeNames = $request->request->get('sponsee-names');
-        if (
-            null === $sponseeNames
-            || false === filter_var($sponseeNames, FILTER_SANITIZE_STRING)
-        ){
-            $this->addFlash('sponsorshipSendMailErrors', $translator->trans('lender-sponsorship_sponsee-names-not-valid'));
-        }
+            $sponseeNames = $request->request->get('sponsee-names');
+            if (
+                null === $sponseeNames
+                || false === filter_var($sponseeNames, FILTER_SANITIZE_STRING)
+            ){
+                $this->addFlash('sponsorshipSendMailErrors', $translator->trans('lender-sponsorship_sponsee-names-not-valid'));
+            }
 
-        $message = $request->request->get('sponsor-message');
-        if (
-            null === $message
-            || false === filter_var($message, FILTER_SANITIZE_STRING)
-        ){
-            $this->addFlash('sponsorshipSendMailErrors', $translator->trans('lender-sponsorship_sponsor-message-not-valid'));
-        }
+            $message = $request->request->get('sponsor-message');
+            if (
+                null === $message
+                || false === filter_var($message, FILTER_SANITIZE_STRING)
+            ){
+                $this->addFlash('sponsorshipSendMailErrors', $translator->trans('lender-sponsorship_sponsor-message-not-valid'));
+            }
 
-        if (false === $this->get('session')->getFlashBag()->has('sponsorshipSendMailErrors')) {
-            $sponsorshipManager->sendSponsorshipInvitation($client, $sponseeEmail, $sponseeNames, $message);
-            $this->addFlash('sponsorshipSendMailSuccess', $translator->trans('lender-sponsorship_send-invitation-success-message'));
+            if (false === $this->get('session')->getFlashBag()->has('sponsorshipSendMailErrors')) {
+                $sponsorshipManager->sendSponsorshipInvitation($client, $sponseeEmail, $sponseeNames, $message);
+                $this->addFlash('sponsorshipSendMailSuccess', $translator->trans('lender-sponsorship_send-invitation-success-message'));
+            }
         }
 
         return $this->render('/pages/lender_sponsorship.html.twig', [

@@ -69,6 +69,7 @@ classNames: 'user-preter-sponsorship'
                                 </div>
 
                                 <p>
+                                    <input type="hidden" name="send-sponsorship-invitation">
                                     <button type="submit" class="btn-primary btn-shape-md" data-equal-width>{% trans %} lender-sponsorship_section-send-button-submit {% endtrans %}</button>
                                     <button type="button" class="btn-default btn-shape-md margin-10-l" data-equal-width data-modal-toggle="#preview-email-dialog">{% trans %} lender-sponsorship_section-send-button-preview {% endtrans %}</button>
                                 </p>
@@ -161,7 +162,6 @@ classNames: 'user-preter-sponsorship'
             </h3>
             <div class="dialog-message">
                 <div id="preview-email-container" class="bg-bg2">
-                    <!-- @TODO load real email template for preview !-->
                     {% trans with {'%sponsorLink%': sponsorLink, '%sponsorNames%': client.prenom ~ ' ' ~ client.nom , '%amountSponsee' : currentCampaign.amountSponsee|localizedcurrency('EUR') } %} lender-sponsorship_modal-preview-text {% endtrans %}
                 </div>
             </div>
