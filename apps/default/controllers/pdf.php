@@ -5,6 +5,7 @@ use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Elements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
@@ -139,82 +140,138 @@ class pdfController extends bootstrap
         }
     }
 
+    public function _projet()
+    {
+        if (
+            isset($this->params[0], $this->params[1])
+            && 1 === preg_match('/^[0-9a-f-]{32,36}$/', $this->params[0])
+            && false !== filter_var($this->params[1], FILTER_VALIDATE_INT)
+            && $this->clients->get($this->params[0], 'hash')
+            && $this->companies->get($this->clients->id_client, 'id_client_owner')
+            && $this->projects->get($this->params[1], 'id_company = ' . $this->companies->id_company . ' AND id_project')
+            && $this->projects->status != ProjectsStatus::PRET_REFUSE
+        ) {
+            $proxy   = $this->commonProxy();
+            $mandate = $this->commonMandate();
+
+            if ('read' === $proxy['action'] && 'read' === $mandate['action']) {
+                /** @var \Symfony\Component\Routing\RouterInterface $router */
+                $router = $this->get('router');
+                header('Location: ' . $router->generate('universign_signature_status', ['signatureType' => \Unilend\Bundle\FrontBundle\Controller\UniversignController::SIGNATURE_TYPE_PROJECT, 'signatureId' => $this->projects->id_project, 'clientHash' => $this->clients->hash]));
+                exit;
+            } elseif ('redirect' === $proxy['action'] && 'redirect' === $mandate['action'] && $proxy['url'] === $mandate['url']) {
+                header('Location: ' . $proxy['url']);
+                exit;
+            } elseif ('sign' === $proxy['action'] || 'sign' === $mandate['action']) {
+                /** @var \Symfony\Component\Routing\RouterInterface $router */
+                $router = $this->get('router');
+                header('Location: ' . $router->generate('universign_project_generation', ['projectId' => $this->projects->id_project]));
+                exit;
+            }
+        }
+
+        header('Location: ' . $this->lurl);
+        exit;
+    }
+
     // mandat emprunteur
     public function _mandat()
     {
-        if (false === isset($this->params[0], $this->params[1]) || false === is_numeric($this->params[1])) {
-            header('Location: ' . $this->lurl);
-            die;
-        }
-
-        $this->clients = $this->loadData('clients');
-        /** @var \projects $project */
-        $project = $this->loadData('projects');
-        /** @var \companies $company */
-        $company = $this->loadData('companies');
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
         if (
-            $this->clients->get($this->params[0], 'hash')
-            && $project->get($this->params[1], 'id_project')
-            && $company->get($this->clients->id_client, 'id_client_owner')
-            && $project->id_company == $company->id_company
-            && $project->status != \projects_status::PRET_REFUSE
+            isset($this->params[0], $this->params[1])
+            && 1 === preg_match('/^[0-9a-f-]{32,36}$/', $this->params[0])
+            && false !== filter_var($this->params[1], FILTER_VALIDATE_INT)
+            && $this->clients->get($this->params[0], 'hash')
+            && $this->companies->get($this->clients->id_client, 'id_client_owner')
+            && $this->projects->get($this->params[1], 'id_company = ' . $this->companies->id_company . ' AND id_project')
+            && $this->projects->status != ProjectsStatus::PRET_REFUSE
         ) {
-            /** @var \clients_mandats $mandates */
-            $mandates        = $this->loadData('clients_mandats');
-            $path            = $this->path . 'protected/pdf/mandat/';
-            $namePDFClient   = 'MANDAT-UNILEND-' . $project->slug . '-' . $this->clients->id_client;
-            $projectMandates = $mandates->select(
-                'id_project = ' . $project->id_project . ' AND id_client = ' . $this->clients->id_client . ' AND status IN (' . UniversignEntityInterface::STATUS_PENDING . ',' . UniversignEntityInterface::STATUS_SIGNED . ')',
-                'id_mandat DESC'
-            );
+            $return = $this->commonMandate();
 
-            if (false === empty($projectMandates)) {
-                $mandate = array_shift($projectMandates);
-
-                foreach ($projectMandates as $mandateToArchive) {
-                    $mandates->get($mandateToArchive['id_mandat']);
-                    $mandates->status = UniversignEntityInterface::STATUS_ARCHIVED;
-                    $mandates->update();
-                }
-
-                if (UniversignEntityInterface::STATUS_SIGNED == $mandate['status']) {
-                    $this->ReadPdf($path . $mandate['name'], $namePDFClient);
-                    die;
-                } elseif (UniversignEntityInterface::STATUS_CANCELED == $mandate['status']) {
-                    header('Location: ' . $this->lurl . '/espace_emprunteur/operations');
-                    die;
-                }
-
-                $mandates->get($mandate['id_mandat']);
-            } else {
-                $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->clients->id_client);
-                if (null === $bankAccount) {
-                    header('Location: ' . $this->lurl);
-                    die;
-                }
-                $mandates->id_client  = $this->clients->id_client;
-                $mandates->url_pdf    = '/pdf/mandat/' . $this->params[0] . '/' . $this->params[1];
-                $mandates->name       = 'mandat-' . $this->params[0] . '-' . $this->params[1] . '.pdf';
-                $mandates->id_project = $project->id_project;
-                $mandates->status     = UniversignEntityInterface::STATUS_PENDING;
-                $mandates->iban       = $bankAccount->getIban();
-                $mandates->bic        = $bankAccount->getBic();
-                $mandates->create();
+            switch ($return['action']) {
+                case 'redirect':
+                    header('Location: ' . $return['url']);
+                    exit;
+                case 'read':
+                    $this->ReadPdf($return['path'], $return['name']);
+                    exit;
+                case 'sign':
+                    header('Location: ' . $this->url . '/universign/mandat/' . $return['mandate']->id_mandat);
+                    exit;
             }
-
-            if (false === file_exists($path . $mandates->name)) {
-                $this->GenerateWarrantyHtml($mandates);
-                $this->WritePdf($path . $mandates->name, 'warranty');
-            }
-
-            header('Location: ' . $this->url . '/universign/mandat/' . $mandates->id_mandat);
-            die;
-        } else {
-            header('Location: ' . $this->lurl);
-            die;
         }
+
+        header('Location: ' . $this->lurl);
+        exit;
+    }
+
+    /**
+     * @return array
+     */
+    private function commonMandate()
+    {
+        /** @var \clients_mandats $mandates */
+        $mandates        = $this->loadData('clients_mandats');
+        $path            = $this->path . 'protected/pdf/mandat/';
+        $namePDFClient   = 'MANDAT-UNILEND-' . $this->projects->slug . '-' . $this->clients->id_client;
+        $projectMandates = $mandates->select(
+            'id_project = ' . $this->projects->id_project . ' AND id_client = ' . $this->clients->id_client . ' AND status IN (' . UniversignEntityInterface::STATUS_PENDING . ',' . UniversignEntityInterface::STATUS_SIGNED . ')',
+            'id_mandat DESC'
+        );
+
+        if (false === empty($projectMandates)) {
+            $mandate = array_shift($projectMandates);
+
+            foreach ($projectMandates as $mandateToArchive) {
+                $mandates->get($mandateToArchive['id_mandat']);
+                $mandates->status = UniversignEntityInterface::STATUS_ARCHIVED;
+                $mandates->update();
+            }
+
+            if (UniversignEntityInterface::STATUS_SIGNED == $mandate['status']) {
+                return [
+                    'action' => 'read',
+                    'path'   => $path . $mandate['name'],
+                    'name'   => $namePDFClient
+                ];
+            } elseif (UniversignEntityInterface::STATUS_CANCELED == $mandate['status']) {
+                return [
+                    'action' => 'redirect',
+                    'url'    => $this->lurl . '/espace_emprunteur/operations'
+                ];
+            }
+
+            $mandates->get($mandate['id_mandat']);
+        } else {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            $bankAccount   = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->clients->id_client);
+            if (null === $bankAccount) {
+                return [
+                    'action' => 'redirect',
+                    'url'    => $this->lurl
+                ];
+            }
+
+            $mandates->id_client  = $this->clients->id_client;
+            $mandates->url_pdf    = '/pdf/mandat/' . $this->clients->hash . '/' . $this->projects->id_project;
+            $mandates->name       = 'mandat-' . $this->clients->hash . '-' . $this->projects->id_project . '.pdf';
+            $mandates->id_project = $this->projects->id_project;
+            $mandates->status     = UniversignEntityInterface::STATUS_PENDING;
+            $mandates->iban       = $bankAccount->getIban();
+            $mandates->bic        = $bankAccount->getBic();
+            $mandates->create();
+        }
+
+        if (false === file_exists($path . $mandates->name)) {
+            $this->GenerateWarrantyHtml($mandates);
+            $this->WritePdf($path . $mandates->name, 'warranty');
+        }
+
+        return [
+            'action'  => 'sign',
+            'mandate' => $mandates
+        ];
     }
 
     private function GenerateWarrantyHtml($mandates)
@@ -271,94 +328,125 @@ class pdfController extends bootstrap
 
     public function _pouvoir()
     {
-        if (isset($this->params[0], $this->params[1]) && $this->clients->get($this->params[0], 'hash')) {
-            $this->companies->get($this->clients->id_client, 'id_client_owner');
+        if (
+            isset($this->params[0], $this->params[1])
+            && 1 === preg_match('/^[0-9a-f-]{32,36}$/', $this->params[0])
+            && false !== filter_var($this->params[1], FILTER_VALIDATE_INT)
+            && $this->clients->get($this->params[0], 'hash')
+            && $this->companies->get($this->clients->id_client, 'id_client_owner')
+            && $this->projects->get($this->params[1], 'id_company = ' . $this->companies->id_company . ' AND id_project')
+            && $this->projects->status != \projects_status::PRET_REFUSE
+        ) {
+            $return = $this->commonProxy();
 
-            if (
-                $this->projects->get($this->params[1], 'id_company = ' . $this->companies->id_company . ' AND id_project')
-                && $this->projects->status != \projects_status::PRET_REFUSE
-            ) {
-                $this->oProjectsPouvoir = $this->loadData('projects_pouvoir');
-
-                $signed        = false;
-                $path          = $this->path . 'protected/pdf/pouvoir/';
-                $namePdfClient = 'POUVOIR-UNILEND-' . $this->projects->slug . '-' . $this->clients->id_client;
-                $fileName      = 'pouvoir-' . $this->params[0] . '-' . $this->params[1] . '.pdf';
-
-                $projectPouvoir        = $this->oProjectsPouvoir->select('id_project = ' . $this->projects->id_project, 'added ASC');
-                $projectPouvoirToTreat = (is_array($projectPouvoir) && false === empty($projectPouvoir)) ? array_shift($projectPouvoir) : null;
-
-                if (is_array($projectPouvoir) && 0 < count($projectPouvoir)) {
-                    foreach ($projectPouvoir as $projectPouvoirToDelete) {
-                        $this->oLogger->info('Deleting proxy (' . $projectPouvoirToDelete['id_pouvoir'] . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project));
-                        $this->oProjectsPouvoir->delete($projectPouvoirToDelete['id_pouvoir'], 'id_pouvoir');
-                    }
-                }
-
-                if (false === is_null($projectPouvoirToTreat)) {
-                    $this->oProjectsPouvoir->get($projectPouvoirToTreat['id_pouvoir'], 'id_pouvoir');
-                    if ($this->oProjectsPouvoir->status == UniversignEntityInterface::STATUS_CANCELED) {
-                        header('Location: ' . $this->lurl . '/espace_emprunteur/operations');
-                        die;
-                    }
-
-                    // si c'est un upload manuel du BO on affiche directement
-                    if ($projectPouvoirToTreat['id_universign'] == 'no_universign' && file_exists($path . $projectPouvoirToTreat['name'])) {
-                        $this->ReadPdf($path . $projectPouvoirToTreat['name'], $namePdfClient);
-                        die;
-                    }
-
-                    $signed        = $projectPouvoirToTreat['status'] == UniversignEntityInterface::STATUS_SIGNED;
-                    $instantCreate = false;
-
-                    if (false === file_exists($path . $projectPouvoirToTreat['name'])) {
-                        $this->GenerateProxyHtml();
-                        $this->WritePdf($path . $projectPouvoirToTreat['name'], 'authority');
-                        $signed        = false;
-                        $instantCreate = true;
-                    }
-                } else {
-                    $this->GenerateProxyHtml();
-                    $this->WritePdf($path . $fileName, 'authority');
-
-                    $this->oProjectsPouvoir->id_project = $this->projects->id_project;
-                    $this->oProjectsPouvoir->url_pdf    = '/pdf/pouvoir/' . $this->params[0] . '/' . (isset($this->params[1]) ? $this->params[1] . '/' : '');
-                    $this->oProjectsPouvoir->name       = $fileName;
-                    $this->oProjectsPouvoir->create();
-
-                    $instantCreate = true;
-                }
-
-                if (false === $signed) {
-                    if (file_exists($path . $fileName) && filesize($path . $fileName) > 0 && date('Y-m-d', filemtime($path . $fileName)) != date('Y-m-d')) {
-                        unlink($path . $fileName);
-
-                        $this->oLogger->info('File "' . $path . $fileName . '" deleted', array('class' => __CLASS__, 'function' => __FUNCTION__));
-
-                        $this->GenerateProxyHtml();
-                        $this->WritePdf($path . $fileName, 'authority');
-                        $instantCreate = true;
-                    }
-
-                    if (date('Y-m-d', strtotime($this->oProjectsPouvoir->updated)) == date('Y-m-d') && false === $instantCreate && false === empty($this->oProjectsPouvoir->url_universign)) {
-                        $regenerationUniversign = '/NoUpdateUniversign';
-                    } else {
-                        $regenerationUniversign = '';
-                        $this->oProjectsPouvoir->update();
-                    }
-
-                    header('Location: ' . $this->url . '/universign/pouvoir/' . $this->oProjectsPouvoir->id_pouvoir . $regenerationUniversign);
+            switch ($return['action']) {
+                case 'redirect':
+                    header('Location: ' . $return['url']);
                     exit;
-                } else {
-                    $this->ReadPdf($path . $fileName, $namePdfClient);
-                }
-            } else {
-                header('Location: ' . $this->lurl);
-                die;
+                case 'read':
+                    $this->ReadPdf($return['path'], $return['name']);
+                    exit;
+                case 'sign':
+                    $regenerationUniversign = $return['regenerate'] ? '' : 'NoUpdateUniversign';
+                    header('Location: ' . $this->url . '/universign/pouvoir/' . $return['proxy']->id_pouvoir . $regenerationUniversign);
+                    exit;
+            }
+        }
+
+        header('Location: ' . $this->lurl);
+        exit;
+    }
+
+    /**
+     * @return array
+     */
+    private function commonProxy()
+    {
+        $this->oProjectsPouvoir = $this->loadData('projects_pouvoir');
+
+        $signed        = false;
+        $path          = $this->path . 'protected/pdf/pouvoir/';
+        $namePdfClient = 'POUVOIR-UNILEND-' . $this->projects->slug . '-' . $this->clients->id_client;
+        $fileName      = 'pouvoir-' . $this->clients->hash . '-' . $this->projects->id_project . '.pdf';
+
+        $projectPouvoir        = $this->oProjectsPouvoir->select('id_project = ' . $this->projects->id_project, 'added ASC');
+        $projectPouvoirToTreat = (is_array($projectPouvoir) && false === empty($projectPouvoir)) ? array_shift($projectPouvoir) : null;
+
+        if (is_array($projectPouvoir) && 0 < count($projectPouvoir)) {
+            foreach ($projectPouvoir as $projectPouvoirToDelete) {
+                $this->oLogger->info('Deleting proxy (' . $projectPouvoirToDelete['id_pouvoir'] . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project));
+                $this->oProjectsPouvoir->delete($projectPouvoirToDelete['id_pouvoir'], 'id_pouvoir');
+            }
+        }
+
+        if (false === is_null($projectPouvoirToTreat)) {
+            $this->oProjectsPouvoir->get($projectPouvoirToTreat['id_pouvoir'], 'id_pouvoir');
+            if ($this->oProjectsPouvoir->status == UniversignEntityInterface::STATUS_CANCELED) {
+                return [
+                    'action' => 'redirect',
+                    'url'    => $this->lurl . '/espace_emprunteur/operations'
+                ];
+            }
+
+            // si c'est un upload manuel du BO on affiche directement
+            if ($projectPouvoirToTreat['id_universign'] == 'no_universign' && file_exists($path . $projectPouvoirToTreat['name'])) {
+                return [
+                    'action' => 'read',
+                    'path'   => $path . $projectPouvoirToTreat['name'],
+                    'name'   => $namePdfClient
+                ];
+            }
+
+            $signed        = $projectPouvoirToTreat['status'] == UniversignEntityInterface::STATUS_SIGNED;
+            $instantCreate = false;
+
+            if (false === file_exists($path . $projectPouvoirToTreat['name'])) {
+                $this->GenerateProxyHtml();
+                $this->WritePdf($path . $projectPouvoirToTreat['name'], 'authority');
+                $signed        = false;
+                $instantCreate = true;
             }
         } else {
-            header('Location: ' . $this->lurl);
-            die;
+            $this->GenerateProxyHtml();
+            $this->WritePdf($path . $fileName, 'authority');
+
+            $this->oProjectsPouvoir->id_project = $this->projects->id_project;
+            $this->oProjectsPouvoir->url_pdf    = '/pdf/pouvoir/' . $this->clients->hash . '/' . $this->projects->id_project . '/';
+            $this->oProjectsPouvoir->name       = $fileName;
+            $this->oProjectsPouvoir->create();
+
+            $instantCreate = true;
+        }
+
+        if (false === $signed) {
+            if (file_exists($path . $fileName) && filesize($path . $fileName) > 0 && date('Y-m-d', filemtime($path . $fileName)) != date('Y-m-d')) {
+                unlink($path . $fileName);
+
+                $this->oLogger->info('File "' . $path . $fileName . '" deleted', array('class' => __CLASS__, 'function' => __FUNCTION__));
+
+                $this->GenerateProxyHtml();
+                $this->WritePdf($path . $fileName, 'authority');
+                $instantCreate = true;
+            }
+
+            if (date('Y-m-d', strtotime($this->oProjectsPouvoir->updated)) == date('Y-m-d') && false === $instantCreate && false === empty($this->oProjectsPouvoir->url_universign)) {
+                $regenerationUniversign = false;
+            } else {
+                $regenerationUniversign = true;
+                $this->oProjectsPouvoir->update();
+            }
+
+            return [
+                'action'     => 'sign',
+                'proxy'      => $this->oProjectsPouvoir,
+                'regenerate' => $regenerationUniversign
+            ];
+        } else {
+            return [
+                'action' => 'read',
+                'path'   => $path . $fileName,
+                'name'   => $namePdfClient
+            ];
         }
     }
 

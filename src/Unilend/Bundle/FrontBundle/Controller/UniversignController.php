@@ -19,6 +19,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\WireTransferOutUniversign;
 
 class UniversignController extends Controller
 {
+    const SIGNATURE_TYPE_PROJECT = 'projet';
+
     /**
      * As the status has been removed from the URL, we need this redirection action for the old callback url.
      * It can be delete in the next release after the "deblocage progressif" project.
@@ -50,7 +52,7 @@ class UniversignController extends Controller
      *     "/universign/{signatureType}/{signatureId}/{clientHash}",
      *     name="universign_signature_status",
      *     requirements={
-     *         "signatureType": "^(pouvoir|mandat|cgv-emprunteurs|virement-emprunteurs)$",
+     *         "signatureType": "^(projet|pouvoir|mandat|cgv-emprunteurs|virement-emprunteurs)$",
      *         "signatureId": "\d+",
      *         "clientHash": "[0-9a-f-]{32,36}"
      *     }
@@ -72,6 +74,17 @@ class UniversignController extends Controller
         }
 
         switch ($signatureType) {
+            case self::SIGNATURE_TYPE_PROJECT:
+                $mandate = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->findOneBy(['idProject' => $signatureId, 'status' => [ClientsMandats::STATUS_PENDING, ClientsMandats::STATUS_SIGNED]], ['added' => 'DESC']);
+                $proxy   = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->findOneBy(['idProject' => $signatureId, 'status' => [ClientsMandats::STATUS_PENDING, ClientsMandats::STATUS_SIGNED]], ['added' => 'DESC']);
+
+                if (null === $mandate || null === $proxy) {
+                    return $this->redirectToRoute('home');
+                }
+
+                $documents[] = $proxy;
+                $documents[] = $mandate;
+                break;
             case ProjectsPouvoir::DOCUMENT_TYPE:
                 $documents[] = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->find($signatureId);
                 break;
@@ -160,10 +173,10 @@ class UniversignController extends Controller
     /**
      * @Route(
      *     "/universign/pouvoir/{proxyId}/{universignUpdate}",
-     *     name="proxy_generation_no_update_universign",
+     *     name="universign_proxy_generation_no_update",
      *     requirements={"proxyId":"\d+", "universignUpdate":"\w+"}
      * )
-     * @Route("/universign/pouvoir/{proxyId}", name="proxy_generation", requirements={"proxyId":"\d+"})
+     * @Route("/universign/pouvoir/{proxyId}", name="universign_proxy_generation", requirements={"proxyId":"\d+"})
      *
      * @param int         $proxyId
      * @param null|string $universignUpdate
@@ -176,17 +189,19 @@ class UniversignController extends Controller
         $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
         $proxy             = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->find($proxyId);
 
-        if ($proxy && UniversignEntityInterface::STATUS_PENDING === $proxy->getStatus()) {
-            if ($universignUpdate == 'NoUpdateUniversign' && false === empty($proxy->getUrlUniversign()) || $universignManager->createProxy($proxy)) {
-                return $this->redirect($proxy->getUrlUniversign());
-            }
+        if (
+            $proxy
+            && UniversignEntityInterface::STATUS_PENDING === $proxy->getStatus()
+            && ($universignUpdate == 'NoUpdateUniversign' && false === empty($proxy->getUrlUniversign()) || $universignManager->createProxy($proxy))
+        ) {
+            return $this->redirect($proxy->getUrlUniversign());
         }
 
         return $this->redirectToRoute('home');
     }
 
     /**
-     * @Route("/universign/mandat/{mandateId}", name="mandate_generation", requirements={"mandateId":"\d+"})
+     * @Route("/universign/mandat/{mandateId}", name="universign_mandate_generation", requirements={"mandateId":"\d+"})
      *
      * @param int $mandateId
      *
@@ -198,17 +213,49 @@ class UniversignController extends Controller
         $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
         $mandate           = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->find($mandateId);
 
-        if ($mandate && $mandate->getStatus() == UniversignEntityInterface::STATUS_PENDING) {
-            if (false === empty($mandate->getUrlUniversign()) || $universignManager->createMandate($mandate)) {
-                return $this->redirect($mandate->getUrlUniversign());
-            }
+        if (
+            $mandate
+            && UniversignEntityInterface::STATUS_PENDING === $mandate->getStatus()
+            && (false === empty($mandate->getUrlUniversign()) || $universignManager->createMandate($mandate))
+        ) {
+            return $this->redirect($mandate->getUrlUniversign());
         }
 
         return $this->redirectToRoute('home');
     }
 
     /**
-     * @Route("/universign/cgv_emprunteurs/{tosId}/{tosName}", name="tos_generation", requirements={"tosId":"\d+"})
+     * @Route("/universign/projet/{projectId}", name="universign_project_generation", requirements={"projectId":"\d+"})
+     *
+     * @param int $projectId
+     *
+     * @return Response
+     */
+    public function createProjectAction($projectId)
+    {
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
+        $project           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+        $mandate           = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->findOneBy(['idProject' => $projectId, 'status' => ClientsMandats::STATUS_PENDING], ['added' => 'DESC']);
+        $proxy             = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->findOneBy(['idProject' => $projectId, 'status' => ClientsMandats::STATUS_PENDING], ['added' => 'DESC']);
+
+        if (
+            $project
+            && $proxy
+            && $mandate
+            && (
+                false === empty($proxy->getUrlUniversign()) && false === empty($mandate->getUrlUniversign()) && $proxy->getUrlUniversign() === $mandate->getUrlUniversign()
+                || $universignManager->createProject($project, $proxy, $mandate)
+            )
+        ) {
+            return $this->redirect($proxy->getUrlUniversign());
+        }
+
+        return $this->redirectToRoute('home');
+    }
+
+    /**
+     * @Route("/universign/cgv_emprunteurs/{tosId}/{tosName}", name="universign_tos_generation", requirements={"tosId":"\d+"})
      *
      * @param int    $tosId
      * @param string $tosName

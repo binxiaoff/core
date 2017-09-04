@@ -11,12 +11,14 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WireTransferOutUniversign;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager;
-use \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
+use Unilend\Bundle\FrontBundle\Controller\UniversignController;
+use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 use PhpXmlRpc\Client;
 use PhpXmlRpc\Request;
 use PhpXmlRpc\Value;
@@ -175,6 +177,45 @@ class UniversignManager
     }
 
     /**
+     * @param Projects        $project
+     * @param ProjectsPouvoir $proxy
+     * @param ClientsMandats  $mandate
+     *
+     * @return bool
+     */
+    public function createProject(Projects $project, ProjectsPouvoir $proxy, ClientsMandats $mandate)
+    {
+        $bankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($project->getIdCompany()->getIdClientOwner());
+        if (null === $bankAccount) {
+            $this->logger->warning('No validated bank account found for mandate ' . $mandate->getId() . ' of client ' . $mandate->getIdClient()->getIdClient(), ['function' => __FUNCTION__]);
+
+            return false;
+        }
+
+        $resultValue = $this->createSignature(UniversignController::SIGNATURE_TYPE_PROJECT, $project->getIdProject(), [$proxy, $mandate]);
+
+        if ($resultValue instanceof Value) {
+            $proxy
+                ->setIdUniversign($resultValue['id']->scalarVal())
+                ->setUrlUniversign($resultValue['url']->scalarVal())
+                ->setStatus(ProjectsPouvoir::STATUS_PENDING);
+
+            $mandate
+                ->setIdUniversign($resultValue['id']->scalarVal())
+                ->setUrlUniversign($resultValue['url']->scalarVal())
+                ->setStatus(UniversignEntityInterface::STATUS_PENDING)
+                ->setBic($bankAccount->getBic())
+                ->setIban($bankAccount->getIban());
+
+            $this->entityManager->flush();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * @param ClientsMandats $mandate
      *
      * @return bool
@@ -183,7 +224,7 @@ class UniversignManager
     {
         $bankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($mandate->getIdClient());
         if (null === $bankAccount) {
-            $this->logger->warning('No validated bank account found for mandat : ' . $mandate->getId() . ' of client : ' . $mandate->getIdClient()->getIdClient(), ['function' => __FUNCTION__]);
+            $this->logger->warning('No validated bank account found for mandate ' . $mandate->getId() . ' of client ' . $mandate->getIdClient()->getIdClient(), ['function' => __FUNCTION__]);
 
             return false;
         }
