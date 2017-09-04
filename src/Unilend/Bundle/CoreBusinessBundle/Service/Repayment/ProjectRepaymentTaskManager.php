@@ -17,12 +17,14 @@ use Unilend\core\Loader;
 
 class ProjectRepaymentTaskManager
 {
-
     /** @var EntityManager */
     private $entityManager;
 
     /** @var ProjectRepaymentNotificationSender */
     private $projectRepaymentNotificationSender;
+
+    /** @var ProjectRepaymentScheduleManager */
+    private $projectRepaymentScheduleManager;
 
     /** @var LoggerInterface */
     private $logger;
@@ -39,12 +41,14 @@ class ProjectRepaymentTaskManager
      * @param EntityManager                      $entityManager
      * @param EntityManagerSimulator             $entityManagerSimulator
      * @param ProjectRepaymentNotificationSender $projectRepaymentNotificationSender
+     * @param projectRepaymentScheduleManager    $projectRepaymentScheduleManager
      * @param LoggerInterface                    $logger
      */
     public function __construct(
         EntityManager $entityManager,
         EntityManagerSimulator $entityManagerSimulator,
         ProjectRepaymentNotificationSender $projectRepaymentNotificationSender,
+        ProjectRepaymentScheduleManager $projectRepaymentScheduleManager,
         LoggerInterface $logger
     )
     {
@@ -52,58 +56,71 @@ class ProjectRepaymentTaskManager
         $this->entityManagerSimulator             = $entityManagerSimulator;
         $this->logger                             = $logger;
         $this->projectRepaymentNotificationSender = $projectRepaymentNotificationSender;
+        $this->projectRepaymentScheduleManager    = $projectRepaymentScheduleManager;
         $this->businessDays                       = Loader::loadLib('jours_ouvres');
     }
 
     /**
      * @param Echeanciers $repaymentSchedule
-     * @param float       $amount
+     * @param float       $repaymentAmount
+     * @param float       $commission
      * @param Receptions  $reception
      * @param Users       $user
      *
-     * @return bool
+     * @throws \Exception
      */
-    public function planRepaymentTask(Echeanciers $repaymentSchedule, $amount, Receptions $reception, Users $user)
+    public function planRepaymentTask(Echeanciers $repaymentSchedule, $repaymentAmount, $commission, Receptions $reception, Users $user)
     {
         $project = $repaymentSchedule->getIdLoan()->getProject();
 
-        $finishedProjectRepaymentTasks = $this->entityManager
+        $repaymentTasks = $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
-            ->findOneBy(['idProject' => $project, 'sequence' => $repaymentSchedule->getOrdre()]);
+            ->findBy(['idProject' => $project, 'sequence' => $repaymentSchedule->getOrdre()]);
 
-        if ($finishedProjectRepaymentTasks) {
-            $wireTransferIn = $finishedProjectRepaymentTasks->getIdWireTransferIn();
+        $plannedAmount     = 0;
+        $plannedCommission = 0;
+        foreach ($repaymentTasks as $task) {
+            $plannedAmount     = round(bcadd($plannedAmount, $task->getAmount(), 4), 2);
+            $plannedCommission = round(bcadd($plannedCommission, $task->getCommissionUnilend(), 4), 2);
+        }
 
-            if (null === $this->entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->findOneBy(['idReceptionRejected' => $wireTransferIn])) {
-                $finishedProjectRepaymentTasks->setIdWireTransferIn($reception);
-                $this->entityManager->flush($finishedProjectRepaymentTasks);
-            } else {
-                $this->logger->error('The repayment task is already repaid for project (id: ' . $project->getIdProject() . ') sequence ' . $repaymentSchedule->getOrdre() . '. Please check the data consistency.');
-                return false;
-            }
+        $plannedAmount     = round(bcadd($plannedAmount, $repaymentAmount, 4), 2);
+        $plannedCommission = round(bcadd($plannedCommission, $commission, 4), 2);
 
-            return true;
+        $netMonthlyAmount  = $this->projectRepaymentScheduleManager->getNetMonthlyAmount($project);
+        $monthlyCommission = $this->projectRepaymentScheduleManager->getUnilendCommissionVatIncl($project);
+
+        if (1 === bccomp($plannedAmount, $netMonthlyAmount)) {
+            throw new \Exception('The total amount of the repayment tasks for project (id: ' . $project->getIdProject() . ') sequence ' . $repaymentSchedule->getOrdre() . ' is more then the monthly amount. Please check the data consistency.');
+        }
+
+        if (1 === bccomp($plannedCommission, $monthlyCommission)) {
+            throw new \Exception('The total commission of the repayment tasks for project (id: ' . $project->getIdProject() . ') sequence ' . $repaymentSchedule->getOrdre() . ' is more then the monthly commission. Please check the data consistency.');
         }
 
         $projectRepaymentTask = new ProjectRepaymentTask();
         $projectRepaymentTask->setIdProject($project)
             ->setSequence($repaymentSchedule->getOrdre())
-            ->setAmount($amount)
+            ->setAmount($repaymentAmount)
+            ->setCommissionUnilend($commission)
             ->setType(ProjectRepaymentTask::TYPE_REGULAR)
             ->setStatus(ProjectRepaymentTask::STATUS_PENDING)
             ->setRepayAt($repaymentSchedule->getDateEcheance())
             ->setIdUserCreation($user)
             ->setIdWireTransferIn($reception);
 
-        if (Projects::AUTO_REPAYMENT_ON === $project->getRembAuto() && $project->getStatus() < ProjectsStatus::PROBLEME) {
+        if (
+            Projects::AUTO_REPAYMENT_ON === $project->getRembAuto()
+            && $project->getStatus() < ProjectsStatus::PROBLEME
+            && 0 === bccomp($repaymentAmount, $this->projectRepaymentScheduleManager->getNetMonthlyAmount($project), 2)
+            && 0 === bccomp($commission, $this->projectRepaymentScheduleManager->getUnilendCommissionVatIncl($project), 2)
+        ) {
             $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_READY)
                 ->setIdUserValidation($user);
         }
 
         $this->entityManager->persist($projectRepaymentTask);
         $this->entityManager->flush($projectRepaymentTask);
-
-        return true;
     }
 
     /**

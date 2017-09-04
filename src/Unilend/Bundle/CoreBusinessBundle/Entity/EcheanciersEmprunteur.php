@@ -12,8 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class EcheanciersEmprunteur
 {
-    const STATUS_PENDING = 0;
-    const STATUS_PAID    = 1;
+    const STATUS_PENDING        = 0;
+    const STATUS_PAID           = 1;
+    const STATUS_PARTIALLY_PAID = 2;
 
     const STATUS_NO_EARLY_REPAYMENT   = 0;
     const STATUS_EARLY_REPAYMENT_DONE = 1;
@@ -44,13 +45,6 @@ class EcheanciersEmprunteur
     /**
      * @var integer
      *
-     * @ORM\Column(name="paid_capital", type="integer", nullable=false)
-     */
-    private $paidCapital;
-
-    /**
-     * @var integer
-     *
      * @ORM\Column(name="interets", type="integer", nullable=false)
      */
     private $interets;
@@ -58,9 +52,9 @@ class EcheanciersEmprunteur
     /**
      * @var integer
      *
-     * @ORM\Column(name="paid_interet", type="integer", nullable=false)
+     * @ORM\Column(name="paid_amount", type="integer", nullable=false)
      */
-    private $paidInteret;
+    private $paidAmount;
 
     /**
      * @var integer
@@ -144,8 +138,6 @@ class EcheanciersEmprunteur
      */
     private $idProject;
 
-
-
     /**
      * Set ordre
      *
@@ -223,30 +215,6 @@ class EcheanciersEmprunteur
     }
 
     /**
-     * Set paidCapital
-     *
-     * @param integer $paidCapital
-     *
-     * @return EcheanciersEmprunteur
-     */
-    public function setPaidCapital($paidCapital)
-    {
-        $this->paidCapital = $paidCapital;
-
-        return $this;
-    }
-
-    /**
-     * Get paidCapital
-     *
-     * @return integer
-     */
-    public function getPaidCapital()
-    {
-        return $this->paidCapital;
-    }
-
-    /**
      * Set interets
      *
      * @param integer $interets
@@ -271,27 +239,27 @@ class EcheanciersEmprunteur
     }
 
     /**
-     * Set paidInteret
+     * Set paidAmount
      *
-     * @param integer $paidInteret
+     * @param integer $paidAmount
      *
      * @return EcheanciersEmprunteur
      */
-    public function setPaidInteret($paidInteret)
+    public function setPaidAmount($paidAmount)
     {
-        $this->paidInteret = $paidInteret;
+        $this->paidAmount = $paidAmount;
 
         return $this;
     }
 
     /**
-     * Get paidInteret
+     * Get paidAmount
      *
      * @return integer
      */
-    public function getPaidInteret()
+    public function getPaidAmount()
     {
-        return $this->paidInteret;
+        return $this->paidAmount;
     }
 
     /**

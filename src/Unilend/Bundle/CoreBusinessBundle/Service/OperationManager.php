@@ -485,11 +485,10 @@ class OperationManager
     }
 
     /**
-     * @param float                   $commission
      * @param EcheanciersEmprunteur   $paymentSchedule
      * @param ProjectRepaymentTaskLog $projectRepaymentTaskLog
      */
-    public function repaymentCommission($commission, EcheanciersEmprunteur $paymentSchedule, ProjectRepaymentTaskLog $projectRepaymentTaskLog)
+    public function repaymentCommission(EcheanciersEmprunteur $paymentSchedule, ProjectRepaymentTaskLog $projectRepaymentTaskLog)
     {
         $borrowerWallet    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($paymentSchedule->getIdProject()->getIdCompany()->getIdClientOwner(),
             WalletType::BORROWER);
@@ -499,7 +498,7 @@ class OperationManager
         $operationType    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_COMMISSION]);
         $operationSubType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::BORROWER_COMMISSION_REPAYMENT]);
 
-        $this->newOperation($commission, $operationType, $operationSubType, $borrowerWallet, $unilendWallet, [$paymentSchedule, $projectRepaymentTaskLog]);
+        $this->newOperation($projectRepaymentTaskLog->getIdTask()->getCommissionUnilend(), $operationType, $operationSubType, $borrowerWallet, $unilendWallet, [$paymentSchedule, $projectRepaymentTaskLog]);
     }
 
     /**

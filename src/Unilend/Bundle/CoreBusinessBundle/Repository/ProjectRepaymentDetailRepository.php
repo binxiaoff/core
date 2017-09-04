@@ -15,7 +15,7 @@ class ProjectRepaymentDetailRepository extends EntityRepository
      *
      * @return ProjectRepaymentDetail[]
      */
-    public function findRandomlyByTask($projectRepaymentTaskLog, $limit)
+    public function findRandomlyByTaskExecution($projectRepaymentTaskLog, $limit)
     {
         $queryBuilder = $this->createQueryBuilder('prd');
         $queryBuilder->where('prd.idTaskLog = :taskLog')

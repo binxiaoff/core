@@ -20,7 +20,6 @@ class ProjectRepaymentTaskRepository extends EntityRepository
         $qb->where('prt.status = :ready')
             ->andWhere('prt.repayAt <= :repaymentDate')
             ->andWhere('prt.type in (:supportedType)')
-            ->andWhere('prt.idProject = 11712')
             ->setParameter('ready', ProjectRepaymentTask::STATUS_READY)
             ->setParameter('repaymentDate', $repaymentDate)
             ->setParameter('supportedType', [ProjectRepaymentTask::TYPE_REGULAR, ProjectRepaymentTask::TYPE_LATE, ProjectRepaymentTask::TYPE_EARLY])

@@ -568,7 +568,7 @@ class EcheanciersRepository extends EntityRepository
      *
      * @return float
      */
-    public function getUnpaidAmount($project, $sequence)
+    public function getUnrepaidAmount($project, $sequence)
     {
         $queryBuilder = $this->createQueryBuilder('e');
         $queryBuilder->select('SUM(e.capital + e.interets - e.capitalRembourse - e.interetsRembourses)')

@@ -41,13 +41,21 @@
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service_repayment.project_repayment_notification_sender"/>
+            <argument type="service" id="unilend.service_repayment.project_repayment_schedule_manager"/>
             <argument type="service" id="logger"/>
         </service>
 
         <service id="unilend.service_repayment.project_repayment_schedule_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentScheduleManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.entity_manager"/>
+        </service>
+
+        <service id="unilend.service_repayment.project_payment_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectPaymentManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service_repayment.project_repayment_task_manager"/>
+            <argument type="service" id="unilend.service_repayment.project_repayment_schedule_manager"/>
+            <argument type="service" id="logger"/>
         </service>
     </services>
 </container>
