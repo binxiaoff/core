@@ -6,6 +6,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
+use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\SponsorshipRepository;
@@ -23,6 +24,8 @@ class CheckPromotionalOfferValidityCommand extends ContainerAwareCommand
     {
         $this->cancelWelcomeOffers();
         $this->cancelSponsorshipOffers();
+
+        $this->archivePastSponsorshipCampaigns();
 
         $this->checkUnilendPromotionalBalance();
     }
@@ -114,6 +117,21 @@ class CheckPromotionalOfferValidityCommand extends ContainerAwareCommand
                     'Could not send email : notification-solde-promotion-faible - Exception: ' . $exception->getMessage(),
                     ['id_mail_template' => $message->getTemplateId(), 'email address' => explode(';', trim($recipientSetting->getValue())), 'class' => __CLASS__, 'function' => __FUNCTION__]
                 );
+            }
+        }
+    }
+
+    private function archivePastSponsorshipCampaigns()
+    {
+        $entityManager   = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $activeCampaigns = $entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->findBy(['status' => SponsorshipCampaign::STATUS_VALID], ['start' => 'ASC']);
+        $now             = new \DateTime('NOW');
+
+        /** @var SponsorshipCampaign $campaign */
+        foreach ($activeCampaigns as $campaign) {
+            if ($campaign->getEnd()->getTimestamp() < $now->getTimestamp()) {
+                $campaign->setStatus(SponsorshipCampaign::STATUS_ARCHIVED);
+                $entityManager->flush($campaign);
             }
         }
     }

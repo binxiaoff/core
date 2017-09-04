@@ -6,6 +6,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Sponsorship;
 use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Service\OperationManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager;
 
 class parrainageController extends bootstrap
 {
@@ -26,12 +28,12 @@ class parrainageController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager $sponsorshipManager */
         $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\SponsorshipRepository $sponsorshipRepository */
-        $sponsorshipRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship');
-        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $sponsorshipRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship');
+        $operationRepository           = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $sponsorshipCampaignRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign');
 
-        $unilendPromotionWalletType            = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
-        $unilendPromotionWallet                = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendPromotionWalletType]);
+        $unilendPromotionWalletType = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
+        $unilendPromotionWallet     = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendPromotionWalletType]);
 
         $totalRewardsPaidSponsee = $operationRepository->sumDebitOperationsByTypeUntil($unilendPromotionWallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION], [OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSEE]);
         $totalRewardsPaidSponsor = $operationRepository->sumDebitOperationsByTypeUntil($unilendPromotionWallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION], [OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR]);
@@ -39,7 +41,25 @@ class parrainageController extends bootstrap
         $validCampaigns    = $this->getAdditionalCampaignData($sponsorshipCampaignRepository->findBy(['status' => SponsorshipCampaign::STATUS_VALID], ['start' => 'ASC']));
         $archivedCampaigns = $this->getAdditionalCampaignData($sponsorshipCampaignRepository->findBy(['status' => SponsorshipCampaign::STATUS_ARCHIVED], ['end' => 'DESC']));
 
-        $newCampaignFormErrors = isset($_SESSION['create_sponsorship_campaign']['errors']) ? $_SESSION['create_sponsorship_campaign']['errors']: [];
+        $this->render(null, [
+            'unilendPromotionalBalance' => $unilendPromotionWallet->getAvailableBalance(),
+            'totalSponsor'              => $sponsorshipRepository->getCountSponsorByCampaign(),
+            'totalSponsee'              => $sponsorshipRepository->getCountSponseeByCampaign(),
+            'totalRewardPaidOutSponsee' => $totalRewardsPaidSponsee,
+            'totalRewardPaidOutSponsor' => $totalRewardsPaidSponsor,
+            'validCampaigns'            => $validCampaigns,
+            'archivedCampaigns'         => $archivedCampaigns,
+            'blacklistedClients'        => $entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipBlacklist')->findAll(),
+            'allSponsorshipRewards'     => $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->getPaidOutSponsorshipDetails(),
+            'currentCampaign'           => $sponsorshipManager->getCurrentSponsorshipCampaign(),
+            'formErrors'                => $this->getErrorsFromSession(),
+            'formSuccess' => $this->getSuccessFromSession()
+        ]);
+    }
+
+    private function getErrorsFromSession()
+    {
+        $newCampaignFormErrors = isset($_SESSION['create_sponsorship_campaign']['errors']) ? $_SESSION['create_sponsorship_campaign']['errors'] : [];
         unset($_SESSION['create_sponsorship_campaign']['errors']);
 
         $modifyCampaignErrors = isset($_SESSION['modify_sponsorship_campaign']['errors']) ? $_SESSION['modify_sponsorship_campaign']['errors'] : [];
@@ -54,25 +74,39 @@ class parrainageController extends bootstrap
         $createSponsorshipErrors = isset($_SESSION['create_sponsorship']['errors']) ? $_SESSION['create_sponsorship']['errors'] : [];
         unset($_SESSION['create_sponsorship']['errors']);
 
-        $this->render(null, [
-            'unilendPromotionalBalance' => $unilendPromotionWallet->getAvailableBalance(),
-            'totalSponsor'              => $sponsorshipRepository->getCountSponsorByCampaign(),
-            'totalSponsee'              => $sponsorshipRepository->getCountSponseeByCampaign(),
-            'totalRewardPaidOutSponsee' => $totalRewardsPaidSponsee,
-            'totalRewardPaidOutSponsor' => $totalRewardsPaidSponsor,
-            'validCampaigns'            => $validCampaigns,
-            'archivedCampaigns'         => $archivedCampaigns,
-            'blacklistedClients'        => $entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipBlacklist')->findAll(),
-            'allSponsorshipRewards'     => $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->getPaidOutSponsorshipDetails(),
-            'currentCampaign'           => $sponsorshipManager->getCurrentSponsorshipCampaign(),
-            'formErrors'                => [
-                'modifyCampaign'    => $modifyCampaignErrors,
-                'newCampaign'       => $newCampaignFormErrors,
-                'blacklist'         => $blacklistFormErrors,
-                'payOutReward'      => $payOutRewardErrors,
-                'createSponsorship' => $createSponsorshipErrors
-            ]
-        ]);
+        return [
+            'modifyCampaign'    => $modifyCampaignErrors,
+            'newCampaign'       => $newCampaignFormErrors,
+            'blacklist'         => $blacklistFormErrors,
+            'payOutReward'      => $payOutRewardErrors,
+            'createSponsorship' => $createSponsorshipErrors
+        ];
+    }
+
+    private function getSuccessFromSession()
+    {
+        $newCampaignFormSuccess = isset($_SESSION['create_sponsorship_campaign']['success']) ? $_SESSION['create_sponsorship_campaign']['success'] : [];
+        unset($_SESSION['create_sponsorship_campaign']['success']);
+
+        $modifyCampaignSuccess = isset($_SESSION['modify_sponsorship_campaign']['success']) ? $_SESSION['modify_sponsorship_campaign']['success'] : [];
+        unset($_SESSION['modify_sponsorship_campaign']['success']);
+
+        $blacklistFormSuccess = isset($_SESSION['sponsorship_blacklist']['success']) ? $_SESSION['sponsorship_blacklist']['success'] : [];
+        unset($_SESSION['sponsorship_blacklist']['success']);
+
+        $payOutRewardSuccess = isset($_SESSION['pay_out_sponsorship']['success']) ? $_SESSION['pay_out_sponsorship']['success'] : [];
+        unset($_SESSION['pay_out_sponsorship']['success']);
+
+        $createSponsorshipSuccess = isset($_SESSION['create_sponsorship']['success']) ? $_SESSION['create_sponsorship']['success'] : [];
+        unset($_SESSION['create_sponsorship']['success']);
+
+        return [
+            'modifyCampaign'    => $modifyCampaignSuccess,
+            'newCampaign'       => $newCampaignFormSuccess,
+            'blacklist'         => $blacklistFormSuccess,
+            'payOutReward'      => $payOutRewardSuccess,
+            'createSponsorship' => $createSponsorshipSuccess
+        ];
     }
 
     /**
@@ -154,8 +188,12 @@ class parrainageController extends bootstrap
 
             try {
                 $sponsorshipManager->saveSponsorshipCampaign($start, $end, $amountSponsee, $amountSponsor, $maxNumberSponsee, $validityDays, $idCampaign);
+                $_SESSION['create_sponsorship_campaign']['success'] = 'La nouvelle campagne a été crée';
             } catch (\Exception $exception) {
-                $_SESSION['create_sponsorship_campaign']['errors'][] = 'Une erreur est survenue lors de l\'enregistrement de la campagne. La campagne se chevauche peut-être avec une déjà existante. Vérifier la saisie.';      $_SESSION['create_sponsorship_campaign']['errors'][] = $exception->getMessage(); //@TODO same as other places, check type of Exception and change display of Exception or do log
+                $_SESSION['create_sponsorship_campaign']['errors'][] = 'Une erreur est survenue lors de l\'enregistrement de la campagne.';
+                if (SponsorshipManager::SPONSORSHIP_MANAGER_EXCEPTION_CODE == $exception->getCode()) {
+                    $_SESSION['create_sponsorship_campaign']['errors']['technical'][] = $exception->getMessage();
+                }
             }
         }
 
@@ -247,6 +285,8 @@ class parrainageController extends bootstrap
             $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
             $user               = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
             $sponsorshipManager->blacklistClientAsSponsor($client, $user, $campaign);
+
+            $_SESSION['sponsorship_blacklist']['success'] = 'Le client a été blacklisté';
         }
 
         header('Location: ' . $this->lurl . '/parrainage');
@@ -272,6 +312,7 @@ class parrainageController extends bootstrap
             $typeReward = $this->request->request->get('type_reward');
             if (empty($typeReward)) {
                 $_SESSION['pay_out_sponsorship']['errors'][] = 'Une erreur s\'est produite';
+                $_SESSION['pay_out_sponsorship']['errors']['technical'][] = 'reward type ' . $this->request->request->get('type_reward') . ' does not exist';
                 header('Location: ' . $this->lurl . '/parrainage');
                 die;
             }
@@ -279,13 +320,17 @@ class parrainageController extends bootstrap
             try {
                 if (OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSEE == $typeReward) {
                     $sponsorshipManager->attributeSponseeReward($sponsorship->getIdClientSponsee());
+                    $_SESSION['pay_out_sponsorship']['success'] = 'La prime du filleul a été versée';
                 }
                 if (OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR == $typeReward) {
                     $sponsorshipManager->attributeSponsorReward($sponsorship->getIdClientSponsor());
+                    $_SESSION['pay_out_sponsorship']['success'] = 'La prime du parrain a été versée';
                 }
             } catch (\Exception $exception) {
                 $_SESSION['pay_out_sponsorship']['errors'][] = 'Une erreur s\'est produite';
-                $_SESSION['pay_out_sponsorship']['errors'][] = $exception->getMessage(); //@todo delete or handle as a different error message and check exception types before to avoid having SQL errors.
+                if (false == in_array($exception->getCode(), [OperationManager::OPERATION_MANAGER_EXCEPTION_CODE, SponsorshipManager::SPONSORSHIP_MANAGER_EXCEPTION_CODE])) {
+                    $_SESSION['pay_out_sponsorship']['errors']['technical'][] = $exception->getMessage();
+                }
             }
         }
 
@@ -351,10 +396,7 @@ class parrainageController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager   = $this->get('doctrine.orm.entity_manager');
 
-        if (
-            (null !== $this->request->request->get('create_sponsorship') && $this->request->isXmlHttpRequest())
-            || null !== $this->request->request->get('create_sponsorship_confirm')
-        ) {
+        if (null !== $this->request->request->get('create_sponsorship') && $this->request->isXmlHttpRequest()) {
             $idClientSponsor = $this->request->request->getInt('id_client_sponsor');
             if (null === $idClientSponsor) {
                 $result = ['success' => false, 'error' => ['L\'id client du parrain n\'est pas valide']];
@@ -366,6 +408,13 @@ class parrainageController extends bootstrap
             $sponsor   = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClientSponsor);
             if (null === $sponsor) {
                 $result = ['success' => false, 'error' => ['Le client parrain n\'existe pas']];
+                header('Content-Type: application/json');
+                echo json_encode($result);
+                die;
+            }
+
+            if (false === $sponsor->isLender()) {
+                $result = ['success' => false, 'error' => ['Le client parrain n\'est pas un prêteur']];
                 header('Content-Type: application/json');
                 echo json_encode($result);
                 die;
@@ -387,9 +436,15 @@ class parrainageController extends bootstrap
                 die;
             }
 
-            $sponseeValidationDate = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->getFirstClientValidation($sponsee->getIdClient());
+            if (false === $sponsee->isLender()) {
+                $result = ['success' => false, 'error' => ['Le client filleul n\'est pas un prêteur']];
+                header('Content-Type: application/json');
+                echo json_encode($result);
+                die;
+            }
 
-            $sponsorshipData = [
+            $sponseeValidationDate = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->getFirstClientValidation($sponsee->getIdClient());
+            $sponsorshipData       = [
                 'idClientSponsor'                => $sponsor->getIdClient(),
                 'lastNameSponsor'                => $sponsor->getNom(),
                 'firstNameSponsor'               => $sponsor->getPrenom(),
@@ -397,41 +452,90 @@ class parrainageController extends bootstrap
                 'lastNameSponsee'                => $sponsee->getNom(),
                 'firstNameSponsee'               => $sponsee->getPrenom(),
                 'subscriptionSponsee'            => $sponsee->getAdded()->format('d/m/Y'),
-                'sponseeValidationDate'          => null !== $sponseeValidationDate ? $sponseeValidationDate->getAdded()->format('d/m/Y'): 'pas encore validé',
+                'sponseeValidationDate'          => null !== $sponseeValidationDate ? $sponseeValidationDate->getAdded()->format('d/m/Y') : 'pas encore validé',
                 'sponseeHasReceivedWelcomeOffer' => $this->get('unilend.service.welcome_offer_manager')->clientHasReceivedWelcomeOffer($sponsee)
             ];
 
-            if (null !== $this->request->request->get('create_sponsorship') ) {
-                $result = ['success' => true, 'sponsorshipData' => $sponsorshipData];
-                header('Content-Type: application/json');
-                echo json_encode($result);
-                die;
-            }
-
-            if (null !== $this->request->request->get('create_sponsorship_confirm')) {
-                $campaign = $entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->findCampaignValidAtDate($sponsee->getAdded());
-
-                if (null === $campaign) {
-                    $_SESSION['create_sponsorship']['errors'][] = 'Il n\'y a pas de campagne active au moment de l\'inscription du filleul';
-                    header('Location: ' . $this->lurl . '/parrainage');
-                    die;
-                }
-
-                $status   = $sponsorshipData['sponseeHasReceivedWelcomeOffer'] ? Sponsorship::STATUS_SPONSEE_PAID : Sponsorship::STATUS_ONGOING;
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager $sponsorshipManager */
-                $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
-                $sponsorshipManager->createSponsorship($sponsee, $sponsor->getSponsorCode(), $campaign);
-
-                $sponsorship = $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $sponsee]);
-                $sponsorship->setIdSponsorshipCampaign($campaign)
-                    ->setStatus($status);
-
-                $entityManager->flush($sponsorship);
-            }
+            $result = ['success' => true, 'sponsorshipData' => $sponsorshipData];
+            header('Content-Type: application/json');
+            echo json_encode($result);
+            die;
         }
 
         header('Location: ' . $this->lurl . '/parrainage');
         die;
+    }
+
+
+    public function _create_sponsorship_confirm()
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager   = $this->get('doctrine.orm.entity_manager');
+
+        if (null !== $this->request->request->get('create_sponsorship_confirm')) {
+            $idClientSponsor = $this->request->request->getInt('id_client_sponsor');
+            if (null === $idClientSponsor) {
+                $_SESSION['create_sponsorship']['errors'][] = 'L\'id client du parrain n\'est pas valide';
+                header('Location: ' . $this->lurl . '/parrainage');
+                die;
+            }
+
+            $sponsor   = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClientSponsor);
+            if (null === $sponsor) {
+                $_SESSION['create_sponsorship']['errors'][] = 'Le client parrain n\'existe pas';
+                header('Location: ' . $this->lurl . '/parrainage');
+                die;
+            }
+
+            if (false === $sponsor->isLender()) {
+                $_SESSION['create_sponsorship']['errors'][] = 'Le client parrain n\'est pas un prêteur';
+                header('Location: ' . $this->lurl . '/parrainage');
+                die;
+            }
+
+            $idClientSponsee = $this->request->request->getInt('id_client_sponsee');
+            if (null === $idClientSponsee) {
+                $_SESSION['create_sponsorship']['errors'][] = 'L\'id client du filleul n\'est pas valide';
+                header('Location: ' . $this->lurl . '/parrainage');
+                die;
+            }
+
+            $sponsee  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClientSponsee);
+            if (null === $sponsee) {
+                $_SESSION['create_sponsorship']['errors'][] = 'Le client filleul n\'existe pas';
+                header('Location: ' . $this->lurl . '/parrainage');
+                die;
+            }
+
+            if (false === $sponsee->isLender()) {
+                $_SESSION['create_sponsorship']['errors'][] = 'Le client filleul n\'est pas un prêteur';
+                header('Location: ' . $this->lurl . '/parrainage');
+                die;
+            }
+
+
+            $campaign = $entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->findCampaignValidAtDate($sponsee->getAdded());
+            if (null === $campaign) {
+                $_SESSION['create_sponsorship']['errors'][] = 'Il n\'y a pas de campagne active au moment de l\'inscription du filleul';
+                header('Location: ' . $this->lurl . '/parrainage');
+                die;
+            }
+
+            $status   = $this->get('unilend.service.welcome_offer_manager')->clientHasReceivedWelcomeOffer($sponsee) ? Sponsorship::STATUS_SPONSEE_PAID : Sponsorship::STATUS_ONGOING;
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager $sponsorshipManager */
+            $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
+            $sponsorshipManager->createSponsorship($sponsee, $sponsor->getSponsorCode(), $campaign);
+
+            $sponsorship = $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $sponsee]);
+            $sponsorship->setIdSponsorshipCampaign($campaign)
+                ->setStatus($status);
+            $entityManager->flush($sponsorship);
+            $_SESSION['create_sponsorship']['success'] = 'Le lien entre parrain (' . $sponsor->getIdClient() . ') et filleul (' . $sponsee->getIdClient() . ') a été crée';
+        }
+
+        header('Location: ' . $this->lurl . '/parrainage');
+        die;
+
     }
 
     public function _export()

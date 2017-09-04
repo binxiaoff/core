@@ -808,11 +808,20 @@ class LenderSubscriptionController extends Controller
      * @Route("devenir-preteur-lp", name="lender_landing_page")
      * @Method("GET")
      */
-    public function landingPageAction(Request $request)
+    public function landingPageAction()
+    {
+        return $this->render('pages/lender_subscription/landing_page.html.twig', ['showWelcomeOffer' => $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage()]);
+    }
+
+
+    /**
+     * @Route("parrainage-preteur", name="lender_sponsorship_landing_page")
+     * @Method("GET")
+     */
+    public function sponsorshipLandngPageAction(Request $request)
     {
         $clientRepository             = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
         $template['isSponsorship']    = false;
-        $template['showWelcomeOffer'] = $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage();
 
         if (
             SponsorshipManager::UTM_SOURCE === $request->query->get('utm_source')
@@ -821,12 +830,14 @@ class LenderSubscriptionController extends Controller
             && null !== $clientRepository->findOneBy(['sponsorCode' => $request->query->get('sponsor')])
             && null !== $this->get('unilend.service.sponsorship_manager')->getCurrentSponsorshipCampaign()
         ) {
-            $template['isSponsorship']   = true;
-            $template['sponsorCode'] = $request->query->get('sponsor');
+            $template['isSponsorship']    = true;
+            $template['showWelcomeOffer'] = false;
+            $template['sponsorCode']      = $request->query->get('sponsor');
         }
 
-        return $this->render('pages/lender_subscription/landing_page.html.twig', $template);
+        return $this->render('pages/lender_subscription/landing_page_sponsorship.html.twig', $template);
     }
+
 
     /**
      * @Route("/figaro/", name="figaro_landing_page")

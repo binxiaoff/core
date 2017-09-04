@@ -259,7 +259,11 @@ $(function(){
 
                             if ("false" == s.sponsor_reward_paid) {
                                 type = $table.data('type-sponsor')
-                                sponsorReceived = '<button class="btn btn-primary btn-xs" data-toggle="modal" data-target="' + modal + '" data-type="' + type + '" data-sponsorship-id="' + s.id_sponsorship + '">Débloquer</button>'
+                                if ("true" == s.sponsee_reward_paid) {
+                                    sponsorReceived = '<button class="btn btn-primary btn-xs" data-toggle="modal" data-target="' + modal + '" data-type="' + type + '" data-sponsorship-id="' + s.id_sponsorship + '">Débloquer</button>'
+                                } else {
+                                    sponsorReceived = 'pas encore possible'
+                                }
                             }
 
                             if ("false" == s.sponsee_reward_paid) {

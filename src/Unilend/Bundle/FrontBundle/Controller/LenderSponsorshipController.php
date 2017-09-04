@@ -82,9 +82,10 @@ class LenderSponsorshipController extends Controller
      */
     public function sponsorshipRedirect($sponsorCode)
     {
-        return $this->redirectToRoute('lender_landing_page', [
+        return $this->redirectToRoute('lender_sponsorship_landing_page', [
             'utm_source'   => SponsorshipManager::UTM_SOURCE,
             'utm_source2'  => $sponsorCode,
+            'utm_medium'   => SponsorshipManager::UTM_MEDIUM,
             'utm_campaign' => SponsorshipManager::UTM_CAMPAIGN,
             'sponsor'      => $sponsorCode
         ]);

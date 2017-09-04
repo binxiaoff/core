@@ -159,6 +159,10 @@ class bootstrap extends Controller
                     'uri'   => 'preteurs/offres_de_bienvenue'
                 ],
                 [
+                    'title' => 'Parrainage',
+                    'uri'   => 'parrainage'
+                ],
+                [
                     'title' => 'Matching ville fiscale',
                     'uri'   => 'preteurs/control_fiscal_city'
                 ],
@@ -169,10 +173,6 @@ class bootstrap extends Controller
                 [
                     'title' => 'Notifications',
                     'uri'   => 'preteurs/notifications'
-                ],
-                [
-                    'title' => 'Rattrapage offre de bienvenue',
-                    'uri'   => 'transferts/rattrapage_offre_bienvenue'
                 ],
                 [
                     'title' => 'Opérations atypiques',

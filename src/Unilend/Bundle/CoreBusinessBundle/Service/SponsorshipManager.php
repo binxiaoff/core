@@ -25,6 +25,8 @@ class SponsorshipManager
     const UTM_MEDIUM      = 'lien';
     const UTM_CAMPAIGN    = 'Parrainage';
 
+    const SPONSORSHIP_MANAGER_EXCEPTION_CODE = 1;
+
     /** @var EntityManager  */
     private $entityManager;
     /** @var OperationManager  */
@@ -96,30 +98,31 @@ class SponsorshipManager
      */
     public function saveSponsorshipCampaign(\DateTime $start, \DateTime $end, $amountSponsee, $amountSponsor, $maxNumberSponsee, $validityDays, $idCampaign = null)
     {
-        $now = new \DateTime('NOW');
+        $today = new \DateTime('NOW');
+        $today->setTime(0, 0, 0);
 
         if (null !== $idCampaign) {
             $campaign = $this->entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->find($idCampaign);
             if (null === $campaign) {
-                throw new \Exception('The id does not match any campaign');
+                throw new \Exception('The id does not match any campaign', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
             }
             $campaign
                 ->setStatus(SponsorshipCampaign::STATUS_ARCHIVED)
-                ->setEnd($now);
+                ->setEnd($today);
             $this->entityManager->flush($campaign);
 
-            $start = $now->getTimestamp() < $start->getTimestamp() ? $now : $start;
+            $start = $today->getTimestamp() < $start->getTimestamp() ? $today : $start;
         }
 
-        if ($now->getTimestamp() > $start->getTimestamp()) {
-            throw new \Exception('Campaign start can not be in the past');
+        if ($today->getTimestamp() > $start->getTimestamp()) {
+            throw new \Exception('Campaign start can not be in the past', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
         }
 
         $validCampaigns = $this->entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->findBy(['status' => SponsorshipCampaign::STATUS_VALID]);
 
         foreach ($validCampaigns as $campaign) {
-            if ($campaign->getEnd()->getTimestamp() < $start->getTimestamp()) {
-                throw new \Exception('Campaign does overlap with exiting campaign. Id campaign = ' . $campaign->getId());
+            if ($campaign->getEnd()->getTimestamp() > $start->getTimestamp()) {
+                throw new \Exception('Campaign does overlap with exiting campaign. Id campaign = ' . $campaign->getId(), self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
             }
         }
 
@@ -154,17 +157,17 @@ class SponsorshipManager
     {
         $sponsorship = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsor' => $sponsee]);
         if (null === $sponsorship) {
-            throw new \Exception('Client ' . $sponsee->getIdClient() . ' has no sponsee');
+            throw new \Exception('Client ' . $sponsee->getIdClient() . ' has no sponsee', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
         }
 
         $eligibility = $this->isEligibleForSponsorReward($sponsorship);
         if (false === $eligibility['isEligible']) {
-            throw new \Exception('Client ' . $sponsee->getIdClient() . ' is not eligible for sponsor reward. Reason : ' . $eligibility['reason']);
+            throw new \Exception('Client ' . $sponsee->getIdClient() . ' is not eligible for sponsor reward. Reason : ' . $eligibility['reason'], self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
         }
 
         $sponsorWallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsorship->getIdClientSponsor(), WalletType::LENDER);
         if (null === $sponsorWallet) {
-            throw new \Exception('Client ' . $sponsorship->getIdClientSponsor()->getIdClient() . ' has no lender wallet (only lenders can be sponsors)');
+            throw new \Exception('Client ' . $sponsorship->getIdClientSponsor()->getIdClient() . ' has no lender wallet (only lenders can be sponsors)', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
         }
 
         $this->operationManager->newSponsorReward($sponsorWallet, $sponsorship);
@@ -182,21 +185,21 @@ class SponsorshipManager
     {
         $sponsorship = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $sponsee]);
         if (null === $sponsorship) {
-            throw new \Exception('Client ' . $sponsee->getIdClient() . ' has no sponsor');
+            throw new \Exception('Client ' . $sponsee->getIdClient() . ' has no sponsor', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
         }
 
         if (Sponsorship::STATUS_ONGOING != $sponsorship->getStatus()) {
-            throw new \Exception('Sponsorship for client ' . $sponsee->getIdClient() . ' has already been paid');
+            throw new \Exception('Sponsorship for client ' . $sponsee->getIdClient() . ' has already been paid', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
         }
 
         $sponseeWallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsee, WalletType::LENDER);
         if (null === $sponseeWallet) {
-            throw new \Exception('Client ' . $sponsorship->getIdClientSponsee()->getIdClient() . ' has no lender wallet (only lenders can be sponsored)');
+            throw new \Exception('Client ' . $sponsorship->getIdClientSponsee()->getIdClient() . ' has no lender wallet (only lenders can be sponsored)', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
         }
 
         $paidReward = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findBy(['idWalletCreditor' => $sponseeWallet, 'idSponsorship' => $sponsorship]);
         if (false === empty($paidReward)) {
-            throw new \Exception('Client ' . $sponsorship->getIdClientSponsee()->getIdClient() . ' has already received the sponsee reward');
+            throw new \Exception('Client ' . $sponsorship->getIdClientSponsee()->getIdClient() . ' has already received the sponsee reward', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
         }
 
         $this->operationManager->newSponseeReward($sponseeWallet, $sponsorship);
@@ -279,10 +282,16 @@ class SponsorshipManager
      */
     public function cancelSponsorReward(Sponsorship $sponsorship)
     {
-        $sponsorWallet       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsorship->getIdClientSponsor(), WalletType::LENDER);
+        $sponsorWallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsorship->getIdClientSponsor(), WalletType::LENDER);
+        $rewardCancelSubType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')
+            ->findOneBy(['label' => OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_SPONSORSHIP_REWARD_SPONSOR]);
 
-        if (
-            0 == $this->getUnusedSponsorRewardAmountFromSponsorship($sponsorship)
+        if (null === $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy([
+                'idWalletDebtor' => $sponsorWallet,
+                'idSponsorship'  => $sponsorship->getId(),
+                'idSubType'      => $rewardCancelSubType
+            ])
+            && 0 == $this->getUnusedSponsorRewardAmountFromSponsorship($sponsorship)
             && $sponsorWallet->getCommittedBalance() < $sponsorship->getIdSponsorshipCampaign()->getAmountSponsor()
             && $sponsorWallet->getAvailableBalance() > $sponsorship->getIdSponsorshipCampaign()->getAmountSponsor()
         ) {
@@ -301,10 +310,14 @@ class SponsorshipManager
      */
     public function cancelSponseeReward(Sponsorship $sponsorship)
     {
-        $sponseeWallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsorship->getIdClientSponsee(), WalletType::LENDER);
+        $sponseeWallet       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsorship->getIdClientSponsee(), WalletType::LENDER);
+        $rewardCancelSubType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')
+            ->findOneBy(['label' => OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_SPONSORSHIP_REWARD_SPONSEE]);
 
         if (
-            0 == $this->getUnusedSponseeRewardAmount($sponsorship->getIdClientSponsee())
+            null === $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')
+                ->findOneBy(['idWalletDebtor' => $sponseeWallet, 'idSponsorship' => $sponsorship->getId(), 'idSubType' => $rewardCancelSubType])
+            && 0 == $this->getUnusedSponseeRewardAmount($sponsorship->getIdClientSponsee())
             && $sponseeWallet->getCommittedBalance() < $sponsorship->getIdSponsorshipCampaign()->getAmountSponsor()
             && $sponseeWallet->getAvailableBalance() > $sponsorship->getIdSponsorshipCampaign()->getAmountSponsor()
         ){
@@ -380,7 +393,7 @@ class SponsorshipManager
     /**
      * @param Sponsorship $sponsorship
      */
-    public function informSponsorAboutSponsee(Sponsorship $sponsorship)
+    private function informSponsorAboutSponsee(Sponsorship $sponsorship)
     {
         $varMail = [
             'surl'               => $this->surl,
@@ -411,7 +424,7 @@ class SponsorshipManager
     /**
      * @param Clients $sponsor
      */
-    public function sendMaxSponseeNotification(Clients $sponsor)
+    private function sendMaxSponseeNotification(Clients $sponsor)
     {
         $currentCampaign = $this->getCurrentSponsorshipCampaign();
 
@@ -443,7 +456,7 @@ class SponsorshipManager
     /**
      * @param Clients $sponsor
      */
-    public function sendInternalMaxSponseeNotification(Clients $sponsor)
+    private function sendInternalMaxSponseeNotification(Clients $sponsor)
     {
         $varMail = [
             'surl'               => $this->surl,
@@ -666,7 +679,9 @@ class SponsorshipManager
 
         $reward              = $operationRepository->findOneBy(['idWalletCreditor' => $sponsorWallet, 'idSubType' => $rewardSubType, 'idSponsorship' => $sponsorship]);
         $rewardCancel        = $operationRepository->findOneBy(['idWalletCreditor' => $sponsorWallet, 'idSubType' => $rewardCancelSubType, 'idSponsorship' => $sponsorship]);
-        $remainingReward     = bcsub($reward->getAmount(), $rewardCancel->getAmount(), 4);
+        $amountReward        = null !== $reward ? $reward->getAmount() : 0;
+        $amountRewardCancel  = null !== $rewardCancel ? $rewardCancel->getAmount() : 0;
+        $remainingReward     = bcsub($amountReward, $amountRewardCancel, 4);
         $sumLoansSinceReward = $operationRepository->sumDebitOperationsByTypeSince($sponsorWallet, [OperationType::LENDER_LOAN], null, $reward->getAdded());
 
         $unusedAmount = round(bcsub($remainingReward, $sumLoansSinceReward, 4), 2);
