@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class CompanyStatus
 {
-    const STATUS_SOLVENT                = 'solvent';
+    const STATUS_IN_BONIS               = 'in_bonis';
     const STATUS_PRECAUTIONARY_PROCESS  = 'precautionary_process';
     const STATUS_RECEIVER_SHIP          = 'receivership';
     const STATUS_COMPULSORY_LIQUIDATION = 'compulsory_liquidation';

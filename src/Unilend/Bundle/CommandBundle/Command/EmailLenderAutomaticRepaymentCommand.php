@@ -8,9 +8,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
 
 class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
 {
+    private $repaymentTasks;
+
     protected function configure()
     {
         $this
@@ -20,9 +23,9 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $entityManagerSimulator  = $this->getContainer()->get('unilend.service.entity_manager');
-        $entityManager           = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $projectRepaymentManager = $this->getContainer()->get('unilend.service.project_repayment_manager');
+        $entityManagerSimulator             = $this->getContainer()->get('unilend.service.entity_manager');
+        $entityManager                      = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $projectRepaymentNotificationSender = $this->getContainer()->get('unilend.service_repayment.project_repayment_notification_sender');
 
         $operationRepository            = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $walletBalanceHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
@@ -36,7 +39,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
         $repaymentSchedules = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->findBy([
             'status'          => Echeanciers::STATUS_REPAID,
             'statusEmailRemb' => Echeanciers::STATUS_REPAYMENT_EMAIL_NOT_SENT
-        ]);
+        ], null, 500);
 
         $emailNB = 0;
 
@@ -62,13 +65,14 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                 $clients_gestion_mails_notif->id_notification           = $notifications->id_notification;
                 $clients_gestion_mails_notif->id_wallet_balance_history = $walletBalanceHistory->getId();
                 $clients_gestion_mails_notif->create();
-
-                if (true === $clients_gestion_notifications->getNotif($wallet->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_REPAYMENT, 'immediatement')) {
+                if ($this->isLateRepayment($repaymentSchedule)) {
+                    $projectRepaymentNotificationSender->sendRegularisationRepaymentMailToLender($repaymentSchedule);
+                } elseif (true === $clients_gestion_notifications->getNotif($wallet->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_REPAYMENT, 'immediatement')) {
                     $clients_gestion_mails_notif->get($clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                     $clients_gestion_mails_notif->immediatement = 1;
                     $clients_gestion_mails_notif->update();
 
-                    $projectRepaymentManager->sendRepaymentMailToLender($repaymentSchedule);
+                    $projectRepaymentNotificationSender->sendRepaymentMailToLender($repaymentSchedule);
                 }
             }
             $repaymentSchedule->setStatusEmailRemb(Echeanciers::STATUS_REPAYMENT_EMAIL_SENT);
@@ -79,5 +83,24 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
             }
         }
         $entityManager->flush();
+    }
+
+    private function isLateRepayment(Echeanciers $repaymentSchedule)
+    {
+        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $index         = $repaymentSchedule->getIdLoan()->getProject()->getIdProject() . '_' . $repaymentSchedule->getOrdre();
+        if (false === isset($this->repaymentTasks[$index])) {
+            $this->repaymentTasks[$index] = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
+                ->findOneBy(['idProject' => $repaymentSchedule->getIdLoan()->getProject(), 'sequence' => $repaymentSchedule->getOrdre(), 'status' => ProjectRepaymentTask::STATUS_REPAID]);
+
+            if (null === $this->repaymentTasks[$index]) {
+                $this->getContainer()->get('monolog.logger.console')->warning(
+                    'Cannot find repayment task for project id ' . $repaymentSchedule->getIdLoan()->getProject()->getIdProject() . ' sequence ' . $repaymentSchedule->getOrdre()
+                );
+
+                return false;
+            }
+        }
+        return $this->repaymentTasks[$index]->getType() === ProjectRepaymentTask::TYPE_LATE;
     }
 }

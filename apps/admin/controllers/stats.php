@@ -859,14 +859,14 @@ class statsController extends bootstrap
         $this->exportCSV($extraction, 'projects_eligibility-' . date('YmdHi'), $header);
     }
 
-    public function _requete_crs_cac()
+    public function _requete_crs_dac()
     {
         $this->autoFireView = false;
         $this->hideDecoration();
 
         $year     = date('Y') - 1;
         $fileName = 'preteurs_crs_dac' . $year . '.xlsx';
-        $filePath = $this->getParameter('path.protected') . '/' . $fileName;
+        $filePath = $this->getParameter('path.protected') . '/queries/' . $fileName;
 
         if (file_exists($filePath)) {
            $this->download($filePath);
