@@ -371,7 +371,7 @@ mandatory: true
 {% block pluginsCSS %}
     <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
     <style>
-        .service-fields-provider, .service-fields, #result {
+        .service-fields-provider, .service-fields, #result, #cache-duration {
             display: none;
         }
         .service-fields-provider.active, .service-fields.active {
@@ -381,6 +381,9 @@ mandatory: true
             float: left;
             width: 160px;
             margin-right: 10px;
+        }
+        #cache-duration {
+            width: 125px;
         }
         #cache-duration.has-error {
             border-color: #d26a5c;
@@ -430,6 +433,14 @@ mandatory: true
             }
         })
 
+        $('input[name="request_type"]').change(function(){
+            var $select = $('#cache-duration')
+            if ($(this).val() === 'cache') {
+                $select.css('display', 'inline-block')
+            } else {
+                $select.css('display', 'none')
+            }
+        })
 
         $('#ws-provider-form').submit(function(e){
             e.preventDefault()
@@ -438,10 +449,9 @@ mandatory: true
             var $form = $(this)
             var $result = $('#result')
             var $alertTrigger = $('#alert-trigger')
-            var $serviceGroupActive = $('.service-fields.active')
 
-            if ($serviceGroupActive.find('#check-cache').is(':checked')) {
-                var $duration = $serviceGroupActive.find('#cache-duration')
+            if ($form.find('#check-cache').is(':checked')) {
+                var $duration = $form.find('#cache-duration')
                 if ($duration.val() === '0') {
                     $duration.addClass('has-error')
                 } else {
@@ -456,7 +466,7 @@ mandatory: true
                     url: $form.attr('action'),
                     data: $form.serialize(),
                     dataType: 'json',
-                    type: 'post',
+                    method: $form.attr('method'),
                     complete: function(response) {
 
                         App.blocks(blockId, 'state_normal');
@@ -554,30 +564,34 @@ mandatory: true
                                             {% endif %}
                                         </div>
                                     {% endfor %}
-                                    <div class="form-group request-type" style="width: auto;">
-                                        <label>Requête</label> <br>
-                                        <label class="css-input css-radio css-radio-primary">
-                                            <input type="radio" data-name="request_type" value="normal" checked><span></span> Normal
-                                        </label>
-                                        <div class="push-10-l" style="display: inline-block;">
-                                            <label class="css-input css-radio css-radio-primary">
-                                                <input id="check-cache" type="radio" data-name="request_type" value="cache"><span></span> Cache
-                                            </label>
-                                            <select id="cache-duration" data-name="storedData" class="form-control input-sm push-5-l" style="display: inline-block; width: 60px;">
-                                                <option value="0">Nombre de jours</option>
-                                                <option value="5">5</option>
-                                                <option value="5">10</option>
-                                                <option value="5">15</option>
-                                            </select>
-                                        </div>
-                                        <label class="css-input css-radio css-radio-primary push-20-l">
-                                            <input type="radio" data-name="request_type" value="force"><span></span> Force WS
-                                        </label>
-                                    </div>
                                 </div>
                             {% endfor %}
                             </div>
                         {% endfor %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group request-type" style="width: auto;">
+                            <label>Requête</label> <br>
+                            <label class="css-input css-radio css-radio-primary">
+                                <input type="radio" name="request_type" value="normal" checked><span></span> Normal
+                            </label>
+                            <div class="push-10-l" style="display: inline-block;">
+                                <label class="css-input css-radio css-radio-primary">
+                                    <input id="check-cache" type="radio" name="request_type" value="cache"><span></span> Cache
+                                </label>
+                                <select id="cache-duration" name="storedData" class="form-control input-sm push-5-l">
+                                    <option value="0">Nombre de jours</option>
+                                    <option value="5">5</option>
+                                    <option value="5">10</option>
+                                    <option value="5">15</option>
+                                </select>
+                            </div>
+                            <label class="css-input css-radio css-radio-primary push-20-l">
+                                <input type="radio" name="request_type" value="force"><span></span> Force WS
+                            </label>
+                        </div>
                     </div>
                 </div>
                 <button type="submit" class="btn btn-primary push">Valider</button>
