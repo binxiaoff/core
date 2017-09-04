@@ -1,4 +1,5 @@
-@charset "UTF-8";
+$path: '../fonts/videojs';
+
 .video-js .vjs-big-play-button:before, .video-js .vjs-control:before, .video-js .vjs-modal-dialog, .vjs-modal-dialog .vjs-modal-dialog-content {
   position: absolute;
   top: 0;
@@ -11,7 +12,7 @@
 
 @font-face {
   font-family: VideoJS;
-  src: url("font/VideoJS.eot?#iefix") format("eot"); }
+  src: url("#{$path}/VideoJS.eot?#iefix") format("eot"); }
 
 @font-face {
   font-family: VideoJS;
