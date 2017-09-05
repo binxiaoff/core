@@ -94,6 +94,7 @@ class SponsorshipManager
      * @param int       $validityDays
      * @param null|int  $idCampaign
      *
+     * @return bool
      * @throws \Exception
      */
     public function saveSponsorshipCampaign(\DateTime $start, \DateTime $end, $amountSponsee, $amountSponsor, $maxNumberSponsee, $validityDays, $idCampaign = null)
@@ -101,42 +102,52 @@ class SponsorshipManager
         $today = new \DateTime('NOW');
         $today->setTime(0, 0, 0);
 
-        if (null !== $idCampaign) {
-            $campaign = $this->entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->find($idCampaign);
-            if (null === $campaign) {
-                throw new \Exception('The id does not match any campaign', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
+        $this->entityManager->getConnection()->beginTransaction();
+        try {
+            if (null !== $idCampaign) {
+                $campaign = $this->entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->find($idCampaign);
+                if (null === $campaign) {
+                    throw new \Exception('The id does not match any campaign', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
+                }
+                $campaign
+                    ->setStatus(SponsorshipCampaign::STATUS_ARCHIVED)
+                    ->setEnd($today);
+                $this->entityManager->flush($campaign);
+
+                $start = $today->getTimestamp() < $start->getTimestamp() ? $today : $start;
             }
-            $campaign
-                ->setStatus(SponsorshipCampaign::STATUS_ARCHIVED)
-                ->setEnd($today);
-            $this->entityManager->flush($campaign);
 
-            $start = $today->getTimestamp() < $start->getTimestamp() ? $today : $start;
-        }
-
-        if ($today->getTimestamp() > $start->getTimestamp()) {
-            throw new \Exception('Campaign start can not be in the past', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
-        }
-
-        $validCampaigns = $this->entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->findBy(['status' => SponsorshipCampaign::STATUS_VALID]);
-
-        foreach ($validCampaigns as $campaign) {
-            if ($campaign->getEnd()->getTimestamp() > $start->getTimestamp()) {
-                throw new \Exception('Campaign does overlap with exiting campaign. Id campaign = ' . $campaign->getId(), self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
+            if ($today->getTimestamp() > $start->getTimestamp()) {
+                throw new \Exception('Campaign start can not be in the past', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
             }
+
+            $validCampaigns = $this->entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->findBy(['status' => SponsorshipCampaign::STATUS_VALID]);
+
+            foreach ($validCampaigns as $campaign) {
+                if ($campaign->getEnd()->getTimestamp() > $start->getTimestamp()) {
+                    throw new \Exception('Campaign does overlap with exiting campaign. Id campaign = ' . $campaign->getId(), self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
+                }
+            }
+
+            $newCampaign = new SponsorshipCampaign();
+            $newCampaign->setStart($start)
+                ->setEnd($end)
+                ->setAmountSponsee($amountSponsee)
+                ->setAmountSponsor($amountSponsor)
+                ->setMaxNumberSponsee($maxNumberSponsee)
+                ->setValidityDays($validityDays)
+                ->setStatus(SponsorshipCampaign::STATUS_VALID);
+
+            $this->entityManager->persist($newCampaign);
+            $this->entityManager->flush($newCampaign);
+
+            $this->entityManager->getConnection()->commit();
+
+            return true;
+        } catch (\Exception $exception) {
+            $this->entityManager->getConnection()->rollBack();
+            throw $exception;
         }
-
-        $newCampaign = new SponsorshipCampaign();
-        $newCampaign->setStart($start)
-            ->setEnd($end)
-            ->setAmountSponsee($amountSponsee)
-            ->setAmountSponsor($amountSponsor)
-            ->setMaxNumberSponsee($maxNumberSponsee)
-            ->setValidityDays($validityDays)
-            ->setStatus(SponsorshipCampaign::STATUS_VALID);
-
-        $this->entityManager->persist($newCampaign);
-        $this->entityManager->flush($newCampaign);
     }
 
     /**
@@ -195,6 +206,11 @@ class SponsorshipManager
         $sponseeWallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsee, WalletType::LENDER);
         if (null === $sponseeWallet) {
             throw new \Exception('Client ' . $sponsorship->getIdClientSponsee()->getIdClient() . ' has no lender wallet (only lenders can be sponsored)', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
+        }
+
+        $validationDate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->getFirstClientValidation($sponsee);
+        if (null === $validationDate) {
+            throw new \Exception('Client ' . $sponsorship->getIdClientSponsee()->getIdClient() . ' has not been validated.', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
         }
 
         $paidReward = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findBy(['idWalletCreditor' => $sponseeWallet, 'idSponsorship' => $sponsorship]);

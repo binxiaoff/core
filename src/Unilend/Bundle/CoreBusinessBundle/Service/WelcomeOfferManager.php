@@ -111,12 +111,13 @@ class WelcomeOfferManager
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
 
-        $offerType       = $this->getWelcomeOfferTypeForClient($client);
-        $welcomeOffer    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->getWelcomeOfferForClient($client, $offerType);
-        $offerIsValid    = null !== $welcomeOffer;
-        $enoughMoneyLeft = false;
+        $offerType                = $this->getWelcomeOfferTypeForClient($client);
+        $welcomeOffer             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->getWelcomeOfferForClient($client, $offerType);
+        $offerIsValid             = null !== $welcomeOffer;
+        $enoughMoneyLeft          = false;
+        $alreadyReceivedPromotion = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumCreditOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION]);
 
-        if ($offerIsValid) {
+        if ($offerIsValid && 0 == $alreadyReceivedPromotion) {
             $unilendPromotionalWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
             $unilendPromotionalWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendPromotionalWalletType]);
 
@@ -151,6 +152,11 @@ class WelcomeOfferManager
         if (false === $enoughMoneyLeft) {
             $this->logger->info('Client ID: ' . $client->getIdClient() . ' Welcome offer not paid out. There is not enough money left', [ 'class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $client->getIdClient()]);
             return ['code' => 2, 'message' => "Il n'y a plus assez d'argent disponible pour créer l'offre de bienvenue."];
+        }
+
+        if (0 < $alreadyReceivedPromotion) {
+            $this->logger->info('Client ID: ' . $client->getIdClient() . ' Welcome offer not paid out. The client has realdy received a promotional operation', [ 'class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $client->getIdClient()]);
+            return ['code' => 3, 'message' => "Le client a déjà reçu une offre commerciale. "];
         }
     }
 

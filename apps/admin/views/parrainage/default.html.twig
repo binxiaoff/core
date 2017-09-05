@@ -382,7 +382,7 @@
                         </p>
                     </div>
                 {% endif %}
-                {% if formSuccess.payOutReward is defined and formSuccesspay.OutReward is not empty %}
+                {% if formSuccess.payOutReward is defined and formSuccess.payOutReward is not empty %}
                     <div class="alert alert-success">
                         <p>{{ formSuccess.payOutReward }}</p>
                     </div>
@@ -460,7 +460,7 @@
                     <tbody>
                     {%  for detail in allSponsorshipRewards %}
                     <tr>
-                        <td>{{ detail.source2 }}</td>
+                        <td>{{ detail.sponsor_code }}</td>
                         <td>{{ detail.id_client_sponsee }}</td>
                         <td><span class="text-uppercase">{{ detail.sponsee_last_name }}</span> {{ detail.sponsee_first_name }}</td>
                         <td>{{ detail.sponsee_email }}</td>
@@ -468,7 +468,7 @@
                         <td>{{ detail.sponsee_added|date('d/m/Y')}}</td>
                         <td>{{ detail.id_client_sponsor }}</td>
                         <td><span class="text-uppercase">{{ detail.sponsor_last_name }}</span> {{ detail.sponsor_first_name }}</td>
-                        <td>{{ detail.spponsor_email }}</td>
+                        <td>{{ detail.sponsor_email }}</td>
                         <td>{{ detail.sponsor_amount|localizedcurrency('EUR') }}</td>
                         <td>{{ detail.sponsor_added|date('d/m/Y')}}</td>
                     </tr>

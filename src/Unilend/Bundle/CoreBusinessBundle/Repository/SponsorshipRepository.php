@@ -101,7 +101,7 @@ class SponsorshipRepository extends EntityRepository
                   o_sponsee.amount AS sponsee_amount,
                   o_sponsee.added AS sponsee_added,
                   ss.id_client_sponsor,
-                  c_sponsee.source2,
+                  c_sponsor.sponsor_code AS sponsor_code,
                   c_sponsor.nom AS sponsor_last_name,
                   c_sponsor.prenom AS sponsor_first_name,
                   c_sponsor.email AS sponsor_email,

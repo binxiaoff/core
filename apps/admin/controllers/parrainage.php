@@ -53,7 +53,7 @@ class parrainageController extends bootstrap
             'allSponsorshipRewards'     => $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->getPaidOutSponsorshipDetails(),
             'currentCampaign'           => $sponsorshipManager->getCurrentSponsorshipCampaign(),
             'formErrors'                => $this->getErrorsFromSession(),
-            'formSuccess' => $this->getSuccessFromSession()
+            'formSuccess'               => $this->getSuccessFromSession()
         ]);
     }
 
@@ -187,8 +187,13 @@ class parrainageController extends bootstrap
             $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
 
             try {
-                $sponsorshipManager->saveSponsorshipCampaign($start, $end, $amountSponsee, $amountSponsor, $maxNumberSponsee, $validityDays, $idCampaign);
-                $_SESSION['create_sponsorship_campaign']['success'] = 'La nouvelle campagne a été crée';
+                $newCampaignCreated = $sponsorshipManager->saveSponsorshipCampaign($start, $end, $amountSponsee, $amountSponsor, $maxNumberSponsee, $validityDays, $idCampaign);
+
+                if ($newCampaignCreated && null !== $this->request->request->get('create_new_campaign')) {
+                    $_SESSION['create_sponsorship_campaign']['success'] = 'La nouvelle campagne a été crée';
+                } elseif ($newCampaignCreated && null !== $this->request->request->get('modify_campaign')) {
+                    $_SESSION['modify_sponsorship_campaign']['success'] = 'La campagne a été modifié.';
+                }
             } catch (\Exception $exception) {
                 $_SESSION['create_sponsorship_campaign']['errors'][] = 'Une erreur est survenue lors de l\'enregistrement de la campagne.';
                 if (SponsorshipManager::SPONSORSHIP_MANAGER_EXCEPTION_CODE == $exception->getCode()) {
@@ -328,7 +333,7 @@ class parrainageController extends bootstrap
                 }
             } catch (\Exception $exception) {
                 $_SESSION['pay_out_sponsorship']['errors'][] = 'Une erreur s\'est produite';
-                if (false == in_array($exception->getCode(), [OperationManager::OPERATION_MANAGER_EXCEPTION_CODE, SponsorshipManager::SPONSORSHIP_MANAGER_EXCEPTION_CODE])) {
+                if (in_array($exception->getCode(), [OperationManager::OPERATION_MANAGER_EXCEPTION_CODE, SponsorshipManager::SPONSORSHIP_MANAGER_EXCEPTION_CODE])) {
                     $_SESSION['pay_out_sponsorship']['errors']['technical'][] = $exception->getMessage();
                 }
             }
@@ -577,7 +582,7 @@ class parrainageController extends bootstrap
                 $activeSheet->setCellValueExplicit('E' . $row, \PHPExcel_Shared_Date::PHPToExcel(\DateTime::createFromFormat('Y-m-d H:i:s', $detail['sponsee_added'])), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
                 $activeSheet->getStyle('E' . $row)->getNumberFormat()->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_DATE_DDMMYYYY);
             }
-            $activeSheet->setCellValue('F' . $row, $detail['source2']);
+            $activeSheet->setCellValue('F' . $row, $detail['sponsor_code']);
             $activeSheet->setCellValue('G' . $row, $detail['id_client_sponsor']);
             $activeSheet->setCellValue('H' . $row, $detail['sponsor_last_name'] . ' ' . $detail['sponsor_first_name']);
             $activeSheet->setCellValue('I' . $row, $detail['sponsor_email']);
