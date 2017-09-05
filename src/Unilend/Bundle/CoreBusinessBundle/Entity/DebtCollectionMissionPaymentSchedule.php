@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * DebtCollectionMissionPaymentSchedule
  *
- * @ORM\Table(name="debt_collection_mission_payment_schedule", indexes={@ORM\Index(name="fk_dc_mission_payment_schedule_id_mission", columns={"id_mission"}), @ORM\Index(name="fk_dc_mission_payment_schedule_id_payment", columns={"id_payment_schedule"})})
+ * @ORM\Table(name="debt_collection_mission_payment_schedule", indexes={@ORM\Index(name="idx_dc_mission_payment_schedule_id_mission", columns={"id_mission"}), @ORM\Index(name="idx_dc_mission_payment_schedule_id_payment", columns={"id_payment_schedule"})})
  * @ORM\Entity
  */
 class DebtCollectionMissionPaymentSchedule
@@ -59,10 +59,14 @@ class DebtCollectionMissionPaymentSchedule
 
     /**
      * @param DebtCollectionMission $idMission
+     *
+     * @return DebtCollectionMissionPaymentSchedule
      */
-    public function setIdMission($idMission)
+    public function setIdMission(DebtCollectionMission $idMission)
     {
         $this->idMission = $idMission;
+
+        return $this;
     }
 
     /**
@@ -75,9 +79,13 @@ class DebtCollectionMissionPaymentSchedule
 
     /**
      * @param EcheanciersEmprunteur $idPaymentSchedule
+     *
+     * @return DebtCollectionMissionPaymentSchedule
      */
-    public function setIdPaymentSchedule($idPaymentSchedule)
+    public function setIdPaymentSchedule(EcheanciersEmprunteur $idPaymentSchedule)
     {
         $this->idPaymentSchedule = $idPaymentSchedule;
+
+        return $this;
     }
 }

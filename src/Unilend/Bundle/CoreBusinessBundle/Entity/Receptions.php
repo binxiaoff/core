@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Receptions
  *
- * @ORM\Table(name="receptions", indexes={@ORM\Index(name="idx_receptions_type", columns={"type"}), @ORM\Index(name="idx_receptions_added", columns={"added"}), @ORM\Index(name="type", columns={"type"}), @ORM\Index(name="status_virement", columns={"status_virement"}), @ORM\Index(name="status_prelevement", columns={"status_prelevement"}), @ORM\Index(name="status_bo", columns={"status_bo"}), @ORM\Index(name="remb", columns={"remb"}), @ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="id_user", columns={"id_user"})})
+ * @ORM\Table(name="receptions", indexes={@ORM\Index(name="idx_receptions_type", columns={"type"}), @ORM\Index(name="idx_receptions_added", columns={"added"}), @ORM\Index(name="type", columns={"type"}), @ORM\Index(name="status_virement", columns={"status_virement"}), @ORM\Index(name="status_prelevement", columns={"status_prelevement"}), @ORM\Index(name="status_bo", columns={"status_bo"}), @ORM\Index(name="remb", columns={"remb"}), @ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="id_user", columns={"id_user"}), @ORM\Index(name="idx_receptions_rejection_iso_code", columns={"rejection_iso_code"})})
  * @ORM\HasLifecycleCallbacks
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ReceptionsRepository")
  */
@@ -177,6 +177,16 @@ class Receptions
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $idReception;
+
+    /**
+     * @var Receptions
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Receptions")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_reception_rejected", referencedColumnName="id_reception")
+     * })
+     */
+    private $idReceptionRejected;
 
     /**
      * Set motif
@@ -608,5 +618,25 @@ class Receptions
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * @return Receptions
+     */
+    public function getIdReceptionRejected()
+    {
+        return $this->idReceptionRejected;
+    }
+
+    /**
+     * @param Receptions|null $idReceptionRejected
+     *
+     * @return Receptions
+     */
+    public function setIdReceptionRejected(Receptions $idReceptionRejected = null)
+    {
+        $this->idReceptionRejected = $idReceptionRejected;
+
+        return $this;
     }
 }

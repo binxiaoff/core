@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * EcheanciersEmprunteur
  *
  * @ORM\Table(name="echeanciers_emprunteur", indexes={@ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="date_echeance_emprunteur_reel", columns={"date_echeance_emprunteur_reel"}), @ORM\Index(name="ordre", columns={"ordre"}), @ORM\Index(name="status_emprunteur", columns={"status_emprunteur"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\EcheanciersEmprunteurRepository")
  */
 class EcheanciersEmprunteur
 {
@@ -80,7 +80,7 @@ class EcheanciersEmprunteur
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_echeance_emprunteur_reel", type="datetime", nullable=false)
+     * @ORM\Column(name="date_echeance_emprunteur_reel", type="datetime", nullable=true)
      */
     private $dateEcheanceEmprunteurReel;
 
@@ -320,7 +320,7 @@ class EcheanciersEmprunteur
      *
      * @return EcheanciersEmprunteur
      */
-    public function setDateEcheanceEmprunteurReel($dateEcheanceEmprunteurReel)
+    public function setDateEcheanceEmprunteurReel(\DateTime $dateEcheanceEmprunteurReel = null)
     {
         $this->dateEcheanceEmprunteurReel = $dateEcheanceEmprunteurReel;
 
