@@ -19,14 +19,14 @@
       "extensions": ["js", "json"],
       "dependencies": [
         "./app/Resources/assets/js/app/modernizr/modernizr.js",
-        "./node_modules/jquery/dist/jquery.js",
-        "./node_modules/fancybox/dist/js/jquery.fancybox.js",
-        "./node_modules/fancybox/dist/helpers/js/jquery.fancybox-media.js",
+        "./app/Resources/assets/js/vendor/jquery.js",
+        "./app/Resources/assets/js/vendor/swiper/swiper.jquery.js",
+        "./app/Resources/assets/js/vendor/jquery.fancybox.js",
+        "./app/Resources/assets/js/vendor/jquery.fancybox-media.js",
         "./app/Resources/assets/js/vendor/videojs/video.js",
-        "./node_modules/videojs-youtube/dist/Youtube.js",
-        "./app/Resources/assets/js/vendor/swiper/js/swiper.jquery.js",
+        "./app/Resources/assets/js/vendor/videojs/Youtube.js",
         "./app/Resources/assets/js/vendor/jquery.caret.js",
-        "./app/Resources/assets/js/vendor/datatables/datatables.js"
+        "./app/Resources/assets/js/vendor/jquery.datatables.js"
       ],
       "extractSharedJs": false
     },

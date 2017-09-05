@@ -696,6 +696,7 @@ var App = function() {
         return false;
     };
 
+
     /*
      ********************************************************************************************
      *
@@ -753,6 +754,183 @@ var App = function() {
                 $tbody.toggleClass('open');
             });
         });
+    };
+
+    // Data Tables
+    var uiHelperDataTables = function() {
+        // DataTables Bootstrap integration
+        var $DataTable = $.fn.dataTable
+        $.extend( true, $DataTable.defaults, {
+            dom:
+            "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
+            "<'row'<'col-sm-12'tr>>" +
+            "<'row'<'col-sm-6'i><'col-sm-6'p>>",
+            renderer: 'bootstrap',
+            oLanguage: {
+                sLengthMenu: "_MENU_",
+                sProcessing:     "Traitement en cours...",
+                sSearch:         "Rechercher&nbsp;:",
+                sLengthMenu:     "Afficher _MENU_ &eacute;l&eacute;ments",
+                sInfo:           "Affichage de l'&eacute;l&eacute;ment _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                sInfoEmpty:      "Affichage de l'&eacute;l&eacute;ment 0 &agrave; 0 sur 0 &eacute;l&eacute;ment",
+                sInfoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                sInfoPostFix:    "",
+                sLoadingRecords: "Chargement en cours...",
+                sZeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                sEmptyTable:     "Aucune donn&eacute;e disponible dans le tableau",
+                oPaginate: {
+                    sFirst:      "Premier",
+                    sPrevious:   "Pr&eacute;c&eacute;dent",
+                    sNext:       "Suivant",
+                    sLast:       "Dernier"
+                },
+                oPaginate: {
+                    sPrevious: '<i class="fa fa-angle-left"></i>',
+                    sNext: '<i class="fa fa-angle-right"></i>'
+                }
+            }
+        })
+        $.extend($DataTable.ext.classes, {
+            sWrapper: "dataTables_wrapper form-inline dt-bootstrap",
+            sFilterInput: "form-control",
+            sLengthSelect: "form-control"
+        })
+        $DataTable.ext.renderer.pageButton.bootstrap = function (settings, host, idx, buttons, page, pages) {
+            var api     = new $DataTable.Api(settings)
+            var classes = settings.oClasses
+            var lang    = settings.oLanguage.oPaginate
+            var btnDisplay, btnClass
+
+            var attach = function (container, buttons) {
+                var i, ien, node, button
+                var clickHandler = function (e) {
+                    e.preventDefault()
+                    if (!jQuery(e.currentTarget).hasClass('disabled')) {
+                        api.page(e.data.action).draw(false)
+                    }
+                }
+
+                for (i = 0, ien = buttons.length; i < ien; i++) {
+                    button = buttons[i]
+
+                    if ($.isArray(button)) {
+                        attach(container, button)
+                    }
+                    else {
+                        btnDisplay = ''
+                        btnClass = ''
+
+                        switch (button) {
+                            case 'ellipsis':
+                                btnDisplay = '&hellip'
+                                btnClass = 'disabled'
+                                break
+
+                            case 'first':
+                                btnDisplay = lang.sFirst
+                                btnClass = button + (page > 0 ? '' : ' disabled')
+                                break
+
+                            case 'previous':
+                                btnDisplay = lang.sPrevious
+                                btnClass = button + (page > 0 ? '' : ' disabled')
+                                break
+
+                            case 'next':
+                                btnDisplay = lang.sNext
+                                btnClass = button + (page < pages - 1 ? '' : ' disabled')
+                                break
+
+                            case 'last':
+                                btnDisplay = lang.sLast
+                                btnClass = button + (page < pages - 1 ? '' : ' disabled')
+                                break
+
+                            default:
+                                btnDisplay = button + 1
+                                btnClass = page === button ?
+                                    'active' : ''
+                                break
+                        }
+
+                        if (btnDisplay) {
+                            node = jQuery('<li>', {
+                                'class': classes.sPageButton + ' ' + btnClass,
+                                'aria-controls': settings.sTableId,
+                                'tabindex': settings.iTabIndex,
+                                'id': idx === 0 && typeof button === 'string' ?
+                                settings.sTableId + '_' + button :
+                                    null
+                            })
+                                .append(jQuery('<a>', {
+                                        'href': '#'
+                                    })
+                                        .html(btnDisplay)
+                                )
+                                .appendTo(container)
+
+                            settings.oApi._fnBindAction(
+                                node, {action: button}, clickHandler
+                            )
+                        }
+                    }
+                }
+            }
+
+            attach(
+                jQuery(host).empty().html('<ul class="pagination"/>').children('ul'),
+                buttons
+            )
+        }
+        if ($DataTable.TableTools) {
+            // Set the classes that TableTools uses to something suitable for Bootstrap
+            $.extend(true, $DataTable.TableTools.classes, {
+                "container": "DTTT btn-group",
+                "buttons": {
+                    "normal": "btn btn-default",
+                    "disabled": "disabled"
+                },
+                "collection": {
+                    "container": "DTTT_dropdown dropdown-menu",
+                    "buttons": {
+                        "normal": "",
+                        "disabled": "disabled"
+                    }
+                },
+                "print": {
+                    "info": "DTTT_print_info"
+                },
+                "select": {
+                    "row": "active"
+                }
+            })
+
+            // Have the collection use a bootstrap compatible drop down
+            $.extend(true, $DataTable.TableTools.DEFAULTS.oTags, {
+                "collection": {
+                    "container": "ul",
+                    "button": "li",
+                    "liner": "a"
+                }
+            })
+        }
+
+        // Simple
+        $('.js-dataTable-simple').dataTable({
+            pageLength: 5,
+            lengthMenu: [[5, 10], [15, 20]],
+            searching: false,
+            dom:
+            "<'row'<'col-sm-12'tr>>" +
+            "<'row'<'col-sm-6'i><'col-sm-6'p>>"
+        })
+
+        // Advanced
+        $('.js-dataTable-advanced').dataTable({
+            columnDefs: [ { orderable: false } ],
+            pageLength: 4,
+            lengthMenu: [[5, 10], [5, 10]]
+        })
     };
 
     // Checkable table functionality
@@ -1271,6 +1449,9 @@ var App = function() {
                 case 'table-tools':
                     uiHelperTableToolsSections();
                     uiHelperTableToolsCheckable();
+                    break;
+                case 'datatables':
+                    uiHelperDataTables()
                     break;
                 case 'slimscroll':
                     uiHelperSlimscroll();

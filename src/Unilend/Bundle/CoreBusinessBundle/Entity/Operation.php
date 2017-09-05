@@ -167,6 +167,15 @@ class Operation
     private $idBackpayline;
 
     /**
+     * @var ProjectRepaymentTaskLog
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_repayment_task_log", referencedColumnName="id")
+     * })
+     */
+    private $idRepaymentTaskLog;
+    /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Sponsorship
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Sponsorship")
@@ -554,6 +563,26 @@ class Operation
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
         }
+    }
+
+    /**
+     * @return ProjectRepaymentTaskLog
+     */
+    public function getIdRepaymentTaskLog()
+    {
+        return $this->idRepaymentTaskLog;
+    }
+
+    /**
+     * @param $idRepaymentTaskLog
+     *
+     * @return $this
+     */
+    public function setIdRepaymentTaskLog(ProjectRepaymentTaskLog $idRepaymentTaskLog)
+    {
+        $this->idRepaymentTaskLog = $idRepaymentTaskLog;
+
+        return $this;
     }
 
     /**
