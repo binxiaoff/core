@@ -162,7 +162,7 @@ class SponsorshipRepository extends EntityRepository
                   c_sponsee.prenom AS sponsee_first_name,
                   c_sponsee.nom AS sponsee_last_name,
                   c_sponsee.email AS sponsee_email,
-                  IF(ss.status = ' . Sponsorship::STATUS_SPONSEE_PAID . ', "true", "false") AS sponsee_reward_paid,
+                  IF(ss.status = ' . Sponsorship::STATUS_ONGOING . ', "false", "true") AS sponsee_reward_paid,
                   ss.id_client_sponsor,
                   c_sponsee.source2,
                   c_sponsor.nom AS sponsor_last_name,
