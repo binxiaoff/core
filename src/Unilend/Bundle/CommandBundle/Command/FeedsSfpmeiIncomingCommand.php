@@ -510,7 +510,7 @@ EOF
         if (false === empty($row['libelleOpe6']) && false !== ($isoCode = substr($row['libelleOpe6'], -4, 4))) {
             return $this->getContainer()->get('doctrine.orm.entity_manager')
                 ->getRepository('UnilendCoreBusinessBundle:SepaRejectionReason')
-                ->findOneBy(['isoCode', $isoCode]);
+                ->findOneBy(['isoCode' => $isoCode]);
         }
 
         return null;
