@@ -83,20 +83,21 @@ class ProjectPaymentManager
 
                 $compareResult = bccomp($amount, $unpaidMonthlyAmount, 2);
                 if (0 === $compareResult || 1 === $compareResult) {
-                    $proportion = 1;
+                    $netRepaymentAmount  = $unpaidNetMonthlyAmount;
+                    $repaymentCommission = $unpaidCommission;
                 } else {
                     $proportion = bcdiv($amount, $unpaidMonthlyAmount, 4);
-                }
 
-                $repaymentProportion = round(bcmul($unpaidNetMonthlyAmount, $proportion, 4), 2);
-                $netRepaymentAmount  = min($unpaidNetMonthlyAmount, $repaymentProportion);
+                    $repaymentProportion = round(bcmul($unpaidNetMonthlyAmount, $proportion, 4), 2);
+                    $netRepaymentAmount  = min($unpaidNetMonthlyAmount, $repaymentProportion);
 
-                $commissionProportion = round(bcsub($amount, $netRepaymentAmount, 4), 2);
-                $repaymentCommission  = min($unpaidCommission, $commissionProportion);
+                    $commissionProportion = round(bcsub($amount, $netRepaymentAmount, 4), 2);
+                    $repaymentCommission  = min($unpaidCommission, $commissionProportion);
 
-                $difference = round(bcsub($commissionProportion, $repaymentCommission, 4), 2);
-                if (1 == bccomp($difference, 0, 2)) {
-                    $netRepaymentAmount = round(bcadd($netRepaymentAmount, $difference, 4), 2);
+                    $difference = round(bcsub($commissionProportion, $repaymentCommission, 4), 2);
+                    if (1 == bccomp($difference, 0, 2)) {
+                        $netRepaymentAmount = round(bcadd($netRepaymentAmount, $difference, 4), 2);
+                    }
                 }
 
                 $paymentSchedule->setPaidAmount($paymentSchedule->getPaidAmount() + bcmul($netRepaymentAmount, 100))
@@ -153,8 +154,8 @@ class ProjectPaymentManager
             foreach ($projectRepaymentTasksToCancel as $task) {
                 $paymentSchedule = $paymentScheduleRepository->findOneBy(['idProject' => $project, 'ordre' => $task->getSequence()]);
 
-                $paidNetAmount  = round(bcsub($paymentSchedule->getPaidAmount(), $task->getAmount(), 4), 2);
-                $paidCommission = round(bcsub($paymentSchedule->getPaidCommissionVatIncl(), $task->getCommissionUnilend(), 4), 2);
+                $paidNetAmount  = $paymentSchedule->getPaidAmount() - bcmul($task->getAmount(), 100);
+                $paidCommission = $paymentSchedule->getPaidCommissionVatIncl() - bcmul($task->getCommissionUnilend(), 100);
 
                 if (0 === bccomp($paidNetAmount, 0, 2) && 0 === bccomp($paidCommission, 0, 2)) {
                     $status = EcheanciersEmprunteur::STATUS_PENDING;
@@ -162,8 +163,8 @@ class ProjectPaymentManager
                     $status = EcheanciersEmprunteur::STATUS_PARTIALLY_PAID;
                 }
 
-                $paymentSchedule->setPaidAmount(bcmul($paidNetAmount, 100))
-                    ->setPaidCommissionVatIncl(bcmul($paidCommission, 100))
+                $paymentSchedule->setPaidAmount($paidNetAmount)
+                    ->setPaidCommissionVatIncl($paidCommission)
                     ->setStatusEmprunteur($status)
                     ->setDateEcheanceEmprunteurReel(null);
 

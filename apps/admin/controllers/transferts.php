@@ -105,6 +105,7 @@ class transfertsController extends bootstrap
                     $entityManager->flush();
                     $entityManager->getConnection()->commit();
                 } catch (Exception $exception) {
+                    $this->get('logger')->error('Cannot affect the amount to a borrower. Error : ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
                     $entityManager->getConnection()->rollBack();
                 }
             }

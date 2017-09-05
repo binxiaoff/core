@@ -80,8 +80,10 @@ class ProjectRepaymentTaskManager
         $plannedAmount     = 0;
         $plannedCommission = 0;
         foreach ($repaymentTasks as $task) {
-            $plannedAmount     = round(bcadd($plannedAmount, $task->getAmount(), 4), 2);
-            $plannedCommission = round(bcadd($plannedCommission, $task->getCommissionUnilend(), 4), 2);
+            if (ProjectRepaymentTask::STATUS_CANCELLED !== $task->getStatus()) {
+                $plannedAmount     = round(bcadd($plannedAmount, $task->getAmount(), 4), 2);
+                $plannedCommission = round(bcadd($plannedCommission, $task->getCommissionUnilend(), 4), 2);
+            }
         }
 
         $plannedAmount     = round(bcadd($plannedAmount, $repaymentAmount, 4), 2);
@@ -91,11 +93,11 @@ class ProjectRepaymentTaskManager
         $monthlyCommission = $this->projectRepaymentScheduleManager->getUnilendCommissionVatIncl($project);
 
         if (1 === bccomp($plannedAmount, $netMonthlyAmount)) {
-            throw new \Exception('The total amount of the repayment tasks for project (id: ' . $project->getIdProject() . ') sequence ' . $repaymentSchedule->getOrdre() . ' is more then the monthly amount. Please check the data consistency.');
+            throw new \Exception('The total amount (' . $plannedAmount . ') of the repayment tasks for project (id: ' . $project->getIdProject() . ') sequence ' . $repaymentSchedule->getOrdre() . ' is more then the monthly amount (' . $netMonthlyAmount . '). Please check the data consistency.');
         }
 
         if (1 === bccomp($plannedCommission, $monthlyCommission)) {
-            throw new \Exception('The total commission of the repayment tasks for project (id: ' . $project->getIdProject() . ') sequence ' . $repaymentSchedule->getOrdre() . ' is more then the monthly commission. Please check the data consistency.');
+            throw new \Exception('The total commission (' . $plannedCommission . ') of the repayment tasks for project (id: ' . $project->getIdProject() . ') sequence ' . $repaymentSchedule->getOrdre() . ' is more then the monthly commission (' . $monthlyCommission . '). Please check the data consistency.');
         }
 
         $projectRepaymentTask = new ProjectRepaymentTask();
