@@ -16,23 +16,19 @@ class pdfController extends bootstrap
      */
     const TMP_PATH_FILE = '/tmp/pdfUnilend/';
 
-    /**
-     * @var Pdf
-     */
+    /** @var Pdf */
     private $oSnapPdf;
-
     /** @var LoggerInterface */
     private $oLogger;
-
-    /**
-     * @var projects_pouvoir
-     */
+    /** @var projects_pouvoir */
     private $oProjectsPouvoir;
-
-    /**
-     * @var loans
-     */
+    /** @var loans */
     public $oLoans;
+    /**
+     * $clients may also be used in common methods so use this instance for document related client
+     * @var \clients
+     */
+    public $pdfClient;
 
     /**
      * @desc contains html returns ($this->execute())
@@ -142,12 +138,14 @@ class pdfController extends bootstrap
 
     public function _projet()
     {
+        $this->pdfClient = $this->loadData('clients');
+
         if (
             isset($this->params[0], $this->params[1])
             && 1 === preg_match('/^[0-9a-f-]{32,36}$/', $this->params[0])
             && false !== filter_var($this->params[1], FILTER_VALIDATE_INT)
-            && $this->clients->get($this->params[0], 'hash')
-            && $this->companies->get($this->clients->id_client, 'id_client_owner')
+            && $this->pdfClient->get($this->params[0], 'hash')
+            && $this->companies->get($this->pdfClient->id_client, 'id_client_owner')
             && $this->projects->get($this->params[1], 'id_company = ' . $this->companies->id_company . ' AND id_project')
             && $this->projects->status != ProjectsStatus::PRET_REFUSE
         ) {
@@ -157,7 +155,7 @@ class pdfController extends bootstrap
             if ('read' === $proxy['action'] && 'read' === $mandate['action']) {
                 /** @var \Symfony\Component\Routing\RouterInterface $router */
                 $router = $this->get('router');
-                header('Location: ' . $router->generate('universign_signature_status', ['signatureType' => \Unilend\Bundle\FrontBundle\Controller\UniversignController::SIGNATURE_TYPE_PROJECT, 'signatureId' => $this->projects->id_project, 'clientHash' => $this->clients->hash]));
+                header('Location: ' . $router->generate('universign_signature_status', ['signatureType' => \Unilend\Bundle\FrontBundle\Controller\UniversignController::SIGNATURE_TYPE_PROJECT, 'signatureId' => $this->projects->id_project, 'clientHash' => $this->pdfClient->hash]));
                 exit;
             } elseif ('redirect' === $proxy['action'] && 'redirect' === $mandate['action'] && $proxy['url'] === $mandate['url']) {
                 header('Location: ' . $proxy['url']);
@@ -177,12 +175,14 @@ class pdfController extends bootstrap
     // mandat emprunteur
     public function _mandat()
     {
+        $this->pdfClient = $this->loadData('clients');
+
         if (
             isset($this->params[0], $this->params[1])
             && 1 === preg_match('/^[0-9a-f-]{32,36}$/', $this->params[0])
             && false !== filter_var($this->params[1], FILTER_VALIDATE_INT)
-            && $this->clients->get($this->params[0], 'hash')
-            && $this->companies->get($this->clients->id_client, 'id_client_owner')
+            && $this->pdfClient->get($this->params[0], 'hash')
+            && $this->companies->get($this->pdfClient->id_client, 'id_client_owner')
             && $this->projects->get($this->params[1], 'id_company = ' . $this->companies->id_company . ' AND id_project')
             && $this->projects->status != ProjectsStatus::PRET_REFUSE
         ) {
@@ -213,9 +213,9 @@ class pdfController extends bootstrap
         /** @var \clients_mandats $mandates */
         $mandates        = $this->loadData('clients_mandats');
         $path            = $this->path . 'protected/pdf/mandat/';
-        $namePDFClient   = 'MANDAT-UNILEND-' . $this->projects->slug . '-' . $this->clients->id_client;
+        $namePDFClient   = 'MANDAT-UNILEND-' . $this->projects->slug . '-' . $this->pdfClient->id_client;
         $projectMandates = $mandates->select(
-            'id_project = ' . $this->projects->id_project . ' AND id_client = ' . $this->clients->id_client . ' AND status IN (' . UniversignEntityInterface::STATUS_PENDING . ',' . UniversignEntityInterface::STATUS_SIGNED . ')',
+            'id_project = ' . $this->projects->id_project . ' AND id_client = ' . $this->pdfClient->id_client . ' AND status IN (' . UniversignEntityInterface::STATUS_PENDING . ',' . UniversignEntityInterface::STATUS_SIGNED . ')',
             'id_mandat DESC'
         );
 
@@ -245,7 +245,7 @@ class pdfController extends bootstrap
         } else {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            $bankAccount   = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->clients->id_client);
+            $bankAccount   = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->pdfClient->id_client);
             if (null === $bankAccount) {
                 return [
                     'action' => 'redirect',
@@ -253,9 +253,9 @@ class pdfController extends bootstrap
                 ];
             }
 
-            $mandates->id_client  = $this->clients->id_client;
-            $mandates->url_pdf    = '/pdf/mandat/' . $this->clients->hash . '/' . $this->projects->id_project;
-            $mandates->name       = 'mandat-' . $this->clients->hash . '-' . $this->projects->id_project . '.pdf';
+            $mandates->id_client  = $this->pdfClient->id_client;
+            $mandates->url_pdf    = '/pdf/mandat/' . $this->pdfClient->hash . '/' . $this->projects->id_project;
+            $mandates->name       = 'mandat-' . $this->pdfClient->hash . '-' . $this->projects->id_project . '.pdf';
             $mandates->id_project = $this->projects->id_project;
             $mandates->status     = UniversignEntityInterface::STATUS_PENDING;
             $mandates->iban       = $bankAccount->getIban();
@@ -277,10 +277,10 @@ class pdfController extends bootstrap
     private function GenerateWarrantyHtml($mandates)
     {
         $this->pays = $this->loadData('pays');
-        $this->clients_adresses->get($this->clients->id_client, 'id_client');
-        $this->pays->get($this->clients->id_langue, 'id_langue');
+        $this->clients_adresses->get($this->pdfClient->id_client, 'id_client');
+        $this->pays->get($this->pdfClient->id_langue, 'id_langue');
 
-        if ($this->companies->get($this->clients->id_client, 'id_client_owner')) {
+        if ($this->companies->get($this->pdfClient->id_client, 'id_client_owner')) {
             $this->entreprise = true;
         } else {
             $this->entreprise = false;
@@ -295,7 +295,7 @@ class pdfController extends bootstrap
             $borrowerManager = $this->get('unilend.service.borrower_manager');
             $this->motif = $borrowerManager->getBorrowerBankTransferLabel($this->projects);
         } else {
-            $this->motif = $this->clients->getLenderPattern($this->clients->id_client);
+            $this->motif = $this->pdfClient->getLenderPattern($this->pdfClient->id_client);
             $this->motif = $this->ficelle->str_split_unicode('UNILEND' . $this->motif);
         }
 
@@ -328,12 +328,14 @@ class pdfController extends bootstrap
 
     public function _pouvoir()
     {
+        $this->pdfClient = $this->loadData('clients');
+
         if (
             isset($this->params[0], $this->params[1])
             && 1 === preg_match('/^[0-9a-f-]{32,36}$/', $this->params[0])
             && false !== filter_var($this->params[1], FILTER_VALIDATE_INT)
-            && $this->clients->get($this->params[0], 'hash')
-            && $this->companies->get($this->clients->id_client, 'id_client_owner')
+            && $this->pdfClient->get($this->params[0], 'hash')
+            && $this->companies->get($this->pdfClient->id_client, 'id_client_owner')
             && $this->projects->get($this->params[1], 'id_company = ' . $this->companies->id_company . ' AND id_project')
             && $this->projects->status != \projects_status::PRET_REFUSE
         ) {
@@ -366,8 +368,8 @@ class pdfController extends bootstrap
 
         $signed        = false;
         $path          = $this->path . 'protected/pdf/pouvoir/';
-        $namePdfClient = 'POUVOIR-UNILEND-' . $this->projects->slug . '-' . $this->clients->id_client;
-        $fileName      = 'pouvoir-' . $this->clients->hash . '-' . $this->projects->id_project . '.pdf';
+        $namePdfClient = 'POUVOIR-UNILEND-' . $this->projects->slug . '-' . $this->pdfClient->id_client;
+        $fileName      = 'pouvoir-' . $this->pdfClient->hash . '-' . $this->projects->id_project . '.pdf';
 
         $projectPouvoir        = $this->oProjectsPouvoir->select('id_project = ' . $this->projects->id_project, 'added ASC');
         $projectPouvoirToTreat = (is_array($projectPouvoir) && false === empty($projectPouvoir)) ? array_shift($projectPouvoir) : null;
@@ -411,7 +413,7 @@ class pdfController extends bootstrap
             $this->WritePdf($path . $fileName, 'authority');
 
             $this->oProjectsPouvoir->id_project = $this->projects->id_project;
-            $this->oProjectsPouvoir->url_pdf    = '/pdf/pouvoir/' . $this->clients->hash . '/' . $this->projects->id_project . '/';
+            $this->oProjectsPouvoir->url_pdf    = '/pdf/pouvoir/' . $this->pdfClient->hash . '/' . $this->projects->id_project . '/';
             $this->oProjectsPouvoir->name       = $fileName;
             $this->oProjectsPouvoir->create();
 
