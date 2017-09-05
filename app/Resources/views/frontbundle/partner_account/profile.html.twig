@@ -21,8 +21,8 @@ classNames: 'partner-account'
                                 <div class="row row-multi-col-computer">
                                     <div class="form-field col-lg-6 col-md-6">
                                         <label for="partner-profile-password-former">
-                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                             {% trans %} partner-profile_password-former-field-label {% endtrans %}
+                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                         </label>
                                         <div class="input-group">
                                             <input type="password" id="partner-profile-password-former"
@@ -34,16 +34,19 @@ classNames: 'partner-account'
                                 </div>
                                 <div class="row row-multi-col-computer">
                                     <div class="form-field col-lg-6 col-md-6">
-                                        <label for="partner-profile-password-new">{% trans %} partner-profile_password-new-field-label {% endtrans %}
-                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                        <label for="partner-profile-password-new">
+                                            {% trans %} partner-profile_password-new-field-label {% endtrans %}
+                                            <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                                         </label>
                                         <input type="password" id="partner-profile-password-new"
                                                name="password[new]" required="required" class="input-field"
                                                data-passwordcheck data-formvalidation-input data-formvalidation-required="true" data-formvalidation-minlength="6">
                                     </div><!-- /.form-field -->
                                     <div class="form-field col-lg-6 col-md-6">
-                                        <label for="partner-profile-password-confirm">{% trans %} partner-profile_password-confirm-field-label {% endtrans %}
-                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                        <label for="partner-profile-password-confirm">
+                                            {% trans %} partner-profile_password-confirm-field-label {% endtrans %}
+                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                        </label>
                                         <div class="input-group">
                                             <input type="password" id="partner-profile-password-confirm"
                                                    name="password[confirm]" required="required" class="input-field"
