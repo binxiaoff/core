@@ -141,7 +141,7 @@ EOF
                         && preg_match('/([0-9]+) REGULARISATION/', $aRow['libelleOpe3'], $matches)
                         && $project = $projectRepository->find((int) $matches[1])
                     ) {
-                        $this->processRegulation($motif, $reception, $project);
+                        $this->processRegulation($reception, $project);
                     } elseif (self::FRENCH_BANK_TRANSFER_BNPP_CODE === $aRow['codeOpBNPP']) {
                         $this->processLenderBankTransfer($motif, $reception);
                     }
@@ -328,11 +328,10 @@ EOF
     }
 
     /**
-     * @param string     $motif
      * @param Receptions $reception
      * @param Projects   $project
      */
-    private function processRegulation($motif, Receptions $reception, Projects $project)
+    private function processRegulation(Receptions $reception, Projects $project)
     {
         $entityManager         = $this->getContainer()->get('doctrine.orm.entity_manager');
         $operationManager      = $this->getContainer()->get('unilend.service.operation_manager');
@@ -345,8 +344,7 @@ EOF
             ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)
             ->setTypeRemb(Receptions::REPAYMENT_TYPE_REGULARISATION)
             ->setRemb(1)
-            ->setAssignmentDate(new \DateTime())
-            ->setMotif($motif);
+            ->setAssignmentDate(new \DateTime());
         $entityManager->flush();
 
         $operationManager->provisionBorrowerWallet($reception);
@@ -472,7 +470,7 @@ EOF
 
             if (1 === preg_match('#^RCNUNILEND/([0-9]{8})/([0-9]+)#', $aRow['libelleOpe4'], $matches)) {
                 $from                        = \DateTime::createFromFormat('Ymd', $matches[1]);
-                $originalRejectedDirectDebit = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->findOriginalDirectDebitByRejectedOne($reception, $from);
+                $originalRejectedDirectDebit = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->findOriginalDirectDebitByRejectedOne($project, $from);
 
                 if ($project && $originalRejectedDirectDebit) {
                     $project->setRembAuto(Projects::AUTO_REPAYMENT_OFF);
