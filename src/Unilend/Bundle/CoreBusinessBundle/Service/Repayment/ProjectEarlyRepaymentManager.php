@@ -11,7 +11,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Service\OperationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class ProjectEarlyRepaymentManager
 {
@@ -33,14 +32,10 @@ class ProjectEarlyRepaymentManager
     /** @var ProjectRepaymentNotificationSender */
     private $projectRepaymentNotificationSender;
 
-    /** @var EntityManagerSimulator */
-    private $entityManagerSimulator;
-
     /**
      * ProjectRepaymentManager constructor.
      *
      * @param EntityManager                      $entityManager
-     * @param EntityManagerSimulator             $entityManagerSimulator
      * @param OperationManager                   $operationManager
      * @param ProjectManager                     $projectManager
      * @param ProjectRepaymentTaskManager        $projectRepaymentTaskManager
@@ -49,7 +44,6 @@ class ProjectEarlyRepaymentManager
      */
     public function __construct(
         EntityManager $entityManager,
-        EntityManagerSimulator $entityManagerSimulator,
         OperationManager $operationManager,
         ProjectManager $projectManager,
         ProjectRepaymentTaskManager $projectRepaymentTaskManager,
@@ -58,7 +52,6 @@ class ProjectEarlyRepaymentManager
     )
     {
         $this->entityManager                      = $entityManager;
-        $this->entityManagerSimulator             = $entityManagerSimulator;
         $this->operationManager                   = $operationManager;
         $this->logger                             = $logger;
         $this->projectManager                     = $projectManager;
