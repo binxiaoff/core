@@ -8,10 +8,14 @@ use Doctrine\ORM\Mapping as ORM;
  * RemboursementAnticipeMailAEnvoyer
  *
  * @ORM\Table(name="remboursement_anticipe_mail_a_envoyer", indexes={@ORM\Index(name="id_reception", columns={"id_reception"})})
+ * @ORM\HasLifecycleCallbacks
  * @ORM\Entity
  */
 class RemboursementAnticipeMailAEnvoyer
 {
+    const STATUS_PENDING = 0;
+    const STATUS_SENT    = 1;
+
     /**
      * @var integer
      *
@@ -29,7 +33,7 @@ class RemboursementAnticipeMailAEnvoyer
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_envoi", type="datetime", nullable=false)
+     * @ORM\Column(name="date_envoi", type="datetime", nullable=true)
      */
     private $dateEnvoi;
 
@@ -55,8 +59,6 @@ class RemboursementAnticipeMailAEnvoyer
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $idRemboursementAnticipeMailAEnvoyer;
-
-
 
     /**
      * Set idReception
@@ -186,5 +188,23 @@ class RemboursementAnticipeMailAEnvoyer
     public function getIdRemboursementAnticipeMailAEnvoyer()
     {
         return $this->idRemboursementAnticipeMailAEnvoyer;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

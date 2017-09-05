@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * CompanyStatusHistory
  *
- * @ORM\Table(name="company_status_history", indexes={@ORM\Index(name="fk_company_status_history_id_company", columns={"id_company"}), @ORM\Index(name="idx_company_status_history_id_status", columns={"id_status"})})
+ * @ORM\Table(name="company_status_history", indexes={@ORM\Index(name="idx_company_status_history_id_company", columns={"id_company"}), @ORM\Index(name="idx_company_status_history_id_status", columns={"id_status"}), @ORM\Index(name="idx_company_status_history_id_user", columns={"id_user"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
@@ -53,11 +53,32 @@ class CompanyStatusHistory
     private $idUser;
 
     /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="changed_on", type="date", nullable=true)
+     */
+    private $changedOn;
+
+    /**
      * @var string
      *
-     * @ORM\Column(name="content", type="text", length=16777215, nullable=true)
+     * @ORM\Column(name="receiver", type="text", length=16777215, nullable=true)
      */
-    private $content;
+    private $receiver;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="mail_content", type="text", length=16777215, nullable=true)
+     */
+    private $mailContent;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="site_content", type="text", length=16777215, nullable=true)
+     */
+    private $siteContent;
 
     /**
      * @var \DateTime
@@ -136,21 +157,81 @@ class CompanyStatusHistory
     }
 
     /**
-     * @return string
+     * @return \DateTime
      */
-    public function getContent()
+    public function getChangedOn()
     {
-        return $this->content;
+        return $this->changedOn;
     }
 
     /**
-     * @param string $content
+     * @param \DateTime $changedOn
      *
      * @return CompanyStatusHistory
      */
-    public function setContent($content)
+    public function setChangedOn(\DateTime $changedOn)
     {
-        $this->content = $content;
+        $this->changedOn = $changedOn;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getReceiver()
+    {
+        return $this->receiver;
+    }
+
+    /**
+     * @param string $receiver
+     *
+     * @return CompanyStatusHistory
+     */
+    public function setReceiver($receiver)
+    {
+        $this->receiver = $receiver;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMailContent()
+    {
+        return $this->mailContent;
+    }
+
+    /**
+     * @param string $mailContent
+     *
+     * @return CompanyStatusHistory
+     */
+    public function setMailContent($mailContent)
+    {
+        $this->mailContent = $mailContent;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSiteContent()
+    {
+        return $this->siteContent;
+    }
+
+    /**
+     * @param string $siteContent
+     *
+     * @return CompanyStatusHistory
+     */
+    public function setSiteContent($siteContent)
+    {
+        $this->siteContent = $siteContent;
 
         return $this;
     }
