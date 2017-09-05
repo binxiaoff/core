@@ -14,7 +14,7 @@ use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 class ProfileController extends Controller
 {
     /**
-     * @Route("partenaire/profil", name="partner_project_profile")
+     * @Route("partenaire/profil", name="partner_profile")
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param Request $request
