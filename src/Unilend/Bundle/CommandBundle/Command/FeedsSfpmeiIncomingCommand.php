@@ -470,7 +470,7 @@ EOF
 
             if (1 === preg_match('#^RCNUNILEND/([0-9]{8})/([0-9]+)#', $aRow['libelleOpe4'], $matches)) {
                 $from                        = \DateTime::createFromFormat('Ymd', $matches[1]);
-                $originalRejectedDirectDebit = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->findOriginalDirectDebitByRejectedOne($reception, $from);
+                $originalRejectedDirectDebit = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->findOriginalDirectDebitByRejectedOne($project, $from);
 
                 if ($project && $originalRejectedDirectDebit) {
                     $project->setRembAuto(Projects::AUTO_REPAYMENT_OFF);
