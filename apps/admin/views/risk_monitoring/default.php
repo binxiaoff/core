@@ -175,7 +175,7 @@
                                 <table class="details">
                                     <tr>
                                         <td class="label"><?= $project['type'] ?></td>
-                                        <td class="value"><?= $project['value'] < $project['previous_value'] ? '↑' : '↓' ?> <?= $project['value'] ?></td>
+                                        <td class="value"><?= $project['value'] < $project['previous_value'] ? '↓' : '↑' ?> <?= $project['value'] ?></td>
                                         <td class="label">Précédent</td>
                                         <td class="value"> <?= $project['previous_value'] ?></td>
                                     </tr>

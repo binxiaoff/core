@@ -106,6 +106,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
                 wbh.id_autobid,
                 IF(wbh.id_loan IS NOT NULL, wbh.id_loan, IF(o.id_loan IS NOT NULL, o.id_loan, IF(e.id_loan IS NOT NULL, e.id_loan, ""))) AS id_loan,
                 o.id_repayment_schedule,
+                o.id_repayment_task_log,
                 p.id_project,
                 p.title,
                 ost.label AS sub_type_label
@@ -178,26 +179,28 @@ class WalletBalanceHistoryRepository extends EntityRepository
         $endDate->setTime(23, 59, 59);
 
         $qb = $this->createQueryBuilder('wbh');
-        $qb->select('o.id,
-                            CASE 
-                                WHEN(o.idWalletDebtor = wbh.idWallet)  
-                                THEN -SUM(o.amount) 
-                                ELSE SUM(o.amount)
-                            END AS amount, 
-                            CASE 
-                                WHEN o.idSubType IS NULL
-                                THEN ot.label
-                                ELSE ost.label
-                            END AS label, 
-                            IDENTITY(o.idProject) AS idProject, 
-                            IDENTITY(o.idPaymentSchedule) AS idPaymentSchedule, 
-                            DATE(o.added) AS date,
-                            -ROUND((f.montantHt/100), 2) AS netCommission,
-                            -ROUND((f.tva/100), 2) AS vat,
-                            e.ordre,
-                            r.rejectionIsoCode,
-                            srr.label as rejectionReasonLabel,
-                            wbh.availableBalance')
+        $qb->select('
+                o.id,
+                CASE 
+                    WHEN(o.idWalletDebtor = wbh.idWallet)  
+                    THEN -SUM(o.amount) 
+                    ELSE SUM(o.amount)
+                END AS amount, 
+                CASE 
+                    WHEN o.idSubType IS NULL
+                    THEN ot.label
+                    ELSE ost.label
+                END AS label, 
+                IDENTITY(o.idProject) AS idProject, 
+                IDENTITY(o.idPaymentSchedule) AS idPaymentSchedule, 
+                DATE(o.added) AS date,
+                -ROUND((f.montantHt/100), 2) AS netCommission,
+                -ROUND((f.tva/100), 2) AS vat,
+                e.ordre,
+                IDENTITY(r.rejectionIsoCode),
+                srr.label as rejectionReasonLabel,
+                wbh.availableBalance'
+            )
             ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.id = wbh.idOperation')
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
             ->leftJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
