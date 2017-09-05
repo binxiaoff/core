@@ -1,0 +1,249 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
+    <style>
+        .service-fields-provider, .service-fields, #ws-result, #cache-duration {
+            display: none;
+        }
+        .service-fields-provider.active, .service-fields.active {
+            display: block;
+        }
+        .form-group {
+            float: left;
+            width: 160px;
+            margin-right: 10px;
+        }
+        #cache-duration {
+            width: 125px;
+        }
+        #cache-duration.has-error {
+            border-color: #d26a5c;
+            color: #d26a5c;
+        }
+    </style>
+{% endblock %}
+
+{% block pluginsJS %}
+    <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
+{% endblock %}
+
+{% block pageScripts %}
+    <script>
+        $(function () {
+            App.initHelpers(['datepicker', 'validation']);
+
+            $('#provider').change(function(){
+                var provider = $(this).val()
+
+                var $providerActive = $('.service-fields-provider.active')
+
+                $providerActive.removeClass('active').find('.service-fields.active').removeClass('active')
+                $providerActive.find('.services-select select').removeAttr('name').val('0')
+
+                if (provider !== '0') {
+                    var $serviceActive = $('.service-fields-provider-' + provider)
+                    var $service = $serviceActive.find('.services-select select')
+                    $serviceActive.addClass('active')
+                    $service.attr('name', $service.data('name'))
+                }
+            })
+
+            $('.services-select select').change(function(){
+                var service = $(this).val()
+                var $provider = $(this).closest('.service-fields-provider')
+                var $serviceGroupActive = $provider.find('.service-fields.active')
+                var $serviceGroupTarget = $provider.find('.service-fields-' + service)
+
+                if (service !== '0') {
+                    $serviceGroupActive.removeClass('active').find('input').each(function () {
+                        $(this).removeAttr('name')
+                    })
+                    $serviceGroupTarget.addClass('active').find('input').each(function () {
+                        var name = $(this).data('name')
+                        $(this).attr('name', name)
+                    })
+                } else {
+                    $serviceGroupActive.removeClass('active').find('input').removeAttr('name')
+                }
+            })
+
+            $('input[name="request_type"]').change(function(){
+                var $select = $('#cache-duration')
+                if ($(this).val() === 'cache') {
+                    $select.css('display', 'inline-block')
+                } else {
+                    $select.css('display', 'none')
+                }
+            })
+
+            $('#ws-provider-form').submit(function(e){
+                e.preventDefault()
+
+                var blockId = '#ws-simulator'
+                var $form = $(this)
+                var $result = $('#ws-result')
+                var $alertTrigger = $('#alert-trigger')
+
+                if ($form.find('#check-cache').is(':checked')) {
+                    var $duration = $form.find('#cache-duration')
+                    if ($duration.val() === '0') {
+                        $duration.addClass('has-error')
+                    } else {
+                        $duration.removeClass('has-error')
+                    }
+                }
+
+                if (!$form.find('.has-error').length) {
+                    App.blocks(blockId, 'state_loading');
+
+                    $result.slideUp().find('pre').html('')
+
+                    $.ajax({
+                        url: $form.attr('action'),
+                        data: $form.serialize(),
+                        dataType: 'json',
+                        method: $form.attr('method'),
+                        complete: function(response) {
+                            App.blocks(blockId, 'state_normal');
+
+                            var response = {
+                                success: true,
+                                error: ['Error 1'],
+                                data: 'This is the service response',
+                                date: '21/08/2017 11:13' // or null
+                            }
+
+                            $result.slideDown()
+
+                            if (response.success) {
+                                $result.find('pre').html(response.data).show()
+                            } else {
+                                $.each( response.error, function(i, val){
+                                    $alertTrigger.data('notify-message', val).trigger('click')
+                                });
+                            }
+                        }
+                    })
+                }
+            })
+        })
+    </script>
+{% endblock %}
+
+{% block modals %}
+    <a id="alert-trigger" data-notify data-notify-message=""></a>
+{% endblock %}
+
+{% block pageHeader %}
+    <h1 class="page-heading push">
+        Simulateur Webservices risque
+    </h1>
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <div id="ws-simulator" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Recherche</h3>
+            </div>
+            <div class="block-content block-content-full">
+                <form id="ws-provider-form" action="{{ adminUrl }}/simulation/webservices_risque" method="post" class="validate">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="provider">Prestataire</label> <br>
+                                <select id="provider" class="form-control required">
+                                    <option value="0">Sélectionner</option>
+                                    {% for resource in resources %}
+                                        <option value="{{ resource.provider }}">{{ resource.provider }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            {% for resource in resources %}
+                                <div class="service-fields-provider service-fields-provider-{{ resource.provider }}">
+                                    <div class="form-group services-select services-select-{{ resource.provider }}">
+                                        <label>Webservice</label>
+                                        <select class="form-control" data-name="service">
+                                            <option value="0">Sélectionner</option>
+                                            {% for service in resource.services %}
+                                                <option value="{{ service.name }}">{{ service.label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    {% for service in resource.services %}
+                                        <div class="service-fields service-fields-{{ service.name }}">
+                                            {% for field in service.fields %}
+                                                <div class="form-group service-field">
+                                                    <label>{{ field.label }}</label>
+                                                    {% if field.type != 'bool' %}
+                                                        <input type="{% if field.type == 'int' %}number{% else %}text{% endif %}" data-name="{{ field.name }}"
+                                                               class="form-control{% if field.mandatory %} required{% endif %}{% if field.type == 'date' %} js-datepicker{% endif %}"
+                                                               value="{% if field.default is defined %}{{ field.default }}{% endif %}"
+                                                                {% if field.type == 'date' %} data-date-format="dd/mm/yy" placeholder="dd/mm/yy"{% endif %}>
+                                                    {% else %}
+                                                        <br>
+                                                        <label class="css-input css-radio css-radio-primary">
+                                                            <input type="radio" data-name="{{ field.name }}" value="true" class="form-control{% if field.mandatory %} required{% endif %}"{% if field.default is defined and field.default %} checked{% endif %}>
+                                                            <span></span>
+                                                            Oui
+                                                        </label>
+                                                        <label>
+
+                                                        </label>
+                                                        <label class="css-input css-radio css-radio-primary">
+                                                            <input type="radio" data-name="{{ field.name }}" value="false" class="form-control{% if field.mandatory %} required{% endif %}"{% if field.default is defined and not field.default %} checked{% endif %}>
+                                                            <span></span>
+                                                            Non
+                                                        </label>
+                                                    {% endif %}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group request-type" style="width: auto;">
+                                <label>Type de requête</label> <br>
+                                <label class="css-input css-radio css-radio-primary">
+                                    <input type="radio" name="request_type" value="normal" checked><span></span> Normal (cache + WS)
+                                </label>
+                                <label class="css-input css-radio css-radio-primary push-20-l">
+                                    <input type="radio" name="request_type" value="force"><span></span> WS
+                                </label>
+                                <div class="push-10-l" style="display: inline-block;">
+                                    <label class="css-input css-radio css-radio-primary">
+                                        <input id="check-cache" type="radio" name="request_type" value="cache"><span></span> Cache
+                                    </label>
+                                    <select id="cache-duration" name="cache_duration" class="form-control input-sm push-5-l">
+                                        <option value="0">Nombre de jours</option>
+                                        <option value="5">5</option>
+                                        <option value="5">10</option>
+                                        <option value="5">15</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Valider</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="ws-result" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Réponse</h3>
+            </div>
+            <div class="block-content block-content-full">
+                <pre></pre>
+            </div>
+        </div>
+    </div>
+{% endblock %}

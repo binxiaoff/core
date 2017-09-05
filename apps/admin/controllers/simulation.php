@@ -6,30 +6,386 @@ use \Doctrine\ORM\EntityRepository;
 
 class simulationController extends bootstrap
 {
-    /**
-     * @var array
-     */
-    private $methods = [
-        'get_incident_list_codinf'               => 'getIncidentList',
-        'get_score_altares'                      => 'getScore',
-        'get_company_identity_altares'           => 'getCompanyIdentity',
-        'get_establishment_identity_altares'     => 'getEstablishmentIdentity',
-        'get_balance_sheet_altares'              => 'getBalanceSheets',
-        'get_financial_summary_altares'          => 'getFinancialSummary',
-        'get_balance_management_line_altares'    => 'getBalanceManagementLine',
-        'get_score_infolegale'                   => 'getScore',
-        'search_company_infolegale'              => 'searchCompany',
-        'get_identity_infolegale'                => 'getIdentity',
-        'get_legal_notice_infolegale'            => 'getListAnnonceLegale',
-        'get_indebtedness_infogreffe'            => 'getIndebtedness',
-        'search_company_euler'                   => 'searchCompany',
-        'get_grade_euler'                        => 'getGrade',
-        'get_traffic_light_euler'                => 'getTrafficLight',
-        'get_executives_infolegale'              => 'getExecutives',
-        'get_mandates_infolegale'                => 'getMandates',
-        'get_homonyms_infolegale'                => 'getHomonyms',
-        'get_announcements__director_infolegale' => 'getDirectorAnnouncements',
-        'get_online_order_ellisphere'            => 'getReport',
+    /** @var array */
+    const RISK_WEBSERVICES = [
+        [
+            'provider' => 'Altares',
+            'services' => [
+                [
+                    'label'  => 'getDerniersBilans',
+                    'name'   => 'get_balance_sheet_altares',
+                    'fields' => [
+                        [
+                            'name'      => 'siren',
+                            'label'     => 'SIREN',
+                            'type'      => 'text',
+                            'mandatory' => true
+                        ],
+                        [
+                            'name'      => 'balancheCount',
+                            'label'     => 'Nombre de bilans',
+                            'type'      => 'int',
+                            'mandatory' => false
+                        ]
+                    ]
+                ],
+                [
+                    'label'  => 'getIdentiteAltaN3Entreprise',
+                    'name'   => 'get_company_identity_altares',
+                    'fields' => [
+                        [
+                            'name'      => 'siren',
+                            'label'     => 'SIREN',
+                            'type'      => 'siren',
+                            'mandatory' => true
+                        ]
+                    ]
+                ],
+                [
+                    'label'  => 'getIdentiteAltaN3Etablissement',
+                    'name'   => 'get_establishment_identity_altares',
+                    'fields' => [
+                        [
+                            'name'      => 'siren',
+                            'label'     => 'SIREN',
+                            'type'      => 'siren',
+                            'mandatory' => true
+                        ]
+                    ]
+                ],
+                [
+                    'label'   => 'getScore',
+                    'name'    => 'get_score_altares',
+                    'fields' => [
+                        [
+                            'name'      => 'siren',
+                            'label'     => 'SIREN',
+                            'type'      => 'siren',
+                            'mandatory' => true
+                        ]
+                    ]
+                ],
+                [
+                    'label'  => 'getSoldeIntermediaireGestion',
+                    'name'   => 'get_balance_management_line_altares',
+                    'fields' => [
+                        [
+                            'name'      => 'siren',
+                            'label'     => 'SIREN',
+                            'type'      => 'siren',
+                            'mandatory' => true
+                        ],
+                        [
+                            'name'      => 'balanceId',
+                            'label'     => 'ID bilan',
+                            'type'      => 'int',
+                            'mandatory' => true
+                        ]
+                    ]
+                ],
+                [
+                    'label'  => 'getSyntheseFinanciere',
+                    'name'   => 'get_financial_summary_altares',
+                    'fields' => [
+                        [
+                            'name'      => 'siren',
+                            'label'     => 'SIREN',
+                            'type'      => 'siren',
+                            'mandatory' => true
+                        ],
+                        [
+                            'name'      => 'balanceId',
+                            'label'     => 'ID bilan',
+                            'type'      => 'int',
+                            'mandatory' => true
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        [
+            'provider' => 'Codinf',
+            'services' => [
+                [
+                    'label'  => 'get_list_v2',
+                    'name'   => 'get_incident_list_codinf',
+                    'fields' => [
+                        [
+                            'name'      => 'siren',
+                            'label'     => 'SIREN',
+                            'type'      => 'siren',
+                            'mandatory' => true
+                        ],
+                        [
+                            'name'      => 'startDate',
+                            'label'     => 'Date de début',
+                            'type'      => 'date',
+                            'mandatory' => false
+                        ],
+                        [
+                            'name'      => 'endDate',
+                            'label'     => 'Date de fin',
+                            'type'      => 'date',
+                            'mandatory' => false
+                        ],
+                        [
+                            'name'      => 'includeRegularized',
+                            'label'     => 'Régularisations',
+                            'type'      => 'bool',
+                            'mandatory' => false,
+                            'default'   => false
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        [
+            'provider' => 'Ellisphere',
+            'services' => [
+                [
+                    'label'  => 'svcOnlineOrder',
+                    'name'   => 'get_online_order_ellisphere',
+                    'fields' => [
+                        [
+                            'name'      => 'siren',
+                            'label'     => 'SIREN',
+                            'type'      => 'siren',
+                            'mandatory' => true
+                        ]
+                    ]
+                ],
+                [
+                    'label'  => 'svcSearch',
+                    'name'   => 'search_ellisphere',
+                    'fields' => [
+                        [
+                            'name'      => 'siren',
+                            'label'     => 'SIREN',
+                            'type'      => 'siren',
+                            'mandatory' => true
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        [
+            'provider' => 'Euler Hermes',
+            'services' => [
+                [
+                    'label'  => 'trafficLight/',
+                    'name'   => 'get_traffic_light_euler/',
+                    'fields' => [
+                        [
+                            'name'      => 'siren',
+                            'label'     => 'SIREN',
+                            'type'      => 'siren',
+                            'mandatory' => true
+                        ],
+                        [
+                            'name'      => 'country',
+                            'label'     => 'Pays',
+                            'type'      => 'string',
+                            'mandatory' => false,
+                            'default'   => 'FR'
+                        ]
+                    ]
+                ],
+                [
+                    'label'  => 'transactor/',
+                    'name'   => 'search_company_euler/',
+                    'fields' => [
+                        [
+                            'name'      => 'siren',
+                            'label'     => 'SIREN',
+                            'type'      => 'siren',
+                            'mandatory' => true
+                        ],
+                        [
+                            'name'      => 'country',
+                            'label'     => 'Pays',
+                            'type'      => 'string',
+                            'mandatory' => false,
+                            'default'   => 'FR'
+                        ]
+                    ]
+                ],
+                [
+                    'label'  => 'transactor/grade/',
+                    'name'   => 'get_grade_euler/grade/',
+                    'fields' => [
+                        [
+                            'name'      => 'siren',
+                            'label'     => 'SIREN',
+                            'type'      => 'siren',
+                            'mandatory' => true
+                        ],
+                        [
+                            'name'      => 'country',
+                            'label'     => 'Pays',
+                            'type'      => 'string',
+                            'mandatory' => false,
+                            'default'   => 'FR'
+                        ]
+                    ]
+                ],
+                [
+                    'label'  => 'transactor/startmonitoring/',
+                    'name'   => 'start_euler_grade_monitoring/startmonitoring/',
+                    'fields' => [
+                        [
+                            'name'      => 'siren',
+                            'label'     => 'SIREN',
+                            'type'      => 'siren',
+                            'mandatory' => true
+                        ],
+                        [
+                            'name'      => 'country',
+                            'label'     => 'Pays',
+                            'type'      => 'string',
+                            'mandatory' => false,
+                            'default'   => 'FR'
+                        ]
+                    ]
+                ],
+                [
+                    'label'  => 'transactor/stopmonitoring/',
+                    'name'   => 'end_euler_grade_monitoring/stopmonitoring/',
+                    'fields' => [
+                        [
+                            'name'      => 'siren',
+                            'label'     => 'SIREN',
+                            'type'      => 'siren',
+                            'mandatory' => true
+                        ],
+                        [
+                            'name'      => 'country',
+                            'label'     => 'Pays',
+                            'type'      => 'string',
+                            'mandatory' => false,
+                            'default'   => 'FR'
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        [
+            'provider' => 'Infogreffe',
+            'services' => [
+                [
+                    'label'  => 'getProduitsWebServicesXML',
+                    'name'   => 'get_indebtedness_infogreffe',
+                    'fields' => [
+                        [
+                            'name'      => 'siren',
+                            'label'     => 'SIREN',
+                            'type'      => 'siren',
+                            'mandatory' => true
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        [
+            'provider' => 'Infolegale',
+            'services' => [
+                [
+                    'label'  => 'getExecutives',
+                    'name'   => 'get_executives_infolegale',
+                    'fields' => [
+                        [
+                            'name'      => 'siren',
+                            'label'     => 'SIREN',
+                            'type'      => 'siren',
+                            'mandatory' => true
+                        ]
+                    ]
+                ],
+                [
+                    'label'  => 'getHomonymes',
+                    'name'   => 'get_homonyms_infolegale',
+                    'fields' => [
+                        [
+                            'name'      => 'executiveId',
+                            'label'     => 'ID dirigeant',
+                            'type'      => 'int',
+                            'mandatory' => true
+                        ]
+                    ]
+                ],
+                [
+                    'label'  => 'getIdentity',
+                    'name'   => 'get_identity_infolegale',
+                    'fields' => [
+                        [
+                            'name'      => 'siren',
+                            'label'     => 'SIREN',
+                            'type'      => 'siren',
+                            'mandatory' => true
+                        ]
+                    ]
+                ],
+                [
+                    'label'  => 'getListAnnonceLegale',
+                    'name'   => 'get_legal_notice_infolegale',
+                    'fields' => [
+                        [
+                            'name'      => 'executiveId',
+                            'label'     => 'ID dirigeant',
+                            'type'      => 'int',
+                            'mandatory' => true
+                        ]
+                    ]
+                ],
+                [
+                    'label'  => 'getListAnnonceLegaleDirigeant',
+                    'name'   => 'get_announcements__director_infolegale',
+                    'fields' => [
+                        [
+                            'name'      => 'siren',
+                            'label'     => 'SIREN',
+                            'type'      => 'siren',
+                            'mandatory' => true
+                        ]
+                    ]
+                ],
+                [
+                    'label'  => 'getMandats',
+                    'name'   => 'get_mandates_infolegale',
+                    'fields' => [
+                        [
+                            'name'      => 'executiveId',
+                            'label'     => 'ID dirigeant',
+                            'type'      => 'int',
+                            'mandatory' => true
+                        ]
+                    ]
+                ],
+                [
+                    'label'  => 'getScore',
+                    'name'   => 'get_score_infolegale',
+                    'fields' => [
+                        [
+                            'name'      => 'siren',
+                            'label'     => 'SIREN',
+                            'type'      => 'siren',
+                            'mandatory' => true
+                        ]
+                    ]
+                ],
+                [
+                    'label'  => 'searchCompany',
+                    'name'   => 'search_company_infolegale',
+                    'fields' => [
+                        [
+                            'name'      => 'siren',
+                            'label'     => 'SIREN',
+                            'type'      => 'siren',
+                            'mandatory' => true
+                        ]
+                    ]
+                ]
+            ]
+        ]
     ];
 
     public function initialize()
@@ -45,8 +401,10 @@ class simulationController extends bootstrap
         die;
     }
 
-    public function _wsProvider()
+    public function _webservices_risque()
     {
+        $this->render(null, ['resources' => self::RISK_WEBSERVICES]);
+
         $this->hideDecoration();
         /** @var EntityRepository $wsResourceRepository */
         $wsResourceRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:WsExternalResource');
@@ -89,8 +447,6 @@ class simulationController extends bootstrap
         } catch (\Exception $exception) {
             $this->result = 'Error code: ' . $exception->getCode() . '. Error message: ' . $exception->getMessage() . ' in file: ' . $exception->getFile() . ' at line: ' . $exception->getLine();
         }
-        $this->render();
-
     }
 
     public function _storedData()
