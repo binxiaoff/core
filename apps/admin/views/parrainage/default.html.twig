@@ -182,26 +182,6 @@
                 <h3 class="block-title">Créer une campagne de parrainage</h3>
             </div>
             <div class="block-content block-content-full">
-                {% if formErrors.newCampaign is defined and formErrors.newCampaign is not empty %}
-                    <div class="alert alert-error">
-                        <p>
-                            {% for error in formErrors.newCampaign %}
-                                {% if error is iterable %}
-                                    {% for technicalError in error %}
-                                        <span>{{ technicalError }}</span> <!-- @TODO that's the collapsed error -->
-                                    {% endfor %}
-                                {% else %}
-                                    <span>{{ error }}</span> <br>
-                                {% endif %}
-                            {% endfor %}
-                        </p>
-                    </div>
-                {% endif %}
-                {% if formSuccess.newCampaign is defined and formSuccess.newCampaign is not empty %}
-                    <div class="alert alert-success">
-                        <p>{{ formSuccess.newCampaign }}</p>
-                    </div>
-                {% endif %}
                 <form method="post" action="{{ app.adminUrl }}/parrainage/create_new_campaign" class="form-inline validate">
                     <div class="form-group">
                         <label>Début de l'offre</label> <br>
@@ -233,34 +213,53 @@
                         <button type="submit" class="btn btn-primary">Créer</button>
                     </div>
                 </form>
+                {% if formErrors.newCampaign is defined and formErrors.newCampaign is not empty %}
+                    <div class="alert alert-error">
+                        <p>
+                            {% for error in formErrors.newCampaign %}
+                                {% if error is iterable %}
+                                    {% for technicalError in error %}
+                                        <span>{{ technicalError }}</span> <!-- @TODO that's the collapsed error -->
+                                    {% endfor %}
+                                {% else %}
+                                    <span>{{ error }}</span> <br>
+                                {% endif %}
+                            {% endfor %}
+                        </p>
+                    </div>
+                {% endif %}
+                {% if formSuccess.newCampaign is defined and formSuccess.newCampaign is not empty %}
+                    <div class="alert alert-success">
+                        <p>{{ formSuccess.newCampaign }}</p>
+                    </div>
+                {% endif %}
             </div>
         </div><!-- /#parrainage-create-campaign -->
         <div id="parrainage-list-ongoing" class="block block-bordered">
             <div class="block-header">
                 <h3 class="block-title">Liste des campagnes en cours</h3>
             </div>
-            {% if formErrors.modifyCampaign is defined and formErrors.modifyCampaign is not empty %}
-                <div class="alert alert-error">
-                    <p>
-                        {% for error in formErrors.modifyCampaign %}
-                            {% if error is iterable %}
-                                {% for technicalError in error %}
-                                    <span>{{ technicalError }}</span> <!-- @TODO that's the collapsed error -->
-                                {% endfor %}
-                            {% else %}
-                                <span>{{ error }}</span> <br>
-                            {% endif %}
-                        {% endfor %}
-                    </p>
-                </div>
-            {% endif %}
-            {% if formSuccess.modifyCampaign is defined and formSuccess.modifyCampaign is not empty %}
-                <div class="alert alert-success">
-                    <p>{{ formSuccess.modifyCampaign }}</p>
-                </div>
-            {% endif %}
             <div class="block-content block-content-full">
-                <!-- @TODO Dynamisation de la table -->
+                {% if formErrors.modifyCampaign is defined and formErrors.modifyCampaign is not empty %}
+                    <div class="alert alert-error">
+                        <p>
+                            {% for error in formErrors.modifyCampaign %}
+                                {% if error is iterable %}
+                                    {% for technicalError in error %}
+                                        <span>{{ technicalError }}</span> <!-- @TODO that's the collapsed error -->
+                                    {% endfor %}
+                                {% else %}
+                                    <span>{{ error }}</span> <br>
+                                {% endif %}
+                            {% endfor %}
+                        </p>
+                    </div>
+                {% endif %}
+                {% if formSuccess.modifyCampaign is defined and formSuccess.modifyCampaign is not empty %}
+                    <div class="alert alert-success">
+                        <p>{{ formSuccess.modifyCampaign }}</p>
+                    </div>
+                {% endif %}
                 <table id="parrainage-list-campaign-table" class="table table-bordered table-striped table-hover table-header-bg js-dataTable-simple">
                     <thead>
                         <tr>
@@ -275,7 +274,7 @@
                             <th class="number-sponsee">Filleuls</th>
                             <th class="total-amount-sponsor">Distribué aux parrains</th>
                             <th class="total-amount-sponsee">Distribué aux filleuls</th>
-                            <td class="action">Action</td>
+                            <th class="action">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -306,7 +305,6 @@
                 <h3 class="block-title">Liste des campagnes finis</h3>
             </div>
             <div class="block-content block-content-full">
-                <!-- @TODO Dynamisation de la table -->
                 <table id="parrainage-list-expired-campaign-table" class="table table-bordered table-striped table-hover table-header-bg js-dataTable-simple">
                     <thead>
                     <tr>
@@ -410,51 +408,63 @@
             </div>
             <div class="block-content">
                 <style>
-                    .helper {
-                        margin: 0 -10px;
-                        clear: both;
+                    .differentiate .sponsee, .differentiate .sponsor {
+                        position: relative;
                     }
-                    .helper .col {
-                        float: left;
-                        width: 44.5%;
-                        padding: 0 10px;
-                    }
-                    .helper .col:first-child {
-                        width: 9%;
-                    }
-                    .helper .col span {
-                        display: block;
+                    .differentiate .sponsee:before, .differentiate .sponsor:before {
+                        content: '';
                         height: 2px;
+                        position: absolute;
+                        top: -15px;
+                        left: -1px; right: -1px;
+                    }
+                    .differentiate .sponsee:before {
+                        background: #353847;
+                    }
+                    .differentiate .sponsor:before {
+                        background: #b20066;
+                    }
+                    .differentiate .sponsee.last:before {
+                        right: 5px;
+                    }
+                    .differentiate .sponsor.first:before {
+                        left: 5px;
                     }
                 </style>
 
                 <a href="{{ app.adminUrl }}/parrainage/export" class="btn btn-default pull-right">Export XLS <span class="fa fa-file-excel-o"></span></a>
-
-                <div class="row helper">
-                    <div class="col">&nbsp;</div>
-                    <div class="col">
-                        <p><b>Filleul</b></p>
-                        <span class="bg-primary"></span>
+                <p style="clear: both">
+                    <div style="width: 100px" class="pull-left">&nbsp;</div>
+                    <div style="width: calc(100% - 100px)" class="pull-right">
+                        <p class="text-center pull-left" style="width: 50%; color: #353847"><b>Filleul</b></p>
+                        <p class="text-center pull-right" style="width: 50%; color: #b20066"><b>Parrain</b></p>
                     </div>
-                    <div class="col">
-                        <p><b>Parrain</b></p>
-                        <span class="bg-primary"></span>
-                    </div>
-                </div>
-                <table class="table table-bordered table-striped table-hover table-header-bg js-dataTable-simple">
+                </p>
+                {#<div class="row helper">#}
+                    {#<div class="col">&nbsp;</div>#}
+                    {#<div class="col">#}
+                        {#<p><b>Filleul</b></p>#}
+                        {#<span class="bg-primary"></span>#}
+                    {#</div>#}
+                    {#<div class="col">#}
+                        {#<p><b>Parrain</b></p>#}
+                        {#<span class="bg-primary"></span>#}
+                    {#</div>#}
+                {#</div>#}
+                <table class="table table-bordered table-striped table-hover table-header-bg js-dataTable-simple differentiate">
                     <thead>
                     <tr>
-                        <th style="width: 10%">Code parrain</th>
-                        <th style="width: 9%">Filleul ID</th>
-                        <th style="width: 9%">Nom/Prénom</th>
-                        <th style="width: 9%">Email</th>
-                        <th style="width: 9%">Prime</th>
-                        <th style="width: 9%">Date Versement</th>
-                        <th style="width: 9%">Parrain ID</th>
-                        <th style="width: 9%">Nom/Prénom</th>
-                        <th style="width: 9%">Email</th>
-                        <th style="width: 9%">Prime</th>
-                        <th style="width: 9%">Date Versement</th>
+                        <th style="width: 100px;">Code parrain</th>
+                        <th class="sponsee">Filleul ID</th>
+                        <th class="sponsee">Nom/Prénom</th>
+                        <th class="sponsee">Email</th>
+                        <th class="sponsee">Prime</th>
+                        <th class="sponsee last">Date Versement</th>
+                        <th class="sponsor first">Parrain ID</th>
+                        <th class="sponsor">Nom/Prénom</th>
+                        <th class="sponsor">Email</th>
+                        <th class="sponsor">Prime</th>
+                        <th class="sponsor">Date Versement</th>
                     </tr>
                     </thead>
                     <tbody>
