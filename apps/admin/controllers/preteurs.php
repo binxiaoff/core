@@ -1,22 +1,23 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
-use Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectNotification;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
-use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectNotification;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
+use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
 
 class preteursController extends bootstrap
 {
@@ -24,18 +25,16 @@ class preteursController extends bootstrap
     {
         parent::initialize();
 
-        include $this->path . '/apps/default/controllers/pdf.php';
-
-        $this->catchAll = true;
-
-        $this->users->checkAccess('preteurs');
+        $this->users->checkAccess(Zones::ZONE_LABEL_LENDERS);
 
         $this->menu_admin = 'preteurs';
+
+        include $this->path . '/apps/default/controllers/pdf.php';
     }
 
     public function _default()
     {
-        header('Location:' . $this->lurl . '/preteurs/search');
+        header('Location: ' . $this->lurl . '/preteurs/search');
         die;
     }
 
@@ -363,10 +362,6 @@ class preteursController extends bootstrap
             /** @var BankAccount $currentBankAccount */
             $this->currentBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
 
-            if (null === $this->currentBankAccount) {
-                $this->currentBankAccount = new BankAccount();
-            }
-
             if ($this->clients->telephone != '') {
                 trim(chunk_split($this->clients->telephone, 2, ' '));
             }
@@ -451,17 +446,27 @@ class preteursController extends bootstrap
                         $this->clients->email = $_POST['email'];
                     }
 
-                    $oBirthday = new \DateTime(str_replace('/', '-', $_POST['naissance']));
+                    $birthday = null;
+                    if (isset($_POST['naissance']) && 1 === preg_match("#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#", $_POST['naissance'])) {
+                        $birthday = \DateTime::createFromFormat('d/m/Y', $_POST['naissance']);
+                    }
+
+                    if (null === $birthday) {
+                        $_SESSION['freeow']['title']   = 'Erreur de données clients';
+                        $_SESSION['freeow']['message'] = 'Le format de la date de naissance n\'est pas correct';
+                        header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->clients->id_client);
+                        die;
+                    }
 
                     $this->clients->telephone           = str_replace(' ', '', $_POST['phone']);
                     $this->clients->mobile              = str_replace(' ', '', $_POST['mobile']);
                     $this->clients->ville_naissance     = $_POST['com-naissance'];
                     $this->clients->insee_birth         = $_POST['insee_birth'];
-                    $this->clients->naissance           = $oBirthday->format('Y-m-d');
+                    $this->clients->naissance           = $birthday->format('Y-m-d');
                     $this->clients->id_pays_naissance   = $_POST['id_pays_naissance'];
                     $this->clients->id_nationalite      = $_POST['nationalite'];
                     $this->clients->id_langue           = 'fr';
-                    $this->clients->type                = 1;
+                    $this->clients->type                = ($_POST['id_pays_naissance'] == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
                     $this->clients->fonction            = '';
                     $this->clients->funds_origin        = $_POST['origine_des_fonds'];
                     $this->clients->funds_origin_detail = $this->clients->funds_origin == '1000000' ? $_POST['preciser'] : '';

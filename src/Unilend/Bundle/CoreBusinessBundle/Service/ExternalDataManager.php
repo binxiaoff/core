@@ -46,6 +46,8 @@ class ExternalDataManager
     private $companyBalanceSheetManager;
     /** @var CompanyRatingHistory */
     private $companyRatingHistory;
+    /** @var  RiskDataMonitoringManager */
+    private $riskDataMonitoringManager;
 
     /**
      * @param EntityManager              $entityManager
@@ -56,6 +58,7 @@ class ExternalDataManager
      * @param InfogreffeManager          $infogreffeManager
      * @param EllisphereManager          $ellisphereManager
      * @param CompanyBalanceSheetManager $companyBalanceSheetManager
+     * @param RiskDataMonitoringManager  $riskDataMonitoringManager
      */
     public function __construct(
         EntityManager $entityManager,
@@ -65,7 +68,8 @@ class ExternalDataManager
         InfolegaleManager $infolegaleManager,
         InfogreffeManager $infogreffeManager,
         EllisphereManager $ellisphereManager,
-        CompanyBalanceSheetManager $companyBalanceSheetManager
+        CompanyBalanceSheetManager $companyBalanceSheetManager,
+        RiskDataMonitoringManager $riskDataMonitoringManager
     )
     {
         $this->entityManager              = $entityManager;
@@ -76,6 +80,7 @@ class ExternalDataManager
         $this->infogreffeManager          = $infogreffeManager;
         $this->ellisphereManager          = $ellisphereManager;
         $this->companyBalanceSheetManager = $companyBalanceSheetManager;
+        $this->riskDataMonitoringManager  = $riskDataMonitoringManager;
     }
 
     /**
@@ -94,32 +99,39 @@ class ExternalDataManager
      * @param string $siren
      *
      * @return CompanyIdentityDetail|null
+     *
+     * @throws \Exception
      */
     public function getCompanyIdentity($siren)
     {
-        $identity = $this->altaresManager->getCompanyIdentity($siren);
+        try {
+            $identity = $this->altaresManager->getCompanyIdentity($siren);
 
-        if (null !== $identity && $this->companyRatingHistory instanceof CompanyRatingHistory) {
-            $company = $this->companyRatingHistory->getIdCompany();
+            if (null !== $identity && $this->companyRatingHistory instanceof CompanyRatingHistory) {
+                $company = $this->companyRatingHistory->getIdCompany();
 
-            if ($company->getSiren() === $siren) {
-                $company->setName($company->getName() ? : $identity->getCorporateName());
-                $company->setForme($company->getForme() ? : $identity->getCompanyForm());
-                $company->setCapital($company->getCapital() ? : $identity->getCapital());
-                $company->setCodeNaf($company->getCodeNaf() ? : $identity->getNAFCode());
-                $company->setAdresse1($company->getAdresse1() ? : $identity->getAddress());
-                $company->setCity($company->getCity() ? : $identity->getCity());
-                $company->setZip($company->getZip() ? : $identity->getPostCode());
-                $company->setSiret($company->getSiret() ? : $identity->getSiret());
-                $company->setDateCreation($company->getDateCreation() ? : $identity->getCreationDate());
-                $company->setRcs($company->getRcs() ? : $identity->getRcs());
-                $company->setTribunalCom($company->getTribunalCom() ? : $identity->getCommercialCourt());
+                if ($company->getSiren() === $siren) {
+                    $company->setName($company->getName() ? : $identity->getCorporateName());
+                    $company->setLegalFormCode($company->getLegalFormCode() ? : $identity->getLegalFormCode());
+                    $company->setForme($company->getForme() ? : $identity->getCompanyForm());
+                    $company->setCapital($company->getCapital() ? : $identity->getCapital());
+                    $company->setCodeNaf($company->getCodeNaf() ? : $identity->getNAFCode());
+                    $company->setAdresse1($company->getAdresse1() ? : $identity->getAddress());
+                    $company->setCity($company->getCity() ? : $identity->getCity());
+                    $company->setZip($company->getZip() ? : $identity->getPostCode());
+                    $company->setSiret($company->getSiret() ? : $identity->getSiret());
+                    $company->setDateCreation($company->getDateCreation() ? : $identity->getCreationDate());
+                    $company->setRcs($company->getRcs() ? : $identity->getRcs());
+                    $company->setTribunalCom($company->getTribunalCom() ? : $identity->getCommercialCourt());
 
-                $this->entityManager->flush($company);
+                    $this->entityManager->flush($company);
+                }
             }
-        }
 
-        return $identity;
+            return $identity;
+        } catch (\Exception $exception) {
+            throw $exception;
+        }
     }
 
     /**
@@ -150,7 +162,7 @@ class ExternalDataManager
             }
 
             $this->setRating(CompanyRating::TYPE_ALTARES_SCORE_20, $score->getScore20());
-            $this->setRating(CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_100, $score->getScore100());
+            $this->setRating(CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_100, $score->getSectoralScore100());
             $this->setRating(CompanyRating::TYPE_ALTARES_VALUE_DATE, $score->getScoreDate()->format('Y-m-d'));
             $this->setRating(CompanyRating::TYPE_XERFI_RISK_SCORE, $xerfiScore);
             $this->setRating(CompanyRating::TYPE_UNILEND_XERFI_RISK, $xerfiUnilend);
@@ -246,7 +258,7 @@ class ExternalDataManager
      */
     public function getEulerHermesGrade($siren)
     {
-        $eulerHermesGrade = $this->eulerHermesManager->getGrade($siren, 'fr');
+        $eulerHermesGrade = $this->riskDataMonitoringManager->getEulerHermesGradeWithMonitoring($siren, 'fr');
 
         if (
             null !== $eulerHermesGrade

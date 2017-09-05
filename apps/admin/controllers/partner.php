@@ -1,6 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\PartnerThirdParty;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class partnerController extends bootstrap
 {
@@ -14,9 +15,7 @@ class partnerController extends bootstrap
     {
         parent::initialize();
 
-        $this->catchAll = true;
-
-        $this->users->checkAccess('emprunteurs');
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
 
         $this->menu_admin = 'emprunteurs';
     }

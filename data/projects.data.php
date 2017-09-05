@@ -643,7 +643,7 @@ class projects extends projects_crud
             FROM echeanciers e
                 LEFT JOIN wallet w ON w.id = e.id_lender
                 LEFT JOIN clients c ON w.id_client = c.id_client
-                LEFT JOIN companies com ON la.id_company_owner = com.id_company
+                LEFT JOIN companies com ON com.id_client_owner = c.id_client
             WHERE id_project = ' . $iProjectId . $sOrder;
 
         $result                 = $this->bdd->query($sql);
@@ -1302,6 +1302,7 @@ class projects extends projects_crud
                 p.status AS status,
                 ps.label AS status_label,
                 co.name AS company_name,
+                co.siren AS siren,
                 CONCAT(cl.prenom, " ", cl.nom) AS client_name,
                 cl.telephone AS client_phone,
                 p.added AS creation,
@@ -1414,6 +1415,7 @@ class projects extends projects_crud
                 p.status AS status,
                 ps.label AS status_label,
                 co.name AS company_name,
+                co.siren AS siren,
                 CONCAT(cl.prenom, " ", cl.nom) AS client_name,
                 cl.telephone AS client_phone,
                 p.added AS creation,

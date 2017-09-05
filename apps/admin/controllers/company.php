@@ -2,6 +2,7 @@
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyIdentityDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
@@ -12,8 +13,7 @@ class companyController extends bootstrap
     {
         parent::initialize();
 
-        $this->catchAll = true;
-        $this->users->checkAccess('emprunteurs');
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
 
         $this->menu_admin = 'emprunteurs';
         $this->translator = $this->get('translator');
@@ -64,32 +64,37 @@ class companyController extends bootstrap
             $altares = $this->get('unilend.service.ws_client.altares_manager');
             /** @var \Unilend\Bundle\WSClientBundle\Service\InfolegaleManager $infoLegale */
             $infoLegale = $this->get('unilend.service.ws_client.infolegale_manager');
-
-            $altaresCompanyIdentity       = $altares->getCompanyIdentity($siren);
-            $altaresEstablishmentIdentity = $altares->getEstablishmentIdentity($siren);
-            $infoLegaleIdentity           = $infoLegale->getIdentity($siren);
-            $companyIdentity              = [];
-            if ($altaresCompanyIdentity instanceof CompanyIdentityDetail) {
-                $companyIdentity = [
-                    'corporateName' => $altaresCompanyIdentity->getCorporateName(),
-                    'address'       => $altaresCompanyIdentity->getAddress(),
-                    'postCode'      => $altaresCompanyIdentity->getPostCode(),
-                    'city'          => $altaresCompanyIdentity->getCity(),
-                ];
-            }
-            if ($altaresEstablishmentIdentity instanceof EstablishmentIdentityDetail) {
-                $companyIdentity['phoneNumber'] = $altaresEstablishmentIdentity->getPhoneNumber();
-            }
-            if (false === empty($infoLegaleIdentity->getDirectors())) {
-                $companyIdentity['title']          = $infoLegaleIdentity->getDirectors()->first()->getTitle();
-                $companyIdentity['ownerName']      = $infoLegaleIdentity->getDirectors()->first()->getName();
-                $companyIdentity['ownerFirstName'] = $infoLegaleIdentity->getDirectors()->first()->getFirstName();
-            }
-
             /** @var \JMS\Serializer\Serializer $serializer */
             $serializer = $this->get('jms_serializer');
 
-            echo $serializer->serialize($companyIdentity, 'json');
+            $companyIdentity = [];
+            try {
+                $altaresCompanyIdentity = $altares->getCompanyIdentity($siren);
+
+                if ($altaresCompanyIdentity instanceof CompanyIdentityDetail) {
+                    $companyIdentity = [
+                        'corporateName' => $altaresCompanyIdentity->getCorporateName(),
+                        'address'       => $altaresCompanyIdentity->getAddress(),
+                        'postCode'      => $altaresCompanyIdentity->getPostCode(),
+                        'city'          => $altaresCompanyIdentity->getCity(),
+                    ];
+                }
+                $altaresEstablishmentIdentity = $altares->getEstablishmentIdentity($siren);
+                $infoLegaleIdentity           = $infoLegale->getIdentity($siren);
+
+                if ($altaresEstablishmentIdentity instanceof EstablishmentIdentityDetail) {
+                    $companyIdentity['phoneNumber'] = $altaresEstablishmentIdentity->getPhoneNumber();
+                }
+                if (false === empty($infoLegaleIdentity->getDirectors())) {
+                    $companyIdentity['title']          = $infoLegaleIdentity->getDirectors()->first()->getTitle();
+                    $companyIdentity['ownerName']      = $infoLegaleIdentity->getDirectors()->first()->getName();
+                    $companyIdentity['ownerFirstName'] = $infoLegaleIdentity->getDirectors()->first()->getFirstName();
+                }
+
+                echo $serializer->serialize($companyIdentity, 'json');
+            } catch (\Exception $exception) {
+                echo $serializer->serialize(['error' => 'Problème technique, veuillez réessayer ultérieurement.'], 'json');
+            }
         }
     }
 

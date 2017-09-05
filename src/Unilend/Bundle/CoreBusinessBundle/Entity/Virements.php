@@ -20,9 +20,10 @@ class Virements
     const STATUS_VALIDATED        = 25;
     const STATUS_SENT             = 30;
 
-    const TYPE_LENDER   = 1;
-    const TYPE_BORROWER = 2;
-    const TYPE_UNILEND  = 4;
+    const TYPE_LENDER         = 1;
+    const TYPE_BORROWER       = 2;
+    const TYPE_UNILEND        = 4;
+    const TYPE_DEBT_COLLECTOR = 5;
 
     /**
      * @var Clients

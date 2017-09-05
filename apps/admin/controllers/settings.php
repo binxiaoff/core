@@ -1,20 +1,20 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+
 class settingsController extends bootstrap
 {
     public function initialize()
     {
         parent::initialize();
 
-        $this->catchAll = true;
+        $this->users->checkAccess(Zones::ZONE_LABEL_CONFIGURATION);
+
+        $this->menu_admin = 'configuration';
     }
 
     public function _default()
     {
-        $this->users->checkAccess('configuration');
-
-        $this->menu_admin = 'configuration';
-
         if (isset($_POST['form_add_settings'])) {
             $this->settings->type   = $_POST['type'];
             $this->settings->value  = $_POST['value'];
@@ -83,10 +83,6 @@ class settingsController extends bootstrap
     {
         $this->hideDecoration();
 
-        $this->users->checkAccess('configuration');
-
-        $this->menu_admin = 'configuration';
-
         $_SESSION['request_url'] = $this->url;
 
         $this->settings->get($this->params[0], 'id_setting');
@@ -95,10 +91,6 @@ class settingsController extends bootstrap
     public function _add()
     {
         $this->hideDecoration();
-
-        $this->users->checkAccess('configuration');
-
-        $this->menu_admin = 'configuration';
 
         $_SESSION['request_url'] = $this->url;
     }

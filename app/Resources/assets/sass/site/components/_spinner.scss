@@ -1,8 +1,8 @@
 // Spinner
 // Inline and whole window
 
-// Small inline spinner (mostly used within btn-groups for AutoComplete input elements)
-.ui-is-spinner {
+// ui-spinner
+@mixin ui-spinner {
   display: none !important;
   color: $c-t3;
   font-family: $ff-icon;
@@ -14,6 +14,24 @@
 
   pointer-events: none;
   user-select: none;
+}
+
+@mixin ui-spinner-loading {
+  display: inline-block !important;
+  color: $c-p1;
+  opacity: 1;
+  animation-play-state: running;
+}
+
+@mixin ui-spinner-end {
+  display: inline-block !important;
+  opacity: 0;
+  animation-play-state: running;
+}
+
+// Small inline spinner (mostly used within btn-groups for AutoComplete input elements)
+.ui-is-spinner {
+  @include ui-spinner;
 
   &:before {
     content: $fa-refresh;
@@ -21,17 +39,12 @@
 
   #{$js-is-loading} &,
   &#{$js-is-loading} {
-    display: inline-block !important;
-    color: $c-p1;
-    opacity: 1;
-    animation-play-state: running;
+    @include ui-spinner-loading;
   }
 
   #{$js-is-loading-end} &,
   &#{$js-is-loading-end} {
-    display: inline-block !important;
-    opacity: 0;
-    animation-play-state: running;
+    @include ui-spinner-end;
   }
 }
 

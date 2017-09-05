@@ -1,5 +1,6 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use \Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
 use \Doctrine\ORM\EntityRepository;
 
@@ -35,9 +36,7 @@ class simulationController extends bootstrap
     {
         parent::initialize();
 
-        $this->catchAll = true;
-
-        $this->users->checkAccess('simulator');
+        $this->users->checkAccess(Zones::ZONE_LABEL_SIMULATOR);
     }
 
     public function _default()

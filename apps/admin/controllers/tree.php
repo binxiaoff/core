@@ -1,14 +1,14 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+
 class treeController extends bootstrap
 {
     public function initialize()
     {
         parent::initialize();
 
-        $this->catchAll = true;
-
-        $this->users->checkAccess('edition');
+        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
 
         $this->menu_admin = 'edition';
     }

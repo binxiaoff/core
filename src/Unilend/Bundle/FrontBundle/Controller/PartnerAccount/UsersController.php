@@ -165,7 +165,7 @@ class UsersController extends Controller
         if (empty($request->request->get('email')) || false === filter_var($request->request->get('email'), FILTER_VALIDATE_EMAIL)) {
             $errors['email'] = true;
         }
-        if ($clientRepository->existEmail($request->request->get('email'))) {
+        if ($clientRepository->existEmail($request->request->get('email'), Clients::STATUS_ONLINE)) {
             $errors['email_existing'] = true;
         }
         if (empty($request->request->get('phone'))) {

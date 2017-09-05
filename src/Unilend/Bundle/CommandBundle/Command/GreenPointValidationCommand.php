@@ -52,7 +52,8 @@ EOF
             AttachmentType::CNI_PASSPORTE_DIRIGEANT,
             AttachmentType::RIB,
         ];
-        $clients                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getLendersInStatus($statusToCheck);
+        /** @var Clients[] $clients */
+        $clients = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getLendersInStatus($statusToCheck);
 
         if (false === empty($clients)) {
             /** @var greenPoint $oGreenPoint */
@@ -100,9 +101,13 @@ EOF
                         $greenPointData = $this->getGreenPointData($client, $attachment, $type);
                         $requestId      = $greenPoint->send($greenPointData, $type, false);
                         if (is_int($requestId)) {
+                            $entityManager->flush($greenPointAttachment);
                             $requests[$requestId] = $greenPointAttachment;
+                        } else {
+                            $entityManager->detach($greenPointAttachment);
                         }
                     } catch (\Exception $exception) {
+                        $entityManager->detach($greenPointAttachment);
                         $logger->error(
                             'Greenpoint was unable to process data (client ' . $client->getIdClient() . ') - Message: ' . $exception->getMessage() . ' - Code: ' . $exception->getCode(),
                             ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]
@@ -112,7 +117,7 @@ EOF
                 }
                 if (false === empty($requests)) {
                     $response = $greenPoint->sendRequests();
-                    $this->processGreenPointResponse($client->getIdClient(), $response, $requests);
+                    $this->processGreenPointResponse($response, $requests);
                     unset($response, $requests);
                     greenPointStatus::addCustomer($client->getIdClient(), $greenPoint, $greenPointKyc);
                 }
@@ -195,11 +200,10 @@ EOF
     }
 
     /**
-     * @param int   $clientId
      * @param array $response
      * @param array $requests
      */
-    private function processGreenPointResponse($clientId, array $response, array $requests)
+    private function processGreenPointResponse(array $response, array $requests)
     {
         /**
          * @var  int                  $requestId
@@ -218,12 +222,12 @@ EOF
             }
             $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
 
-            $response = json_decode($response[$requestId]['RESPONSE'], true);
+            $responseData = json_decode($response[$requestId]['RESPONSE'], true);
 
-            if (isset($response['resource']) && is_array($response['resource'])) {
-                $greenPointData = greenPointStatus::getGreenPointData($response['resource'], $attachment->getType()->getId(), $response['code']);
+            if (isset($responseData['resource']) && is_array($responseData['resource'])) {
+                $greenPointData = greenPointStatus::getGreenPointData($responseData['resource'], $attachment->getType()->getId(), $responseData['code']);
             } else {
-                $greenPointData = greenPointStatus::getGreenPointData([], $attachment->getType()->getId(), $response['code']);
+                $greenPointData = greenPointStatus::getGreenPointData([], $attachment->getType()->getId(), $responseData['code']);
             }
 
             $greenPointAttachment->setValidationCode($greenPointData['greenpoint_attachment']['validation_code'])

@@ -46,6 +46,7 @@ class OperationType
     const COLLECTION_COMMISSION_PROVISION = 'collection_commission_provision';
     const COLLECTION_COMMISSION_BORROWER  = 'collection_commission_borrower';
     const COLLECTION_COMMISSION_LENDER    = 'collection_commission_lender';
+    const DEBT_COLLECTOR_WITHDRAW         = 'debt_collector_withdraw';
 
     // General regularization
     const UNILEND_BORROWER_COMMERCIAL_GESTURE = 'unilend_borrower_commercial_gesture';
@@ -86,6 +87,16 @@ class OperationType
         self::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_REGULARIZATION,
         self::TAX_FR_CRDS_REGULARIZATION,
         self::TAX_FR_RETENUES_A_LA_SOURCE_REGULARIZATION
+    ];
+
+    const TAX_WITHDRAW_TYPES = [
+        OperationType::TAX_FR_CRDS_WITHDRAW,
+        OperationType::TAX_FR_CSG_WITHDRAW,
+        OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_WITHDRAW,
+        OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_WITHDRAW,
+        OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_WITHDRAW,
+        OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_WITHDRAW,
+        OperationType::TAX_FR_RETENUES_A_LA_SOURCE_WITHDRAW
     ];
 
     /**

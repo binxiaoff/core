@@ -510,7 +510,11 @@ class MailerManager
             $projectRates = $bidManager->getProjectRateRange($project);
 
             if ($bid->getAutobid()) {
-                if ($bid->getProject()->getDateFin() <= $now) {
+                /**
+                 * Using the projects.data object is a workaround while projects has not been completely migrated on Doctrine Entity
+                 * and date_fin can not be NULL
+                 */
+                if ('0000-00-00 00:00:00' != $project->date_fin && $bid->getProject()->getDateFin() <= $now) {
                     $mailTemplate = 'preteur-autobid-ko-apres-fin-de-periode-projet';
                 } elseif ($bids->getProjectMaxRate($project) > $projectRates['rate_min']) {
                     $mailTemplate = 'preteur-autobid-ko';
@@ -518,7 +522,7 @@ class MailerManager
                     $mailTemplate = 'preteur-autobid-ko-minimum-rate';
                 }
             } else {
-                if ($bid->getProject()->getDateFin() <= $now) {
+                if ('0000-00-00 00:00:00' != $project->date_fin && $bid->getProject()->getDateFin() <= $now) {
                     $mailTemplate = 'preteur-bid-ko-apres-fin-de-periode-projet';
                 } elseif ($bids->getProjectMaxRate($project) > $projectRates['rate_min']) {
                     $mailTemplate = 'preteur-bid-ko';
@@ -1876,78 +1880,6 @@ class MailerManager
             $this->oLogger->warning(
                 'Could not send email : admin-nouveau-mot-de-passe - Exception: ' . $exception->getMessage(),
                 ['id_mail_template' => $message->getTemplateId(), 'email address' => trim($user->email), 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
-        }
-    }
-
-    /**
-     * @param Projects $project
-     */
-    public function sendInternalNotificationEndOfRepayment(Projects $project)
-    {
-        $company  = $project->getIdCompany();
-        $settings = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse controle interne']);
-
-        $varMail = [
-            'surl'           => $this->sSUrl,
-            'url'            => $this->sFUrl,
-            'nom_entreprise' => $company->getName(),
-            'nom_projet'     => $project->getTitle(),
-            'id_projet'      => $project->getIdProject(),
-            'annee'          => date('Y')
-        ];
-
-        /** @var TemplateMessage $messageBO */
-        $messageBO = $this->messageProvider->newMessage('preteur-dernier-remboursement-controle', $varMail);
-        $messageBO->setTo($settings->getValue());
-        $this->mailer->send($messageBO);
-
-        $this->oLogger->info('Manual repayment, Send preteur-dernier-remboursement-controle. Data to use: ' . var_export($varMail, true), ['class' => __CLASS__, 'function' => __FUNCTION__]);
-    }
-
-    /**
-     * @param Projects $project
-     */
-    public function sendClientNotificationEndOfRepayment(Projects $project)
-    {
-        $company                = $project->getIdCompany();
-        $client                 = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
-        $borrowerWithdrawalType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_WITHDRAW]);
-        $borrowerWithdrawal     = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Operation')
-            ->findOneBy(['idType' => $borrowerWithdrawalType, 'idProject' => $project], ['added' => 'ASC']);
-        $lastRepayment          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->findOneBy(['idProject' => $project], ['added' => 'DESC']);
-
-        /** @var \loans $loans */
-        $loans = $this->entityManagerSimulator->getRepository('loans');
-
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
-
-        $varMail = [
-            'surl'               => $this->sSUrl,
-            'url'                => $this->sFUrl,
-            'prenom'             => $client->getPrenom(),
-            'date_financement'   => $borrowerWithdrawal->getAdded()->format('d/m/Y'),
-            'date_remboursement' => $lastRepayment->getAdded()->format('d/m/Y'),
-            'raison_sociale'     => $company->getName(),
-            'montant'            => $ficelle->formatNumber($project->getAmount(), 0),
-            'duree'              => $project->getPeriod(),
-            'duree_financement'  => $project->getDatePublication()->diff($project->getDateRetrait())->d,
-            'nb_preteurs'        => $loans->getNbPreteurs($project->getIdProject()),
-            'lien_fb'            => $this->getFacebookLink(),
-            'lien_tw'            => $this->getTwitterLink(),
-        ];
-
-        /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('emprunteur-dernier-remboursement', $varMail);
-        try {
-            $message->setTo($client->getEmail());
-            $this->mailer->send($message);
-        } catch (\Exception $exception){
-            $this->oLogger->warning(
-                'Could not send email: emprunteur-dernier-remboursement - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
             );
         }
     }

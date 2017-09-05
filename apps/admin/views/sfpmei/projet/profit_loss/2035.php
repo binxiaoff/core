@@ -6,9 +6,9 @@
             <th>Compte de résultat</th>
             <?php foreach ($this->aAnnualAccountsDates as $index => $aAnnualAccountsDate) : ?>
                 <th width="250"><?= $aAnnualAccountsDate['start']->format('d/m/Y') ?> au <?= $aAnnualAccountsDate['end']->format('d/m/Y') ?></th>
-                <?php if ($index != $oldestAnnualAccountsId) { ?>
+                <?php if ($index != $oldestAnnualAccountsId) : ?>
                     <th width="50"></th>
-                <?php } ?>
+                <?php endif; ?>
             <?php endforeach; ?>
         </tr>
         </thead>
@@ -41,3 +41,4 @@
         </tbody>
     </table>
 <?php endif; ?>
+

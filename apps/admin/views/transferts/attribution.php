@@ -1,12 +1,16 @@
+<style>
+    #response .attention {
+        width: 100%!important;
+    }
+</style>
+
 <div id="popup" style="min-width:500px;">
-    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"/></a>
-    <h1>Attribution d'une opération</h1>
+    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"></a>
+    <h1>Attribuer une opération</h1>
     <h2>Montant</h2>
-    <?= $this->ficelle->formatNumber($this->receptions->montant / 100) ?> €
-    <br/><br/>
+    <p><?= $this->ficelle->formatNumber($this->receptions->montant / 100) ?> €</p>
     <h2>Motif</h2>
-    <?= $this->receptions->motif ?>
-    <br/><br/>
+    <p><?= $this->receptions->motif ?></p>
     <form id="switch-form">
         <div style="text-align:center;">
             <button type="button" id="switch-lender" class="btn">Prêteur</button>
@@ -14,85 +18,74 @@
         </div>
     </form>
     <div id="lender-form-container" style="display:none;">
-        <br/><hr/><br/>
+        <hr>
         <form id="search-lender" name="search-lender">
-            <fieldset>
-                <table class="formColor">
-                    <tr>
-                        <th><label for="id">ID :</label></th>
-                        <td><input type="text" name="id" id="id" class="input_large"/></td>
-                    </tr>
-                    <tr>
-                        <th colspan="2" style="text-align:center;"><br/>Personne physique</th>
-                    </tr>
-                    <tr>
-                        <th><label for="nom">Nom :</label></th>
-                        <td><input type="text" name="nom" id="nom" class="input_large"/></td>
-                    </tr>
-                    <tr>
-                        <th><label for="prenom">Prenom :</label></th>
-                        <td><input type="text" name="prenom" id="prenom" class="input_large"/></td>
-                    </tr>
-                    <tr>
-                        <th><label for="email">Email :</label></th>
-                        <td><input type="text" name="email" id="email" class="input_large"/></td>
-                    </tr>
-                    <tr>
-                        <th colspan="2" style="text-align:center;"><br/>Personne morale</th>
-                    </tr>
-                    <tr>
-                        <th><label for="raison_sociale">Raison sociale :</label></th>
-                        <td><input type="text" name="raison_sociale" id="raison_sociale" class="input_large"/></td>
-                    </tr>
-                    <tr>
-                        <td>&nbsp;</td>
-                        <th>
-                            <input type="hidden" name="id_reception" value="<?= $this->receptions->id_reception ?>"/>
-                            <button type="submit" class="btn-primary">Valider</button>
-                        </th>
-                    </tr>
-                </table>
+            <fieldset style="background: #ECECEC; padding: 15px 15px 0; margin-bottom: 15px;">
+                <div class="form-group">
+                    <label for="id">ID Prêteur</label>
+                    <input class="form-control" type="text" id="id" name="id">
+                </div>
+                </fieldset>
+            <fieldset style="background: #ECECEC; padding: 15px 15px 0; margin-bottom: 15px;">
+                <h3>Personne physique</h3>
+                <div class="form-group">
+                    <label for="nom">Nom</label>
+                    <input class="form-control" type="text" id="nom" name="nom">
+                </div>
+                <div class="form-group">
+                    <label for="prenom">Prénom</label>
+                    <input class="form-control" type="text" id="prenom" name="prenom">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input class="form-control" type="text" id="email" name="email">
+                </div>
             </fieldset>
+            <fieldset style="background: #ECECEC; padding: 15px 15px 0; margin-bottom: 15px;">
+                <h3>Personne morale</h3>
+                <div class="form-group">
+                    <label for="raison_sociale">Raison sociale</label>
+                    <input class="form-control" type="text" id="raison_sociale" name="raison_sociale">
+                </div>
+            </fieldset>
+            <div class="text-right">
+                <input type="hidden" name="id_reception" value="<?= $this->receptions->id_reception ?>">
+                <button type="submit" class="btn-primary">Valider</button>
+            </div>
         </form>
     </div>
     <div id="project-form-container" style="display:none;">
-        <br/><hr/><br/>
+        <hr>
         <form method="post" name="project-form" id="project-form" enctype="multipart/form-data" action="<?= $this->lurl ?>/transferts/non_attribues">
-            <fieldset>
-                <table class="formColor">
-                    <tr>
-                        <th><label for="id">ID projet :</label></th>
-                        <td><input type="text" id="id_project" name="id_project" class="input_large"/></td>
-                    </tr>
-                    <tr>
-                        <th><label for="motif">Type de remboursement :</label></th>
-                        <td>
-                            <label class="label_radio">
-                                <input class="radio" type="radio" name="type_remb" value="remboursement_anticipe">
-                                Anticipé
-                            </label>
-                            <label class="label_radio">
-                                <input class="radio" type="radio" name="type_remb" value="regularisation">
-                                Régularisation
-                            </label>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>&nbsp;</td>
-                        <th>
-                            <input type="hidden" name="id_reception" value ="<?= $this->receptions->id_reception ?>"/>
-                            <input type="submit" value="Valider" title="Valider" name="send_projet" id="send_projet" class="btn"/>
-                        </th>
-                    </tr>
-                </table>
+            <fieldset style="background: #ECECEC; padding: 15px 15px 0; margin-bottom: 15px;">
+                <div class="form-group">
+                    <label for="id_project">ID projet</label>
+                    <input class="form-control" type="text" id="id_project" name="id_project">
+                </div>
+
+                <div class="form-group">
+                    <p style="margin-bottom: 5px;">Type de remboursement</p>
+                    <label style="display: inline-block; margin-right: 10px;">
+                        <input type="radio" name="type_remb" value="remboursement_anticipe">
+                        Anticipé
+                    </label>
+                    <label>
+                        <input type="radio" name="type_remb" value="regularisation">
+                        Régularisation
+                    </label>
+                </div>
             </fieldset>
+            <div class="text-right">
+                <input type="hidden" name="id_reception" value ="<?= $this->receptions->id_reception ?>">
+                <button type="submit" class="btn-primary">Valider</button>
+            </div>
         </form>
     </div>
     <div id="response"></div>
-    <p style="text-align:center;color:green;display:none;" class="reponse_valid_vir">Attribution effectuée</p>
+    <p style="text-align: center; color: green; display: none;" class="reponse_valid_vir">Attribution effectuée</p>
 </div>
 
-<script type="text/javascript">
+<script>
     $('#switch-lender').click(function() {
         $('#switch-lender').removeClass('btnDisabled');
         $('#switch-project').addClass('btnDisabled');

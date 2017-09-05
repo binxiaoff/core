@@ -8,9 +8,13 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class DevDebtCollectionCreationCommand extends ContainerAwareCommand
@@ -31,6 +35,7 @@ class DevDebtCollectionCreationCommand extends ContainerAwareCommand
             ->addOption('project-id', null, InputOption::VALUE_REQUIRED, 'Use with the action "provision" and "repayment". The project id of the debt collection.')
             ->addOption('commission', null, InputOption::VALUE_REQUIRED, 'Use with the action "provision" and "repayment". The commission for the debt collection.')
             ->addOption('collector', null, InputOption::VALUE_REQUIRED, 'Use with the action "provision" and "repayment". The debt collector for the debt collection.')
+            ->addOption('net-amount', null, null, 'Use with the action "provision". If net amount, generate operation to cancel debt collection provision.')
             ->setHelp(<<<EOF
 The <info>unilend:dev_tools:debt_collection:create</info> create the transactions and operations for the debt collection.
 <info>php bin/console unilend:dev_tools:debt_collection:create provision|repayment</info>
@@ -60,6 +65,7 @@ EOF
         $receptionId      = $input->getOption('reception-id');
         $projectId        = $input->getOption('project-id');
         $commission       = filter_var($input->getOption('commission'), FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+        $isNetAmount      = $input->getOption('net-amount');
         $entityManager    = $this->getContainer()->get('doctrine.orm.entity_manager');
         $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         $walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
@@ -101,11 +107,28 @@ EOF
         $entityManager->getConnection()->beginTransaction();
         try {
             $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_RECOVERY)
-                      ->setStatusBo(Receptions::STATUS_MANUALLY_ASSIGNED)
-                      ->setIdClient($client)
-                      ->setIdProject($project)
-                      ->setAssignmentDate(new \DateTime());
-            $this->getContainer()->get('unilend.service.operation_manager')->provisionCollection($collector, $borrower, $reception, $commission);
+                ->setStatusBo(Receptions::STATUS_ASSIGNED_MANUAL)
+                ->setIdClient($client)
+                ->setIdProject($project)
+                ->setAssignmentDate(new \DateTime());
+            $this->getContainer()->get('unilend.service.operation_manager')->provisionBorrowerWallet($reception);
+            $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
+            if ($isNetAmount) {
+                $this->getContainer()->get('unilend.service.operation_manager')->provisionCollection($collector, $borrower, $reception, $commission);
+                // amount is always brut.
+                $amount = round(bcadd($amount, $commission, 4), 2);
+            }
+            $user                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
+            $projectRepaymentTask = new ProjectRepaymentTask();
+            $projectRepaymentTask->setIdProject($project)
+                ->setAmount($amount)
+                ->setType(ProjectRepaymentTask::TYPE_CLOSE_OUT_NETTING)
+                ->setStatus(ProjectRepaymentTask::STATUS_PENDING)
+                ->setRepayAt(new \DateTime())
+                ->setIdUserCreation($user)
+                ->setIdWireTransferIn($reception);
+
+            $entityManager->persist($projectRepaymentTask);
 
             $entityManager->flush();
             $entityManager->getConnection()->commit();
@@ -155,6 +178,16 @@ EOF
             $output->writeln($protectedDir . 'import/' . 'recouvrement.csv cannot be opened');
             return;
         }
+        /** @var ProjectRepaymentTask $projectRepaymentTask */
+        $projectRepaymentTask = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
+            'idProject' => $project,
+            'type'      => ProjectRepaymentTask::TYPE_CLOSE_OUT_NETTING,
+            'status'    => ProjectRepaymentTask::STATUS_PENDING
+        ]);
+        if (null === $projectRepaymentTask) {
+            $output->writeln('Repayment task not found.');
+            return;
+        }
 
         $statusHistory   = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->findStatusFirstOccurrence($projectId, ProjectsStatus::REMBOURSEMENT);
         $fundReleaseDate = $statusHistory->getAdded();
@@ -164,27 +197,54 @@ EOF
 
         $entityManager->getConnection()->beginTransaction();
         try {
+            $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_IN_PROGRESS);
+
+            $repaidAmount = 0;
+            $repaidNb     = 0;
+
+            $projectRepaymentTaskLog = new ProjectRepaymentTaskLog();
+            $projectRepaymentTaskLog->setIdTask($projectRepaymentTask)
+                ->setStarted(new \DateTime())
+                ->setRepaidAmount($repaidAmount)
+                ->setRepaymentNb($repaidNb);
+            $entityManager->persist($projectRepaymentTaskLog);
+            $entityManager->flush($projectRepaymentTaskLog);
+
             if ($fundReleaseDate >= $dateOfChange) {
                 if ($commission <= 0) {
                     throw new \Exception('Invalid commission');
                 }
                 $operationManager->payCollectionCommissionByBorrower($borrower, $collector, $commission, $project);
+
+                $amountToRepay = round(bcsub($projectRepaymentTask, $commission, 4), 2);
+                $projectRepaymentTask->setAmount($amountToRepay);
             }
+
             while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
                 $clientId = $aRow[0];
                 $amount   = str_replace(',', '.', $aRow[1]);
                 $lender   = $walletRepository->findOneBy(['idClient' => $clientId]);
-                if ($lender) {
+                if ($lender instanceof Wallet) {
                     $commissionLender = 0;
                     if ($fundReleaseDate < $dateOfChange && false === empty($aRow[2])) {
                         $commissionLender = str_replace(',', '.', $aRow[2]);
                     }
-                    $operationManager->repaymentCollection($lender, $project, $amount);
+                    $operationManager->repaymentCollection($lender, $project, $amount, $projectRepaymentTaskLog);
                     if ($fundReleaseDate < $dateOfChange && false === empty($aRow[2])) {
-                        $operationManager->payCollectionCommissionByLender($lender, $collector, $commissionLender, $project);
+                        $operationManager->payCollectionCommissionByLender($lender, $collector, $commissionLender, [$project, $projectRepaymentTaskLog]);
                     }
                 }
+                $repaidAmount = round(bcadd($repaidAmount, $amount, 4), 2);
+                $repaidNb++;
             }
+
+            $projectRepaymentTaskLog->setRepaidAmount($repaidAmount)
+                ->setRepaymentNb($repaidNb)
+                ->setEnded(new \DateTime());
+
+            $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_REPAID);
+
+            $entityManager->flush();
             $entityManager->getConnection()->commit();
         } catch (\Exception $e) {
             $entityManager->getConnection()->rollBack();

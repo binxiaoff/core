@@ -39,11 +39,12 @@ class ClientsRepository extends EntityRepository
     }
 
     /**
-     * @param $email
+     * @param string   $email
+     * @param int|null $status
      *
      * @return bool
      */
-    public function existEmail($email)
+    public function existEmail($email, $status = null)
     {
         if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return false;
@@ -54,6 +55,13 @@ class ClientsRepository extends EntityRepository
             ->select('COUNT(c)')
             ->where('c.email = :email')
             ->setParameter('email', $email);
+
+        if (null !== $status) {
+            $queryBuilder
+                ->andWhere('c.status = :status')
+                ->setParameter('status', $status, \PDO::PARAM_INT);
+        }
+
         $query = $queryBuilder->getQuery();
 
         return $query->getSingleScalarResult() > 0;
@@ -430,14 +438,79 @@ class ClientsRepository extends EntityRepository
     }
 
     /**
+     * @param array     $clientType
+     * @param \DateTime $start
+     * @param \DateTime $end
+     * @param bool      $onlyActive
+     *
+     * @return int|null
+     */
+    public function countLendersByClientTypeBetweenDates(array $clientType, \DateTime $start, \DateTime $end, $onlyActive = false)
+    {
+        $start->setTime(0, 0, 0);
+        $end->setTime(23, 59, 59);
+
+        $queryBuilder = $this->createQueryBuilder('c');
+        $queryBuilder->select('COUNT(DISTINCT(c.idClient))')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
+            ->andWhere('wt.label = :lender')
+            ->andWhere('c.status = :statusOnline')
+            ->andWhere('c.type IN (:types)')
+            ->andWhere('c.added BETWEEN :start AND :end')
+            ->setParameter('lender', WalletType::LENDER)
+            ->setParameter('statusOnline', Clients::STATUS_ONLINE)
+            ->setParameter('types', $clientType, Connection::PARAM_INT_ARRAY)
+            ->setParameter('start', $start->format('Y-m-d H:i:s'))
+            ->setParameter('end', $end->format('Y-m-d H:i:s'));
+
+        if ($onlyActive) {
+            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idClientStatus = 6');
+        }
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * if true only lenders activated at least once (active lenders)
+     * if false all online lender (Community)
+     *
+     * @param \DateTime $start
+     * @param \DateTime $end
+     * @param bool      $onlyActive
+     *
+     * @return int|null
+     */
+    public function countLendersBetweenDates(\DateTime $start, \DateTime $end, $onlyActive = false)
+    {
+        $queryBuilder = $this->createQueryBuilder('c');
+        $queryBuilder->select('COUNT(DISTINCT(c.idClient))')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
+            ->andWhere('wt.label = :lender')
+            ->andWhere('c.status = :statusOnline')
+            ->andWhere('c.added BETWEEN :start AND :end')
+            ->setParameter('lender', WalletType::LENDER)
+            ->setParameter('statusOnline', Clients::STATUS_ONLINE)
+            ->setParameter('start', $start->format('Y-m-d H:i:s'))
+            ->setParameter('end', $end->format('Y-m-d H:i:s'));
+
+        if ($onlyActive) {
+            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idClientStatus = 6');
+        }
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
      * @param int $year
      *
      * @return array
      */
     public function findValidatedClientsUntilYear($year)
     {
-        $qb  = $this->createQueryBuilder('c');
-        $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClient = csh.idClient')
+        $queryBuilder  = $this->createQueryBuilder('c');
+        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClient = csh.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:ClientsStatus', 'cs', Join::WITH, 'csh.idClientStatus = cs.idClientStatus')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
@@ -450,6 +523,78 @@ class ClientsRepository extends EntityRepository
             ->setParameter('clientStatus', Clients::STATUS_ONLINE)
             ->setParameter('year', $year . '-12-31 23:59:59');
 
-        return $qb->getQuery()->getResult();
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @return array
+     */
+    public function findAllClientsForLoiEckert()
+    {
+        $query = 'SELECT
+                  c.*,
+                  IF (
+                    o_provision.added IS NOT NULL, 
+                    IF (
+                        o_withdraw.added IS NOT NULL,
+                        IF (MAX(o_provision.added) > MAX(o_withdraw.added), MAX(o_provision.added), MAX(o_withdraw.added)),
+                        MAX(o_provision.added)), 
+                    MAX(o_withdraw.added)
+                  ) AS lastMovement,
+                  w.available_balance AS availableBalance,
+                  MIN(csh.added) AS validationDate
+                FROM clients c
+                  INNER JOIN wallet w ON c.id_client = w.id_client AND w.id_type = (SELECT id FROM wallet_type WHERE label = "' . WalletType::LENDER . '")
+                  LEFT JOIN operation o_provision ON w.id = o_provision.id_wallet_creditor AND o_provision.id_type = (SELECT id FROM operation_type WHERE label = "'. OperationType::LENDER_PROVISION . '")
+                  LEFT JOIN operation o_withdraw ON w.id = o_withdraw.id_wallet_debtor AND o_withdraw.id_type = (SELECT id FROM operation_type WHERE label = "'. OperationType::LENDER_WITHDRAW . '")
+                  LEFT JOIN clients_status_history csh ON c.id_client = csh.id_client AND csh.id_client_status = 6
+                WHERE csh.id_client_status_history IS NOT NULL OR available_balance > 0
+                GROUP BY c.id_client
+                ORDER BY c.lastlogin ASC';
+
+        return $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery($query)
+            ->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param string   $search
+     * @param int|null $limit
+     *
+     * @return array
+     */
+    public function findLendersByAutocomplete($search, $limit = null)
+    {
+        $search       = trim(filter_var($search, FILTER_SANITIZE_STRING));
+        $queryBuilder = $this->createQueryBuilder('c');
+        $queryBuilder
+            ->select('c.idClient')
+            ->addSelect('c.type')
+            ->addSelect('IFNULL (CASE WHEN c.type IN (:companyType) THEN co.name ELSE c.nom END, \' \') AS name')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType= wt.id AND wt.label = :lenderWalletType')
+            ->leftJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'c.idClient = co.idClientOwner AND c.type IN (:companyType)')
+            ->setParameter('lenderWalletType', WalletType::LENDER)
+            ->setParameter('companyType', [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER], Connection::PARAM_INT_ARRAY)
+            ->orderBy('c.added', 'DESC')
+            ->addOrderBy('c.status', 'DESC');
+
+        if (filter_var($search, FILTER_VALIDATE_INT)) {
+            $queryBuilder
+                ->where('c.idClient = :search')
+                ->setParameter('search', $search . '%');
+        } else {
+            $queryBuilder
+                ->where('c.nom LIKE :search')
+                ->orWhere('co.name LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
+        }
+
+        if (is_int($limit)) {
+            $queryBuilder->setMaxResults($limit);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }
