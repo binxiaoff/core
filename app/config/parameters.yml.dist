@@ -17,7 +17,7 @@ parameters:
 
     gtm_token:                      GTM-W2WQKW
 
-    url.universign:                 'https://equipeit@unilend.fr:universign4unilend@ws.universign.eu/sign/rpc/'
+    url.universign:                 'https://equipeit@unilend.fr:7RM6X40A@sign.test.cryptolog.com/sign/rpc/'
     url.host_admin:                 'admin.local.unilend.fr' # for Front to know the url BO
     url.host_default:               'www.local.unilend.fr' # for BO to know the url Front
 
