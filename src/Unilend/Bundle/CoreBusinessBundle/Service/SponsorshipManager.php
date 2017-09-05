@@ -124,7 +124,7 @@ class SponsorshipManager
             $validCampaigns = $this->entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->findBy(['status' => SponsorshipCampaign::STATUS_VALID]);
 
             foreach ($validCampaigns as $campaign) {
-                if ($campaign->getEnd()->getTimestamp() > $start->getTimestamp()) {
+                if ($start->getTimestamp() > $campaign->getStart()->getTimestamp() && $campaign->getEnd()->getTimestamp() > $start->getTimestamp()) {
                     throw new \Exception('Campaign does overlap with exiting campaign. Id campaign = ' . $campaign->getId(), self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
                 }
             }
@@ -166,14 +166,14 @@ class SponsorshipManager
      */
     public function attributeSponsorReward(Clients $sponsee)
     {
-        $sponsorship = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsor' => $sponsee]);
+        $sponsorship = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $sponsee]);
         if (null === $sponsorship) {
-            throw new \Exception('Client ' . $sponsee->getIdClient() . ' has no sponsee', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
+            throw new \Exception('Client ' . $sponsee->getIdClient() . ' has no sponsor', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
         }
 
         $eligibility = $this->isEligibleForSponsorReward($sponsorship);
         if (false === $eligibility['isEligible']) {
-            throw new \Exception('Client ' . $sponsee->getIdClient() . ' is not eligible for sponsor reward. Reason : ' . $eligibility['reason'], self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
+            throw new \Exception('Client ' . $sponsorship->getIdClientSponsor()->getIdClient() . ' is not eligible for sponsor reward. Reason : ' . $eligibility['reason'], self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
         }
 
         $sponsorWallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsorship->getIdClientSponsor(), WalletType::LENDER);
@@ -182,6 +182,11 @@ class SponsorshipManager
         }
 
         $this->operationManager->newSponsorReward($sponsorWallet, $sponsorship);
+
+        $sponsorship->setStatus(Sponsorship::STATUS_SPONSOR_PAID);
+
+        $this->entityManager->flush($sponsorship);
+
         $this->sendSponsorRewardEmail($sponsorship);
 
         return true;

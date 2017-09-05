@@ -822,7 +822,7 @@ class OperationManager
         $this->newOperation($amount, $operationType, $operationSubType, $unilendWallet, $wallet, $sponsorship);
     }
 
-    /**
+    /**n
      * @param Wallet      $wallet
      * @param Sponsorship $sponsorship
      */

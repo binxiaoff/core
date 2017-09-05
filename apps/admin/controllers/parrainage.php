@@ -196,6 +196,7 @@ class parrainageController extends bootstrap
                 }
             } catch (\Exception $exception) {
                 $_SESSION['create_sponsorship_campaign']['errors'][] = 'Une erreur est survenue lors de l\'enregistrement de la campagne.';
+
                 if (SponsorshipManager::SPONSORSHIP_MANAGER_EXCEPTION_CODE == $exception->getCode()) {
                     $_SESSION['create_sponsorship_campaign']['errors']['technical'][] = $exception->getMessage();
                 }
@@ -328,13 +329,16 @@ class parrainageController extends bootstrap
                     $_SESSION['pay_out_sponsorship']['success'] = 'La prime du filleul a été versée';
                 }
                 if (OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR == $typeReward) {
-                    $sponsorshipManager->attributeSponsorReward($sponsorship->getIdClientSponsor());
-                    $_SESSION['pay_out_sponsorship']['success'] = 'La prime du parrain a été versée';
+                    if ($sponsorshipManager->attributeSponsorReward($sponsorship->getIdClientSponsee())) {
+                        $_SESSION['pay_out_sponsorship']['success'] = 'La prime du parrain a été versée';
+                    }
                 }
             } catch (\Exception $exception) {
                 $_SESSION['pay_out_sponsorship']['errors'][] = 'Une erreur s\'est produite';
                 if (in_array($exception->getCode(), [OperationManager::OPERATION_MANAGER_EXCEPTION_CODE, SponsorshipManager::SPONSORSHIP_MANAGER_EXCEPTION_CODE])) {
                     $_SESSION['pay_out_sponsorship']['errors']['technical'][] = $exception->getMessage();
+                } else {
+                    $this->get('logger')->warning('Sponsorship reward could not be paid for sponsorship. Reason: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_sponsorship' => $sponsorship->getId()]);
                 }
             }
         }
@@ -522,6 +526,19 @@ class parrainageController extends bootstrap
             $campaign = $entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->findCampaignValidAtDate($sponsee->getAdded());
             if (null === $campaign) {
                 $_SESSION['create_sponsorship']['errors'][] = 'Il n\'y a pas de campagne active au moment de l\'inscription du filleul';
+                header('Location: ' . $this->lurl . '/parrainage');
+                die;
+            }
+
+            if ($sponsor->getIdClient() === $sponsee->getIdClient()) {
+                $_SESSION['create_sponsorship']['errors'][] = 'Parrain et filleul ne peuvent pas être le même client';
+                header('Location: ' . $this->lurl . '/parrainage');
+                die;
+            }
+
+            $sponsorship = $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsor' => $sponsor, 'idClientSponsee' => $sponsee]);
+            if (null !== $sponsorship) {
+                $_SESSION['create_sponsorship']['errors'][] = 'L\'assosciation parrain filleul pour ces clients existe déjà';
                 header('Location: ' . $this->lurl . '/parrainage');
                 die;
             }

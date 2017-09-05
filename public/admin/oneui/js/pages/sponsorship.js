@@ -182,7 +182,7 @@ $(function(){
                         $sponseeTable.find('.sponsee-last-name').text(sponsorshipData.lastNameSponsee)
                         $sponseeTable.find('.sponsee-date-inscription').text(sponsorshipData.subscriptionSponsee)
                         $sponseeTable.find('.sponsee-date-validation').text(sponsorshipData.sponseeValidationDate)
-                        $sponseeTable.find('.sponsee-welcome-offer').text(welcomeOffer)
+                        $sponseeTable.find('.sponsee-welcome-offer').html(welcomeOffer)
 
                         $submit.data('sponsee-id', sponsorshipData.idClientSponsee).data('sponsor-id', sponsorshipData.idClientSponsor)
 
