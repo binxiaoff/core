@@ -208,11 +208,6 @@ class SponsorshipManager
             throw new \Exception('Client ' . $sponsorship->getIdClientSponsee()->getIdClient() . ' has no lender wallet (only lenders can be sponsored)', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
         }
 
-        $validationDate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->getFirstClientValidation($sponsee);
-        if (null === $validationDate) {
-            throw new \Exception('Client ' . $sponsorship->getIdClientSponsee()->getIdClient() . ' has not been validated.', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
-        }
-
         $paidReward = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findBy(['idWalletCreditor' => $sponseeWallet, 'idSponsorship' => $sponsorship]);
         if (false === empty($paidReward)) {
             throw new \Exception('Client ' . $sponsorship->getIdClientSponsee()->getIdClient() . ' has already received the sponsee reward', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
@@ -278,12 +273,12 @@ class SponsorshipManager
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('parrainage-versement-prime-filleul', $varMail);
         try {
-            $message->setTo($sponsorship->getIdClientSponsor()->getEmail());
+            $message->setTo($sponsorship->getIdClientSponsee()->getEmail());
             $this->mailer->send($message);
         } catch (\Exception $exception) {
             $this->logger->warning('Could not send email: parrainage-versement-prime-filleul - Exception: ' . $exception->getMessage(), [
                 'id_mail_template' => $message->getTemplateId(),
-                'id_client'        => $sponsorship->getIdClientSponsor()->getIdClient(),
+                'id_client'        => $sponsorship->getIdClientSponsee()->getIdClient(),
                 'class'            => __CLASS__,
                 'function'         => __FUNCTION__
             ]);

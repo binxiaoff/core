@@ -170,7 +170,7 @@ $(function(){
 
                         var welcomeOffer = ''
                         if (sponsorshipData.sponseeHasReceivedWelcomeOffer) {
-                            welcomeOffer =+ '<div class="alert alert-info"><p>Filleul a reçu l\'offre de bienvenue et ne recevra donc pas de prime de parrainage</p></div>'
+                            welcomeOffer += '<div class="alert alert-info"><p>Filleul a reçu l\'offre de bienvenue et ne recevra donc pas de prime de parrainage</p></div>'
                         }
 
                         $sponsorTable.find('.sponsor-id').html(sponsorshipData.idClientSponsor)

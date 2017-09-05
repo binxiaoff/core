@@ -248,10 +248,6 @@ class bootstrap extends Controller
                     'uri'   => 'transferts/non_attribues'
                 ],
                 [
-                    'title' => 'Rattrapage offre de bienvenue',
-                    'uri'   => 'transferts/rattrapage_offre_bienvenue'
-                ],
-                [
                     'title' => 'Déblocage des fonds',
                     'uri'   => 'transferts/deblocage'
                 ],
