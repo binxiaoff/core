@@ -71,7 +71,7 @@ class sfpmeiController extends bootstrap
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
             $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
-            $this->lenders    = $clientRepository->findLenders($clientId, $email, $lastName, null, $companyName, null, true, true);
+            $this->lenders    = $clientRepository->findLenders($clientId, $email, $lastName, null, $companyName, null, true);
 
             if (false === empty($this->lenders) && 1 === count($this->lenders)) {
                 header('Location: ' . $this->lurl . '/sfpmei/preteur/' . $this->lenders[0]['id_client']);

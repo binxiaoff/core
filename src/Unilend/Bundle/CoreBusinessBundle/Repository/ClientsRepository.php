@@ -611,7 +611,7 @@ class ClientsRepository extends EntityRepository
      *
      * @return array
      */
-    public function findLenders($idClient = null, $email = null, $name = null, $firstName = null, $companyName = null, $siren = null, $online = true, $adult = false)
+    public function findLenders($idClient = null, $email = null, $name = null, $firstName = null, $companyName = null, $siren = null, $online = true)
     {
         $query = '
                 SELECT
@@ -646,50 +646,45 @@ class ClientsRepository extends EntityRepository
                   LEFT JOIN companies co ON co.id_client_owner = c.id_client
                  WHERE c.status_inscription_preteur = 1' ;
 
-        $params = [];
+        $parameters = [];
 
         if (null !== $idClient) {
-            $query .= ' AND c.id_client IN (:idClient) ';
-            $params = ['idClient' => $idClient];
+            $query                  .= ' AND c.id_client IN (:idClient)';
+            $parameters['idClient'] = $idClient;
         }
 
         if (null !== $email) {
-            $query .= ' AND c.email LIKE :email';
-            $params = array_merge($params, ['email' => $email . '%']);
+            $query               .= ' AND c.email LIKE :email';
+            $parameters['email'] = $email . '%';
         }
 
         if (null !== $name) {
-            $query .= ' AND (c.nom LIKE :name OR c.nom_usage LIKE :name)';
-            $params = array_merge($params, ['name' => $name . '%']);
+            $query              .= ' AND (c.nom LIKE :name OR c.nom_usage LIKE :name)';
+            $parameters['name'] = $name . '%';
         }
 
         if (null !== $firstName) {
-            $query .= ' AND c.prenom LIKE :firstName';
-            $params = array_merge($params, ['firstName' => $firstName . '%']);
+            $query                   .= ' AND c.prenom LIKE :firstName';
+            $parameters['firstName'] = $firstName . '%';
         }
 
         if (null !== $companyName) {
-            $query .= ' AND co.name LIKE :companyName';
-            $params = array_merge($params, ['companyName' => $companyName . '%']);
+            $query                     .= ' AND co.name LIKE :companyName';
+            $parameters['companyName'] = $companyName . '%';
         }
 
         if (null !== $siren) {
-            $query .= ' AND co.siren = :siren';
-            $params = array_merge($params, ['siren' => $siren]);
+            $query               .= ' AND co.siren = :siren';
+            $parameters['siren'] = $siren;
         }
 
         $query .= $online ? ' AND c.status = ' . Clients::STATUS_ONLINE : ' AND c.status = ' . Clients::STATUS_OFFLINE;
-
-        if ($adult) {
-            $query .= ' AND YEAR(NOW()) - YEAR(c.naissance) >= 18 ';
-        }
-
         $query .= ' GROUP BY c.id_client
                    ORDER BY c.id_client DESC';
 
         return $this->getEntityManager()
             ->getConnection()
-            ->executeQuery($query, $params)
+            ->executeQuery($query, $parameters)
             ->fetchAll(\PDO::FETCH_ASSOC);
     }
 }
