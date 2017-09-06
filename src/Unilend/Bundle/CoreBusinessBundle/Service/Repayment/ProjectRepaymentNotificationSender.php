@@ -219,7 +219,8 @@ class ProjectRepaymentNotificationSender
             'annee'           => date('Y'),
             'lien_fb'         => $facebook,
             'lien_tw'         => $twitter,
-            'montantRemb'     => $this->numberFormatter->format(round(bcdiv(bcadd(bcadd($paymentSchedule->getMontant(), $paymentSchedule->getCommission()), $paymentSchedule->getTva()), 100, 3), 2))
+            'montantRemb'     => $this->numberFormatter->format(round(bcdiv($paymentSchedule->getCapital() + $paymentSchedule->getInterets() + $paymentSchedule->getCommission() + $paymentSchedule->getTva(),
+                100, 4), 2))
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */

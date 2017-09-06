@@ -84,16 +84,7 @@ class ProjectEarlyRepaymentManager
         $repaidAmount = 0;
         $project      = $projectRepaymentTask->getIdProject();
 
-        $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_IN_PROGRESS);
-        $this->entityManager->flush($projectRepaymentTask);
-
-        $projectRepaymentTaskLog = new ProjectRepaymentTaskLog();
-        $projectRepaymentTaskLog->setIdTask($projectRepaymentTask)
-            ->setRepaidAmount($repaidAmount)
-            ->setRepaymentNb($repaidLoanNb)
-            ->setStarted(new \DateTime());
-        $this->entityManager->persist($projectRepaymentTaskLog);
-        $this->entityManager->flush();
+        $projectRepaymentTaskLog = $this->projectRepaymentTaskManager->start($projectRepaymentTask);
 
         $this->entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements')->terminatePendingDirectDebits($project);
         $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->earlyPayAllPendingSchedules($projectRepaymentTask->getIdWireTransferIn());
@@ -125,9 +116,6 @@ class ProjectEarlyRepaymentManager
             }
         }
 
-        $projectRepaymentTaskLog->setRepaymentNb($repaidLoanNb)->setRepaidAmount($repaidAmount)->setEnded(new \DateTime());
-        $this->entityManager->flush($projectRepaymentTaskLog);
-
         $pendingRepaymentSchedule = $repaymentScheduleRepository->findByProject($project, null, null, Echeanciers::STATUS_PENDING, null, null, 0, 1);
 
         if (0 === count($pendingRepaymentSchedule)) {
@@ -135,6 +123,6 @@ class ProjectEarlyRepaymentManager
             $this->entityManager->flush($projectRepaymentTask);
         }
 
-        return $projectRepaymentTaskLog;
+        return $this->projectRepaymentTaskManager->end($projectRepaymentTaskLog, $repaidAmount, $repaidLoanNb);
     }
 }
