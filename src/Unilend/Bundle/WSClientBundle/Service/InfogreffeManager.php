@@ -38,7 +38,9 @@ class InfogreffeManager
     /** @var ResourceManager */
     private $resourceManager;
     /** @var bool */
-    private $useCache = true;
+    private $saveToCache = true;
+    /** @var bool */
+    private $readFromCache = true;
     /** @var bool */
     private $monitoring = false;
 
@@ -74,13 +76,27 @@ class InfogreffeManager
     }
 
     /**
-     * @param bool $useCache
+     * Should be replaced by method parameters instead of class parameters
+     * @param bool $saveToCache
      *
      * @return InfogreffeManager
      */
-    public function setUseCache($useCache)
+    public function setSaveToCache($saveToCache)
     {
-        $this->useCache = $useCache;
+        $this->saveToCache = $saveToCache;
+
+        return $this;
+    }
+
+    /**
+     * Should be replaced by method parameters instead of class parameters
+     * @param bool $readFromCache
+     *
+     * @return InfogreffeManager
+     */
+    public function setReadFromCache($readFromCache)
+    {
+        $this->readFromCache = $readFromCache;
 
         return $this;
     }
@@ -113,13 +129,13 @@ class InfogreffeManager
         $wsResource = $this->resourceManager->getResource(self::RESOURCE_INDEBTEDNESS);
         $logContext = ['class' => __CLASS__, 'resource' => $wsResource->getResourceName(), 'siren' => $siren];
 
-        $response = $this->useCache ? $this->callHistoryManager->getStoredResponse($wsResource, $siren) : false;
+        $response = $this->readFromCache ? $this->callHistoryManager->getStoredResponse($wsResource, $siren) : false;
         $result   = $response ? $this->extractResponse($response) : false;
 
         if ($this->isValidResponse($result)['is_valid']) {
             return $result;
         }
-        $callBack = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
+        $callBack = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->saveToCache);
 
         try {
             $request = $this->getXmlRequest($siren);

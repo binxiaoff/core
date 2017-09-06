@@ -30,7 +30,9 @@ class CodinfManager
     /** @var ResourceManager */
     private $resourceManager;
     /** @var bool */
-    private $useCache = true;
+    private $saveToCache = true;
+    /** @var bool */
+    private $readFromCache = true;
 
     /**
      * @param ClientInterface    $client
@@ -63,13 +65,27 @@ class CodinfManager
     }
 
     /**
-     * @param bool $useCache
+     * Should be replaced by method parameters instead of class parameters
+     * @param bool $saveToCache
      *
      * @return CodinfManager
      */
-    public function setUseCache($useCache)
+    public function setSaveToCache($saveToCache)
     {
-        $this->useCache = $useCache;
+        $this->saveToCache = $saveToCache;
+
+        return $this;
+    }
+
+    /**
+     * Should be replaced by method parameters instead of class parameters
+     * @param bool $readFromCache
+     *
+     * @return CodinfManager
+     */
+    public function setReadFromCache($readFromCache)
+    {
+        $this->readFromCache = $readFromCache;
 
         return $this;
     }
@@ -142,7 +158,7 @@ class CodinfManager
             if ($storedResponse = $this->getStoredResponse($wsResource, $siren)) {
                 return $storedResponse;
             }
-            $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
+            $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->saveToCache);
             $response = $this->client->get(
                 $wsResource->getResourceName(),
                 ['query' => $query]
@@ -203,7 +219,7 @@ class CodinfManager
     private function getStoredResponse(WsExternalResource $resource, $siren)
     {
         if (
-            $this->useCache
+            $this->readFromCache
             && false !== ($storedResponse = $this->callHistoryManager->getStoredResponse($resource, $siren))
             && 1 === preg_match(self::RESPONSE_MATCHING_PATTERN, $storedResponse)
         ) {

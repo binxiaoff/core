@@ -64,7 +64,7 @@ class MonitoringController extends Controller
         try {
             $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
             $siren               = '790766034';
-            $codinfManager       = $this->get('unilend.service.ws_client.codinf_manager')->setUseCache(false);
+            $codinfManager       = $this->get('unilend.service.ws_client.codinf_manager')->setReadFromCache(false)->setSaveToCache(false);
             $codinfManager->getIncidentList($siren);
 
             $response = $wsMonitoringManager->sendNotifications($wsMonitoringManager->getRateByCallStatus(CodinfManager::RESOURCE_INCIDENT_LIST), self::PINGDOM_FREQUENCY);
@@ -121,7 +121,7 @@ class MonitoringController extends Controller
         try {
             $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
             $siren               = '790766034';
-            $infogreffeManager   = $this->get('unilend.service.ws_client.infogreffe_manager')->setUseCache(false)->setMonitoring(true);
+            $infogreffeManager   = $this->get('unilend.service.ws_client.infogreffe_manager')->setReadFromCache(false)->setSaveToCache(false)->setMonitoring(true);
             $infogreffeManager->getIndebtedness($siren);
 
             $response = $wsMonitoringManager->sendNotifications($wsMonitoringManager->getRateByCallStatus(InfogreffeManager::RESOURCE_INDEBTEDNESS), self::PINGDOM_FREQUENCY);
@@ -147,7 +147,7 @@ class MonitoringController extends Controller
         try {
             $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
             $siren               = '790766034';
-            $infolegaleManager   = $this->get('unilend.service.ws_client.infolegale_manager')->setUseCache(false);
+            $infolegaleManager   = $this->get('unilend.service.ws_client.infolegale_manager')->setReadFromCache(false)->setSaveToCache(false);
             $infolegaleManager->getScore($siren);
 
             $response = $wsMonitoringManager->sendNotifications($wsMonitoringManager->getRateByCallStatus(InfolegaleManager::RESOURCE_COMPANY_SCORE), self::PINGDOM_FREQUENCY);

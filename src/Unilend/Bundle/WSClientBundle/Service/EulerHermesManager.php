@@ -38,12 +38,12 @@ class EulerHermesManager
     private $accountEmail;
     /** @var ResourceManager */
     private $resourceManager;
-    /** @var bool */
-    private $saveToCache = true;
-    /** @var bool  */
-    private $readFromCache = true;
     /** @var CacheItemPoolInterface */
     private $cachePool;
+    /** @var bool */
+    private $saveToCache = true;
+    /** @var bool */
+    private $readFromCache = true;
 
     /**
      * @param Client                 $client
@@ -55,7 +55,7 @@ class EulerHermesManager
      * @param CallHistoryManager     $callHistoryManager
      * @param Serializer             $serializer
      * @param ResourceManager        $resourceManager
-     * @param CacheItemPoolInterface $cachePool;
+     * @param CacheItemPoolInterface $cachePool
      */
     public function __construct(
         Client $client,
@@ -103,7 +103,7 @@ class EulerHermesManager
      */
     public function setReadFromCache($readFromCache)
     {
-        $this->saveToCache = $readFromCache;
+        $this->readFromCache = $readFromCache;
 
         return $this;
     }
