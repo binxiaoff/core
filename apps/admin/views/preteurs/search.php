@@ -45,7 +45,7 @@
                     <td><input type="text" name="raison_sociale" id="raison_sociale" class="input_large" /></td>
                 </tr>
                 <tr>
-                    <th><label for="siren">Siren :</label></th>
+                    <th><label for="siren">SIREN :</label></th>
                     <td><input type="text" name="siren" id="siren" class="input_large" /></td>
                 </tr>
                 <tr>

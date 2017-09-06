@@ -604,7 +604,7 @@ class ClientsRepository extends EntityRepository
      * @param null|string $name
      * @param null|string $firstName
      * @param null|string $companyName
-     * @param null|null   $siren
+     * @param null|string $siren
      * @param bool        $online
      * @param bool        $adult
      *
@@ -624,8 +624,8 @@ class ClientsRepository extends EntityRepository
                     ELSE
                     (SELECT
                        CASE co.status_client
-                       WHEN 1 THEN CONCAT(c.prenom," ",c.nom)
-                       ELSE CONCAT(co.prenom_dirigeant," ",co.nom_dirigeant)
+                       WHEN 1 THEN CONCAT(c.prenom, " ", c.nom)
+                       ELSE CONCAT(co.prenom_dirigeant, " ", co.nom_dirigeant)
                        END as dirigeant
                      FROM companies co WHERE co.id_client_owner = c.id_client)
                   END AS prenom_ou_dirigeant,
@@ -646,12 +646,12 @@ class ClientsRepository extends EntityRepository
 
         if (null !== $idClient) {
             $query .= ' AND c.id_client IN (:idClient) ';
-            $params = array_merge($params, ['idClient' => $idClient]);
+            $params = ['idClient' => $idClient];
         }
 
         if (null !== $email) {
             $query .= ' AND c.email LIKE :email';
-            $params = ['email' => $email . '%'];
+            $params = array_merge($params, ['email' => $email . '%']);
         }
 
         if (null !== $name) {

@@ -27,13 +27,13 @@
             <?php $i = 1; ?>
             <?php foreach ($this->lPreteurs as $client) : ?>
                 <tr class="<?= ($i++ % 2 == 1 ? '' : 'odd') ?> ">
-                    <td class="leLender<?= $client['id_client'] ?>"><?= $client['id_client'] ?></td>
-                    <td class="leLender<?= $client['id_client'] ?>"><?= $client['nom_ou_societe'] ?></td>
-                    <td class="leLender<?= $client['id_client'] ?>"><?= $client['nom_usage'] ?></td>
-                    <td class="leLender<?= $client['id_client'] ?>"><?= $client['prenom_ou_dirigeant'] ?></td>
-                    <td class="leLender<?= $client['id_client'] ?>"><?= $client['email'] ?></td>
-                    <td class="leLender<?= $client['id_client'] ?>"><?= $client['telephone'] ?></td>
-                    <td class="leLender<?= $client['id_client'] ?>"><?= $client['status'] == \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_ONLINE ? 'en ligne' : 'hors ligne' ?></td>
+                    <td><?= $client['id_client'] ?></td>
+                    <td><?= $client['nom_ou_societe'] ?></td>
+                    <td><?= $client['nom_usage'] ?></td>
+                    <td><?= $client['prenom_ou_dirigeant'] ?></td>
+                    <td><?= $client['email'] ?></td>
+                    <td><?= $client['telephone'] ?></td>
+                    <td><?= $client['status'] == \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_ONLINE ? 'en ligne' : 'hors ligne' ?></td>
                     <td align="center">
                         <a href="<?= $this->lurl ?>/preteurs/edit/<?= $client['id_client'] ?>">
                             <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $client['nom_ou_societe'] . ' ' . $client['prenom_ou_dirigeant'] ?>"/>
