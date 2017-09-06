@@ -433,7 +433,7 @@ class simulationController extends bootstrap
             }
 
             if ($response instanceof WsCall) {
-                $date     = $response->getAdded()->format(\DateTime::RFC3339);
+                $date     = $response->getAdded()->format('d/m/Y H:i:s');
                 $response = $response->getResponse();
 
                 if ('xml' === $format) {

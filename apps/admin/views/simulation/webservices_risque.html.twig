@@ -100,7 +100,7 @@
                 if (!$form.find('.has-error').length) {
                     App.blocks(blockId, 'state_loading');
 
-                    $result.slideUp().find('pre').html('')
+                    $result.slideUp().find('.block-content').html('')
 
                     $.ajax({
                         url: $form.attr('action'),
@@ -110,35 +110,35 @@
                         success: function(response) {
                             App.blocks(blockId, 'state_normal');
 
-//                            var response = {
-//                                success: true,
-//                                error: ['Error 1'],
-//                                data: {
-//                                    response: '{"associationInfo":null,"capital":1707445,"categorieEntreCode":"PME","categorieEntreLabel":"Petite ou Moyenne Entreprise","chiffreAffaire":9198607,"codeFantoir":"3401450274GRUE ","codeIris":"341450107","codePaysOrigine":"00000","codePostal":"34400","communeCode":"34145","complementRue":"ZONE INDUSTRIELLE","dateCreation":"1986-07-01","dateDernierBilan":"2015-12-31","dateFermeture":null,"dateImmatriculation":"1981-06-16","dateReactivation":null,"deviseCapitalCode":"300","deviseCapitalLabel":"Euros","dirigeantPrincipal":"CHARMENSAT Jean-Pierre Joseph Maurice","dureeDernierBilan":12,"effectif":22,"etat":"1","etatLabel":"Actif","formeJuridique":"Soci\u00e9t\u00e9 par actions simplifi\u00e9e","formeJuridiqueCode":"5710","greffe":"Montpellier","libellePaysOrigine":"FRANCE","naf5EntreCode":"4313Z","naf5EntreLibelle":"Forages et sondages","nbEtablissement":4,"nbEtablissementActif":2,"nonDiffusible":false,"numTVAIntraCom":"FR40302179130","objetSocial":"L\'achat et la vente de v\u00e9hicules neufs et d\'occasion li\u00e9s \u00e0 l\'activit\u00e9 de forage.","pourcentageAppartenanceGroupe":"100","procedureCollective":"NEANT","raisonSociale":"FORACO","raisonSocialeDirigeantMoral":null,"raisonSocialeTeteGroupe25":"FORACO INTERNATIONAL","rcs":"2001B00495","rue":"701 RUE DES FOURNELS","sigle":null,"sirenTeteGroupe25":"412824682","siret":"30217913000075","sousCategorieEntreCode":"ME","sousCategorieEntreLabel":"Moyenne entreprise","statutEirlCode":"N","statutEirlLabel":"Non","trCA":"De 5 millions \u00e0 moins de 10 millions d\' euros","trCACode":"4","trEffectifEntre":"20 \u00e0 49 salari\u00e9s","trEffectifEntreCode":"12","typeExploitationCode":"O","typeExploitationLabel":"Exploitant","ville":"LUNEL"}',
-//                                    format: 'json',
-//                                    date: '2017-08-21T15:18:17+02:00' // RFC-3339 // or null
-//                                }
-//                            }
-
                             $result.slideDown()
 
                             if (response.success) {
                                 var format = response.data.format
                                 var content = response.data.response
+                                var date = response.data.date
+
+                                if (date) {
+                                    var $date = $('<h4></h4>')
+                                    $date.addClass('font-w300 push')
+                                    $date.html(date)
+                                    $result.find('.block-content').append($date)
+                                }
 
                                 if (format === 'string') {
-                                    $result.find('pre').html(content)
+                                    var $message = $('<p></p>')
+                                    $message.html(content)
+                                    $result.find('.block-content').append($message)
                                 } else {
                                     if (format === 'json') {
                                         try {
-                                            content = JSON.stringify(JSON.parse(content), null, "  ")
+                                            content = JSON.stringify(JSON.parse(content), null, '  ')
                                         } catch (e) {}
                                     }
 
                                     var $code = $('<code></code>')
                                     $code.addClass(format)
                                     $code.html(content)
-                                    $result.find('pre').append($code)
+                                    $result.find('.block-content').append('<pre></pre>').find('pre').append($code)
                                 }
 
                                 $result.find('code').each(function(i, block) {
@@ -147,7 +147,7 @@
                             } else {
                                 $.each(response.error, function(i, val){
                                     $alertTrigger.data('notify-message', val).trigger('click')
-                                });
+                                })
                             }
                         }
                     })
@@ -262,9 +262,7 @@
             <div class="block-header">
                 <h3 class="block-title">Réponse</h3>
             </div>
-            <div class="block-content block-content-full">
-                <pre class="pre-sh"><code class="json"></code></pre>
-            </div>
+            <div class="block-content block-content-full"></div>
         </div>
     </div>
 {% endblock %}
