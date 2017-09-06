@@ -7,7 +7,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class ProjectPaymentManager
 {
@@ -17,9 +16,6 @@ class ProjectPaymentManager
     /** @var ProjectRepaymentTaskManager */
     private $projectRepaymentTaskManager;
 
-    /** @var EntityManagerSimulator */
-    private $entityManagerSimulator;
-
     /** @var ProjectRepaymentScheduleManager */
     private $projectRepaymentScheduleManager;
 
@@ -27,19 +23,16 @@ class ProjectPaymentManager
      * ProjectRepaymentManager constructor.
      *
      * @param EntityManager                   $entityManager
-     * @param EntityManagerSimulator          $entityManagerSimulator
      * @param ProjectRepaymentTaskManager     $projectRepaymentTaskManager
      * @param ProjectRepaymentScheduleManager $projectRepaymentScheduleManager
      */
     public function __construct(
         EntityManager $entityManager,
-        EntityManagerSimulator $entityManagerSimulator,
         ProjectRepaymentTaskManager $projectRepaymentTaskManager,
         ProjectRepaymentScheduleManager $projectRepaymentScheduleManager
     )
     {
         $this->entityManager                   = $entityManager;
-        $this->entityManagerSimulator          = $entityManagerSimulator;
         $this->projectRepaymentTaskManager     = $projectRepaymentTaskManager;
         $this->projectRepaymentScheduleManager = $projectRepaymentScheduleManager;
     }

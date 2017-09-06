@@ -11,7 +11,7 @@ class ProjectRepaymentDetailRepository extends EntityRepository
 
     /**
      * @param ProjectRepaymentTaskLog|int $projectRepaymentTaskLog
-     * @param int                      $limit
+     * @param int                         $limit
      *
      * @return ProjectRepaymentDetail[]
      */

@@ -4,30 +4,22 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class ProjectRepaymentScheduleManager
 {
     /** @var EntityManager */
     private $entityManager;
 
-
-    /** @var EntityManagerSimulator */
-    private $entityManagerSimulator;
-
     /**
      * ProjectRepaymentManager constructor.
      *
-     * @param EntityManager               $entityManager
-     * @param EntityManagerSimulator      $entityManagerSimulator
+     * @param EntityManager $entityManager
      */
     public function __construct(
-        EntityManager $entityManager,
-        EntityManagerSimulator $entityManagerSimulator
+        EntityManager $entityManager
     )
     {
-        $this->entityManager               = $entityManager;
-        $this->entityManagerSimulator      = $entityManagerSimulator;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -69,10 +61,10 @@ class ProjectRepaymentScheduleManager
      *
      * @return float
      */
-    public function getUnrepaidAmount(Projects $project, $sequence)
+    public function getNotRepaidAmountByProjectAndSequence(Projects $project, $sequence)
     {
         $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
 
-        return $repaymentScheduleRepository->getUnrepaidAmount($project, $sequence);
+        return $repaymentScheduleRepository->getNotRepaidAmountByProjectAndSequence($project, $sequence);
     }
 }

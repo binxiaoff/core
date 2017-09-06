@@ -69,4 +69,24 @@ class EcheanciersEmprunteurRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getResult();
     }
+
+    /**
+     * @param int|Projects $project
+     * @param int          $sequence
+     *
+     * @return string
+     */
+    public function getRemainingCapitalFrom($project, $sequence)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee');
+        $queryBuilder->select('ROUND(SUM(ee.capital) / 100, 2)')
+            ->where('ee.idProject = :project')
+            ->andWhere('ee.ordre >= :sequence')
+            ->andWhere('ee.statusEmprunteur = :pending')
+            ->setParameter('project', $project)
+            ->setParameter('pending', EcheanciersEmprunteur::STATUS_PENDING)
+            ->setParameter('sequence', $sequence);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
 }

@@ -295,7 +295,7 @@ class ProjectRepaymentDetail
      *
      * @return ProjectRepaymentDetail
      */
-    public function setIdWallet(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idWallet = null)
+    public function setIdWallet(Wallet $idWallet)
     {
         $this->idWallet = $idWallet;
 
@@ -319,7 +319,7 @@ class ProjectRepaymentDetail
      *
      * @return ProjectRepaymentDetail
      */
-    public function setIdRepaymentSchedule(\Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers $idRepaymentSchedule = null)
+    public function setIdRepaymentSchedule(Echeanciers $idRepaymentSchedule = null)
     {
         $this->idRepaymentSchedule = $idRepaymentSchedule;
 
@@ -329,7 +329,7 @@ class ProjectRepaymentDetail
     /**
      * Get idRepaymentSchedule
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers
+     * @return Echeanciers|null
      */
     public function getIdRepaymentSchedule()
     {
@@ -343,7 +343,7 @@ class ProjectRepaymentDetail
      *
      * @return ProjectRepaymentDetail
      */
-    public function setIdTaskLog(\Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog $idTaskLog = null)
+    public function setIdTaskLog(ProjectRepaymentTaskLog $idTaskLog)
     {
         $this->idTaskLog = $idTaskLog;
 

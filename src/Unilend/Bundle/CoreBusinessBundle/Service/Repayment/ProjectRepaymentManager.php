@@ -179,6 +179,11 @@ class ProjectRepaymentManager
         $invoice->create();
     }
 
+    /**
+     * @param ProjectRepaymentTask $projectRepaymentTask
+     *
+     * @return ProjectRepaymentTaskLog
+     */
     private function processCompleteRepayment(ProjectRepaymentTask $projectRepaymentTask)
     {
         $projectRepaymentTaskLog = $this->projectRepaymentTaskManager->start($projectRepaymentTask);
@@ -266,8 +271,8 @@ class ProjectRepaymentManager
                 /** @var Echeanciers $repaymentSchedule */
                 $repaymentSchedule = $projectRepaymentDetail->getIdRepaymentSchedule();
                 if (null === $repaymentSchedule) {
-                    throw new \Exception('Cannot found repayment schedule for project (id: ' . $project->getIdProject() . '), sequence ' . $repaymentSequence . ' and client (id: ' . $projectRepaymentDetail->getIdWallet()
-                            ->getIdClient() . ')');
+                    throw new \Exception('Cannot found repayment schedule for project (id: ' . $project->getIdProject() . '), sequence ' . $repaymentSequence
+                        . ' and client (id: ' . $projectRepaymentDetail->getIdWallet()->getIdClient() . ')');
                 }
 
                 $this->operationManager->repayment($projectRepaymentDetail->getCapital(), $projectRepaymentDetail->getInterest(), $repaymentSchedule, $projectRepaymentTaskLog);
@@ -327,7 +332,6 @@ class ProjectRepaymentManager
             ->findByProject($projectRepaymentTask->getIdProject(), $projectRepaymentTask->getSequence(), null, [Echeanciers::STATUS_PENDING, Echeanciers::STATUS_PARTIALLY_REPAID]);
 
         foreach ($repaymentSchedules as $repaymentSchedule) {
-
             $unRepaidCapital  = round(bcdiv($repaymentSchedule->getCapital() - $repaymentSchedule->getCapitalRembourse(), 100, 4), 2);
             $unRepaidInterest = round(bcdiv($repaymentSchedule->getInterets() - $repaymentSchedule->getInteretsRembourses(), 100, 4), 2);
 
@@ -392,7 +396,7 @@ class ProjectRepaymentManager
                     $interest = round(bcadd($projectRepaymentDetail->getInterest(), $adjustAmount, 4), 2);
                     $projectRepaymentDetail->setInterest($interest);
                 } else {
-                    // It's imposable to be here. I add this line for the code readability
+                    // It's impossible to be here. I add this line for the code readability
                     continue;
                 }
 
@@ -422,7 +426,7 @@ class ProjectRepaymentManager
      */
     private function getUnpaidProportion(ProjectRepaymentTask $projectRepaymentTask)
     {
-        $unpaidNetRepaymentAmount = $this->projectRepaymentScheduleManager->getUnrepaidAmount($projectRepaymentTask->getIdProject(), $projectRepaymentTask->getSequence());
+        $unpaidNetRepaymentAmount = $this->projectRepaymentScheduleManager->getNotRepaidAmountByProjectAndSequence($projectRepaymentTask->getIdProject(), $projectRepaymentTask->getSequence());
 
         return bcdiv($projectRepaymentTask->getAmount(), $unpaidNetRepaymentAmount, 4);
     }
