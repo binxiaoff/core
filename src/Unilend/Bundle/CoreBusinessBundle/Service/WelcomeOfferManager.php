@@ -111,12 +111,13 @@ class WelcomeOfferManager
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
 
-        $offerType       = $this->getWelcomeOfferTypeForClient($client);
-        $welcomeOffer    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->getWelcomeOfferForClient($client, $offerType);
-        $offerIsValid    = null !== $welcomeOffer;
-        $enoughMoneyLeft = false;
+        $offerType                = $this->getWelcomeOfferTypeForClient($client);
+        $welcomeOffer             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->getWelcomeOfferForClient($client, $offerType);
+        $offerIsValid             = null !== $welcomeOffer;
+        $enoughMoneyLeft          = false;
+        $alreadyReceivedPromotion = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumCreditOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION]);
 
-        if ($offerIsValid) {
+        if ($offerIsValid && 0 == $alreadyReceivedPromotion) {
             $unilendPromotionalWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
             $unilendPromotionalWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendPromotionalWalletType]);
 
@@ -151,6 +152,11 @@ class WelcomeOfferManager
         if (false === $enoughMoneyLeft) {
             $this->logger->info('Client ID: ' . $client->getIdClient() . ' Welcome offer not paid out. There is not enough money left', [ 'class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $client->getIdClient()]);
             return ['code' => 2, 'message' => "Il n'y a plus assez d'argent disponible pour créer l'offre de bienvenue."];
+        }
+
+        if (0 < $alreadyReceivedPromotion) {
+            $this->logger->info('Client ID: ' . $client->getIdClient() . ' Welcome offer not paid out. The client has realdy received a promotional operation', [ 'class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $client->getIdClient()]);
+            return ['code' => 3, 'message' => "Le client a déjà reçu une offre commerciale. "];
         }
     }
 
@@ -243,9 +249,37 @@ class WelcomeOfferManager
             ->sumCreditOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION], [OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER]);
 
         if (null === $receivedWelcomeOffer) {
-             return true;
+             return false;
         }
 
-        return false;
+        return true;
+    }
+
+    /**
+     * Returns true even when there is no welcome offer for client
+     * @param Clients $client
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public function getUnusedWelcomeOfferAmount(Clients $client)
+    {
+        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        if (null === $wallet) {
+            throw new \Exception('Client has no lender wallet');
+        }
+
+        $operationRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $welcomeOffer          = $operationRepository->sumCreditOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION], [OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER]);
+        $cancelledWelcomeOffer = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL], [OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_WELCOME_OFFER]);
+        $totalWelcomeOffer     = bcsub($welcomeOffer, $cancelledWelcomeOffer, 4);
+        $loans                 = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::LENDER_LOAN]);
+
+        $unusedAmount = round(bcsub($totalWelcomeOffer, $loans, 4), 2);
+        if ($unusedAmount <= 0 ) {
+            return 0;
+        }
+
+        return $unusedAmount;
     }
 }

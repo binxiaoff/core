@@ -12,15 +12,26 @@
 {% endblock %}
 
 {% block siteContent %}
-    <article id="devenir-preteur" class="page page-lp">
+    <article id="devenir-preteur" class="page page-l page-lp-sponsor">
         <div class="hero-wrap">
             <div class="page-content">
                 <div class="site-wrap">
                     <div class="row row-multi-col-computer">
                         <div class="col-lg-6 col-md-6">
-                            <h2 class="h3">{% trans %} lender-landing-page_text-section-title {% endtrans %}</h2>
+                            <div class="stamp show-xs" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
+                                {% trans %} lender-landing-page_sponsorship-offer-text {% endtrans %}
+                            </div>
+
+                            <h2 class="h3">
+                                {% trans %} lender-landing-page_sponsorship-section-title {% endtrans %}
+                            </h2>
+
+                            <div class="stamp hide-xs ui-is-visible" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
+                                {% trans %} lender-landing-page_sponsorship-offer-text {% endtrans %}
+                            </div>
+
                             <div class="block-copy-lp">
-                                    <p>{% trans %} lender-landing-page_text-section-text {% endtrans %}</p>
+                                <p>{% trans %} lender-landing-page_sponsorship-section-text {% endtrans %}</p>
                                 <p class="small">{% trans %} lender-landing-page_stats-section-IRR-text {% endtrans %}
                                     <span class="c-p1">{{ getStatistic('unilendIRR')|localizednumber }}%</span><br/>
                                     {% trans %} lender-landing-page_stats-section-amount-borrowed {% endtrans %}
@@ -71,7 +82,11 @@
                     </div>
                 </div>
                 <div class="col-conditions col-lg-4 col-md-4">
+                    {% if isSponsorship == true %}
+                        <p>* <a href="#dialog-conditions-content" class="fancybox-html">{% trans %} lender-landing-page_sponsorship-conditions-title {% endtrans %}</a></p>
+                    {% else  %}
                         <p>* <a href="#dialog-conditions-content" class="fancybox-html">{% trans %} lender-landing-page_welcome-offer-conditions-title {% endtrans %}</a></p>
+                    {% endif %}
                 </div>
             </div>
         </div><!-- /.block-copy-lp-footer -->
@@ -79,8 +94,8 @@
         {# Hidden text until made visible through the fancybox #}
         <div class="hide-accessible">
             <div id="dialog-conditions-content" class="dialog-content readable-wrap text-align-center">
-                    <h3>{% trans %} lender-landing-page_welcome-offer-conditions-title {% endtrans %} </h3>
-                    {% trans %} lender-landing-page_welcome-offer-conditions-text {% endtrans %}
+                <h3>{% trans %} lender-landing-page_sponsorship-conditions-title {% endtrans %} </h3>
+                {% trans %} lender-landing-page_sponsorship-conditions-text {% endtrans %}
             </div><!-- /#dialog-conditions-content -->
         </div><!-- /.hide-accessible -->
     </article><!-- /.page -->

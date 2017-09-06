@@ -45,9 +45,9 @@ class SponsorshipCampaign
     private $end;
 
     /**
-     * @var boolean
+     * @var int
      *
-     * @ORM\Column(name="status", type="boolean", nullable=false)
+     * @ORM\Column(name="status", type="integer", nullable=false)
      */
     private $status;
 
@@ -189,7 +189,7 @@ class SponsorshipCampaign
     /**
      * Set status
      *
-     * @param boolean $status
+     * @param int $status
      *
      * @return SponsorshipCampaign
      */
@@ -203,7 +203,7 @@ class SponsorshipCampaign
     /**
      * Get status
      *
-     * @return boolean
+     * @return int
      */
     public function getStatus()
     {

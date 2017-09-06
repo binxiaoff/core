@@ -854,7 +854,7 @@ class preteursController extends bootstrap
             $this->remainingAmountCurrentOfferLandingPage = round(bcsub($this->currentOfferLandingPage->getMontantLimit(), $this->alreadyPaidOutCurrentOfferLandingPage, 4), 2);
         }
 
-        $this->allOffers = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findAll();
+        $this->pastOffers = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findBy(['status' => OffresBienvenues::STATUS_OFFLINE]);
     }
 
     private function createNewWelcomeOffer()
@@ -886,7 +886,7 @@ class preteursController extends bootstrap
         $welcomeOffer = new OffresBienvenues();
         $welcomeOffer->setDebut($startDate);
         $welcomeOffer->setMontant(bcmul($amount, 100));
-        $welcomeOffer->setMontantLimit(bcmul($maxAmount, 100));
+        $welcomeOffer->setMontantLimit($maxAmount);
         $welcomeOffer->setType($type);
         $welcomeOffer->setIdUser($user->getIdUser());
         $welcomeOffer->setStatus(OffresBienvenues::STATUS_ONLINE);

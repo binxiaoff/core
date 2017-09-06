@@ -30,8 +30,14 @@
     box-shadow: 0 2px #CA9FAF;
 }
 .alert-danger {
-    background: #ffcbcc;
-    box-shadow: 0 2px #BA7E7F;
+    background: rgba(178, 0, 102, 0.7);
+    box-shadow: 0 2px #b20066;
+    color: #fff;
+}
+.alert-danger .close {
+    color: #fff;
+    opacity: 1;
+    text-shadow: none;
 }
 .alert-success {
     background: #eaf4ea;
@@ -64,4 +70,23 @@
 }
 .text-darker {
     color: #353847;
+}
+
+/* Forms */
+.form-inline > .form-group > button[type=submit] {
+    margin-top: 23px;
+    min-width: 120px;
+}
+
+/* Tables */
+.table-header-bg>thead>tr>th, .table-header-bg>thead>tr>td {
+    background-color: #f5f5f5;
+    border-color: #e9e9e9;
+    border-top: 1px solid #e9e9e9!important;
+    color: #444;
+    font-size: 12px;
+    vertical-align: top;
+}
+table.dataTable thead .sorting:after, table.dataTable thead .sorting_asc:after, table.dataTable thead .sorting_desc:after {
+    top: 8px;
 }

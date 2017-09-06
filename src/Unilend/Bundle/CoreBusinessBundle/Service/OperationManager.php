@@ -37,6 +37,8 @@ class OperationManager
     /** @var TaxManager */
     private $taxManager;
 
+    const OPERATION_MANAGER_EXCEPTION_CODE = 2;
+
     /**
      * @param EntityManager          $entityManager
      * @param EntityManagerSimulator $entityManagerSimulator
@@ -74,7 +76,7 @@ class OperationManager
         }
 
         if (null === $debtor && null === $creditor) {
-            throw new \InvalidArgumentException('Both the debtor and creditor wallets are null.');
+            throw new \InvalidArgumentException('Both the debtor and creditor wallets are null.', self::OPERATION_MANAGER_EXCEPTION_CODE);
         }
 
         $this->entityManager->getConnection()->beginTransaction();
@@ -820,7 +822,7 @@ class OperationManager
         $this->newOperation($amount, $operationType, $operationSubType, $unilendWallet, $wallet, $sponsorship);
     }
 
-    /**
+    /**n
      * @param Wallet      $wallet
      * @param Sponsorship $sponsorship
      */

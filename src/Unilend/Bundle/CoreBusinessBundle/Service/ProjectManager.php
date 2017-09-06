@@ -346,10 +346,13 @@ class ProjectManager
                     } else {
                         $bid->setStatus(Bids::STATUS_BID_ACCEPTED);
                         $this->entityManager->flush($bid);
-                        try {
-                            $this->sponsorshipManager->attributeSponsorReward($bid->getIdLenderAccount()->getIdClient());
-                        } catch (\Exception $exception) {
-                            $this->logger->info('Sponsor reward could not be attributed for bid ' . $bid->getIdBid() . '. Reason: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project]);
+
+                        if (null !== $this->entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $bid->getIdLenderAccount()->getIdClient()])) {
+                            try {
+                                $this->sponsorshipManager->attributeSponsorReward($bid->getIdLenderAccount()->getIdClient());
+                            } catch (\Exception $exception) {
+                                $this->logger->info('Sponsor reward could not be attributed for bid ' . $bid->getIdBid() . '. Reason: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project]);
+                            }
                         }
                     }
 
