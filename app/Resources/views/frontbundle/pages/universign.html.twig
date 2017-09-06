@@ -3,18 +3,21 @@
 {% block siteContent %}
     <div class="site-wrap">
         <section class="page-section">
-            <h3>{{ "universign_#{ document }-title-#{ status }"|trans|raw }}</h3>
-            <div class="row">
-                <p>{{ "universign_#{ document }-message-#{ status }"|trans({'%borrower_account_link%': borrowerAccountLink})|raw }}</p>
-                {% if universign.status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\UniversignEntityInterface::STATUS_SIGNED') %}
-                    <div class="document-download">
-                        <a href="{{ pdfLink }}" target="_blank">
-                            <img class="document-download" src="{{ siteurlmedia('dashboard/file-pdf-60x80.png') }}" alt="{% trans %} borrower-document_invoices-invoice-download-link-placeholder {% endtrans %}"/>
-                            {% trans %} borrower-document_invoices-invoice-download-link {% endtrans %}
-                        </a>
-                    </div>
-                {% endif %}
-            </div><!-- /.row -->
+            <h3>{% trans %} universign_title {% endtrans %}</h3>
+            {% for document in documents %}
+                <h4>{{ "universign_#{ document.name }-title"|trans|raw }}</h4>
+                <div class="row">
+                    <p>{{ "universign_#{ document.name }-message-#{ document.status }"|trans({'%borrower_account_link%': borrowerAccountLink})|raw }}</p>
+                    {% if document.universign.status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\UniversignEntityInterface::STATUS_SIGNED') %}
+                        <div class="document-download">
+                            <a href="{{ document.pdfLink }}" target="_blank">
+                                <img class="document-download" src="{{ siteurlmedia('dashboard/file-pdf-60x80.png') }}" alt="{{ 'borrower-document_invoices-invoice-download-link-placeholder'|trans|e('html_attr') }}">
+                                {% trans %} borrower-document_invoices-invoice-download-link {% endtrans %}
+                            </a>
+                        </div>
+                    {% endif %}
+                </div><!-- /.row -->
+            {% endfor %}
         </section>
     </div><!-- /.site-wrap -->
 {% endblock %}

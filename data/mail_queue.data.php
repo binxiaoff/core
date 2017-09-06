@@ -88,7 +88,7 @@ class mail_queue extends mail_queue_crud
         }
 
         if (false === is_null($sSubject)) {
-            $sWhere .= 'AND mt.subject LIKE "%' . $sSubject . '%"';
+            $sWhere .= ' AND mt.subject LIKE "%' . $sSubject . '%"';
         }
 
         if (false === is_null($oDateStart)) {

@@ -20,7 +20,7 @@
 <script>
     $(function() {
         $('#receptions-table').DataTable({
-            order: [[0, 'asc']],
+            order: [[0, 'desc']],
             pageLength: <?= $this->nb_lignes ?>,
             bLengthChange: false,
             columnDefs: [

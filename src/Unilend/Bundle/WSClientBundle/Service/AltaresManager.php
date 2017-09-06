@@ -49,7 +49,9 @@ class AltaresManager
     /** @var ResourceManager */
     private $resourceManager;
     /** @var bool */
-    private $useCache = true;
+    private $saveToCache = true;
+    /** @var bool  */
+    private $readFromCache = true;
 
     /**
      * @param string             $login
@@ -83,13 +85,27 @@ class AltaresManager
     }
 
     /**
-     * @param bool $useCache
+     * Should be replaced by method parameters instead of class parameters
+     * @param bool $saveToCache
      *
      * @return AltaresManager
      */
-    public function setUseCache($useCache)
+    public function setSaveToCache($saveToCache)
     {
-        $this->useCache = $useCache;
+        $this->saveToCache = $saveToCache;
+
+        return $this;
+    }
+
+    /**
+     * Should be replaced by method parameters instead of class parameters
+     * @param bool $readFromCache
+     *
+     * @return AltaresManager
+     */
+    public function setReadFromCache($readFromCache)
+    {
+        $this->saveToCache = $readFromCache;
 
         return $this;
     }
@@ -230,7 +246,7 @@ class AltaresManager
                     return $storedResponse;
                 }
             }
-            $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
+            $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->saveToCache);
             ini_set('default_socket_timeout', self::CALL_TIMEOUT);
 
             /** @var \SoapClient $soapClient */
@@ -342,7 +358,7 @@ class AltaresManager
     private function getStoredResponse($resource, $siren)
     {
         if (
-            $this->useCache
+            $this->readFromCache
             && false !== ($storedResponse = $this->callHistoryManager->getStoredResponse($resource, $siren))
             && null !== ($storedResponse = json_decode($storedResponse))
             && isset($storedResponse->return)

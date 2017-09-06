@@ -69,7 +69,7 @@ class transfertsController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         $this->nonAttributedReceptions = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')
-            ->findBy(['statusBo' => Receptions::STATUS_PENDING], ['added' => 'ASC', 'idReception' => 'ASC']);
+            ->findBy(['statusBo' => Receptions::STATUS_PENDING], ['added' => 'DESC', 'idReception' => 'DESC']);
 
         if (isset($_POST['id_project'], $_POST['id_reception'])) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */

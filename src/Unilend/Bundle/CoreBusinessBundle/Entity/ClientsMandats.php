@@ -13,6 +13,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ClientsMandats implements UniversignEntityInterface
 {
+    const DOCUMENT_TYPE = 'mandat';
+
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      *

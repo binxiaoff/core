@@ -852,7 +852,8 @@ class clients extends clients_crud
             'attachmentTypeIdentity' => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::CNI_PASSPORTE,
             'attachmentTypeAddress'  => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::JUSTIFICATIF_DOMICILE,
             'attachmentTypeRib'      => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::RIB,
-            'vigilanceStatus'        => $vigilanceStatusExcluded
+            'vigilanceStatus'        => $vigilanceStatusExcluded,
+            'lenderWallet'           => WalletType::LENDER
         ];
         $type = [
             'statusValid'            => PDO::PARAM_INT,
@@ -860,38 +861,47 @@ class clients extends clients_crud
             'attachmentTypeIdentity' => PDO::PARAM_INT,
             'attachmentTypeAddress'  => PDO::PARAM_INT,
             'attachmentTypeRib'      => PDO::PARAM_INT,
-            'vigilanceStatus'        => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY
+            'vigilanceStatus'        => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'lenderWallet'           => PDO::PARAM_STR
         ];
 
         $sql = "
-        SELECT
-          c.id_client,
-          ga_identity.id AS identity_attachment_id,
-          ga_identity.validation_status identity_attachment_status,
-          ga_address.id AS address_attachment_id,
-          ga_address.validation_status address_attachment_status,
-          ga_rib.id AS rib_attachment_id,
-          ga_rib.validation_status rib_attachment_status
-        
-        FROM clients_status_history csh
-          INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeIdentity AND a.archived IS NULL) ga_identity ON ga_identity.id_client = csh.id_client
-          INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeAddress AND a.archived IS NULL) ga_address ON ga_address.id_client = csh.id_client
-          INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeRib AND a.archived IS NULL) ga_rib ON ga_rib.id_client = csh.id_client
-          INNER JOIN clients c ON c.id_client = csh.id_client
-          INNER JOIN clients_adresses ca ON ca.id_client = c.id_client AND ca.id_pays_fiscal = 1
-          INNER JOIN clients_status cs ON cs.id_client_status = csh.id_client_status
-          LEFT JOIN (SELECT * FROM client_vigilance_status_history cvsh
-                     WHERE cvsh.id = (SELECT cvsh_max.id
-                                      FROM client_vigilance_status_history cvsh_max
-                                      WHERE cvsh.id_client = cvsh_max.id_client
-                                      ORDER BY cvsh_max.added DESC, cvsh_max.id DESC LIMIT 1)) last_cvsh ON c.id_client = last_cvsh.id_client AND last_cvsh.vigilance_status IN (:vigilanceStatus)
-        WHERE csh.id_client_status_history = (SELECT csh_max.id_client_status_history
-                                              FROM clients_status_history csh_max
-                                              WHERE csh_max.id_client = csh.id_client
-                                              ORDER BY csh_max.added DESC, csh_max.id_client_status_history DESC LIMIT 1)
-          AND cs.status IN (:clientStatus)
-          AND TIMESTAMPDIFF(YEAR, naissance, CURDATE()) < 80
-          AND last_cvsh.id_client IS NULL";
+            SELECT
+              c.id_client,
+              ga_identity.id AS identity_attachment_id,
+              ga_identity.validation_status identity_attachment_status,
+              ga_address.id AS address_attachment_id,
+              ga_address.validation_status address_attachment_status,
+              ga_rib.id AS rib_attachment_id,
+              ga_rib.validation_status rib_attachment_status
+            FROM clients_status_history csh
+              INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeIdentity AND a.archived IS NULL) ga_identity ON ga_identity.id_client = csh.id_client
+              INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeAddress AND a.archived IS NULL) ga_address ON ga_address.id_client = csh.id_client
+              INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeRib AND a.archived IS NULL) ga_rib ON ga_rib.id_client = csh.id_client
+              INNER JOIN clients c ON c.id_client = csh.id_client
+              INNER JOIN clients_adresses ca ON ca.id_client = c.id_client AND ca.id_pays_fiscal = 1
+              INNER JOIN clients_status cs ON cs.id_client_status = csh.id_client_status
+              INNER JOIN wallet w ON c.id_client = w.id_client
+              INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = :lenderWallet
+              LEFT JOIN (
+                SELECT * 
+                FROM client_vigilance_status_history cvsh
+                WHERE cvsh.id = (
+                  SELECT cvsh_max.id
+                  FROM client_vigilance_status_history cvsh_max
+                  WHERE cvsh.id_client = cvsh_max.id_client
+                  ORDER BY cvsh_max.added DESC, cvsh_max.id DESC LIMIT 1
+                )
+              ) last_cvsh ON c.id_client = last_cvsh.id_client AND last_cvsh.vigilance_status IN (:vigilanceStatus)
+            WHERE csh.id_client_status_history = (
+              SELECT csh_max.id_client_status_history
+              FROM clients_status_history csh_max
+              WHERE csh_max.id_client = csh.id_client
+              ORDER BY csh_max.added DESC, csh_max.id_client_status_history DESC LIMIT 1
+            )
+              AND cs.status IN (:clientStatus)
+              AND TIMESTAMPDIFF(YEAR, naissance, CURDATE()) < 80
+              AND last_cvsh.id_client IS NULL";
 
         /** @var \Doctrine\DBAL\Statement $statement */
         $statement = $this->bdd->executeQuery($sql, $bind, $type);

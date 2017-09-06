@@ -287,11 +287,11 @@ class MailerManager
             'montant'                => $this->oFicelle->formatNumber($project->amount, 0),
             'taux_moyen'             => $this->oFicelle->formatNumber($project->getAverageInterestRate(), 1),
             'link_compte_emprunteur' => $this->sFUrl . '/projects/detail/' . $project->id_project,
-            'link_mandat'            => $this->sFUrl . '/pdf/mandat/' . $borrower->hash . '/' . $project->id_project,
-            'link_pouvoir'           => $this->sFUrl . '/pdf/pouvoir/' . $borrower->hash . '/' . $project->id_project,
+            'link_signature'         => $this->sFUrl . '/pdf/projet/' . $borrower->hash . '/' . $project->id_project,
             'projet'                 => $project->title,
             'lien_fb'                => $this->getFacebookLink(),
-            'lien_tw'                => $this->getTwitterLink()
+            'lien_tw'                => $this->getTwitterLink(),
+            'annee'                  => date('Y')
         ];
 
         /** @var TemplateMessage $message */
