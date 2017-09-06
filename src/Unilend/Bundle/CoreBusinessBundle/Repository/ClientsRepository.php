@@ -9,6 +9,7 @@ use Doctrine\ORM\Query\Expr\Join;
 use PDO;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
@@ -620,21 +621,24 @@ class ClientsRepository extends EntityRepository
                   c.telephone AS telephone,
                   c.status_inscription_preteur AS status_inscription_preteur,
                   CASE c.type
-                    WHEN ' . Clients::TYPE_PERSON . ' OR ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN c.prenom
+                    WHEN ' . Clients::TYPE_PERSON . ' THEN c.prenom
+                    WHEN ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN c.prenom
                     ELSE
                     (SELECT
                        CASE co.status_client
-                       WHEN 1 THEN CONCAT(c.prenom, " ", c.nom)
+                       WHEN ' . Companies::CLIENT_STATUS_MANAGER . ' THEN CONCAT(c.prenom, " ", c.nom)
                        ELSE CONCAT(co.prenom_dirigeant, " ", co.nom_dirigeant)
                        END as dirigeant
                      FROM companies co WHERE co.id_client_owner = c.id_client)
                   END AS prenom_ou_dirigeant,
                   CASE c.type
-                    WHEN ' . Clients::TYPE_PERSON . ' OR ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN c.nom
+                    WHEN ' . Clients::TYPE_PERSON . ' THEN c.nom
+                    WHEN ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN c.nom
                   ELSE (SELECT co.name FROM companies co WHERE co.id_client_owner = c.id_client)
                   END AS nom_ou_societe,
                   CASE c.type
-                    WHEN ' . Clients::TYPE_PERSON . ' OR ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN REPLACE(c.nom_usage,"Nom D\'usage","")
+                    WHEN ' . Clients::TYPE_PERSON . ' THEN REPLACE(c.nom_usage, "Nom D\'usage" ,"")
+                    WHEN ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN REPLACE(c.nom_usage, "Nom D\'usage" ,"")
                     ELSE ""
                   END AS nom_usage
                 FROM clients c
