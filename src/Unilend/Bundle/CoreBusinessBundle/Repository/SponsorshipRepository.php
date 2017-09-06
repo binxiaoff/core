@@ -41,7 +41,7 @@ class SponsorshipRepository extends EntityRepository
                       INNER JOIN operation ON operation.id_sponsorship = sponsorship.id
                       INNER JOIN operation_sub_type ON operation.id_sub_type = operation_sub_type.id AND label = :subTypeLabel
                     WHERE sponsorship.status != ' . Sponsorship::STATUS_ONGOING . '
-                      AND DATEDIFF(DATE_ADD(operation.added, INTERVAL sponsorship_campaign.validity_days DAY), CURDATE()) < 0
+                      AND DATEDIFF(DATE_ADD(operation.added, INTERVAL sponsorship_campaign.validity_days DAY), CURDATE()) <= 0
                       AND NOT EXISTS (
                                       SELECT * FROM operation 
                                       INNER JOIN operation_sub_type ON operation.id_sub_type = operation_sub_type.id 

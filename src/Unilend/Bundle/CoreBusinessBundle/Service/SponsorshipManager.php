@@ -307,7 +307,7 @@ class SponsorshipManager
                 'idSponsorship'  => $sponsorship->getId(),
                 'idSubType'      => $rewardCancelSubType
             ])
-            && 0 == $this->getUnusedSponsorRewardAmountFromSponsorship($sponsorship)
+            && 0 < $this->getUnusedSponsorRewardAmountFromSponsorship($sponsorship)
             && $sponsorWallet->getCommittedBalance() < $sponsorship->getIdSponsorshipCampaign()->getAmountSponsor()
             && $sponsorWallet->getAvailableBalance() > $sponsorship->getIdSponsorshipCampaign()->getAmountSponsor()
         ) {
@@ -333,7 +333,7 @@ class SponsorshipManager
         if (
             null === $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')
                 ->findOneBy(['idWalletDebtor' => $sponseeWallet, 'idSponsorship' => $sponsorship->getId(), 'idSubType' => $rewardCancelSubType])
-            && 0 == $this->getUnusedSponseeRewardAmount($sponsorship->getIdClientSponsee())
+            && 0 < $this->getUnusedSponseeRewardAmount($sponsorship->getIdClientSponsee())
             && $sponseeWallet->getCommittedBalance() < $sponsorship->getIdSponsorshipCampaign()->getAmountSponsor()
             && $sponseeWallet->getAvailableBalance() > $sponsorship->getIdSponsorshipCampaign()->getAmountSponsor()
         ){
