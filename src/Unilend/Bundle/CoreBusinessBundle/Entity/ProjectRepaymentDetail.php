@@ -85,14 +85,14 @@ class ProjectRepaymentDetail
     private $id;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Loans
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Loans")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_wallet", referencedColumnName="id")
      * })
      */
-    private $idWallet;
+    private $idLoan;
 
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog
@@ -289,27 +289,27 @@ class ProjectRepaymentDetail
     }
 
     /**
-     * Set idWallet
+     * Set idLoan
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idWallet
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Loans $idLoan
      *
      * @return ProjectRepaymentDetail
      */
-    public function setIdWallet(Wallet $idWallet)
+    public function setIdLoan(Loans $idLoan)
     {
-        $this->idWallet = $idWallet;
+        $this->idLoan = $idLoan;
 
         return $this;
     }
 
     /**
-     * Get idWallet
+     * Get idLoan
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Loans
      */
-    public function getIdWallet()
+    public function getIdLoan()
     {
-        return $this->idWallet;
+        return $this->idLoan;
     }
 
     /**
