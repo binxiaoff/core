@@ -49,9 +49,9 @@ class AltaresManager
     /** @var ResourceManager */
     private $resourceManager;
     /** @var bool */
-    private $useStorageCache = true;
+    private $saveToCache = true;
     /** @var bool  */
-    private $useResultCache = true;
+    private $readFromCache = true;
 
     /**
      * @param string             $login
@@ -85,25 +85,27 @@ class AltaresManager
     }
 
     /**
-     * @param bool $useStorageCache
+     * Should be replaced by method parameters instead of class parameters
+     * @param bool $saveToCache
      *
      * @return AltaresManager
      */
-    public function setUseStorageCache($useStorageCache)
+    public function setSaveToCache($saveToCache)
     {
-        $this->useStorageCache = $useStorageCache;
+        $this->saveToCache = $saveToCache;
 
         return $this;
     }
 
     /**
-     * @param bool $useResultCache
+     * Should be replaced by method parameters instead of class parameters
+     * @param bool $readFromCache
      *
      * @return AltaresManager
      */
-    public function setUseResultCache($useResultCache)
+    public function setReadFromCache($readFromCache)
     {
-        $this->useStorageCache = $useResultCache;
+        $this->saveToCache = $readFromCache;
 
         return $this;
     }
@@ -244,7 +246,7 @@ class AltaresManager
                     return $storedResponse;
                 }
             }
-            $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useStorageCache);
+            $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->saveToCache);
             ini_set('default_socket_timeout', self::CALL_TIMEOUT);
 
             /** @var \SoapClient $soapClient */
@@ -356,7 +358,7 @@ class AltaresManager
     private function getStoredResponse($resource, $siren)
     {
         if (
-            $this->useResultCache
+            $this->readFromCache
             && false !== ($storedResponse = $this->callHistoryManager->getStoredResponse($resource, $siren))
             && null !== ($storedResponse = json_decode($storedResponse))
             && isset($storedResponse->return)

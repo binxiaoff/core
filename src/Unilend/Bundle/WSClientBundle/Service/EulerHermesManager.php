@@ -39,9 +39,9 @@ class EulerHermesManager
     /** @var ResourceManager */
     private $resourceManager;
     /** @var bool */
-    private $useStorageCache = true;
+    private $saveToCache = true;
     /** @var bool  */
-    private $useResultCache = true;
+    private $readFromCache = true;
     /** @var CacheItemPoolInterface */
     private $cachePool;
 
@@ -83,25 +83,27 @@ class EulerHermesManager
     }
 
     /**
-     * @param bool $useStorageCache
+     * Should be replaced by method parameters instead of class parameters
+     * @param bool $saveToCache
      *
      * @return EulerHermesManager
      */
-    public function setUseStorageCache($useStorageCache)
+    public function setSaveToCache($saveToCache)
     {
-        $this->useStorageCache = $useStorageCache;
+        $this->saveToCache = $saveToCache;
 
         return $this;
     }
 
     /**
-     * @param bool $useResultCache
+     * Should be replaced by method parameters instead of class parameters
+     * @param bool $readFromCache
      *
      * @return EulerHermesManager
      */
-    public function setUseResultCache($useResultCache)
+    public function setReadFromCache($readFromCache)
     {
-        $this->useStorageCache = $useResultCache;
+        $this->saveToCache = $readFromCache;
 
         return $this;
     }
@@ -207,7 +209,7 @@ class EulerHermesManager
                     return $storedResponse;
                 }
             }
-            $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useStorageCache);
+            $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->saveToCache);
             $response = $this->client->get(
                 $wsResource->getResourceName() . $uri,
                 ['headers' => ['apikey' => $apiKey]]
@@ -303,7 +305,7 @@ class EulerHermesManager
     private function getStoredResponse(WsExternalResource $resource, $siren)
     {
         if (
-            $this->useResultCache
+            $this->readFromCache
             && false !== ($storedResponse = $this->callHistoryManager->getStoredResponse($resource, $siren))
             && json_decode($storedResponse)
         ) {

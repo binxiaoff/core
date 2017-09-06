@@ -40,9 +40,9 @@ class EllisphereManager
     /** @var CallHistoryManager */
     private $callHistoryManager;
     /** @var bool */
-    private $useStorageCache = true;
+    private $readFromCache = true;
     /** @var bool  */
-    private $useResultCache = true;
+    private $saveToCache = true;
     /** @var EntityManager */
     private $entityManager;
     /** @var SerializerInterface */
@@ -85,25 +85,27 @@ class EllisphereManager
     }
 
     /**
-     * @param bool $useStorageCache
+     * Should be replaced by method parameters instead of class parameters
+     * @param bool $readFromCache
      *
      * @return EllisphereManager
      */
-    public function setUseStorageCache($useStorageCache)
+    public function setReadFromCache($readFromCache)
     {
-        $this->useStorageCache = $useStorageCache;
+        $this->readFromCache = $readFromCache;
 
         return $this;
     }
 
     /**
-     * @param bool $useResultCache
+     * Should be replaced by method parameters instead of class parameters
+     * @param bool $saveToCache
      *
      * @return EllisphereManager
      */
-    public function setUseResultCache($useResultCache)
+    public function setSaveToCache($saveToCache)
     {
-        $this->useStorageCache = $useResultCache;
+        $this->readFromCache = $saveToCache;
 
         return $this;
     }
@@ -160,7 +162,7 @@ class EllisphereManager
                 }
             }
 
-            $callback = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useStorageCache);
+            $callback = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->readFromCache);
         }
 
         $headers = ['Content-type' => 'application/xml'];
@@ -273,7 +275,7 @@ class EllisphereManager
         $storedResponse = $this->callHistoryManager->getStoredResponse($resource, $siren);
 
         if (
-            $this->useResultCache
+            $this->readFromCache
             && false !== $storedResponse
             && false !== simplexml_load_string($storedResponse)
         ) {
