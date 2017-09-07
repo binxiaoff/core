@@ -41,36 +41,39 @@ class preteursController extends bootstrap
 
     public function _gestion()
     {
-        $this->clients = $this->loadData('clients');
-
         if (isset($_POST['form_search_preteur'])) {
-            if (empty($_POST['id']) && empty($_POST['nom']) && empty($_POST['email']) && empty($_POST['prenom']) && empty($_POST['raison_sociale'])) {
+            if (empty($_POST['id']) && empty($_POST['nom']) && empty($_POST['email']) && empty($_POST['prenom']) && empty($_POST['raison_sociale']) && empty($_POST['siren'])) {
                 $_SESSION['error_search'][]  = 'Veuillez remplir au moins un champ';
             }
 
-            $email = empty($_POST['email']) ? '' : filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
+            $email = empty($_POST['email']) ? null : filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
             if (false === $email) {
                 $_SESSION['error_search'][]  = 'Format de l\'email est non valide';
             }
 
-            $clientId = empty($_POST['id']) ? '' : filter_var($_POST['id'], FILTER_SANITIZE_NUMBER_INT);
+            $clientId = empty($_POST['id']) ? null : filter_var($_POST['id'], FILTER_SANITIZE_NUMBER_INT);
             if (false === $clientId) {
                 $_SESSION['error_search'][]  = 'L\'id du client doit être numérique';
             }
 
-            $lastName = empty($_POST['nom']) ? '' : filter_var($_POST['nom'], FILTER_SANITIZE_STRING);
+            $lastName = empty($_POST['nom']) ? null : filter_var($_POST['nom'], FILTER_SANITIZE_STRING);
             if (false === $lastName) {
                 $_SESSION['error_search'][]  = 'Le format du nom n\'est pas valide';
             }
 
-            $firstName = empty($_POST['prenom']) ? '' : filter_var($_POST['prenom'], FILTER_SANITIZE_STRING);
+            $firstName = empty($_POST['prenom']) ? null : filter_var($_POST['prenom'], FILTER_SANITIZE_STRING);
             if (false === $firstName) {
                 $_SESSION['error_search'][]  = 'Le format du prenom n\'est pas valide';
             }
 
-            $companyName = empty($_POST['raison_sociale']) ? '' : filter_var($_POST['raison_sociale'], FILTER_SANITIZE_STRING);
+            $companyName = empty($_POST['raison_sociale']) ? null : filter_var($_POST['raison_sociale'], FILTER_SANITIZE_STRING);
             if (false === $companyName) {
                 $_SESSION['error_search'][]  = 'Le format de la raison sociale n\'est pas valide';
+            }
+
+            $siren = empty($_POST['siren']) ? null : trim(filter_var($_POST['siren'], FILTER_SANITIZE_STRING));
+            if (false === $siren) {
+                $_SESSION['error_search'][]  = 'Le format du siren n\'est pas valide';
             }
 
             if (false === empty($_SESSION['error_search'])) {
@@ -78,9 +81,10 @@ class preteursController extends bootstrap
                 die;
             }
 
-            $nonValide = (isset($_POST['nonValide']) && $_POST['nonValide'] != false) ? 1 : '';
-
-            $this->lPreteurs = $this->clients->searchPreteurs($clientId, $lastName, $email, $firstName, $companyName, $nonValide);
+            $online = (isset($_POST['nonValide']) && true == $_POST['nonValide']) ? false : true;
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
+            $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+            $this->lPreteurs = $clientRepository->findLenders($clientId, $email, $lastName, $firstName, $companyName, $siren, $online);
 
             if (false === empty($this->lPreteurs) && 1 == count($this->lPreteurs)) {
                 header('Location:' . $this->lurl . '/preteurs/edit/' . $this->lPreteurs[0]['id_client']);

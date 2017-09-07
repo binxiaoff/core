@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
@@ -27,6 +28,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Unilend\core\Loader;
 
 class LenderOperationsController extends Controller
 {
@@ -421,7 +423,7 @@ class LenderOperationsController extends Controller
                 }
                 try {
                     $loanData['activity'] = [
-                        'unread_count' => $notificationsRepository->countUnreadNotificationsForClient($wallet->getId(), $projectLoans['id_project'])
+                        'unread_count' => $notificationsRepository->countUnreadNotificationsForClient($wallet->getId(), $projectLoans['id_project'], [Notifications::TYPE_LOAN_ACCEPTED])
                     ];
                 } catch (\Exception $exception) {
                     unset($exception);
@@ -788,6 +790,43 @@ class LenderOperationsController extends Controller
                 'iso-8601'  => $repayment->getAdded()->format('c'),
                 'status'    => 'read'
             ];
+        }
+
+        $acceptedLoansNotifications = $entityManager->getRepository('UnilendCoreBusinessBundle:Notifications')
+            ->findBy(['idProject' => $projectId, 'idLender' => $wallet, 'type' => Notifications::TYPE_LOAN_ACCEPTED]);
+        $bidsEntity                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
+        $acceptedBidEntity          = $entityManager->getRepository('UnilendCoreBusinessBundle:AcceptedBids');
+        /** @var \ficelle $ficelle */
+        $ficelle = Loader::loadLib('ficelle');
+
+        foreach ($acceptedLoansNotifications as $notification) {
+            $title             = $translator->trans('lender-notifications_accepted-loan-title');
+            $bid               = $bidsEntity->find($notification->getIdBid());
+            $acceptedBids      = $acceptedBidEntity->findBy(['idBid' => $bid->getIdBid()]);
+            $acceptedBidAmount = 0;
+            foreach ($acceptedBids as $acceptedBid) {
+                $acceptedBidAmount += $acceptedBid->getAmount();
+            }
+            $content = $translator->trans('lender-notifications_accepted-loan-content', [
+                '%rate%'       => $ficelle->formatNumber($bid->getRate(), 1),
+                '%amount%'     => $ficelle->formatNumber(bcdiv($acceptedBidAmount, 100), 0),
+                '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
+                '%company%'    => $project->getIdCompany()->getName()
+            ]);
+
+            $data[] = [
+                'id'        => $notification->getIdNotification(),
+                'projectId' => $projectId,
+                'image'     => 'offer-accepted',
+                'type'      => 'offer-accepted',
+                'title'     => $title,
+                'content'   => $content,
+                'datetime'  => $notification->getAdded(),
+                'iso-8601'  => $notification->getAdded()->format('c'),
+                'status'    => $notification->getStatus() == Notifications::STATUS_READ ? 'read' : 'unread'
+            ];
+
+            break;
         }
 
         if (false === empty($data)) {

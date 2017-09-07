@@ -9,6 +9,7 @@ use Doctrine\ORM\Query\Expr\Join;
 use PDO;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
@@ -636,5 +637,94 @@ class ClientsRepository extends EntityRepository
         }
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param null|int    $idClient
+     * @param null|string $email
+     * @param null|string $name
+     * @param null|string $firstName
+     * @param null|string $companyName
+     * @param null|string $siren
+     * @param bool        $online
+     * @param bool        $adult
+     *
+     * @return array
+     */
+    public function findLenders($idClient = null, $email = null, $name = null, $firstName = null, $companyName = null, $siren = null, $online = true)
+    {
+        $query = '
+                SELECT
+                  c.id_client AS id_client,
+                  c.status AS status,
+                  c.email AS email,
+                  c.telephone AS telephone,
+                  c.status_inscription_preteur AS status_inscription_preteur,
+                  CASE c.type
+                    WHEN ' . Clients::TYPE_PERSON . ' THEN c.prenom
+                    WHEN ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN c.prenom
+                    ELSE
+                    (SELECT
+                       CASE co.status_client
+                       WHEN ' . Companies::CLIENT_STATUS_MANAGER . ' THEN CONCAT(c.prenom, " ", c.nom)
+                       ELSE CONCAT(co.prenom_dirigeant, " ", co.nom_dirigeant)
+                       END as dirigeant
+                     FROM companies co WHERE co.id_client_owner = c.id_client)
+                  END AS prenom_ou_dirigeant,
+                  CASE c.type
+                    WHEN ' . Clients::TYPE_PERSON . ' THEN c.nom
+                    WHEN ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN c.nom
+                  ELSE (SELECT co.name FROM companies co WHERE co.id_client_owner = c.id_client)
+                  END AS nom_ou_societe,
+                  CASE c.type
+                    WHEN ' . Clients::TYPE_PERSON . ' THEN REPLACE(c.nom_usage, "Nom D\'usage" ,"")
+                    WHEN ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN REPLACE(c.nom_usage, "Nom D\'usage" ,"")
+                    ELSE ""
+                  END AS nom_usage
+                FROM clients c
+                  INNER JOIN wallet w ON c.id_client = w.id_client AND w.id_type = (SELECT id FROM wallet_type WHERE label = "' . WalletType::LENDER . '")
+                  LEFT JOIN companies co ON co.id_client_owner = c.id_client
+                 WHERE c.status_inscription_preteur = 1' ;
+
+        $parameters = [];
+
+        if (null !== $idClient) {
+            $query                  .= ' AND c.id_client IN (:idClient)';
+            $parameters['idClient'] = $idClient;
+        }
+
+        if (null !== $email) {
+            $query               .= ' AND c.email LIKE :email';
+            $parameters['email'] = $email . '%';
+        }
+
+        if (null !== $name) {
+            $query              .= ' AND (c.nom LIKE :name OR c.nom_usage LIKE :name)';
+            $parameters['name'] = $name . '%';
+        }
+
+        if (null !== $firstName) {
+            $query                   .= ' AND c.prenom LIKE :firstName';
+            $parameters['firstName'] = $firstName . '%';
+        }
+
+        if (null !== $companyName) {
+            $query                     .= ' AND co.name LIKE :companyName';
+            $parameters['companyName'] = $companyName . '%';
+        }
+
+        if (null !== $siren) {
+            $query               .= ' AND co.siren = :siren';
+            $parameters['siren'] = $siren;
+        }
+
+        $query .= $online ? ' AND c.status = ' . Clients::STATUS_ONLINE : ' AND c.status = ' . Clients::STATUS_OFFLINE;
+        $query .= ' GROUP BY c.id_client
+                   ORDER BY c.id_client DESC';
+
+        return $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery($query, $parameters)
+            ->fetchAll(\PDO::FETCH_ASSOC);
     }
 }

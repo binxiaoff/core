@@ -139,13 +139,6 @@ class loans extends loans_crud
         return (int)($this->bdd->result($result));
     }
 
-    public function getLoansCount($id_lender)
-    {
-        $sql = 'SELECT COUNT(DISTINCT id_loan) FROM loans WHERE id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED;
-        $result = $this->bdd->query($sql);
-        return (int) $this->bdd->result($result);
-    }
-
     // retourne la moyenne des prets validés d'un projet
     public function getAvgLoans($id_project, $champ = 'amount')
     {
