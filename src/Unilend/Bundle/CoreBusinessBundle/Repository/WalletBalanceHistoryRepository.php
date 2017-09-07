@@ -10,6 +10,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
+use Unilend\librairies\CacheKeys;
 
 class WalletBalanceHistoryRepository extends EntityRepository
 {
@@ -29,11 +30,11 @@ class WalletBalanceHistoryRepository extends EntityRepository
 
         $qb = $this->createQueryBuilder('w');
         $qb->andWhere('w.idWallet = :wallet')
-           ->andWhere('w.added <= :dateTime')
-           ->setParameters(['wallet' => $wallet, 'dateTime' => $date])
-           ->orderBy('w.added', 'DESC')
-           ->addOrderBy('w.id', 'DESC')
-           ->setMaxResults(1);
+            ->andWhere('w.added <= :dateTime')
+            ->setParameters(['wallet' => $wallet, 'dateTime' => $date])
+            ->orderBy('w.added', 'DESC')
+            ->addOrderBy('w.id', 'DESC')
+            ->setMaxResults(1);
         $query = $qb->getQuery();
 
         return $query->getOneOrNullResult();
@@ -49,7 +50,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
     public function getLenderOperationHistory(Wallet $wallet, \DateTime $start, \DateTime $end)
     {
         $start->setTime(00, 00, 00);
-        $end->setTime(23, 59,59);
+        $end->setTime(23, 59, 59);
 
         $query = '
             SELECT
@@ -95,18 +96,16 @@ class WalletBalanceHistoryRepository extends EntityRepository
                             IF(
                                 1 = (SELECT COUNT(*) FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_autobid = wbh.id_autobid AND wbh_bid.id_project = wbh.id_project),
                                 "' . LenderOperationsManager::OP_AUTOBID . '",
-                                IF(EXISTS(SELECT * FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_autobid = wbh.id_autobid AND wbh_bid.id_project = wbh.id_project AND wbh.added < wbh_bid.added), "' . LenderOperationsManager::OP_AUTOBID . '" , "' . LenderOperationsManager::OP_REFUSED_AUTOBID .'")
+                                IF(EXISTS(SELECT * FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_autobid = wbh.id_autobid AND wbh_bid.id_project = wbh.id_project AND wbh.added < wbh_bid.added), "' . LenderOperationsManager::OP_AUTOBID . '" , "' . LenderOperationsManager::OP_REFUSED_AUTOBID . '")
                             )
                         )
                 )) AS label,
-                IF(o.id_project IS NOT NULL, o.id_project, wbh.id_project) AS id_project,
-                DATE(wbh.added) AS date,
                 wbh.added AS operationDate,
                 wbh.id_bid,
                 wbh.id_autobid,
                 IF(wbh.id_loan IS NOT NULL, wbh.id_loan, IF(o.id_loan IS NOT NULL, o.id_loan, IF(e.id_loan IS NOT NULL, e.id_loan, ""))) AS id_loan,
                 o.id_repayment_schedule,
-                o.id_repayment_task_log,
+                IFNULL(o.id_repayment_task_log, wbh.id)                                                                                  AS id_repayment_task_log,
                 p.id_project,
                 p.title,
                 ost.label AS sub_type_label
@@ -120,11 +119,9 @@ class WalletBalanceHistoryRepository extends EntityRepository
                 LEFT JOIN projects p ON IF(o.id_project IS NULL, wbh.id_project, o.id_project) = p.id_project
             WHERE wbh.id_wallet = :idWallet
             AND wbh.added BETWEEN :startDate AND :endDate
-            GROUP BY wbh.id
+            GROUP BY o.id_repayment_task_log
             ORDER BY wbh.id DESC';
-
-        /** @var QueryCacheProfile $qcProfile */
-        $qcProfile = new QueryCacheProfile(\Unilend\librairies\CacheKeys::LONG_TIME, md5(__METHOD__ . $wallet->getId()));
+        $qcProfile = new QueryCacheProfile(CacheKeys::LONG_TIME, md5(__METHOD__ . $wallet->getId()));
 
         $statement = $this->getEntityManager()->getConnection()->executeCacheQuery($query, [
             'idWallet'  => $wallet->getId(),
@@ -136,7 +133,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
             'endDate'   => \PDO::PARAM_STR
         ], $qcProfile);
 
-        $result =  $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
         $statement->closeCursor();
 
         return $result;
@@ -200,7 +197,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
                 IDENTITY(r.rejectionIsoCode),
                 srr.label as rejectionReasonLabel,
                 wbh.availableBalance'
-            )
+        )
             ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.id = wbh.idOperation')
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
             ->leftJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
