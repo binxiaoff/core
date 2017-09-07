@@ -14,6 +14,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
@@ -691,8 +692,8 @@ class OperationRepository extends EntityRepository
                                 "lender_provision_wire_transfer_in",
                                 NULL)
                           )
-                          WHEN "'. OperationType::BORROWER_COMMISSION . '" THEN ost.label
-                          WHEN "'. OperationType::BORROWER_COMMISSION_REGULARIZATION . '" THEN ost.label
+                          WHEN "' . OperationType::BORROWER_COMMISSION . '" THEN ost.label
+                          WHEN "' . OperationType::BORROWER_COMMISSION_REGULARIZATION . '" THEN ost.label
                      ELSE ot.label END AS movement
                 FROM operation o USE INDEX (idx_operation_added)
                 INNER JOIN operation_type ot ON o.id_type = ot.id
@@ -1118,5 +1119,28 @@ class OperationRepository extends EntityRepository
             ->executeQuery($query, ['end' => $end->format('Y-m-d H:i:s'), 'projects' => $projects], ['end' => \PDO::PARAM_STR, 'projects' => Connection::PARAM_INT_ARRAY]);
 
         return $statement->fetchColumn();
+    }
+
+    /**
+     * @param Loans|int                   $loan
+     * @param ProjectRepaymentTaskLog|int $projectRepaymentTaskLog
+     *
+     * @return float
+     */
+    public function getTaxAmountByLoanAndRepaymentTaskLog($loan, $projectRepaymentTaskLog)
+    {
+        $qb = $this->createQueryBuilder('o');
+        $qb->select('SUM(CASE WHEN ot.label IN (:taxTypes) THEN o.amount ELSE -o.amount END) as amount')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('ot.label IN (:allTaxTypes)')
+            ->andWhere('o.idLoan = :loan')
+            ->andWhere('o.idRepaymentTaskLog = :repaymentTaskLog')
+            ->setParameter('taxTypes', OperationType::TAX_TYPES_FR)
+            ->setParameter('allTaxTypes', array_merge(OperationType::TAX_TYPES_FR, OperationType::TAX_TYPES_FR_REGULARIZATION))
+            ->setParameter('loan', $loan)
+            ->setParameter('repaymentTaskLog', $projectRepaymentTaskLog)
+            ->setCacheable(true);
+
+        return (float) $qb->getQuery()->getSingleScalarResult();
     }
 }

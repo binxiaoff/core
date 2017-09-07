@@ -444,4 +444,17 @@ class ProjectRepaymentTaskManager
 
         return $projectRepaymentTaskLog;
     }
+
+    /**
+     * @param ProjectRepaymentTask $projectRepaymentTask
+     *
+     * @return bool
+     */
+    public function isCompleteRepayment(ProjectRepaymentTask $projectRepaymentTask)
+    {
+        $taskAmount    = round(bcadd($projectRepaymentTask->getAmount(), $projectRepaymentTask->getCommissionUnilend(), 4), 2);
+        $monthlyAmount = $this->projectRepaymentScheduleManager->getMonthlyAmount($projectRepaymentTask->getIdProject());
+
+        return 0 === bccomp($taskAmount, $monthlyAmount, 2);
+    }
 }

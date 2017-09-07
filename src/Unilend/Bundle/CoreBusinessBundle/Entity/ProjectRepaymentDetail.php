@@ -13,8 +13,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ProjectRepaymentDetail
 {
-    const STATUS_PENDING = 0;
-    const STATUS_TREATED = 1;
+    const STATUS_PENDING  = 0;
+    const STATUS_TREATED  = 1;
+    const STATUS_NOTIFIED = 2;
 
     const CAPITAL_UNCOMPLETED = 0;
     const CAPITAL_COMPLETED   = 1;
