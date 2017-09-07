@@ -2,8 +2,6 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Doctrine\ORM\EntityManager;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -13,9 +11,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\LenderValidationManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
 
 class AutomaticLenderValidationCommand extends ContainerAwareCommand
 {
@@ -56,20 +51,17 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
      */
     private function validateLender(\clients $client, array $attachment)
     {
-        $entityManager          = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
-        $logger                 = $this->getContainer()->get('monolog.logger.console');
-        $welcomeOfferManager    = $this->getContainer()->get('unilend.service.welcome_offer_manager');
-        $mailerManager          = $this->getContainer()->get('unilend.service.email_manager');
-        $taxManager             = $this->getContainer()->get('unilend.service.tax_manager');
-        $clientStatusManager    = $this->getContainer()->get('unilend.service.client_status_manager');
-        $bankAccountRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
+        $entityManager           = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $entityManagerSimulator  = $this->getContainer()->get('unilend.service.entity_manager');
+        $logger                  = $this->getContainer()->get('monolog.logger.console');
+        $taxManager              = $this->getContainer()->get('unilend.service.tax_manager');
+        $lenderValidationManager = $this->getContainer()->get('unilend.service.lender_validation_manager');
+        $bankAccountRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
         /** @var \clients_adresses $clientAddress */
         $clientAddress = $entityManagerSimulator->getRepository('clients_adresses');
         /** @var \users_history $userHistory */
         $userHistory = $entityManagerSimulator->getRepository('users_history');
-        /** @var \clients_status_history $clientStatusHistory */
-        $clientStatusHistory = $entityManagerSimulator->getRepository('clients_status_history');
+        $user        = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
 
         if (null === $bankAccountRepository->getClientValidatedBankAccount($client->id_client)) {
             /** @var BankAccount $bankAccount */
