@@ -5,6 +5,8 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
 use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
@@ -33,6 +35,7 @@ class CheckPromotionalOfferValidityCommand extends ContainerAwareCommand
     private function cancelWelcomeOffers()
     {
         $entityManager               = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $operationRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $operationManager            = $this->getContainer()->get('unilend.service.operation_manager');
         $logger                      = $this->getContainer()->get('monolog.logger.console');
         $validitySetting             = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Durée validité Offre de bienvenue']);
@@ -41,13 +44,20 @@ class CheckPromotionalOfferValidityCommand extends ContainerAwareCommand
 
         /** @var OffresBienvenuesDetails $welcomeOffer */
         foreach ($entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->findUnusedWelcomeOffers($dateLimit) as $welcomeOffer) {
-            $welcomeOffer->setStatus(OffresBienvenuesDetails::STATUS_CANCELED);
-            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($welcomeOffer->getIdClient(), WalletType::LENDER);
-            try {
-                $operationManager->cancelWelcomeOffer($wallet, $welcomeOffer);
-                $numberOfUnusedWelcomeOffers +=1;
-            } catch (\Exception $exception) {
-                continue;
+            $wallet                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($welcomeOffer->getIdClient(), WalletType::LENDER);
+            $sumLoans                  = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::LENDER_LOAN]);
+            $sumWelcomeOffers          = $operationRepository->sumCreditOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION], [OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER]);
+            $sumCancelledWelcomeOffers = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL], [OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_WELCOME_OFFER]);
+            $totalWelcomeOffer         = round(bcsub($sumWelcomeOffers, $sumCancelledWelcomeOffers, 4), 2);
+
+            if ($sumLoans < $totalWelcomeOffer) {
+                $welcomeOffer->setStatus(OffresBienvenuesDetails::STATUS_CANCELED);
+                try {
+                    $operationManager->cancelWelcomeOffer($wallet, $welcomeOffer);
+                    $numberOfUnusedWelcomeOffers +=1;
+                } catch (\Exception $exception) {
+                    continue;
+                }
             }
         }
         $entityManager->flush();

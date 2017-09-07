@@ -86,7 +86,7 @@
             <argument type="service" id="unilend.service_product.product_manager"/>
             <argument type="service" id="unilend.service_product_contract.contract_attribute_manager"/>
             <argument type="service" id="unilend.service.slack_manager"/>
-            <argument type="service" id="unilend.service.risk_data_monitoring_manager" />
+            <argument type="service" id="unilend.service.risk_data_monitoring_manager"/>
             <argument type="service" id="unilend.service.sponsorship_manager" />
             <argument>%url.universign%</argument>
             <call method="setLogger">
