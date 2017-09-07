@@ -225,8 +225,8 @@ class bootstrap extends Controller
                     'uri'   => 'partner'
                 ],
                 [
-                    'title' => 'Monitoring données risque',
-                    'uri'   => 'risk_monitoring'
+                    'title' => 'Surveillance données risque',
+                    'uri'   => 'surveillance_risque'
                 ],
                 [
                     'title' => 'Simulateur WS risque',
