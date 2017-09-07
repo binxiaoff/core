@@ -4,7 +4,7 @@
     <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
     <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/highlightjs/github-gist.min.css">
     <style>
-        .service-fields-provider, .service-fields, #ws-result, #cache-duration {
+        .service-fields-provider, .service-fields, #ws-result, #cache-duration, #result-date, #result-message, #result-code {
             display: none;
         }
         .service-fields-provider.active, .service-fields.active {
@@ -49,6 +49,11 @@
                     var $service = $serviceActive.find('.services-select select')
                     $serviceActive.addClass('active')
                     $service.attr('name', $service.data('name'))
+
+                    if ($service.find('option').length === 2) {
+                        $service.find('option:eq(1)').prop('selected', true)
+                        $service.change()
+                    }
                 }
             })
 
@@ -66,6 +71,7 @@
                         var name = $(this).data('name')
                         $(this).attr('name', name)
                     })
+                    $serviceGroupTarget.find('input').eq(0).focus()
                 } else {
                     $serviceGroupActive.removeClass('active').find('input').removeAttr('name')
                 }
@@ -100,7 +106,7 @@
                 if (!$form.find('.has-error').length) {
                     App.blocks(blockId, 'state_loading');
 
-                    $result.slideUp().find('.block-content').html('')
+                    $result.slideUp()
 
                     $.ajax({
                         url: $form.attr('action'),
@@ -118,16 +124,14 @@
                                 var date = response.data.date
 
                                 if (date) {
-                                    var $date = $('<h4></h4>')
-                                    $date.addClass('font-w300 push')
-                                    $date.html(date)
-                                    $result.find('.block-content').append($date)
+                                    $('#result-date').show().html(date)
+                                } else {
+                                    $('#result-date').hide()
                                 }
 
                                 if (format === 'string') {
-                                    var $message = $('<p></p>')
-                                    $message.html(content)
-                                    $result.find('.block-content').append($message)
+                                    $('#result-message').show().html(content)
+                                    $('#result-code').hide()
                                 } else {
                                     if (format === 'json') {
                                         try {
@@ -135,10 +139,8 @@
                                         } catch (e) {}
                                     }
 
-                                    var $code = $('<code></code>')
-                                    $code.addClass(format)
-                                    $code.html(content)
-                                    $result.find('.block-content').append('<pre></pre>').find('pre').append($code)
+                                    $('#result-message').hide()
+                                    $('#result-code').show().find('code').removeClass('json xml').addClass(format).html(content)
                                 }
 
                                 $result.find('code').each(function(i, block) {
@@ -262,7 +264,11 @@
             <div class="block-header">
                 <h3 class="block-title">Réponse</h3>
             </div>
-            <div class="block-content block-content-full"></div>
+            <div class="block-content block-content-full">
+                <h4 id="result-date" class="font-w300 push"></h4>
+                <p id="result-message"></p>
+                <pre id="result-code"><code></code></pre>
+            </div>
         </div>
     </div>
 {% endblock %}

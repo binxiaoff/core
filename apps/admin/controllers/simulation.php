@@ -359,18 +359,18 @@ class simulationController extends bootstrap
 
     public function _webservices_risque()
     {
-        if (empty($_POST)) {
+        if (false === $this->request->isXmlHttpRequest()) {
             $this->render(null, ['resources' => self::RISK_WEBSERVICES]);
         }
 
         header('Content-Type: application/json');
 
         if (
-            false === isset($_POST['service'])
-            || false === isset($_POST['request_type'])
-            || false === isset($_POST['parameter'])
-            || false === is_array($_POST['parameter'])
-            || empty($_POST['parameter'])
+            null === $this->request->request->filter('service', FILTER_SANITIZE_STRING)
+            || null === $this->request->request->filter('request_type')
+            || null === $this->request->request->get('parameter')
+            || false === is_array($this->request->request->get('parameter'))
+            || empty($this->request->request->get('parameter'))
         ) {
             echo json_encode([
                 'success' => false,
@@ -382,7 +382,8 @@ class simulationController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager        = $this->get('doctrine.orm.entity_manager');
         $wsResourceRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:WsExternalResource');
-        $wsResource           = $wsResourceRepository->findOneBy(['label' => $_POST['service']]);
+        $service              = $this->request->request->filter('service', FILTER_SANITIZE_STRING);
+        $wsResource           = $wsResourceRepository->findOneBy(['label' => $service]);
 
         if (null === $wsResource) {
             echo json_encode([
@@ -396,9 +397,9 @@ class simulationController extends bootstrap
         $method = null;
         $format = 'xml';
         foreach (self::RISK_WEBSERVICES as $provider) {
-            foreach ($provider['services'] as $service) {
-                if ($service['name'] === $_POST['service']) {
-                    $method = $service['method'];
+            foreach ($provider['services'] as $providerService) {
+                if ($providerService['name'] === $service) {
+                    $method = $providerService['method'];
                     $format = $provider['format'];
                     break;
                 }
@@ -414,15 +415,15 @@ class simulationController extends bootstrap
         }
 
         try {
-            switch ($_POST['request_type']) {
+            switch ($this->request->request->filter('request_type', FILTER_SANITIZE_STRING)) {
                 case 'normal':
-                    $response = $this->getNormalWsCall($wsResource, $method);
+                    $response = $this->getNormalWsCall($wsResource, $method, $this->request->request->get('parameter'));
                     break;
                 case 'ws':
-                    $response = $this->getDirectWsCall($wsResource, $method);
+                    $response = $this->getDirectWsCall($wsResource, $method, $this->request->request->get('parameter'));
                     break;
                 case 'cache':
-                    $response = $this->getCacheWsCall($wsResource, (int) $_POST['cache_duration']);
+                    $response = $this->getCacheWsCall($wsResource, $this->request->request->getInt('cache_duration'));
                     break;
                 default:
                     echo json_encode([
@@ -470,13 +471,14 @@ class simulationController extends bootstrap
     /**
      * @param WsExternalResource $wsResource
      * @param string             $method
+     * @param array              $parameters
      *
      * @return false|WsCall
      */
-    private function getNormalWsCall(WsExternalResource $wsResource, $method)
+    private function getNormalWsCall(WsExternalResource $wsResource, $method, array $parameters)
     {
         $providerService = $this->get('unilend.service.ws_client.' . $wsResource->getProviderName() . '_manager');
-        $response        = call_user_func_array([$providerService, $method], $this->getWsCallParameters());
+        $response        = call_user_func_array([$providerService, $method], $this->getWsCallParameters($parameters));
 
         if (null === $response) {
             return false;
@@ -488,15 +490,16 @@ class simulationController extends bootstrap
     /**
      * @param WsExternalResource $wsResource
      * @param string             $method
+     * @param array              $parameters
      *
      * @return false|WsCall
      */
-    public function getDirectWsCall(WsExternalResource $wsResource, $method)
+    public function getDirectWsCall(WsExternalResource $wsResource, $method, array $parameters)
     {
         $providerService = $this->get('unilend.service.ws_client.' . $wsResource->getProviderName() . '_manager');
         $providerService->setReadFromCache(false);
 
-        $response = call_user_func_array([$providerService, $method], $this->getWsCallParameters());
+        $response = call_user_func_array([$providerService, $method], $this->getWsCallParameters($parameters));
 
         if (null === $response) {
             return false;
@@ -506,12 +509,14 @@ class simulationController extends bootstrap
     }
 
     /**
+     * @param array $parameters
+     *
      * @return array
      */
-    private function getWsCallParameters()
+    private function getWsCallParameters(array $parameters)
     {
-        $parameters = [];
-        foreach ($_POST['parameter'] as $name => $parameter) {
+        $callParameters = [];
+        foreach ($parameters as $name => $parameter) {
             if (empty($parameter)) {
                 break;
             }
@@ -526,10 +531,10 @@ class simulationController extends bootstrap
                     break;
             }
 
-            $parameters[] = $parameter;
+            $callParameters[] = $parameter;
         }
 
-        return $parameters;
+        return $callParameters;
     }
 
     /**
