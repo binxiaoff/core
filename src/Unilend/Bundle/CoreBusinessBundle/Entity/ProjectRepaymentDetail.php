@@ -89,7 +89,7 @@ class ProjectRepaymentDetail
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Loans")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_wallet", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_loan", referencedColumnName="id_loan")
      * })
      */
     private $idLoan;
