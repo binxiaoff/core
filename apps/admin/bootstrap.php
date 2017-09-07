@@ -227,6 +227,11 @@ class bootstrap extends Controller
                 [
                     'title' => 'Monitoring données risque',
                     'uri'   => 'risk_monitoring'
+                ],
+                [
+                    'title' => 'Simulateur WS risque',
+                    'uri'   => 'simulation/webservices_risque',
+                    'zone'  => Zones::ZONE_LABEL_SIMULATOR
                 ]
             ]
         ],

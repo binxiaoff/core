@@ -39,18 +39,16 @@ class EllisphereManager
     private $client;
     /** @var CallHistoryManager */
     private $callHistoryManager;
-    /** @var bool */
-    private $readFromCache = true;
-    /** @var bool  */
-    private $saveToCache = true;
     /** @var EntityManager */
     private $entityManager;
     /** @var SerializerInterface */
     private $serializer;
+    /** @var bool */
+    private $saveToCache = true;
+    /** @var bool */
+    private $readFromCache = true;
 
     /**
-     * EllisphereManager constructor.
-     *
      * @param EntityManager       $entityManager
      * @param ClientInterface     $client
      * @param CallHistoryManager  $callHistoryManager
@@ -86,6 +84,19 @@ class EllisphereManager
 
     /**
      * Should be replaced by method parameters instead of class parameters
+     * @param bool $saveToCache
+     *
+     * @return EllisphereManager
+     */
+    public function setSaveToCache($saveToCache)
+    {
+        $this->saveToCache = $saveToCache;
+
+        return $this;
+    }
+
+    /**
+     * Should be replaced by method parameters instead of class parameters
      * @param bool $readFromCache
      *
      * @return EllisphereManager
@@ -93,19 +104,6 @@ class EllisphereManager
     public function setReadFromCache($readFromCache)
     {
         $this->readFromCache = $readFromCache;
-
-        return $this;
-    }
-
-    /**
-     * Should be replaced by method parameters instead of class parameters
-     * @param bool $saveToCache
-     *
-     * @return EllisphereManager
-     */
-    public function setSaveToCache($saveToCache)
-    {
-        $this->readFromCache = $saveToCache;
 
         return $this;
     }
@@ -162,7 +160,7 @@ class EllisphereManager
                 }
             }
 
-            $callback = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->readFromCache);
+            $callback = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->saveToCache);
         }
 
         $headers = ['Content-type' => 'application/xml'];

@@ -224,7 +224,7 @@ class CallHistoryManager
     }
 
     /**
-     * @param string         $siren
+     * @param null|string    $siren
      * @param array          $parameter
      * @param string         $provider
      * @param string         $resource
