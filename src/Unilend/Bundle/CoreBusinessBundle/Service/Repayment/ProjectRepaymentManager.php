@@ -101,10 +101,8 @@ class ProjectRepaymentManager
         $netRepaymentAmount = $this->projectRepaymentScheduleManager->getNetMonthlyAmount($projectRepaymentTask->getIdProject());
         $compareResult      = bccomp($netRepaymentAmount, $projectRepaymentTask->getAmount(), 2);
 
-        if (0 === $compareResult) {
-            $projectRepaymentTaskLog = $this->processCompleteRepayment($projectRepaymentTask);
-        } elseif (1 === $compareResult) {
-            $projectRepaymentTaskLog = $this->processPartialRepayment($projectRepaymentTask);
+        if (0 === $compareResult || 1 === $compareResult) {
+            $projectRepaymentTaskLog = $this->processRepayment($projectRepaymentTask);
         } else {
             $this->logger->warning(
                 'The amount of the project repayment task (id: ' . $projectRepaymentTask->getId() . ') is invalid.',
@@ -160,66 +158,7 @@ class ProjectRepaymentManager
      *
      * @return ProjectRepaymentTaskLog
      */
-    private function processCompleteRepayment(ProjectRepaymentTask $projectRepaymentTask)
-    {
-        $projectRepaymentTaskLog = $this->projectRepaymentTaskManager->start($projectRepaymentTask);
-
-        $repaidLoanNb      = 0;
-        $repaidAmount      = 0;
-        $repaymentSequence = $projectRepaymentTask->getSequence();
-        $project           = $projectRepaymentTask->getIdProject();
-
-        $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-        $repaymentSchedules          = $repaymentScheduleRepository->findBy([
-            'idProject' => $projectRepaymentTask->getIdProject(),
-            'ordre'     => $projectRepaymentTask->getSequence(),
-            'status'    => Echeanciers::STATUS_PENDING
-        ]);
-
-        foreach ($repaymentSchedules as $repaymentSchedule) {
-            $this->entityManager->getConnection()->beginTransaction();
-            try {
-                $capital  = round(bcdiv($repaymentSchedule->getCapital(), 100, 4), 2);
-                $interest = round(bcdiv($repaymentSchedule->getInterets(), 100, 4), 2);
-                $this->operationManager->repayment($capital, $interest, $repaymentSchedule, $projectRepaymentTaskLog);
-
-                $repaymentSchedule->setCapitalRembourse($repaymentSchedule->getCapital())
-                    ->setInteretsRembourses($repaymentSchedule->getInterets())
-                    ->setStatus(Echeanciers::STATUS_REPAID)
-                    ->setDateEcheanceReel(new \DateTime());
-
-                $repaidLoanNb++;
-                $repaidAmount = round(bcadd($repaidAmount, bcadd($capital, $interest, 4), 4), 2);
-
-                $this->entityManager->flush($repaymentSchedule);
-
-                $this->entityManager->commit();
-            } catch (\Exception $exception) {
-                $this->entityManager->rollback();
-
-                $this->logger->error(
-                    'An error occurs for the repayment # ' . $repaymentSchedule->getIdEcheancier() . ' of project # ' . $project->getIdProject() . ' (order: ' . $repaymentSequence . '). Error : ' . $exception->getMessage(),
-                    ['method' => __METHOD__]
-                );
-
-                $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_ERROR);
-                $this->entityManager->flush($projectRepaymentTask);
-
-                $this->projectRepaymentNotificationSender->sendIncompleteRepaymentNotification($project, $repaymentSequence);
-
-                break;
-            }
-        }
-
-        return $this->projectRepaymentTaskManager->end($projectRepaymentTaskLog, $repaidAmount, $repaidLoanNb);
-    }
-
-    /**
-     * @param ProjectRepaymentTask $projectRepaymentTask
-     *
-     * @return ProjectRepaymentTaskLog
-     */
-    private function processPartialRepayment(ProjectRepaymentTask $projectRepaymentTask)
+    private function processRepayment(ProjectRepaymentTask $projectRepaymentTask)
     {
         $projectRepaymentTaskLog = $this->projectRepaymentTaskManager->start($projectRepaymentTask);
 
@@ -248,7 +187,7 @@ class ProjectRepaymentManager
                 $repaymentSchedule = $projectRepaymentDetail->getIdRepaymentSchedule();
                 if (null === $repaymentSchedule) {
                     throw new \Exception('Cannot found repayment schedule for project (id: ' . $project->getIdProject() . '), sequence ' . $repaymentSequence
-                        . ' and client (id: ' . $projectRepaymentDetail->getIdWallet()->getIdClient() . ')');
+                        . ' and client (id: ' . $projectRepaymentDetail->getIdLoan()->getIdLender()->getIdClient() . ')');
                 }
 
                 $this->operationManager->repayment($projectRepaymentDetail->getCapital(), $projectRepaymentDetail->getInterest(), $repaymentSchedule, $projectRepaymentTaskLog);
@@ -320,7 +259,7 @@ class ProjectRepaymentManager
             $projectRepaymentDetail = new ProjectRepaymentDetail();
 
             $projectRepaymentDetail->setIdTaskLog($projectRepaymentTaskLog)
-                ->setIdWallet($repaymentSchedule->getIdLoan()->getIdLender())
+                ->setIdloan($repaymentSchedule->getIdLoan())
                 ->setIdRepaymentSchedule($repaymentSchedule)
                 ->setCapital($capitalToRepay)
                 ->setInterest($interestToRepay)
