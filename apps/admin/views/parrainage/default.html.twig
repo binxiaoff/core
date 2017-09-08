@@ -37,7 +37,7 @@
                              <input type="text" name="end" class="js-datepicker form-control required" data-date-format="dd/mm/yyyy">
                          </div>
                          <div class="form-group">
-                             <label>Durée de validité (Jours)</label> <br>
+                             <label>Durée de validité (jours)</label> <br>
                              <input type="number" name="validity_days" class="form-control required">
                          </div>
                          <div class="form-group">
@@ -72,7 +72,7 @@
                          <h3 class="block-title">Client trouvé</h3>
                      </div>
                      <div class="block-content">
-                         <p>Êtes-vous sûr de vouloir ajouter le client <span class="nom text-uppercase"></span> <span class="prenom"></span> dans la blacklist ?</p>
+                         <p>Êtes-vous sûr de vouloir ajouter le client <span class="last-name text-uppercase"></span> <span class="first-name"></span> dans la blacklist ?</p>
 
                          <div class="form-group">
                              <label>Sélectionner une campagne</label>
@@ -124,7 +124,7 @@
              <div class="modal-content">
                  <div class="block block-themed block-transparent remove-margin-b">
                      <div class="block-header bg-primary-light">
-                         <h3 class="block-title">Créer un lien Parrain-Filleul</h3>
+                         <h3 class="block-title">Créer un lien parrain-filleul</h3>
                      </div>
                      <div class="block-content">
                          <p>Êtes-vous sûr de vouloir associer les clients ?</p>
@@ -191,15 +191,15 @@
                         <input type="text" name="end" class="js-datepicker form-control required" data-date-format="dd/mm/yyyy">
                     </div>
                     <div class="form-group push-5-l">
-                        <label>Durée de validité (Jours)</label> <br>
+                        <label>Durée de validité (jours)</label> <br>
                         <input type="number" name="validity_days" class="form-control required">
                     </div>
                     <div class="form-group push-5-l">
-                        <label>Montant  (Filleul)</label> <br>
+                        <label>Montant  (filleul)</label> <br>
                         <input type="number" name="amount_sponsee" class="form-control required">
                     </div>
                     <div class="form-group push-5-l">
-                        <label>Montant (Parrain)</label> <br>
+                        <label>Montant (parrain)</label> <br>
                         <input type="number" name="amount_sponsor" class="form-control required">
                     </div>
                     <div class="form-group push-5-l">
@@ -267,8 +267,8 @@
                             <th class="start">Début de l'offre</th>
                             <th class="end">Fin de l'offre</th>
                             <th class="validity">Validité</th>
-                            <th class="amount-sponsee">Montant (Filleul)</th>
-                            <th class="amount-sponsor">Montant (Parrain)</th>
+                            <th class="amount-sponsee">Montant (filleul)</th>
+                            <th class="amount-sponsor">Montant (parrain)</th>
                             <th class="max-sponsee">Max. filleuls</th>
                             <th class="number-sponsor">Parrains</th>
                             <th class="number-sponsee">Filleuls</th>
@@ -348,11 +348,11 @@
             <div class="block-content">
                 <form id="parrainage-adjust-prime-search" method="post" action="{{ app.adminUrl }}/parrainage/search_sponsorship" class="form-inline push validate">
                     <div class="form-group">
-                        <label>ID Client</label> <br>
+                        <label>ID client</label> <br>
                         <input type="text" name="id_client" class="form-control required">
                     </div>
                     <div class="form-group push-20-l">
-                        <label>Type client</label> <br>
+                        <label>Type</label> <br>
                         <label class="css-input css-radio css-radio-default">
                             <input type="radio" name="type" value="sponsor" class="form-control required" checked><span></span> Parrain
                         </label>
@@ -478,7 +478,7 @@
         </div><!-- /#parrainage-history -->
         <div id="parrainage-establish-link" class="block block-bordered">
             <div class="block-header">
-                <h3 class="block-title">parrain <span class="fa fa-arrows-h"></span> filleul — Créer une association</h3>
+                <h3 class="block-title">parrain <span class="fa fa-arrows-h"></span> filleul — Créer un lien</h3>
             </div>
             <div class="block-content block-content-full">
                 {% if formErrors.createSponsorship is defined and formErrors.createSponsorship is not empty %}
@@ -503,11 +503,11 @@
                 {% endif %}
                 <form id="parrainage-establish-link-search" method="post" action="{{ app.adminUrl }}/parrainage/create_sponsorship" class="form-inline push validate">
                     <div class="form-group">
-                        <label>ID Client Parrain</label> <br>
+                        <label>ID client parrain</label> <br>
                         <input type="number" name="id_client_sponsor" class="form-control required">
                     </div>
                     <div class="form-group push-5-l">
-                        <label>ID Client Filleul</label> <br>
+                        <label>ID client filleul</label> <br>
                         <input type="number" name="id_client_sponsee" class="form-control required">
                     </div>
                     <div class="form-group push-5-l">
@@ -521,7 +521,7 @@
                         <p><b>Parrain</b></p>
                         <table id="link-sponsor-table" class="table table-condensed" style="max-width: 300px">
                             <tr>
-                                <td>ID Client</td>
+                                <td>ID client</td>
                                 <td class="sponsor-id"></td>
                             </tr>
                             <tr>
@@ -537,14 +537,14 @@
                     <div class="col-md-2">
                         <div class="form-group text-center push-20-t">
                             <span class="fa fa-chevron-left push-10-r"></span>
-                            <button id="link-submit" type="submit" class="btn btn-primary" data-toggle="modal" data-target="#modal-establish-link" data-sponsor-id="" data-sponsee-id="">Confirmer l'association</button> <span class="fa fa-chevron-right push-10-l"></span>
+                            <button id="link-submit" type="submit" class="btn btn-primary" data-toggle="modal" data-target="#modal-establish-link" data-sponsor-id="" data-sponsee-id="">Confirmer le lien</button> <span class="fa fa-chevron-right push-10-l"></span>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <p><b>Filleul</b></p>
                         <table id="link-sponsee-table" class="table table-condensed table-bordered" style="max-width: 500px">
                             <tr>
-                                <td>ID Client</td>
+                                <td>ID client</td>
                                 <td class="sponsee-id"></td>
                             </tr>
                             <tr>
@@ -594,7 +594,7 @@
                 {% endif %}
                 <form id="parrainage-blacklist-search" method="post" action="{{ app.adminUrl }}/parrainage/search_client" class="form-inline push validate">
                     <div class="form-group">
-                        <label>ID Client</label> <br>
+                        <label>ID client</label> <br>
                         <input type="number" name="id_client" class="form-control required">
                     </div>
                     <div class="form-group push-5-l">
@@ -606,7 +606,7 @@
                 <table id="parrainage-blacklist-table" class="table table-bordered table-striped table-hover table-header-bg js-dataTable-simple">
                     <thead>
                     <tr>
-                        <th>ID Client</th>
+                        <th>ID client</th>
                         <th>Nom</th>
                         <th>Prénom</th>
                         <th>Date d'exclusion</th>

@@ -51,8 +51,8 @@ $(function(){
                     if (response.success) {
                         $modal.find('.client-id').text(response.data.idClient)
                         $modal.find('input[name="id_client"]').val(response.data.idClient)
-                        $modal.find('.nom').text(response.data.lastName)
-                        $modal.find('.prenom').text(response.data.firstName)
+                        $modal.find('.last-name').text(response.data.lastName)
+                        $modal.find('.first-name').text(response.data.firstName)
 
                         modalTrigger.attr('data-target', '#' + $modal.attr('id')).trigger('click')
                     } else {
