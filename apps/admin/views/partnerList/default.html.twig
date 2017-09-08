@@ -1,0 +1,101 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+    <!--<link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">-->
+    <style>
+        #partner-list-table tr td {
+            vertical-align: middle;
+        }
+    </style>
+{% endblock %}
+
+{% block pluginsJS %}
+    <!--<script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>-->
+{% endblock %}
+
+{% block pageScripts %}
+    <script>
+        $(function(){
+            //App.initHelpers(['validation', 'select2', 'datepicker', 'masked-inputs', 'summernote', 'table-tools', 'datatables', 'easy-pie-chart']);
+        })
+    </script>
+{% endblock %}
+
+{% block modals %}
+    <!-- Normal Modal -->
+    <!--<div class="modal" id="modal-normal" tabindex="-1" role="dialog" aria-hidden="true">-->
+    <!--    <div class="modal-dialog">-->
+    <!--        <div class="modal-content">-->
+    <!--            <div class="block block-themed block-transparent remove-margin-b">-->
+    <!--                <div class="block-header bg-primary-light">-->
+    <!--                    <h3 class="block-title"></h3>-->
+    <!--                </div>-->
+    <!--                <div class="block-content">-->
+    <!--                </div>-->
+    <!--            </div>-->
+    <!--            <div class="modal-footer">-->
+    <!--                <button class="btn btn-sm btn-default" type="button" data-dismiss="modal"></button>-->
+    <!--                <button class="btn btn-sm btn-primary" type="button" data-dismiss="modal"><i class="fa fa-check"></i> </button>-->
+    <!--            </div>-->
+    <!--        </div>-->
+    <!--    </div>-->
+    <!--</div>-->
+{% endblock %}
+
+{% block pageHeader %}
+    <h1 class="page-heading push">
+        Gestion des partenaires
+    </h1>
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <div class="block">
+            <div class="block-header">
+                <h3 class="block-title">Liste des partenaires</h3>
+            </div>
+            <div class="block-content">
+                <table id="partner-list-table" class="table table-hover table-striped table-header-bg">
+                    <thead>
+                    <tr>
+                        <td style="width: 150px;">&nbsp;</td>
+                        <td style="width: 25%">Partenaire</td>
+                        <td style="width: 25%">Statut</td>
+                        <td style="width: 25%">Date de création</td>
+                        <td style="width: 150px;">Action</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>
+                            <img src="https://placehold.it/60x60" alt="Axxa">
+                        </td>
+                        <td>AXXA Bank</td>
+                        <td>Active</td>
+                        <td>24/02//2017</td>
+                        <td><a href="/" class="btn btn-xs btn-default">Voir détails <span class="fa fa-chevron-right push-5-l"></span></a></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <img src="https://placehold.it/60x60" alt="Médident)">
+                        </td>
+                        <td>Médident</td>
+                        <td>Active</td>
+                        <td>10/04//2016</td>
+                        <td><a href="/" class="btn btn-xs btn-default">Voir détails <span class="fa fa-chevron-right push-5-l"></span></a></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <img src="https://placehold.it/60x60" alt="U-Car">
+                        </td>
+                        <td>U-Car</td>
+                        <td>Active</td>
+                        <td>24/01//2015</td>
+                        <td><a href="/" class="btn btn-xs btn-default">Voir détails <span class="fa fa-chevron-right push-5-l"></span></a></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
