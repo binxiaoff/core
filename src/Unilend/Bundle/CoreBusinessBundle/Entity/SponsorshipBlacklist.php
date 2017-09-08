@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * SponsorshipBlacklist
  *
  * @ORM\Table(name="sponsorship_blacklist", indexes={@ORM\Index(name="idx_sponsorship_blacklist_id_client", columns={"id_client"}), @ORM\Index(name="idx_sponsorship_blacklist_id_user", columns={"id_user"})})
- * @ORM\HasLifecycleCallbacks()
+ * @ORM\HasLifecycleCallbacks
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\SponsorshipBlacklistRepository")
  */
 class SponsorshipBlacklist

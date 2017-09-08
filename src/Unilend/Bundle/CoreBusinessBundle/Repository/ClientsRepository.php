@@ -560,8 +560,8 @@ class ClientsRepository extends EntityRepository
     }
 
     /**
-     * @param           $lastName
-     * @param           $firstName
+     * @param string    $lastName
+     * @param string    $firstName
      * @param \DateTime $birthdate
      *
      * @return array
@@ -570,8 +570,8 @@ class ClientsRepository extends EntityRepository
     {
         $charactersToReplace = [' ', '-', '_', '*', ',', '^', '`', ':', ';', ',', '.', '!', '&', '"', '\'', '<', '>', '(', ')', '@'];
 
-        $firstName     = str_replace($charactersToReplace, '', htmlspecialchars_decode($firstName));
-        $lastName      = str_replace($charactersToReplace, '', htmlspecialchars_decode($lastName));
+        $firstName = str_replace($charactersToReplace, '', htmlspecialchars_decode($firstName));
+        $lastName  = str_replace($charactersToReplace, '', htmlspecialchars_decode($lastName));
 
         $replaceCharacters = '';
         foreach ($charactersToReplace as $character) {
@@ -579,17 +579,17 @@ class ClientsRepository extends EntityRepository
         }
 
         $sql = 'SELECT *
-                FROM clients c
+                  FROM clients c
                 WHERE ' . str_repeat('REPLACE(', count($charactersToReplace)) . '`nom`' . $replaceCharacters . ' LIKE :lastName
-                            AND ' . str_repeat('REPLACE(', count($charactersToReplace)) . '`prenom`' . $replaceCharacters . ' LIKE :firstName
-                            AND naissance = :birthdate
-                            AND status = ' . Clients::STATUS_ONLINE . '
-                            AND
-                                (SELECT cs.status
-                                FROM clients_status cs
-                                    LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status)
-                                WHERE csh.id_client = c.id_client
-                                    ORDER BY csh.added DESC LIMIT 1) IN (' . \clients_status::VALIDATED . ')';
+                  AND ' . str_repeat('REPLACE(', count($charactersToReplace)) . '`prenom`' . $replaceCharacters . ' LIKE :firstName
+                  AND naissance = :birthdate
+                  AND status = ' . Clients::STATUS_ONLINE . '
+                  AND (
+                        SELECT cs.status
+                          FROM clients_status cs
+                        LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status)
+                        WHERE csh.id_client = c.id_client
+                        ORDER BY csh.added DESC LIMIT 1) = ' . \clients_status::VALIDATED;
 
         $result = $this->getEntityManager()
             ->getConnection()

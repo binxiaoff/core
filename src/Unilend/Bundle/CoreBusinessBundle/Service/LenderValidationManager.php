@@ -33,8 +33,8 @@ class LenderValidationManager
     private $mailer;
     /** @var LoggerInterface */
     private $logger;
-    private $surl;
-    private $furl;
+    private $staticUrl;
+    private $frontUrl;
 
     /**
      * @param EntityManager           $entityManager
@@ -46,8 +46,8 @@ class LenderValidationManager
      * @param \Swift_Mailer           $mailer
      * @param LoggerInterface         $logger
      * @param Packages                $assetsPackages
-     * @param                         $schema
-     * @param                         $frontHost
+     * @param string                  $schema
+     * @param string                  $frontHost
      */
     public function __construct(
         EntityManager $entityManager,
@@ -71,15 +71,15 @@ class LenderValidationManager
         $this->messageProvider     = $messageProvider;
         $this->mailer              = $mailer;
         $this->logger              = $logger;
-        $this->surl                = $assetsPackages->getUrl('');
-        $this->furl                = $schema . '://' . $frontHost;
+        $this->staticUrl           = $assetsPackages->getUrl('');
+        $this->frontUrl            = $schema . '://' . $frontHost;
     }
 
     /**
      * @param Clients|\clients $client
      * @param Users            $user
      *
-     * @return bool
+     * @return bool|int
      */
     public function validateClient($client, Users $user)
     {
@@ -91,7 +91,7 @@ class LenderValidationManager
 
         if ($client->isNaturalPerson()) {
             $duplicateClient = $this->checkLenderUniqueness($client, $user);
-            if (true  !== $duplicateClient) {
+            if (true !== $duplicateClient) {
                 return $duplicateClient;
             }
         }
@@ -114,7 +114,7 @@ class LenderValidationManager
     public function firstClientValidation(Clients $client, Users $user)
     {
         $isSponsee                 = $this->sponsorshipManager->isEligibleForSponseeReward($client);
-        $isEligibleForWelcomeOffer = $this->welcomeOfferManager->clientIsEligibleForWelcomeOffer($client);
+        $isEligibleForWelcomeOffer = $this->welcomeOfferManager->isClientEligibleForWelcomeOffer($client);
 
         if ($isSponsee) {
             $this->sponsorshipManager->attributeSponseeReward($client);
@@ -133,17 +133,17 @@ class LenderValidationManager
      */
     public function sendClientValidationEmail(Clients $client, $mailType)
     {
-        $varMail = [
-            'surl'    => $this->surl,
-            'url'     => $this->furl,
+        $keyWords = [
+            'surl'    => $this->staticUrl,
+            'url'     => $this->frontUrl,
             'prenom'  => $client->getPrenom(),
-            'projets' => $this->furl . '/projets-a-financer',
+            'projets' => $this->frontUrl . '/projets-a-financer',
             'lien_fb' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
             'lien_tw' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
         ];
 
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage($mailType, $varMail);
+        $message = $this->messageProvider->newMessage($mailType, $keyWords);
         try {
             $message->setTo($client->getEmail());
             $this->mailer->send($message);

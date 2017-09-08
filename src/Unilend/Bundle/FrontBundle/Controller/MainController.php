@@ -57,10 +57,11 @@ class MainController extends Controller
         /** @var WelcomeOfferManager $welcomeOfferManager */
         $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
 
-        $template                       = [];
-        $template['showWelcomeOffer']   = $welcomeOfferManager->displayOfferOnHome();
-        $template['testimonialPeople']  = $testimonialService->getAllBattenbergTestimonials();
-        $template['sliderTestimonials'] = $testimonialService->getSliderInformation();
+        $template = [
+            'showWelcomeOffer'   => $welcomeOfferManager->displayOfferOnHome(),
+            'testimonialPeople'  => $testimonialService->getAllBattenbergTestimonials(),
+            'sliderTestimonials' => $testimonialService->getSliderInformation()
+        ];
 
         if ($authorizationChecker->isGranted('ROLE_LENDER')) {
             return $this->redirectToRoute('home_lender');
@@ -85,13 +86,14 @@ class MainController extends Controller
         $user                  = $this->getUser();
         $client                = null;
 
-        $template                     = [];
-        $template['showWelcomeOffer'] = $welcomeOfferManager->displayOfferOnHome();
-        $template['featureLender']    = $testimonialService->getFeaturedTestimonialLender();
-        $template['showPagination']   = false;
-        $template['showSortable']     = false;
-        $template['sortType']         = strtolower(\projects::SORT_FIELD_END);
-        $template['sortDirection']    = strtolower(\projects::SORT_DIRECTION_DESC);
+        $template = [
+            'showWelcomeOffer' => $welcomeOfferManager->displayOfferOnHome(),
+            'featureLender'    => $testimonialService->getFeaturedTestimonialLender(),
+            'showPagination'   => false,
+            'showSortable'     => false,
+            'sortType'         => strtolower(\projects::SORT_FIELD_END),
+            'sortDirection'    => strtolower(\projects::SORT_DIRECTION_DESC)
+        ];
 
         if (
             $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')

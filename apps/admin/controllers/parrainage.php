@@ -126,11 +126,13 @@ class parrainageController extends bootstrap
 
         /** @var SponsorshipCampaign $campaign */
         foreach ($campaigns as $campaign) {
-            $campaignDetails[$campaign->getId()]['campaign']             = $campaign;
-            $campaignDetails[$campaign->getId()]['numberSponsee']        = $sponsorshipRepository->getCountSponseeByCampaign($campaign);
-            $campaignDetails[$campaign->getId()]['numberSponsee']        = $sponsorshipRepository->getCountSponsorByCampaign($campaign);
-            $campaignDetails[$campaign->getId()]['paidOutRewardSponsee'] = $operationRepository->getSumRewardAmountByCampaign(OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSEE, $campaign);
-            $campaignDetails[$campaign->getId()]['paidOutRewardSponsor'] = $operationRepository->getSumRewardAmountByCampaign(OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR, $campaign);
+            $campaignDetails[$campaign->getId()] = [
+                'campaign'             => $campaign,
+                'numberSponsee'        => $sponsorshipRepository->getCountSponseeByCampaign($campaign),
+                'numberSponsor'        => $sponsorshipRepository->getCountSponsorByCampaign($campaign),
+                'paidOutRewardSponsee' => $operationRepository->getSumRewardAmountByCampaign(OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSEE, $campaign),
+                'paidOutRewardSponsor' => $operationRepository->getSumRewardAmountByCampaign(OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR, $campaign)
+            ];
         }
 
         return $campaignDetails;
@@ -215,38 +217,25 @@ class parrainageController extends bootstrap
     public function _search_client()
     {
         $this->autoFireView = false;
+        $this->hideDecoration();
 
-        if (null !== $this->request->request->get('search_client') && $this->request->isXmlHttpRequest()) {
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
-
+        if ($this->request->isXmlHttpRequest() && null !== $this->request->request->get('search_client')) {
             $idClient = $this->request->request->getInt('id_client');
             if (empty($idClient)) {
-                $result = ['success' => false, 'error' => ['Veuillez saisir un id Client']];
-                header('Content-Type: application/json');
-                echo json_encode($result);
-                die;
+                $this->sendAjaxResponse(false, null, ['Veuillez saisir un id Client']);
             }
 
-            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClient);
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $client */
+            $client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClient);
             if (null === $client) {
-                $result = ['success' => false, 'error' => ['Ce client n\'existe pas']];
-                header('Content-Type: application/json');
-                echo json_encode($result);
-                die;
+                $this->sendAjaxResponse(false, null, ['Ce client n\'existe pas']);
             }
 
             if (false === $client->isLender()) {
-                $result = ['success' => false, 'error' => ['Ce client n\'est pas un prêteur']];
-                header('Content-Type: application/json');
-                echo json_encode($result);
-                die;
+                $this->sendAjaxResponse(false, null, ['Ce client n\'est pas un prêteur']);
             }
 
-            $result = ['success' => true, 'client' => ['idClient' => $client->getIdClient(), 'lastName' => $client->getNom(), 'firstName' => $client->getPrenom()]];
-            header('Content-Type: application/json');
-            echo json_encode($result);
-            die;
+            $this->sendAjaxResponse(true, ['idClient' => $client->getIdClient(), 'lastName' => $client->getNom(), 'firstName' => $client->getPrenom()]);
         }
     }
 
@@ -289,8 +278,7 @@ class parrainageController extends bootstrap
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager $sponsorshipManager */
             $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
-            $user               = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
-            $sponsorshipManager->blacklistClientAsSponsor($client, $user, $campaign);
+            $sponsorshipManager->blacklistClientAsSponsor($client, $this->userEntity, $campaign);
 
             $_SESSION['sponsorship_blacklist']['success'] = 'Le client a été blacklisté';
         }
@@ -350,32 +338,24 @@ class parrainageController extends bootstrap
     public function _search_sponsorship()
     {
         $this->autoFireView = false;
+        $this->hideDecoration();
 
-        if (null !== $this->request->request->get('search_sponsorship') && $this->request->isXmlHttpRequest()){
+        if ($this->request->isXmlHttpRequest() && null !== $this->request->request->get('search_sponsorship')){
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             $idClient = $this->request->request->getInt('id_client');
             $client   = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClient);
             if (null === $client) {
-                $result = ['success' => false, 'error' => ['Le client n\'existe pas']];
-                header('Content-Type: application/json');
-                echo json_encode($result);
-                die;
+                $this->sendAjaxResponse(false, null, ['Le client n\'existe pas']);
             }
 
             if (false === $client->isLender()) {
-                $result = ['success' => false, 'error' => ['Ce client n\'est pas un prêteur']];
-                header('Content-Type: application/json');
-                echo json_encode($result);
-                die;
+                $this->sendAjaxResponse(false, null, ['Ce client n\'est pas un prêteur']);
             }
 
             $type = $this->request->request->get('type');
             if (empty($type)) {
-                $result = ['success' => false, 'error' => ['Merci de spécifier s\'il s\'agit d\'un parrain ou d\'un filleul']];
-                header('Content-Type: application/json');
-                echo json_encode($result);
-                die;
+                $this->sendAjaxResponse(false, null, ['Merci de spécifier s\'il s\'agit d\'un parrain ou d\'un filleul']);
             }
 
             $sponsorshipRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship');
@@ -387,69 +367,45 @@ class parrainageController extends bootstrap
             }
 
             if (empty($sponsorship)) {
-                $result = ['success' => false, 'error' => ['Il n\'y a pas de lien parrain-filleul pour ce client.']];
-                header('Content-Type: application/json');
-                echo json_encode($result);
-                die;
+                $this->sendAjaxResponse(false, null, ['Merci de spécifier s\'il s\'agit d\'un parrain ou d\'un filleul']);
             }
 
-            $result = ['success' => true, 'sponsorships' => $sponsorship];
-            header('Content-Type: application/json');
-            echo json_encode($result);
-            die;
+            $this->sendAjaxResponse(true, $sponsorship);
         }
     }
 
     public function _create_sponsorship()
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager   = $this->get('doctrine.orm.entity_manager');
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        if (null !== $this->request->request->get('create_sponsorship') && $this->request->isXmlHttpRequest()) {
+        if ($this->request->isXmlHttpRequest()) {
             $idClientSponsor = $this->request->request->getInt('id_client_sponsor');
             if (null === $idClientSponsor) {
-                $result = ['success' => false, 'error' => ['L\'id client du parrain n\'est pas valide']];
-                header('Content-Type: application/json');
-                echo json_encode($result);
-                die;
+                $this->sendAjaxResponse(false, null, ['L\'id client du parrain n\'est pas valide']);
             }
 
             $sponsor   = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClientSponsor);
             if (null === $sponsor) {
-                $result = ['success' => false, 'error' => ['Le client parrain n\'existe pas']];
-                header('Content-Type: application/json');
-                echo json_encode($result);
-                die;
+                $this->sendAjaxResponse(false, null, ['Le client parrain n\'existe pas']);
             }
 
             if (false === $sponsor->isLender()) {
-                $result = ['success' => false, 'error' => ['Le client parrain n\'est pas un prêteur']];
-                header('Content-Type: application/json');
-                echo json_encode($result);
-                die;
+                $this->sendAjaxResponse(false, null, ['Le client parrain n\'est pas un prêteur']);
             }
 
             $idClientSponsee = $this->request->request->getInt('id_client_sponsee');
             if (null === $idClientSponsee) {
-                $result = ['success' => false, 'error' => ['L\'id client du filleul n\'est pas valide']];
-                header('Content-Type: application/json');
-                echo json_encode($result);
-                die;
+                $this->sendAjaxResponse(false, null, ['L\'id client du filleul n\'est pas valide']);
             }
 
             $sponsee  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClientSponsee);
             if (null === $sponsee) {
-                $result = ['success' => false, 'error' => ['Le client filleul n\'existe pas']];
-                header('Content-Type: application/json');
-                echo json_encode($result);
-                die;
+                $this->sendAjaxResponse(false, null, ['Le client filleul n\'existe pas']);
             }
 
             if (false === $sponsee->isLender()) {
-                $result = ['success' => false, 'error' => ['Le client filleul n\'est pas un prêteur']];
-                header('Content-Type: application/json');
-                echo json_encode($result);
-                die;
+                $this->sendAjaxResponse(false, null, ['Le client filleul n\'est pas un prêteur']);
             }
 
             $sponseeValidationDate = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->getFirstClientValidation($sponsee->getIdClient());
@@ -465,21 +421,15 @@ class parrainageController extends bootstrap
                 'sponseeHasReceivedWelcomeOffer' => $this->get('unilend.service.welcome_offer_manager')->clientHasReceivedWelcomeOffer($sponsee)
             ];
 
-            $result = ['success' => true, 'sponsorshipData' => $sponsorshipData];
-            header('Content-Type: application/json');
-            echo json_encode($result);
-            die;
+            $this->sendAjaxResponse(true, $sponsorshipData);
         }
-
-        header('Location: ' . $this->lurl . '/parrainage');
-        die;
     }
 
 
     public function _create_sponsorship_confirm()
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager   = $this->get('doctrine.orm.entity_manager');
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (null !== $this->request->request->get('create_sponsorship_confirm')) {
             $idClientSponsor = $this->request->request->getInt('id_client_sponsor');
@@ -489,7 +439,7 @@ class parrainageController extends bootstrap
                 die;
             }
 
-            $sponsor   = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClientSponsor);
+            $sponsor = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClientSponsor);
             if (null === $sponsor) {
                 $_SESSION['create_sponsorship']['errors'][] = 'Le client parrain n\'existe pas';
                 header('Location: ' . $this->lurl . '/parrainage');
@@ -509,7 +459,7 @@ class parrainageController extends bootstrap
                 die;
             }
 
-            $sponsee  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClientSponsee);
+            $sponsee = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClientSponsee);
             if (null === $sponsee) {
                 $_SESSION['create_sponsorship']['errors'][] = 'Le client filleul n\'existe pas';
                 header('Location: ' . $this->lurl . '/parrainage');
@@ -521,7 +471,6 @@ class parrainageController extends bootstrap
                 header('Location: ' . $this->lurl . '/parrainage');
                 die;
             }
-
 
             $campaign = $entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->findCampaignValidAtDate($sponsee->getAdded());
             if (null === $campaign) {
@@ -543,21 +492,20 @@ class parrainageController extends bootstrap
                 die;
             }
 
-            $status   = $this->get('unilend.service.welcome_offer_manager')->clientHasReceivedWelcomeOffer($sponsee) ? Sponsorship::STATUS_SPONSEE_PAID : Sponsorship::STATUS_ONGOING;
+            $status = $this->get('unilend.service.welcome_offer_manager')->clientHasReceivedWelcomeOffer($sponsee) ? Sponsorship::STATUS_SPONSEE_PAID : Sponsorship::STATUS_ONGOING;
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager $sponsorshipManager */
             $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
             $sponsorshipManager->createSponsorship($sponsee, $sponsor->getSponsorCode(), $campaign);
 
             $sponsorship = $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $sponsee]);
-            $sponsorship->setIdSponsorshipCampaign($campaign)
+            $sponsorship->setIdCampaign($campaign)
                 ->setStatus($status);
             $entityManager->flush($sponsorship);
-            $_SESSION['create_sponsorship']['success'] = 'Le lien entre parrain (' . $sponsor->getIdClient() . ') et filleul (' . $sponsee->getIdClient() . ') a été crée';
+            $_SESSION['create_sponsorship']['success'] = 'Le parrainage entre parrain ' . $sponsor->getIdClient() . ') et filleul ' . $sponsee->getIdClient() . ') a été crée';
         }
 
         header('Location: ' . $this->lurl . '/parrainage');
         die;
-
     }
 
     public function _export()

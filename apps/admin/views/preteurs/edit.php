@@ -137,7 +137,7 @@
             <tr>
                 <th>Nom :</th>
                 <td><?= $this->clients->nom ?></td>
-                <th>Source2 :</th>
+                <th>Source secondaire :</th>
                 <td><?= $this->clients->source2 ?></td>
             </tr>
             <tr>

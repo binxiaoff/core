@@ -18,7 +18,7 @@ class OffresBienvenuesDetailsRepository extends EntityRepository
     public function getSumPaidOutForOffer(OffresBienvenues $offer = null)
     {
         $queryBuilder = $this->createQueryBuilder('obd');
-        $queryBuilder->select('SUM(obd.montant / 100)')
+        $queryBuilder->select('ROUND(SUM(obd.montant / 100), 2)')
             ->where('obd.type = :type')
             ->andWhere('obd.status != :status')
             ->setParameter('type', OffresBienvenuesDetails::TYPE_OFFER)

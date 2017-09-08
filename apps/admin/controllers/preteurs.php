@@ -77,7 +77,7 @@ class preteursController extends bootstrap
             }
 
             if (false === empty($_SESSION['error_search'])) {
-                header('Location:' . $this->lurl . '/preteurs/search');
+                header('Location: ' . $this->lurl . '/preteurs/search');
                 die;
             }
 
@@ -87,7 +87,7 @@ class preteursController extends bootstrap
             $this->lPreteurs = $clientRepository->findLenders($clientId, $email, $lastName, $firstName, $companyName, $siren, $online);
 
             if (false === empty($this->lPreteurs) && 1 == count($this->lPreteurs)) {
-                header('Location:' . $this->lurl . '/preteurs/edit/' . $this->lPreteurs[0]['id_client']);
+                header('Location: ' . $this->lurl . '/preteurs/edit/' . $this->lPreteurs[0]['id_client']);
                 die;
             }
 
@@ -405,7 +405,7 @@ class preteursController extends bootstrap
 
             if (isset($_POST['send_completude'])) {
                 $this->sendCompletenessRequest();
-                $clientStatusManager->addClientStatus($this->clients, $user->getIdUser(), \clients_status::COMPLETENESS, $_SESSION['content_email_completude'][$this->clients->id_client]);
+                $clientStatusManager->addClientStatus($this->clients, $this->userEntity->getIdUser(), \clients_status::COMPLETENESS, $_SESSION['content_email_completude'][$this->clients->id_client]);
 
                 unset($_SESSION['content_email_completude'][$this->clients->id_client]);
                 $_SESSION['email_completude_confirm'] = true;
@@ -521,7 +521,7 @@ class preteursController extends bootstrap
                                 $oLenderTaxExemption->id_lender   = $wallet->getId();
                                 $oLenderTaxExemption->iso_country = 'FR';
                                 $oLenderTaxExemption->year        = $iExemptionYear;
-                                $oLenderTaxExemption->id_user     = $user->getIdUser();
+                                $oLenderTaxExemption->id_user     = $this->userEntity->getIdUser();
                                 $oLenderTaxExemption->create();
                                 $taxExemptionHistory[] = ['year' => $oLenderTaxExemption->year, 'action' => 'adding'];
                             }
@@ -535,7 +535,7 @@ class preteursController extends bootstrap
                     }
 
                     if (false === empty($taxExemptionHistory)) {
-                        $this->users_history->histo(\users_history::FORM_ID_LENDER, \users_history::FORM_NAME_TAX_EXEMPTION, $user->getIdUser(), serialize([
+                        $this->users_history->histo(\users_history::FORM_ID_LENDER, \users_history::FORM_NAME_TAX_EXEMPTION, $this->userEntity->getIdUser(), serialize([
                             'id_client'     => $this->clients->id_client,
                             'modifications' => $taxExemptionHistory
                         ]));
@@ -544,10 +544,10 @@ class preteursController extends bootstrap
                     $this->clients_adresses->update();
 
                     $serialize = serialize(['id_client' => $this->clients->id_client, 'post'  => $_POST, 'files' => $_FILES]);
-                    $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur', $user->getIdUser(), $serialize);
+                    $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur', $this->userEntity->getIdUser(), $serialize);
 
                     if (isset($_POST['statut_valider_preteur']) && 1 == $_POST['statut_valider_preteur']) {
-                        $validation = $lenderValidationManager->validateClient($this->clients, $user);
+                        $validation = $lenderValidationManager->validateClient($this->clients, $this->userEntity);
                         if (true !== $validation) {
                             $this->changeClientStatus($this->clients, Clients::STATUS_OFFLINE, \users_history::FORM_ID_LENDER);
                             header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->clients->id_client);
@@ -560,9 +560,9 @@ class preteursController extends bootstrap
                     }
 
                     if (true === $applyTaxCountry) {
-                        $taxManager->addTaxToApply($wallet->getIdClient(), $this->clients_adresses, $user->getIdUser());
+                        $taxManager->addTaxToApply($wallet->getIdClient(), $this->clients_adresses, $this->userEntity->getIdUser());
                     }
-                    header('location:' . $this->lurl . '/preteurs/edit_preteur/' . $this->clients->id_client);
+                    header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->clients->id_client);
                     die;
                 } elseif (in_array($this->clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                     $this->companies->name         = $_POST['raison-sociale'];
@@ -660,10 +660,10 @@ class preteursController extends bootstrap
                     $this->clients_adresses->update();
 
                     $serialize = serialize(['id_client' => $this->clients->id_client, 'post'      => $_POST, 'files'     => $_FILES ]);
-                    $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur personne morale', $user->getIdUser(), $serialize);
+                    $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur personne morale', $this->userEntity->getIdUser(), $serialize);
 
                     if (isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1) {
-                        $lenderValidationManager->validateClient($this->clients, $user);
+                        $lenderValidationManager->validateClient($this->clients, $this->userEntity);
                         $this->validateBankAccount($_POST['id_bank_account']);
                         $_SESSION['compte_valide'] = true;
                     }
@@ -802,7 +802,7 @@ class preteursController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
-        $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
+        $welcomeOfferManager  = $this->get('unilend.service.welcome_offer_manager');
         $paidOutWelcomeOffers = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails');
 
         if (isset($_SESSION['create_new_welcome_offer']['errors'])) {
@@ -830,7 +830,10 @@ class preteursController extends bootstrap
         }
 
         if (isset($_POST['affect_welcome_offer']) && isset($this->params[0]) && is_numeric($this->params[0])) {
-            $this->payOutWelcomeOffer();
+            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
+            if (null !== $client) {
+                $this->payOutWelcomeOffer($client);
+            }
         }
 
         $unilendPromotionWalletType          = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
@@ -840,7 +843,7 @@ class preteursController extends bootstrap
         $this->offerIsDisplayedOnHome        = $welcomeOfferManager->displayOfferOnHome();
         $this->offerIsDisplayedOnLandingPage = $welcomeOfferManager->displayOfferOnLandingPage();
 
-        $this->currentOfferHomepage                = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy([
+        $this->currentOfferHomepage = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy([
             'status' => OffresBienvenues::STATUS_ONLINE,
             'type'   => OffresBienvenues::TYPE_HOME
         ]);
@@ -849,7 +852,7 @@ class preteursController extends bootstrap
             $this->remainingAmountCurrentOfferHomepage = round(bcsub($this->currentOfferHomepage->getMontantLimit(), $this->alreadyPaidOutCurrentOfferHomepage, 4), 2);
         }
 
-        $this->currentOfferLandingPage             = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy([
+        $this->currentOfferLandingPage = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy([
             'status' => OffresBienvenues::STATUS_ONLINE,
             'type'   => OffresBienvenues::TYPE_LANDING_PAGE
         ]);
@@ -865,7 +868,6 @@ class preteursController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $user          = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
         $start     = $this->request->request->get('start');
         $amount    = $this->request->request->getInt('amount');
@@ -883,7 +885,7 @@ class preteursController extends bootstrap
             $_SESSION['create_new_welcome_offer']['errors'][] = 'Il faut choisir le type de page sur laquelle l\'offre va être affiché';
         }
         if (false === empty($_SESSION['create_new_welcome_offer']['errors'])) {
-            header('Location:' . $this->lurl . '/preteurs/offres_de_bienvenue');
+            header('Location :' . $this->lurl . '/preteurs/offres_de_bienvenue');
             die;
         }
 
@@ -892,38 +894,34 @@ class preteursController extends bootstrap
         $welcomeOffer->setMontant(bcmul($amount, 100));
         $welcomeOffer->setMontantLimit($maxAmount);
         $welcomeOffer->setType($type);
-        $welcomeOffer->setIdUser($user->getIdUser());
+        $welcomeOffer->setIdUser($this->userEntity->getIdUser());
         $welcomeOffer->setStatus(OffresBienvenues::STATUS_ONLINE);
 
         $entityManager->persist($welcomeOffer);
         $entityManager->flush($welcomeOffer);
 
-        header('Location:' . $this->lurl . '/preteurs/offres_de_bienvenue');
+        header('Location: ' . $this->lurl . '/preteurs/offres_de_bienvenue');
         die;
     }
 
-    private function payOutWelcomeOffer()
+    /**
+     * @param Clients $client
+     */
+    private function payOutWelcomeOffer(Clients $client)
     {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
-        $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
+        $response = $this->get('unilend.service.welcome_offer_manager')->payOutWelcomeOffer($client);
 
-        if (null !== $client) {
-            $response = $welcomeOfferManager->payOutWelcomeOffer($client);
-            switch ($response['code']) {
-                case 0:
-                    $_SESSION['freeow']['title'] = 'Offre de bienvenue crédité;';
-                    break;
-                default:
-                    $_SESSION['freeow']['title'] = 'Offre de bienvenue non cédité';
-                    break;
-            }
-            $_SESSION['freeow']['message'] = $response['message'];
+        switch ($response['code']) {
+            case 0:
+                $_SESSION['freeow']['title'] = 'Offre de bienvenue crédité;';
+                break;
+            default:
+                $_SESSION['freeow']['title'] = 'Offre de bienvenue non cédité';
+                break;
         }
+        $_SESSION['freeow']['message'] = $response['message'];
 
-        header('Location:' . $this->lurl . '/preteurs/offres_de_bienvenue');
+        header('Location: ' . $this->lurl . '/preteurs/offres_de_bienvenue');
         die;
     }
 
@@ -939,7 +937,7 @@ class preteursController extends bootstrap
         $this->welcomeOffer = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy(['type' => $welcomeOfferType]);
 
         if (false === $this->client->isNaturalPerson()) {
-            $this->company      = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->client->getIdClient()]);
+            $this->company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->client->getIdClient()]);
         }
     }
 
@@ -950,7 +948,8 @@ class preteursController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $welcomeOffer = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->find($this->request->request->get('welcome_offer_id'));
+        $welcomeOffer  = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->find($this->request->request->getInt('welcome_offer_id'));
+
         if (
             null !== $welcomeOffer
             && OffresBienvenues::STATUS_ONLINE == $welcomeOffer->getStatus()
@@ -962,7 +961,7 @@ class preteursController extends bootstrap
             $entityManager->flush($welcomeOffer);
         }
 
-        header('Location:' . $this->lurl . '/preteurs/offres_de_bienvenue');
+        header('Location: ' . $this->lurl . '/preteurs/offres_de_bienvenue');
         die;
     }
 
@@ -981,7 +980,7 @@ class preteursController extends bootstrap
                 $_SESSION['FilterMails']['StartDate'] = $_POST['debut'];
                 $_SESSION['FilterMails']['EndDate']   = $_POST['fin'];
 
-                header('Location: ' . $this->lurl . '/preteurs/email_history/' . $this->params[0]);
+                header('Location:  ' . $this->lurl . '/preteurs/email_history/' . $this->params[0]);
                 die;
             }
 
@@ -1237,7 +1236,7 @@ class preteursController extends bootstrap
             $_SESSION['freeow']['message'] = 'Le client est &eacute;galement un emprunteur et ne peux &ecirc;tre mis hors ligne !';
 
 
-            header('Location: ' . $this->lurl . '/preteurs/edit/' . $oClient->id_client);
+            header('Location:  ' . $this->lurl . '/preteurs/edit/' . $oClient->id_client);
             die;
         }
     }
@@ -1430,7 +1429,7 @@ class preteursController extends bootstrap
              $sValue = ('on' == $this->params[1]) ? \client_settings::BETA_TESTER_ON : \client_settings::BETA_TESTER_OFF;
              $oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_BETA_TESTER, $sValue);
 
-             header('Location: ' . $this->lurl . '/preteurs/portefeuille/' . $oClient->id_client);
+             header('Location:  ' . $this->lurl . '/preteurs/portefeuille/' . $oClient->id_client);
              die;
          }
     }
@@ -1461,7 +1460,7 @@ class preteursController extends bootstrap
                 $sContent = 'Compte remis en ligne par Unilend';
                 $clientStatusManager->addClientStatus($oClient, $_SESSION['user']['id_user'], $oClientStatus->status, $sContent);
             }
-            header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $oClient->id_client);
+            header('Location:  ' . $this->lurl . '/preteurs/edit_preteur/' . $oClient->id_client);
             die;
         }
 
@@ -1469,7 +1468,7 @@ class preteursController extends bootstrap
             $this->changeClientStatus($oClient, $this->params[2], 1);
             $this->sendEmailClosedAccount($oClient);
             $clientStatusManager->addClientStatus($oClient, $_SESSION['user']['id_user'], \clients_status::CLOSED_LENDER_REQUEST);
-            header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $oClient->id_client);
+            header('Location:  ' . $this->lurl . '/preteurs/edit_preteur/' . $oClient->id_client);
             die;
         }
     }
@@ -1494,7 +1493,7 @@ class preteursController extends bootstrap
                 $_SESSION['FilterBids']['StartDate'] = $_POST['debut'];
                 $_SESSION['FilterBids']['EndDate']   = $_POST['fin'];
 
-                header('Location: ' . $this->lurl . '/preteurs/bids/' . $this->params[0]);
+                header('Location:  ' . $this->lurl . '/preteurs/bids/' . $this->params[0]);
                 die;
             }
 
@@ -1703,12 +1702,11 @@ class preteursController extends bootstrap
             && false === empty($_POST['selectedProjectId'])
             && $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find(filter_var($_POST['selectedProjectId'], FILTER_SANITIZE_NUMBER_INT))
         ) {
-            $user                = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
             $projectNotification = new ProjectNotification();
             $projectNotification->setIdProject($project)
                 ->setSubject(filter_var($_POST['notificationSubject'], FILTER_SANITIZE_STRING))
                 ->setContent($_POST['notificationContent'])
-                ->setIdUser($user);
+                ->setIdUser($this->userEntity);
 
             if (isset($_POST['notificationDate']) && ($notificationDate = \DateTime::createFromFormat('d/m/Y', $_POST['notificationDate']))) {
                 $projectNotification->setNotificationDate($notificationDate);

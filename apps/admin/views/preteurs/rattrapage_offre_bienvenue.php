@@ -36,7 +36,7 @@
                             <table id="offer-search-table-header" class="table tablesorter" style="margin: 0">
                                 <thead>
                                 <tr>
-                                    <th class="th-id header">Id Client</th>
+                                    <th class="th-id header">ID client</th>
                                     <th class="th-nom header">Nom</th>
                                     <th class="th-prenom header">Prénom</th>
                                     <th class="th-email header">Email</th>
@@ -51,7 +51,7 @@
                             <table id="offer-search-table" class="tablesorter table table-hover table-striped">
                                 <thead style="display: none;">
                                 <tr>
-                                    <th>Id Client</th>
+                                    <th>ID client</th>
                                     <th>Nom</th>
                                     <th>Prénom</th>
                                     <th>Email</th>

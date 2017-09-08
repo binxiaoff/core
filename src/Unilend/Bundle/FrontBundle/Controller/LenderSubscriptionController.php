@@ -46,7 +46,7 @@ use Unilend\core\Loader;
 class LenderSubscriptionController extends Controller
 {
     /**
-     * @Route("inscription_preteur/etape1", name="lender_subscription_personal_information")
+     * @Route("/inscription_preteur/etape1", name="lender_subscription_personal_information")
      */
     public function personalInformationAction(Request $request)
     {
@@ -462,7 +462,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("inscription_preteur/etape2/{clientHash}", name="lender_subscription_documents", requirements={"clientHash": "[0-9a-f-]{32,36}"})
+     * @Route("/inscription_preteur/etape2/{clientHash}", name="lender_subscription_documents", requirements={"clientHash": "[0-9a-f-]{32,36}"})
      *
      * @param string  $clientHash
      * @param Request $request
@@ -682,7 +682,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit", requirements={"clientHash": "[0-9a-f-]{32,36}"})
+     * @Route("/inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit", requirements={"clientHash": "[0-9a-f-]{32,36}"})
      * @Method("GET")
      *
      * @param string  $clientHash
@@ -712,7 +712,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit_form", requirements={"clientHash": "[0-9a-f-]{32,36}"})
+     * @Route("/inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit_form", requirements={"clientHash": "[0-9a-f-]{32,36}"})
      * @Method("POST")
      *
      * @param string  $clientHash
@@ -755,7 +755,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("inscription_preteur/payment/{clientHash}", name="lender_subscription_money_transfer")
+     * @Route("/inscription_preteur/payment/{clientHash}", name="lender_subscription_money_transfer")
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
     public function paymentAction(Request $request, $clientHash)
@@ -805,7 +805,7 @@ class LenderSubscriptionController extends Controller
 
 
     /**
-     * @Route("devenir-preteur-lp", name="lender_landing_page")
+     * @Route("/devenir-preteur-lp", name="lender_landing_page")
      * @Method("GET")
      */
     public function landingPageAction()
@@ -815,7 +815,7 @@ class LenderSubscriptionController extends Controller
 
 
     /**
-     * @Route("parrainage-preteur", name="lender_sponsorship_landing_page")
+     * @Route("/parrainage-preteur", name="lender_sponsorship_landing_page")
      * @Method("GET")
      */
     public function sponsorshipLandngPageAction(Request $request)

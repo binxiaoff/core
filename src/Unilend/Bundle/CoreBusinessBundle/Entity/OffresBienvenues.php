@@ -8,7 +8,6 @@ use Doctrine\ORM\Mapping as ORM;
  * OffresBienvenues
  *
  * @ORM\Table(name="offres_bienvenues", indexes={@ORM\Index(name="id_user", columns={"id_user"})})
- * @ORM\Entity
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\OffresBienvenuesRepository")
  * @ORM\HasLifecycleCallbacks
  */

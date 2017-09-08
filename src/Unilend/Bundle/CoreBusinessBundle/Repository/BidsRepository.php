@@ -88,15 +88,15 @@ class BidsRepository extends EntityRepository
     }
 
     /**
-     * @param Wallet|int   $wallet
-     * @param int          $status
+     * @param Wallet|int $wallet
+     * @param int        $status
      *
      * @return mixed
      */
     public function getSumBidsForLenderAndStatus($wallet, $status)
     {
         $qb = $this->createQueryBuilder('b');
-        $qb->select('SUM(b.amount) / 100')
+        $qb->select('ROUND(SUM(b.amount) / 100, 2)')
             ->where('b.idLenderAccount = :wallet')
             ->andWhere('b.status = :status')
             ->setParameter('wallet', $wallet)

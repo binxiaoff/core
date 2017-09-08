@@ -7,9 +7,9 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Sponsorship
  *
- * @ORM\Table(name="sponsorship", indexes={@ORM\Index(name="idx_sponsorship_id_client_sponsor", columns={"id_client_sponsor"}), @ORM\Index(name="idx_sponsorship_id_client_sponsee", columns={"id_client_sponsee"}), @ORM\Index(name="idx_sponsorship_id_sponsorship_campaign", columns={"id_sponsorship_campaign"})})
- * @ORM\HasLifecycleCallbacks()
+ * @ORM\Table(name="sponsorship", uniqueConstraints={@ORM\UniqueConstraint(name="id_client_sponsee_id_client_sponsor", columns={"id_client_sponsee", "id_client_sponsor"})}, indexes={@ORM\Index(name="idx_sponsorship_status", columns={"status"}), @ORM\Index(name="idx_sponsorship_id_client_sponsor", columns={"id_client_sponsor"}), @ORM\Index(name="idx_sponsorship_id_client_sponsee", columns={"id_client_sponsee"}), @ORM\Index(name="idx_sponsorship_id_campaign", columns={"id_campaign"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\SponsorshipRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class Sponsorship
 {
@@ -18,9 +18,9 @@ class Sponsorship
     const STATUS_SPONSOR_PAID    = 2;
 
     /**
-     * @var int
+     * @var boolean
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
+     * @ORM\Column(name="status", type="boolean", nullable=false)
      */
     private $status;
 
@@ -52,10 +52,10 @@ class Sponsorship
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_sponsorship_campaign", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_campaign", referencedColumnName="id")
      * })
      */
-    private $idSponsorshipCampaign;
+    private $idCampaign;
 
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
@@ -76,8 +76,6 @@ class Sponsorship
      * })
      */
     private $idClientSponsee;
-
-
 
     /**
      * Set status
@@ -162,27 +160,27 @@ class Sponsorship
     }
 
     /**
-     * Set idSponsorshipCampaign
+     * Set idCampaign
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign $idSponsorshipCampaign
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign $idCampaign
      *
      * @return Sponsorship
      */
-    public function setIdSponsorshipCampaign(\Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign $idSponsorshipCampaign = null)
+    public function setIdCampaign(\Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign $idCampaign = null)
     {
-        $this->idSponsorshipCampaign = $idSponsorshipCampaign;
+        $this->idCampaign = $idCampaign;
 
         return $this;
     }
 
     /**
-     * Get idSponsorshipCampaign
+     * Get idCampaign
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign
      */
-    public function getIdSponsorshipCampaign()
+    public function getIdCampaign()
     {
-        return $this->idSponsorshipCampaign;
+        return $this->idCampaign;
     }
 
     /**

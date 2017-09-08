@@ -37,7 +37,7 @@ class SponsorshipRepository extends EntityRepository
         $query = '  SELECT
                       sponsorship.*
                     FROM sponsorship
-                      INNER JOIN sponsorship_campaign ON sponsorship.id_sponsorship_campaign = sponsorship_campaign.id
+                      INNER JOIN sponsorship_campaign ON sponsorship.id_campaign = sponsorship_campaign.id
                       INNER JOIN operation ON operation.id_sponsorship = sponsorship.id
                       INNER JOIN operation_sub_type ON operation.id_sub_type = operation_sub_type.id AND label = :subTypeLabel
                     WHERE sponsorship.status != ' . Sponsorship::STATUS_ONGOING . '
@@ -66,7 +66,7 @@ class SponsorshipRepository extends EntityRepository
         $queryBuilder->select('COUNT(DISTINCT ss.idClientSponsor)');
 
         if (null !== $campaign) {
-            $queryBuilder->where('ss.idSponsorshipCampaign = :idCampaign')
+            $queryBuilder->where('ss.idCampaign = :idCampaign')
                 ->setParameter('idCampaign', $campaign);
         }
 
@@ -84,7 +84,7 @@ class SponsorshipRepository extends EntityRepository
         $queryBuilder->select('COUNT(DISTINCT ss.idClientSponsee)');
 
         if (null !== $campaign) {
-            $queryBuilder->where('ss.idSponsorshipCampaign = :idCampaign')
+            $queryBuilder->where('ss.idCampaign = :idCampaign')
                 ->setParameter('idCampaign', $campaign);
         }
 

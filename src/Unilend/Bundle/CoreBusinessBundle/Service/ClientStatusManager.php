@@ -130,5 +130,4 @@ class ClientStatusManager
 
         return null !== $previousValidation;
     }
-
 }

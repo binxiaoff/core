@@ -1134,7 +1134,7 @@ class OperationRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'ost.id = o.idSubType')
             ->innerJoin('UnilendCoreBusinessBundle:Sponsorship', 'ss', Join::WITH, 'ss.id = o.idSponsorship')
             ->where('ost.label = :subTypeLabel')
-            ->andWhere('ss.idSponsorshipCampaign = :idCampaign')
+            ->andWhere('ss.idCampaign = :idCampaign')
             ->setParameter('subTypeLabel', $subTypeLabel)
             ->setParameter('idCampaign', $sponsorshipCampaign);
 

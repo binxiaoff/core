@@ -32,7 +32,6 @@
                 $('#type_offer').val('home_page')
         })
 
-
         // Rattrapage tablesorter (Search Lenders by ID)
         var $header = $('#offer-search-table-header')
         var $results = $('#offer-search-table')
@@ -263,7 +262,7 @@
 
     <div id="offer-past" class="block block-bordered" style="border: 0">
         <div class="block-header">
-            <h3 class="block-title">Offres passés</h3>
+            <h3 class="block-title">Offres passées</h3>
         </div>
         <div class="block-content">
             <?php if (false === empty($this->pastOffers)) : ?>

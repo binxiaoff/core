@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -9,12 +10,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
 use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\SponsorshipRepository;
 
 class CheckPromotionalOfferValidityCommand extends ContainerAwareCommand
 {
+    const PROMOTIONAL_WALLET_BALANCE_WARNING_LIMIT = 1000;
+
     protected function configure()
     {
         $this
@@ -110,7 +112,7 @@ class CheckPromotionalOfferValidityCommand extends ContainerAwareCommand
         $unilendWalletType = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
         $unilendWallet     = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
 
-        if ($unilendWallet->getAvailableBalance() <= 1000) {
+        if ($unilendWallet->getAvailableBalance() <= self::PROMOTIONAL_WALLET_BALANCE_WARNING_LIMIT) {
             /** @var Settings $recipientSetting */
             $recipientSetting = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse notification solde unilend promotion']);
             $variables = [

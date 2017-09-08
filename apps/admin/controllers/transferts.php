@@ -122,7 +122,6 @@ class transfertsController extends bootstrap
         $this->hideDecoration();
         $this->lPreteurs = [];
 
-
         $this->clients   = $this->loadData('clients');
         $this->companies = $this->loadData('companies');
 

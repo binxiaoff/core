@@ -36,28 +36,19 @@ class LenderSponsorshipController extends Controller
         $client             = $this->getClient();
         $sponsorLink        = $this->generateUrl('lender_sponsorship_redirect', ['sponsorCode' => $client->getSponsorCode()], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        if (null !== $request->request->get('send-sponsorship-invitation')) {
+        if (null !== $request->request->filter('send-sponsorship-invitation', FILTER_VALIDATE_EMAIL)) {
             $sponseeEmail = $request->request->get('sponsee-email');
-            if (
-                null === $sponseeEmail
-                || false === filter_var($sponseeEmail, FILTER_VALIDATE_EMAIL)
-            ) {
+            if (null === $sponseeEmail) {
                 $this->addFlash('sponsorshipSendMailErrors', $translator->trans('lender-sponsorship_sponsee-email-not-valid'));
             }
 
-            $sponseeNames = $request->request->get('sponsee-names');
-            if (
-                null === $sponseeNames
-                || false === filter_var($sponseeNames, FILTER_SANITIZE_STRING)
-            ){
+            $sponseeNames = $request->request->filter('sponsee-names', FILTER_SANITIZE_STRING);
+            if (null === $sponseeNames){
                 $this->addFlash('sponsorshipSendMailErrors', $translator->trans('lender-sponsorship_sponsee-names-not-valid'));
             }
 
-            $message = $request->request->get('sponsor-message');
-            if (
-                null === $message
-                || false === filter_var($message, FILTER_SANITIZE_STRING)
-            ){
+            $message = $request->request->filter('sponsor-message', FILTER_SANITIZE_STRING);
+            if (null === $message){
                 $this->addFlash('sponsorshipSendMailErrors', $translator->trans('lender-sponsorship_sponsor-message-not-valid'));
             }
 

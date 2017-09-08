@@ -21,7 +21,7 @@ class WelcomeOfferManager
     private $operationManager;
     /** @var EntityManager  */
     private $entityManager;
-    /** @var  \NumberFormatter */
+    /** @var \NumberFormatter */
     private $numberFormatter;
     /** @var TemplateMessageProvider */
     private $messageProvider;
@@ -29,8 +29,8 @@ class WelcomeOfferManager
     private $mailer;
     /** @var LoggerInterface */
     private $logger;
-    private $surl;
-    private $furl;
+    private $staticUrl;
+    private $frontUrl;
 
     public function __construct(
         OperationManager $operationManager,
@@ -50,8 +50,8 @@ class WelcomeOfferManager
         $this->messageProvider  = $messageProvider;
         $this->mailer           = $mailer;
         $this->logger           = $logger;
-        $this->surl             = $assetsPackages->getUrl('');
-        $this->furl             = $schema . '://' . $frontHost;
+        $this->staticUrl        = $assetsPackages->getUrl('');
+        $this->frontUrl         = $schema . '://' . $frontHost;
     }
 
     /**
@@ -113,18 +113,18 @@ class WelcomeOfferManager
 
         $offerType                = $this->getWelcomeOfferTypeForClient($client);
         $welcomeOffer             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->getWelcomeOfferForClient($client, $offerType);
-        $offerIsValid             = null !== $welcomeOffer;
-        $enoughMoneyLeft          = false;
+        $isOfferValid             = null !== $welcomeOffer;
+        $hasEnoughMoneyLeft       = false;
         $alreadyReceivedPromotion = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumCreditOperationsByTypeUntil($wallet, [OperationType::UNILEND_PROMOTIONAL_OPERATION]);
 
-        if ($offerIsValid && 0 == $alreadyReceivedPromotion) {
+        if ($isOfferValid && 0 == $alreadyReceivedPromotion) {
             $unilendPromotionalWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
             $unilendPromotionalWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendPromotionalWalletType]);
 
             $alreadyPaidOutOffer = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->getSumPaidOutForOffer($welcomeOffer);
-            $enoughMoneyLeft     = $alreadyPaidOutOffer + $welcomeOffer->getMontant() <= $welcomeOffer->getMontantLimit() && $unilendPromotionalWallet->getAvailableBalance() >= $welcomeOffer->getMontant();
+            $hasEnoughMoneyLeft  = $alreadyPaidOutOffer + $welcomeOffer->getMontant() <= $welcomeOffer->getMontantLimit() && $unilendPromotionalWallet->getAvailableBalance() >= $welcomeOffer->getMontant();
 
-            if ($enoughMoneyLeft) {
+            if ($hasEnoughMoneyLeft) {
                 $paidOutWelcomeOffer = new OffresBienvenuesDetails();
                 $paidOutWelcomeOffer->setIdOffreBienvenue($welcomeOffer->getIdOffreBienvenue())
                     ->setIdClient($client->getIdClient())
@@ -144,12 +144,12 @@ class WelcomeOfferManager
             }
         }
 
-        if (false === $offerIsValid) {
+        if (false === $isOfferValid) {
             $this->logger->info('Client ID: ' . $client->getIdClient() . ' Welcome offer not paid out. There is no welcome offer corresponding to client\'s origin', [ 'class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $client->getIdClient()]);
             return ['code' => 1, 'message' => "Il n'y a pas d'offre de bienvenue correspondant à l'origine du client."];
         }
 
-        if (false === $enoughMoneyLeft) {
+        if (false === $hasEnoughMoneyLeft) {
             $this->logger->info('Client ID: ' . $client->getIdClient() . ' Welcome offer not paid out. There is not enough money left', [ 'class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $client->getIdClient()]);
             return ['code' => 2, 'message' => "Il n'y a plus assez d'argent disponible pour créer l'offre de bienvenue."];
         }
@@ -165,7 +165,7 @@ class WelcomeOfferManager
      *
      * @return bool
      */
-    public function clientIsEligibleForWelcomeOffer($client)
+    public function isClientEligibleForWelcomeOffer($client)
     {
         if ($client instanceof \clients) {
             $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
@@ -195,9 +195,8 @@ class WelcomeOfferManager
                 $legacyWelcomeOffer = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy(['type' => 'Offre de bienvenue']);
                 if ($client->getAdded() < $legacyWelcomeOffer->getFin()) {
                     return 'Offre de bienvenue';
-                } else {
-                    return OffresBienvenues::TYPE_HOME;
                 }
+                return OffresBienvenues::TYPE_HOME;
         }
     }
 
@@ -208,10 +207,10 @@ class WelcomeOfferManager
     public function sendWelcomeOfferEmail(Clients $client, OffresBienvenues $welcomeOffer)
     {
         $varMail = [
-            'surl'            => $this->surl,
-            'url'             => $this->furl,
+            'surl'            => $this->staticUrl,
+            'url'             => $this->frontUrl,
             'prenom_p'        => $client->getPrenom(),
-            'projets'         => $this->furl . '/projets-a-financer',
+            'projets'         => $this->frontUrl . '/projets-a-financer',
             'offre_bienvenue' => $this->numberFormatter->format($welcomeOffer->getMontant() / 100),
             'lien_fb'         => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
             'lien_tw'         => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),

@@ -49,10 +49,10 @@ $(function(){
                 dataType: 'json',
                 success: function (response) {
                     if (response.success) {
-                        $modal.find('.client-id').text(response.client.idClient)
-                        $modal.find('input[name="id_client"]').val(response.client.idClient)
-                        $modal.find('.nom').text(response.client.lastName)
-                        $modal.find('.prenom').text(response.client.firstName)
+                        $modal.find('.client-id').text(response.data.idClient)
+                        $modal.find('input[name="id_client"]').val(response.data.idClient)
+                        $modal.find('.nom').text(response.data.lastName)
+                        $modal.find('.prenom').text(response.data.firstName)
 
                         modalTrigger.attr('data-target', '#' + $modal.attr('id')).trigger('click')
                     } else {
@@ -87,8 +87,8 @@ $(function(){
                     if (response.success) {
                         var html = '';
 
-                        for (i = 0; i < response.sponsorships.length; i++) {
-                            var s = response.sponsorships[i];
+                        for (i = 0; i < response.data.length; i++) {
+                            var s = response.data[i];
                             var sponsorReceived = 'versée'
                             var sponseeReceived = 'versée'
                             var type = ''
@@ -166,7 +166,7 @@ $(function(){
                 success: function(response){
                     if (response.success) {
 
-                        var sponsorshipData = response.sponsorshipData
+                        var sponsorshipData = response.data
 
                         var welcomeOffer = ''
                         if (sponsorshipData.sponseeHasReceivedWelcomeOffer) {

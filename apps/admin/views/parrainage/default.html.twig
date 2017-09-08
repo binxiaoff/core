@@ -17,7 +17,6 @@
 {% endblock %}
 
 {% block modals %}
-
      <a id="js-alerts-trigger" class="js-notify" data-notify-message=""></a>
      <a id="js-modal-trigger" data-toggle="modal" data-target=""></a>
 
@@ -42,7 +41,7 @@
                              <input type="number" name="validity_days" class="form-control required">
                          </div>
                          <div class="form-group">
-                             <label>Montant  (Filleul)</label> <br>
+                             <label>Montant (Filleul)</label> <br>
                              <input type="number" name="amount_sponsee" class="form-control required">
                          </div>
                          <div class="form-group">
@@ -50,7 +49,7 @@
                              <input type="number" name="amount_sponsor" class="form-control required">
                          </div>
                          <div class="form-group">
-                             <label>Max. filleuls</label> <br>
+                             <label>Nombre maximum de filleuls par parrain</label> <br>
                              <input type="number" name="max_number_sponsee" class="form-control required">
                          </div>
 
@@ -76,13 +75,13 @@
                          <p>Êtes-vous sûr de vouloir ajouter le client <span class="nom text-uppercase"></span> <span class="prenom"></span> dans la blacklist ?</p>
 
                          <div class="form-group">
-                             <label>Selectionner une campagne</label>
+                             <label>Sélectionner une campagne</label>
                              <select name="campaign" class="form-control required">
                                  <option></option>
                                  <option value="all">Toutes les campagnes</option>
                                  {% if validCampaigns is defined and validCampaigns is not empty %}
                                      {% for campaign in validCampaigns %}
-                                        <option value="{{ campaign.campaign.id }}">Campagne N°{{ campaign.campaign.id }}</option>
+                                        <option value="{{ campaign.campaign.id }}">Campagne n°{{ campaign.campaign.id }}</option>
                                      {% endfor %}
                                  {% endif %}
                              </select>
@@ -303,7 +302,7 @@
         </div><!-- /#parrainage-list-campaign -->
         <div id="parrainage-list-expired" class="block block-bordered">
             <div class="block-header">
-                <h3 class="block-title">Liste des campagnes finis</h3>
+                <h3 class="block-title">Liste des campagnes terminées</h3>
             </div>
             <div class="block-content block-content-full">
                 <table id="parrainage-list-expired-campaign-table" class="table table-bordered table-striped table-hover table-header-bg js-dataTable-simple">
@@ -389,14 +388,14 @@
                 <table id="parrainage-adjust-prime-table" class="table table-striped table-hover table-header-bg hide" data-type-sponsor="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR') }}" data-type-sponsee="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSEE') }}">
                     <thead>
                         <tr>
-                            <th class="sponsee-id">Client ID (Filleul)</th>
-                            <th class="sponsee-first-name">Nom (Filleul)</th>
-                            <th class="sponsee-last-name">Prénom (Filleul)</th>
-                            <th class="sponsee-prime">Prime (Filleul)</th>
-                            <th class="sponsor-id">ID (Parrain)</th>
-                            <th class="sponsor-first-name">Nom (Parrain)</th>
-                            <th class="sponsor-last-name">Prénom (Parrain)</th>
-                            <th class="sponsor-prime">Prime (Parrain)</th>
+                            <th class="sponsee-id">ID filleul</th>
+                            <th class="sponsee-first-name">Nom filleul</th>
+                            <th class="sponsee-last-name">Prénom filleul)</th>
+                            <th class="sponsee-prime">Prime filleul</th>
+                            <th class="sponsor-id">ID parrain</th>
+                            <th class="sponsor-first-name">Nom parrain</th>
+                            <th class="sponsor-last-name">Prénom parrain</th>
+                            <th class="sponsor-prime">Prime parrain</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -512,7 +511,6 @@
                         <input type="number" name="id_client_sponsee" class="form-control required">
                     </div>
                     <div class="form-group push-5-l">
-                        <input type="hidden" name="create_sponsorship">
                         <button type="submit" class="btn btn-primary">Rechercher</button>
                     </div>
                 </form>
