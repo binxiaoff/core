@@ -1,8 +1,8 @@
 {% extends 'layout.html.twig' %}
 
 {% block pluginsCSS %}
-    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
-    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/highlightjs/github-gist.min.css">
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/highlightjs/github-gist.min.css">
     <style>
         .service-fields-provider, .service-fields, #ws-result, #cache-duration, #result-date, #result-message, #result-code {
             display: none;
@@ -26,8 +26,8 @@
 {% endblock %}
 
 {% block pluginsJS %}
-    <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
-    <script src="{{ adminUrl }}/oneui/js/plugins/highlightjs/highlight.pack.js"></script>
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/highlightjs/highlight.pack.js"></script>
 {% endblock %}
 
 {% block pageScripts %}
@@ -176,7 +176,7 @@
                 <h3 class="block-title">Recherche</h3>
             </div>
             <div class="block-content block-content-full">
-                <form id="ws-provider-form" action="{{ adminUrl }}/simulation/webservices_risque" method="post" class="validate">
+                <form id="ws-provider-form" action="{{ app.adminUrl }}/simulation/webservices_risque" method="post" class="validate">
                     <div class="row">
                         <div class="col-md-12">
                             <div class="form-group">
