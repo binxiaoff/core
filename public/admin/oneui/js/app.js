@@ -1376,9 +1376,12 @@ var App = function() {
             $(this).find('.required').each(function(){
                 var $input = $(this)
                 if ($input.is('input[type=text]') || $input.is('input[type=number]') || $input.is('input[type=email]') || $input.is('textarea') || $input.is('input[type=password]')) {
+                    var attrName = $(this).attr('name');
                     if (!$input.val() || $input.val() === '') {
-                        $input.closest('.form-group').removeClass('has-error').addClass('has-error')
-                        valid = false
+                        if (typeof attrName !== typeof undefined && attrName !== false) {
+                            $input.closest('.form-group').removeClass('has-error').addClass('has-error')
+                            valid = false
+                        }
                     } else {
                         $input.closest('.form-group').removeClass('has-error')
                         valid = true
@@ -1394,6 +1397,7 @@ var App = function() {
                     }
                 }
                 if (!valid) {
+                    console.log('has errors')
                     e.preventDefault()
                     $form.addClass('has-errors')
                 } else {

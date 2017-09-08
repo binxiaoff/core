@@ -50,7 +50,7 @@ class AltaresManager
     private $resourceManager;
     /** @var bool */
     private $saveToCache = true;
-    /** @var bool  */
+    /** @var bool */
     private $readFromCache = true;
 
     /**
@@ -105,7 +105,7 @@ class AltaresManager
      */
     public function setReadFromCache($readFromCache)
     {
-        $this->saveToCache = $readFromCache;
+        $this->readFromCache = $readFromCache;
 
         return $this;
     }

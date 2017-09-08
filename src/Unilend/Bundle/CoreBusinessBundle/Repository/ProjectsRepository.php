@@ -271,7 +271,7 @@ class ProjectsRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('p');
         $queryBuilder->select('COUNT(p.idProject)')
             ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'co.idCompany = p.idCompany')
-            ->where('p.status IN (:status)')
+            ->where('p.status NOT IN (:status)')
             ->andWhere('co.siren = :siren')
             ->setParameter('siren', $siren)
             ->setParameter('status', $status);
