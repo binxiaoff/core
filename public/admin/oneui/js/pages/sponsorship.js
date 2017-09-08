@@ -26,9 +26,9 @@ $(function(){
             $modal.find('.block-title').text('Modifier la campagne')
             $modal.find('input[name="start"]').val($row.find('td').eq(startIndex).text())
             $modal.find('input[name="end"]').val($row.find('td').eq(endIndex).text())
-            $modal.find('input[name="validity_days"]').val(parseFloat($row.find('td').eq(validityIndex).text()))
-            $modal.find('input[name="amount_sponsee"]').val(parseFloat($row.find('td').eq(amountSponseeIndex).text()))
-            $modal.find('input[name="amount_sponsor"]').val(parseFloat($row.find('td').eq(amountSponsorIndex).text()))
+            $modal.find('input[name="validity_days"]').val(parseInt($row.find('td').eq(validityIndex).text()))
+            $modal.find('input[name="amount_sponsee"]').val(App.utility.currencyToInteger($row.find('td').eq(amountSponseeIndex).text()))
+            $modal.find('input[name="amount_sponsor"]').val(App.utility.currencyToInteger($row.find('td').eq(amountSponsorIndex).text()))
             $modal.find('input[name="max_number_sponsee"]').val($row.find('td').eq(maxSponsee).text())
             $modal.find('input[name="id_campaign"]').val(campaignId)
         }

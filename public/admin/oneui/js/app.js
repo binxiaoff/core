@@ -1403,6 +1403,13 @@ var App = function() {
         })
     };
 
+    var utility = {
+        currencyToInteger: function(currency) {
+            var number = parseFloat(currency.replace(',', '.').replace('€', '').replace(/\s+/g, ''))
+            return number
+        }
+    };
+
     return {
         init: function($func) {
             switch ($func) {
@@ -1535,7 +1542,8 @@ var App = function() {
             } else {
                 App.initHelper($helpers);
             }
-        }
+        },
+        utility: utility
     };
 
 
