@@ -24,10 +24,44 @@
 }
 
 /* Colors & Alerts */
+.alert-collapse {
+    position: relative;
+}
+.alert-collapse button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    padding: 0;
+    background-color: #ca9faf;
+    border: 0;
+    color: #fff;
+    border-top-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+}
+.alert-collapse button:focus {
+    outline: 0;
+}
+.alert-collapse button:before {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    vertical-align: middle;
+    border-top: 4px dashed;
+    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
+}
+.alert-collapse ul {
+    display: none;
+    padding-left: 20px;
+}
 .alert, .alert-info, .alert-warning {
     color: #444;
     background: #fdf4fa;
-    box-shadow: 0 2px #CA9FAF;
+    box-shadow: 0 2px #ca9faf;
 }
 .alert-danger {
     background: rgba(178, 0, 102, 0.7);
@@ -39,9 +73,16 @@
     opacity: 1;
     text-shadow: none;
 }
+.alert-collapse.alert-danger button {
+    background-color: #b20066;
+}
+
 .alert-success {
     background: #eaf4ea;
     box-shadow: 0 2px #b0c3b5;
+}
+.alert-collapse.alert-success button {
+    background-color: #b0c3b5;
 }
 .bg-success {
     background: #eaf4ea;

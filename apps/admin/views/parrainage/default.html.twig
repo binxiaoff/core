@@ -182,7 +182,7 @@
                 <h3 class="block-title">Créer une campagne de parrainage</h3>
             </div>
             <div class="block-content block-content-full">
-                <form method="post" action="{{ app.adminUrl }}/parrainage/create_new_campaign" class="form-inline validate">
+                <form method="post" action="{{ app.adminUrl }}/parrainage/create_new_campaign" class="form-inline validate push">
                     <div class="form-group">
                         <label>Début de l'offre</label> <br>
                         <input type="text" name="start" class="js-datepicker form-control required" data-date-format="dd/mm/yyyy">
@@ -213,19 +213,20 @@
                         <button type="submit" class="btn btn-primary">Créer</button>
                     </div>
                 </form>
+
                 {% if formErrors.newCampaign is defined and formErrors.newCampaign is not empty %}
-                    <div class="alert alert-error">
-                        <p>
-                            {% for error in formErrors.newCampaign %}
-                                {% if error is iterable %}
+                    <div class="alert">
+                        {% for error in formErrors.newCampaign %}
+                            {% if error is iterable %}
+                                <ul class="hide">
                                     {% for technicalError in error %}
-                                        <span>{{ technicalError }}</span> <!-- @TODO that's the collapsed error -->
+                                        <li>{{ technicalError }}</li>
                                     {% endfor %}
-                                {% else %}
-                                    <span>{{ error }}</span> <br>
-                                {% endif %}
-                            {% endfor %}
-                        </p>
+                                </ul>
+                            {% else %}
+                                <p>{{ error }}</p>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                 {% endif %}
                 {% if formSuccess.newCampaign is defined and formSuccess.newCampaign is not empty %}
@@ -241,18 +242,18 @@
             </div>
             <div class="block-content block-content-full">
                 {% if formErrors.modifyCampaign is defined and formErrors.modifyCampaign is not empty %}
-                    <div class="alert alert-error">
-                        <p>
-                            {% for error in formErrors.modifyCampaign %}
-                                {% if error is iterable %}
+                    <div class="alert">
+                        {% for error in formErrors.modifyCampaign %}
+                            {% if error is iterable %}
+                                <ul class="hide">
                                     {% for technicalError in error %}
-                                        <span>{{ technicalError }}</span> <!-- @TODO that's the collapsed error -->
+                                        <li>{{ technicalError }}</li>
                                     {% endfor %}
-                                {% else %}
-                                    <span>{{ error }}</span> <br>
-                                {% endif %}
-                            {% endfor %}
-                        </p>
+                                </ul>
+                            {% else %}
+                                <p>{{ error }}</p>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                 {% endif %}
                 {% if formSuccess.modifyCampaign is defined and formSuccess.modifyCampaign is not empty %}
@@ -365,19 +366,19 @@
                         <button type="submit" class="btn btn-primary">Rechercher</button>
                     </div>
                 </form>
-                {%  if formErrors.payOutReward is defined and formErrors.payOutReward is not empty %}
-                    <div class="alert alert-error">
-                        <p>
-                            {% for error in formErrors.payOutReward %}
-                                {% if error is iterable %}
+                {% if formErrors.payOutReward is defined and formErrors.payOutReward is not empty %}
+                    <div class="alert">
+                        {% for error in formErrors.payOutReward %}
+                            {% if error is iterable %}
+                                <ul class="hide">
                                     {% for technicalError in error %}
-                                        <span>{{ technicalError }}</span> <!-- @TODO that's the collapsed error -->
+                                        <li>{{ technicalError }}</li>
                                     {% endfor %}
-                                {% else %}
-                                    <span>{{ error }}</span> <br>
-                                {% endif %}
-                            {% endfor %}
-                        </p>
+                                </ul>
+                            {% else %}
+                                <p>{{ error }}</p>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                 {% endif %}
                 {% if formSuccess.payOutReward is defined and formSuccess.payOutReward is not empty %}
@@ -481,19 +482,19 @@
                 <h3 class="block-title">parrain <span class="fa fa-arrows-h"></span> filleul — Créer une association</h3>
             </div>
             <div class="block-content block-content-full">
-                {% if formErrors.createSponsorship is defined and formErrors.createSponsorship  is not empty %}
-                    <div class="alert alert-error">
-                        <p>
-                            {% for error in formErrors.createSponsorship %}
-                                {% if error is iterable %}
+                {% if formErrors.createSponsorship is defined and formErrors.createSponsorship is not empty %}
+                    <div class="alert">
+                        {% for error in formErrors.createSponsorship %}
+                            {% if error is iterable %}
+                                <ul class="hide">
                                     {% for technicalError in error %}
-                                        <span>{{ technicalError }}</span> <!-- @TODO that's the collapsed error -->
+                                        <li>{{ technicalError }}</li>
                                     {% endfor %}
-                                {% else %}
-                                    <span>{{ error }}</span> <br>
-                                {% endif %}
-                            {% endfor %}
-                        </p>
+                                </ul>
+                            {% else %}
+                                <p>{{ error }}</p>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                 {% endif %}
                 {% if formSuccess.createSponsorship is defined and formSuccess.createSponsorship is not empty %}
@@ -582,12 +583,10 @@
             </div>
             <div class="block-content">
                 {%  if formErrors.blacklist is defined and formErrors.blacklist is not empty %}
-                    <div class="alert alert-error">
-                        <p>
-                            {% for error in formErrors.blacklist %}
-                                <span>{{ error }}</span> <br>
-                            {% endfor %}
-                        </p>
+                    <div class="alert">
+                        {% for error in formErrors.blacklist %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
                     </div>
                 {% endif %}
                 {% if formSuccess.blacklist is defined and formSuccess.blacklist is not empty %}

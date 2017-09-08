@@ -696,6 +696,24 @@ var App = function() {
         return false;
     };
 
+    // Collapse details of alerts
+    var uiAlertCollapse = function() {
+        $alert = jQuery('.alert')
+        $alert.each(function(){
+            if ($(this).find('ul.hide').length) {
+                $(this).addClass('alert-collapse').append('<button></button>').find('ul.hide').removeClass('hide')
+                $(this).find('button').click(function(){
+                    var $alert = $(this).closest('.alert')
+                    var $target = $alert.find('ul')
+                    if ($target.is(':visible'))
+                        $target.slideUp(150)
+                    else
+                        $target.slideDown(150)
+                })
+            }
+        })
+    };
+
 
     /*
      ********************************************************************************************
@@ -1418,6 +1436,9 @@ var App = function() {
                 case 'uiLoader':
                     uiLoader('hide');
                     break;
+                case 'uiAlertCollapse':
+                    uiAlertCollapse();
+                    break;
                 default:
                     // Init all vital functions
                     uiInit();
@@ -1430,6 +1451,7 @@ var App = function() {
                     uiScrollTo();
                     uiYearCopy();
                     uiLoader('hide');
+                    uiAlertCollapse();
             }
         },
         layout: function($mode) {
