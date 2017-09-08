@@ -8,6 +8,7 @@ use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\librairies\CacheKeys;
@@ -167,6 +168,25 @@ class LoansRepository extends EntityRepository
         $queryBuilder->select('COUNT(DISTINCT l.idLender) ')
             ->where('l.idProject = :project')
             ->setParameter('project', $project);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Wallet $wallet
+     * @return mixed
+     */
+    public function getDefinitelyAcceptedLoansCount(Wallet $wallet)
+    {
+        $queryBuilder = $this->createQueryBuilder('l')
+            ->select('COUNT(DISTINCT l.idLoan)')
+            ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'p.idProject = l.idProject')
+            ->where('l.idLender = :lenderId')
+            ->setParameter('lenderId', $wallet->getId())
+            ->andWhere('l.status = :accepted')
+            ->setParameter('accepted', Loans::STATUS_ACCEPTED)
+            ->andWhere('p.status >= :repayment')
+            ->setParameter('repayment', ProjectsStatus::REMBOURSEMENT);
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }

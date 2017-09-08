@@ -50,8 +50,6 @@ class WsCall
     protected $parameter;
 
     /**
-     * Get id
-     *
      * @return string $id
      */
     public function getId()
@@ -60,21 +58,19 @@ class WsCall
     }
 
     /**
-     * Set service
-     *
      * @param string $provider
+     *
      * @return $this
      */
     public function setProvider($provider)
     {
         $this->provider = $provider;
+
         return $this;
     }
 
     /**
-     * Get service
-     *
-     * @return string $service
+     * @return string
      */
     public function getProvider()
     {
@@ -82,21 +78,19 @@ class WsCall
     }
 
     /**
-     * Set method
-     *
      * @param string $resource
+     *
      * @return $this
      */
     public function setResource($resource)
     {
         $this->resource = $resource;
+
         return $this;
     }
 
     /**
-     * Get method
-     *
-     * @return string $method
+     * @return string
      */
     public function getResource()
     {
@@ -104,21 +98,19 @@ class WsCall
     }
 
     /**
-     * Set response
-     *
      * @param string $response
+     *
      * @return $this
      */
     public function setResponse($response)
     {
         $this->response = $response;
+
         return $this;
     }
 
     /**
-     * Get response
-     *
-     * @return string $response
+     * @return string
      */
     public function getResponse()
     {
@@ -126,7 +118,19 @@ class WsCall
     }
 
     /**
-     * @return mixed
+     * @param string $siren
+     *
+     * @return $this
+     */
+    public function setSiren($siren)
+    {
+        $this->siren = $siren;
+
+        return $this;
+    }
+
+    /**
+     * @return string
      */
     public function getSiren()
     {
@@ -134,15 +138,19 @@ class WsCall
     }
 
     /**
-     * @param mixed $siren
+     * @param \DateTime $added
+     *
+     * @return $this
      */
-    public function setSiren($siren)
+    public function setAdded($added)
     {
-        $this->siren = $siren;
+        $this->added = $added;
+
+        return $this;
     }
 
     /**
-     * @return mixed
+     * @return \DateTime
      */
     public function getAdded()
     {
@@ -150,15 +158,19 @@ class WsCall
     }
 
     /**
-     * @param mixed $added
+     * @param int $idWsCallHistory
+     *
+     * @return $this
      */
-    public function setAdded($added)
+    public function setIdWsCallHistory($idWsCallHistory)
     {
-        $this->added = $added;
+        $this->idWsCallHistory = $idWsCallHistory;
+
+        return $this;
     }
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getIdWsCallHistory()
     {
@@ -166,11 +178,15 @@ class WsCall
     }
 
     /**
-     * @param mixed $idWsCallHistory
+     * @param string $parameter
+     *
+     * @return $this
      */
-    public function setIdWsCallHistory($idWsCallHistory)
+    public function setParameter($parameter)
     {
-        $this->idWsCallHistory = $idWsCallHistory;
+        $this->parameter = $parameter;
+
+        return $this;
     }
 
     /**
@@ -179,13 +195,5 @@ class WsCall
     public function getParameter()
     {
         return $this->parameter;
-    }
-
-    /**
-     * @param $parameter
-     */
-    public function setParameter($parameter)
-    {
-        $this->parameter = $parameter;
     }
 }

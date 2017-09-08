@@ -38,10 +38,12 @@ class EulerHermesManager
     private $accountEmail;
     /** @var ResourceManager */
     private $resourceManager;
-    /** @var bool */
-    private $useCache = true;
     /** @var CacheItemPoolInterface */
     private $cachePool;
+    /** @var bool */
+    private $saveToCache = true;
+    /** @var bool */
+    private $readFromCache = true;
 
     /**
      * @param Client                 $client
@@ -53,7 +55,7 @@ class EulerHermesManager
      * @param CallHistoryManager     $callHistoryManager
      * @param Serializer             $serializer
      * @param ResourceManager        $resourceManager
-     * @param CacheItemPoolInterface $cachePool;
+     * @param CacheItemPoolInterface $cachePool
      */
     public function __construct(
         Client $client,
@@ -81,13 +83,27 @@ class EulerHermesManager
     }
 
     /**
-     * @param bool $useCache
+     * Should be replaced by method parameters instead of class parameters
+     * @param bool $saveToCache
      *
      * @return EulerHermesManager
      */
-    public function setUseCache($useCache)
+    public function setSaveToCache($saveToCache)
     {
-        $this->useCache = $useCache;
+        $this->saveToCache = $saveToCache;
+
+        return $this;
+    }
+
+    /**
+     * Should be replaced by method parameters instead of class parameters
+     * @param bool $readFromCache
+     *
+     * @return EulerHermesManager
+     */
+    public function setReadFromCache($readFromCache)
+    {
+        $this->readFromCache = $readFromCache;
 
         return $this;
     }
@@ -193,7 +209,7 @@ class EulerHermesManager
                     return $storedResponse;
                 }
             }
-            $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
+            $callable = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->saveToCache);
             $response = $this->client->get(
                 $wsResource->getResourceName() . $uri,
                 ['headers' => ['apikey' => $apiKey]]
@@ -289,7 +305,7 @@ class EulerHermesManager
     private function getStoredResponse(WsExternalResource $resource, $siren)
     {
         if (
-            $this->useCache
+            $this->readFromCache
             && false !== ($storedResponse = $this->callHistoryManager->getStoredResponse($resource, $siren))
             && json_decode($storedResponse)
         ) {

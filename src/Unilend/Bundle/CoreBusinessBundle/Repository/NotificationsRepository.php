@@ -41,10 +41,11 @@ class NotificationsRepository extends EntityRepository
     /**
      * @param int      $lenderId
      * @param int|null $projectId
+     * @param array    $notificationType
      *
      * @return int
      */
-    public function countUnreadNotificationsForClient($lenderId, $projectId = null)
+    public function countUnreadNotificationsForClient($lenderId, $projectId = null, $notificationType = [])
     {
         $qb = $this->createQueryBuilder('n')
             ->select('COUNT(n.idNotification)')
@@ -55,6 +56,11 @@ class NotificationsRepository extends EntityRepository
         if (null !== $projectId) {
             $qb->andWhere('n.idProject = :projectId')
                 ->setParameter('projectId', $projectId);
+        }
+
+        if (false === empty($notificationType)) {
+            $qb->andWhere('n.type IN (:notificationType)')
+                ->setParameter('notificationType', $notificationType, Connection::PARAM_INT_ARRAY);
         }
 
         return $qb->getQuery()->getSingleScalarResult();

@@ -69,7 +69,7 @@ class transfertsController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         $this->nonAttributedReceptions = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')
-            ->findBy(['statusBo' => Receptions::STATUS_PENDING], ['added' => 'ASC', 'idReception' => 'ASC']);
+            ->findBy(['statusBo' => Receptions::STATUS_PENDING], ['added' => 'DESC', 'idReception' => 'DESC']);
 
         if (isset($_POST['id_project'], $_POST['id_reception'])) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
@@ -131,7 +131,6 @@ class transfertsController extends bootstrap
         $this->hideDecoration();
         $this->lPreteurs = [];
 
-
         $this->clients   = $this->loadData('clients');
         $this->companies = $this->loadData('companies');
 
@@ -142,27 +141,27 @@ class transfertsController extends bootstrap
                 $_SESSION['search_lender_attribution_error'][] = 'Veuillez remplir au moins un champ';
             }
 
-            $email = empty($_POST['email']) ? '' : filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
+            $email = empty($_POST['email']) ? null : trim(filter_var($_POST['email'], FILTER_VALIDATE_EMAIL));
             if (false === $email) {
                 $_SESSION['search_lender_attribution_error'][] = 'Format de l\'email est non valide';
             }
 
-            $clientId = empty($_POST['id']) ? '' : filter_var($_POST['id'], FILTER_SANITIZE_NUMBER_INT);
+            $clientId = empty($_POST['id']) ? null : trim(filter_var($_POST['id'], FILTER_SANITIZE_NUMBER_INT));
             if (false === $clientId) {
                 $_SESSION['search_lender_attribution_error'][] = 'L\'id du client doit être numérique';
             }
 
-            $lastName = empty($_POST['nom']) ? '' : filter_var($_POST['nom'], FILTER_SANITIZE_STRING);
+            $lastName = empty($_POST['nom']) ? null : trim(filter_var($_POST['nom'], FILTER_SANITIZE_STRING));
             if (false === $lastName) {
                 $_SESSION['search_lender_attribution_error'][] = 'Le format du nom n\'est pas valide';
             }
 
-            $firstName = empty($_POST['prenom']) ? '' : filter_var($_POST['prenom'], FILTER_SANITIZE_STRING);
+            $firstName = empty($_POST['prenom']) ? null : trim(filter_var($_POST['prenom'], FILTER_SANITIZE_STRING));
             if (false === $firstName) {
                 $_SESSION['search_lender_attribution_error'][] = 'Le format du prenom n\'est pas valide';
             }
 
-            $companyName = empty($_POST['raison_sociale']) ? '' : filter_var($_POST['raison_sociale'], FILTER_SANITIZE_STRING);
+            $companyName = empty($_POST['raison_sociale']) ? null : trim(filter_var($_POST['raison_sociale'], FILTER_SANITIZE_STRING));
             if (false === $companyName) {
                 $_SESSION['search_lender_attribution_error'][] = 'Le format de la raison sociale n\'est pas valide';
             }
@@ -172,7 +171,9 @@ class transfertsController extends bootstrap
                 die;
             }
 
-            $this->lPreteurs    = $this->clients->searchPreteurs(trim($clientId), trim($lastName), trim($email), trim($firstName), trim($companyName));
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
+            $clientRepository   = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+            $this->lPreteurs    = $clientRepository->findLenders($clientId, $email, $lastName, $firstName, $companyName);
             $this->id_reception = $_POST['id_reception'];
         }
     }

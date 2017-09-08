@@ -46,8 +46,7 @@ classNames: 'user-preter-profile'
 
                     <header class="panel-header">
                         <h3>{% trans %} lender-profile_security-identification-section-title {% endtrans %}</h3>
-                        <div id="form-profile-info-notifications">
-                            {{ form_errors(forms.securityEmail) }}
+                        <div id="profile-security-identification-notifications">
                             {% if app.session.flashBag.has('securityIdentificationSuccess') %}
                                 <div class="message-success">
                                     {% for message in app.session.flashBag.get('securityIdentificationSuccess') %}
