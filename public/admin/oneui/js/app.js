@@ -1207,9 +1207,9 @@ var App = function() {
     };
 
     /*
-     * X-editable.js, for more examples you can check out http://vitalets.github.io/x-editable/
+     * Bootstrap Notify, for more examples you can check out http://bootstrap-growl.remabledesigns.com/
      *
-     * App.initHelper('editable');
+     * App.initHelper('notify');
      *
      */
     var uiHelperNotify = function(){
@@ -1251,16 +1251,20 @@ var App = function() {
         });
     };
 
-
+    /*
+     * X-editable.js, for more examples you can check out http://vitalets.github.io/x-editable/
+     *
+     * App.initHelper('editable');
+     *
+     */
     var uiHelperEditable = function(){
+        // Required attributes
         jQuery('[data-editable]').each(function() {
             var requiredAttributes = []
             var missing = false
             var url = $(this).data('editable-url')
             var key = $(this).data('editable-key')
-
             requiredAttributes.push(['url', url], ['key', key])
-
             for (var i = 0; i < requiredAttributes.length; i++) {
                 var attrKey = requiredAttributes[i][0]
                 var attrValue = requiredAttributes[i][1]
@@ -1269,7 +1273,6 @@ var App = function() {
                     missing = true
                 }
             }
-
             // Optional attributes
             var toggle = $(this).data('editable-trigger')
             if (typeof toggle === 'undefined' || toggle === '')
