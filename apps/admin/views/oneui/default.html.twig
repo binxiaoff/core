@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
 <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/summernote/summernote.min.css">
 <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.css">
+<link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap3-editable/css/bootstrap-editable.css">
 {% endblock %}
 
 {% block pluginsJS %}
@@ -17,13 +18,14 @@
 <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/summernote/summernote.min.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.js"></script>
+<script src="{{ adminUrl }}/oneui/js/plugins/bootstrap3-editable/js/bootstrap-editable.js"></script>
 {% endblock %}
 
 {% block pageScripts %}
 <script>
     $(function(){
         // Page helpers are initialised in app.js and can be called quickly using their name
-        App.initHelpers(['validation', 'select2', 'datepicker', 'masked-inputs', 'summernote', 'table-tools', 'datatables', 'easy-pie-chart']);
+        App.initHelpers(['validation', 'select2', 'datepicker', 'masked-inputs', 'summernote', 'table-tools', 'datatables', 'easy-pie-chart', 'editable']);
 
         // jQuery AutoComplete example, for more examples you can check out https://github.com/Pixabay/jQuery-autoComplete
         $('.js-autocomplete').autoComplete({
@@ -127,7 +129,7 @@
 </script>
 {% endblock %}
 
- {% block modals %}
+{% block modals %}
      <!-- Normal Modal -->
      <div class="modal" id="modal-normal" tabindex="-1" role="dialog" aria-hidden="true">
          <div class="modal-dialog">
@@ -1088,6 +1090,35 @@
                 <div class="block">
                     <div class="block-content block-content-full">
                         <div class="js-summernote">Hello Summernote!</div>
+                    </div>
+                </div>
+            </article>
+            <article id="editable">
+                <h4>Editable</h4>
+                <div class="row">
+                    <div class="col-md-4">
+                        <h5 class="content-heading">Inline</h5>
+                        <div class="block">
+                            <div class="block-content block-content-full">
+                                <a role="editable" data-editable data-editable-style="inline" data-editable-key="editableField" data-editable-url="/post">Editable Text</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <h5 class="content-heading">Hover</h5>
+                        <div class="block">
+                            <div class="block-content block-content-full">
+                                <a role="editable" data-editable data-editable-style="inline" data-editable-key="editableField" data-editable-url="/post" data-editable-trigger="mouseenter">Editable Text</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <h5 class="content-heading">Popup</h5>
+                        <div class="block">
+                            <div class="block-content block-content-full">
+                                <a role="editable" data-editable data-editable-key="editableField" data-editable-url="/post">Editable Text</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </article>

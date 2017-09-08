@@ -1207,9 +1207,9 @@ var App = function() {
     };
 
     /*
-     * Bootstrap Notify, for more examples you can check out http://bootstrap-growl.remabledesigns.com/
+     * X-editable.js, for more examples you can check out http://vitalets.github.io/x-editable/
      *
-     * App.initHelper('notify');
+     * App.initHelper('editable');
      *
      */
     var uiHelperNotify = function(){
@@ -1249,6 +1249,56 @@ var App = function() {
                     }
                 });
         });
+    };
+
+
+    var uiHelperEditable = function(){
+        jQuery('[data-editable]').each(function() {
+            var requiredAttributes = []
+            var missing = false
+            var url = $(this).data('editable-url')
+            var key = $(this).data('editable-key')
+
+            requiredAttributes.push(['url', url], ['key', key])
+
+            for (var i = 0; i < requiredAttributes.length; i++) {
+                var attrKey = requiredAttributes[i][0]
+                var attrValue = requiredAttributes[i][1]
+                if (typeof attrValue === 'undefined' || attrValue === '') {
+                    console.log('Missing attribute data-editable-' + attrKey)
+                    missing = true
+                }
+            }
+
+            // Optional attributes
+            var toggle = $(this).data('editable-trigger')
+            if (typeof toggle === 'undefined' || toggle === '')
+                toggle = 'click'
+            var style = $(this).data('editable-style')
+            if (style === 'inline')
+                $.fn.editable.defaults.mode = 'inline'
+            else
+                $.fn.editable.defaults.mode = 'popup'
+
+            // If all required are there, init
+            if (!missing) {
+                $(this).editable({
+                    type: 'text',
+                    pk: key,
+                    url: url,
+                    toggle: toggle,
+                    success: function(response, newValue) {
+                        if (!response.success) {
+                            var errors = ''
+                            $.each( response.error, function(i, val){
+                                errors += val + ' '
+                            })
+                            return errors
+                        }
+                    }
+                })
+            }
+        })
     };
 
     /*
@@ -1506,6 +1556,9 @@ var App = function() {
                     break;
                 case 'validation':
                     uiHelperFormValidate();
+                    break;
+                case 'editable':
+                    uiHelperEditable();
                     break;
                 default:
                     return false;
