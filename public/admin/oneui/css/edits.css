@@ -65,3 +65,8 @@
 .text-darker {
     color: #353847;
 }
+
+/* Tables */
+.table-vertical-center tbody tr td {
+    vertical-align: middle;
+}
