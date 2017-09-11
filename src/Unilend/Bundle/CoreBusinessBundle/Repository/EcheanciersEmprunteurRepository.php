@@ -89,4 +89,23 @@ class EcheanciersEmprunteurRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }
+
+    /**
+     * @param Projects|int $project
+     *
+     * @return int
+     */
+    public function getOverdueScheduleCount($project)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee');
+        $queryBuilder->select('count(*)')
+            ->where('ee.idProject = :project')
+            ->andWhere('ee.statusEmprunteur in (:unfinished)')
+            ->andWhere('DATE(ee.dateEcheanceEmprunteur) <= :today')
+            ->setParameter('project', $project)
+            ->setParameter('today', (new \DateTime())->format('Y-m-d'))
+            ->setParameter('unfinished', [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
 }

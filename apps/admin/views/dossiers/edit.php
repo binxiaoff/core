@@ -766,7 +766,7 @@
                                     <input type="hidden" name="check_confirmation_send_email" id="check_confirmation_send_email" value="0">
                                     <select name="status" id="status" class="select">
                                         <?php foreach ($this->lProjects_status as $s) : ?>
-                                            <option <?= ($this->projects->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
+                                            <option <?= ($this->projects->status == $this->lProjects_status->getStatus() ? 'selected' : '') ?> value="<?= $this->lProjects_status->getStatus() ?>"><?= $this->lProjects_status->getLabel() ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 <?php endif; ?>
