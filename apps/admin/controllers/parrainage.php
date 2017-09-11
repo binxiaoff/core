@@ -219,10 +219,10 @@ class parrainageController extends bootstrap
         $this->autoFireView = false;
         $this->hideDecoration();
 
-        if ($this->request->isXmlHttpRequest() && null !== $this->request->request->get('search_client')) {
+        if ($this->request->isXmlHttpRequest()) {
             $idClient = $this->request->request->getInt('id_client');
             if (empty($idClient)) {
-                $this->sendAjaxResponse(false, null, ['Veuillez saisir un id Client']);
+                $this->sendAjaxResponse(false, null, ['Veuillez saisir un ID client']);
             }
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $client */
@@ -340,11 +340,11 @@ class parrainageController extends bootstrap
         $this->autoFireView = false;
         $this->hideDecoration();
 
-        if ($this->request->isXmlHttpRequest() && null !== $this->request->request->get('search_sponsorship')){
+        if ($this->request->isXmlHttpRequest()){
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            $idClient = $this->request->request->getInt('id_client');
-            $client   = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClient);
+            $idClient      = $this->request->request->getInt('id_client');
+            $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClient);
             if (null === $client) {
                 $this->sendAjaxResponse(false, null, ['Le client n\'existe pas']);
             }
@@ -353,7 +353,7 @@ class parrainageController extends bootstrap
                 $this->sendAjaxResponse(false, null, ['Ce client n\'est pas un prêteur']);
             }
 
-            $type = $this->request->request->get('type');
+            $type = $this->request->request->filter('type', FILTER_SANITIZE_STRING);
             if (empty($type)) {
                 $this->sendAjaxResponse(false, null, ['Merci de spécifier s\'il s\'agit d\'un parrain ou d\'un filleul']);
             }
@@ -367,7 +367,7 @@ class parrainageController extends bootstrap
             }
 
             if (empty($sponsorship)) {
-                $this->sendAjaxResponse(false, null, ['Merci de spécifier s\'il s\'agit d\'un parrain ou d\'un filleul']);
+                $this->sendAjaxResponse(false, null, ['Il n\'y a pas de lien parrain - filleul pour ce client .']);
             }
 
             $this->sendAjaxResponse(true, $sponsorship);

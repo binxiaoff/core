@@ -41,11 +41,11 @@
                              <input type="number" name="validity_days" class="form-control required">
                          </div>
                          <div class="form-group">
-                             <label>Montant (Filleul)</label> <br>
+                             <label>Montant (filleul)</label> <br>
                              <input type="number" name="amount_sponsee" class="form-control required">
                          </div>
                          <div class="form-group">
-                             <label>Montant (Parrain)</label> <br>
+                             <label>Montant (parrain)</label> <br>
                              <input type="number" name="amount_sponsor" class="form-control required">
                          </div>
                          <div class="form-group">
@@ -124,7 +124,7 @@
              <div class="modal-content">
                  <div class="block block-themed block-transparent remove-margin-b">
                      <div class="block-header bg-primary-light">
-                         <h3 class="block-title">Créer un lien parrain-filleul</h3>
+                         <h3 class="block-title">Créer une association parrain-filleul</h3>
                      </div>
                      <div class="block-content">
                          <p>Êtes-vous sûr de vouloir associer les clients ?</p>
@@ -203,7 +203,7 @@
                         <input type="number" name="amount_sponsor" class="form-control required">
                     </div>
                     <div class="form-group push-5-l">
-                        <label>Max. filleuls</label> <br>
+                        <label>Nombre max. filleuls/parrain</label> <br>
                         <input type="number" name="max_number_sponsee" class="form-control required">
                     </div>
                     <div class="form-group push-5-l">
@@ -269,7 +269,7 @@
                             <th class="validity">Validité</th>
                             <th class="amount-sponsee">Montant (filleul)</th>
                             <th class="amount-sponsor">Montant (parrain)</th>
-                            <th class="max-sponsee">Max. filleuls</th>
+                            <th class="max-sponsee">Nombre max. <br>filleuls/parrain</th>
                             <th class="number-sponsor">Parrains</th>
                             <th class="number-sponsee">Filleuls</th>
                             <th class="total-amount-sponsor">Distribué aux parrains</th>
@@ -307,35 +307,35 @@
             <div class="block-content block-content-full">
                 <table id="parrainage-list-expired-campaign-table" class="table table-bordered table-striped table-hover table-header-bg js-dataTable-simple">
                     <thead>
-                    <tr>
-                        <th class="id">N° de campagne</th>
-                        <th class="start">Début de l'offre</th>
-                        <th class="end">Fin de l'offre</th>
-                        <th class="validity">Validité</th>
-                        <th class="amount-sponsee">Montant (Filleul)</th>
-                        <th class="amount-sponsor">Montant (Parrain)</th>
-                        <th class="max-sponsee">Max. filleuls</th>
-                        <th class="number-sponsor">Parrains</th>
-                        <th class="number-sponsee">Filleuls</th>
-                        <th class="total-amount-sponsor">Distribué aux parrains</th>
-                        <th class="total-amount-sponsee">Distribué aux filleuls</th>
-                    </tr>
+                        <tr>
+                            <th class="id">N° de campagne</th>
+                            <th class="start">Début de l'offre</th>
+                            <th class="end">Fin de l'offre</th>
+                            <th class="validity">Validité</th>
+                            <th class="amount-sponsee">Montant (filleul)</th>
+                            <th class="amount-sponsor">Montant (parrain)</th>
+                            <th class="max-sponsee">Nombre max. <br>filleuls/parrain</th>
+                            <th class="number-sponsor">Parrains</th>
+                            <th class="number-sponsee">Filleuls</th>
+                            <th class="total-amount-sponsor">Distribué aux parrains</th>
+                            <th class="total-amount-sponsee">Distribué aux filleuls</th>
+                        </tr>
                     </thead>
                     <tbody>
                     {% for campaignData in archivedCampaigns %}
-                    <tr>
-                        <td>{{ campaignData.campaign.id }}</td>
-                        <td>{{ campaignData.campaign.start|date('d/m/Y') }}</td>
-                        <td>{{ campaignData.campaign.end|date('d/m/Y') }}</td>
-                        <td>{{ campaignData.campaign.validityDays }} jours</td>
-                        <td>{{ campaignData.campaign.amountSponsee|localizedcurrency('EUR') }}</td>
-                        <td>{{ campaignData.campaign.amountSponsor|localizedcurrency('EUR') }}</td>
-                        <td>{{ campaignData.campaign.maxNumberSponsee|localizednumber }}</td>
-                        <td>{{ campaignData.numberSponsor|localizednumber }}</td>
-                        <td>{{ campaignData.numberSponsee|localizednumber }}</td>
-                        <td>{{ campaignData.paidOutRewardSponsee|localizedcurrency('EUR') }}</td>
-                        <td>{{ campaignData.paidOutRewardSponsor|localizedcurrency('EUR') }}</td>
-                    </tr>
+                        <tr>
+                            <td>{{ campaignData.campaign.id }}</td>
+                            <td>{{ campaignData.campaign.start|date('d/m/Y') }}</td>
+                            <td>{{ campaignData.campaign.end|date('d/m/Y') }}</td>
+                            <td>{{ campaignData.campaign.validityDays }} jours</td>
+                            <td>{{ campaignData.campaign.amountSponsee|localizedcurrency('EUR') }}</td>
+                            <td>{{ campaignData.campaign.amountSponsor|localizedcurrency('EUR') }}</td>
+                            <td>{{ campaignData.campaign.maxNumberSponsee|localizednumber }}</td>
+                            <td>{{ campaignData.numberSponsor|localizednumber }}</td>
+                            <td>{{ campaignData.numberSponsee|localizednumber }}</td>
+                            <td>{{ campaignData.paidOutRewardSponsee|localizedcurrency('EUR') }}</td>
+                            <td>{{ campaignData.paidOutRewardSponsor|localizedcurrency('EUR') }}</td>
+                        </tr>
                     {%  endfor %}
                     </tbody>
                 </table>
@@ -361,7 +361,6 @@
                         </label>
                     </div>
                     <div class="form-group push-20-l">
-                        <input type="hidden" name="search_sponsorship">
                         <button type="submit" class="btn btn-primary">Rechercher</button>
                     </div>
                 </form>
@@ -444,16 +443,16 @@
                     <thead>
                     <tr>
                         <th style="width: 100px;">Code parrain</th>
-                        <th class="sponsee">Filleul ID</th>
-                        <th class="sponsee">Nom/Prénom</th>
+                        <th class="sponsee">ID filleul</th>
+                        <th class="sponsee">Nom/prénom</th>
                         <th class="sponsee">Email</th>
                         <th class="sponsee">Prime</th>
-                        <th class="sponsee last">Date Versement</th>
-                        <th class="sponsor first">Parrain ID</th>
-                        <th class="sponsor">Nom/Prénom</th>
+                        <th class="sponsee last">Date de vérsement</th>
+                        <th class="sponsor first">ID parrain</th>
+                        <th class="sponsor">Nom/prénom</th>
                         <th class="sponsor">Email</th>
                         <th class="sponsor">Prime</th>
-                        <th class="sponsor">Date Versement</th>
+                        <th class="sponsor">Date de vérsement</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -478,7 +477,7 @@
         </div><!-- /#parrainage-history -->
         <div id="parrainage-establish-link" class="block block-bordered">
             <div class="block-header">
-                <h3 class="block-title">parrain <span class="fa fa-arrows-h"></span> filleul — Créer un lien</h3>
+                <h3 class="block-title">parrain <span class="fa fa-arrows-h"></span> filleul — Créer une association</h3>
             </div>
             <div class="block-content block-content-full">
                 {% if formErrors.createSponsorship is defined and formErrors.createSponsorship is not empty %}
@@ -503,11 +502,11 @@
                 {% endif %}
                 <form id="parrainage-establish-link-search" method="post" action="{{ app.adminUrl }}/parrainage/create_sponsorship" class="form-inline push validate">
                     <div class="form-group">
-                        <label>ID client parrain</label> <br>
+                        <label>ID parrain</label> <br>
                         <input type="number" name="id_client_sponsor" class="form-control required">
                     </div>
                     <div class="form-group push-5-l">
-                        <label>ID client filleul</label> <br>
+                        <label>ID filleul</label> <br>
                         <input type="number" name="id_client_sponsee" class="form-control required">
                     </div>
                     <div class="form-group push-5-l">
@@ -537,7 +536,7 @@
                     <div class="col-md-2">
                         <div class="form-group text-center push-20-t">
                             <span class="fa fa-chevron-left push-10-r"></span>
-                            <button id="link-submit" type="submit" class="btn btn-primary" data-toggle="modal" data-target="#modal-establish-link" data-sponsor-id="" data-sponsee-id="">Confirmer le lien</button> <span class="fa fa-chevron-right push-10-l"></span>
+                            <button id="link-submit" type="submit" class="btn btn-primary" data-toggle="modal" data-target="#modal-establish-link" data-sponsor-id="" data-sponsee-id="">Confirmer le parrainage</button> <span class="fa fa-chevron-right push-10-l"></span>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -598,7 +597,6 @@
                         <input type="number" name="id_client" class="form-control required">
                     </div>
                     <div class="form-group push-5-l">
-                        <input type="hidden" name="search_client">
                         <button type="submit" class="btn btn-primary">Rechercher</button>
                     </div>
                 </form>
