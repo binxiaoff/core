@@ -31,7 +31,6 @@
             else if ($(this).is('.hp'))
                 $('#type_offer').val('home_page')
         })
-
         // Rattrapage tablesorter (Search Lenders by ID)
         var $header = $('#offer-search-table-header')
         var $results = $('#offer-search-table')
@@ -62,10 +61,8 @@
                 $results.trigger("sorton", [sorting]);
             }
         })
-
         // Past offers tablesorter
         $('#offer-past-table').tablesorter()
-
         // Toggle Rattrapage results
         $('#toggle-trigger').click(function(e){
             e.preventDefault()
