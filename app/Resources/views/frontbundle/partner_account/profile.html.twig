@@ -1,8 +1,8 @@
 {% extends 'partner_account/_layout.html.twig' %}
 
 {% set page = {
-id: 'partner-account-profile',
-classNames: 'partner-account'
+    id: 'partner-account-profile',
+    classNames: 'partner-account'
 } %}
 
 {% block dashboardContent %}
@@ -15,9 +15,27 @@ classNames: 'partner-account'
                     </header>
                     <div class="row">
                         <div class="col-md-8 col-lg-8">
-                            <form id="form-partner-profile-password" action="" method="post" data-formvalidation data-formvalidation-notificationselem="#form-partner-profile-password-notifications">
+                            {{ form_start(form, {
+                                'id': 'form-partner-profile-password',
+                                'attr': {
+                                    'data-formvalidation data-formvalidation-notificationselem': '#form-partner-profile-password-notifications'
+                                }
+                            }) }}
+                            <form id="form-partner-profile-password" action="{{ path('partner_profile') }}" method="post" data-formvalidation data-formvalidation-notificationselem="#form-partner-profile-password-notifications">
                                 <div id="form-partner-profile-password-notifications" class="ui-formvalidation-notifications"></div>
-
+                                {% if app.session.flashBag.has('error') %}
+                                    <div class="message-error">
+                                        {% for error in app.session.flashBag.get('error') %}
+                                            <p>{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% elseif app.session.flashBag.has('success') %}
+                                    <div class="message-success">
+                                        {% for success in app.session.flashBag.get('success') %}
+                                            <p>{{ success }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
                                 <div class="row row-multi-col-computer">
                                     <div class="form-field col-lg-6 col-md-6">
                                         <label for="partner-profile-password-former">
@@ -25,9 +43,14 @@ classNames: 'partner-account'
                                             <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                         </label>
                                         <div class="input-group">
-                                            <input type="password" id="partner-profile-password-former"
-                                                   name="password[former]" required="required" class="input-field" data-formvalidation-input data-formvalidation-required="true">
-                                            {#{{ form_errors(forms.securityPwd.formerPassword) }}#}
+                                            {{ form_widget(form.formerPassword, {
+                                                'id': 'partner-profile-password-former',
+                                                'required': false,
+                                                'attr': {
+                                                    'class': 'input-field',
+                                                    'data-formvalidation-input data-formvalidation-required': 'true'
+                                                }
+                                            }) }}
                                         </div><!-- /.input-group -->
                                         <ul class="ui-formvalidation-messages"></ul>
                                     </div><!-- /.form-field -->
@@ -38,9 +61,15 @@ classNames: 'partner-account'
                                             {% trans %} partner-profile_password-new-field-label {% endtrans %}
                                             <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                                         </label>
-                                        <input type="password" id="partner-profile-password-new"
-                                               name="password[new]" required="required" class="input-field"
-                                               data-passwordcheck data-formvalidation-input data-formvalidation-required="true" data-formvalidation-minlength="6">
+                                        {{ form_widget(form.password.first, {
+                                            'id': 'partner-profile-password-new',
+                                            'required': false,
+                                            'attr': {
+                                                'class': 'input-field',
+                                                'data-passwordcheck data-formvalidation-input data-formvalidation-required': 'true',
+                                                'data-formvalidation-minlength': '8'
+                                            }
+                                        }) }}
                                     </div><!-- /.form-field -->
                                     <div class="form-field col-lg-6 col-md-6">
                                         <label for="partner-profile-password-confirm">
@@ -48,18 +77,23 @@ classNames: 'partner-account'
                                             <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                         </label>
                                         <div class="input-group">
-                                            <input type="password" id="partner-profile-password-confirm"
-                                                   name="password[confirm]" required="required" class="input-field"
-                                                   data-formvalidation-input="" data-formvalidation-required="true" data-formvalidation-samevalueas="#partner-profile-password-new">
+                                            {{ form_widget(form.password.second, {
+                                                'id': 'partner-profile-password-confirm',
+                                                'required': false,
+                                                'attr': {
+                                                    'class': 'input-field',
+                                                    'data-formvalidation-input data-formvalidation-required': 'true',
+                                                    'data-formvalidation-samevalueas': '#partner-profile-password-new'
+                                                }
+                                            }) }}
                                         </div>
                                     </div><!-- /.form-field -->
-                                    {#{{ form_errors(forms.securityPwd.password) }}#}
                                 </div>
 
                                 <div class="row btn-controls">
                                     <button type="submit" class="btn-primary btn-shape-medium">{% trans %} partner-profile_password-button-submit {% endtrans %}</button>
                                 </div>
-                            </form><!-- /#form-partner-profile-password -->
+                            {{ form_end(form) }}<!-- /#form-partner-profile-password -->
                         </div>
                     </div>
                 </div><!-- /.panel -->

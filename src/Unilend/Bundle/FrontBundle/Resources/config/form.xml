@@ -79,5 +79,10 @@
             <tag name="form.type" />
             <argument type="service" id="translator" />
         </service>
+
+        <service id="unilend.form.partner.profile" class="Unilend\Bundle\FrontBundle\Form\PartnerAccount\ProfileType">
+            <tag name="form.type" />
+            <argument type="service" id="translator" />
+        </service>
     </services>
 </container>

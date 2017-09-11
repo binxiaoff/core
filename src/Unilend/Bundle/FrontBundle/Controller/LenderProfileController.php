@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -81,7 +82,7 @@ class LenderProfileController extends Controller
 
         $identityForm = $identityFb->getForm();
 
-        if ($request->isMethod('POST')) {
+        if ($request->isMethod(Request::METHOD_POST)) {
             $isValid = false;
             if (isset($request->request->get('form')['client'])) {
                 $identityForm->handleRequest($request);
@@ -141,6 +142,7 @@ class LenderProfileController extends Controller
                     $isValid = true;
                 }
             }
+
             if ($isValid) {
                 return $this->redirectToRoute('lender_profile_personal_information');
             }
@@ -553,7 +555,7 @@ class LenderProfileController extends Controller
         $pwdForm                = $this->createForm(ClientPasswordType::class);
         $questionForm           = $this->createForm(SecurityQuestionType::class, $clientEntity);
 
-        if ($request->isMethod('POST')) {
+        if ($request->isMethod(Request::METHOD_POST)) {
             $isValid = null;
             if (false === empty($request->request->get('client_email'))) {
                 $emailForm->handleRequest($request);
