@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Bundle\FrontBundle\Controller;
+namespace Unilend\Bundle\FrontBundle\Controller\Endpoint;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -17,7 +17,7 @@ class RiskDataMonitoringController extends Controller
     const SUCCESS              = 'success';
 
     /**
-     * @Route("/ws/monitoring/euler-hermes/grade", name="risk_data_monitoring_euler_hermes_grade")
+     * @Route("/ws/surveillance/euler-hermes/grade", name="risk_data_monitoring_euler_hermes_grade")
      * @Method("POST")
      *
      * @return Response
@@ -48,7 +48,7 @@ class RiskDataMonitoringController extends Controller
     }
 
     /**
-     * @Route("/ws/monitoring/euler-hermes/grade/end", name="risk_data_monitoring_euler_hermes_grade_end")
+     * @Route("/ws/surveillance/euler-hermes/grade/end", name="risk_data_monitoring_euler_hermes_grade_end")
      * @Method("PUT")
      *
      * @return Response

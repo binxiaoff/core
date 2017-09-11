@@ -2,12 +2,11 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-
 use Doctrine\ORM\EntityManager;
 use NumberFormatter;
 use Psr\Log\LoggerInterface;
-use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Asset\Packages;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
@@ -20,53 +19,40 @@ class PaylineManager
 {
     const PAYMENT_LOCATION_LENDER_WALLET = 2;
 
-    /**
-     * @var EntityManagerSimulator
-     */
+    /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-    /**
-     * @var EntityManager
-     */
+
+    /** @var EntityManager */
     private $entityManager;
-    /**
-     * @var TemplateMessageProvider
-     */
+
+    /** @var TemplateMessageProvider */
     private $messageProvider;
-    /**
-     * @var \Swift_Mailer
-     */
+
+    /** @var \Swift_Mailer */
     private $mailer;
-    /**
-     * @var ClientManager
-     */
+
+    /** @var ClientManager */
     private $clientManager;
-    /**
-     * @var OperationManager
-     */
+
+    /** @var OperationManager */
     private $operationManager;
-    /**
-     * @var Router
-     */
+
+    /** @var RouterInterface */
     private $router;
-    /**
-     * @var LoggerInterface
-     */
+
+    /** @var LoggerInterface */
     private $logger;
-    /**
-     * @var string
-     */
+
+    /** @var string */
     private $sUrl;
-    /**
-     * @var boolean
-     */
+
+    /** @var boolean */
     private $isProduction;
-    /**
-     * @var string
-     */
+
+    /** @var string */
     private $merchantId;
-    /**
-     * @var string
-     */
+
+    /** @var string */
     private $accessKey;
 
     /** @var NumberFormatter */
@@ -125,7 +111,7 @@ class PaylineManager
         $payline                  = new \paylineSDK($this->merchantId, $this->accessKey, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, $this->isProduction);
         $payline->returnURL       = $redirectUrl;
         $payline->cancelURL       = $cancelUrl;
-        $payline->notificationURL = NOTIFICATION_URL;
+        $payline->notificationURL = $this->router->generate('payline_callback', [], UrlGeneratorInterface::ABSOLUTE_URL);
 
         $paylineParameter = [
             'payment'         => [
@@ -140,8 +126,8 @@ class PaylineManager
                 'amount'   => $amountInCent,
                 'currency' => ORDER_CURRENCY,
             ],
-            'contracts'       => explode(";", CONTRACT_NUMBER_LIST),
-            'secondContracts' => explode(";", SECOND_CONTRACT_NUMBER_LIST),
+            'contracts'       => explode(';', CONTRACT_NUMBER_LIST),
+            'secondContracts' => explode(';', SECOND_CONTRACT_NUMBER_LIST),
         ];
 
         $this->logger->debug('Calling Payline::doWebPayment: return URL=' . $payline->returnURL . ' Transmetted data: ' . json_encode($paylineParameter));
