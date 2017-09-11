@@ -106,7 +106,10 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
                 fwrite($file, $this->getStartDeclarerRecord());
 
                 foreach ($data as $row) {
-                    fwrite($file, $this->getLoanRecord($row));
+                    $loanRecord = $this->getLoanRecord($row);
+                    if (null !== $loanRecord) {
+                        fwrite($file, $loanRecord);
+                    }
                 }
                 fwrite($file, $this->getEndDeclarerRecord());
                 fwrite($file, $this->getEndSenderRecord());
@@ -137,6 +140,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 
     /**
      * @param string $code
+     *
      * @return string
      */
     private function getStartingRecord($code)
@@ -149,6 +153,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
     /**
      * @param \transmission_sequence $transmissionSequence
      * @param string $fileName
+     *
      * @return string
      */
     private function getStartSenderRecord(\transmission_sequence $transmissionSequence, $fileName)
@@ -168,11 +173,18 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 
     /**
      * @param array $projectData
-     * @return string
+     *
+     * @return string|null
      */
     private function getLoanRecord(array $projectData)
     {
-        return $this->multiBytePad($this->getStartingRecord('11') . $this->getProjectInformation($projectData), self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
+        $projectData = $this->getProjectInformation($projectData);
+
+        if (null !== $projectData) {
+            return $this->multiBytePad($this->getStartingRecord('11') . $projectData , self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
+        }
+
+        return null;
     }
 
     /**
@@ -197,11 +209,18 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 
     /**
      * @param array $data
-     * @return string
+     *
+     * @return string|null
      */
     private function getProjectInformation(array $data)
     {
-        $amount          = $this->getUnpaidAmountAndComingCapital($data);
+        $amount            = $this->getUnpaidAmountAndComingCapital($data);
+        $roundedDueCapital = $this->checkAmounts($amount['owed_capital']);
+
+        if ($roundedDueCapital == 0) {
+            return null;
+        }
+
         $projectLineInfo = $this->checkSiren($data['siren']);
         $projectLineInfo .= $this->checkName($data['name']);
         $projectLineInfo .= $this->checkLoanType($data['loan_type']);
@@ -210,7 +229,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $projectLineInfo .= $this->checkLoanPeriod($data['loan_duration']);
         $projectLineInfo .= $this->checkLoanAvgRate($data['average_loan_rate']);
         $projectLineInfo .= $data['repayment_frequency'];
-        $projectLineInfo .= $this->checkAmounts($amount['owed_capital']);
+        $projectLineInfo .= $roundedDueCapital;
         $projectLineInfo .= $this->checkAmounts($amount['unpaid_amount']);
         $projectLineInfo .= $this->checkUnpaidDate($data['recovery_date'], $data['judgement_date'], $data['late_payment_date']);
         $projectLineInfo .= $this->checkLoanContributorNumber($data['contributor_person_number'], 'person');
@@ -225,6 +244,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 
     /**
      * @param array $data
+     *
      * @return array
      */
     private function getUnpaidAmountAndComingCapital(array $data)
@@ -255,6 +275,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 
     /**
      * @param string $siren
+     *
      * @return string
      * @throws \Exception
      */
@@ -271,6 +292,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 
     /**
      * @param string $name
+     *
      * @return string
      */
     private function checkName($name)
@@ -283,6 +305,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 
     /**
      * @param string $loanType
+     *
      * @return string mixed
      * @throws \Exception
      */
@@ -297,6 +320,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 
     /**
      * @param float $amount
+     *
      * @return string
      * @throws \Exception
      */
@@ -312,6 +336,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 
     /**
      * @param int $loanPeriod
+     *
      * @return string
      * @throws \Exception
      */
@@ -326,6 +351,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 
     /**
      * @param float $loanAvgRate
+     *
      * @return string
      * @throws \Exception
      */
@@ -346,6 +372,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
      * @param string $recoveryDate
      * @param string $judgementDate
      * @param string $latePaymentDate
+     *
      * @return string
      */
     private function checkUnpaidDate($recoveryDate, $judgementDate, $latePaymentDate)
@@ -364,6 +391,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
     /**
      * @param int $number
      * @param string $type
+     *
      * @return string
      * @throws \Exception
      */
@@ -389,6 +417,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 
     /**
      * @param float $percentage
+     *
      * @return string
      * @throws \Exception
      */
@@ -406,6 +435,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
      * @param string $padString
      * @param int $padType
      * @param string $encoding
+     *
      * @return string
      */
     private function multiBytePad($input, $padLength, $padString = ' ', $padType = STR_PAD_RIGHT, $encoding = 'UTF-8')
@@ -441,11 +471,18 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 
     /**
      * @param array $data
+     *
      * @return string
      */
     private function getProjectInformationCsv(array $data)
     {
         $amount            = $this->getUnpaidAmountAndComingCapital($data);
+        $roundedDueCapital = $this->checkAmounts($amount['owed_capital']);
+
+        if ($roundedDueCapital == 0) {
+            return null;
+        }
+
         $projectLineInfo[] = $this->checkSiren($data['siren']);
         $projectLineInfo[] = $this->checkName($data['name']);
         $projectLineInfo[] = $this->checkLoanType($data['loan_type']);
@@ -454,7 +491,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $projectLineInfo[] = $this->checkLoanPeriod($data['loan_duration']);
         $projectLineInfo[] = $this->checkLoanAvgRate($data['average_loan_rate']);
         $projectLineInfo[] = $data['repayment_frequency'];
-        $projectLineInfo[] = $this->checkAmounts($amount['owed_capital']);
+        $projectLineInfo[] = $roundedDueCapital;
         $projectLineInfo[] = $this->checkAmounts($amount['unpaid_amount']);
         $projectLineInfo[] = $this->checkUnpaidDate($data['recovery_date'], $data['judgement_date'], $data['late_payment_date']);
         $projectLineInfo[] = $this->checkLoanContributorNumber($data['contributor_person_number'], 'person');
@@ -466,5 +503,4 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 
         return implode(';', $projectLineInfo) . PHP_EOL;
     }
-
 }
