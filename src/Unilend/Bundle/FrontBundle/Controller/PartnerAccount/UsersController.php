@@ -34,11 +34,17 @@ class UsersController extends Controller
         $users                   = $companyClientRepository->findBy(['idCompany' => $this->getUserCompanies()]);
 
         foreach ($users as $user) {
-            $template['users'][] = [
+            $userData = [
                 'client' => $user->getIdClient(),
                 'role'   => $user->getRole() === UserPartner::ROLE_ADMIN ? 'admin' : 'agent',
                 'entity' => $user->getIdCompany()
             ];
+
+            if (Clients::STATUS_OFFLINE == $user->getIdClient()->getStatus()) {
+                $template['offlineUsers'][] = $userData;
+            } else {
+                $template['onlineUsers'][] = $userData;
+            }
         }
 
         return $this->render('/partner_account/users.html.twig', $template);
