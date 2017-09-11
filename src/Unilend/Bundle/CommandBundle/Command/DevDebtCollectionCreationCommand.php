@@ -120,7 +120,9 @@ EOF
             $user                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
             $projectRepaymentTask = new ProjectRepaymentTask();
             $projectRepaymentTask->setIdProject($project)
-                ->setAmount($amount)
+                ->setCapital($amount)
+                ->setInterest(0)
+                ->setCommissionUnilend(0)
                 ->setType(ProjectRepaymentTask::TYPE_CLOSE_OUT_NETTING)
                 ->setStatus(ProjectRepaymentTask::STATUS_PENDING)
                 ->setRepayAt(new \DateTime())
@@ -209,7 +211,7 @@ EOF
                 $operationManager->payCollectionCommissionByBorrower($borrower, $collector, $commission, $project);
 
                 $amountToRepay = round(bcsub($projectRepaymentTask, $commission, 4), 2);
-                $projectRepaymentTask->setAmount($amountToRepay);
+                $projectRepaymentTask->setCapital($amountToRepay);
             }
 
             while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
