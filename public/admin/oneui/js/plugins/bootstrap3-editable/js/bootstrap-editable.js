@@ -243,8 +243,12 @@ Editableform is linked with one of input types, e.g. 'text', 'select' etc.
             .done($.proxy(function(response) {
                 this.isSaving = false;
 
+
+
                 //run success callback
                 var res = typeof this.options.success === 'function' ? this.options.success.call(this.options.scope, response, newValue) : null;
+
+
 
                 //if success callback returns false --> keep form open and do not activate input
                 if(res === false) {
@@ -256,6 +260,14 @@ Editableform is linked with one of input types, e.g. 'text', 'select' etc.
                 //if success callback returns string -->  keep form open, show error and activate input               
                 if(typeof res === 'string') {
                     this.error(res);
+                    this.showForm();
+                    return;
+                }
+
+                //if success callback returns array -->  keep form open, show errors and activate input
+                if($.isArray(res)) {
+                    var errors = res.join('\n')
+                    this.error(errors);
                     this.showForm();
                     return;
                 }
@@ -5926,7 +5938,7 @@ Editableform based on Twitter Bootstrap 3
 		forceParse: true,
 		format: 'mm/dd/yyyy',
 		keyboardNavigation: true,
-		language: 'en',
+		language: 'fr',
 		minViewMode: 0,
 		rtl: false,
 		startDate: -Infinity,
@@ -6205,7 +6217,9 @@ $(function(){
     $.fn.bdatepicker = $.fn.datepicker.noConflict();
     if(!$.fn.datepicker) { //if there were no other datepickers, keep also original name
         $.fn.datepicker = $.fn.bdatepicker;    
-    }    
+    }
+
+    $.fn.datepicker.dates.fr = $.fn.bdatepicker.dates.fr= {days:['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'],daysShort:['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'],daysMin:['di','lu','ma','me','je','ve','sa'],months:['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'],monthsShort:['janv.','févr.','mars','avril','mai','juin','juil.','août','sept.','oct.','nov.','déc.'],today:'Aujourd\'hui',monthsTitle:'Mois',clear:'Effacer',weekStart:1,format:'dd/mm/yyyy'};
     
     var Date = function (options) {
         this.init('date', options, Date.defaults);
@@ -6357,9 +6371,9 @@ $(function(){
 
         @property format 
         @type string
-        @default yyyy-mm-dd
+        @default dd/mm/yyyy
         **/
-        format:'yyyy-mm-dd',
+        format:'dd/mm/yyyy',
         /**
         Format used for displaying date. Also applied when converting date from element's text on init.   
         If not specified equals to <code>format</code>
@@ -6386,7 +6400,8 @@ $(function(){
             weekStart: 0,
             startView: 0,
             minViewMode: 0,
-            autoclose: false
+            autoclose: false,
+            language: 'fr'
         },
         /**
         Text shown as clear date button. 

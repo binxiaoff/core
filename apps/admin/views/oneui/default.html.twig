@@ -1094,29 +1094,73 @@
                 </div>
             </article>
             <article id="editable">
-                <h4>Editable</h4>
+                <h4 class="push-20">Editable</h4>
+                <p class="push-10">The only required attributes for each element are:</p>
+                <ul class="remove-margin">
+                    <li>data-editable</li>
+                    <li>data-editable-url</li>
+                    <li>data-editable-name</li>
+                </ul>
                 <div class="row">
-                    <div class="col-md-4">
-                        <h5 class="content-heading">Inline</h5>
+                    <div class="col-md-3">
+                        <h5 class="content-heading">Text</h5>
                         <div class="block">
                             <div class="block-content block-content-full">
-                                <a role="editable" data-editable data-editable-style="inline" data-editable-key="editableField" data-editable-url="/post">Editable Text</a>
+                                <a role="editable" data-editable data-editable-name="text" data-editable-url="/oneui/editable/" data-editable-placement="right">Editable Text</a>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <h5 class="content-heading">Hover</h5>
+                    <div class="col-md-3">
+                        <h5 class="content-heading">Number</h5>
                         <div class="block">
                             <div class="block-content block-content-full">
-                                <a role="editable" data-editable data-editable-style="inline" data-editable-key="editableField" data-editable-url="/post" data-editable-trigger="mouseenter">Editable Text</a>
+                                <a role="editable" data-editable data-editable-type="numeric" data-editable-name="numericField" data-editable-url="/oneui/editable/">1 000.00 €</a>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <h5 class="content-heading">Popup</h5>
+                    <div class="col-md-3">
+                        <h5 class="content-heading">Date</h5>
                         <div class="block">
                             <div class="block-content block-content-full">
-                                <a role="editable" data-editable data-editable-key="editableField" data-editable-url="/post">Editable Text</a>
+                                <a role="editable" data-editable data-editable-type="date" data-editable-name="dateField" data-editable-url="/oneui/editable/">20/04/2017</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <h5 class="content-heading">Select</h5>
+                        <div class="block">
+                            <div class="block-content block-content-full">
+                                <a role="editable" data-editable data-editable-type="select" data-editable-options="Active,Inactive,Deleted" data-editable-name="selectField" data-editable-url="/oneui/editable/">Active</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row editable-group" data-editable-url="/oneui/editable/" data-editable-id="clientId">
+                    <div class="col-md-6">
+                        <h5 class="content-heading">Group</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="block remove-margin">
+                                    <div class="block-content block-content-full">
+                                        <a role="editable" data-editable data-editable-group=".editable-group" data-editable-name="groupField1" data-editable-placement="right">Group member 1</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="block remove-margin">
+                                    <div class="block-content block-content-full">
+                                        <a role="editable" data-editable data-editable-group=".editable-group" data-editable-name="groupField2">Group member 2</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p><small>* Instead of adding the same <span class="text-primary">data-editable-url</span> and <span class="text-primary">data-editable-id</span> to multiple elements, add those attributes to their <span class="text-primary">parent</span>.</small></p>
+                    </div>
+                    <div class="col-md-3 col-md-offset-3">
+                        <h5 class="content-heading">Inline Style</h5>
+                        <div class="block">
+                            <div class="block-content block-content-full">
+                                <a role="editable" data-editable data-editable-style="inline" data-editable-name="inlineField" data-editable-url="/oneui/editable/">Editable Text</a>
                             </div>
                         </div>
                     </div>

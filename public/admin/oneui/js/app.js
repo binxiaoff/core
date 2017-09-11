@@ -1115,10 +1115,13 @@ var App = function() {
      */
     var uiHelperDatepicker = function(){
         // Init datepicker (with .js-datepicker and .input-daterange class)
+        $.fn.datepicker.dates.fr= {days:['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'],daysShort:['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'],daysMin:['di','lu','ma','me','je','ve','sa'],months:['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'],monthsShort:['janv.','févr.','mars','avril','mai','juin','juil.','août','sept.','oct.','nov.','déc.'],today:'Aujourd\'hui',monthsTitle:'Mois',clear:'Effacer',weekStart:1,format:'dd/mm/yyyy'};
+
         jQuery('.js-datepicker').add('.input-daterange').datepicker({
             weekStart: 1,
             autoclose: true,
-            todayHighlight: true
+            todayHighlight: true,
+            language: 'fr'
         });
     };
 
@@ -1258,49 +1261,104 @@ var App = function() {
      *
      */
     var uiHelperEditable = function(){
-        // Required attributes
         jQuery('[data-editable]').each(function() {
+            var $this = $(this)
+
+            // Retrieve data settings
             var requiredAttributes = []
-            var missing = false
-            var url = $(this).data('editable-url')
-            var key = $(this).data('editable-key')
-            requiredAttributes.push(['url', url], ['key', key])
+            var type = $this.data('editable-type') // Text, Numeric, Date, Select
+            var value = $this.data('editable-value') // The value to edit
+            var url = $this.data('editable-url') // Server/Ajax URL
+            var name = $this.data('editable-name') // Field name to be edited
+            var id = $this.data('editable-id') // Client or Project ID
+            var group = $this.data('editable-group') // Group editable fields together
+            var options = $this.data('editable-options') // An array of options for Select editable type
+            var placement = $this.data('editable-placement') // Client or Project ID
+            var display = null // This must change to false if the server returns the newValue (as opposed to what the user typed)
+            var style = $this.data('editable-style')
+
+            // Default values
+            if (typeof type === 'undefined')
+                type = 'text'
+            if (typeof value === 'undefined')
+                value = $this.text()
+            if (typeof options === 'undefined')
+                options = ''
+            if (typeof id === 'undefined')
+                id = ''
+            if (typeof placement === 'undefined')
+                placement = 'top'
+            if (typeof style === 'undefined' || style === '')
+                style = 'popup'
+            $.fn.editable.defaults.mode = style
+
+            // Group - get ID and URL from a parent group element
+            if (typeof group !== 'undefined') {
+                $groupElement = $this.closest(group)
+                if (!$groupElement.length) {
+                    console.log('Missing group element.')
+                    return false
+                } else {
+                    id = $groupElement.data('editable-id')
+                    url = $groupElement.data('editable-url')
+                }
+            }
+
+            // Required attributes
+            requiredAttributes.push(['type', type], ['name', name], ['url', url])
             for (var i = 0; i < requiredAttributes.length; i++) {
                 var attrKey = requiredAttributes[i][0]
                 var attrValue = requiredAttributes[i][1]
                 if (typeof attrValue === 'undefined' || attrValue === '') {
                     console.log('Missing attribute data-editable-' + attrKey)
-                    missing = true
+                    return false
                 }
             }
-            // Optional attributes
-            var toggle = $(this).data('editable-trigger')
-            if (typeof toggle === 'undefined' || toggle === '')
-                toggle = 'click'
-            var style = $(this).data('editable-style')
-            if (style === 'inline')
-                $.fn.editable.defaults.mode = 'inline'
-            else
-                $.fn.editable.defaults.mode = 'popup'
 
-            // If all required are there, init
-            if (!missing) {
-                $(this).editable({
-                    type: 'text',
-                    pk: key,
-                    url: url,
-                    toggle: toggle,
-                    success: function(response, newValue) {
-                        if (!response.success) {
-                            var errors = ''
-                            $.each( response.error, function(i, val){
-                                errors += val + ' '
-                            })
-                            return errors
-                        }
+            // Handle custom types
+            if (type !== 'text') {
+                if (type === 'numeric') {
+                    type = 'text'
+                    display = false
+                    var initialType = 'numeric'
+                    var value = $this.data('editable-numeric-value')
+                    if (typeof value === 'undefined' || value === '')
+                        value = parseFloat($this.text().replace(/[A-Za-z$-\s+]/g, '').replace(',', '.'))
+                }
+                if (type === 'select') {
+                    var prepareOptions = []
+                    options = options.split(',')
+                    for (var $i = 0; $i < options.length; $i++) {
+                        prepareOptions.push({value: $i + 1, text: options[$i]})
+                        if (options[$i] === $this.text())
+                            value = $i + 1 // Set select to current option
                     }
-                })
+                    options = prepareOptions
+                }
             }
+
+            // @ Debug
+            // console.log('Editable --- type:' + type + ' name:' + name + ' value:' + value + ' url:' + url + ' id:' + id + ' ajaxOptions:' + ajaxOptions + ' display:' + display)
+
+            // Init
+            $this.editable({
+                type: type,
+                name: name,
+                value: value,
+                url: url,
+                pk: id,
+                placement: placement,
+                source: options,
+                ajaxOptions: {type: 'post', dataType: 'json'},
+                display: display,
+                success: function(response) {
+                    if (!response.success)
+                        return response.error
+                    else
+                        if (initialType === 'numeric')
+                            $this.html(response.newValue)
+                }
+            })
         })
     };
 

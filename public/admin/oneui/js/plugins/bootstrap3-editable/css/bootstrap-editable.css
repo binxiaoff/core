@@ -166,11 +166,26 @@
    font-size: inherit;  /* jqueryui widget font 1.1em too big, overwrite it */
    z-index: 9990; /* should be less than select2 dropdown z-index to close dropdown first when click */
 }
+.editable-click {
+    position: relative;
+}
 .editable-click, 
 a.editable-click, 
 a.editable-click:hover {
     text-decoration: none;
     border-bottom: dashed 1px #353847;
+    cursor: pointer;
+}
+.editable-click:hover:before {
+    font-family: 'FontAwesome';
+    content: '\f040';
+    display: block;
+    position: absolute;
+    top: 0;
+    right: -20px;
+    text-align: right;
+    width: 20px;
+    height: 20px;
 }
 
 .editable-click.editable-disabled, 
@@ -233,7 +248,7 @@ a.editable-click.editable-disabled:hover {
 
 }
 .datepicker-inline {
-  width: 220px;
+  width: 230px;
 }
 .datepicker.datepicker-rtl {
   direction: rtl;
@@ -275,8 +290,14 @@ a.editable-click.editable-disabled:hover {
 .datepicker.months div.datepicker-months {
   display: block;
 }
+.datepicker-months .table-condensed td {
+    width: 100%;
+}
 .datepicker.years div.datepicker-years {
   display: block;
+}
+.datepicker-years .table-condensed td {
+    width: 100%;
 }
 .datepicker table {
   margin: 0;
@@ -379,17 +400,6 @@ a.editable-click.editable-disabled:hover {
 .datepicker table tr td.range.today.disabled,
 .datepicker table tr td.range.today.disabled:hover {
   background-color: #f3d17a;
-  background-image: -moz-linear-gradient(top, #f3c17a, #f3e97a);
-  background-image: -ms-linear-gradient(top, #f3c17a, #f3e97a);
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#f3c17a), to(#f3e97a));
-  background-image: -webkit-linear-gradient(top, #f3c17a, #f3e97a);
-  background-image: -o-linear-gradient(top, #f3c17a, #f3e97a);
-  background-image: linear-gradient(top, #f3c17a, #f3e97a);
-  background-repeat: repeat-x;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#f3c17a', endColorstr='#f3e97a', GradientType=0);
-  border-color: #f3e97a #f3e97a #edde34;
-  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
-  filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
   -webkit-border-radius: 0;
   -moz-border-radius: 0;
   border-radius: 0;
@@ -431,19 +441,7 @@ a.editable-click.editable-disabled:hover {
 .datepicker table tr td.selected.disabled,
 .datepicker table tr td.selected.disabled:hover {
   background-color: #9e9e9e;
-  background-image: -moz-linear-gradient(top, #b3b3b3, #808080);
-  background-image: -ms-linear-gradient(top, #b3b3b3, #808080);
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#b3b3b3), to(#808080));
-  background-image: -webkit-linear-gradient(top, #b3b3b3, #808080);
-  background-image: -o-linear-gradient(top, #b3b3b3, #808080);
-  background-image: linear-gradient(top, #b3b3b3, #808080);
-  background-repeat: repeat-x;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#b3b3b3', endColorstr='#808080', GradientType=0);
-  border-color: #808080 #808080 #595959;
-  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
-  filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
   color: #fff;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 .datepicker table tr td.selected:hover,
 .datepicker table tr td.selected:hover:hover,
@@ -482,19 +480,7 @@ a.editable-click.editable-disabled:hover {
 .datepicker table tr td.active.disabled,
 .datepicker table tr td.active.disabled:hover {
   background-color: #006dcc;
-  background-image: -moz-linear-gradient(top, #353847, #0044cc);
-  background-image: -ms-linear-gradient(top, #353847, #0044cc);
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#353847), to(#0044cc));
-  background-image: -webkit-linear-gradient(top, #353847, #0044cc);
-  background-image: -o-linear-gradient(top, #353847, #0044cc);
-  background-image: linear-gradient(top, #353847, #0044cc);
-  background-repeat: repeat-x;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#353847', endColorstr='#0044cc', GradientType=0);
-  border-color: #0044cc #0044cc #002a80;
-  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
-  filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
   color: #fff;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 .datepicker table tr td.active:hover,
 .datepicker table tr td.active:hover:hover,
@@ -554,19 +540,7 @@ a.editable-click.editable-disabled:hover {
 .datepicker table tr td span.active.disabled,
 .datepicker table tr td span.active.disabled:hover {
   background-color: #006dcc;
-  background-image: -moz-linear-gradient(top, #353847, #0044cc);
-  background-image: -ms-linear-gradient(top, #353847, #0044cc);
-  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#353847), to(#0044cc));
-  background-image: -webkit-linear-gradient(top, #353847, #0044cc);
-  background-image: -o-linear-gradient(top, #353847, #0044cc);
-  background-image: linear-gradient(top, #353847, #0044cc);
-  background-repeat: repeat-x;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#353847', endColorstr='#0044cc', GradientType=0);
-  border-color: #0044cc #0044cc #002a80;
-  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
-  filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
   color: #fff;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 .datepicker table tr td span.active:hover,
 .datepicker table tr td span.active:hover:hover,
