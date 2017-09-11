@@ -20,7 +20,7 @@ use Unilend\core\Loader;
 class UsersController extends Controller
 {
     /**
-     * @Route("partenaire/utilisateurs", name="partner_users")
+     * @Route("/partenaire/utilisateurs", name="partner_users")
      * @Method("GET")
      * @Security("has_role('ROLE_PARTNER_ADMIN')")
      *
@@ -45,7 +45,7 @@ class UsersController extends Controller
     }
 
     /**
-     * @Route("partenaire/utilisateurs", name="partner_user_form")
+     * @Route("/partenaire/utilisateurs", name="partner_user_form")
      * @Method("POST")
      * @Security("has_role('ROLE_PARTNER_ADMIN')")
      *
@@ -66,7 +66,7 @@ class UsersController extends Controller
                 case 'password':
                     /** @var \temporary_links_login $temporaryLink */
                     $temporaryLink = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
-                    $token         = $temporaryLink->generateTemporaryLink($client->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_SHORT);
+                    $token         = $temporaryLink->generateTemporaryLink($client->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_MEDIUM);
                     $keywords      = [
                         'surl'          => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
                         'url'           => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
@@ -106,7 +106,7 @@ class UsersController extends Controller
     }
 
     /**
-     * @Route("partenaire/utilisateurs/creation", name="partner_user_creation")
+     * @Route("/partenaire/utilisateurs/creation", name="partner_user_creation")
      * @Method("GET")
      * @Security("has_role('ROLE_PARTNER_ADMIN')")
      *
@@ -141,7 +141,7 @@ class UsersController extends Controller
     }
 
     /**
-     * @Route("partenaire/utilisateurs/creation", name="partner_user_creation_form")
+     * @Route("/partenaire/utilisateurs/creation", name="partner_user_creation_form")
      * @Method("POST")
      * @Security("has_role('ROLE_PARTNER_ADMIN')")
      *
@@ -226,7 +226,7 @@ class UsersController extends Controller
     }
 
     /**
-     * @Route("partenaire/securite/{token}", name="partner_security", requirements={"token": "[0-9a-f]+"})
+     * @Route("/partenaire/securite/{token}", name="partner_security", requirements={"token": "[0-9a-f]+"})
      *
      * @param string  $token
      * @param Request $request
