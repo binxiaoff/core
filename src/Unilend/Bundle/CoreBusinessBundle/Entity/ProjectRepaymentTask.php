@@ -29,9 +29,16 @@ class ProjectRepaymentTask
     /**
      * @var string
      *
-     * @ORM\Column(name="amount", type="decimal", precision=12, scale=2, nullable=false)
+     * @ORM\Column(name="capital", type="decimal", precision=12, scale=2, nullable=false)
      */
-    private $amount;
+    private $capital;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="interest", type="decimal", precision=12, scale=2, nullable=false)
+     */
+    private $interest;
 
     /**
      * @var string
@@ -164,27 +171,51 @@ class ProjectRepaymentTask
     }
 
     /**
-     * Set amount
+     * Set capital
      *
-     * @param string $amount
+     * @param string $capital
      *
      * @return ProjectRepaymentTask
      */
-    public function setAmount($amount)
+    public function setCapital($capital)
     {
-        $this->amount = $amount;
+        $this->capital = $capital;
 
         return $this;
     }
 
     /**
-     * Get amount
+     * Get capital
      *
      * @return string
      */
-    public function getAmount()
+    public function getCapital()
     {
-        return $this->amount;
+        return $this->capital;
+    }
+
+    /**
+     * Set interest
+     *
+     * @param string $interest
+     *
+     * @return ProjectRepaymentTask
+     */
+    public function setInterest($interest)
+    {
+        $this->interest = $interest;
+
+        return $this;
+    }
+
+    /**
+     * Get interest
+     *
+     * @return string
+     */
+    public function getInterest()
+    {
+        return $this->interest;
     }
 
     /**

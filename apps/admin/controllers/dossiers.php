@@ -1896,7 +1896,7 @@ class dossiersController extends bootstrap
 
                 $borrowerOwedCapital = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getRemainingCapitalFrom($this->projects->id_project, $nextRepayment[0]['ordre']);
 
-                if (0 === bccomp($borrowerOwedCapital, $projectRepaymentTask->getAmount(), 2)) {
+                if (0 === bccomp($borrowerOwedCapital, $projectRepaymentTask->getCapital(), 2)) {
                     $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_READY)->setIdUserValidation($user);
                     $entityManager->flush($projectRepaymentTask);
 

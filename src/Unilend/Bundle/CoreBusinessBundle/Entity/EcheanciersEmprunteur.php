@@ -45,6 +45,13 @@ class EcheanciersEmprunteur
     /**
      * @var integer
      *
+     * @ORM\Column(name="paid_capital", type="integer", nullable=false)
+     */
+    private $paidCapital;
+
+    /**
+     * @var integer
+     *
      * @ORM\Column(name="interets", type="integer", nullable=false)
      */
     private $interets;
@@ -52,9 +59,9 @@ class EcheanciersEmprunteur
     /**
      * @var integer
      *
-     * @ORM\Column(name="paid_amount", type="integer", nullable=false)
+     * @ORM\Column(name="paid_interest", type="integer", nullable=false)
      */
-    private $paidAmount;
+    private $paidInterest;
 
     /**
      * @var integer
@@ -215,6 +222,30 @@ class EcheanciersEmprunteur
     }
 
     /**
+     * Set paidCapital
+     *
+     * @param integer $paidCapital
+     *
+     * @return EcheanciersEmprunteur
+     */
+    public function setPaidCapital($paidCapital)
+    {
+        $this->paidCapital = $paidCapital;
+
+        return $this;
+    }
+
+    /**
+     * Get paidCapital
+     *
+     * @return integer
+     */
+    public function getPaidCapital()
+    {
+        return $this->paidCapital;
+    }
+
+    /**
      * Set interets
      *
      * @param integer $interets
@@ -239,27 +270,27 @@ class EcheanciersEmprunteur
     }
 
     /**
-     * Set paidAmount
+     * Set paidInterest
      *
-     * @param integer $paidAmount
+     * @param integer $paidInterest
      *
      * @return EcheanciersEmprunteur
      */
-    public function setPaidAmount($paidAmount)
+    public function setPaidInterest($paidInterest)
     {
-        $this->paidAmount = $paidAmount;
+        $this->paidInterest = $paidInterest;
 
         return $this;
     }
 
     /**
-     * Get paidAmount
+     * Get paidInterest
      *
      * @return integer
      */
-    public function getPaidAmount()
+    public function getPaidInterest()
     {
-        return $this->paidAmount;
+        return $this->paidInterest;
     }
 
     /**

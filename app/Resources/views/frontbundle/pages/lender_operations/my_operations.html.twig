@@ -126,7 +126,7 @@
                             data-sortable-type="{{ op.label }}"
                             data-sortable-contract="{{ op.id_loan }}"
                             data-sortable-project="{{ op.id_project }}"
-                            data-sortable-date="{{ op.date|date('U') }}"
+                            data-sortable-date="{{ op.operationDate|date('U') }}"
                             data-sortable-amount="{{ op.amount }}"
                             data-sortable-balance="{{ op.available_balance }}">
                             <td class="table-myoperations-item-type">{{ ('lender-operations_operation-label-'~op.label)|trans }}</td>
@@ -134,7 +134,7 @@
                             <td class="table-myoperations-item-project">
                                 <div class="text-crop">{{ op.title }}</div>
                             </td>
-                            <td class="table-myoperations-item-date">{{ op.date|date('d/m/y') }}</td>
+                            <td class="table-myoperations-item-date">{{ op.operationDate|date('d/m/y') }}</td>
                             <td class="table-myoperations-item-amount">{{ op.amount|localizedcurrency('EUR') }}</td>
                             <td class="table-myoperations-item-balance">{{ op.available_balance|localizedcurrency('EUR') }}</td>
                         </tr>
