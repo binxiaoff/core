@@ -209,6 +209,6 @@ class InvoiceManager
         $this->entityManager->persist($newInvoiceCount);
         $this->entityManager->flush($newInvoiceCount);
 
-        return vprintf('FR-E%s%s', ['date' => $date->format('Ymd'), 'sequence' => str_pad($newInvoiceCount->getOrdre(), 5, '0', STR_PAD_LEFT)]);
+        return vsprintf('FR-E%s%s', ['date' => $date->format('Ymd'), 'sequence' => str_pad($newInvoiceCount->getOrdre(), 5, '0', STR_PAD_LEFT)]);
     }
 }
