@@ -98,7 +98,7 @@ class EcheanciersEmprunteurRepository extends EntityRepository
     public function getOverdueScheduleCount($project)
     {
         $queryBuilder = $this->createQueryBuilder('ee');
-        $queryBuilder->select('count(*)')
+        $queryBuilder->select('count(ee)')
             ->where('ee.idProject = :project')
             ->andWhere('ee.statusEmprunteur in (:unfinished)')
             ->andWhere('DATE(ee.dateEcheanceEmprunteur) <= :today')

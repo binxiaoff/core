@@ -47,13 +47,13 @@ class ProjectStatusManager
                     return [];
                 }
                 $possibleStatus = \projects_status::$afterRepayment;
-                if ($key = array_search(ProjectsStatus::DEFAUT, $possibleStatus)) {
+                if (false !== $key = array_search(ProjectsStatus::DEFAUT, $possibleStatus)) {
                     unset($possibleStatus[$key]);
                 }
 
                 if (
                     0 < $paymentScheduleRepository->getOverdueScheduleCount($project)
-                    && $key = array_search(ProjectsStatus::REMBOURSEMENT, $possibleStatus)
+                    && false !== $key = array_search(ProjectsStatus::REMBOURSEMENT, $possibleStatus)
                 ) {
                     unset($possibleStatus[$key]);
                 }
