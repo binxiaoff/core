@@ -9,13 +9,17 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="compteur_factures", indexes={@ORM\Index(name="date", columns={"date"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class CompteurFactures
 {
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
      */
     private $idProject;
 
@@ -56,16 +60,14 @@ class CompteurFactures
      */
     private $idCompteurFacture;
 
-
-
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject
      *
      * @return CompteurFactures
      */
-    public function setIdProject($idProject)
+    public function setIdProject(Projects $idProject)
     {
         $this->idProject = $idProject;
 
@@ -75,7 +77,7 @@ class CompteurFactures
     /**
      * Get idProject
      *
-     * @return integer
+     * @return Projects
      */
     public function getIdProject()
     {
@@ -186,5 +188,23 @@ class CompteurFactures
     public function getIdCompteurFacture()
     {
         return $this->idCompteurFacture;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

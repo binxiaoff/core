@@ -230,7 +230,11 @@ class dossiersController extends bootstrap
             $this->aSalesPersons        = $this->users->select('(status = 1 AND id_user_type = 3) OR id_user = 23 OR id_user = ' . $this->projects->id_commercial); // ID user 23 corresponds to Arnaud
             $this->projectComments      = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ProjectsComments')->findBy(['idProject' => $this->projects->id_project], ['added' => 'DESC']);
             $this->aAllAnnualAccounts   = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
-            $this->lProjects_status     = $projectStatusManager->getPossibleStatus($this->projects);
+
+            $this->possibleProjectStatus = $projectStatusManager->getPossibleStatus($this->projectEntity);
+            if ($this->projectEntity->getStatus()) {
+                $this->currentProjectStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $this->projectEntity->getStatus()]);
+            }
 
             if (empty($this->projects->id_dernier_bilan)) {
                 $this->lbilans = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC', 0, 3);
@@ -1896,7 +1900,7 @@ class dossiersController extends bootstrap
 
                 $borrowerOwedCapital = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getRemainingCapitalFrom($this->projects->id_project, $nextRepayment[0]['ordre']);
 
-                if (0 === bccomp($borrowerOwedCapital, $projectRepaymentTask->getAmount(), 2)) {
+                if (0 === bccomp($borrowerOwedCapital, $projectRepaymentTask->getCapital(), 2)) {
                     $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_READY)->setIdUserValidation($user);
                     $entityManager->flush($projectRepaymentTask);
 
