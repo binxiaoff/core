@@ -436,16 +436,28 @@ class ProjectRepaymentTaskManager
     }
 
     /**
+     * It checks if a planned repayment task is a complete repayment.
+     *
      * @param ProjectRepaymentTask $projectRepaymentTask
      *
      * @return bool
      */
     public function isCompleteRepayment(ProjectRepaymentTask $projectRepaymentTask)
     {
-        $taskAmount    = round(bcadd($projectRepaymentTask->getAmount(), $projectRepaymentTask->getCommissionUnilend(), 4), 2);
-        $monthlyAmount = $this->projectRepaymentScheduleManager->getMonthlyAmount($projectRepaymentTask->getIdProject());
+        $paymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy([
+            'idProject' => $projectRepaymentTask->getIdProject(),
+            'ordre'     => $projectRepaymentTask->getSequence()
+        ]);
 
-        return 0 === bccomp($taskAmount, $monthlyAmount, 2);
+        if (
+            0 === bccomp($projectRepaymentTask->getCapital(), round(bcdiv($paymentSchedule->getCapital(), 100, 4), 2), 2)
+            && 0 === bccomp($projectRepaymentTask->getInterest(), round(bcdiv($paymentSchedule->getInterets(), 100, 4), 2), 2)
+            && 0 === bccomp($projectRepaymentTask->getCommissionUnilend(), round(bcdiv($paymentSchedule->getCommission() + $paymentSchedule->getTva(), 100, 4), 2), 2)
+        ) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
