@@ -18,7 +18,7 @@ class BorrowerInvoiceCreationCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $invoiceManager   = $this->getContainer()->get('unilend.service.invoice_manager');
-        $paymentSchedules = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findPaymentSchedulesToInvoice(1);
+        $paymentSchedules = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findPaymentSchedulesToInvoice(50);
 
         foreach ($paymentSchedules as $paymentSchedule) {
             try {
