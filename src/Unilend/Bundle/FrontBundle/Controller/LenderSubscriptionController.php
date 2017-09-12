@@ -818,7 +818,7 @@ class LenderSubscriptionController extends Controller
      * @Route("/parrainage-preteur", name="lender_sponsorship_landing_page")
      * @Method("GET")
      */
-    public function sponsorshipLandngPageAction(Request $request)
+    public function sponsorshipLandingPageAction(Request $request)
     {
         $clientRepository             = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
         $template['isSponsorship']    = false;
