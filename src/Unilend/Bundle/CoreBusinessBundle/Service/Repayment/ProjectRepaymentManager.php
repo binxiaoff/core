@@ -116,13 +116,14 @@ class ProjectRepaymentManager
 
         $this->payCommission($projectRepaymentTaskLog);
 
-        // Invoice generation will be modified in DEV-1544
-        $paymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy([
-            'idProject' => $projectRepaymentTask->getIdProject(),
-            'ordre'     => $projectRepaymentTask->getSequence()
-        ]);
-        $this->createPaymentScheduleInvoice($paymentSchedule);
-        $this->projectRepaymentNotificationSender->sendPaymentScheduleInvoiceToBorrower($paymentSchedule);
+        if (0 === $compareResult) {
+            $paymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy([
+                'idProject' => $projectRepaymentTask->getIdProject(),
+                'ordre'     => $projectRepaymentTask->getSequence()
+            ]);
+
+            $this->projectRepaymentNotificationSender->sendPaymentScheduleInvoiceToBorrower($paymentSchedule);
+        }
 
         // Send "end of repayment" notifications
         $pendingRepaymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')
@@ -134,31 +135,6 @@ class ProjectRepaymentManager
         }
 
         return $projectRepaymentTaskLog;
-    }
-
-    /**
-     * @param EcheanciersEmprunteur $paymentSchedule
-     */
-    private function createPaymentScheduleInvoice(EcheanciersEmprunteur $paymentSchedule)
-    {
-        /** @var \compteur_factures $invoiceCounter */
-        $invoiceCounter = $this->entityManagerSimulator->getRepository('compteur_factures');
-        /** @var \factures $invoice */
-        $invoice = $this->entityManagerSimulator->getRepository('factures');
-        $project = $paymentSchedule->getIdProject();
-        $now     = new \DateTime();
-
-        $invoice->num_facture     = 'FR-E' . $now->format('Ymd') . str_pad($invoiceCounter->compteurJournalier($project->getIdProject(), $now->format('Y-m-d')), 5, '0', STR_PAD_LEFT);
-        $invoice->date            = $now->format('Y-m-d H:i:s');
-        $invoice->id_company      = $project->getIdCompany()->getIdCompany();
-        $invoice->id_project      = $project->getIdProject();
-        $invoice->ordre           = $paymentSchedule->getOrdre();
-        $invoice->type_commission = Factures::TYPE_COMMISSION_REPAYMENT;
-        $invoice->commission      = $project->getCommissionRateRepayment();
-        $invoice->montant_ht      = $paymentSchedule->getCommission();
-        $invoice->tva             = $paymentSchedule->getTva();
-        $invoice->montant_ttc     = bcadd($paymentSchedule->getCommission(), $paymentSchedule->getTva(), 2);
-        $invoice->create();
     }
 
     /**

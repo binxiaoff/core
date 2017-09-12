@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="factures", indexes={@ORM\Index(name="id_company", columns={"id_company"}), @ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="ordre", columns={"ordre"}), @ORM\Index(name="type_commission", columns={"type_commission"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class Factures
 {
@@ -31,6 +32,8 @@ class Factures
 
     /**
      * @var integer
+     *
+     * @deprecated use idProject
      *
      * @ORM\Column(name="id_company", type="integer", nullable=false)
      */
@@ -111,8 +114,6 @@ class Factures
      */
     private $idFacture;
 
-
-
     /**
      * Set numFacture
      *
@@ -164,6 +165,8 @@ class Factures
     /**
      * Set idCompany
      *
+     * @deprecated use idProject
+     *
      * @param integer $idCompany
      *
      * @return Factures
@@ -178,6 +181,8 @@ class Factures
     /**
      * Get idCompany
      *
+     * @deprecated use idProject
+     *
      * @return integer
      */
     public function getIdCompany()
@@ -188,11 +193,11 @@ class Factures
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param Projects $idProject
      *
      * @return Factures
      */
-    public function setIdProject($idProject)
+    public function setIdProject(Projects $idProject)
     {
         $this->idProject = $idProject;
 
@@ -409,5 +414,23 @@ class Factures
     public function getIdFacture()
     {
         return $this->idFacture;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }
