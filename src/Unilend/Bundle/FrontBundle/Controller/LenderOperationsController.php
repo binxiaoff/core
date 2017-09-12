@@ -46,6 +46,7 @@ class LenderOperationsController extends Controller
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
+     *
      * @return Response
      */
     public function indexAction(Request $request)
@@ -83,10 +84,12 @@ class LenderOperationsController extends Controller
     }
 
     /**
-     * @param Request $request
-     * @return JsonResponse
      * @Route("/operations/filterLoans", name="filter_loans")
      * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse
      */
     public function filterLoansAction(Request $request)
     {
@@ -105,10 +108,12 @@ class LenderOperationsController extends Controller
     }
 
     /**
-     * @param Request $request
-     * @return JsonResponse
      * @Route("/operations/filterOperations", name="filter_operations")
      * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse
      */
     public function filterOperationsAction(Request $request)
     {
@@ -139,9 +144,10 @@ class LenderOperationsController extends Controller
     }
 
     /**
-     * @return Response
      * @Route("/operations/exportOperationsCsv", name="export_operations_csv")
      * @Security("has_role('ROLE_LENDER')")
+     *
+     * @return Response
      */
     public function exportOperationsCsvAction()
     {
@@ -178,10 +184,12 @@ class LenderOperationsController extends Controller
     }
 
     /**
-     * @param Request $request
-     * @return Response
      * @Route("/operations/exportLoansCsv", name="export_loans_csv")
      * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param Request $request
+     *
+     * @return Response
      */
     public function exportLoansCsvAction(Request $request)
     {
@@ -306,7 +314,7 @@ class LenderOperationsController extends Controller
 
     /**
      * @param Request $request
-     * @param Wallet $wallet
+     * @param Wallet  $wallet
      *
      * @return array
      */
@@ -320,49 +328,14 @@ class LenderOperationsController extends Controller
         $project = $entityManagerSimulator->getRepository('projects');
         $notificationsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Notifications');
 
-        $orderField     = $request->request->get('type', 'start');
-        $orderDirection = strtoupper($request->request->get('order', 'ASC'));
-        $orderDirection = in_array($orderDirection, ['ASC', 'DESC']) ? $orderDirection : 'ASC';
-
-        switch ($orderField) {
-            case 'status':
-                $sOrderBy = 'p.status ' . $orderDirection . ', debut DESC, p.title ASC';
-                break;
-            case 'title':
-                $sOrderBy = 'p.title ' . $orderDirection . ', debut DESC';
-                break;
-            case 'note':
-                $sOrderBy = 'p.risk ' . $orderDirection . ', debut DESC, p.title ASC';
-                break;
-            case 'amount':
-                $sOrderBy = 'amount ' . $orderDirection . ', debut DESC, p.title ASC';
-                break;
-            case 'interest':
-                $sOrderBy = 'rate ' . $orderDirection . ', debut DESC, p.title ASC';
-                break;
-            case 'next':
-                $sOrderBy = 'next_echeance ' . $orderDirection . ', debut DESC, p.title ASC';
-                break;
-            case 'end':
-                $sOrderBy = 'fin ' . $orderDirection . ', debut DESC, p.title ASC';
-                break;
-            case 'repayment':
-                $sOrderBy = 'last_perceived_repayment ' . $orderDirection . ', debut DESC, p.title ASC';
-                break;
-            case 'start':
-            default:
-                $sOrderBy = 'debut ' . $orderDirection . ', p.title ASC';
-                break;
-        }
-
         /** @var UserLender $user */
         $user               = $this->getUser();
         $projectsInDept     = $project->getProjectsInDebt();
         $filters            = $request->request->get('filter', []);
         $year               = isset($filters['date']) && false !== filter_var($filters['date'], FILTER_VALIDATE_INT) ? $filters['date'] : null;
-        $status             = isset($filters['status']) && in_array($filters['status'], array_keys(self::LOAN_STATUS_FILTER)) ? self::LOAN_STATUS_FILTER[$filters['status']] : null;
+        $status             = isset($filters['status']) && in_array($filters['status'], array_keys(self::LOAN_STATUS_FILTER)) ? [self::LOAN_STATUS_FILTER[$filters['status']]] : null;
         $loanStatus         = array_fill_keys(array_keys(self::LOAN_STATUS_FILTER), 0);
-        $lenderLoans        = $loan->getSumLoansByProject($wallet->getId(), $sOrderBy, $year, $status);
+        $lenderLoans        = $loan->getSumLoansByProject($wallet->getId(), 'debut ASC, p.title ASC', $year, $status);
         $lenderProjectLoans = [];
 
         foreach ($lenderLoans as $projectLoans) {
@@ -391,31 +364,31 @@ class LenderOperationsController extends Controller
                 $loanData['project_status']           = $projectLoans['project_status'];
 
                 switch ($projectLoans['project_status']) {
-                    case \projects_status::PROBLEME:
-                    case \projects_status::PROBLEME_J_X:
+                    case ProjectsStatus::PROBLEME:
+                    case ProjectsStatus::PROBLEME_J_X:
                         $loanData['status'] = 'late';
                         ++$loanStatus['late-repayment'];
                         break;
-                    case \projects_status::RECOUVREMENT:
+                    case ProjectsStatus::RECOUVREMENT:
                         $loanData['status'] = 'completing';
                         ++$loanStatus['problem'];
                         break;
-                    case \projects_status::PROCEDURE_SAUVEGARDE:
-                    case \projects_status::REDRESSEMENT_JUDICIAIRE:
-                    case \projects_status::LIQUIDATION_JUDICIAIRE:
+                    case ProjectsStatus::PROCEDURE_SAUVEGARDE:
+                    case ProjectsStatus::REDRESSEMENT_JUDICIAIRE:
+                    case ProjectsStatus::LIQUIDATION_JUDICIAIRE:
                         $loanData['status'] = 'problem';
                         ++$loanStatus['problem'];
                         break;
-                    case \projects_status::DEFAUT:
+                    case ProjectsStatus::DEFAUT:
                         $loanData['status'] = 'defaulted';
                         ++$loanStatus['problem'];
                         break;
-                    case \projects_status::REMBOURSE:
-                    case \projects_status::REMBOURSEMENT_ANTICIPE:
+                    case ProjectsStatus::REMBOURSE:
+                    case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
                         $loanData['status'] = 'completed';
                         ++$loanStatus['repaid'];
                         break;
-                    case \projects_status::REMBOURSEMENT:
+                    case ProjectsStatus::REMBOURSEMENT:
                     default:
                         $loanData['status'] = 'inprogress';
                         ++$loanStatus['repayment'];
@@ -492,13 +465,13 @@ class LenderOperationsController extends Controller
     }
 
     /**
-     * @param int $projectStatus
-     * @param string $hash
-     * @param int $loanId
+     * @param int                $projectStatus
+     * @param string             $hash
+     * @param int                $loanId
      * @param UnderlyingContract $contract
-     * @param array $projectsInDept
-     * @param int $projectId
-     * @param $nbDeclarations
+     * @param array              $projectsInDept
+     * @param int                $projectId
+     * @param int                $nbDeclarations
      *
      * @return array
      */
@@ -527,6 +500,7 @@ class LenderOperationsController extends Controller
 
     /**
      * @param Request $request
+     *
      * @return array
      */
     private function getOperationFilters(Request $request)
@@ -971,7 +945,7 @@ class LenderOperationsController extends Controller
                 $snappy->getOutputFromHtml($pdfContent),
                 200,
                 [
-                    'Content-Type' => 'application/pdf',
+                    'Content-Type'        => 'application/pdf',
                     'Content-Disposition' => sprintf('attachment; filename="%s"', $fileName)
                 ]
         );
