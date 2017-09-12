@@ -33,8 +33,17 @@ class ProfileController extends Controller
 
             if ($form->isSubmitted() && $form->isValid()) {
                 $this->handlePasswordForm($client, $form);
-                return $this->redirectToRoute('partner_profile');
             }
+
+            if ($form->isValid()) {
+                $this->addFlash('success', $this->get('translator')->trans('partner-profile_security-password-section-form-success-message'));
+            } else {
+                foreach ($form->getErrors(true) as $error) {
+                    $this->addFlash('error', $error->getMessage());
+                }
+            }
+
+            return $this->redirectToRoute('partner_profile');
         }
 
         return $this->render('/partner_account/profile.html.twig', ['form' => $form->createView()]);
@@ -43,37 +52,25 @@ class ProfileController extends Controller
     /**
      * @param Clients       $client
      * @param FormInterface $form
-     *
-     * @return bool
      */
     public function handlePasswordForm(Clients $client, FormInterface $form)
     {
-        $translator              = $this->get('translator');
         $securityPasswordEncoder = $this->get('security.password_encoder');
-        $entityManager           = $this->get('doctrine.orm.entity_manager');
 
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
         if (false === $securityPasswordEncoder->isPasswordValid($this->getUser(), $form->get('formerPassword')->getData())) {
-            $form->get('formerPassword')->addError(new FormError($translator->trans('lender-profile_security-password-section-error-wrong-former-password')));
-            $this->addFlash('error', $translator->trans('partner-profile_security-password-section-error-wrong-former-password'));
+            $form->get('formerPassword')->addError(new FormError($this->get('translator')->trans('lender-profile_security-password-section-error-wrong-former-password')));
         }
 
         if (false === $ficelle->password_fo($form->get('password')->getData(), 6)) {
-            $form->get('password')->addError(new FormError($translator->trans('common-validator_password-invalid')));
-            $this->addFlash('error', $translator->trans('common-validator_password-invalid'));
+            $form->get('password')->addError(new FormError($this->get('translator')->trans('common-validator_password-invalid')));
         }
 
         if ($form->isValid()) {
             $client->setPassword($securityPasswordEncoder->encodePassword($this->getUser(), $form->get('password')->getData()));
-            $entityManager->flush($client);
-
-            $this->addFlash('success', $translator->trans('partner-profile_security-password-section-form-success-message'));
-
-            return true;
+            $this->get('doctrine.orm.entity_manager')->flush($client);
         }
-
-        return false;
     }
 }
