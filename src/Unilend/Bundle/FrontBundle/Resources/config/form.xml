@@ -65,7 +65,7 @@
             <argument type="service" id="translator" />
         </service>
 
-        <service id="unilend.form.password" class="Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\ClientPasswordType">
+        <service id="unilend.form.password" class="Unilend\Bundle\FrontBundle\Form\ClientPasswordType">
             <tag name="form.type" />
             <argument type="service" id="translator" />
         </service>
@@ -76,11 +76,6 @@
         </service>
 
         <service id="unilend.form.legal_entity_identity" class="Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\LegalEntityType">
-            <tag name="form.type" />
-            <argument type="service" id="translator" />
-        </service>
-
-        <service id="unilend.form.partner.profile" class="Unilend\Bundle\FrontBundle\Form\PartnerAccount\ProfileType">
             <tag name="form.type" />
             <argument type="service" id="translator" />
         </service>

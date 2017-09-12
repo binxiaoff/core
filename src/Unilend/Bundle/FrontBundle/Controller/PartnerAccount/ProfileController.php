@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\FrontBundle\Form\PartnerAccount\ProfileType;
+use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
 use Unilend\core\Loader;
 
 class ProfileController extends Controller
@@ -26,7 +26,7 @@ class ProfileController extends Controller
     public function profileAction(Request $request)
     {
         $client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
-        $form   = $this->createForm(ProfileType::class);
+        $form   = $this->createForm(ClientPasswordType::class);
 
         if ($request->isMethod(Request::METHOD_POST)) {
             $form->handleRequest($request);

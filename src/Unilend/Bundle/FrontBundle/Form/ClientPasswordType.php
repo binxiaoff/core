@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Bundle\FrontBundle\Form\PartnerAccount;
+namespace Unilend\Bundle\FrontBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -8,7 +8,7 @@ use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 
-class ProfileType extends AbstractType
+class ClientPasswordType extends AbstractType
 {
     /** @var TranslatorInterface */
     private $translator;
@@ -23,7 +23,7 @@ class ProfileType extends AbstractType
 
     /**
      * @param FormBuilderInterface $builder
-     * @param array                $options
+     * @param array $options
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -33,6 +33,7 @@ class ProfileType extends AbstractType
                 'type'            => PasswordType::class,
                 'invalid_message' => $this->translator->trans('common-validator_password-not-equal'),
                 'required'        => true
-            ]);
+            ])
+        ;
     }
 }
