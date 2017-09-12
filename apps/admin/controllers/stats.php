@@ -769,13 +769,12 @@ class statsController extends bootstrap
                 'status'           => $status ? $status->getLabel() : '',
             ];
 
-            $projectEligibilityAssessment = $assessmentRepository->findOneBy([
-                'idProject' => $project,
-                'status'    => ProjectEligibilityAssessment::STATUS_CHECK_KO,
-            ], ['added' => 'DESC']);
+            $projectEligibilityAssessment = $assessmentRepository->findOneBy(
+                ['idProject' => $project],
+                ['added' => 'DESC', 'id' => 'DESC']
+            );
 
-            $row['common_check'] = $projectEligibilityAssessment ? $projectEligibilityAssessment->getIdRule()->getLabel() : 'OK';
-
+            $row['common_check']           = $projectEligibilityAssessment->getStatus() ? 'OK' : $projectEligibilityAssessment->getIdRule()->getLabel();
             $row['b_lend_check']           = 'Pas d\'évaluation';
             $row['ifp_product_check']      = 'Pas d\'évaluation';
             $row['prof_lib_product_check'] = 'Pas d\'évaluation';
