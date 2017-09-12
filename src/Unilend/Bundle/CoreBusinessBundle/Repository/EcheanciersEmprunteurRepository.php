@@ -3,9 +3,11 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 
 class EcheanciersEmprunteurRepository extends EntityRepository
@@ -107,5 +109,25 @@ class EcheanciersEmprunteurRepository extends EntityRepository
             ->setParameter('unfinished', [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]);
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param int $limit
+     *
+     * @return EcheanciersEmprunteur[]
+     */
+    public function findPaymentSchedulesToInvoice($limit)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee');
+        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'ee.idProject = p.idProject')
+            ->leftJoin('UnilendCoreBusinessBundle:Factures', 'f', Join::WITH, 'ee.idProject = f.idProject AND f.ordre = ee.ordre')
+            ->where('DATE(ee.dateEcheanceEmprunteur) <= :today')
+            ->andWhere('p.status in (:status)')
+            ->andWhere('f.idFacture IS NULL')
+            ->setParameter('today', (new \DateTime())->format('Y-m-d'))
+            ->setParameter('status', [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME, ProjectsStatus::PROBLEME_J_X])
+            ->setMaxResults($limit);
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }
