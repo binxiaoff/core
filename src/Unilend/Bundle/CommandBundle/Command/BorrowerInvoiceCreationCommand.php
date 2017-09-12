@@ -28,7 +28,6 @@ class BorrowerInvoiceCreationCommand extends ContainerAwareCommand
                     ->error('Errors occur during repayment invoice creation command. Error message : ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
                 continue;
             }
-
         }
     }
 }
