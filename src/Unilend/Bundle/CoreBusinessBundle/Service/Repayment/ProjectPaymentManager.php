@@ -74,12 +74,12 @@ class ProjectPaymentManager
                     $proportion         = bcdiv($amount, $unpaidMonthlyAmount, 10);
                     $netRepaymentAmount = round(bcmul($unpaidNetRepaymentAmount, $proportion, 4), 2);
 
-                    $commissionProportion = round(bcsub($amount, $netRepaymentAmount, 4), 2);
-                    $commissionToPay      = min($unpaidCommission, $commissionProportion);
+                    $restOfAmount    = round(bcsub($amount, $netRepaymentAmount, 4), 2);
+                    $commissionToPay = min($unpaidCommission, $restOfAmount);
 
-                    $difference = round(bcsub($commissionProportion, $commissionToPay, 4), 2);
-                    if (1 == bccomp($difference, 0, 2)) {
-                        $netRepaymentAmount = round(bcadd($netRepaymentAmount, $difference, 4), 2);
+                    $stillRest = round(bcsub($restOfAmount, $commissionToPay, 4), 2);
+                    if (1 == bccomp($stillRest, 0, 2)) {
+                        $netRepaymentAmount = round(bcadd($netRepaymentAmount, $stillRest, 4), 2);
                     }
 
                     $capitalToPay  = min($netRepaymentAmount, $unpaidCapital);

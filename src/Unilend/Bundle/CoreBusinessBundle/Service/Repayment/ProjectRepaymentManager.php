@@ -116,7 +116,7 @@ class ProjectRepaymentManager
 
         $this->payCommission($projectRepaymentTaskLog);
 
-        if (0 === $compareResult) {
+        if ($this->projectRepaymentTaskManager->isCompleteRepayment($projectRepaymentTask)) {
             $paymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy([
                 'idProject' => $projectRepaymentTask->getIdProject(),
                 'ordre'     => $projectRepaymentTask->getSequence()
