@@ -568,10 +568,28 @@ class EcheanciersRepository extends EntityRepository
      *
      * @return float
      */
-    public function getNotRepaidAmountByProjectAndSequence($project, $sequence)
+    public function getNotRepaidCapitalByProjectAndSequence($project, $sequence)
     {
         $queryBuilder = $this->createQueryBuilder('e');
-        $queryBuilder->select('ROUND(SUM(e.capital + e.interets - e.capitalRembourse - e.interetsRembourses) / 100, 2)')
+        $queryBuilder->select('ROUND(SUM(e.capital - e.capitalRembourse) / 100, 2)')
+            ->where('e.idProject = :project')
+            ->andWhere('e.ordre = :sequence')
+            ->setParameter('project', $project)
+            ->setParameter('sequence', $sequence);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Projects|int $project
+     * @param int          $sequence
+     *
+     * @return float
+     */
+    public function getNotRepaidInterestByProjectAndSequence($project, $sequence)
+    {
+        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder->select('ROUND(SUM(e.interets - e.interetsRembourses) / 100, 2)')
             ->where('e.idProject = :project')
             ->andWhere('e.ordre = :sequence')
             ->setParameter('project', $project)
