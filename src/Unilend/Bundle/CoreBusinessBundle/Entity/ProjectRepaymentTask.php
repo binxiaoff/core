@@ -34,6 +34,13 @@ class ProjectRepaymentTask
     private $amount;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="commission_unilend", type="decimal", precision=10, scale=2, nullable=false)
+     */
+    private $commissionUnilend;
+
+    /**
      * @var integer
      *
      * @ORM\Column(name="sequence", type="integer", nullable=true)
@@ -178,6 +185,30 @@ class ProjectRepaymentTask
     public function getAmount()
     {
         return $this->amount;
+    }
+
+    /**
+     * Set commissionUnilend
+     *
+     * @param string $commissionUnilend
+     *
+     * @return ProjectRepaymentTask
+     */
+    public function setCommissionUnilend($commissionUnilend)
+    {
+        $this->commissionUnilend = $commissionUnilend;
+
+        return $this;
+    }
+
+    /**
+     * Get commissionUnilend
+     *
+     * @return string
+     */
+    public function getCommissionUnilend()
+    {
+        return $this->commissionUnilend;
     }
 
     /**

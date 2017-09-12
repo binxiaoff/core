@@ -57,7 +57,7 @@ class EcheanciersRepository extends EntityRepository
     public function getMaxRepaymentAmountForLender($idLender, $timeFrame)
     {
         $qb = $this->createQueryBuilder('e');
-        $qb->select('ROUND(SUM((e.capital + e.interets) / 100), 2) AS amount')
+        $qb->select('ROUND(SUM((e.capital + e.interets)) / 100, 2) AS amount')
             ->where('e.idLender = :idLender')
             ->orderBy('amount', 'DESC')
             ->groupBy('timeFrame')
@@ -542,8 +542,8 @@ class EcheanciersRepository extends EntityRepository
     }
 
     /**
-     * @param \DateTime $date
-     * @param Projects|int  $project
+     * @param \DateTime    $date
+     * @param Projects|int $project
      *
      * @return null|Echeanciers
      */
@@ -558,6 +558,25 @@ class EcheanciersRepository extends EntityRepository
             ->setParameter('pending', Echeanciers::STATUS_PENDING)
             ->orderBy('e.ordre', 'ASC')
             ->setMaxResults(1);
+
         return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * @param Projects|int $project
+     * @param int          $sequence
+     *
+     * @return float
+     */
+    public function getNotRepaidAmountByProjectAndSequence($project, $sequence)
+    {
+        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder->select('ROUND(SUM(e.capital + e.interets - e.capitalRembourse - e.interetsRembourses) / 100, 2)')
+            ->where('e.idProject = :project')
+            ->andWhere('e.ordre = :sequence')
+            ->setParameter('project', $project)
+            ->setParameter('sequence', $sequence);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }

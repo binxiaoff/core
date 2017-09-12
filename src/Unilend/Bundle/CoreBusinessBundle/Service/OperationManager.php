@@ -419,16 +419,17 @@ class OperationManager
     }
 
     /**
-     * @param Echeanciers $repaymentSchedule
+     * @param float                   $amountCapital
+     * @param float                   $amountInterestGross
+     * @param Echeanciers             $repaymentSchedule
+     * @param ProjectRepaymentTaskLog $projectRepaymentTaskLog
      */
-    public function repayment(Echeanciers $repaymentSchedule, ProjectRepaymentTaskLog $projectRepaymentTaskLog)
+    public function repayment($amountCapital, $amountInterestGross, Echeanciers $repaymentSchedule, ProjectRepaymentTaskLog $projectRepaymentTaskLog)
     {
-        $loan                = $repaymentSchedule->getIdLoan();
-        $lenderWallet        = $loan->getIdLender();
-        $borrowerClientId    = $loan->getProject()->getIdCompany()->getIdClientOwner();
-        $borrowerWallet      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($borrowerClientId, WalletType::BORROWER);
-        $amountInterestGross = round(bcdiv(bcsub($repaymentSchedule->getInterets(), $repaymentSchedule->getInteretsRembourses()), 100, 4), 2);
-        $amountCapital       = round(bcdiv(bcsub($repaymentSchedule->getCapital(), $repaymentSchedule->getCapitalRembourse()), 100, 4), 2);
+        $loan             = $repaymentSchedule->getIdLoan();
+        $lenderWallet     = $loan->getIdLender();
+        $borrowerClientId = $loan->getProject()->getIdCompany()->getIdClientOwner();
+        $borrowerWallet   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($borrowerClientId, WalletType::BORROWER);
 
         $this->repaymentGeneric($borrowerWallet, $lenderWallet, $amountCapital, $amountInterestGross, null, [$repaymentSchedule, $projectRepaymentTaskLog]);
     }
@@ -501,12 +502,11 @@ class OperationManager
             WalletType::BORROWER);
         $unilendWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);
         $unilendWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
-        $amount            = round(bcdiv(bcadd($paymentSchedule->getCommission(), $paymentSchedule->getTva(), 2), 100, 4), 2);
 
         $operationType    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_COMMISSION]);
         $operationSubType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::BORROWER_COMMISSION_REPAYMENT]);
 
-        $this->newOperation($amount, $operationType, $operationSubType, $borrowerWallet, $unilendWallet, [$paymentSchedule, $projectRepaymentTaskLog]);
+        $this->newOperation($projectRepaymentTaskLog->getIdTask()->getCommissionUnilend(), $operationType, $operationSubType, $borrowerWallet, $unilendWallet, [$paymentSchedule, $projectRepaymentTaskLog]);
     }
 
     /**

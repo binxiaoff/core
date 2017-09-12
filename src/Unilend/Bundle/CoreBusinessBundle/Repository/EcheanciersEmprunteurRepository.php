@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 
 class EcheanciersEmprunteurRepository extends EntityRepository
@@ -50,5 +51,42 @@ class EcheanciersEmprunteurRepository extends EntityRepository
         );
 
         return $resultPaymentSchedule && $resultRepaymentSchedule;
+    }
+
+    /**
+     * @param Projects|int $project
+     *
+     * @return EcheanciersEmprunteur[]
+     */
+    public function findUnFinishedSchedules($project)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee');
+        $queryBuilder->where('ee.idProject = :project')
+            ->andWhere('ee.statusEmprunteur in (:unfinished)')
+            ->orderBy('ee.ordre', 'ASC')
+            ->setParameter('project', $project)
+            ->setParameter('unfinished', [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param int|Projects $project
+     * @param int          $sequence
+     *
+     * @return string
+     */
+    public function getRemainingCapitalFrom($project, $sequence)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee');
+        $queryBuilder->select('ROUND(SUM(ee.capital) / 100, 2)')
+            ->where('ee.idProject = :project')
+            ->andWhere('ee.ordre >= :sequence')
+            ->andWhere('ee.statusEmprunteur = :pending')
+            ->setParameter('project', $project)
+            ->setParameter('pending', EcheanciersEmprunteur::STATUS_PENDING)
+            ->setParameter('sequence', $sequence);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }

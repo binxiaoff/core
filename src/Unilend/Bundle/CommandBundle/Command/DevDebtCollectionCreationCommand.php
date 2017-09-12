@@ -9,7 +9,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
@@ -140,11 +139,12 @@ EOF
 
     private function repayment(InputInterface $input, OutputInterface $output)
     {
-        $entityManager    = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $operationManager = $this->getContainer()->get('unilend.service.operation_manager');
-        $walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $projectId        = $input->getOption('project-id');
-        $commission       = filter_var($input->getOption('commission'), FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+        $entityManager               = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $operationManager            = $this->getContainer()->get('unilend.service.operation_manager');
+        $projectRepaymentTaskManager = $this->getContainer()->get('unilend.service_repayment.project_repayment_task_manager');
+        $walletRepository            = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $projectId                   = $input->getOption('project-id');
+        $commission                  = filter_var($input->getOption('commission'), FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
 
         $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
         if (null === $project) {
@@ -197,18 +197,10 @@ EOF
 
         $entityManager->getConnection()->beginTransaction();
         try {
-            $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_IN_PROGRESS);
-
             $repaidAmount = 0;
             $repaidNb     = 0;
 
-            $projectRepaymentTaskLog = new ProjectRepaymentTaskLog();
-            $projectRepaymentTaskLog->setIdTask($projectRepaymentTask)
-                ->setStarted(new \DateTime())
-                ->setRepaidAmount($repaidAmount)
-                ->setRepaymentNb($repaidNb);
-            $entityManager->persist($projectRepaymentTaskLog);
-            $entityManager->flush($projectRepaymentTaskLog);
+            $projectRepaymentTaskLog = $projectRepaymentTaskManager->start($projectRepaymentTask);
 
             if ($fundReleaseDate >= $dateOfChange) {
                 if ($commission <= 0) {
@@ -238,11 +230,9 @@ EOF
                 $repaidNb++;
             }
 
-            $projectRepaymentTaskLog->setRepaidAmount($repaidAmount)
-                ->setRepaymentNb($repaidNb)
-                ->setEnded(new \DateTime());
-
             $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_REPAID);
+
+            $projectRepaymentTaskManager->end($projectRepaymentTaskLog, $repaidAmount, $repaidNb);
 
             $entityManager->flush();
             $entityManager->getConnection()->commit();
