@@ -691,8 +691,8 @@ class OperationRepository extends EntityRepository
                                 "lender_provision_wire_transfer_in",
                                 NULL)
                           )
-                          WHEN "'. OperationType::BORROWER_COMMISSION . '" THEN ost.label
-                          WHEN "'. OperationType::BORROWER_COMMISSION_REGULARIZATION . '" THEN ost.label
+                          WHEN "' . OperationType::BORROWER_COMMISSION . '" THEN ost.label
+                          WHEN "' . OperationType::BORROWER_COMMISSION_REGULARIZATION . '" THEN ost.label
                      ELSE ot.label END AS movement
                 FROM operation o USE INDEX (idx_operation_added)
                 INNER JOIN operation_type ot ON o.id_type = ot.id
@@ -912,9 +912,9 @@ class OperationRepository extends EntityRepository
     }
 
     /**
-     * @param int $loan
-     * @param int $wallet
-     * @param int $repaymentTaskLogId
+     * @param int|null $loan
+     * @param int      $wallet
+     * @param int      $repaymentTaskLogId
      *
      * @return mixed
      */

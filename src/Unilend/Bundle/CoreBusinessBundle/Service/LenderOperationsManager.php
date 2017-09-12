@@ -130,7 +130,7 @@ class LenderOperationsManager
         foreach ($walletHistory as $index => $historyLine) {
             if ($historyLine['id'] !== $historyLine['id_repayment_task_log'] ) {
                 $type           = self::OP_REPAYMENT;
-                if (strpos($historyLine['label'], '_regularization') !== false) {
+                if (false !== strpos($historyLine['label'], '_regularization')) {
                     $type           = self::OP_REPAYMENT_REGULARIZATION;
                 }
                 $repaymentDetails = $operationRepository->getDetailByLoanAndRepaymentLog($historyLine['id_loan'], $wallet->getId(), $historyLine['id_repayment_task_log']);
@@ -143,7 +143,6 @@ class LenderOperationsManager
 
             if (OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION === $historyLine['sub_type_label']) {
                 $historyLine['label'] = self::OP_RECOVERY_REPAYMENT;
-
             }
 
             if (OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION_REGULARIZATION === $historyLine['sub_type_label']) {
