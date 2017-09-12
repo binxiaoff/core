@@ -22,9 +22,6 @@ class ProjectRepaymentTaskManager
     /** @var ProjectRepaymentNotificationSender */
     private $projectRepaymentNotificationSender;
 
-    /** @var ProjectRepaymentScheduleManager */
-    private $projectRepaymentScheduleManager;
-
     /** @var LoggerInterface */
     private $logger;
 
@@ -36,87 +33,65 @@ class ProjectRepaymentTaskManager
      *
      * @param EntityManager                      $entityManager
      * @param ProjectRepaymentNotificationSender $projectRepaymentNotificationSender
-     * @param projectRepaymentScheduleManager    $projectRepaymentScheduleManager
      * @param LoggerInterface                    $logger
      */
     public function __construct(
         EntityManager $entityManager,
         ProjectRepaymentNotificationSender $projectRepaymentNotificationSender,
-        ProjectRepaymentScheduleManager $projectRepaymentScheduleManager,
         LoggerInterface $logger
     )
     {
         $this->entityManager                      = $entityManager;
         $this->logger                             = $logger;
         $this->projectRepaymentNotificationSender = $projectRepaymentNotificationSender;
-        $this->projectRepaymentScheduleManager    = $projectRepaymentScheduleManager;
         $this->businessDays                       = Loader::loadLib('jours_ouvres');
     }
 
     /**
      * @param Echeanciers $repaymentSchedule
-     * @param float       $repaymentAmount
-     * @param float       $commission
+     * @param float       $capitalToRepay
+     * @param float       $interestToRepay
+     * @param float       $commissionToPay
      * @param Receptions  $reception
      * @param Users       $user
      *
      * @throws \Exception
      */
-    public function planRepaymentTask(Echeanciers $repaymentSchedule, $repaymentAmount, $commission, Receptions $reception, Users $user)
+    public function planRepaymentTask(Echeanciers $repaymentSchedule, $capitalToRepay, $interestToRepay, $commissionToPay, Receptions $reception, Users $user)
     {
         $project = $repaymentSchedule->getIdLoan()->getProject();
 
-        $repaymentTasks = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
-            ->findBy([
-                'idProject' => $project,
-                'sequence'  => $repaymentSchedule->getOrdre(),
-                'status'    => [
-                    ProjectRepaymentTask::STATUS_ERROR,
-                    ProjectRepaymentTask::STATUS_PENDING,
-                    ProjectRepaymentTask::STATUS_READY,
-                    ProjectRepaymentTask::STATUS_IN_PROGRESS,
-                    ProjectRepaymentTask::STATUS_REPAID
-                ]
-            ]);
-
-        $plannedAmount     = 0;
-        $plannedCommission = 0;
-        foreach ($repaymentTasks as $task) {
-            $plannedAmount     = round(bcadd($plannedAmount, $task->getAmount(), 4), 2);
-            $plannedCommission = round(bcadd($plannedCommission, $task->getCommissionUnilend(), 4), 2);
-        }
-
-        $plannedAmount     = round(bcadd($plannedAmount, $repaymentAmount, 4), 2);
-        $plannedCommission = round(bcadd($plannedCommission, $commission, 4), 2);
-
-        $netMonthlyAmount  = $this->projectRepaymentScheduleManager->getNetMonthlyAmount($project);
-        $monthlyCommission = $this->projectRepaymentScheduleManager->getUnilendCommissionVatIncl($project);
-
-        if (1 === bccomp($plannedAmount, $netMonthlyAmount, 2)) {
-            throw new \Exception('The total amount (' . $plannedAmount . ') of the repayment tasks for project (id: ' . $project->getIdProject() . ') sequence ' . $repaymentSchedule->getOrdre() . ' is more then the monthly amount (' . $netMonthlyAmount . '). Please check the data consistency.');
-        }
-
-        if (1 === bccomp($plannedCommission, $monthlyCommission, 2)) {
-            throw new \Exception('The total commission (' . $plannedCommission . ') of the repayment tasks for project (id: ' . $project->getIdProject() . ') sequence ' . $repaymentSchedule->getOrdre() . ' is more then the monthly commission (' . $monthlyCommission . '). Please check the data consistency.');
+        if (
+            0 === bccomp($capitalToRepay, 0, 2)
+            && 0 === bccomp($interestToRepay, 0, 2)
+            && 0 === bccomp($commissionToPay, 0, 2)
+        ) {
+            throw new \Exception('The repayment amount of project (id: ' . $project->getIdProject() . ') sequence ' . $repaymentSchedule->getOrdre() . ' is 0. Please check the data consistency.');
         }
 
         $projectRepaymentTask = new ProjectRepaymentTask();
         $projectRepaymentTask->setIdProject($project)
             ->setSequence($repaymentSchedule->getOrdre())
-            ->setAmount($repaymentAmount)
-            ->setCommissionUnilend($commission)
+            ->setCapital($capitalToRepay)
+            ->setInterest($interestToRepay)
+            ->setCommissionUnilend($commissionToPay)
             ->setType(ProjectRepaymentTask::TYPE_REGULAR)
-            ->setStatus(ProjectRepaymentTask::STATUS_PENDING)
+            ->setStatus(projectRepaymentTask::STATUS_PENDING)
             ->setRepayAt($repaymentSchedule->getDateEcheance())
             ->setIdUserCreation($user)
             ->setIdWireTransferIn($reception);
 
+        $paymentSchedule   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy(['idProject' => $project, 'ordre' => $repaymentSchedule->getOrdre()]);
+        $totalCapital      = round(bcdiv($paymentSchedule->getCapital(), 100, 4), 2);
+        $totalInterest     = round(bcdiv($paymentSchedule->getInterets(), 100, 4), 2);
+        $monthlyCommission = round(bcdiv($paymentSchedule->getCommission() + $paymentSchedule->getTva(), 100, 4), 2);
+
         if (
             Projects::AUTO_REPAYMENT_ON === $project->getRembAuto()
             && $project->getStatus() < ProjectsStatus::PROBLEME
-            && 0 === bccomp($repaymentAmount, $this->projectRepaymentScheduleManager->getNetMonthlyAmount($project), 2)
-            && 0 === bccomp($commission, $this->projectRepaymentScheduleManager->getUnilendCommissionVatIncl($project), 2)
+            && 0 === bccomp($totalCapital, $capitalToRepay, 2)
+            && 0 === bccomp($totalInterest, $interestToRepay, 2)
+            && 0 === bccomp($monthlyCommission, $commissionToPay, 2)
         ) {
             $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_READY)
                 ->setIdUserValidation($user);
@@ -124,6 +99,8 @@ class ProjectRepaymentTaskManager
 
         $this->entityManager->persist($projectRepaymentTask);
         $this->entityManager->flush($projectRepaymentTask);
+
+        $this->checkPlannedTaskAmount($project, $repaymentSchedule->getOrdre());
     }
 
     /**
@@ -154,15 +131,17 @@ class ProjectRepaymentTaskManager
             ->findOneBy(['idProject' => $project, 'type' => ProjectRepaymentTask::TYPE_EARLY]);
 
         if ($projectRepaymentTask) {
-            $amount = round(bcadd($projectRepaymentTask->getAmount(), $receivedAmount, 4), 2);
-            $projectRepaymentTask->setAmount($amount);
+            $amount = round(bcadd($projectRepaymentTask->getCapital(), $receivedAmount, 4), 2);
+            $projectRepaymentTask->setCapital($amount);
         } else {
             $limitDate = $this->getLimitDate(new \DateTime('today midnight'));
 
             $nextRepayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->findNextPendingScheduleAfter($limitDate, $project);
 
             $projectRepaymentTask = new ProjectRepaymentTask();
-            $projectRepaymentTask->setAmount($receivedAmount)
+            $projectRepaymentTask->setCapital($receivedAmount)
+                ->setInterest(0)
+                ->setCommissionUnilend(0)
                 ->setIdProject($project)
                 ->setType(ProjectRepaymentTask::TYPE_EARLY)
                 ->setStatus(ProjectRepaymentTask::STATUS_PENDING)
@@ -300,6 +279,17 @@ class ProjectRepaymentTaskManager
 
                 return false;
             }
+
+            try {
+                $this->checkPlannedTaskAmount($projectRepaymentTask->getIdProject(), $projectRepaymentTask->getSequence());
+            } catch (\Exception $exception) {
+                $this->logger->warning(
+                    $exception->getMessage(),
+                    ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                );
+
+                return false;
+            }
         }
 
         if (in_array($projectRepaymentTask->getType(), [ProjectRepaymentTask::TYPE_REGULAR, ProjectRepaymentTask::TYPE_LATE])) {
@@ -326,7 +316,7 @@ class ProjectRepaymentTaskManager
             if ($nextPayment) {
                 $borrowerOwedCapital = $paymentScheduleRepository->getRemainingCapitalFrom($projectRepaymentTask->getIdProject(), $nextPayment->getOrdre());
 
-                if (0 !== bccomp($borrowerOwedCapital, $projectRepaymentTask->getAmount(), 2)) {
+                if (0 !== bccomp($borrowerOwedCapital, $projectRepaymentTask->getCapital(), 2)) {
                     $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_ERROR);
                     $this->entityManager->flush($projectRepaymentTask);
 
@@ -373,7 +363,7 @@ class ProjectRepaymentTaskManager
     private function getAmountToRepay(ProjectRepaymentTask $projectRepaymentTask)
     {
         $repaidAmount  = $this->getRepaidAmount($projectRepaymentTask);
-        $amountToRepay = $projectRepaymentTask->getAmount();
+        $amountToRepay = round(bcadd($projectRepaymentTask->getCapital(), $projectRepaymentTask->getInterest(), 4), 2);
 
         return round(bcsub($amountToRepay, $repaidAmount, 4), 2);
     }
@@ -456,5 +446,57 @@ class ProjectRepaymentTaskManager
         $monthlyAmount = $this->projectRepaymentScheduleManager->getMonthlyAmount($projectRepaymentTask->getIdProject());
 
         return 0 === bccomp($taskAmount, $monthlyAmount, 2);
+    }
+
+    /**
+     * @param Projects $project
+     * @param int      $sequence
+     *
+     * @throws \Exception
+     */
+    private function checkPlannedTaskAmount(Projects $project, $sequence)
+    {
+        $repaymentTasks = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
+            ->findBy([
+                'idProject' => $project,
+                'sequence'  => $sequence,
+                'status'    => [
+                    ProjectRepaymentTask::STATUS_ERROR,
+                    ProjectRepaymentTask::STATUS_PENDING,
+                    ProjectRepaymentTask::STATUS_READY,
+                    ProjectRepaymentTask::STATUS_IN_PROGRESS,
+                    ProjectRepaymentTask::STATUS_REPAID
+                ]
+            ]);
+
+        $plannedCapital    = 0;
+        $plannedInterest   = 0;
+        $plannedCommission = 0;
+        foreach ($repaymentTasks as $task) {
+            $plannedCapital    = round(bcadd($plannedCapital, $task->getCapital(), 4), 2);
+            $plannedInterest   = round(bcadd($plannedInterest, $task->getInterest(), 4), 2);
+            $plannedCommission = round(bcadd($plannedCommission, $task->getCommissionUnilend(), 4), 2);
+        }
+
+        $paymentSchedule   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy(['idProject' => $project, 'ordre' => $sequence]);
+        $totalCapital      = round(bcdiv($paymentSchedule->getCapital(), 100, 4), 2);
+        $totalInterest     = round(bcdiv($paymentSchedule->getInterets(), 100, 4), 2);
+        $monthlyCommission = round(bcdiv($paymentSchedule->getCommission() + $paymentSchedule->getTva(), 100, 4), 2);
+
+        $compareCapital = bccomp($plannedCapital, $totalCapital, 2);
+        if (1 === $compareCapital) {
+            throw new \Exception('The total capital (' . $plannedCapital . ') of all the repayment tasks for project (id: ' . $project->getIdProject() . ') sequence ' . $sequence . ' is more then the monthly capital (' . $totalCapital . '). Please check the data consistency.');
+        }
+
+        $compareInterest = bccomp($plannedInterest, $totalInterest, 2);
+        if (1 === $compareInterest) {
+            throw new \Exception('The total interest (' . $plannedInterest . ') of all the repayment tasks for project (id: ' . $project->getIdProject() . ') sequence ' . $sequence . ' is more then the monthly interest (' . $totalInterest . '). Please check the data consistency.');
+        }
+
+        $compareCommission = bccomp($plannedCommission, $monthlyCommission, 2);
+        if (1 === $compareCommission) {
+            throw new \Exception('The total commission (' . $plannedCommission . ') of all the repayment tasks for project (id: ' . $project->getIdProject() . ') sequence ' . $sequence . ' is more then the monthly commission (' . $monthlyCommission . '). Please check the data consistency.');
+        }
     }
 }

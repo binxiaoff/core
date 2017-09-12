@@ -16,25 +16,19 @@ class ProjectPaymentManager
     /** @var ProjectRepaymentTaskManager */
     private $projectRepaymentTaskManager;
 
-    /** @var ProjectRepaymentScheduleManager */
-    private $projectRepaymentScheduleManager;
-
     /**
      * ProjectRepaymentManager constructor.
      *
-     * @param EntityManager                   $entityManager
-     * @param ProjectRepaymentTaskManager     $projectRepaymentTaskManager
-     * @param ProjectRepaymentScheduleManager $projectRepaymentScheduleManager
+     * @param EntityManager               $entityManager
+     * @param ProjectRepaymentTaskManager $projectRepaymentTaskManager
      */
     public function __construct(
         EntityManager $entityManager,
-        ProjectRepaymentTaskManager $projectRepaymentTaskManager,
-        ProjectRepaymentScheduleManager $projectRepaymentScheduleManager
+        ProjectRepaymentTaskManager $projectRepaymentTaskManager
     )
     {
-        $this->entityManager                   = $entityManager;
-        $this->projectRepaymentTaskManager     = $projectRepaymentTaskManager;
-        $this->projectRepaymentScheduleManager = $projectRepaymentScheduleManager;
+        $this->entityManager               = $entityManager;
+        $this->projectRepaymentTaskManager = $projectRepaymentTaskManager;
     }
 
     /**
@@ -48,15 +42,13 @@ class ProjectPaymentManager
     {
         $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
 
-        $amount  = round(bcdiv($reception->getMontant(), 100, 4), 2);
         $project = $reception->getIdProject();
-
-        $netMonthlyAmount = $this->projectRepaymentScheduleManager->getNetMonthlyAmount($project);
-        $commission       = $this->projectRepaymentScheduleManager->getUnilendCommissionVatIncl($project);
 
         if ($project->getStatus() >= ProjectsStatus::PROBLEME) {
             return true;
         }
+
+        $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
 
         $unpaidPaymentSchedules = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findUnFinishedSchedules($project);
 
@@ -67,39 +59,41 @@ class ProjectPaymentManager
                     break;
                 }
 
-                $paidNetAmount  = round(bcdiv($paymentSchedule->getPaidAmount(), 100, 4), 2);
-                $paidCommission = round(bcdiv($paymentSchedule->getPaidCommissionVatIncl(), 100, 4), 2);
-
-                $unpaidNetMonthlyAmount = round(bcsub($netMonthlyAmount, $paidNetAmount, 4), 2);
-                $unpaidCommission       = round(bcsub($commission, $paidCommission, 4), 2);
-                $unpaidMonthlyAmount    = round(bcadd($unpaidNetMonthlyAmount, $unpaidCommission, 4), 2);
+                $unpaidCapital            = round(bcdiv($paymentSchedule->getCapital() - $paymentSchedule->getPaidCapital(), 100, 4), 2);
+                $unpaidInterest           = round(bcdiv($paymentSchedule->getInterets() - $paymentSchedule->getPaidInterest(), 100, 4), 2);
+                $unpaidCommission         = round(bcdiv($paymentSchedule->getCommission() + $paymentSchedule->getTva() - $paymentSchedule->getPaidCommissionVatIncl(), 100, 4), 2);
+                $unpaidNetRepaymentAmount = round(bcadd($unpaidCapital, $unpaidInterest, 4), 2);
+                $unpaidMonthlyAmount      = round(bcadd($unpaidNetRepaymentAmount, $unpaidCommission, 4), 2);
 
                 $compareResult = bccomp($amount, $unpaidMonthlyAmount, 2);
                 if (0 === $compareResult || 1 === $compareResult) {
-                    $netRepaymentAmount  = $unpaidNetMonthlyAmount;
-                    $repaymentCommission = $unpaidCommission;
+                    $capitalToPay    = $unpaidCapital;
+                    $interestToPay   = $unpaidInterest;
+                    $commissionToPay = $unpaidCommission;
                 } else {
-                    $proportion = bcdiv($amount, $unpaidMonthlyAmount, 4);
-
-                    $repaymentProportion = round(bcmul($unpaidNetMonthlyAmount, $proportion, 4), 2);
-                    $netRepaymentAmount  = min($unpaidNetMonthlyAmount, $repaymentProportion);
+                    $proportion         = bcdiv($amount, $unpaidMonthlyAmount, 10);
+                    $netRepaymentAmount = round(bcmul($unpaidNetRepaymentAmount, $proportion, 4), 2);
 
                     $commissionProportion = round(bcsub($amount, $netRepaymentAmount, 4), 2);
-                    $repaymentCommission  = min($unpaidCommission, $commissionProportion);
+                    $commissionToPay      = min($unpaidCommission, $commissionProportion);
 
-                    $difference = round(bcsub($commissionProportion, $repaymentCommission, 4), 2);
+                    $difference = round(bcsub($commissionProportion, $commissionToPay, 4), 2);
                     if (1 == bccomp($difference, 0, 2)) {
                         $netRepaymentAmount = round(bcadd($netRepaymentAmount, $difference, 4), 2);
                     }
+
+                    $capitalToPay  = min($netRepaymentAmount, $unpaidCapital);
+                    $interestToPay = round(bcsub($netRepaymentAmount, $capitalToPay, 4), 2);
                 }
 
-                $paymentSchedule->setPaidAmount($paymentSchedule->getPaidAmount() + bcmul($netRepaymentAmount, 100))
-                    ->setPaidCommissionVatIncl($paymentSchedule->getPaidCommissionVatIncl() + bcmul($repaymentCommission, 100));
-
-                $paidNetAmount  = round(bcdiv($paymentSchedule->getPaidAmount(), 100, 4), 2);
-                $paidCommission = round(bcdiv($paymentSchedule->getPaidCommissionVatIncl(), 100, 4), 2);
-
-                if (0 === bccomp($netMonthlyAmount, $paidNetAmount, 2) && 0 === bccomp($commission, $paidCommission, 2)) {
+                $paymentSchedule->setPaidCapital($paymentSchedule->getPaidCapital() + bcmul($capitalToPay, 100))
+                    ->setPaidInterest($paymentSchedule->getPaidInterest() + bcmul($interestToPay, 100))
+                    ->setPaidCommissionVatIncl($paymentSchedule->getPaidCommissionVatIncl() + bcmul($commissionToPay, 100));
+                if (
+                    $paymentSchedule->getCapital() == $paymentSchedule->getPaidCapital()
+                    && $paymentSchedule->getInterets() == $paymentSchedule->getPaidInterest()
+                    && $paymentSchedule->getPaidCommissionVatIncl() == $paymentSchedule->getCommission() + $paymentSchedule->getTva()
+                ) {
                     $paymentSchedule->setStatusEmprunteur(EcheanciersEmprunteur::STATUS_PAID)
                         ->setDateEcheanceEmprunteurReel(new \DateTime());
                 } else {
@@ -113,9 +107,9 @@ class ProjectPaymentManager
                     'ordre'     => $paymentSchedule->getOrdre()
                 ]);
 
-                $this->projectRepaymentTaskManager->planRepaymentTask($repaymentSchedule, $netRepaymentAmount, $repaymentCommission, $reception, $user);
+                $this->projectRepaymentTaskManager->planRepaymentTask($repaymentSchedule, $capitalToPay, $interestToPay, $commissionToPay, $reception, $user);
 
-                $paidAmount = round(bcadd($netRepaymentAmount, $repaymentCommission, 4), 2);
+                $paidAmount = round(bcadd(bcadd($capitalToPay, $interestToPay, 4), $commissionToPay, 4), 2);
                 $amount     = round(bcsub($amount, $paidAmount, 4), 2);
             }
 
@@ -147,16 +141,22 @@ class ProjectPaymentManager
             foreach ($projectRepaymentTasksToCancel as $task) {
                 $paymentSchedule = $paymentScheduleRepository->findOneBy(['idProject' => $project, 'ordre' => $task->getSequence()]);
 
-                $paidNetAmount  = $paymentSchedule->getPaidAmount() - bcmul($task->getAmount(), 100);
+                $paidCapital    = $paymentSchedule->getPaidCapital() - bcmul($task->getCapital(), 100);
+                $paidInterest   = $paymentSchedule->getPaidInterest() - bcmul($task->getInterest(), 100);
                 $paidCommission = $paymentSchedule->getPaidCommissionVatIncl() - bcmul($task->getCommissionUnilend(), 100);
 
-                if (0 === bccomp($paidNetAmount, 0, 2) && 0 === bccomp($paidCommission, 0, 2)) {
+                if (
+                    0 === bccomp($paidCapital, 0, 2)
+                    && 0 === bccomp($paidInterest, 0, 2)
+                    && 0 === bccomp($paidCommission, 0, 2)
+                ) {
                     $status = EcheanciersEmprunteur::STATUS_PENDING;
                 } else {
                     $status = EcheanciersEmprunteur::STATUS_PARTIALLY_PAID;
                 }
 
-                $paymentSchedule->setPaidAmount($paidNetAmount)
+                $paymentSchedule->setPaidCapital($paidCapital)
+                    ->setPaidInterest($paidInterest)
                     ->setPaidCommissionVatIncl($paidCommission)
                     ->setStatusEmprunteur($status)
                     ->setDateEcheanceEmprunteurReel(null);
