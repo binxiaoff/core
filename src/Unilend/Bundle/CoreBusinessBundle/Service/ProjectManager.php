@@ -895,7 +895,8 @@ class ProjectManager
 
         if (
             $projectStatus === ProjectsStatus::REMBOURSEMENT
-            && 0 < $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getOverdueScheduleCount($project)) {
+            && 0 < $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getOverdueScheduleCount($project)
+        ) {
             return;
         }
 
