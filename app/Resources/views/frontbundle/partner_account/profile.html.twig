@@ -17,11 +17,11 @@
                         <div class="col-md-8 col-lg-8">
                             {{ form_start(form, {
                                 'id': 'form-partner-profile-password',
+                                'action': path('partner_profile'),
                                 'attr': {
                                     'data-formvalidation data-formvalidation-notificationselem': '#form-partner-profile-password-notifications'
                                 }
                             }) }}
-                            <form id="form-partner-profile-password" action="{{ path('partner_profile') }}" method="post" data-formvalidation data-formvalidation-notificationselem="#form-partner-profile-password-notifications">
                                 <div id="form-partner-profile-password-notifications" class="ui-formvalidation-notifications"></div>
                                 {% if app.session.flashBag.has('error') %}
                                     <div class="message-error">
