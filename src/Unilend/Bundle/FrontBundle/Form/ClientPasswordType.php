@@ -1,7 +1,6 @@
 <?php
 
-
-namespace Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile;
+namespace Unilend\Bundle\FrontBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -9,12 +8,14 @@ use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 
-
 class ClientPasswordType extends AbstractType
 {
-    /** @var  TranslatorInterface */
+    /** @var TranslatorInterface */
     private $translator;
 
+    /**
+     * @param TranslatorInterface $translator
+     */
     public function __construct(TranslatorInterface $translator)
     {
         $this->translator = $translator;

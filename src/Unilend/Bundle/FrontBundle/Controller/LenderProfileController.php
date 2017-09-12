@@ -1,8 +1,10 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
@@ -10,8 +12,8 @@ use Symfony\Component\HttpFoundation\FileBag;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
@@ -20,6 +22,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
@@ -27,9 +30,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\LendersImpositionHistoryRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
+use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\BankAccountType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\ClientEmailType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\ClientPasswordType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\LegalEntityProfileType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\OriginOfFundsType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonPhoneType;
@@ -41,8 +44,6 @@ use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonFiscalAddres
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\SecurityQuestionType;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\core\Loader;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 
 class LenderProfileController extends Controller
 {
@@ -81,7 +82,7 @@ class LenderProfileController extends Controller
 
         $identityForm = $identityFb->getForm();
 
-        if ($request->isMethod('POST')) {
+        if ($request->isMethod(Request::METHOD_POST)) {
             $isValid = false;
             if (isset($request->request->get('form')['client'])) {
                 $identityForm->handleRequest($request);
@@ -141,6 +142,7 @@ class LenderProfileController extends Controller
                     $isValid = true;
                 }
             }
+
             if ($isValid) {
                 return $this->redirectToRoute('lender_profile_personal_information');
             }
@@ -553,7 +555,7 @@ class LenderProfileController extends Controller
         $pwdForm                = $this->createForm(ClientPasswordType::class);
         $questionForm           = $this->createForm(SecurityQuestionType::class, $clientEntity);
 
-        if ($request->isMethod('POST')) {
+        if ($request->isMethod(Request::METHOD_POST)) {
             $isValid = null;
             if (false === empty($request->request->get('client_email'))) {
                 $emailForm->handleRequest($request);
