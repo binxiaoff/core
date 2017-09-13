@@ -36,8 +36,8 @@ class LenderSponsorshipController extends Controller
         $client             = $this->getClient();
         $sponsorLink        = $this->generateUrl('lender_sponsorship_redirect', ['sponsorCode' => $client->getSponsorCode()], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        if (null !== $request->request->filter('send-sponsorship-invitation', FILTER_VALIDATE_EMAIL)) {
-            $sponseeEmail = $request->request->get('sponsee-email');
+        if ($request->isMethod(Request::METHOD_POST)) {
+            $sponseeEmail = $request->request->filter('sponsee-email', FILTER_VALIDATE_EMAIL);
             if (null === $sponseeEmail) {
                 $this->addFlash('sponsorshipSendMailErrors', $translator->trans('lender-sponsorship_sponsee-email-not-valid'));
             }
