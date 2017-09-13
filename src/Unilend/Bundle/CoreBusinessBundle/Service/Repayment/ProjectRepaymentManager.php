@@ -226,6 +226,7 @@ class ProjectRepaymentManager
                 $this->projectRepaymentNotificationSender->sendIncompleteRepaymentNotification($project, $repaymentSequence);
 
                 throw $exception;
+                break;
             }
         }
 
