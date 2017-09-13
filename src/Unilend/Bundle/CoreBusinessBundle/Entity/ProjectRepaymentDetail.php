@@ -106,6 +106,16 @@ class ProjectRepaymentDetail
     private $idTaskLog;
 
     /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_task", referencedColumnName="id")
+     * })
+     */
+    private $idTask;
+
+    /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers
      *
      * @ORM\ManyToOne(targetEntity="\Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers")
@@ -359,6 +369,30 @@ class ProjectRepaymentDetail
     public function getIdTaskLog()
     {
         return $this->idTaskLog;
+    }
+
+    /**
+     * Set idTask
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask $idTask
+     *
+     * @return ProjectRepaymentDetail
+     */
+    public function setIdTask(ProjectRepaymentTask $idTask)
+    {
+        $this->idTask = $idTask;
+
+        return $this;
+    }
+
+    /**
+     * Get idTask
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask
+     */
+    public function getIdTask()
+    {
+        return $this->idTask;
     }
 
     /**
