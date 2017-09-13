@@ -53,7 +53,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                     $notifications->amount     = bcmul($netRepayment, 100);
                     $notifications->create();
 
-                    if ($projectRepaymentTaskManager->isCompleteRepayment($repaymentDetail->getIdTaskLog()->getIdTask())) {
+                    if ($projectRepaymentTaskManager->isCompleteRepayment($repaymentDetail->getIdTask())) {
                         $repaymentOperation   = $operationRepository->findOneBy(['idRepaymentSchedule' => $repaymentDetail->getIdRepaymentSchedule()]);
                         $walletBalanceHistory = $walletBalanceHistoryRepository->findOneBy(['idOperation' => $repaymentOperation, 'idWallet' => $wallet]);
 
@@ -63,7 +63,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                         $clients_gestion_mails_notif->id_notification           = $notifications->id_notification;
                         $clients_gestion_mails_notif->id_wallet_balance_history = $walletBalanceHistory->getId();
                         $clients_gestion_mails_notif->create();
-                        if ($repaymentDetail->getIdTaskLog()->getIdTask()->getType() === ProjectRepaymentTask::TYPE_LATE) {
+                        if ($repaymentDetail->getIdTask()->getType() === ProjectRepaymentTask::TYPE_LATE) {
                             $projectRepaymentNotificationSender->sendRegularisationRepaymentMailToLender($repaymentSchedule);
                         } elseif (true === $clients_gestion_notifications->getNotif($wallet->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_REPAYMENT, 'immediatement')) {
                             $clients_gestion_mails_notif->get($clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
@@ -84,5 +84,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
 
         }
         $entityManager->flush();
+
+        $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail')->deleteFinishedDetails(new \DateTime('3 months ago'));
     }
 }
