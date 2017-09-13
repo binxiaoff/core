@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ProjectRepaymentDetail
  *
- * @ORM\Table(name="project_repayment_detail", indexes={@ORM\Index(name="idx_project_repayment_task_details_id_task", columns={"id_task"}), @ORM\Index(name="idx_project_repayment_task_details_id_wallet", columns={"id_wallet"})})
+ * @ORM\Table(name="project_repayment_detail", indexes={@ORM\Index(name="idx_project_repayment_task_details_id_repayment_schedule", columns={"id_repayment_schedule"}), @ORM\Index(name="idx_project_repayment_task_details_id_loan", columns={"id_loan"}), @ORM\Index(name="idx_project_repayment_task_details_id_task", columns={"id_task"}), @ORM\Index(name="idx_project_repayment_task_details_id_task_log", columns={"id_task_log"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectRepaymentDetailRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -118,7 +118,7 @@ class ProjectRepaymentDetail
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers
      *
-     * @ORM\ManyToOne(targetEntity="\Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_repayment_schedule", referencedColumnName="id_echeancier")
      * })
@@ -222,6 +222,8 @@ class ProjectRepaymentDetail
     }
 
     /**
+     * Get status
+     *
      * @return int
      */
     public function getStatus()
@@ -230,6 +232,8 @@ class ProjectRepaymentDetail
     }
 
     /**
+     * Set status
+     *
      * @param int $status
      *
      * @return ProjectRepaymentDetail
