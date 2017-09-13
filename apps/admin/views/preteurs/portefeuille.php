@@ -63,7 +63,13 @@
                            disabled="disabled"/>
                 </div>
                 <div class="autobid-param-advanced autobid-param-advanced-locked autobid-block" id="autobid-block">
-                    <?php if (false === in_array(count($this->aAutoBidSettings), [0, 25])) : ?>
+                    <?php
+                        $settingsCount = 0;
+                        foreach ($this->aAutoBidSettings as $periodSettings) {
+                            $settingsCount += count($periodSettings);
+                        }
+                    ?>
+                    <?php if (false === in_array($settingsCount, [0, 25])) : ?>
                         <p style="background-color: #f9babe; padding: 10px; font-weight: bold;">La configuration Autolend de ce client n'est pas correcte. Veuillez vous rapprocher du service informatique, ce cas nécessitant des investigations.</p>
                     <?php else : ?>
                         <table class="autobid-param-advanced-table">
