@@ -31,14 +31,14 @@
             <h2>Autolend Settings</h2>
             <div id="allow-beta-user" style="padding-bottom: 15px;">
                 <span>
-                <?php if ($this->bIsBetaTester) : ?>
-                    <img alt="ON" src="<?= $this->surl ?>/images/admin/check_on.png">
-                <?php else : ?>
-                    <img alt="OFF" src="<?= $this->surl ?>/images/admin/check_off.png">
-                <?php endif; ?>
+                    <?php if ($this->bIsBetaTester) : ?>
+                        <img alt="ON" src="<?= $this->surl ?>/images/admin/check_on.png">
+                    <?php else : ?>
+                        <img alt="OFF" src="<?= $this->surl ?>/images/admin/check_off.png">
+                    <?php endif; ?>
                     BetaTester
                 </span>
-            <span style="padding-left: 50px"></span>
+                <span style="padding-left: 50px"></span>
                 <input type="hidden" value="<?= ($this->bIsBetaTester) ? 'off' : 'on' ?>" id="NewSettingValue">
                 <a class="btn_link" href="<?= $this->lurl ?>/preteurs/saveBetaTesterSetting/" onclick="$(this).attr('href', '<?= $this->lurl ?>/preteurs/saveBetaTesterSetting/<?= $this->clients->id_client?>/'+ $('#NewSettingValue').val());">
                     <?= ($this->bIsBetaTester) ? 'Desactiver BetaTester' : 'Activer BetaTester'?>
@@ -46,62 +46,71 @@
             </div>
             <?php if (empty($this->aAutoBidSettings)) : ?>
                 <div style="margin: 25px 25px;">
-                <span style="font-weight: bold; background-color:#F2F258; padding: 10px 10px;">
-                Le preteur n'a pas encore défini ses paramètres.
-                </span>
+                    <span style="font-weight: bold; background-color:#F2F258; padding: 10px 10px;">
+                        Le preteur n'a pas encore défini ses paramètres.
+                    </span>
                 </div>
             <?php else : ?>
-            <div>
-                <span>Activation le : <?= isset($this->aSettingsDates['on']) ? $this->aSettingsDates['on']->format('d/m/Y') : '' ?></span>
-                <span style="padding-left: 400px;">Désactivation le : <?= isset($this->aSettingsDates['off']) ? $this->aSettingsDates['off']->format('d/m/Y') : '' ?></span>
-            </div>
-            <div style="padding-bottom: 15px;">Dernière mise à jour des settings: <?= isset($this->sValidationDate) ? $this->sValidationDate : '' ?></div>
-
-            <div style="margin-bottom: 15px;">
-                <span>Montant: </span>
-                <input type="text" name="autobid-amount" id="autobid-amount"
-                       value="<?= (isset($this->aAutoBidSettings[1]['A']['amount'])) ? $this->aAutoBidSettings[1]['A']['amount'] : '' ?>"
-                       disabled="disabled"/>
-            </div>
-            <div class="autobid-param-advanced autobid-param-advanced-locked autobid-block" id="autobid-block">
-                <table class="autobid-param-advanced-table">
-                    <tr>
-                        <th class="empty"></th>
-                        <th scope="col" colspan="5" class="table-title"><?= $this->translator->trans('autobid_expert-settings-table-title-risk') ?></th>
-                    </tr>
-                    <tr>
-                        <th scope="col" class="table-title"><?= $this->translator->trans('autobid_expert-settings-table-title-period') ?></th>
-                        <?php foreach (array_keys(array_values($this->aAutoBidSettings)[0]) as $evaluation) : ?>
-                            <th><?=constant('\projects::RISK_' . $evaluation)?>*</th>
-                        <?php endforeach; ?>
-                    </tr>
-                    <?php foreach ($this->aAutoBidSettings as $aPeriodSettings) : ?>
-                        <tr>
-                            <th scope="row"><?= $this->translator->trans('autobid_autobid-period-' . array_values($aPeriodSettings)[0]['id_period'], ['[#SEPARATOR#]' => '<br>']); ?></th>
-                            <?php foreach ($aPeriodSettings as $aSetting) : ?>
-                                <td class="<?= (\autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
-                                <?= ($aSetting['rate_min'] <= round($aSetting['AverageRateUnilend'], 1) || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
-                                    <div class="cell-inner">
-                                        <label class="param-advanced-label"><?= empty($aSetting['rate_min']) ? 'off' : $this->ficelle->formatNumber($aSetting['rate_min'], 1) ?>%</label>
+                <div>
+                    <span>Activation le : <?= isset($this->aSettingsDates['on']) ? $this->aSettingsDates['on']->format('d/m/Y') : '' ?></span>
+                    <span style="padding-left: 400px;">Désactivation le : <?= isset($this->aSettingsDates['off']) ? $this->aSettingsDates['off']->format('d/m/Y') : '' ?></span>
+                </div>
+                <div style="padding-bottom: 15px;">Dernière mise à jour des settings: <?= isset($this->sValidationDate) ? $this->sValidationDate : '' ?></div>
+                <div style="margin-bottom: 15px;">
+                    <span>Montant: </span>
+                    <input type="text" name="autobid-amount" id="autobid-amount"
+                           value="<?= (isset($this->aAutoBidSettings[1]['A']['amount'])) ? $this->aAutoBidSettings[1]['A']['amount'] : '' ?>"
+                           disabled="disabled"/>
+                </div>
+                <div class="autobid-param-advanced autobid-param-advanced-locked autobid-block" id="autobid-block">
+                    <?php
+                        $settingsCount = 0;
+                        foreach ($this->aAutoBidSettings as $periodSettings) {
+                            $settingsCount += count($periodSettings);
+                        }
+                    ?>
+                    <?php if (false === in_array($settingsCount, [0, 25])) : ?>
+                        <p style="background-color: #f9babe; padding: 10px; font-weight: bold;">La configuration Autolend de ce client n'est pas correcte. Veuillez vous rapprocher du service informatique, ce cas nécessitant des investigations.</p>
+                    <?php else : ?>
+                        <table class="autobid-param-advanced-table">
+                            <tr>
+                                <th class="empty"></th>
+                                <th scope="col" colspan="5" class="table-title"><?= $this->translator->trans('autobid_expert-settings-table-title-risk') ?></th>
+                            </tr>
+                            <tr>
+                                <th scope="col" class="table-title"><?= $this->translator->trans('autobid_expert-settings-table-title-period') ?></th>
+                                <?php foreach (array_keys(array_values($this->aAutoBidSettings)[0]) as $evaluation) : ?>
+                                    <th><?=constant('\projects::RISK_' . $evaluation)?>*</th>
+                                <?php endforeach; ?>
+                            </tr>
+                            <?php foreach ($this->aAutoBidSettings as $aPeriodSettings) : ?>
+                                <tr>
+                                    <th scope="row"><?= $this->translator->trans('autobid_autobid-period-' . array_values($aPeriodSettings)[0]['id_period'], ['[#SEPARATOR#]' => '<br>']); ?></th>
+                                    <?php foreach ($aPeriodSettings as $aSetting) : ?>
+                                        <td class="<?= (\autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
+                                        <?= ($aSetting['rate_min'] <= round($aSetting['AverageRateUnilend'], 1) || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
+                                            <div class="cell-inner">
+                                                <label class="param-advanced-label"><?= empty($aSetting['rate_min']) ? 'off' : $this->ficelle->formatNumber($aSetting['rate_min'], 1) ?>%</label>
+                                            </div>
+                                        </td>
+                                    <?php endforeach; ?>
+                                </tr>
+                            <?php endforeach; ?>
+                            <tr>
+                                <td class="empty"></td>
+                                <td colspan="5" class="empty">
+                                    <div class="table-legend">
+                                        <span><span class="rate-legend legend-green"></span><?= $this->translator->trans('autobid_expert-settings-legend-inferior-rate') ?></span>
+                                        <span><span class="rate-legend legend-gray"></span><?= $this->translator->trans('autobid_expert-settings-legend-deactivated') ?></span>
+                                        <span><span class="rate-legend legend-red"></span><?= $this->translator->trans('autobid_expert-settings-legend-superior-rate') ?></span>
                                     </div>
                                 </td>
-                            <?php endforeach; ?>
-                        </tr>
-                    <?php endforeach; ?>
-                    <tr>
-                        <td class="empty"></td>
-                        <td colspan="5" class="empty">
-                            <div class="table-legend">
-                                <span><span class="rate-legend legend-green"></span><?= $this->translator->trans('autobid_expert-settings-legend-inferior-rate') ?></span>
-                                <span><span class="rate-legend legend-gray"></span><?= $this->translator->trans('autobid_expert-settings-legend-deactivated') ?></span>
-                                <span><span class="rate-legend legend-red"></span><?= $this->translator->trans('autobid_expert-settings-legend-superior-rate') ?></span>
-                            </div>
-                        </td>
-                    </tr>
-                </table>
-            </div>
+                            </tr>
+                        </table>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
         </div>
-        <?php endif; ?>
 
         <h2>Prêts</h2>
         <div class="table-filter clearfix">
