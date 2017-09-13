@@ -17,6 +17,7 @@ class RiskDataMonitoringController extends Controller
     const SUCCESS              = 'success';
 
     /**
+     * @Route("/ws/monitoring/euler-hermes/grade", name="risk_data_monitoring_euler_hermes_grade_legacy")
      * @Route("/ws/surveillance/euler-hermes/grade", name="risk_data_monitoring_euler_hermes_grade")
      * @Method("POST")
      *
@@ -48,6 +49,7 @@ class RiskDataMonitoringController extends Controller
     }
 
     /**
+     * @Route("/ws/monitoring/euler-hermes/grade/end", name="risk_data_monitoring_euler_hermes_grade_end_legacy")
      * @Route("/ws/surveillance/euler-hermes/grade/end", name="risk_data_monitoring_euler_hermes_grade_end")
      * @Method("PUT")
      *
