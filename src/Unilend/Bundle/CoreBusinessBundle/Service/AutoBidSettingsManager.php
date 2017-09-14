@@ -495,8 +495,8 @@ class AutoBidSettingsManager
         $settings = $oAutoBid->getSettings($wallet->getId(), null, null, [\autobid::STATUS_ACTIVE], [], 1);
         $amount   = null;
 
-        if (true === isset($settings[0]['amount'])) {
-            $amount = $settings[0]['amount'];
+        if (false === empty($settings)) {
+            $amount = array_shift($settings)['amount'];
         }
 
         return $amount;
