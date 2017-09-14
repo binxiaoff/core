@@ -261,9 +261,10 @@ class AutoBidSettingsManager
             if ($oAutobid->exist($wallet->getId() . '" AND status = "' . \autobid::STATUS_INACTIVE, 'id_lender')) {
                 $bIsNovice = false;
             } else {
-                $aAutobids = $oAutobid->getSettings($wallet->getId());
-                $fRate     = $aAutobids[0]['rate_min'];
-                $iAmount   = $aAutobids[0]['amount'];
+                $aAutobids           = $oAutobid->getSettings($wallet->getId());
+                $firstAutobidSetting = array_shift($aAutobids);
+                $fRate               = $firstAutobidSetting['rate_min'];
+                $iAmount             = $firstAutobidSetting['amount'];
 
                 foreach ($aAutobids as $aAutobid) {
                     if ($fRate !== $aAutobid['rate_min'] || $iAmount !== $aAutobid['amount']) {

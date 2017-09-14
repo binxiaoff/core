@@ -128,6 +128,11 @@ class autobid extends autobid_crud
         $settings  = [];
         $statement = $queryBuilder->execute();
 
+        // @todo temporary patch
+        if (null === $lenderId) {
+            return $statement->fetchAll();
+        }
+
         foreach ($statement->fetchAll() as $setting) {
             $settings[$setting['period_min'] . $setting['evaluation']] = $setting;
         }
