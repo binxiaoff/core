@@ -72,6 +72,21 @@ class WelcomeOfferManager
     }
 
     /**
+     * @param string $type
+     *
+     * @return int
+     */
+    public function getWelcomeOfferAmount($type)
+    {
+        $welcomeOffer = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy([
+            'status' => OffresBienvenues::STATUS_ONLINE,
+            'type'   => $type
+        ]);
+
+        return null !== $welcomeOffer ? $welcomeOffer->getMontant() : 0;
+    }
+
+    /**
      * @return bool
      */
     public function displayOfferOnLandingPage()

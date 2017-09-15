@@ -26,6 +26,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
@@ -810,7 +811,10 @@ class LenderSubscriptionController extends Controller
      */
     public function landingPageAction()
     {
-        return $this->render('pages/lender_subscription/landing_page.html.twig', ['showWelcomeOffer' => $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage()]);
+        return $this->render('pages/lender_subscription/landing_page.html.twig', [
+            'showWelcomeOffer'   => $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage(),
+            'welcomeOfferAmount' => $this->get('unilend.service.welcome_offer_manager')->getWelcomeOfferAmount(OffresBienvenues::TYPE_LANDING_PAGE)
+        ]);
     }
 
 
@@ -847,7 +851,10 @@ class LenderSubscriptionController extends Controller
      */
     public function figaroLandingPageAction()
     {
-        return $this->render('pages/lender_subscription/partners/figaro.html.twig', ['showWelcomeOffer' => $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage()]);
+        return $this->render('pages/lender_subscription/partners/figaro.html.twig', [
+            'showWelcomeOffer'   => $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage(),
+            'welcomeOfferAmount' => $this->get('unilend.service.welcome_offer_manager')->getWelcomeOfferAmount(OffresBienvenues::TYPE_LANDING_PAGE)
+        ]);
     }
 
     /**
@@ -857,7 +864,10 @@ class LenderSubscriptionController extends Controller
      */
     public function landingPageFormOnlyAction()
     {
-        return $this->render('pages/lender_subscription/landing_page_form_only.html.twig', ['showWelcomeOffer' => $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage()]);
+        return $this->render('pages/lender_subscription/landing_page_form_only.html.twig', [
+            'showWelcomeOffer'   => $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage(),
+            'welcomeOfferAmount' => $this->get('unilend.service.welcome_offer_manager')->getWelcomeOfferAmount(OffresBienvenues::TYPE_LANDING_PAGE)
+        ]);
     }
 
     /**

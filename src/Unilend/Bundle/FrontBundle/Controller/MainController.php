@@ -19,6 +19,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -60,7 +61,8 @@ class MainController extends Controller
         $template = [
             'showWelcomeOffer'   => $welcomeOfferManager->displayOfferOnHome(),
             'testimonialPeople'  => $testimonialService->getAllBattenbergTestimonials(),
-            'sliderTestimonials' => $testimonialService->getSliderInformation()
+            'sliderTestimonials' => $testimonialService->getSliderInformation(),
+            'welcomeOfferAmount' => $this->get('unilend.service.welcome_offer_manager')->getWelcomeOfferAmount(OffresBienvenues::TYPE_HOME)
         ];
 
         if ($authorizationChecker->isGranted('ROLE_LENDER')) {
