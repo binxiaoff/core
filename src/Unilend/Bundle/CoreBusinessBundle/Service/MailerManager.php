@@ -502,18 +502,19 @@ class MailerManager
         $bid = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($notification->id_bid);
 
         if (Clients::STATUS_ONLINE === $bid->getIdLenderAccount()->getIdClient()->getStatus()) {
+            /**
+             * Using the projects.data object is a workaround while projects has not been completely migrated on Doctrine Entity
+             * and date_fin cannot be NULL
+             */
             $project->get($bid->getProject()->getIdProject());
 
             $now          = new \DateTime();
-            $interval     = $this->formatDateDiff($now, $bid->getProject()->getDateFin());
+            $endDate      = '0000-00-00 00:00:00' === $project->date_fin ? $bid->getProject()->getDateRetrait() : $bid->getProject()->getDateFin();
+            $interval     = $this->formatDateDiff($now, $endDate);
             $bidManager   = $this->container->get('unilend.service.bid_manager');
             $projectRates = $bidManager->getProjectRateRange($project);
 
             if ($bid->getAutobid()) {
-                /**
-                 * Using the projects.data object is a workaround while projects has not been completely migrated on Doctrine Entity
-                 * and date_fin can not be NULL
-                 */
                 if ('0000-00-00 00:00:00' != $project->date_fin && $bid->getProject()->getDateFin() <= $now) {
                     $mailTemplate = 'preteur-autobid-ko-apres-fin-de-periode-projet';
                 } elseif ($bids->getProjectMaxRate($project) > $projectRates['rate_min']) {
