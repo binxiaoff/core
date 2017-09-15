@@ -100,12 +100,14 @@ class WalletBalanceHistoryRepository extends EntityRepository
                             )
                         )
                 )) AS label,
+                DATE(wbh.added) AS date,
                 wbh.added AS operationDate,
                 wbh.id_bid,
                 wbh.id_autobid,
                 IF(wbh.id_loan IS NOT NULL, wbh.id_loan, IF(o.id_loan IS NOT NULL, o.id_loan, IF(e.id_loan IS NOT NULL, e.id_loan, ""))) AS id_loan,
                 o.id_repayment_schedule,
-                IFNULL(o.id_repayment_task_log, wbh.id)                                                                                  AS id_repayment_task_log,
+                IFNULL(o.id_repayment_task_log, wbh.id) AS order_by_id,
+                id_repayment_task_log,
                 p.id_project,
                 p.title,
                 ost.label AS sub_type_label
@@ -119,10 +121,10 @@ class WalletBalanceHistoryRepository extends EntityRepository
                 LEFT JOIN projects p ON IF(o.id_project IS NULL, wbh.id_project, o.id_project) = p.id_project
             WHERE wbh.id_wallet = :idWallet
             AND wbh.added BETWEEN :startDate AND :endDate
-            GROUP BY o.id_repayment_task_log
+            GROUP BY order_by_id
             ORDER BY wbh.id DESC';
-        $qcProfile = new QueryCacheProfile(CacheKeys::LONG_TIME, md5(__METHOD__ . $wallet->getId()));
 
+        $qcProfile = new QueryCacheProfile(CacheKeys::LONG_TIME, md5(__METHOD__ . $wallet->getId()));
         $statement = $this->getEntityManager()->getConnection()->executeCacheQuery($query, [
             'idWallet'  => $wallet->getId(),
             'startDate' => $start->format('Y-m-d H:i:s'),
