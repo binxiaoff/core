@@ -1322,7 +1322,7 @@ class dossiersController extends bootstrap
                 if (null !== $clientEntity && $clientManager->isBorrower($clientEntity)) {
                     $companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity->getIdClient()]);
                 } else {
-                    $_SESSION['freeow']['title']   = 'La création n\' pas abouti';
+                    $_SESSION['freeow']['title']   = 'Erreur';
                     $_SESSION['freeow']['message'] = 'Le client selectioné n\'est pas un emprunteur.';
                     header('Location: ' . $this->lurl . '/dossiers/add/create');
                     die;
@@ -1399,6 +1399,17 @@ class dossiersController extends bootstrap
 
             $this->get('unilend.service.wallet_creation_manager')->createWallet($clientEntity, WalletType::BORROWER);
             $entityManager->getConnection()->commit();
+
+            $companyStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus');
+            $userRepository          = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
+            $companyManager = $this->get('unilend.service.company_manager');
+            $companyManager->addCompanyStatus(
+            $companyEntity,
+            $companyStatusRepository->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus::STATUS_IN_BONIS]),
+            $userRepository->find($_SESSION['user']['id_user'])
+            );
         } catch (Exception $exception) {
             $entityManager->getConnection()->rollBack();
             $this->get('logger')->error('An error occurred while creating client: ' . $exception->getMessage(), [['class' => __CLASS__, 'function' => __FUNCTION__]]);
@@ -2586,6 +2597,20 @@ class dossiersController extends bootstrap
                     $company->siren                         = filter_var($_POST['siren'], FILTER_SANITIZE_NUMBER_INT);
                     $company->status_adresse_correspondance = 1;
                     $company->create();
+
+                    /** @var \Doctrine\ORM\EntityManager $entityManager */
+                    $entityManager           = $this->get('doctrine.orm.entity_manager');
+                    $companyRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+                    $companyStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus');
+                    $userRepository          = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
+                    $companyManager = $this->get('unilend.service.company_manager');
+                    $companyManager->addCompanyStatus(
+                        $companyRepository->find($company->id_company),
+                        $companyStatusRepository->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus::STATUS_IN_BONIS]),
+                        $userRepository->find($_SESSION['user']['id_user'])
+                    );
 
                     $this->projects->id_target_company = $company->id_company;
                     $this->projects->update();
