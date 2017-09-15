@@ -39,12 +39,8 @@ class ProjectsStatus
     const REMBOURSE                  = 90;
     const REMBOURSEMENT_ANTICIPE     = 95;
     const PROBLEME                   = 100;
-    const PROBLEME_J_X               = 110;
     const RECOUVREMENT               = 120;
-    const PROCEDURE_SAUVEGARDE       = 130;
-    const REDRESSEMENT_JUDICIAIRE    = 140;
-    const LIQUIDATION_JUDICIAIRE     = 150;
-    const DEFAUT                     = 160;
+    const PERTE                      = 160;
 
     const NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND                     = 'product_not_found';
     const NON_ELIGIBLE_REASON_PRODUCT_BLEND                         = 'product_blend';
@@ -75,27 +71,12 @@ class ProjectsStatus
     const NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT  = 'infolegale_previous_manager_incident';
     const UNEXPECTED_RESPONSE                                       = 'unexpected_response_from_';
 
-    const RUNNING_REPAYMENT = [
-        ProjectsStatus::REMBOURSEMENT,
-        ProjectsStatus::PROBLEME,
-        ProjectsStatus::PROBLEME_J_X,
-        ProjectsStatus::RECOUVREMENT,
-        ProjectsStatus::PROCEDURE_SAUVEGARDE,
-        ProjectsStatus::REDRESSEMENT_JUDICIAIRE,
-        ProjectsStatus::LIQUIDATION_JUDICIAIRE
-    ];
-
     const AFTER_REPAYMENT = [
         ProjectsStatus::REMBOURSEMENT,
         ProjectsStatus::REMBOURSE,
         ProjectsStatus::REMBOURSEMENT_ANTICIPE,
         ProjectsStatus::PROBLEME,
-        ProjectsStatus::PROBLEME_J_X,
-        ProjectsStatus::RECOUVREMENT,
-        ProjectsStatus::PROCEDURE_SAUVEGARDE,
-        ProjectsStatus::REDRESSEMENT_JUDICIAIRE,
-        ProjectsStatus::LIQUIDATION_JUDICIAIRE,
-        ProjectsStatus::DEFAUT
+        ProjectsStatus::PERTE
     ];
 
     /**

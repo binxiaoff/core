@@ -6,6 +6,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 
 class projects extends projects_crud
 {
@@ -217,7 +218,7 @@ class projects extends projects_crud
             case self::SORT_FIELD_RATE:
                 $select .= ',
                     CASE
-                        WHEN p.status IN (' . implode(', ', [ProjectsStatus::FUNDE, ProjectsStatus::REMBOURSEMENT, ProjectsStatus::REMBOURSE, ProjectsStatus::PROBLEME, ProjectsStatus::PROBLEME_J_X, ProjectsStatus::RECOUVREMENT, ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE, ProjectsStatus::DEFAUT]) . ') THEN (SELECT SUM(amount * rate) / SUM(amount) AS avg_rate FROM loans WHERE id_project = p.id_project)
+                        WHEN p.status IN (' . implode(', ', [ProjectsStatus::FUNDE, ProjectsStatus::REMBOURSEMENT, ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::PROBLEME, ProjectsStatus::PERTE]) . ') THEN (SELECT SUM(amount * rate) / SUM(amount) AS avg_rate FROM loans WHERE id_project = p.id_project)
                         WHEN p.status IN (' . implode(', ', [ProjectsStatus::PRET_REFUSE, ProjectsStatus::EN_FUNDING, ProjectsStatus::AUTO_BID_PLACED, ProjectsStatus::A_FUNDER]) . ') THEN (SELECT SUM(amount * rate) / SUM(amount) AS avg_rate FROM bids WHERE id_project = p.id_project AND status IN (0, 1))
                         WHEN p.status IN (' . implode(', ', [ProjectsStatus::FUNDING_KO]) . ') THEN (SELECT SUM(amount * rate) / SUM(amount) AS avg_rate FROM bids WHERE id_project = p.id_project)
                     END AS avg_rate';
@@ -496,7 +497,9 @@ class projects extends projects_crud
         $rResult   = $this->bdd->query('
             SELECT *
             FROM projects
-            WHERE status IN (' . implode(', ', [ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE]) . ')'
+            INNER JOIN companies c ON c.id_company = projects.id_company
+            INNER JOIN unilend.company_status cs ON cs.id = c.id_status
+            WHERE cs.label IN ("' . implode('", " ', [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]) . '")'
         );
 
         if ($this->bdd->num_rows($rResult) > 0) {
@@ -531,13 +534,8 @@ class projects extends projects_crud
             case ProjectsStatus::REMBOURSEMENT:
             case ProjectsStatus::REMBOURSE:
             case ProjectsStatus::PROBLEME:
-            case ProjectsStatus::PROBLEME_J_X:
-            case ProjectsStatus::RECOUVREMENT:
             case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
-            case ProjectsStatus::PROCEDURE_SAUVEGARDE:
-            case ProjectsStatus::REDRESSEMENT_JUDICIAIRE:
-            case ProjectsStatus::LIQUIDATION_JUDICIAIRE:
-            case ProjectsStatus::DEFAUT:
+            case ProjectsStatus::PERTE:
                 $queryBuilder
                     ->from('loans');
                 break;
@@ -665,7 +663,7 @@ class projects extends projects_crud
             INNER JOIN (SELECT id_project, MIN(date_echeance_emprunteur) AS date_echeance_emprunteur FROM echeanciers_emprunteur WHERE status_emprunteur = 0 GROUP BY id_project) min_unpaid ON min_unpaid.id_project = p.id_project
             INNER JOIN echeanciers_emprunteur prev ON prev.id_project = p.id_project AND prev.date_echeance_emprunteur = min_unpaid.date_echeance_emprunteur
             INNER JOIN echeanciers_emprunteur next ON next.id_project = p.id_project AND next.ordre = prev.ordre + 1 AND next.status_emprunteur = 0
-            WHERE p.status = ' . ProjectsStatus::PROBLEME_J_X . '
+            WHERE p.status = ' . ProjectsStatus::PROBLEME . '
                 AND DATE(next.date_echeance_emprunteur) = DATE(ADDDATE(NOW(), INTERVAL 7 DAY))'
         );
         while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
@@ -1117,36 +1115,38 @@ class projects extends projects_crud
 
     /**
      * @param DateTime $declarationDate
+     *
      * @return array
      */
     public function getDataForBDFDeclaration(\DateTime $declarationDate)
     {
+        /* @todo Il faut revoir cette requête lors du traitement du ticket sur la déchéance du temrme. */
         $bind = [
-            'declaration_last_day'     => $declarationDate->format('Y-m-t'),
-            'problematic_status'       => [
-                ProjectsStatus::PROCEDURE_SAUVEGARDE,
-                ProjectsStatus::REDRESSEMENT_JUDICIAIRE,
-                ProjectsStatus::LIQUIDATION_JUDICIAIRE,
+            'declaration_last_day'         => $declarationDate->format('Y-m-t'),
+            'collective_proceeding_status' => [
+                CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
+                CompanyStatus::STATUS_RECEIVERSHIP,
+                CompanyStatus::STATUS_COMPULSORY_LIQUIDATION,
             ],
-            'status_to_exclude'        => [
+            'status_to_exclude'            => [
                 ProjectsStatus::REMBOURSE,
                 ProjectsStatus::REMBOURSEMENT_ANTICIPE
             ],
-            'client_type_person'       => [
+            'client_type_person'           => [
                 Clients::TYPE_PERSON,
                 Clients::TYPE_PERSON_FOREIGNER
             ],
-            'client_type_legal_entity' => [
+            'client_type_legal_entity'     => [
                 Clients::TYPE_LEGAL_ENTITY,
                 Clients::TYPE_LEGAL_ENTITY_FOREIGNER
             ]
         ];
         $type = [
-            'declaration_last_day'     => \PDO::PARAM_STR,
-            'problematic_status'       => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
-            'status_to_exclude'        => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
-            'client_type_person'       => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
-            'client_type_legal_entity' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'declaration_last_day'         => \PDO::PARAM_STR,
+            'collective_proceeding_status' => \Doctrine\DBAL\Connection::PARAM_STR_ARRAY,
+            'status_to_exclude'            => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'client_type_person'           => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'client_type_legal_entity'     => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
         ];
 
         $sql = "
@@ -1167,14 +1167,15 @@ class projects extends projects_crud
           END AS loan_type,
           p.amount AS loan_amount,
           (SELECT MIN(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project AND ps.status = " . ProjectsStatus::REMBOURSEMENT . ") AS loan_date,
-          (SELECT MAX(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project AND ps.status = " . ProjectsStatus::PROBLEME . " AND p.status IN (" . ProjectsStatus::PROBLEME . ", " . ProjectsStatus::PROBLEME_J_X . ")) AS late_payment_date,
+          (SELECT MAX(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project AND ps.status = " . ProjectsStatus::PROBLEME . " AND p.status IN (" . ProjectsStatus::PROBLEME . ")) AS late_payment_date,
           p.period AS loan_duration,
           ROUND(SUM(l.amount * l.rate) / SUM(l.amount), 2) AS average_loan_rate,
           'M' AS repayment_frequency,
-          (SELECT pshd.date FROM projects_status_history_details pshd WHERE pshd.id_project_status_history = (
-            SELECT MIN(psh.id_project_status_history) FROM projects_status_history psh
-            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status WHERE ps.status IN (:problematic_status) AND psh.id_project = p.id_project)
+          (SELECT csh.changed_on FROM company_status_history csh WHERE csh.id = (
+            SELECT MIN(csh_min.id) FROM company_status_history csh_min
+            INNER JOIN company_status cs ON cs.id = csh_min.id_status WHERE cs.label IN (:collective_proceeding_status) AND csh.id_company = p.id_company)
           ) AS judgement_date,
+          -- @todo replace it with close out netting date
           (SELECT MIN(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project AND ps.status = " . ProjectsStatus::RECOUVREMENT . ") AS recovery_date,
           (
             SELECT IFNULL(SUM(o.amount),0)

@@ -8,15 +8,14 @@ use Doctrine\ORM\Mapping as ORM;
  * CompanyStatus
  *
  * @ORM\Table(name="company_status", uniqueConstraints={@ORM\UniqueConstraint(name="label_UNIQUE", columns={"label"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\CompanyStatusRepository")
  */
 class CompanyStatus
 {
     const STATUS_IN_BONIS               = 'in_bonis';
     const STATUS_PRECAUTIONARY_PROCESS  = 'precautionary_process';
-    const STATUS_RECEIVER_SHIP          = 'receivership';
+    const STATUS_RECEIVERSHIP           = 'receivership';
     const STATUS_COMPULSORY_LIQUIDATION = 'compulsory_liquidation';
-    const STATUS_DEFAULT                = 'default';
 
     /**
      * @var integer

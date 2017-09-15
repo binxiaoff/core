@@ -7,6 +7,8 @@ use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
@@ -26,21 +28,22 @@ class EcheanciersRepository extends EntityRepository
      */
     public function getLostCapitalForLender($idLender)
     {
-        $projectStatusCollectiveProceeding = [
-            ProjectsStatus::PROCEDURE_SAUVEGARDE,
-            ProjectsStatus::REDRESSEMENT_JUDICIAIRE,
-            ProjectsStatus::LIQUIDATION_JUDICIAIRE,
-            ProjectsStatus::DEFAUT
+        $companyStatus = [
+            CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
+            CompanyStatus::STATUS_RECEIVERSHIP,
+            CompanyStatus::STATUS_COMPULSORY_LIQUIDATION
         ];
 
         $qb = $this->createQueryBuilder('e');
         $qb->select('SUM(e.capital)')
             ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'e.idProject = p.idProject')
+            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'c.idCompany = p.idCompany')
+            ->innerJoin('UnilendCoreBusinessBundle:CompanyStatus', 'cs', Join::WITH, 'cs.id = c.idStatus')
             ->where('e.idLender = :idLender')
-            ->andWhere('e.status = ' . \echeanciers::STATUS_PENDING)
-            ->andWhere('p.status IN (:projectStatus) OR (p.status = ' . ProjectsStatus::RECOUVREMENT . ' AND DATEDIFF(NOW(), e.dateEcheance) > 180)')
+            ->andWhere('e.status = ' . Echeanciers::STATUS_PENDING)
+            ->andWhere('cs.label IN (:companyStatus) OR (p.status = ' . ProjectsStatus::PROBLEME . ' AND DATEDIFF(NOW(), e.dateEcheance) > 180)')
             ->setParameter('idLender', $idLender)
-            ->setParameter('projectStatus', $projectStatusCollectiveProceeding, Connection::PARAM_INT_ARRAY);
+            ->setParameter('companyStatus', $companyStatus, Connection::PARAM_STR_ARRAY);
 
         $amount = $qb->getQuery()->getSingleScalarResult();
 
@@ -380,13 +383,15 @@ class EcheanciersRepository extends EntityRepository
                 LEFT JOIN lender_tax_exemption lte ON lte.id_lender = e.id_lender AND lte.year = YEAR(e.date_echeance)
                 LEFT JOIN lenders_imposition_history lih ON lih.id_lenders_imposition_history = (SELECT MAX(id_lenders_imposition_history) FROM lenders_imposition_history WHERE id_lender = e.id_lender)
                 LEFT JOIN projects p ON e.id_project = p.id_project
+                LEFT JOIN companies com ON p.id_company = com.id_company
+                LEFT JOIN company_status cs ON cs.id = com.id_status
                 WHERE e.id_lender = :lender
                     AND e.status = 0
                     AND e.date_echeance >= NOW()
                     AND IF(
-                        (p.status IN (' . implode(',',
-                [ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE, ProjectsStatus::DEFAUT]) . ')
-                        OR (p.status >= ' . ProjectsStatus::PROBLEME . '
+                        (cs.label IN (:companyStatus)
+                        OR p.status = ' . ProjectsStatus::PERTE . '
+                        OR (p.status = ' . ProjectsStatus::PROBLEME . '
                         AND DATEDIFF(NOW(), (
                         SELECT psh2.added
                         FROM projects_status_history psh2
@@ -422,7 +427,8 @@ class EcheanciersRepository extends EntityRepository
                 'tax_type_exempted_lender'     => TaxManager::TAX_TYPE_EXEMPTED_LENDER,
                 'tax_type_taxable_lender'      => TaxManager::TAX_TYPE_TAXABLE_LENDER,
                 'tax_type_foreigner_lender'    => TaxManager::TAX_TYPE_FOREIGNER_LENDER,
-                'tax_type_legal_entity_lender' => TaxManager::TAX_TYPE_LEGAL_ENTITY_LENDER
+                'tax_type_legal_entity_lender' => TaxManager::TAX_TYPE_LEGAL_ENTITY_LENDER,
+                'companyStatus'                => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]
             ],
             [
                 'repaymentTypes'               => Connection::PARAM_INT_ARRAY,
@@ -432,7 +438,8 @@ class EcheanciersRepository extends EntityRepository
                 'tax_type_exempted_lender'     => Connection::PARAM_INT_ARRAY,
                 'tax_type_taxable_lender'      => Connection::PARAM_INT_ARRAY,
                 'tax_type_foreigner_lender'    => Connection::PARAM_INT_ARRAY,
-                'tax_type_legal_entity_lender' => Connection::PARAM_INT_ARRAY
+                'tax_type_legal_entity_lender' => Connection::PARAM_INT_ARRAY,
+                'companyStatus'                => Connection::PARAM_STR_ARRAY
             ],
             $oQCProfile
         );
@@ -461,21 +468,29 @@ class EcheanciersRepository extends EntityRepository
                     INNER JOIN projects_status_history psh2 ON t.first_status_history = psh2.id_project_status_history
                     INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
                     INNER JOIN echeanciers e ON e.id_project = psh2.id_project
+                    INNER JOIN projects p ON p.id_project = psh2.id_project
+                    INNER JOIN companies c ON c.id_company = p.id_company
+                    INNER JOIN company_status cs ON cs.id = c.id_status
+                    LEFT JOIN debt_collection_mission dcm ON p.id_project = dcm.id_project AND dcm.status = :ongoing
                   WHERE psh2.added <= :end
                     AND ps2.status IN (:status)
+                    AND cs.label = :inBonis
+                    AND dcm.id_project IS NULL
                     AND e.status = :pending
                     AND e.date_echeance <= :end';
 
         return $this->getEntityManager()->getConnection()->executeQuery($query, [
-            'end'             => $end->format('Y-m-d H:i:s'),
-            'repaymentStatus' => ProjectsStatus::REMBOURSEMENT,
-            'status'          => [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME, ProjectsStatus::PROBLEME_J_X],
-            'pending'         => Echeanciers::STATUS_PENDING
+            'end'     => $end->format('Y-m-d H:i:s'),
+            'status'  => [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME],
+            'inBonis' => CompanyStatus::STATUS_IN_BONIS,
+            'ongoing' => DebtCollectionMission::STATUS_ONGOING,
+            'pending' => Echeanciers::STATUS_PENDING
         ], [
-            'end'             => \PDO::PARAM_STR,
-            'repaymentStatus' => \PDO::PARAM_INT,
-            'status'          => Connection::PARAM_INT_ARRAY,
-            'pending'         => \PDO::PARAM_INT
+            'end'     => \PDO::PARAM_STR,
+            'status'  => Connection::PARAM_INT_ARRAY,
+            'inBonis' => \PDO::PARAM_STR,
+            'ongoing' => \PDO::PARAM_INT,
+            'pending' => \PDO::PARAM_INT
         ])->fetchAll(\PDO::FETCH_ASSOC)[0];
     }
 
@@ -559,5 +574,25 @@ class EcheanciersRepository extends EntityRepository
             ->orderBy('e.ordre', 'ASC')
             ->setMaxResults(1);
         return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * @param array $loans
+     * @param int   $projectId
+     * @param int   $status
+     *
+     * @return Echeanciers[]
+     */
+    public function findRepaymentsByLoansAndProject(array $loans, $projectId, $status)
+    {
+        $queryBuilder = $this->createQueryBuilder('e')
+            ->where('e.idProject = :projectId')
+            ->setParameter('projectId', $projectId)
+            ->andWhere('e.status = :status')
+            ->setParameter('status', $status)
+            ->andWhere('e.idLoan IN (:loans)')
+            ->setParameter('loans', $loans);
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }

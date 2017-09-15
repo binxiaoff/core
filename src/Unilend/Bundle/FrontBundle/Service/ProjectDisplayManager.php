@@ -43,19 +43,14 @@ class ProjectDisplayManager
     private $cachePool;
     /** @var array */
     private static $projectsStatus = [
-        \projects_status::EN_FUNDING,
-        \projects_status::FUNDE,
-        \projects_status::FUNDING_KO,
-        \projects_status::REMBOURSEMENT,
-        \projects_status::REMBOURSE,
-        \projects_status::PROBLEME,
-        \projects_status::RECOUVREMENT,
-        \projects_status::DEFAUT,
-        \projects_status::REMBOURSEMENT_ANTICIPE,
-        \projects_status::PROBLEME_J_X,
-        \projects_status::PROCEDURE_SAUVEGARDE,
-        \projects_status::REDRESSEMENT_JUDICIAIRE,
-        \projects_status::LIQUIDATION_JUDICIAIRE
+        ProjectsStatus::EN_FUNDING,
+        ProjectsStatus::FUNDE,
+        ProjectsStatus::FUNDING_KO,
+        ProjectsStatus::REMBOURSEMENT,
+        ProjectsStatus::REMBOURSE,
+        ProjectsStatus::PROBLEME,
+        ProjectsStatus::PERTE,
+        ProjectsStatus::REMBOURSEMENT_ANTICIPE,
     ];
 
     /**
@@ -171,9 +166,9 @@ class ProjectDisplayManager
                 'longitude' => (float) $company->longitude
             ],
             'status'               => $project->status,
-            'finished'             => ($project->status > \projects_status::EN_FUNDING || $end < $now),
+            'finished'             => ($project->status > ProjectsStatus::EN_FUNDING || $end < $now),
             'averageRate'          => round($project->getAverageInterestRate(), 1),
-            'fundingDuration'      => (\projects_status::EN_FUNDING > $project->status) ? '' : $this->getFundingDurationTranslation($project)
+            'fundingDuration'      => (ProjectsStatus::EN_FUNDING > $project->status) ? '' : $this->getFundingDurationTranslation($project)
         ];
 
         $daysLeft = $now->diff($end);
@@ -205,7 +200,7 @@ class ProjectDisplayManager
 
         $projectData['minRate']      = (float) $projectRateSettings['rate_min'];
         $projectData['maxRate']      = (float) $projectRateSettings['rate_min'];
-        $projectData['totalLenders'] = (\projects_status::EN_FUNDING >= $project->status) ? $bids->countLendersOnProject($project->id_project) : $loans->getNbPreteurs($project->id_project);
+        $projectData['totalLenders'] = (ProjectsStatus::EN_FUNDING >= $project->status) ? $bids->countLendersOnProject($project->id_project) : $loans->getNbPreteurs($project->id_project);
 
         if ($alreadyFunded >= $project->amount) {
             $projectData['costFunded']    = $project->amount;
@@ -226,17 +221,17 @@ class ProjectDisplayManager
         $projectData['navigation'] = $project->positionProject($project->id_project, self::$projectsStatus, [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC], $productIds);
 
         $now = new \DateTime('NOW');
-        if ($projectData['endDate'] <= $now && $projectData['status'] == \projects_status::EN_FUNDING) {
+        if ($projectData['endDate'] <= $now && $projectData['status'] == ProjectsStatus::EN_FUNDING) {
             $projectData['projectPending'] = true;
         }
 
-        if (in_array($projectData['status'], [\projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE])) {
+        if (in_array($projectData['status'], [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE])) {
             $lastStatusHistory                = $projectStatusHistory->select('id_project = ' . $project->id_project, 'added DESC, id_project_status_history DESC', 0, 1);
             $lastStatusHistory                = array_shift($lastStatusHistory);
             $projectData['dateLastRepayment'] = date('d/m/Y', strtotime($lastStatusHistory['added']));
         }
 
-        if (\projects_status::EN_FUNDING <= $projectData['status']) {
+        if (ProjectsStatus::EN_FUNDING <= $projectData['status']) {
             $rateSummary     = [];
             $bidsSummary     = $this->projectManager->getBidsSummary($project);
             $bidsCount       = array_sum(array_column($bidsSummary, 'bidsCount'));

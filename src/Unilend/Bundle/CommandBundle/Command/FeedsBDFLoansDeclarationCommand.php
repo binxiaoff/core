@@ -8,6 +8,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\core\Loader;
 
@@ -258,7 +259,8 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
             $amount = bcadd($repayment->getUnpaidAmountAtDate($data['id_project'], $date), $repayment->getTotalComingCapitalByProject($data['id_project'], $date), 2);
             $amount = bcsub($amount, $data['debt_collection_repayment'], 2);
             $return = ['unpaid_amount' => $amount, 'owed_capital' => $amount];
-        } elseif (false === empty($data['judgement_date']) && true === in_array($data['status'], [\projects_status::LIQUIDATION_JUDICIAIRE])) {
+            /** @todo Modifier ceci : date de la déchéance du terme ? */
+        } elseif (false === empty($data['judgement_date']) && true === in_array($data['status'], [ProjectsStatus::LIQUIDATION_JUDICIAIRE])) {
             /** @var \DateTime $date */
             $date   = \DateTime::createFromFormat('Y-m-d', $data['judgement_date']);
             $amount = bcadd($repayment->getUnpaidAmountAtDate($data['id_project'], $date), $repayment->getTotalComingCapitalByProject($data['id_project'], $date), 2);

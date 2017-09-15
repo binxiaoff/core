@@ -1,5 +1,7 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
+
 class thickboxController extends bootstrap
 {
     public function initialize()
@@ -89,88 +91,50 @@ class thickboxController extends bootstrap
         $this->projects_status = $this->loadData('projects_status');
         $this->projects_status->get($this->params[1], 'status');
 
-        $this->iProjectId = $this->params[0];
+        $this->projectId = $this->params[0];
 
         switch ($this->params[1]) {
             case \projects_status::PROBLEME:
-                $this->bAskEmail         = true;
-                $this->bCustomEmail      = true;
-                $this->bCustomSite       = true;
-                $this->bDecisionDate     = false;
-                $this->bReceiver         = false;
-                $this->bAskEmailBorrower = true;
-
-                /** @var \Symfony\Component\Translation\TranslatorInterface  $translator*/
-                $translator         = $this->get('translator');
+                /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
+                $translator                 = $this->get('translator');
                 $this->sInfoStatusChange    = trim($translator->trans('projet_info-passage-statut-probleme'));
                 $this->mailInfoStatusChange = trim($translator->trans('projet_mail-info-passage-statut-probleme'));
-
-                break;
-            case \projects_status::PROBLEME_J_X:
-                $this->bAskEmail         = true;
-                $this->bCustomEmail      = true;
-                $this->bCustomSite       = true;
-                $this->bDecisionDate     = false;
-                $this->bReceiver         = false;
-                $this->bAskEmailBorrower = true;
-                break;
-            case \projects_status::RECOUVREMENT:
-                $this->bAskEmail         = true;
-                $this->bCustomEmail      = true;
-                $this->bCustomSite       = true;
-                $this->bDecisionDate     = false;
-                $this->bReceiver         = false;
-                $this->bAskEmailBorrower = true;
-                break;
-            case \projects_status::PROCEDURE_SAUVEGARDE:
-                $this->bAskEmail         = false;
-                $this->bCustomEmail      = true;
-                $this->bCustomSite       = true;
-                $this->bDecisionDate     = true;
-                $this->bReceiver         = true;
-                $this->bAskEmailBorrower = true;
-                break;
-            case \projects_status::REDRESSEMENT_JUDICIAIRE:
-                $this->bAskEmail         = false;
-                $this->bCustomEmail      = true;
-                $this->bCustomSite       = true;
-                $this->bDecisionDate     = true;
-                $this->bReceiver         = true;
-                $this->bAskEmailBorrower = true;
-                break;
-            case \projects_status::LIQUIDATION_JUDICIAIRE:
-                $this->bAskEmail         = false;
-                $this->bCustomEmail      = true;
-                $this->bCustomSite       = true;
-                $this->bDecisionDate     = true;
-                $this->bReceiver         = true;
-                $this->bAskEmailBorrower = true;
-                break;
-            case \projects_status::DEFAUT:
-                $this->bAskEmail         = false;
-                $this->bCustomEmail      = false;
-                $this->bCustomSite       = true;
-                $this->bDecisionDate     = true;
-                $this->bReceiver         = true;
-                $this->bAskEmailBorrower = true;
                 break;
         }
+    }
 
-        if (in_array($this->params[1], array(\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
-            /** @var \projects_status_history $oProjectsStatusHistory */
-            $oProjectsStatusHistory = $this->loadData('projects_status_history');
-            $oProjectsStatusHistory->loadLastProjectHistory($this->params[0]);
+    public function _company_status_update()
+    {
+        $this->clientId        = filter_var($this->params[0], FILTER_VALIDATE_INT);
+        $this->companyId       = filter_var($this->params[1], FILTER_VALIDATE_INT);
+        $this->companyStatusId = filter_var($this->params[2], FILTER_VALIDATE_INT);
 
-            $oProjectsStatusHistoryDetails = $this->loadData('projects_status_history_details');
-            $oProjectsStatusHistoryDetails->get($oProjectsStatusHistory->id_project_status_history, 'id_project_status_history');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus $companyStatusEntity */
+        $companyStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')->find($this->companyStatusId);
+        $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companyId);
 
-            $this->sPreviousReceiver = $oProjectsStatusHistoryDetails->receiver;
+        if (null === $companyStatus || null === $company || $company->getIdClientOwner() != $this->clientId) {
+            return;
+        }
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager companyManager */
+        $this->companyManager = $this->get('unilend.service.company_manager');
+        $this->statusLabel    = $this->companyManager->getCompanyStatusNameByLabel($companyStatus->getLabel());
+
+        if (in_array($companyStatus->getLabel(), array(CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION))) {
+            $companyStatusHistory   = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')
+                ->findOneBy(['idCompany' => $this->companyId], ['added' => 'DESC']);
+            $this->previousReceiver = '';
+            if (null !== $companyStatusHistory) {
+                $this->previousReceiver = $companyStatusHistory->getReceiver();
+            }
         }
     }
 
     public function _confirm_tax_exemption()
     {
-        if ('uncheck' === $this->params[1]){
+        if ('uncheck' === $this->params[1]) {
             $this->message = 'Le préteur ne sera pas exonéré pour l\'année ' . $this->params[0] . '<br>une fois les modifications sauvegardées';
         } elseif ('check' === $this->params[1]) {
             $this->message = 'Le préteur sera exonéré pour l\'année ' . $this->params[0] . '<br>une fois les modifications sauvegardées';

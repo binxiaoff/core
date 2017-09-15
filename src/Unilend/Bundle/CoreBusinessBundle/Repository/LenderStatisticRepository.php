@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
@@ -57,19 +58,6 @@ class LenderStatisticRepository extends EntityRepository
 
             SELECT
                 e.date_echeance AS date,
-                CASE WHEN e.date_echeance < NOW() THEN "0" ELSE e.capital + e.interets END AS amount
-            FROM echeanciers e
-              INNER JOIN projects p ON e.id_project = p.id_project
-              INNER JOIN loans l ON e.id_loan = l.id_loan
-            WHERE
-                l.id_lender = :idWallet
-                AND e.status = ' . Echeanciers::STATUS_PENDING . '
-                AND p.status IN (' . implode(',', [ProjectsStatus::PROBLEME, ProjectsStatus::PROBLEME_J_X]) . ')
-
-        UNION ALL
-
-            SELECT
-                e.date_echeance AS date,
                 CASE WHEN e.date_echeance < NOW() THEN "0" ELSE
                 CASE WHEN DATEDIFF(NOW(),
                     (
@@ -87,10 +75,13 @@ class LenderStatisticRepository extends EntityRepository
             FROM echeanciers e
               INNER JOIN projects p ON e.id_project = p.id_project
               INNER JOIN loans l ON e.id_loan = l.id_loan
+              INNER JOIN companies com ON p.id_company = com.id_company
+              INNER JOIN company_status cs2 ON cs2.id = com.id_status
             WHERE
                 l.id_lender = :idWallet
                 AND e.status = ' . Echeanciers::STATUS_PENDING . '
-                AND p.status = ' . ProjectsStatus::RECOUVREMENT . '
+                AND p.status = ' . ProjectsStatus::PROBLEME . '
+                AND cs2.label = \'' . CompanyStatus::STATUS_IN_BONIS . '\'
 
         UNION ALL
 
@@ -100,15 +91,17 @@ class LenderStatisticRepository extends EntityRepository
             FROM echeanciers e
               INNER JOIN projects p ON e.id_project = p.id_project
               INNER JOIN loans l ON e.id_loan = l.id_loan
+              INNER JOIN companies com ON com.id_company = p.id_company
+              INNER JOIN company_status cs ON cs.id = com.id_status
             WHERE
                 l.id_lender = :idWallet
                 AND e.status = ' . Echeanciers::STATUS_PENDING . '
-                AND p.status IN (' . implode(',', [
-                ProjectsStatus::PROCEDURE_SAUVEGARDE,
-                ProjectsStatus::REDRESSEMENT_JUDICIAIRE,
-                ProjectsStatus::LIQUIDATION_JUDICIAIRE,
-                ProjectsStatus::DEFAUT
-            ]) . ')
+                AND p.status >= ' . ProjectsStatus::REMBOURSEMENT . '
+                AND cs.label IN (\'' . implode('\',\'', [
+                CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
+                CompanyStatus::STATUS_RECEIVERSHIP,
+                CompanyStatus::STATUS_COMPULSORY_LIQUIDATION,
+            ]) . '\')
 
         UNION ALL
         

@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
@@ -70,22 +71,20 @@ class CompaniesRepository extends EntityRepository
         $end->setTime(23, 59, 59);
 
         $status = [
-            ProjectsStatus::PROCEDURE_SAUVEGARDE,
-            ProjectsStatus::LIQUIDATION_JUDICIAIRE,
-            ProjectsStatus::REDRESSEMENT_JUDICIAIRE
+            CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
+            CompanyStatus::STATUS_COMPULSORY_LIQUIDATION,
+            CompanyStatus::STATUS_RECEIVERSHIP
         ];
 
-        $query = 'SELECT
-                      COUNT(DISTINCT(id_company))
-                    FROM (SELECT MAX(id_project_status_history) AS max_id_projects_status_history
-                          FROM projects_status_history psh_max
-                          GROUP BY id_project) AS psh_max
-                      INNER JOIN projects_status_history psh ON psh_max.max_id_projects_status_history = psh.id_project_status_history
-                      INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                      INNER JOIN projects p ON p.id_project = psh.id_project
-                    WHERE
-                      ps.status IN (:status)
-                      AND psh.added BETWEEN :start AND :end';
+        $query = 'SELECT COUNT(DISTINCT(csh.id_company))
+                  FROM (SELECT MAX(id) AS max_id
+                        FROM company_status_history csh_max
+                        GROUP BY id_company) AS csh_max
+                    INNER JOIN company_status_history csh ON csh_max.max_id = csh.id
+                    INNER JOIN company_status cs ON csh.id_status = cs.id
+                  WHERE
+                    cs.label IN (:status)
+                    AND csh.added BETWEEN :start AND :end';
 
         $result = $this->getEntityManager()->getConnection()
             ->executeQuery($query, [
@@ -93,11 +92,34 @@ class CompaniesRepository extends EntityRepository
                 'start'  => $start->format('Y-m-d H:i:s'),
                 'end'    => $end->format('Y-m-d H:i:s')
             ], [
-                'status' => Connection::PARAM_INT_ARRAY,
+                'status' => Connection::PARAM_STR_ARRAY,
                 'start'  => \PDO::PARAM_STR,
                 'end'    => \PDO::PARAM_STR
             ])->fetchAll();
 
         return $result;
+    }
+
+    /**
+     * @param string $siren
+     * @return bool
+     */
+    public function isProblematicCompany($siren)
+    {
+        $queryBuilder = $this->createQueryBuilder('c')
+            ->select('COUNT(c.idCompany)')
+            ->innerJoin('UnilendCoreBusinessBundle:CompanyStatusHistory', 'csh', Join::WITH,  'csh.idCompany = c.idCompany')
+            ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH,  'p.idCompany = c.idCompany')
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatusHistory', 'psh', Join::WITH,  'psh.idProject = p.idProject')
+            ->innerJoin('UnilendCoreBusinessBundle:CompanyStatus', 'cs', Join::WITH,  'cs.id = csh.idStatus')
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH,  'ps.idProjectStatus = psh.idProjectStatus')
+            ->where('c.siren = :siren')
+            ->setParameter('siren', $siren)
+            ->andWhere('cs.label != :inBonis')
+            ->setParameter('inBonis', CompanyStatus::STATUS_IN_BONIS)
+            ->andWhere('ps.status IN (:projectStatus)')
+            ->setParameter('projectStatus', [ProjectsStatus::PROBLEME]);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult() > 0;
     }
 }

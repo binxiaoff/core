@@ -1,6 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 
 class companies extends companies_crud
 {
@@ -185,36 +186,6 @@ class companies extends companies_crud
     }
 
     /**
-     * @return bool
-     */
-    public function countProblemsBySIREN()
-    {
-        if (empty($this->id_company)) {
-            return 0;
-        }
-
-        $aStatuses = array(
-            \projects_status::PROBLEME,
-            \projects_status::PROBLEME_J_X,
-            \projects_status::RECOUVREMENT,
-            \projects_status::PROCEDURE_SAUVEGARDE,
-            \projects_status::REDRESSEMENT_JUDICIAIRE,
-            \projects_status::LIQUIDATION_JUDICIAIRE,
-            \projects_status::DEFAUT
-        );
-        return (int) $this->bdd->result($this->bdd->query('
-            SELECT COUNT(*)
-            FROM companies current_company
-            INNER JOIN companies c ON current_company.siren = c.siren
-            INNER JOIN projects p ON c.id_company = p.id_company
-            INNER JOIN projects_status_history psh ON p.id_project = psh.id_project
-            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
-            WHERE ps.status IN (' . implode(', ', $aStatuses) . ')
-                AND current_company.id_company = ' . $this->id_company
-        ));
-    }
-
-    /**
      * @param string $sName
      * @return array
      */
@@ -335,37 +306,40 @@ class companies extends companies_crud
             $caseSql .= ' WHEN ' . $year . ' THEN "' . $year . '"';
         }
 
-        $query = 'SELECT COUNT(DISTINCT id_company) AS amount,
-                   (
-                     SELECT
-                       CASE LEFT(projects_status_history.added, 4)
-                       WHEN 2013 THEN "2013-2014"
-                       WHEN 2014 THEN "2013-2014"
-                       ELSE LEFT(projects_status_history.added, 4)
-                       END AS date_range
-                     FROM projects_status_history
-                       INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                     WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
-                            AND projects.id_project = projects_status_history.id_project
-                     ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
-                   ) AS cohort
+        $query = '
+            SELECT COUNT(DISTINCT projects.id_company) AS amount,
+               (
+                 SELECT
+                   CASE LEFT(projects_status_history.added, 4)
+                   WHEN 2013 THEN "2013-2014"
+                   WHEN 2014 THEN "2013-2014"
+                   ELSE LEFT(projects_status_history.added, 4)
+                   END AS date_range
+                 FROM projects_status_history
+                   INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
+                 WHERE  projects_status.status = ' . \projects_status::REMBOURSEMENT . '
+                        AND projects.id_project = projects_status_history.id_project
+                 ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
+               ) AS cohort
             FROM projects
-            WHERE projects.status IN (' . implode(',', [\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::DEFAUT]) .')
-                  OR
-                  (IF(
-                       (projects.status IN (' . implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X, \projects_status::RECOUVREMENT]) . ') AND
-                        DATEDIFF(NOW(),
-                                 (
-                                   SELECT psh2.added
-                                   FROM projects_status_history psh2
-                                     INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                                   WHERE
-                                     ps2.status = ' . \projects_status::PROBLEME . '
-                                     AND psh2.id_project = projects.id_project
-                                   ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
-                                   LIMIT 1
-                                 )
-                        ) > 180), TRUE, FALSE) = TRUE)
+               INNER JOIN companies c ON c.id_company = projects.id_company
+               INNER JOIN company_status cs ON cs.id = c.id_status 
+            WHERE projects.status >= ' . ProjectsStatus::REMBOURSEMENT . '
+               AND cs.label IN ("' . implode('", "', [CompanyStatus::STATUS_COMPULSORY_LIQUIDATION, CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP]) . '")
+               OR
+               (projects.status = ' . ProjectsStatus::PROBLEME . ' AND
+                DATEDIFF(NOW(),
+                         (
+                          SELECT psh2.added
+                          FROM projects_status_history psh2
+                            INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                          WHERE
+                            ps2.status = ' . ProjectsStatus::PROBLEME . '
+                            AND psh2.id_project = projects.id_project
+                          ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
+                          LIMIT 1
+                         )
+                ) > 180)
             GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery($query);

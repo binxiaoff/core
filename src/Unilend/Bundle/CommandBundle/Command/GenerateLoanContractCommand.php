@@ -8,6 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class GenerateLoanContractCommand extends ContainerAwareCommand
@@ -49,16 +50,11 @@ EOF
         $entityManagerSimulator->getRepository('projects_status');
 
         $status = [
-            \projects_status::REMBOURSEMENT,
-            \projects_status::REMBOURSE,
-            \projects_status::PROBLEME,
-            \projects_status::RECOUVREMENT,
-            \projects_status::DEFAUT,
-            \projects_status::REMBOURSEMENT_ANTICIPE,
-            \projects_status::PROBLEME_J_X,
-            \projects_status::PROCEDURE_SAUVEGARDE,
-            \projects_status::REDRESSEMENT_JUDICIAIRE,
-            \projects_status::LIQUIDATION_JUDICIAIRE
+            ProjectsStatus::REMBOURSEMENT,
+            ProjectsStatus::REMBOURSE,
+            ProjectsStatus::REMBOURSEMENT_ANTICIPE,
+            ProjectsStatus::PROBLEME,
+            ProjectsStatus::PERTE
         ];
 
         $projects = $project->selectProjectsByStatus($status, '', [], '', '', false);

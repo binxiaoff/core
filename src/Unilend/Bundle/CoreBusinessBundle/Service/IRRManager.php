@@ -4,7 +4,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
@@ -24,6 +26,17 @@ class IRRManager
     const IRR_UNILEND_RISK_PERIOD_3_START = '2015-09-01';
     const IRR_UNILEND_RISK_PERIOD_3_END   = '2016-08-31';
     const IRR_UNILEND_RISK_PERIOD_4_START = '2016-09-01';
+
+    const PROJECT_STATUS_TRIGGERING_CHANGE = [
+        ProjectsStatus::REMBOURSEMENT,
+        ProjectsStatus::PROBLEME,
+        ProjectsStatus::PERTE
+    ];
+    const COMPANY_STATUS_TRIGGERING_CHANGE = [
+        CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
+        CompanyStatus::STATUS_RECEIVERSHIP,
+        CompanyStatus::STATUS_COMPULSORY_LIQUIDATION
+    ];
 
     /** @var LoggerInterface */
     private $logger;
@@ -123,23 +136,14 @@ class IRRManager
     {
         /** @var WalletRepository $walletRepository */
         $walletRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        /** @var \projects_status_history $projectStatusHistory */
-        $projectStatusHistory = $this->entityManagerSimulator->getRepository('projects_status_history');
-        $projectStatusTriggeringChange = [
-            \projects_status::REMBOURSEMENT,
-            \projects_status::PROBLEME,
-            \projects_status::PROBLEME_J_X,
-            \projects_status::RECOUVREMENT,
-            \projects_status::PROCEDURE_SAUVEGARDE,
-            \projects_status::REDRESSEMENT_JUDICIAIRE,
-            \projects_status::LIQUIDATION_JUDICIAIRE,
-            \projects_status::DEFAUT
-        ];
 
         $lendersWithLatePayments   = $walletRepository->getLendersWalletsWithLatePaymentsForIRR();
-        $countProjectStatusChanges = $projectStatusHistory->countProjectStatusChangesOnDate($date->format('Y-m-d'), $projectStatusTriggeringChange);
+        $projectStatusChanges = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+            ->getProjectStatusChangesOnDate($date, self::PROJECT_STATUS_TRIGGERING_CHANGE);
+        $companyStatusChanges      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')
+            ->getCompanyStatusChangesOnDate($date, self::COMPANY_STATUS_TRIGGERING_CHANGE);
 
-        return count($countProjectStatusChanges) > 0 || count($lendersWithLatePayments) > 0 ;
+        return count($projectStatusChanges) > 0 || count($lendersWithLatePayments) > 0 || count($companyStatusChanges) > 0;
     }
 
     /**
@@ -209,7 +213,7 @@ class IRRManager
 
         $cohort4 = new UnilendStats();
         $cohort4->setValue($this->getUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_4_START, date('Y-m-d')));
-        $cohort4->setTypeStat('IRR_cohort_' . 'IRR_cohort_' . self::IRR_UNILEND_RISK_PERIOD_4_START . '_' . date('Y-m-d'));
+        $cohort4->setTypeStat('IRR_cohort_' . self::IRR_UNILEND_RISK_PERIOD_4_START . '_' . date('Y-m-d'));
         $this->entityManager->persist($cohort4);
 
         $this->entityManager->flush();

@@ -223,7 +223,7 @@ class sfpmeiController extends bootstrap
                 $this->setView('preteur/portefeuille');
 
                 $statusOK = [ProjectsStatus::EN_FUNDING, ProjectsStatus::FUNDE, ProjectsStatus::FUNDING_KO, ProjectsStatus::PRET_REFUSE, ProjectsStatus::REMBOURSEMENT, ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE];
-                $statusKO = [ProjectsStatus::PROBLEME, ProjectsStatus::RECOUVREMENT, ProjectsStatus::DEFAUT, ProjectsStatus::PROBLEME_J_X, ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE];
+                $statusKO = [ProjectsStatus::PROBLEME, ProjectsStatus::PERTE];
 
                 $this->lenderIRR                = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderStatistic')->findOneBy(['idWallet' => $this->wallet, 'typeStat' => LenderStatistic::TYPE_STAT_IRR], ['added' => 'DESC']);
                 $this->projectsCount            = $this->loans->getProjectsCount($this->wallet->getId());

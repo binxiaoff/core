@@ -90,13 +90,9 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
         $rejectWireTransfersIn                = $wireTransferInRepository->getRejectedDirectDebitIndicatorsBetweenDates($startDate, $endDate);
         $regularizationWireTransfers          = $wireTransferInRepository->getBorrowerProvisionRegularizationIndicatorsBetweenDates($startDate, $endDate);
         $lateRepayments                       = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->getLateRepaymentIndicators($endDate);
-        $projectsInDebtCollection             = $projectRepository->findProjectsHavingHadStatusBetweenDates([ProjectsStatus::RECOUVREMENT], new \DateTime('January 2013'), $endDate);
+        $projectsInDebtCollection             = $projectRepository->findProjectsWithDebtCollectionMissionBetweenDates(new \DateTime('January 2013'), $endDate);
         $remainingDueCapitalInDebtCollection  = $operationRepository->getRemainingDueCapitalForProjects($endDate, array_column($projectsInDebtCollection, 'id_project'));
-        $projectsInCollectiveProceeding       = $projectRepository->findProjectsHavingHadStatusBetweenDates([
-            ProjectsStatus::PROCEDURE_SAUVEGARDE,
-            ProjectsStatus::LIQUIDATION_JUDICIAIRE,
-            ProjectsStatus::REDRESSEMENT_JUDICIAIRE
-        ], new \DateTime('January 2013'), $endDate);
+        $projectsInCollectiveProceeding       = $projectRepository->findProjectsHavingHadCompanyStatusInCollectiveProceeding(new \DateTime('January 2013'), $endDate);
         $companiesInCollectiveProceeding      = $companiesRepository->getCountCompaniesInCollectiveProceedingBetweenDates($startDate, $endDate);
         $newlyRiskAnalysisProjects            = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->getCountProjectsInRiskReviewBetweenDates($startDate, $endDate);
         $newlyPresentedProjects               = $projectRepository->getIndicatorBetweenDates('COUNT(p.id_project) AS newProjects', $startDate, $endDate, ProjectsStatus::EN_FUNDING)['newProjects'];

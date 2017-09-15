@@ -1,4 +1,8 @@
-<?php use \Unilend\Bundle\CoreBusinessBundle\Entity\OperationType; ?>
+<?php
+
+use \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
+
+?>
 <script>
     $(function () {
         $(".listeProjets").tablesorter({headers: {4: {sorter: false}, 5: {sorter: false}}});
@@ -26,6 +30,16 @@
                     $(".borrower-operation-table").html(data);
                 }
             });
+        });
+
+        $('#status').change(function () {
+            var status = $(this).val();
+
+            if (
+                status != '<?= $this->companyStatusInBonis->getId() ?>'
+            ) {
+                $.colorbox({href: "<?= $this->lurl ?>/thickbox/company_status_update/<?= $this->clients->id_client ?>/<?= $this->companies->id_company ?>/" + status});
+            }
         });
     });
 </script>
@@ -129,6 +143,39 @@
         </table>
     </form>
     <br/><br/>
+
+    <div class="company">
+        <h2>Société</h2>
+        <table class="tablesorter">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Raison sociale</th>
+                <th>Statut</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tr>
+                <td><?= $this->companyEntity->getIdCompany() ?></td>
+                <td><?= $this->companyEntity->getName() ?></td>
+                <td><?= (null !== $this->companyEntity->getIdStatus()) ? $this->companyManager->getCompanyStatusNameByLabel($this->companyEntity->getIdStatus()->getLabel()) : '' ?></td>
+                <td>
+                    <div class="form-group">
+                        <form class="form-inline">
+                            <label for="status">Statut</label>
+                            <select id="status" name="status" class="select">
+                                <?php /** @var $status CompanyStatus */ ?>
+                                <?php foreach ($this->possibleCompanyStatus as $status) : ?>
+                                    <option <?= $this->companyEntity->getIdStatus()->getId() == $status->getId() ? 'selected' : '' ?> value="<?= $status->getId() ?>"><?= $this->companyManager->getCompanyStatusNameByLabel($status->getLabel()) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <br><br>
 
     <?php $this->fireView('../bank_account/blocks/validated_bank_account'); ?>
     <?php $this->fireView('../bank_account/blocks/other_bank_account'); ?>

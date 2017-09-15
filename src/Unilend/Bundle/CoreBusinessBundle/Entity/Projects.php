@@ -424,15 +424,23 @@ class Projects
     private $invoices;
 
     /**
+     * @var DebtCollectionMission[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission", mappedBy="idProject")
+     */
+    private $debtCollectionMissions;
+
+    /**
      * Projects constructor.
      */
     public function __construct()
     {
-        $this->attachments      = new ArrayCollection();
-        $this->mandates         = new ArrayCollection();
-        $this->notes            = new ArrayCollection();
-        $this->wireTransferOuts = new ArrayCollection();
-        $this->invoices         = new ArrayCollection();
+        $this->attachments            = new ArrayCollection();
+        $this->mandates               = new ArrayCollection();
+        $this->notes                  = new ArrayCollection();
+        $this->wireTransferOuts       = new ArrayCollection();
+        $this->invoices               = new ArrayCollection();
+        $this->debtCollectionMissions = new ArrayCollection();
     }
 
     /**
@@ -1651,5 +1659,56 @@ class Projects
     public function getInvoices()
     {
         return $this->invoices;
+    }
+
+    /**
+     * @param bool $includeArchived
+     *
+     * @return DebtCollectionMission[]
+     */
+    public function getDebtCollectionMissions($includeArchived = false)
+    {
+        if (false === $includeArchived) {
+            $criteria = Criteria::create()
+                ->where(Criteria::expr()->eq('status', DebtCollectionMission::STATUS_ONGOING));
+
+            return $this->debtCollectionMissions->matching($criteria)->toArray();
+        }
+
+        return $this->debtCollectionMissions->toArray();
+    }
+
+    /**
+     * @param bool $includeArchived
+     *
+     * @return DebtCollectionMission[]
+     */
+    public function getAmicableDebtCollectionMissions($includeArchived = false)
+    {
+        $criteria = Criteria::create()
+            ->where(Criteria::expr()->eq('type', DebtCollectionMission::TYPE_AMICABLE));
+
+        if (false === $includeArchived) {
+            $criteria->andWhere(Criteria::expr()->eq('status', DebtCollectionMission::STATUS_ONGOING));
+        }
+
+        return $this->debtCollectionMissions->matching($criteria)->toArray();
+    }
+
+    /**
+     * @param bool $includeArchived
+     *
+     * @return DebtCollectionMission[]
+     */
+    public function getLitigationDebtCollectionMissions($includeArchived = false)
+    {
+        $criteria = Criteria::create()
+            ->where(Criteria::expr()->eq('type', DebtCollectionMission::TYPE_LITIGATION));
+
+        if (false === $includeArchived) {
+            $criteria->andWhere(Criteria::expr()->eq('status', DebtCollectionMission::STATUS_ONGOING));
+        }
+
+        return $this->debtCollectionMissions->matching($criteria)->toArray();
     }
 }
