@@ -373,9 +373,14 @@ class CompanyValidator
     {
         try {
             $nafCode = $this->getNAFCode($siren);
-            $xerfi   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($nafCode);
 
-            if (Xerfi::UNILEND_ELIMINATION_SCORE === $xerfi->getUnilendRating()) {
+            if (empty($nafCode)) {
+                return [];
+            }
+
+            $xerfi = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($nafCode);
+
+            if ($xerfi instanceof Xerfi && Xerfi::UNILEND_ELIMINATION_SCORE === $xerfi->getUnilendRating()) {
                 return [ProjectsStatus::NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE];
             }
         } catch (\Exception $exception) {

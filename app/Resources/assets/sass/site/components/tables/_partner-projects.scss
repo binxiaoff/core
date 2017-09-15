@@ -37,39 +37,6 @@
     }
 }
 
-.table-prospects-item-action, .table-projects-item-action, .table-users-item-action {
-    padding-top: 5px;
-    padding-bottom: 5px;
-    text-align: right;
-    .btn-default {
-        padding: 4px;
-        margin-right: 2px;
-        min-height: 0;
-        min-width: 0;
-        height: 28px;
-        width: 28px;
-        line-height: 1;
-        font-size: 14px;
-        color: $c-t3;
-        &:last-child {
-            margin-right: 0;
-        }
-        &:hover {
-            color: $c-p1;
-        }
-    }
-    .icon {
-        line-height: 16px;
-    }
-}
-
-.table-prospects-item-action, .table-projects-item-action {
-    .icon {
-        display: inline-block;
-        width: 16px;
-        height: 16px;
-    }
-}
 .table-projects-details {
     > td {
         padding: 0;

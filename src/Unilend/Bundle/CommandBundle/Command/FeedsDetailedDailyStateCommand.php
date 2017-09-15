@@ -38,27 +38,28 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
     const CRDS_COLUMN                           = 'P';
     const LENDER_WITHDRAW_COLUMN                = 'Q';
     const UNILEND_WITHDRAW_COLUMN               = 'R';
-    const TOTAL_FINANCIAL_MOVEMENTS_COLUMN      = 'S';
-    const THEORETICAL_BALANCE_COLUMN            = 'T';
-    const BALANCE_COLUMN                        = 'U';
-    const BALANCE_DIFFERENCE_COLUMN             = 'V';
-    const LENDER_BALANCE_COLUMN                 = 'W';
-    const BORROWER_BALANCE_COLUMN               = 'X';
-    const DEBT_COLLECTOR_BALANCE_COLUMN         = 'Y';
-    const UNILEND_PROMOTIONAL_BALANCE_COLUMN    = 'Z';
-    const UNILEND_BALANCE_COLUMN                = 'AA';
-    const TAX_BALANCE_COLUMN                    = 'AB';
-    const PROMOTION_OFFER_DISTRIBUTION_COLUMN   = 'AC';
-    const LENDER_LOAN_COLUMN                    = 'AD';
-    const CAPITAL_REPAYMENT_COLUMN              = 'AE';
-    const NET_INTEREST_COLUMN                   = 'AF';
-    const PAYMENT_ASSIGNMENT_COLUMN             = 'AG';
-    const FISCAL_DIFFERENCE_COLUMN              = 'AH';
-    const DEBT_COLLECTOR_COMMISSION_COLUMN      = 'AI';
-    const WIRE_TRANSFER_OUT_COLUMN              = 'AJ';
-    const UNILEND_WIRE_TRANSFER_OUT_COLUMN      = 'AK';
-    const TAX_WITHDRAW_COLUMN                   = 'AL';
-    const DIRECT_DEBIT_COLUMN                   = 'AM';
+    const DEBT_COLLECTOR_WITHDRAW_COLUMN        = 'S';
+    const TOTAL_FINANCIAL_MOVEMENTS_COLUMN      = 'T';
+    const THEORETICAL_BALANCE_COLUMN            = 'U';
+    const BALANCE_COLUMN                        = 'V';
+    const BALANCE_DIFFERENCE_COLUMN             = 'W';
+    const LENDER_BALANCE_COLUMN                 = 'X';
+    const BORROWER_BALANCE_COLUMN               = 'Y';
+    const DEBT_COLLECTOR_BALANCE_COLUMN         = 'Z';
+    const UNILEND_PROMOTIONAL_BALANCE_COLUMN    = 'AA';
+    const UNILEND_BALANCE_COLUMN                = 'AB';
+    const TAX_BALANCE_COLUMN                    = 'AC';
+    const PROMOTION_OFFER_DISTRIBUTION_COLUMN   = 'AD';
+    const LENDER_LOAN_COLUMN                    = 'AE';
+    const CAPITAL_REPAYMENT_COLUMN              = 'AF';
+    const NET_INTEREST_COLUMN                   = 'AG';
+    const PAYMENT_ASSIGNMENT_COLUMN             = 'AH';
+    const FISCAL_DIFFERENCE_COLUMN              = 'AI';
+    const DEBT_COLLECTOR_COMMISSION_COLUMN      = 'AJ';
+    const WIRE_TRANSFER_OUT_COLUMN              = 'AK';
+    const UNILEND_WIRE_TRANSFER_OUT_COLUMN      = 'AL';
+    const TAX_WITHDRAW_COLUMN                   = 'AM';
+    const DIRECT_DEBIT_COLUMN                   = 'AN';
     const LAST_COLUMN                           = self::DIRECT_DEBIT_COLUMN;
 
     /**
@@ -179,6 +180,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             OperationType::COLLECTION_COMMISSION_LENDER_REGULARIZATION,
             OperationType::COLLECTION_COMMISSION_BORROWER_REGULARIZATION,
             OperationType::UNILEND_WITHDRAW,
+            OperationType::DEBT_COLLECTOR_WITHDRAW
         ], OperationType::TAX_TYPES_FR, OperationType::TAX_TYPES_FR_REGULARIZATION);
 
         $dailyMovements   = $operationRepository->sumMovementsForDailyStateByDay($firstDay, $requestedDate, $movements);
@@ -208,7 +210,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $wireTransfersDay = [
             'out'         => $wireTransferOutRepository->sumWireTransferOutByDay($firstDay, $requestedDate, Virements::STATUS_SENT),
             'unilend'     => $wireTransferOutRepository->sumWireTransferOutByDay($firstDay, $requestedDate, Virements::STATUS_SENT, Virements::TYPE_UNILEND),
-            'taxes'       => $operationRepository->sumMovementsForDailyState($firstDay, $requestedDate, OperationType::TAX_WITHDRAW_TYPES),
+            'taxes'       => $operationRepository->sumMovementsForDailyStateByDay($firstDay, $requestedDate, OperationType::TAX_WITHDRAW_TYPES),
             'directDebit' => $directDebitRepository->sumDirectDebitByDay($firstDay, $requestedDate)
         ];
         $this->addWireTransferLines($activeSheet, $wireTransfersDay, $specificRows['totalDay'], $specificRows['coordinatesDay']);
@@ -232,7 +234,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
     {
         $detailedDailyStateBalanceRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:DetailedDailyStateBalanceHistory');
         $previousDay                         = $firstDay->sub(\DateInterval::createFromDateString('1 day'));
-        $previousDayBalanceHistory           = $detailedDailyStateBalanceRepository->findOneBy(['date' => $previousDay->format('Y-m-d')]);
+        $previousDayBalanceHistory           = $detailedDailyStateBalanceRepository->findOneBy(['date' => $previousDay]);
 
         if (null === $previousDayBalanceHistory) {
             $previousDayBalanceHistory = $this->newDailyStateBalanceHistory($previousDay);
@@ -247,7 +249,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
                 break;
             }
 
-            $balanceHistory = $detailedDailyStateBalanceRepository->findOneBy(['date' => $date]);
+            $balanceHistory = $detailedDailyStateBalanceRepository->findOneBy(['date' => $dateTime]);
             if (null === $balanceHistory) {
                 $balanceDate    = ($date == $requestedDate->format('Y-m-d')) ? $requestedDate : $dateTime;
                 $balanceHistory = $this->newDailyStateBalanceHistory($balanceDate);
@@ -261,7 +263,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
 
         $previousYear = new \DateTime('Last day of december ' . $requestedDate->format('Y'));
         $previousYear->sub(\DateInterval::createFromDateString('1 year'));
-        $previousMonthBalanceHistory = $detailedDailyStateBalanceRepository->findOneBy(['date' => $previousYear->format('Y-m-d')]);
+        $previousMonthBalanceHistory = $detailedDailyStateBalanceRepository->findOneBy(['date' => $previousYear]);
 
         if (null === $previousMonthBalanceHistory) {
             $previousMonthBalanceHistory = $this->newDailyStateBalanceHistory($previousYear);
@@ -273,12 +275,12 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
 
             if ($month <= $requestedDate->format('n')) {
                 if ($month == $requestedDate->format('n')) {
-                    $balanceHistory = $detailedDailyStateBalanceRepository->findOneBy(['date' => $requestedDate->format('Y-m-d')]);
+                    $balanceHistory = $detailedDailyStateBalanceRepository->findOneBy(['date' => $requestedDate]);
                     $this->addBalanceLine($activeSheet, $balanceHistory, $row, $specificRows);
                     $this->addBalanceLine($activeSheet, $balanceHistory, $specificRows['totalMonth'], $specificRows);
                     continue;
                 }
-                $balanceHistory = $detailedDailyStateBalanceRepository->findOneBy(['date' => $lastDayOfMonth->format('Y-m-t')]);
+                $balanceHistory = $detailedDailyStateBalanceRepository->findOneBy(['date' => $lastDayOfMonth]);
                 if (null === $balanceHistory) {
                     $balanceHistory = $this->newDailyStateBalanceHistory($lastDayOfMonth);
                 }
@@ -305,6 +307,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $balanceHistory->setUnilendPromotionalBalance($walletBalanceHistoryRepository->sumBalanceForDailyState($date, [WalletType::UNILEND_PROMOTIONAL_OPERATION]));
         $balanceHistory->setTaxBalance($walletBalanceHistoryRepository->sumBalanceForDailyState($date, WalletType::TAX_FR_WALLETS));
         $balanceHistory->setDate($date);
+        $balanceHistory->setAdded(new \DateTime('NOW'));
 
         $entityManager->persist($balanceHistory);
         $entityManager->flush($balanceHistory);
@@ -363,6 +366,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $activeSheet->setCellValue(self::CRDS_COLUMN . $secondarySectionRow, 'CRDS');
         $activeSheet->setCellValue(self::LENDER_WITHDRAW_COLUMN . $secondarySectionRow, 'Virement');
         $activeSheet->setCellValue(self::UNILEND_WITHDRAW_COLUMN . $secondarySectionRow, 'Retrait Unilend');
+        $activeSheet->setCellValue(self::DEBT_COLLECTOR_WITHDRAW_COLUMN . $secondarySectionRow, 'Retrait Recouvreurs');
         $activeSheet->setCellValue(self::TOTAL_FINANCIAL_MOVEMENTS_COLUMN . $secondarySectionRow, 'Total mouvements');
         $activeSheet->setCellValue(self::THEORETICAL_BALANCE_COLUMN . $secondarySectionRow, 'Solde théorique');
         $activeSheet->setCellValue(self::BALANCE_COLUMN . $secondarySectionRow, 'Solde réel');
@@ -473,7 +477,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
 
     /**
      * @param \PHPExcel_Worksheet $activeSheet
-     * @param int $headerStartRow
+     * @param int                 $headerStartRow
      */
     private function formatHeader(\PHPExcel_Worksheet $activeSheet, $headerStartRow)
     {
@@ -493,8 +497,8 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
 
     /**
      * @param \PHPExcel_Worksheet $activeSheet
-     * @param array $movements
-     * @param int $row
+     * @param array               $movements
+     * @param int                 $row
      */
     private function addMovementLines(\PHPExcel_Worksheet $activeSheet, array $movements, $row)
     {
@@ -526,6 +530,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $crdsRegularization                         = empty($line[OperationType::TAX_FR_CRDS_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_CRDS_REGULARIZATION];
             $lenderWithdraw                             = empty($line[OperationType::LENDER_WITHDRAW]) ? 0 : $line[OperationType::LENDER_WITHDRAW];
             $unilendWithdraw                            = empty($line[OperationType::UNILEND_WITHDRAW]) ? 0 : $line[OperationType::UNILEND_WITHDRAW];
+            $debtCollectorWithdraw                      = empty($line[OperationType::DEBT_COLLECTOR_WITHDRAW]) ? 0 : $line[OperationType::DEBT_COLLECTOR_WITHDRAW];
             $promotionalOffers                          = empty($line[OperationType::UNILEND_PROMOTIONAL_OPERATION]) ? 0 : $line[OperationType::UNILEND_PROMOTIONAL_OPERATION];
             $commercialGestures                         = empty($line[OperationType::UNILEND_BORROWER_COMMERCIAL_GESTURE]) ? 0 : $line[OperationType::UNILEND_BORROWER_COMMERCIAL_GESTURE];
             $lenderRegularization                       = empty($line[OperationType::UNILEND_LENDER_REGULARIZATION]) ? 0 : $line[OperationType::UNILEND_LENDER_REGULARIZATION];
@@ -553,17 +558,16 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $totalProjectCommission       = round(bcsub($borrowerCommissionProject, $borrowerCommissionProjectRegularization, 4), 2);
             $totalPaymentCommission       = round(bcsub($borrowerCommissionPayment, $borrowerCommissionPaymentRegularization, 4), 2);
             $totalTax                     = round(bcadd($totalCrds, bcadd($totalSolidarityDeductions, bcadd($totalAdditionalContributions, bcadd($totalSocialDeductions, bcadd($totalCsg, bcadd($totalStatutoryContributions, $totalIncomeTax, 4), 4), 4), 4), 4), 4), 2);
-            $totalCollectionCommission    = round(bcsub($collectionCommissionProvision, bcadd(bcsub($collectionCommissionLender, $collectionCommissionLenderRegularization, 4), bcsub($collectionCommissionBorrower, $collectionCommissionBorrowerRegularization, 4), 4), 4), 2);
+            $totalCollectionCommission    = round(bcsub(bcadd(bcsub($collectionCommissionLender, $collectionCommissionLenderRegularization, 4), bcsub($collectionCommissionBorrower, $collectionCommissionBorrowerRegularization, 4), 4), $collectionCommissionProvision, 4), 2);
 
             $incomingLender              = bcadd($lenderProvisionCreditCard, $lenderProvisionWireTransfer, 4);
             $incomingBorrower            = $realBorrowerProvision;
             $incomingUnilend             = $totalPromotionProvision;
-            $incomingDebtCollector       = $totalCollectionCommission;
             $outgoingLender              = bcadd($totalTax, $lenderWithdraw, 4);
             $outgoingBorrower            = $borrowerWithdraw;
             $outgoingUnilend             = $unilendWithdraw;
-            $outgoingDebtCollector       = $totalCollectionCommission;
-            $totalIncoming               = round(bcadd($incomingDebtCollector, bcadd(bcadd($incomingLender, $incomingBorrower, 4), $incomingUnilend, 4), 4), 2);
+            $outgoingDebtCollector       = $debtCollectorWithdraw;
+            $totalIncoming               = round(bcadd(bcadd($incomingLender, $incomingBorrower, 4), $incomingUnilend, 4), 2);
             $totalOutgoing               = round(bcadd($outgoingDebtCollector, bcadd($outgoingUnilend, bcadd($outgoingBorrower, $outgoingLender, 4), 4), 4), 2);
             $totalFinancialMovementsLine = round(bcsub($totalIncoming, $totalOutgoing, 4), 2);
 
@@ -591,6 +595,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $activeSheet->setCellValueExplicit(self::CRDS_COLUMN . $row, $totalCrds, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::LENDER_WITHDRAW_COLUMN . $row, $lenderWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::UNILEND_WITHDRAW_COLUMN . $row, $unilendWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicit(self::DEBT_COLLECTOR_WITHDRAW_COLUMN . $row, $debtCollectorWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::TOTAL_FINANCIAL_MOVEMENTS_COLUMN . $row, $totalFinancialMovementsLine, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
             /* Internal Movements */
@@ -607,10 +612,10 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
     }
 
     /**
-     * @param \PHPExcel_Worksheet $activeSheet
+     * @param \PHPExcel_Worksheet              $activeSheet
      * @param DetailedDailyStateBalanceHistory $dailyBalances
-     * @param int $row
-     * @param array $specificRows
+     * @param int                              $row
+     * @param array                            $specificRows
      */
     private function addBalanceLine(\PHPExcel_Worksheet $activeSheet, DetailedDailyStateBalanceHistory $dailyBalances, $row, array $specificRows)
     {
@@ -649,12 +654,12 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
 
         if ($isTotal) {
             if ($row == $specificRows['totalDay']) {
-                $lastNotEmptyRow    = $specificRows['coordinatesDay'][$dailyBalances->getDate()];
+                $lastNotEmptyRow    = $specificRows['coordinatesDay'][$dailyBalances->getDate()->format('Y-m-d')];
                 $theoreticalBalance = $activeSheet->getCell(self::THEORETICAL_BALANCE_COLUMN . $lastNotEmptyRow)->getValue();
             }
 
             if ($row == $specificRows['totalMonth']) {
-                $month              = (int) substr($dailyBalances->getDate(), 5, 2);
+                $month              = $dailyBalances->getDate()->format('n');
                 $lastNotEmptyRow    = $specificRows['coordinatesMonth'][$month];
                 $theoreticalBalance = $activeSheet->getCell(self::THEORETICAL_BALANCE_COLUMN . $lastNotEmptyRow)->getValue();
             }
@@ -665,7 +670,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
     }
 
     /**
-     * @param string $theoreticalBalance
+     * @param string                           $theoreticalBalance
      * @param DetailedDailyStateBalanceHistory $dailyBalances
      */
     private function addTheoreticalBalanceToHistory($theoreticalBalance, DetailedDailyStateBalanceHistory $dailyBalances)
@@ -678,9 +683,9 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
 
     /**
      * @param \PHPExcel_Worksheet $activeSheet
-     * @param array $wireTransfers
-     * @param int $totalRow
-     * @param array $coordinates
+     * @param array               $wireTransfers
+     * @param int                 $totalRow
+     * @param array               $coordinates
      */
     private function addWireTransferLines(\PHPExcel_Worksheet $activeSheet, array $wireTransfers, $totalRow, array $coordinates)
     {

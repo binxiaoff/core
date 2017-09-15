@@ -2,6 +2,7 @@
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class project_rate_settingsController extends bootstrap
 {
@@ -9,8 +10,8 @@ class project_rate_settingsController extends bootstrap
     {
         parent::initialize();
 
-        $this->catchAll = true;
-        $this->users->checkAccess('admin');
+        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
+
         $this->menu_admin = 'configuration';
     }
 

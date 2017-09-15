@@ -3,7 +3,7 @@
 class temporary_links_login extends temporary_links_login_crud
 {
     const PASSWORD_TOKEN_LIFETIME_SHORT  = 'T1H';
-    const PASSWORD_TOKEN_LIFETIME_MEDIUM = 'T6H';
+    const PASSWORD_TOKEN_LIFETIME_MEDIUM = '1D';
     const PASSWORD_TOKEN_LIFETIME_LONG   = '1W';
 
     public function __construct($bdd, $params = '')

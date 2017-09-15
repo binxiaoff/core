@@ -11,6 +11,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
@@ -122,6 +123,9 @@ class OperationManager
                 if ($item instanceof Transfer) {
                     $operation->setTransfer($item);
                 }
+                if ($item instanceof ProjectRepaymentTaskLog) {
+                    $operation->setIdRepaymentTaskLog($item);
+                }
                 if ($item instanceof Operation) {
                     $operation->setProject($item->getProject())
                         ->setBackpayline($item->getBackpayline())
@@ -218,6 +222,9 @@ class OperationManager
             case Virements::TYPE_UNILEND:
                 $this->withdrawUnilendWallet($wireTransferOut);
                 break;
+            case Virements::TYPE_DEBT_COLLECTOR:
+                $this->withdrawDebtCollectorWallet($wireTransferOut);
+                break;
             default :
                 throw new \InvalidArgumentException('Wire transfer out type ' . $wireTransferOut->getType() . ' is not supported.');
         }
@@ -260,6 +267,20 @@ class OperationManager
     {
         $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_WITHDRAW]);
         $wallet        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($wireTransferOut->getClient(), WalletType::BORROWER);
+        $amount        = round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2);
+
+        $this->newOperation($amount, $operationType, null, $wallet, null, $wireTransferOut);
+    }
+
+    /**
+     * @param Virements $wireTransferOut
+     *
+     * @throws \Exception
+     */
+    private function withdrawDebtCollectorWallet(Virements $wireTransferOut)
+    {
+        $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::DEBT_COLLECTOR_WITHDRAW]);
+        $wallet        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($wireTransferOut->getClient(), WalletType::DEBT_COLLECTOR);
         $amount        = round(bcdiv($wireTransferOut->getMontant(), 100, 4), 2);
 
         $this->newOperation($amount, $operationType, null, $wallet, null, $wireTransferOut);
@@ -392,7 +413,7 @@ class OperationManager
     /**
      * @param Echeanciers $repaymentSchedule
      */
-    public function repayment(Echeanciers $repaymentSchedule)
+    public function repayment(Echeanciers $repaymentSchedule, ProjectRepaymentTaskLog $projectRepaymentTaskLog)
     {
         $loan                = $repaymentSchedule->getIdLoan();
         $lenderWallet        = $loan->getIdLender();
@@ -401,7 +422,7 @@ class OperationManager
         $amountInterestGross = round(bcdiv(bcsub($repaymentSchedule->getInterets(), $repaymentSchedule->getInteretsRembourses()), 100, 4), 2);
         $amountCapital       = round(bcdiv(bcsub($repaymentSchedule->getCapital(), $repaymentSchedule->getCapitalRembourse()), 100, 4), 2);
 
-        $this->repaymentGeneric($borrowerWallet, $lenderWallet, $amountCapital, $amountInterestGross, null, $repaymentSchedule);
+        $this->repaymentGeneric($borrowerWallet, $lenderWallet, $amountCapital, $amountInterestGross, null, [$repaymentSchedule, $projectRepaymentTaskLog]);
     }
 
     /**
@@ -463,9 +484,10 @@ class OperationManager
     }
 
     /**
-     * @param EcheanciersEmprunteur $paymentSchedule
+     * @param EcheanciersEmprunteur   $paymentSchedule
+     * @param ProjectRepaymentTaskLog $projectRepaymentTaskLog
      */
-    public function repaymentCommission(EcheanciersEmprunteur $paymentSchedule)
+    public function repaymentCommission(EcheanciersEmprunteur $paymentSchedule, ProjectRepaymentTaskLog $projectRepaymentTaskLog)
     {
         $borrowerWallet    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($paymentSchedule->getIdProject()->getIdCompany()->getIdClientOwner(),
             WalletType::BORROWER);
@@ -476,14 +498,16 @@ class OperationManager
         $operationType    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_COMMISSION]);
         $operationSubType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::BORROWER_COMMISSION_REPAYMENT]);
 
-        $this->newOperation($amount, $operationType, $operationSubType, $borrowerWallet, $unilendWallet, $paymentSchedule);
+        $this->newOperation($amount, $operationType, $operationSubType, $borrowerWallet, $unilendWallet, [$paymentSchedule, $projectRepaymentTaskLog]);
     }
 
     /**
-     * @param Loans $loan
+     * @param Loans                   $loan
+     * @param ProjectRepaymentTaskLog $projectRepaymentTaskLog
      *
+     * @return string
      */
-    public function earlyRepayment(Loans $loan)
+    public function earlyRepayment(Loans $loan, ProjectRepaymentTaskLog $projectRepaymentTaskLog)
     {
         /** @var \echeanciers $repaymentSchedule */
         $repaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
@@ -493,7 +517,9 @@ class OperationManager
         $lenderWallet       = $loan->getIdLender();
         $operationSubType   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_EARLY]);
 
-        $this->repaymentGeneric($borrowerWallet, $lenderWallet, $outstandingCapital, 0, $operationSubType, $loan);
+        $this->repaymentGeneric($borrowerWallet, $lenderWallet, $outstandingCapital, 0, $operationSubType, [$loan, $projectRepaymentTaskLog]);
+
+        return $outstandingCapital;
     }
 
     /**
@@ -574,25 +600,22 @@ class OperationManager
         if ($collector->getIdType()->getLabel() !== WalletType::DEBT_COLLECTOR) {
             return false;
         }
-        $amount        = round(bcdiv($reception->getMontant(), 100, 4), 2);
         $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::COLLECTION_COMMISSION_PROVISION]);
         $this->newOperation($commission, $operationType, null, $collector, $borrower, $reception);
-        $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_PROVISION]);
-        $this->newOperation($amount, $operationType, null, null, $borrower, $reception);
 
         return true;
     }
 
     /**
-     * @param Wallet   $lender
-     * @param Wallet   $collector
-     * @param          $commission
-     * @param Projects $project
+     * @param Wallet       $lender
+     * @param Wallet       $collector
+     * @param              $commission
+     * @param array|object $origins
      */
-    public function payCollectionCommissionByLender(Wallet $lender, Wallet $collector, $commission, Projects $project)
+    public function payCollectionCommissionByLender(Wallet $lender, Wallet $collector, $commission, $origins = [])
     {
         $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::COLLECTION_COMMISSION_LENDER]);
-        $this->newOperation($commission, $operationType, null, $lender, $collector, $project);
+        $this->newOperation($commission, $operationType, null, $lender, $collector, $origins);
     }
 
     /**
@@ -610,13 +633,14 @@ class OperationManager
     /**
      * Simple version which does not support interest repayment.
      *
-     * @param Wallet   $lender
-     * @param Projects $project
-     * @param          $amount
+     * @param Wallet                  $lender
+     * @param Projects                $project
+     * @param                         $amount
+     * @param ProjectRepaymentTaskLog $projectRepaymentTaskLog
      *
      * @return bool
      */
-    public function repaymentCollection(Wallet $lender, Projects $project, $amount)
+    public function repaymentCollection(Wallet $lender, Projects $project, $amount, ProjectRepaymentTaskLog $projectRepaymentTaskLog)
     {
         $borrower = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
         if (null === $borrower) {
@@ -624,7 +648,7 @@ class OperationManager
         }
         $operationSubType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION]);
 
-        return $this->repaymentGeneric($borrower, $lender, $amount, 0, $operationSubType, $project);
+        return $this->repaymentGeneric($borrower, $lender, $amount, 0, $operationSubType, [$project, $projectRepaymentTaskLog]);
     }
 
     /**

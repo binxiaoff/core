@@ -1,6 +1,7 @@
 <?php
 
-use \Unilend\Bundle\TranslationBundle\Service\TranslationManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
 class traductionsController extends bootstrap
 {
@@ -8,12 +9,8 @@ class traductionsController extends bootstrap
     {
         parent::initialize();
 
-        $this->catchAll = true;
+        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
 
-        // Controle d'acces � la rubrique
-        $this->users->checkAccess('edition');
-
-        // Activation du menu
         $this->menu_admin = 'edition';
     }
 
@@ -71,6 +68,7 @@ class traductionsController extends bootstrap
     public function _add()
     {
         $this->hideDecoration();
+
         $_SESSION['request_url'] = $this->url;
     }
 
@@ -108,6 +106,7 @@ class traductionsController extends bootstrap
     {
         $this->hideDecoration();
         $this->autoFireView = false;
+
         /** @var TranslationManager $translationManager */
         $this->get('sonata.cache.symfony')->flush(['translations']);
         header('Location: ' . $this->lurl . '/traductions');

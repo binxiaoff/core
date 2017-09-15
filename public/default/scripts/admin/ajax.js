@@ -690,35 +690,3 @@ function valid_rejete_etape7(status, id_project) {
         }
     }
 }
-
-/* fonction qui vérifie la force d'un mot de passe */
-function check_force_pass() {
-    xhr_object = AjaxObject();
-    var param = no_cache();
-
-    new_pass = document.getElementById('new_pass').value;
-
-    // On traite les donnees en POST via l'ajax
-    xhr_object.open('POST', add_url + '/ajax/check_force_pass', false);
-    xhr_object.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr_object.send('pass=' + new_pass);
-    // On recupere la reponse
-    var reponse = xhr_object.responseText;
-    // Si la reponse est OK on balance l'ajax
-    document.getElementById('indicateur_force').innerHTML = reponse;
-}
-
-/* Fonction qui check si une autre compagnie possede deja cet iban */
-function CheckIfIbanExistDeja(iban, bic, id_client) {
-    xhr_object = AjaxObject();
-    var param = no_cache();
-
-    // On traite les donnees en POST via l'ajax
-    xhr_object.open('POST', add_url + '/ajax/ibanExistV2', false);
-    xhr_object.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr_object.send('iban=' + iban + '&id=' + id_client + '&bic=' + bic);
-    // On recupere la reponse
-    var reponse = xhr_object.responseText;
-    // Si la reponse est OK on balance l'ajax
-    return reponse;
-}

@@ -23,8 +23,6 @@ class apiController extends Controller
         $this->autoFireView = false;
         $this->hideDecoration();
 
-        $this->catchAll = true;
-
         $this->oLogger = $this->get('logger');
 
         $this->checkIp();

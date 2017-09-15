@@ -481,7 +481,7 @@ class OperationRepository extends EntityRepository
 
         $result = $qb->getQuery()->getArrayResult();
 
-        return round(bcsub($result[0]['amount'], $result[0]['regularized_amount'], 4) ,2);
+        return round(bcsub($result[0]['amount'], $result[0]['regularized_amount'], 4), 2);
     }
 
     /**
@@ -511,7 +511,7 @@ class OperationRepository extends EntityRepository
 
         $result = $qb->getQuery()->getArrayResult();
 
-        return round(bcsub($result[0]['amount'], $result[0]['regularized_amount'], 4) ,2);
+        return round(bcsub($result[0]['amount'], $result[0]['regularized_amount'], 4), 2);
     }
 
     /**
@@ -558,7 +558,7 @@ class OperationRepository extends EntityRepository
                     WHEN e.id_lender THEN "non_taxable"
                     ELSE "taxable"
                   END AS exemption_status,
-                  SUM(o_interest.amount) as interests
+                  SUM(o_interest.amount) AS interests
                 FROM operation o_interest USE INDEX (idx_operation_added)
                   INNER JOIN operation_type ot_interest ON o_interest.id_type = ot_interest.id AND ot_interest.label = "' . $interestOperationType . '"
                   INNER JOIN wallet w ON o_interest.' . $walletField . ' = w.id
@@ -683,7 +683,6 @@ class OperationRepository extends EntityRepository
                   LEFT(o.added, 10) AS day,
                   MONTH(o.added) AS month,
                   SUM(o.amount) AS amount,
-                  IF(o.id_sub_type IS NULL,
                      CASE ot.label
                         WHEN "' . OperationType::LENDER_PROVISION . '" THEN
                           IF(o.id_backpayline IS NOT NULL,
@@ -692,8 +691,9 @@ class OperationRepository extends EntityRepository
                                 "lender_provision_wire_transfer_in",
                                 NULL)
                           )
-                     ELSE ot.label END,
-                     ost.label)  AS movement
+                          WHEN "'. OperationType::BORROWER_COMMISSION . '" THEN ost.label
+                          WHEN "'. OperationType::BORROWER_COMMISSION_REGULARIZATION . '" THEN ost.label
+                     ELSE ot.label END AS movement
                 FROM operation o USE INDEX (idx_operation_added)
                 INNER JOIN operation_type ot ON o.id_type = ot.id
                 LEFT JOIN operation_sub_type ost ON o.id_sub_type = ost.id';
@@ -762,6 +762,7 @@ class OperationRepository extends EntityRepository
     /**
      * @param \DateTime $start
      * @param \DateTime $end
+     * @param array     $operationTypes
      *
      * @return array
      */
@@ -911,75 +912,41 @@ class OperationRepository extends EntityRepository
     }
 
     /**
-     * @param int $idRepaymentSchedule
+     * @param int $repaymentScheduleId
+     * @param int $repaymentTaskLogId
      *
      * @return mixed
      */
-    public function getDetailByRepaymentScheduleIdAndRepaymentLog($idRepaymentSchedule)
+    public function getDetailByRepaymentScheduleAndRepaymentLog($repaymentScheduleId, $repaymentTaskLogId, $isRegularization = false)
     {
         $query = 'SELECT
-                      o_capital.amount AS capital,
-                      o_interest.amount AS interest,
-                      (SELECT
-                        SUM(o_taxes.amount)
-                        FROM operation o_taxes
-                          INNER JOIN operation_type ot_taxes ON o_taxes.id_type = ot_taxes.id AND ot_taxes.label IN ("' . implode('","', OperationType::TAX_TYPES_FR) . '")
-                          LEFT JOIN projects_remb_log prl_taxes ON o_taxes.id_project = prl_taxes.id_project AND prl_taxes.debut <= o_taxes.added AND prl_taxes.fin >= o_taxes.added
-                        WHERE o_taxes.id_repayment_schedule = o_interest.id_repayment_schedule AND prl_taxes.id_project_remb_log = prl.id_project_remb_log) AS taxes,
-                      null as available_balance,
-                      prl.id_project_remb_log,
-                      o_capital.added
-                    FROM operation o_capital
-                      INNER JOIN operation_type ot_capital ON o_capital.id_type = ot_capital.id AND ot_capital.label = "' . OperationType::CAPITAL_REPAYMENT . '"
-                      LEFT JOIN operation o_interest ON o_capital.id_repayment_schedule = o_interest.id_repayment_schedule
-                      INNER JOIN operation_type ot_interest ON o_interest.id_type = ot_interest.id AND ot_interest.label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '"
-                      INNER JOIN echeanciers e ON o_capital.id_repayment_schedule = e.id_echeancier
-                      LEFT JOIN projects_remb_log prl ON o_capital.id_project = prl.id_project AND debut <= o_capital.added AND fin >= o_capital.added AND e.ordre = prl.ordre
-                    WHERE o_capital.id_repayment_schedule = :idRepaymentSchedule
-                    GROUP BY prl.id_project_remb_log';
+                  SUM(IF(ot.label = :capitalRepaymentLabel, o.amount, 0))       AS capital,
+                  SUM(IF(ot.label = :grossInterestRepaymentLabel, o.amount, 0)) AS interest,
+                  SUM(IF(ot.label IN (:frenchTaxes), amount, 0))                AS taxes,
+                  NULL                                                          AS available_balance,
+                  MIN(o.added)                                                  AS added
+                FROM operation o
+                  INNER JOIN operation_type ot ON ot.id = o.id_type
+                WHERE o.id_repayment_schedule = :repaymentScheduleId AND o.id_repayment_task_log = :repaymentTaskLogId';
 
-        $qcProfile = new QueryCacheProfile(CacheKeys::DAY, md5(__METHOD__ . $idRepaymentSchedule));
-        $statement = $this->getEntityManager()->getConnection()->executeCacheQuery($query, ['idRepaymentSchedule' => $idRepaymentSchedule], ['idRepaymentSchedule' => \PDO::PARAM_INT], $qcProfile);
-        $result    = $statement->fetch();
-        $statement->closeCursor();
-
-        return $result;
-    }
-
-    /**
-     * @param int $idRepaymentSchedule
-     *
-     * @return mixed
-     */
-    public function getRegularizationDetailByRepaymentScheduleId($idRepaymentSchedule)
-    {
-        $taxRegularizationOperations = [
-            OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_REGULARIZATION,
-            OperationType::TAX_FR_CRDS_REGULARIZATION,
-            OperationType::TAX_FR_CSG_REGULARIZATION,
-            OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_REGULARIZATION,
-            OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_REGULARIZATION,
-            OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_REGULARIZATION,
-            OperationType::TAX_FR_RETENUES_A_LA_SOURCE_REGULARIZATION,
-        ];
-
-        $query = 'SELECT
-                      o_capital.amount AS capital,
-                      o_interest.amount AS interest,
-                      (SELECT SUM(o_taxes.amount) FROM operation o_taxes
-                         INNER JOIN operation_type ot_taxes ON o_taxes.id_type = ot_taxes.id AND ot_taxes.label IN ("' . implode('","', $taxRegularizationOperations) . '")
-                       WHERE o_taxes.id_repayment_schedule = o_interest.id_repayment_schedule) AS taxes,
-                      o_capital.added,
-                      null as available_balance
-                    FROM operation o_capital
-                      INNER JOIN operation_type ot_capital ON o_capital.id_type = ot_capital.id AND ot_capital.label = "' . OperationType::CAPITAL_REPAYMENT . '"
-                      LEFT JOIN operation o_interest ON o_capital.id_repayment_schedule = o_interest.id_repayment_schedule
-                      INNER JOIN operation_type ot_interest ON o_interest.id_type = ot_interest.id AND ot_interest.label = "' . OperationType::GROSS_INTEREST_REPAYMENT . '"
-                    WHERE o_capital.id_repayment_schedule = :idRepaymentSchedule';
-
-        $qcProfile = new QueryCacheProfile(\Unilend\librairies\CacheKeys::DAY, md5(__METHOD__ . $idRepaymentSchedule));
-        $statement = $this->getEntityManager()->getConnection()->executeCacheQuery($query, ['idRepaymentSchedule' => $idRepaymentSchedule], ['idRepaymentSchedule' => \PDO::PARAM_INT], $qcProfile);
-        $result    = $statement->fetch();
+        $qcProfile = new QueryCacheProfile(CacheKeys::DAY, md5(__METHOD__));
+        if (false === $isRegularization) {
+            $parameters = [
+                'capitalRepaymentLabel'       => OperationType::CAPITAL_REPAYMENT,
+                'grossInterestRepaymentLabel' => OperationType::GROSS_INTEREST_REPAYMENT,
+                'frenchTaxes'                 => OperationType::TAX_TYPES_FR,
+            ];
+        } else {
+            $parameters = [
+                'capitalRepaymentLabel'       => OperationType::CAPITAL_REPAYMENT_REGULARIZATION,
+                'grossInterestRepaymentLabel' => OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION,
+                'frenchTaxes'                 => OperationType::TAX_TYPES_FR_REGULARIZATION,
+            ];
+        }
+        $parameters = array_merge($parameters, ['repaymentScheduleId' => $repaymentScheduleId, 'repaymentTaskLogId' => $repaymentTaskLogId,]);
+        $types      = ['frenchTaxes' => Connection::PARAM_STR_ARRAY];
+        $statement  = $this->getEntityManager()->getConnection()->executeQuery($query, $parameters, $types, $qcProfile);
+        $result     = $statement->fetch();
         $statement->closeCursor();
 
         return $result;
@@ -1047,5 +1014,109 @@ class OperationRepository extends EntityRepository
         }
 
         return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     * @param bool      $groupByProvision
+     * @param bool      $onlineLenders
+     *
+     * @return array
+     */
+    public function getLenderProvisionIndicatorsBetweenDates(\DateTime $start, \DateTime $end, $groupByProvision = true, $onlineLenders = true)
+    {
+        $start->setTime(0, 0, 0);
+        $end->setTime(23, 59, 59);
+
+        $queryBuilder = $this->createQueryBuilder('o');
+        $queryBuilder->select('SUM(o.amount) AS totalAmount')
+            ->addSelect('COUNT(DISTINCT o.idWalletCreditor) AS numberLenders')
+            ->addSelect('ROUND(AVG(o.amount), 2) AS averageAmount')
+            ->addSelect('COUNT(o.id) AS numberProvisions')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('ot.label = :lenderProvision')
+            ->andWhere('o.added BETWEEN :start AND :end')
+            ->setParameter('lenderProvision', OperationType::LENDER_PROVISION)
+            ->setParameter('start', $start->format('Y-m-d H:i:s'))
+            ->setParameter('end', $end->format('Y-m-d H:i:s'));
+
+        if ($groupByProvision) {
+            $queryBuilder->addSelect('CASE WHEN (o.idBackpayline IS NOT NULL) THEN \'creditCard\' ELSE \'wireTransferIn\' END AS provisionType')
+                ->groupBy('provisionType');
+        }
+
+        if ($onlineLenders) {
+            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'o.idWalletCreditor = w.id')
+                ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'c.idClient = w.idClient')
+                ->andWhere('c.status = :online')
+                ->setParameter('online', Clients::STATUS_ONLINE);
+        }
+
+        return $queryBuilder->getQuery()->getArrayResult();
+    }
+
+    /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return array
+     */
+    public function getLenderWithdrawIndicatorsBetweenDates(\DateTime $start, \DateTime $end)
+    {
+        $start->setTime(0, 0, 0);
+        $end->setTime(23, 59, 59);
+
+        $queryBuilder = $this->createQueryBuilder('o');
+        $queryBuilder->select('SUM(o.amount) AS totalAmount')
+            ->addSelect('AVG(o.amount) AS averageAmount')
+            ->addSelect('COUNT(o.id) AS numberWithdraw')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('ot.label = :lenderWithdraw')
+            ->andWhere('o.added BETWEEN :start AND :end')
+            ->setParameter('lenderWithdraw', OperationType::LENDER_WITHDRAW)
+            ->setParameter('start', $start->format('Y-m-d H:i:s'))
+            ->setParameter('end', $end->format('Y-m-d H:i:s'));
+
+        return $queryBuilder->getQuery()->getResult()[0];
+    }
+
+    /**
+     * @param \DateTime $end
+     * @param array     $projects
+     *
+     * @return bool|string
+     */
+    public function getRemainingDueCapitalForProjects(\DateTime $end, array $projects)
+    {
+        $end->setTime(23, 59, 59);
+
+        $query = '
+            SELECT IFNULL(SUM(o_loan.amount), 0) - (
+              SELECT IFNULL(SUM(o_repayment.amount), 0)
+              FROM operation o_repayment
+              INNER JOIN operation_type ot ON ot.id = o_repayment.id_type
+              WHERE o_repayment.added <= :end
+              AND ot.label = "' . OperationType::CAPITAL_REPAYMENT . '"
+              AND o_repayment.id_project IN (:projects)
+            ) - (
+              SELECT IFNULL(SUM(o_repayment_regul.amount), 0)
+              FROM operation o_repayment_regul
+              INNER JOIN operation_type ot ON ot.id = o_repayment_regul.id_type
+              WHERE o_repayment_regul.added <= :end
+              AND ot.label = "' . OperationType::CAPITAL_REPAYMENT_REGULARIZATION . '"
+              AND o_repayment_regul.id_project IN (:projects)
+            )
+            FROM operation o_loan
+            INNER JOIN operation_type ot ON ot.id = o_loan.id_type
+            WHERE o_loan.added <= :end
+            AND ot.label = "' . OperationType::LENDER_LOAN . '"
+            AND o_loan.id_project  IN (:projects)';
+
+        $statement = $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery($query, ['end' => $end->format('Y-m-d H:i:s'), 'projects' => $projects], ['end' => \PDO::PARAM_STR, 'projects' => Connection::PARAM_INT_ARRAY]);
+
+        return $statement->fetchColumn();
     }
 }

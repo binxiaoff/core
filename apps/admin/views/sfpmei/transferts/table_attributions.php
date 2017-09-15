@@ -1,3 +1,4 @@
+<?php use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions; ?>
 <?php if (count($this->receptions) > 0) : ?>
     <table class="tablesorter table table-hover table-striped operations-attribution">
         <thead>
@@ -6,40 +7,37 @@
             <th>Motif</th>
             <th>Montant</th>
             <th>Attribution</th>
-            <th>ID <?= ($this->type === 'preteurs') ? 'client' : 'dossier' ?></th>
+            <th>ID <?= ($this->type === 'preteurs') ? 'client' : 'projet' ?></th>
             <th>Date</th>
         </tr>
         </thead>
         <tbody>
-        <?php
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions $reception */
-        foreach ($this->receptions as $reception) : ?>
-            <tr>
-                <td><?= $reception->getIdReception() ?></td>
-                <td><?= $reception->getMotif() ?></td>
-                <td style="text-align:right"><?= $this->ficelle->formatNumber($reception->getMontant() / 100) ?> €</td>
-                <td class="statut_operation_<?= $reception->getIdReception() ?>">
-                    <?php if (1 == $reception->getstatusBo() && $reception->getIdUser()): ?>
-                        <?= $reception->getIdUser()->getFirstname() . ' ' . $reception->getIdUser()->getName() ?>
-                        <br/>
-                        <?= $reception->getAssignmentDate()->format('d/m/Y à H:i:s') ?>
-                    <?php else: ?>
-                        <?= $this->statusOperations[$reception->getstatusBo()] ?>
-                    <?php endif; ?>
-                </td>
-                <td>
-                    <?php if ($this->type === 'preteurs') : ?>
-                        <?= $reception->getIdClient()->getIdClient() ?>
-                    <?php else : ?>
-                        <a href="/sfpmei/dossier/<?= $reception->getIdProject()->getIdProject() ?>"><?= $reception->getIdProject()->getIdProject() ?></a>
-                    <?php endif; ?>
-                </td>
-                <td><?= $reception->getAdded()->format('d/m/Y') ?></td>
-            </tr>
-        <?php endforeach; ?>
+            <?php /** @var Receptions $reception */ ?>
+            <?php foreach ($this->receptions as $reception) : ?>
+                <tr>
+                    <td><?= $reception->getIdReception() ?></td>
+                    <td><?= $reception->getMotif() ?></td>
+                    <td style="text-align:right"><?= $this->ficelle->formatNumber($reception->getMontant() / 100) ?> €</td>
+                    <td class="statut_operation_<?= $reception->getIdReception() ?>">
+                        <?php if (Receptions::STATUS_ASSIGNED_MANUAL == $reception->getstatusBo() && $reception->getIdUser()): ?>
+                            <?= $reception->getIdUser()->getFirstname() . ' ' . $reception->getIdUser()->getName() ?><br>
+                            <?= $reception->getAssignmentDate()->format('d/m/Y H:i:s') ?>
+                        <?php else: ?>
+                            <?= $this->statusOperations[$reception->getstatusBo()] ?>
+                        <?php endif; ?>
+                    </td>
+                    <td>
+                        <?php if ($this->type === 'preteurs') : ?>
+                            <a href="<?= $this->lurl ?>/sfpmei/preteur/<?= $reception->getIdClient()->getIdClient() ?>"><?= $reception->getIdClient()->getIdClient() ?></a>
+                        <?php else : ?>
+                            <a href="<?= $this->lurl ?>/sfpmei/projet/<?= $reception->getIdProject()->getIdProject() ?>"><?= $reception->getIdProject()->getIdProject() ?></a>
+                        <?php endif; ?>
+                    </td>
+                    <td><?= $reception->getAdded()->format('d/m/Y') ?></td>
+                </tr>
+            <?php endforeach; ?>
         </tbody>
     </table>
-
     <?php if (count($this->receptions) > $this->pagination) : ?>
         <div id="pagination" class="row">
             <div class="col-md-12 text-center">
@@ -58,7 +56,7 @@
     Aucune opération
 <?php endif; ?>
 
-<script type="text/javascript">
+<script>
     $(function () {
         jQuery.tablesorter.addParser({
             id: "fancyNumber", is: function (s) {
@@ -68,15 +66,14 @@
             }, type: "numeric"
         });
 
-        $(".operations-attribution").tablesorter({headers: {2: {sorter: 'amount'}, 5: {sorter: 'date'}}});
+        $('.operations-attribution').tablesorter({headers: {2: {sorter: 'amount'}, 5: {sorter: 'date'}}});
 
         <?php if (count($this->receptions) != '') : ?>
-        $(".operations-attribution").tablesorterPager({
-            container: $("#pagination"),
-            positionFixed: false,
-            size: <?= $this->pagination ?>});
+            $('.operations-attribution').tablesorterPager({
+                container: $('#pagination'),
+                positionFixed: false,
+                size: <?= $this->pagination ?>
+            });
         <?php endif; ?>
-
-        $(".inline").colorbox({inline: true, width: "50%"});
     });
 </script>

@@ -1,14 +1,11 @@
 <?php
 
+use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\LoginConnectionAdmin;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+
 class rootController extends bootstrap
 {
-    public function initialize()
-    {
-        parent::initialize();
-
-        $this->catchAll = true;
-    }
-
     public function _login()
     {
         $this->hideDecoration();
@@ -20,29 +17,30 @@ class rootController extends bootstrap
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
                 $mailerManager = $this->get('unilend.service.email_manager');
-                $mailerManager->sendNewPasswordEmail($newPassword, $this->users);
+                $mailerManager->sendNewPasswordEmail($this->users, $newPassword);
 
-                $this->loggin_connection_admin                 = $this->loadData('loggin_connection_admin');
-                $this->loggin_connection_admin->id_user        = $this->users->id_user;
-                $this->loggin_connection_admin->nom_user       = $this->users->firstname . " " . $this->users->name;
-                $this->loggin_connection_admin->email          = $this->users->email;
-                $this->loggin_connection_admin->date_connexion = date('Y-m-d H:i:s');
-                $this->loggin_connection_admin->ip             = $_SERVER["REMOTE_ADDR"];
-                $country_code                                  = strtolower(geoip_country_code_by_name($_SERVER['REMOTE_ADDR']));
-                $this->loggin_connection_admin->pays           = $country_code;
-                $this->loggin_connection_admin->statut         = 2;
-                $this->loggin_connection_admin->create();
+                $loginLog = new LoginConnectionAdmin();
+                $loginLog->setIdUser($this->users->id_user);
+                $loginLog->setNomUser($this->users->firstname . ' ' . $this->users->name);
+                $loginLog->setEmail($this->users->email);
+                $loginLog->setDateConnexion(new \DateTime('now'));
+                $loginLog->setIp($_SERVER['REMOTE_ADDR']);
+
+                /** @var EntityManager $entityManager */
+                $entityManager = $this->get('doctrine.orm.entity_manager');
+                $entityManager->persist($loginLog);
+                $entityManager->flush();
 
                 $_SESSION['msgErreur']   = 'newPassword';
                 $_SESSION['newPassword'] = 'OK';
 
-                header('Location:' . $this->lurl . '/login');
+                header('Location: ' . $this->lurl . '/login');
                 die;
             } else {
                 $_SESSION['msgErreur']   = 'newPassword';
                 $_SESSION['newPassword'] = 'NOK';
 
-                header('Location:' . $this->lurl . '/login');
+                header('Location: ' . $this->lurl . '/login');
                 die;
             }
         }
@@ -64,7 +62,7 @@ class rootController extends bootstrap
 
     public function _default()
     {
-        $this->users->checkAccess('dashboard');
+        $this->users->checkAccess(Zones::ZONE_LABEL_DASHBOARD);
 
         /** @var \users $user */
         $user = $this->loadData('users');
@@ -126,20 +124,22 @@ class rootController extends bootstrap
                 $previousPasswords->create();
                 $previousPasswords->deleteOldPasswords($this->users->id_user);
 
-                $this->loggin_connection_admin                 = $this->loadData('loggin_connection_admin');
-                $this->loggin_connection_admin->id_user        = $this->users->id_user;
-                $this->loggin_connection_admin->nom_user       = $this->users->firstname . " " . $this->users->name;
-                $this->loggin_connection_admin->email          = $this->users->email;
-                $this->loggin_connection_admin->date_connexion = date('Y-m-d H:i:s');
-                $this->loggin_connection_admin->ip             = $_SERVER["REMOTE_ADDR"];
-                $this->loggin_connection_admin->pays           = strtolower(geoip_country_code_by_name($_SERVER['REMOTE_ADDR']));
-                $this->loggin_connection_admin->statut         = 2;
-                $this->loggin_connection_admin->create();
+                $loginLog = new LoginConnectionAdmin();
+                $loginLog->setIdUser($this->users->id_user);
+                $loginLog->setNomUser($this->users->firstname . ' ' . $this->users->name);
+                $loginLog->setEmail($this->users->email);
+                $loginLog->setDateConnexion(new \DateTime('now'));
+                $loginLog->setIp($_SERVER['REMOTE_ADDR']);
+
+                /** @var EntityManager $entityManager */
+                $entityManager = $this->get('doctrine.orm.entity_manager');
+                $entityManager->persist($loginLog);
+                $entityManager->flush();
 
                 $_SESSION['freeow']['title']   = 'Modification de votre mot de passe';
                 $_SESSION['freeow']['message'] = 'Votre mot de passe a bien &eacute;t&eacute; modifi&eacute; !';
 
-                header('Location:' . $this->lurl);
+                header('Location: ' . $this->lurl);
                 die;
             } else {
                 $this->retour_pass = "La confirmation du nouveau de passe doit être la même que votre nouveau mot de passe";
