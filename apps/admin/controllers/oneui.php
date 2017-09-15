@@ -33,4 +33,21 @@ class oneuiController extends bootstrap
             ]);
         }
     }
+
+    // For demo purposes only
+    public function _editor_table()
+    {
+        $this->autoFireView = false;
+        $this->hideDecoration();
+
+        // If the request value is numeric (e.g. 1000),
+        // but we want to keep the formatting
+        if ($this->request->isXmlHttpRequest()) {
+            echo json_encode([
+                'success' => true,
+                'error'   => ['Error 1', 'Error 2'],
+                'id' => 2334 // New client or project id or whatever - required for js to work
+            ]);
+        }
+    }
 }

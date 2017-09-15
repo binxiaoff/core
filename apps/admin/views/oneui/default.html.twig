@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/summernote/summernote.min.css">
 <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.css">
 <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap3-editable/css/bootstrap-editable.css">
+
 {% endblock %}
 
 {% block pluginsJS %}
@@ -16,6 +17,7 @@
 <script src="{{ adminUrl }}/oneui/js/plugins/masked-inputs/jquery.maskedinput.min.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="{{ adminUrl }}/oneui/js/plugins/datatables/dataTables.buttons.min.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/summernote/summernote.min.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap3-editable/js/bootstrap-editable.js"></script>
@@ -25,7 +27,7 @@
 <script>
     $(function(){
         // Page helpers are initialised in app.js and can be called quickly using their name
-        App.initHelpers(['validation', 'select2', 'datepicker', 'masked-inputs', 'summernote', 'table-tools', 'datatables', 'easy-pie-chart', 'editable']);
+        App.initHelpers(['validation', 'select2', 'datepicker', 'masked-inputs', 'summernote', 'table-tools', 'easy-pie-chart', 'editable', 'datatables', ]);
 
         // jQuery AutoComplete example, for more examples you can check out https://github.com/Pixabay/jQuery-autoComplete
         $('.js-autocomplete').autoComplete({
@@ -130,6 +132,7 @@
 {% endblock %}
 
 {% block modals %}
+     <a id="js-alerts-trigger" class="js-notify" data-notify-message=""></a>
      <!-- Normal Modal -->
      <div class="modal" id="modal-normal" tabindex="-1" role="dialog" aria-hidden="true">
          <div class="modal-dialog">
@@ -472,7 +475,7 @@
                                     <a href="#btabs-static-profile">Profile</a>
                                 </li>
                                 <li class="pull-right">
-                                    <a href="#btabs-static-settings" data-toggle="tooltip" title="" data-original-title="Settings"><i class="si si-settings"></i></a>
+                                    <a href="#btabs-static-settings" data-toggle="tooltip" title="Settings"><i class="si si-settings"></i></a>
                                 </li>
                             </ul>
                             <div class="block-content tab-content">
@@ -569,7 +572,7 @@
                         <h2 class="content-heading">Top</h2>
                         <div class="block">
                             <div class="block-content block-content-full">
-                                <button class="btn btn-default" data-toggle="popover" title="" data-placement="top" data-content="This is example content. You can put a description or more info here." type="button" data-original-title="Top Popover">Show Popover</button>
+                                <button class="btn btn-default" data-toggle="popover" data-placement="top" data-content="This is example content. You can put a description or more info here." type="button" title="Top Popover">Show Popover</button>
                             </div>
                         </div>
                     </div>
@@ -577,7 +580,7 @@
                         <h2 class="content-heading">Right</h2>
                         <div class="block">
                             <div class="block-content block-content-full">
-                                <button class="btn btn-default" data-toggle="popover" title="" data-placement="right" data-content="This is example content. You can put a description or more info here." type="button" data-original-title="Right Popover">Show Popover</button>
+                                <button class="btn btn-default" data-toggle="popover" data-placement="right" data-content="This is example content. You can put a description or more info here." type="button" title="Right Popover">Show Popover</button>
                             </div>
                         </div>
                     </div>
@@ -585,7 +588,7 @@
                         <h2 class="content-heading">Bottom</h2>
                         <div class="block">
                             <div class="block-content block-content-full">
-                                <button class="btn btn-default" data-toggle="popover" title="" data-placement="bottom" data-content="This is example content. You can put a description or more info here." type="button" data-original-title="Bottom Popover">Show Popover</button>
+                                <button class="btn btn-default" data-toggle="popover" data-placement="bottom" data-content="This is example content. You can put a description or more info here." type="button" title="Bottom Popover">Show Popover</button>
                             </div>
                         </div>
                     </div>
@@ -593,7 +596,7 @@
                         <h2 class="content-heading">Left</h2>
                         <div class="block">
                             <div class="block-content block-content-full">
-                                <button class="btn btn-default" data-toggle="popover" title="" data-placement="left" data-content="This is example content. You can put a description or more info here." type="button" data-original-title="Left Popover">Show Popover</button>
+                                <button class="btn btn-default" data-toggle="popover" data-placement="left" data-content="This is example content. You can put a description or more info here." type="button" title="Left Popover">Show Popover</button>
                             </div>
                         </div>
                     </div>
@@ -831,8 +834,8 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
                                             </div>
                                         </td>
                                     </tr>
@@ -844,8 +847,8 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
                                             </div>
                                         </td>
                                     </tr>
@@ -876,8 +879,8 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
                                             </div>
                                         </td>
                                     </tr>
@@ -889,8 +892,8 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
                                             </div>
                                         </td>
                                     </tr>
@@ -921,8 +924,8 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
                                             </div>
                                         </td>
                                     </tr>
@@ -934,8 +937,8 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
                                             </div>
                                         </td>
                                     </tr>
@@ -947,8 +950,8 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
                                             </div>
                                         </td>
                                     </tr>
@@ -1074,6 +1077,157 @@
                                     </tbody>
                                 </table>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <h2 class="content-heading">Editor</h2>
+                    <div class="block block-bordered">
+                        <div class="block-content block-content-full">
+                            <table class="table table-bordered table-striped js-dataTable-editor" data-editor-url="/oneui/editor_table/">
+                                <thead>
+                                <tr>
+                                    <th data-editor-name="user_name" data-editor-type="text">Name</th>
+                                    <th data-editor-name="user_email" data-editor-type="email">Email</th>
+                                    <th data-editor-name="user_status" data-editor-type="radio" data-editor-options="Active,Inactive,Deleted">Status</th>
+                                    <th data-editor-name="birth_date" data-editor-type="date">Date</th>
+                                    <th data-editor-name="user_amount" data-editor-type="numerical">Amount</th>
+                                    <th data-editor-actions>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr data-id="342342">
+                                    <td>Ashley Welch</td>
+                                    <td>client1@example.com</td>
+                                    <td>Active</td>
+                                    <td>24/02/1980</td>
+                                    <td>1 000.00 €</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a class="btn btn-xs btn-default edit-btn" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                            <a class="btn btn-xs btn-default delete-btn" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr data-id="342343">
+                                    <td>George Stone</td>
+                                    <td>client2@example.com</td>
+                                    <td>Inactive</td>
+                                    <td>12/03/2001</td>
+                                    <td>2 000.00 €</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a class="btn btn-xs btn-default edit-btn" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                            <a class="btn btn-xs btn-default delete-btn" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr data-id="34242">
+                                    <td>Lisa Gordon</td>
+                                    <td>client3@example.com</td>
+                                    <td>Inactive</td>
+                                    <td>15/08/1960</td>
+                                    <td>50 000.00 €</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a class="btn btn-xs btn-default edit-btn" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                            <a class="btn btn-xs btn-default delete-btn" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr data-id="22342">
+                                    <td>Rebecca Reid</td>
+                                    <td>client4@example.com</td>
+                                    <td>Active</td>
+                                    <td>06/12/1980</td>
+                                    <td>5 000.00 €</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a class="btn btn-xs btn-default edit-btn" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                            <a class="btn btn-xs btn-default delete-btn" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr data-id="2334">
+                                    <td>Laura Bell</td>
+                                    <td>client5@example.com</td>
+                                    <td>Active</td>
+                                    <td>06/01/1987</td>
+                                    <td>1 000.00 €</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a class="btn btn-xs btn-default edit-btn" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                            <a class="btn btn-xs btn-default delete-btn" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr data-id="23432">
+                                    <td>Sara Holland</td>
+                                    <td>client6@example.com</td>
+                                    <td>Active</td>
+                                    <td>01/10/1962</td>
+                                    <td>1 000.00 €</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a class="btn btn-xs btn-default edit-btn" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                            <a class="btn btn-xs btn-default delete-btn" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr data-id="234323">
+                                    <td>Adam Hall</td>
+                                    <td>client7@example.com</td>
+                                    <td>Active</td>
+                                    <td>12/02/1983</td>
+                                    <td>4 000.00 €</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a class="btn btn-xs btn-default edit-btn" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                            <a class="btn btn-xs btn-default delete-btn" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr data-id="234233">
+                                    <td>Lisa Gordon</td>
+                                    <td>client8@example.com</td>
+                                    <td>Active</td>
+                                    <td>05/12/1972</td>
+                                    <td>2 500.00 €</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a class="btn btn-xs btn-default edit-btn" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                            <a class="btn btn-xs btn-default delete-btn" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr data-id="235633">
+                                    <td>Ashley Welch</td>
+                                    <td>client9@example.com</td>
+                                    <td>Active</td>
+                                    <td>01/05/1987</td>
+                                    <td>6 000.00 €</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a class="btn btn-xs btn-default edit-btn" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                            <a class="btn btn-xs btn-default delete-btn" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr data-id="236633">
+                                    <td>Denise Watson</td>
+                                    <td>client10@example.com</td>
+                                    <td>Inactive</td>
+                                    <td>02/11/1955</td>
+                                    <td>2 000.00 €</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a class="btn btn-xs btn-default edit-btn" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                            <a class="btn btn-xs btn-default delete-btn" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

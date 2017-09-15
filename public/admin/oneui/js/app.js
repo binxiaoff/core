@@ -914,9 +914,34 @@ var App = function() {
                 }
             })
         }
+        
+        // See the row in datable by display the right pagination page
+        $DataTable.Api.register('row().show()', function() {
+            console.log('here')
+            var page_info = this.table().page.info()
+            var new_row_index = this.index()
+            var row_position = this.table().rows()[0].indexOf(new_row_index)
+            console.log(this.table().rows())
+            var page_to_display = Math.floor(row_position / this.table().page.len())
+            console.log(page_to_display)
+            this.table().page(1).draw(false)
+            return this
+        })
+
+
+        $DataTable.Api.register( 'page.jumpToDataId()', function (id) {
+            var pos = this.column(column, {order:'current'}).data().indexOf( data );
+
+            if ( pos >= 0 ) {
+                var page = Math.floor( pos / this.page.info().length );
+                this.page( page ).draw( false );
+            }
+
+            return this;
+        } );
 
         // Simple
-        $('.js-dataTable-simple').dataTable({
+        $('.js-dataTable-simple').DataTable({
             pageLength: 5,
             lengthMenu: [[5, 10], [15, 20]],
             searching: false,
@@ -926,10 +951,263 @@ var App = function() {
         })
 
         // Advanced
-        $('.js-dataTable-advanced').dataTable({
+        $('.js-dataTable-advanced').DataTable({
             columnDefs: [ { orderable: false } ],
             pageLength: 4,
             lengthMenu: [[5, 10], [5, 10]]
+        })
+        
+        function Editor(elem) {
+            var self = this
+            self.$elem = $(elem)
+
+            // Prevent multiple inits
+            if (self.$elem[0].Editor)
+                return false
+
+            // Init
+            self.$elem[0].Editor = self
+            self.dtInstance = self.$elem.DataTable({
+                lengthChange: false,
+                pageLength: 5
+            })
+
+            // Some vars
+            self.actionsHtml = self.$elem.find('tbody tr:eq(0) td:last-child').html()
+            self.submitUrl = self.$elem.data('editor-url'),
+            self.randomId = Math.floor((Math.random() * 10) + 1)
+
+            // Append to wrapper
+            self.$wrapper = self.$elem.closest('.dataTables_wrapper')
+            self.$wrapper.find('.col-sm-6:eq(0)').append('<a role="button" class="btn btn-default add-btn"><span class="fa fa-plus"></span> Ajouter</a>')
+            self.$wrapper.prepend('<div class="messages" />')
+
+            // Append Modal
+            $('body').append(self.modal())
+            self.$modal = $('#modal-editor-' + self.randomId)
+
+            // Activate event listeners
+            self.events()
+        }
+        Editor.prototype.fields = function() {
+            var self = this
+            var fields = []
+            self.$elem.find('th').each(function(){
+                var $th = $(this)
+                var name = $th.data('editor-name')
+                var type = $th.data('editor-type')
+                var options = $th.data('editor-options')
+                var label = $th.text()
+                if (typeof name === 'undefined' || typeof type === 'undefined') {
+                    if (!$th.is('[data-editor-actions]')) {
+                        console.log('Missing data-editor attributes')
+                        return false
+                    }
+                } else {
+                    fields.push({name: name, type: type, label: label, options: options})
+                }
+            })
+            return fields
+        }
+        Editor.prototype.form = function() {
+            var self = this
+            var fields = self.fields()
+            var html = ''
+            for (var $i=0; $i < fields.length; $i++) {
+                var name = fields[$i].name
+                var label = fields[$i].label
+                var type = fields[$i].type
+                html += '<div class="form-group"><label>' + label + '</label>'
+                if (type === 'text' || type === 'email') {
+                    html += '<input type="text" name="' + name + '" class="form-control required">'
+                } else if (type === 'date') {
+                    html += '<input type="text" name="' + name + '" class="form-control required" data-date-format="dd/mm/yyyy">'
+                } else if (type === 'numerical') {
+                    html += '<input type="text" name="' + name + '" class="form-control required">'
+                } else if (type === 'radio') {
+                    var options = fields[$i].options.split(',')
+                    html += '<br>'
+                    for ($l = 0; $l < options.length; $l++) {
+                        html += '<label class="css-input css-radio css-radio-sm css-radio-default push-10-r"><input type="radio"  name="' + name + '" value="' + options[$l].toLowerCase() + '" class="required"><span></span>' + options[$l] + '</label>'
+                    }
+                } else {
+                    console.log('Unknown input type')
+                    return false
+                }
+                html += '</div>'
+            }
+            return html
+        }
+        Editor.prototype.modal = function() {
+            var self = this
+            var html = '<div class="modal fade" id="modal-editor-' + self.randomId + '" tabindex="-1" role="dialog" aria-hidden="true">' +
+                '<form class="modal-dialog validate" action="' + self.submitUrl + '" method="post">' +
+                '<div class="modal-content"><div class="block block-themed block-transparent remove-margin-b">' +
+                '<div class="block-header bg-primary-light">' +
+                '<h3 class="block-title">Nouvelle ligne</h3></div>' +
+                '<div class="block-content">' + self.form() + '</div></div>' +
+                '<div class="modal-footer">' +
+                '<button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>' +
+                '<button class="btn btn-sm btn-primary" type="submit">Valider</button></div></div></form></div>'
+            return(html)
+        }
+        Editor.prototype.reset = function() {
+            var self = this
+            var $modal = $('#modal-editor-' + self.randomId)
+            $modal.find('.block').removeClass('block-opt-refresh')
+            $modal.find('.has-error').removeClass('has-error')
+            $modal.find('input').each(function(){
+                if ($(this).is('input[type=radio]')) {
+                    $(this).prop('checked', false)
+                } else {
+                    $(this).val('')
+                }
+            })
+        }
+        Editor.prototype.submit = function() {
+            var self = this
+            var $form = self.$modal.find('form')
+            if (!$form.find('.has-error').length) {
+
+                self.$modal.find('.block').addClass('block-opt-refresh')
+                $.ajax({
+                    url: $form.attr('action'),
+                    type: 'POST',
+                    data: $form.serialize(),
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            self.update(response.data)
+                        } else {
+                            var errors = '<div class="alert alert-danger">'
+                            $.each(response.error, function(i, val){
+                                errors += '<p>' + val + '</p>'
+                            })
+                            errors += '</div>'
+                            self.$wrapper.find('.messages').html(errors)
+                        }
+                        self.$modal.modal('hide')
+                    }
+                })
+            }
+        }
+        Editor.prototype.update = function(data) {
+            var self = this
+            var data = {
+                id: 2334,
+                name: 'New name',
+                email: 'new@email.com',
+                status: 'New status',
+                data: 'New data',
+                amount: 'New amount'
+            }
+
+            var id = data.id
+            var values = []
+            $.each(data, function (key, val) {
+                values.push(val)
+            })
+            // remove id from columns
+            values.shift()
+            // add actions column
+            values.push(self.actionsHtml)
+
+            var tr = self.dtInstance.row('[data-id=' + id + ']')
+
+            if (!tr.length) {
+                console.log('new row')
+                // Add new row
+                self.dtInstance.row.add(values).draw().show().node().dataset.id = id
+                self.dtInstance.draw(false)
+            } else {
+                // Modify row
+                tr.data(values)
+                tr.row().show()
+            }
+        }
+        Editor.prototype.modify = function($row) {
+            var self = this
+            var fields = self.fields()
+            for (var $i=0; $i < fields.length; $i++) {
+                var val = $row.find('td:eq(' + $i + ')').text()
+                var type = fields[$i].type
+                var $formGroup = self.$modal.find('.form-group:eq(' + $i + ')')
+                if (type === 'radio') {
+                    $formGroup.find('input[value='+ val.toLowerCase() +']').prop('checked', true)
+                } else {
+                    if (type === 'numerical') {
+                        val = parseFloat(val.replace(/[A-Za-z$-\s+]/g, '').replace(',', '.'))
+                    }
+                    $formGroup.find('input').val(val)
+                }
+            }
+            self.$modal.modal('show')
+        }
+        Editor.prototype.open = function($row) {
+            var self = this
+            var fields = self.fields()
+            for (var $i=0; $i < fields.length; $i++) {
+                var val = $row.find('td:eq(' + $i + ')').text()
+                var type = fields[$i].type
+                var $formGroup = self.$modal.find('.form-group:eq(' + $i + ')')
+                if (type === 'radio') {
+                    $formGroup.find('input[value='+ val.toLowerCase() +']').prop('checked', true)
+                } else {
+                    if (type === 'numerical') {
+                        val = parseFloat(val.replace(/[A-Za-z$-\s+]/g, '').replace(',', '.'))
+                    }
+                    $formGroup.find('input').val(val)
+                }
+            }
+            self.$modal.modal('show')
+        }
+        Editor.prototype.delete = function() {
+
+        }
+        Editor.prototype.events = function() {
+            var self = this
+            self.$wrapper.on('click', '.add-btn', function(){
+                self.$modal.modal('show')
+            })
+
+            // Reset on modal close
+            self.$modal.on('hidden.bs.modal', function() {
+                self.reset()
+            })
+
+            // Timepicker on modal open
+            self.$modal.on('shown.bs.modal', function() {
+                self.$modal.find('[data-date-format]').datepicker({
+                    weekStart: 1,
+                    autoclose: true,
+                    todayHighlight: false,
+                    language: 'fr'
+                })
+            })
+
+            // Add record
+            uiHelperFormValidate()
+            self.$modal.find('form').on('submit', function (e) {
+                e.preventDefault()
+                self.submit()
+            })
+
+            // Edit record
+            self.$elem.on('click', '.edit-btn', function(){
+                var $row = $(this).closest('tr')
+                self.modify($row)
+            })
+
+            // Delete record
+            self.$elem.on('click', '.delete-btn', function(){
+                var $row = $(this).closest('tr')
+                self.delete($row)
+            })
+
+        }
+
+        $('.js-dataTable-editor').each(function(){
+            new Editor($(this)[0])
         })
     };
 
@@ -1487,6 +1765,20 @@ var App = function() {
                 }
                 if ($input.is('select')) {
                     if ($input.val() === '' || $input.val() === '0' || $input.val() === 'Selectionner') {
+                        $input.closest('.form-group').removeClass('has-error').addClass('has-error')
+                        valid = false
+                    } else {
+                        $input.closest('.form-group').removeClass('has-error')
+                        valid = true
+                    }
+                }
+                if ($input.is('input[type=radio]')) {
+                    var oneChecked = false
+                    $input.closest('.form-group').find('input[name='+ $input.attr('name') +']').each(function(){
+                       if ($(this).is(':checked'))
+                           oneChecked = true
+                    })
+                    if (!oneChecked) {
                         $input.closest('.form-group').removeClass('has-error').addClass('has-error')
                         valid = false
                     } else {
