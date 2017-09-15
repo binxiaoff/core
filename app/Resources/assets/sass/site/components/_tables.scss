@@ -219,3 +219,29 @@ thead.table-sortable-columns {
     content: $fa-sort-desc-u;
   }
 }
+
+.table-actions {
+  text-align: right;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  .btn-default {
+    padding: 4px;
+    margin-right: 2px;
+    min-height: 0;
+    min-width: 0;
+    height: 28px;
+    width: 28px;
+    line-height: 1;
+    font-size: 14px;
+    color: #9f9d9f;
+    &:last-child {
+      margin-right: 0;
+    }
+    &:hover {
+      color: $c-p1;
+    }
+    .icon {
+      line-height: 16px;
+    }
+  }
+}
