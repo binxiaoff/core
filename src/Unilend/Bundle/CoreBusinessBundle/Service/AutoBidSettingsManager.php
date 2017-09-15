@@ -177,12 +177,11 @@ class AutoBidSettingsManager
         $oBid = $this->entityManagerSimulator->getRepository('bids');
 
         $oSettings->get('Pret min', 'type');
-        $iAmountMin = (int)$oSettings->value;
+        $iAmountMin = (int) $oSettings->value;
 
         if ($iAmount < $iAmountMin) {
             return false;
         }
-
 
         if (false === $this->isRateValid($fRate)) {
             return false;
@@ -221,13 +220,11 @@ class AutoBidSettingsManager
     }
 
     /**
-     * @param int     $iLenderId
-     * @param string  $sEvaluation
-     * @param int     $iAutoBidPeriodId
-     * @param float   $fRate
-     * @param int     $iAmount
-     *
-     * @return bool
+     * @param int    $iLenderId
+     * @param string $sEvaluation
+     * @param int    $iAutoBidPeriodId
+     * @param float  $fRate
+     * @param int    $iAmount
      */
     private function createSetting($iLenderId, $sEvaluation, $iAutoBidPeriodId, $fRate, $iAmount)
     {
