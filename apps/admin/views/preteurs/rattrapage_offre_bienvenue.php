@@ -17,6 +17,20 @@
     <div class="block-content">
         <div class="row">
             <div class="col-md-12">
+                <?php if (isset($this->payOutWelcomeOfferFormErrors)) : ?>
+                    <div class="alert alert-error">
+                        <?php foreach ($this->payOutWelcomeOfferFormErrors as $error) : ?>
+                            <span><?= $error ?> </span><br>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+                <?php if (isset($this->payOutWelcomeOfferFormSuccess)) : ?>
+                    <div class="alert alert-success">
+                        <?php foreach ($this->payOutWelcomeOfferFormSuccess as $success) : ?>
+                            <span><?= $success ?> </span><br>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
                 <form method="post" class="form-inline" style="margin-bottom: 20px">
                     <input type="hidden" name="spy_search" id="spy_search">
                     <label>ID ou liste d'IDs (séparés par virgule)</label><br>

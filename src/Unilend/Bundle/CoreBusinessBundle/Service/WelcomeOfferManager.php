@@ -164,14 +164,14 @@ class WelcomeOfferManager
             return ['code' => 1, 'message' => "Il n'y a pas d'offre de bienvenue correspondant à l'origine du client."];
         }
 
-        if (false === $hasEnoughMoneyLeft) {
-            $this->logger->info('Client ID: ' . $client->getIdClient() . ' Welcome offer not paid out. There is not enough money left', [ 'class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $client->getIdClient()]);
-            return ['code' => 2, 'message' => "Il n'y a plus assez d'argent disponible pour créer l'offre de bienvenue."];
-        }
-
         if (0 < $alreadyReceivedPromotion) {
             $this->logger->info('Client ID: ' . $client->getIdClient() . ' Welcome offer not paid out. The client has realdy received a promotional operation', [ 'class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $client->getIdClient()]);
             return ['code' => 3, 'message' => "Le client a déjà reçu une offre commerciale. "];
+        }
+
+        if (false === $hasEnoughMoneyLeft) {
+            $this->logger->info('Client ID: ' . $client->getIdClient() . ' Welcome offer not paid out. There is not enough money left', [ 'class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $client->getIdClient()]);
+            return ['code' => 2, 'message' => "Il n'y a plus assez d'argent disponible pour créer l'offre de bienvenue."];
         }
     }
 

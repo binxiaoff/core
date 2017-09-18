@@ -810,6 +810,16 @@ class preteursController extends bootstrap
             unset($_SESSION['create_new_welcome_offer']['errors']);
         }
 
+        if (isset($_SESSION['pay_out_welcome_offer']['errors'])) {
+            $this->payOutWelcomeOfferFormErrors = $_SESSION['pay_out_welcome_offer']['errors'];
+            unset($_SESSION['pay_out_welcome_offer']['errors']);
+        }
+
+        if (isset($_SESSION['pay_out_welcome_offer']['success'])) {
+            $this->payOutWelcomeOfferFormSuccess = $_SESSION['pay_out_welcome_offer']['success'];
+            unset($_SESSION['pay_out_welcome_offer']['success']);
+        }
+
         if (null !== $this->request->request->get('form_send_new_offer')) {
             $this->createNewWelcomeOffer();
         }
@@ -913,13 +923,13 @@ class preteursController extends bootstrap
 
         switch ($response['code']) {
             case 0:
-                $_SESSION['freeow']['title'] = 'Offre de bienvenue crédité;';
+                $_SESSION['pay_out_welcome_offer']['success'][] = 'Offre de bienvenue crédité';
                 break;
             default:
-                $_SESSION['freeow']['title'] = 'Offre de bienvenue non cédité';
+                $_SESSION['pay_out_welcome_offer']['errors'][]= 'Offre de bienvenue non crédité';
+                $_SESSION['pay_out_welcome_offer']['errors'][] = $response['message'];
                 break;
         }
-        $_SESSION['freeow']['message'] = $response['message'];
 
         header('Location: ' . $this->lurl . '/preteurs/offres_de_bienvenue');
         die;

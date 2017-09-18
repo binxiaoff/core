@@ -100,6 +100,25 @@
         color: #333;
         font-weight: 600;
     }
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+    }
+
+    .alert-error {
+        color: #444;
+        background: #fdf4fa;
+        box-shadow: 0 2px #ca9faf;
+
+    }
+    .alert-success {
+        background: #eaf4ea;
+        color: #34a263;
+        -webkit-box-shadow: 0 2px #cdefdb;
+        box-shadow: 0 2px #cdefdb;
+    }
 </style>
 <div id="contenu">
     <div class="row">
@@ -224,7 +243,7 @@
         </div>
         <div class="block-content block-content-full">
             <?php if (isset($this->newWelcomeOfferFormErrors)) : ?>
-                <div id="create_offer_errors">
+                <div class="alert alert-error">
                     <?php foreach ($this->newWelcomeOfferFormErrors as $error) : ?>
                         <span><?= $error ?> </span>
                     <?php endforeach; ?>
@@ -276,7 +295,7 @@
                     <tbody>
                     <?php foreach ($this->pastOffers as $offer) : ?>
                         <tr>
-                            <td><?= (false === in_array($offer->getType(), [OffresBienvenues::TYPE_HOME, OffresBienvenues::TYPE_LANDING_PAGE])) ? $offer->getType() : (OffresBienvenues::TYPE_LANDING_PAGE == $offer->getType()) ? 'Landing Page' : 'Home Page'; ?></td>
+                            <td><?= (false === in_array($offer->getType(), [OffresBienvenues::TYPE_HOME, OffresBienvenues::TYPE_LANDING_PAGE])) ? $offer->getType() : ((OffresBienvenues::TYPE_LANDING_PAGE == $offer->getType()) ? 'Landing Page' : 'Home Page'); ?></td>
                             <td><?= $offer->getDebut()->format('d/m/Y') ?></td>
                             <td><?= null !== $offer->getFin() ? $offer->getFin()->format('d/m/Y') : '' ?></td>
                             <td><?= $this->currencyFormatter->format($offer->getMontant() / 100) ?></td>
