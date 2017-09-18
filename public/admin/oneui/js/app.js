@@ -917,14 +917,16 @@ var App = function() {
         
         // See the row in datable by display the right pagination page
         $DataTable.Api.register('row().show()', function() {
-            console.log('here')
             var page_info = this.table().page.info()
             var new_row_index = this.index()
             var row_position = this.table().rows()[0].indexOf(new_row_index)
-            console.log(this.table().rows())
+            console.log('new index' + new_row_index)
+            if(row_position >= page_info.start && row_position < page_info.end) {
+                return this
+            }
             var page_to_display = Math.floor(row_position / this.table().page.len())
-            console.log(page_to_display)
-            this.table().page(1).draw(false)
+            this.table().page(page_to_display).draw(false)
+            console.log('page index' + page_to_display)
             return this
         })
 
@@ -956,7 +958,7 @@ var App = function() {
             pageLength: 4,
             lengthMenu: [[5, 10], [5, 10]]
         })
-        
+
         function Editor(elem) {
             var self = this
             self.$elem = $(elem)
@@ -965,17 +967,29 @@ var App = function() {
             if (self.$elem[0].Editor)
                 return false
 
+            // Add actions
+            self.$elem.find('thead tr').append('<th data-editor-actions>Actions</th>')
+            self.$elem.find('tbody tr').each(function () {
+                var $tr = $(this)
+                var state = $tr.data('state')
+                $tr.append('<td>' + self.buttons(state) + '</td>')
+            })
+
             // Init
+            var pageLength = self.$elem.data('table-pagelength')
+            if (typeof pageLength === 'undefined') pageLength = 10
+            var actionsIndex = self.$elem.find('th:last-child').index()
             self.$elem[0].Editor = self
             self.dtInstance = self.$elem.DataTable({
                 lengthChange: false,
-                pageLength: 5
+                pageLength: pageLength,
+                columnDefs: [{targets: [actionsIndex], orderable: false}]
             })
 
             // Some vars
-            self.actionsHtml = self.$elem.find('tbody tr:eq(0) td:last-child').html()
-            self.submitUrl = self.$elem.data('editor-url'),
-            self.randomId = Math.floor((Math.random() * 10) + 1)
+            self.submitUrl = self.$elem.data('editor-url')
+            self.randomModalId = Math.floor((Math.random() * 10) + 1)
+            self.delay = 900
 
             // Append to wrapper
             self.$wrapper = self.$elem.closest('.dataTables_wrapper')
@@ -984,10 +998,21 @@ var App = function() {
 
             // Append Modal
             $('body').append(self.modal())
-            self.$modal = $('#modal-editor-' + self.randomId)
+            self.$modal = $('#modal-editor-' + self.randomModalId)
 
             // Activate event listeners
             self.events()
+        }
+        Editor.prototype.buttons = function (state) {
+            var btn = (state === 'inactive') ? 'activate-btn' : 'deactivate-btn'
+            var tooltip = (state === 'inactive') ? 'Activer' : 'Dèsactiver'
+            var icon = (state === 'inactive') ? 'off' : 'on'
+            var html = '<div class="btn-group">' +
+                '<a class="btn btn-xs btn-default edit-btn" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>' +
+                '<a class="btn btn-xs btn-default delete-btn" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>' +
+                '<a class="btn btn-xs btn-default ' + btn + '" data-toggle="tooltip" title="' + tooltip + '"><i class="fa fa-toggle-' + icon + '"></i></a>'
+                '</div>'
+            return html
         }
         Editor.prototype.fields = function() {
             var self = this
@@ -1009,26 +1034,30 @@ var App = function() {
             })
             return fields
         }
-        Editor.prototype.form = function() {
+        Editor.prototype.form = function(fields) {
             var self = this
-            var fields = self.fields()
+            var fields = (typeof fields === 'undefined') ? fields = self.fields() : fields
             var html = ''
             for (var $i=0; $i < fields.length; $i++) {
                 var name = fields[$i].name
                 var label = fields[$i].label
                 var type = fields[$i].type
+                var val = (typeof fields[$i].val === 'undefined') ? '' : fields[$i].val
                 html += '<div class="form-group"><label>' + label + '</label>'
                 if (type === 'text' || type === 'email') {
-                    html += '<input type="text" name="' + name + '" class="form-control required">'
+                    html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control required">'
                 } else if (type === 'date') {
-                    html += '<input type="text" name="' + name + '" class="form-control required" data-date-format="dd/mm/yyyy">'
+                    html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control required" data-date-format="dd/mm/yyyy">'
                 } else if (type === 'numerical') {
-                    html += '<input type="text" name="' + name + '" class="form-control required">'
+                    val = (typeof fields[$i].val === 'undefined') ? '' : parseFloat(fields[$i].val.replace(/[A-Za-z$-\s+]/g, '').replace(',', '.'))
+                    html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control required">'
                 } else if (type === 'radio') {
                     var options = fields[$i].options.split(',')
                     html += '<br>'
-                    for ($l = 0; $l < options.length; $l++) {
-                        html += '<label class="css-input css-radio css-radio-sm css-radio-default push-10-r"><input type="radio"  name="' + name + '" value="' + options[$l].toLowerCase() + '" class="required"><span></span>' + options[$l] + '</label>'
+                    for (var $l=0; $l < options.length; $l++) {
+                        var option = options[$l].trim()
+                        var checked = (val === option) ? 'checked' : ''
+                        html += '<label class="css-input css-radio css-radio-sm css-radio-default push-10-r"><input type="radio"  name="' + name + '" value="' + option + '" ' + checked + ' class="required"><span></span>' + option + '</label>'
                     }
                 } else {
                     console.log('Unknown input type')
@@ -1036,39 +1065,86 @@ var App = function() {
                 }
                 html += '</div>'
             }
+            // Add hidden inputs
+            html += '<input type="hidden" name="id" value="">'
+            html += '<input type="hidden" name="action" value="">'
             return html
         }
         Editor.prototype.modal = function() {
             var self = this
-            var html = '<div class="modal fade" id="modal-editor-' + self.randomId + '" tabindex="-1" role="dialog" aria-hidden="true">' +
+            var html = '<div class="modal fade" id="modal-editor-' + self.randomModalId + '" tabindex="-1" role="dialog" aria-hidden="true">' +
                 '<form class="modal-dialog validate" action="' + self.submitUrl + '" method="post">' +
                 '<div class="modal-content"><div class="block block-themed block-transparent remove-margin-b">' +
                 '<div class="block-header bg-primary-light">' +
-                '<h3 class="block-title">Nouvelle ligne</h3></div>' +
+                '<h3 class="block-title"></h3></div>' +
                 '<div class="block-content">' + self.form() + '</div></div>' +
                 '<div class="modal-footer">' +
                 '<button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>' +
                 '<button class="btn btn-sm btn-primary" type="submit">Valider</button></div></div></form></div>'
             return(html)
         }
-        Editor.prototype.reset = function() {
+        Editor.prototype.getCellValues = function(id) {
             var self = this
-            var $modal = $('#modal-editor-' + self.randomId)
-            $modal.find('.block').removeClass('block-opt-refresh')
-            $modal.find('.has-error').removeClass('has-error')
-            $modal.find('input').each(function(){
-                if ($(this).is('input[type=radio]')) {
-                    $(this).prop('checked', false)
-                } else {
-                    $(this).val('')
-                }
-            })
+            var $row = self.$elem.find('tr[data-id=' + id + ']')
+            var fields = self.fields()
+            for (var $i=0; $i < fields.length; $i++) {
+                var val = $row.find('td:eq(' + $i + ')').text()
+                fields[$i].val = val
+            }
+            return fields
+        }
+        Editor.prototype.openModal = function(type, id) {
+            var self = this
+            var title, content, hiddenAction, hiddenId
+            if (id)
+                hiddenId = id
+            else
+                hiddenId = ''
+
+            if (type === 'create') {
+                title = 'Ajouter'
+                content = self.form()
+                hiddenAction = 'create'
+            }
+            if (type === 'activate') {
+                title = 'Activer'
+                content =  '<p>Êtes-vous sûr de vouloir activer l\'élément ?</p>'
+                content += '<input type="hidden" name="id">'
+                content += '<input type="hidden" name="action">'
+                hiddenAction = 'activate'
+            }
+            if (type === 'deactivate') {
+                title = 'Dèsactiver'
+                content =  '<p>Êtes-vous sûr de vouloir dèsactiver l\'élément ?</p>'
+                content += '<input type="hidden" name="id">'
+                content += '<input type="hidden" name="action">'
+                hiddenAction = 'deactivate'
+            }
+            if (type === 'modify') {
+                title = 'Modifier'
+                var fields = self.getCellValues(id)
+                content = self.form(fields)
+                hiddenAction = 'modify'
+            }
+            if (type === 'delete') {
+                title = 'Sipprimer'
+                content = '<p>Êtes-vous sûr de vouloir supprimer  l\'élément ?</p>'
+                content += '<input type="hidden" name="id">'
+                content += '<input type="hidden" name="action">'
+                hiddenAction = 'delete'
+            }
+            self.$modal.find('.block').removeClass('block-opt-refresh')
+            self.$modal.find('.has-error').removeClass('has-error')
+            self.$modal.find('.block-title').html(title)
+            self.$modal.find('.block-content').html(content)
+            self.$modal.find('input[name=id]').val(hiddenId)
+            self.$modal.find('input[name=action]').val(hiddenAction)
+            self.$modal.modal('show')
         }
         Editor.prototype.submit = function() {
             var self = this
             var $form = self.$modal.find('form')
             if (!$form.find('.has-error').length) {
-
                 self.$modal.find('.block').addClass('block-opt-refresh')
                 $.ajax({
                     url: $form.attr('action'),
@@ -1077,7 +1153,7 @@ var App = function() {
                     dataType: 'json',
                     success: function(response) {
                         if (response.success) {
-                            self.update(response.data)
+                            self.update(response.id, response.data)
                         } else {
                             var errors = '<div class="alert alert-danger">'
                             $.each(response.error, function(i, val){
@@ -1091,91 +1167,64 @@ var App = function() {
                 })
             }
         }
-        Editor.prototype.update = function(data) {
+        Editor.prototype.update = function(id, data) {
             var self = this
-            var data = {
-                id: 2334,
-                name: 'New name',
-                email: 'new@email.com',
-                status: 'New status',
-                data: 'New data',
-                amount: 'New amount'
-            }
-
-            var id = data.id
-            var values = []
-            $.each(data, function (key, val) {
-                values.push(val)
-            })
-            // remove id from columns
-            values.shift()
-            // add actions column
-            values.push(self.actionsHtml)
-
             var tr = self.dtInstance.row('[data-id=' + id + ']')
-
+            var $tr = self.$elem.find('[data-id=' + id + ']')
+            // Delete row
+            if (data === 'delete') {
+                $tr.addClass('animated flash-bg')
+                setTimeout(function(){ tr.remove().draw(false) }, self.delay)
+                return false
+            }
+            if (data === 'active' || data === 'inactive') {
+                $tr.addClass('animated flash-bg').find('td:last-child').html(self.buttons(data))
+                setTimeout(function(){ $tr.removeClass('animated flash-bg') }, self.delay)
+                return false
+            }
+            // Add or modify row
             if (!tr.length) {
-                console.log('new row')
                 // Add new row
-                self.dtInstance.row.add(values).draw().show().node().dataset.id = id
-                self.dtInstance.draw(false)
+                data.push(self.buttons('active'))
+                tr = self.dtInstance.row.add(data).draw()
+                tr.node().dataset.id = id
             } else {
                 // Modify row
-                tr.data(values)
-                tr.row().show()
+                data.push(self.buttons($tr.data('state')))
+                tr.data(data)
             }
+            // Go to the page on which the row is
+            self.page(tr.index(), $tr)
         }
-        Editor.prototype.modify = function($row) {
+        Editor.prototype.page = function(index, $tr) {
             var self = this
-            var fields = self.fields()
-            for (var $i=0; $i < fields.length; $i++) {
-                var val = $row.find('td:eq(' + $i + ')').text()
-                var type = fields[$i].type
-                var $formGroup = self.$modal.find('.form-group:eq(' + $i + ')')
-                if (type === 'radio') {
-                    $formGroup.find('input[value='+ val.toLowerCase() +']').prop('checked', true)
-                } else {
-                    if (type === 'numerical') {
-                        val = parseFloat(val.replace(/[A-Za-z$-\s+]/g, '').replace(',', '.'))
-                    }
-                    $formGroup.find('input').val(val)
-                }
-            }
-            self.$modal.modal('show')
-        }
-        Editor.prototype.open = function($row) {
-            var self = this
-            var fields = self.fields()
-            for (var $i=0; $i < fields.length; $i++) {
-                var val = $row.find('td:eq(' + $i + ')').text()
-                var type = fields[$i].type
-                var $formGroup = self.$modal.find('.form-group:eq(' + $i + ')')
-                if (type === 'radio') {
-                    $formGroup.find('input[value='+ val.toLowerCase() +']').prop('checked', true)
-                } else {
-                    if (type === 'numerical') {
-                        val = parseFloat(val.replace(/[A-Za-z$-\s+]/g, '').replace(',', '.'))
-                    }
-                    $formGroup.find('input').val(val)
-                }
-            }
-            self.$modal.modal('show')
-        }
-        Editor.prototype.delete = function() {
-
+            var position = self.dtInstance.rows()[0].indexOf(index)
+            var page = Math.floor(position / self.dtInstance.page.len())
+            self.dtInstance.page(page).draw(false)
+            $tr.addClass('animated flash-bg')
+            setTimeout(function() {$tr.removeClass('animated flash-bg')}, 1000)
         }
         Editor.prototype.events = function() {
             var self = this
             self.$wrapper.on('click', '.add-btn', function(){
-                self.$modal.modal('show')
+                self.openModal('create')
             })
-
-            // Reset on modal close
-            self.$modal.on('hidden.bs.modal', function() {
-                self.reset()
+            self.$elem.on('click', '.edit-btn', function(){
+                var id = $(this).closest('tr').data('id')
+                self.openModal('modify', id)
             })
-
-            // Timepicker on modal open
+            self.$elem.on('click', '.delete-btn', function(){
+                var id = $(this).closest('tr').data('id')
+                self.openModal('delete', id)
+            })
+            self.$elem.on('click', '.activate-btn', function(){
+                var id = $(this).closest('tr').data('id')
+                self.openModal('activate', id)
+            })
+            self.$elem.on('click', '.deactivate-btn', function(){
+                var id = $(this).closest('tr').data('id')
+                self.openModal('deactivate', id)
+            })
             self.$modal.on('shown.bs.modal', function() {
                 self.$modal.find('[data-date-format]').datepicker({
                     weekStart: 1,
@@ -1184,29 +1233,13 @@ var App = function() {
                     language: 'fr'
                 })
             })
-
-            // Add record
-            uiHelperFormValidate()
+            uiHelperFormValidate() // Call validation
             self.$modal.find('form').on('submit', function (e) {
                 e.preventDefault()
                 self.submit()
             })
-
-            // Edit record
-            self.$elem.on('click', '.edit-btn', function(){
-                var $row = $(this).closest('tr')
-                self.modify($row)
-            })
-
-            // Delete record
-            self.$elem.on('click', '.delete-btn', function(){
-                var $row = $(this).closest('tr')
-                self.delete($row)
-            })
-
         }
-
-        $('.js-dataTable-editor').each(function(){
+        $('[data-editor]').each(function(){
             new Editor($(this)[0])
         })
     };
