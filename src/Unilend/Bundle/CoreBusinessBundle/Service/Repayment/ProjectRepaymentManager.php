@@ -321,6 +321,8 @@ class ProjectRepaymentManager
                     }
 
                     $repaidCapital = round(bcadd($repaidCapital, $adjustAmount, 4), 2);
+
+                    $this->entityManager->flush($projectRepaymentDetail);
                 }
             }
 
@@ -346,10 +348,10 @@ class ProjectRepaymentManager
                     }
 
                     $repaidInterest = round(bcadd($repaidInterest, $adjustAmount, 4), 2);
+
+                    $this->entityManager->flush($projectRepaymentDetail);
                 }
             }
-
-            $this->entityManager->flush();
 
             $this->adjustRepaymentAmount($projectRepaymentTask, $repaidCapital, $repaidInterest);
         }
