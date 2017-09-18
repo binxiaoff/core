@@ -2,12 +2,10 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
-use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 
 class RiskDataMonitoringRepository extends EntityRepository
 {
-
     /**
      * @param array $status
      *
@@ -21,6 +19,7 @@ class RiskDataMonitoringRepository extends EntityRepository
                   co.name,
                   p.id_project,
                   p.title,
+                  p.status,
                   ps.label,
                   cr.type,
                   cr.value,
@@ -43,9 +42,11 @@ class RiskDataMonitoringRepository extends EntityRepository
                   INNER JOIN company_rating_history crh ON rdmcl.id_company_rating_history = crh.id_company_rating_history
                 WHERE rdm.end IS NULL
                 GROUP BY p.status, p.id_company, p.id_project
-                ORDER BY crh.added DESC, p.status ASC';
+                ORDER BY crh.added DESC, p.status DESC, p.id_project DESC';
 
-        return $this->getEntityManager()->getConnection()->executeQuery($query)->fetchAll(\PDO::FETCH_ASSOC);
+        return $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery($query)
+            ->fetchAll(\PDO::FETCH_ASSOC);
     }
-
 }
