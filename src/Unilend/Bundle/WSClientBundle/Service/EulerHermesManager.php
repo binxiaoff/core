@@ -342,7 +342,6 @@ class EulerHermesManager
         if (null !== $company && null !== $company->getSingleInvoiceId()) {
             $wsResource = $this->resourceManager->getResource(self::RESOURCE_EULER_GRADE_MONITORING_START);
             $response   = $this->client->post($wsResource->getResourceName() . $company->getSingleInvoiceId(), ['headers' => ['apikey' => $this->getMonitoringApiKey()]]);
-
             if (200 === $response->getStatusCode()) {
                 $this->logger->info('Euler grade long term monitoring has been activated for siren ' . $siren);
 

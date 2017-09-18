@@ -107,7 +107,10 @@ EOF
                     $this->processWelcomeOffer($aRow);
                 }
 
-                if (false !== stripos($aRow['ligne1'], 'CANTONNEMENT') || false !== stripos($aRow['ligne1'], 'DECANTON')) {
+                if (
+                    in_array($aRow['codeOpInterbancaire'], [21, 30, 62])
+                    || in_array(substr($motif, 0, 11), ['/FRM SFPMEI', '/FOR SFPMEI'])
+                ) {
                     $status = Receptions::STATUS_IGNORED_AUTO;
                 }
 

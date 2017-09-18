@@ -1,7 +1,7 @@
 {% extends 'partner_account/_layout.html.twig' %}
 
 {% set page = {
-    id: 'partner-account-statistics',
+    id: 'partner-account-add-user',
     classNames: 'partner-account'
 } %}
 
@@ -16,7 +16,7 @@
 
                     <form id="form-project-add-user" action="" method="post" class="form-project-add-user" data-formvalidation data-formvalidation-notificationselem="#form-project-add-user-notifications">
 
-                        <div id="form-project-add=user-notifications" class="ui-formvalidation-notifications">
+                        <div id="form-project-add-user-notifications" class="ui-formvalidation-notifications">
                             {% if form.errors is not empty %}
                                 <div class="message-error"><p>{% trans %} form-validation_error-group-has-errors {% endtrans %}</p></div>
                             {% endif %}
