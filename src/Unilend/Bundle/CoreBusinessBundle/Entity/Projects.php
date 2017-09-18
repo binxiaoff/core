@@ -1673,7 +1673,7 @@ class Projects
      *
      * @return Projects
      */
-    public function setCloseOutNettingDate(\DateTime $closeOutNettingDate)
+    public function setCloseOutNettingDate(\DateTime $closeOutNettingDate = null)
     {
         $this->closeOutNettingDate = $closeOutNettingDate;
 
