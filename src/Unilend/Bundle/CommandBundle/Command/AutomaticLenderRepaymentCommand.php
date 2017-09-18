@@ -47,6 +47,18 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
 
                 $stopWatchEvent = $stopWatch->stop('autoRepayment');
 
+            } catch (\Exception $exception) {
+                $logger->error(
+                    'Errors occur during the automatic repayment command. Error message : ' . $exception->getMessage(),
+                    ['Method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                );
+
+                $task->setStatus(ProjectRepaymentTask::STATUS_ERROR);
+                $entityManager->flush($task);
+
+                continue;
+            }
+            try {
                 if ($taskLog) {
                     switch ($task->getType()) {
                         case ProjectRepaymentTask::TYPE_REGULAR:
@@ -69,13 +81,10 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 }
                 $slackManager->sendMessage($message);
             } catch (\Exception $exception) {
-                $logger->error(
-                    'Errors occur during the automatic repayment command. Error message : ' . $exception->getMessage(),
+                $logger->warning(
+                    'Errors occur when sending the slack message for the automatic repayment command. Error message : ' . $exception->getMessage(),
                     ['Method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
                 );
-
-                $task->setStatus(ProjectRepaymentTask::STATUS_ERROR);
-                $entityManager->flush($task);
 
                 continue;
             }
