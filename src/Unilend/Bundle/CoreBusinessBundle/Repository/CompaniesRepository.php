@@ -4,7 +4,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
 class CompaniesRepository extends EntityRepository
 {
@@ -54,5 +56,48 @@ class CompaniesRepository extends EntityRepository
         }
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return array
+     */
+    public function getCountCompaniesInCollectiveProceedingBetweenDates(\DateTime $start, \DateTime $end)
+    {
+        $start->setTime(0, 0, 0);
+        $end->setTime(23, 59, 59);
+
+        $status = [
+            ProjectsStatus::PROCEDURE_SAUVEGARDE,
+            ProjectsStatus::LIQUIDATION_JUDICIAIRE,
+            ProjectsStatus::REDRESSEMENT_JUDICIAIRE
+        ];
+
+        $query = 'SELECT
+                      COUNT(DISTINCT(id_company))
+                    FROM (SELECT MAX(id_project_status_history) AS max_id_projects_status_history
+                          FROM projects_status_history psh_max
+                          GROUP BY id_project) AS psh_max
+                      INNER JOIN projects_status_history psh ON psh_max.max_id_projects_status_history = psh.id_project_status_history
+                      INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                      INNER JOIN projects p ON p.id_project = psh.id_project
+                    WHERE
+                      ps.status IN (:status)
+                      AND psh.added BETWEEN :start AND :end';
+
+        $result = $this->getEntityManager()->getConnection()
+            ->executeQuery($query, [
+                'status' => $status,
+                'start'  => $start->format('Y-m-d H:i:s'),
+                'end'    => $end->format('Y-m-d H:i:s')
+            ], [
+                'status' => Connection::PARAM_INT_ARRAY,
+                'start'  => \PDO::PARAM_STR,
+                'end'    => \PDO::PARAM_STR
+            ])->fetchAll();
+
+        return $result;
     }
 }

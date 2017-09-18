@@ -349,7 +349,7 @@ class tree extends tree_crud
                                 <option value=""></option>';
 
                     foreach ($partners as $partner) {
-                        echo '<option value="' . $partner['id'] . '"' . ($this->params['tree_elements']->value == $partner['id'] ? ' selected' : '') . '>' . $partner['name'] . '</option>';
+                        echo '<option value="' . $partner['id'] . '"' . ($this->params['tree_elements']->value == $partner['id'] ? ' selected' : '') . '>' . $partner['label'] . '</option>';
                     }
 
                     echo '

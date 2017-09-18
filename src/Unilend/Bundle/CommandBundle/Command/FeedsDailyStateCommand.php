@@ -216,7 +216,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
         $wireTransfersDay = [
             'out'         => $wireTransferOutRepository->sumWireTransferOutByDay($firstDay, $requestedDate, Virements::STATUS_SENT),
             'unilend'     => $wireTransferOutRepository->sumWireTransferOutByDay($firstDay, $requestedDate, Virements::STATUS_SENT, Virements::TYPE_UNILEND),
-            'taxes'       => $operationRepository->sumMovementsForDailyState($firstDay, $requestedDate, $taxWithdrawTypes),
+            'taxes'       => $operationRepository->sumMovementsForDailyStateByDay($firstDay, $requestedDate, $taxWithdrawTypes),
             'directDebit' => $directDebitRepository->sumDirectDebitByDay($firstDay, $requestedDate)
         ];
         $this->addWireTransferLines($activeSheet, $wireTransfersDay, $specificRows['totalDay'], $specificRows['coordinatesDay']);

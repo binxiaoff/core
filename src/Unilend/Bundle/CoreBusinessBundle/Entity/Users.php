@@ -14,6 +14,9 @@ class Users
 {
     const USER_ID_CRON  = -1;
     const USER_ID_FRONT = -2;
+    // @todo useful because users can't belong to several groups for the moment
+    const USER_ID_ALAIN_ELKAIM    = 28;
+    const USER_ID_ARNAUD_SCHWARTZ = 23;
 
     const STATUS_ONLINE  = 1;
     const STATUS_OFFLINE = 0;
@@ -69,6 +72,13 @@ class Users
      * @ORM\Column(name="slack", type="string", length=191, nullable=false)
      */
     private $slack;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="ip", type="string", length=191, nullable=true)
+     */
+    private $ip;
 
     /**
      * @var string
@@ -289,6 +299,30 @@ class Users
     public function getSlack()
     {
         return $this->slack;
+    }
+
+    /**
+     * Set IP range
+     *
+     * @param string $ip
+     *
+     * @return Users
+     */
+    public function setIp($ip)
+    {
+        $this->ip = $ip;
+
+        return $this;
+    }
+
+    /**
+     * Get ip
+     *
+     * @return string
+     */
+    public function getIp()
+    {
+        return $this->ip;
     }
 
     /**

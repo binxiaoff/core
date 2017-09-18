@@ -2,6 +2,7 @@
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class productController extends bootstrap
 {
@@ -9,8 +10,8 @@ class productController extends bootstrap
     {
         parent::initialize();
 
-        $this->catchAll = true;
-        $this->users->checkAccess('emprunteurs');
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
+
         $this->menu_admin = 'emprunteurs';
         $this->translator = $this->get('translator');
     }
@@ -81,6 +82,7 @@ class productController extends bootstrap
         $this->noIncidentUnilendDays = $productManager->getAttributesByType($this->product, ProductAttributeType::NO_INCIDENT_UNILEND_PROJECT_DAYS);
         $this->minPreScore           = $productManager->getAttributesByType($this->product, ProductAttributeType::MIN_PRE_SCORE);
         $this->maxPreScore           = $productManager->getAttributesByType($this->product, ProductAttributeType::MAX_PRE_SCORE);
+        $this->legalFormCode         = $productManager->getAttributesByType($this->product, ProductAttributeType::ELIGIBLE_BORROWER_COMPANY_LEGAL_FORM_CODE);
     }
 
     public function _contract_details()

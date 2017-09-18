@@ -82,6 +82,12 @@ class CompanyIdentityDetail
     private $collectiveProcedure;
 
     /**
+     * @JMS\SerializedName("formeJuridiqueCode")
+     * @JMS\Type("string")
+     */
+    private $legalFormCode;
+
+    /**
      * @return mixed
      */
     public function getCorporateName()
@@ -183,5 +189,13 @@ class CompanyIdentityDetail
     public function getCollectiveProcedure()
     {
         return 'OUI' === $this->collectiveProcedure;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLegalFormCode()
+    {
+        return $this->legalFormCode;
     }
 }

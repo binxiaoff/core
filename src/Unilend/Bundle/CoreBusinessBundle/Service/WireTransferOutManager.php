@@ -121,6 +121,9 @@ class WireTransferOutManager
             case WalletType::UNILEND:
                 $type = Virements::TYPE_UNILEND;
                 break;
+            case WalletType::DEBT_COLLECTOR:
+                $type = Virements::TYPE_DEBT_COLLECTOR;
+                break;
             default :
                 throw new \InvalidArgumentException('Wallet type ' . $wallet->getIdType()->getLabel() . ' is not supported.');
         }
@@ -142,12 +145,16 @@ class WireTransferOutManager
 
         $this->entityManager->persist($wireTransferOut);
 
-        if (WalletType::UNILEND === $wallet->getIdType()->getLabel() || WalletType::LENDER === $wallet->getIdType()->getLabel()) {
-            $this->validateTransfer($wireTransferOut);
-        } else {
-            if ($bankAccount && $bankAccount->getIdClient() === $wallet->getIdClient()) {
-                $this->clientValidateTransfer($wireTransferOut);
-            }
+        switch ($wallet->getIdType()->getLabel()) {
+            case WalletType::UNILEND:
+            case WalletType::LENDER:
+            case WalletType::DEBT_COLLECTOR:
+                $this->validateTransfer($wireTransferOut);
+                break;
+            default :
+                if ($bankAccount && $bankAccount->getIdClient() === $wallet->getIdClient()) {
+                    $this->clientValidateTransfer($wireTransferOut);
+                }
         }
 
         $this->entityManager->flush($wireTransferOut);

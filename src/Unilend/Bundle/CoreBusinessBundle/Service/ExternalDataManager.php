@@ -112,6 +112,7 @@ class ExternalDataManager
 
                 if ($company->getSiren() === $siren) {
                     $company->setName($company->getName() ? : $identity->getCorporateName());
+                    $company->setLegalFormCode($company->getLegalFormCode() ? : $identity->getLegalFormCode());
                     $company->setForme($company->getForme() ? : $identity->getCompanyForm());
                     $company->setCapital($company->getCapital() ? : $identity->getCapital());
                     $company->setCodeNaf($company->getCodeNaf() ? : $identity->getNAFCode());
@@ -161,7 +162,7 @@ class ExternalDataManager
             }
 
             $this->setRating(CompanyRating::TYPE_ALTARES_SCORE_20, $score->getScore20());
-            $this->setRating(CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_100, $score->getScore100());
+            $this->setRating(CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_100, $score->getSectoralScore100());
             $this->setRating(CompanyRating::TYPE_ALTARES_VALUE_DATE, $score->getScoreDate()->format('Y-m-d'));
             $this->setRating(CompanyRating::TYPE_XERFI_RISK_SCORE, $xerfiScore);
             $this->setRating(CompanyRating::TYPE_UNILEND_XERFI_RISK, $xerfiUnilend);

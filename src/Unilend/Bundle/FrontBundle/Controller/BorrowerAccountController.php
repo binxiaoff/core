@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Doctrine\ORM\EntityManager;
 use Knp\Snappy\GeneratorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
@@ -15,15 +14,12 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Repository\OperationRepository;
-use Unilend\Bundle\CoreBusinessBundle\Repository\WalletBalanceHistoryRepository;
+use Unilend\Bundle\CoreBusinessBundle\Service\BorrowerOperationsManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\FrontBundle\Form\BorrowerContactType;
 use Unilend\Bundle\FrontBundle\Form\SimpleProjectType;
@@ -32,15 +28,6 @@ use Unilend\core\Loader;
 
 class BorrowerAccountController extends Controller
 {
-    const OP_EARLY_PAYMENT                  = 'early-payment';
-    const OP_MONTHLY_PAYMENT                = 'monthly-payment';
-    const OP_RECOVERY_PAYMENT               = 'recovery-payment';
-    const OP_MONTHLY_PAYMENT_REGULARIZATION = 'monthly-payment-regularization';
-    const OP_LENDER_MONTHLY_REPAYMENT       = 'lender-monthly-repayment';
-    const OP_LENDER_EARLY_REPAYMENT         = 'lender-early-repayment';
-    const OP_LENDER_RECOVERY_REPAYMENT      = 'lender-recovery-repayment';
-
-
     /**
      * @Route("/espace-emprunteur/projets", name="borrower_account_projects")
      * @Template("borrower_account/projects.html.twig")
@@ -184,14 +171,14 @@ class BorrowerAccountController extends Controller
             OperationType::LENDER_LOAN,
             OperationType::BORROWER_WITHDRAW,
             OperationSubType::BORROWER_COMMISSION_FUNDS,
-            self::OP_MONTHLY_PAYMENT,
-            self::OP_MONTHLY_PAYMENT_REGULARIZATION,
+            BorrowerOperationsManager::OP_MONTHLY_PAYMENT,
+            BorrowerOperationsManager::OP_MONTHLY_PAYMENT_REGULARIZATION,
             OperationSubType::BORROWER_COMMISSION_REPAYMENT,
-            self::OP_EARLY_PAYMENT,
-            self::OP_LENDER_MONTHLY_REPAYMENT,
-            self::OP_LENDER_EARLY_REPAYMENT,
-            self::OP_RECOVERY_PAYMENT,
-            self::OP_LENDER_RECOVERY_REPAYMENT
+            BorrowerOperationsManager::OP_EARLY_PAYMENT,
+            BorrowerOperationsManager::OP_LENDER_MONTHLY_REPAYMENT,
+            BorrowerOperationsManager::OP_LENDER_EARLY_REPAYMENT,
+            BorrowerOperationsManager::OP_RECOVERY_PAYMENT,
+            BorrowerOperationsManager::OP_LENDER_RECOVERY_REPAYMENT
         ];
 
         if ($request->isXmlHttpRequest()) {
@@ -209,8 +196,8 @@ class BorrowerAccountController extends Controller
                 if ($filter['project'] !== 'all' && in_array($filter['project'], $projectsIds)) {
                     $projectsIds = [$filter['project']];
                 }
-
-                $borrowerOperations = $this->getBorrowerOperations($client, $start, $end, $projectsIds, $operation);
+                $borrowerOperationsManager = $this->get('unilend.service.borrower_operations_manager');
+                $borrowerOperations        = $borrowerOperationsManager->getBorrowerOperations($client, $start, $end, $projectsIds, $operation);
 
                 return $this->json([
                     'count'         => count($borrowerOperations),
@@ -444,9 +431,9 @@ class BorrowerAccountController extends Controller
         if ($filter['project'] !== 'all' && in_array($filter['project'], $projectsIds)) {
             $projectsIds = [$filter['project']];
         }
-
-        $borrowerOperations = $this->getBorrowerOperations($client, $start, $end, $projectsIds, $operation);
-        $translator         = $this->get('translator');
+        $borrowerOperationsManager = $this->get('unilend.service.borrower_operations_manager');
+        $borrowerOperations        = $borrowerOperationsManager->getBorrowerOperations($client, $start, $end, $projectsIds, $operation);
+        $translator                = $this->get('translator');
 
         $response = new StreamedResponse();
         $response->setCallback(function () use ($borrowerOperations, $translator) {
@@ -510,8 +497,9 @@ class BorrowerAccountController extends Controller
         $wallet              = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::BORROWER);
         $company             = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $wallet->getIdClient()->getIdClient()]);
 
-        $fileName            = 'operations_emprunteur_' . date('Y-m-d') . '.pdf';
-        $borrowerOperations  = $this->getBorrowerOperations($client, $start, $end, $projectsIds, $operation);
+        $fileName                  = 'operations_emprunteur_' . date('Y-m-d') . '.pdf';
+        $borrowerOperationsManager = $this->get('unilend.service.borrower_operations_manager');
+        $borrowerOperations        = $borrowerOperationsManager->getBorrowerOperations($client, $start, $end, $projectsIds, $operation);
 
         $pdfContent = $this->renderView('pdf/borrower_operations.html.twig', [
             'operations'        => $borrowerOperations,
@@ -570,7 +558,7 @@ class BorrowerAccountController extends Controller
                     'Intérets',
                     'Date'
                 ];
-                $label         = $translator->trans('borrower-operation_' . self::OP_LENDER_MONTHLY_REPAYMENT);
+                $label         = $translator->trans('borrower-operation_' . BorrowerOperationsManager::OP_LENDER_MONTHLY_REPAYMENT);
                 $data          = $project->getDuePaymentsAndLenders(null, $repaymentOrder);
                 $dateTime      = \DateTime::createFromFormat('Y-m-d H:i:s', $data[0]['date']);
                 $date          = $dateTime->format('mY');
@@ -859,105 +847,5 @@ class BorrowerAccountController extends Controller
         $paymentOrder = $lastOrder['ordre'] + 1;
 
         return $repaymentSchedule->getRemainingCapitalAtDue($projectId, $paymentOrder);
-    }
-
-    /**
-     * @param \clients  $client
-     * @param \DateTime $start
-     * @param \DateTime $end
-     * @param array     $projectsIds
-     * @param string    $borrowerOperationType
-     *
-     * @return array
-     */
-    private function getBorrowerOperations(\clients $client, \DateTime $start, \DateTime $end, array $projectsIds, $borrowerOperationType)
-    {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::BORROWER);
-        /** @var WalletBalanceHistoryRepository $walletBalanceHistoryRepository */
-        $walletBalanceHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
-        /** @var OperationRepository $operationRepository */
-        $operationRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $walletHistory          = $walletBalanceHistoryRepository->getBorrowerWalletOperations($wallet, $start, $end, $projectsIds);
-        $borrowerOperations     = [];
-        $lenderRepayment        = [];
-        $recoveryCommissionKeys = array_keys(array_column($walletHistory, 'label'), OperationType::COLLECTION_COMMISSION_PROVISION);
-
-        foreach ($walletHistory as $index => $operation){
-            if (
-                in_array($operation['label'], [OperationType::CAPITAL_REPAYMENT, OperationType::GROSS_INTEREST_REPAYMENT])
-                && null !== $operation['ordre']
-            ) {
-                if (false === empty($lenderRepayment[$operation['idProject']][$operation['ordre']]['amount'])) {
-                    $operation['label']  = self::OP_LENDER_MONTHLY_REPAYMENT;
-                    $operation['amount'] = bcadd($lenderRepayment[$operation['idProject']][$operation['ordre']]['amount'], $operation['amount'], 2);
-                    /** @var Operation $operationEntity */
-                    $operationEntity = $operationRepository->find($operation['id']);
-                    if (\echeanciers::IS_EARLY_REFUND === $operationEntity->getRepaymentSchedule()->getStatusRa()) {
-                        $operation['label'] = self::OP_LENDER_EARLY_REPAYMENT;
-                    }
-                } else {
-                    $lenderRepayment[$operation['idProject']][$operation['ordre']]['amount'] = $operation['amount'];
-                    continue;
-                }
-            }
-
-            if (OperationType::BORROWER_PROVISION === $operation['label']) {
-                foreach ($recoveryCommissionKeys as $key) {
-                    if ($walletHistory[$key]['date'] === $operation['date'] && false === empty($walletHistory[$key]['amount'])) {
-                        $operation['amount'] = bcadd($walletHistory[$key]['amount'], $operation['amount'], 2);
-                        $operation['label']  = self::OP_RECOVERY_PAYMENT;
-                    }
-                }
-            }
-
-            if (OperationType::BORROWER_PROVISION === $operation['label']) {
-                /** @var Operation $operationEntity */
-                $operationEntity = $operationRepository->find($operation['id']);
-
-                switch ($operationEntity->getWireTransferIn()->getTypeRemb()) {
-                    case Receptions::REPAYMENT_TYPE_EARLY:
-                        $operation['label'] =  self::OP_EARLY_PAYMENT;
-                        break;
-                    case Receptions::REPAYMENT_TYPE_NORMAL:
-                        $operation['label'] = self::OP_MONTHLY_PAYMENT;
-                        break;
-                    case Receptions::REPAYMENT_TYPE_RECOVERY:
-                        $operation['label'] = self::OP_RECOVERY_PAYMENT;
-                        break;
-                    case Receptions::REPAYMENT_TYPE_REGULARISATION:
-                        $operation['label'] =  self::OP_MONTHLY_PAYMENT_REGULARIZATION;
-                        break;
-                    default:
-                        //TODO log or exception;
-                        break;
-                }
-            }
-
-            if (OperationType::BORROWER_WITHDRAW === $operation['label']) {
-                /** @var Operation $operationEntity */
-                $operationEntity = $operationRepository->find($operation['id']);
-                if (
-                    null !== $operationEntity->getWireTransferOut()->getBankAccount()
-                    && $operationEntity->getWireTransferOut()->getBankAccount()->getIdClient() !== $operationEntity->getWalletDebtor()->getIdClient()
-                ) {
-                    $thirdPartyClient                 = $operationEntity->getWireTransferOut()->getBankAccount()->getIdClient();
-                    $thirdPartyCompany                = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $thirdPartyClient->getIdClient()]);
-                    $operation['third_party_company'] = $thirdPartyCompany;
-                }
-            }
-
-            if ($borrowerOperationType === 'all' || $borrowerOperationType === $operation['label']) {
-                $borrowerOperations[] = $operation;
-            }
-        }
-
-        $debtCollectionCommissionKeys = array_keys(array_column($borrowerOperations, 'label'), OperationType::COLLECTION_COMMISSION_PROVISION);
-        foreach ($debtCollectionCommissionKeys as $index) {
-            unset($borrowerOperations[$index]);
-        }
-
-        return $borrowerOperations;
     }
 }

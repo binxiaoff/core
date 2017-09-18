@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Companies
  *
- * @ORM\Table(name="companies", indexes={@ORM\Index(name="id_client_owner", columns={"id_client_owner"}), @ORM\Index(name="fk_companies_id_parent_company", columns={"id_parent_company"})})
+ * @ORM\Table(name="companies", indexes={@ORM\Index(name="id_client_owner", columns={"id_client_owner"}), @ORM\Index(name="fk_companies_id_parent_company", columns={"id_parent_company"}), @ORM\Index(name="idx_companies_id_status", columns={"id_status"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\CompaniesRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -36,6 +36,16 @@ class Companies
      * @ORM\Column(name="id_client_owner", type="integer", nullable=false)
      */
     private $idClientOwner;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_status", referencedColumnName="id")
+     * })
+     */
+    private $idStatus;
 
     /**
      * @var integer
@@ -71,6 +81,13 @@ class Companies
      * @ORM\Column(name="forme", type="string", length=191, nullable=true)
      */
     private $forme;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="legal_form_code", type="string", length=10, nullable=true)
+     */
+    private $legalFormCode;
 
     /**
      * @var string
@@ -1233,6 +1250,22 @@ class Companies
     }
 
     /**
+     * @return string|null
+     */
+    public function getLegalFormCode()
+    {
+        return $this->legalFormCode;
+    }
+
+    /**
+     * @param string $legalFormCode
+     */
+    public function setLegalFormCode($legalFormCode = null)
+    {
+        $this->legalFormCode = $legalFormCode;
+    }
+
+    /**
      * @ORM\PrePersist
      */
     public function setAddedValue()
@@ -1248,6 +1281,26 @@ class Companies
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * @return null|CompanyStatus
+     */
+    public function getIdStatus()
+    {
+        return $this->idStatus;
+    }
+
+    /**
+     * @param CompanyStatus $idStatus
+     *
+     * @return Companies
+     */
+    public function setIdStatus(CompanyStatus $idStatus)
+    {
+        $this->idStatus = $idStatus;
+
+        return $this;
     }
 
     /**

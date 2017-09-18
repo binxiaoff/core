@@ -157,6 +157,7 @@ class LenderDashboardController extends Controller
         $yearAxisData           = $this->getYearAxis($repaymentDateRange);
 
         $depositedAmount = bcsub($operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::LENDER_PROVISION]), $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::LENDER_WITHDRAW]), 2);
+        $loansRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
 
         return $this->render(
             '/pages/lender_dashboard/lender_dashboard.html.twig',
@@ -170,7 +171,7 @@ class LenderDashboardController extends Controller
                     'irrTranslation'            => $irrTranslationType,
                     'initials'                  => $this->getUser()->getInitials(),
                     'companiesLenderInvestedIn' => $projectsRepository->countCompaniesLenderInvestedIn($wallet->getId()),
-                    'numberOfLoans'             => $loan->getLoansCount($wallet->getId())
+                    'numberOfLoans'             => $loansRepository->getDefinitelyAcceptedLoansCount($wallet)
                 ],
                 'walletData'         => [
                     'by_sector' => $lenderDisplayManager->getLenderLoansAllocationByCompanySector($wallet->getIdClient()),
@@ -253,12 +254,13 @@ class LenderDashboardController extends Controller
                 $preferences = $panelPreferences->getLenderPreferencesByPage($wallet->getId(), $pageName);
                 foreach ($postData as $panel) {
                     if (
-                        isset($preferences[$panel['id']], $panel['hidden'], $panel['order'])
-                        && filter_var($panel['order'], FILTER_VALIDATE_INT)
+                        $panel['order'] == (int) $panel['order']
+                        && isset($panel['hidden'], $panel['order'])
                     ) {
                         if (
-                            $preferences[$panel['id']]['hidden'] != $panel['hidden']
-                            || $preferences[$panel['id']]['panel_order'] != $panel['order']
+                            isset ($preferences[$panel['id']])
+                            && ($preferences[$panel['id']]['hidden'] != $panel['hidden']
+                            || $preferences[$panel['id']]['panel_order'] != $panel['order'])
                         ) {
                             $panelPreferences->get($preferences[$panel['id']]['id_lender_panel_preference']);
                             $panelPreferences->hidden      = ('true' === $panel['hidden']) ? 1 : 0;

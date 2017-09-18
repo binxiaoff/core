@@ -77,7 +77,7 @@ class AutolendController extends Controller
             return $this->redirectToRoute('autolend');
         }
 
-        $projectPeriods = $projectPeriods->select();
+        $projectPeriods = $projectPeriods->select('', 'min ASC');
         foreach ($projectPeriods as $period) {
             $template['projectPeriods'][$period['id_period']] = $period;
         }
@@ -94,10 +94,7 @@ class AutolendController extends Controller
 
         $template['projectRatesGlobal'] = $autoBidSettingsManager->getRateRange();
         $autoBidSettings = $autobid->getSettings($wallet->getId(), null, null, [\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE]);
-
-        if (empty($autoBidSettings)) {
-            $autoBidSettings = $this->generateFakeAutolendSettings($projectPeriods, $project, $projectRateSettings);
-        }
+        $autoBidSettings = $this->fillMissingAutolendSettings($autoBidSettings, $projectPeriods, $project, $projectRateSettings);
 
         foreach ($autoBidSettings as $aSetting) {
             $aSetting['project_rate_min'] = $template['projectRatesGlobal']['rate_min'];
@@ -292,28 +289,35 @@ class AutolendController extends Controller
         }
     }
 
-    private function generateFakeAutolendSettings($projectPeriods, \projects $project, \project_rate_settings $projectRateSettings)
+    private function fillMissingAutolendSettings(array $userSettings, array $projectPeriods, \projects $project, \project_rate_settings $projectRateSettings)
     {
-        $settings = [];
+        $settings           = [];
+        $fakeSettingsStatus = empty($userSettings) ? \autobid::STATUS_ACTIVE : \autobid::STATUS_INACTIVE;
 
         foreach ($projectPeriods as $period ) {
             $availableRisks = $project->getAvailableRisks();
             rsort($availableRisks);
 
             foreach ($availableRisks as $risk) {
-                $rateSetting = $projectRateSettings->select('id_period = ' . $period['id_period'] . ' AND evaluation = "' . $risk . '" AND status = ' . \project_rate_settings::STATUS_ACTIVE);
-                $rate = array_shift($rateSetting);
-                $averageRate = bcdiv(bcadd($rate['rate_min'], $rate['rate_max']), 2, 1);
-                $settings[] = [
-                    'id_autobid' => '',
-                    'status'     => 1,
-                    'evaluation' => $risk,
-                    'id_period'  => $period['id_period'],
-                    'rate_min'   => $averageRate,
-                    'amount'     => '',
-                    'period_min' => $period['min'],
-                    'period_max' => $period['max']
-                ];
+                $rateSetting                      = $projectRateSettings->select('id_period = ' . $period['id_period'] . ' AND evaluation = "' . $risk . '" AND status = ' . \project_rate_settings::STATUS_ACTIVE);
+                $key                              = $period['min'] . $risk;
+
+                if (false === array_key_exists($key, $userSettings)) {
+                    $rate           = array_shift($rateSetting);
+                    $averageRate    = bcdiv(bcadd($rate['rate_min'], $rate['rate_max']), 2, 1);
+                    $settings[$key] = [
+                        'id_autobid' => '',
+                        'status'     => $fakeSettingsStatus,
+                        'evaluation' => $risk,
+                        'id_period'  => $period['id_period'],
+                        'rate_min'   => $averageRate,
+                        'amount'     => '',
+                        'period_min' => $period['min'],
+                        'period_max' => $period['max']
+                    ];
+                } else {
+                    $settings[$key] = $userSettings[$key];
+                }
             }
         }
 

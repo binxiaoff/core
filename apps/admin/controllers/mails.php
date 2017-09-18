@@ -1,22 +1,15 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class mailsController extends bootstrap
 {
-
-    public function initialize()
-    {
-        parent::initialize();
-
-        $this->catchAll = true;
-
-        $this->users->checkAccess('configuration');
-        $this->menu_admin = 'configuration';
-    }
-
     public function _default()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
+        $this->menu_admin = 'edition';
+
         /** @var \Unilend\Bundle\MessagingBundle\Service\MailTemplateManager $mailTemplateManager */
         $mailTemplateManager = $this->get('unilend.service.mail_template');
 
@@ -30,7 +23,7 @@ class mailsController extends bootstrap
             $_SESSION['freeow']['title']   = 'Archivage d\'un mail';
             $_SESSION['freeow']['message'] = 'Le mail a bien &eacute;t&eacute; archiv&eacute; !';
 
-            header('Location:' . $this->lurl . '/mails');
+            header('Location: ' . $this->lurl . '/mails');
             die;
         }
 
@@ -43,6 +36,9 @@ class mailsController extends bootstrap
 
     public function _add()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
+        $this->menu_admin = 'edition';
+
         if (isset($_POST['form_add_mail'])) {
             $aPost = $this->handlePost();
             /** @var \Unilend\Bundle\MessagingBundle\Service\MailTemplateManager $mailTemplateManager */
@@ -70,6 +66,9 @@ class mailsController extends bootstrap
 
     public function _edit()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
+        $this->menu_admin = 'edition';
+
         /** @var \Unilend\Bundle\MessagingBundle\Service\MailTemplateManager $mailTemplateManager */
         $mailTemplateManager = $this->get('unilend.service.mail_template');
 
@@ -99,6 +98,9 @@ class mailsController extends bootstrap
 
     public function _emailhistory()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_CONFIGURATION);
+        $this->menu_admin = 'configuration';
+
         /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $mailQueueManager */
         $mailQueueManager = $this->get('unilend.service.mail_queue');
 
@@ -116,12 +118,18 @@ class mailsController extends bootstrap
 
     public function _recherche()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_CONFIGURATION);
+        $this->menu_admin = 'configuration';
+
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->lurl;
     }
 
     public function _emailpreview()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_CONFIGURATION);
+        $this->menu_admin = 'configuration';
+
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->lurl;
 
@@ -138,13 +146,13 @@ class mailsController extends bootstrap
                 $aFrom = $oEmail->getFrom();
                 $aTo   = $oEmail->getTo();
 
-                $this->aEmail = array(
+                $this->aEmail = [
                     'date'    => date('d/m/Y H:i', $iDate),
                     'from'    => array_shift($aFrom),
                     'to'      => array_shift($aTo),
                     'subject' => $oEmail->getSubject(),
                     'body'    => $oEmail->getBody()
-                );
+                ];
             }
         }
     }

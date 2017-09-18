@@ -4,13 +4,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 
 class rootController extends bootstrap
 {
-    public function initialize()
-    {
-        parent::initialize();
-
-        $this->catchAll = true;
-    }
-
     public function _default()
     {
         header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');

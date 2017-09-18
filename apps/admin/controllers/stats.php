@@ -1,16 +1,17 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRating;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityAssessment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectProductAssessment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRating;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
+use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class statsController extends bootstrap
 {
@@ -21,9 +22,7 @@ class statsController extends bootstrap
 
         parent::initialize();
 
-        $this->catchAll = true;
-
-        $this->users->checkAccess('stats');
+        $this->users->checkAccess(Zones::ZONE_LABEL_STATISTICS);
 
         $this->menu_admin = 'stats';
     }
@@ -711,7 +710,7 @@ class statsController extends bootstrap
         }
     }
 
-    public function _extraction_b_lend()
+    public function _projects_eligibility()
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager                  = $this->get('doctrine.orm.entity_manager');
@@ -770,13 +769,12 @@ class statsController extends bootstrap
                 'status'           => $status ? $status->getLabel() : '',
             ];
 
-            $projectEligibilityAssessment = $assessmentRepository->findOneBy([
-                'idProject' => $project,
-                'status'    => ProjectEligibilityAssessment::STATUS_CHECK_KO,
-            ], ['added' => 'DESC']);
+            $projectEligibilityAssessment = $assessmentRepository->findOneBy(
+                ['idProject' => $project],
+                ['added' => 'DESC', 'id' => 'DESC']
+            );
 
-            $row['common_check'] = $projectEligibilityAssessment ? $projectEligibilityAssessment->getIdRule()->getLabel() : 'OK';
-
+            $row['common_check']           = $projectEligibilityAssessment->getStatus() ? 'OK' : $projectEligibilityAssessment->getIdRule()->getLabel();
             $row['b_lend_check']           = 'Pas d\'évaluation';
             $row['ifp_product_check']      = 'Pas d\'évaluation';
             $row['prof_lib_product_check'] = 'Pas d\'évaluation';
@@ -857,31 +855,20 @@ class statsController extends bootstrap
             'reprise et transmission'
         ];
 
-        $this->exportCSV($extraction, 'extraction_b_lend' . date('Ymd'), $header);
+        $this->exportCSV($extraction, 'projects_eligibility-' . date('YmdHi'), $header);
     }
 
-    public function _requete_crs_cac()
+    public function _requete_crs_dac()
     {
         $this->autoFireView = false;
         $this->hideDecoration();
 
         $year     = date('Y') - 1;
         $fileName = 'preteurs_crs_dac' . $year . '.xlsx';
-        $filePath = $this->getParameter('path.protected') . '/' . $fileName;
+        $filePath = $this->getParameter('path.protected') . '/queries/' . $fileName;
 
         if (file_exists($filePath)) {
-            header('Content-Description: File Transfer');
-            header('Content-Type: application/force-download');
-            header("Content-Disposition: attachment; filename=\"" . basename($fileName) . "\";");
-            header('Content-Transfer-Encoding: binary');
-            header('Expires: 0');
-            header('Cache-Control: must-revalidate');
-            header('Pragma: public');
-            header('Content-Length: ' . filesize($filePath));
-            ob_clean();
-            flush();
-            readfile($filePath);
-            exit;
+           $this->download($filePath);
         } else {
             echo "Le fichier n'a pas été généré. ";
         }
@@ -893,5 +880,47 @@ class statsController extends bootstrap
         $wsMonitoringManager = $this->get('unilend.service.ws_monitoring_manager');
         $data                = $wsMonitoringManager->getDataForChart();
         $this->chartData     = json_encode($data);
+    }
+
+    public function _loi_eckert()
+    {
+        $this->autoFireView = false;
+        $this->hideDecoration();
+
+        $filePath = $this->getParameter('path.protected') . '/queries/loi_eckert.xlsx';
+
+        if (file_exists($filePath)) {
+            $this->download($filePath);
+        } else {
+            echo "Le fichier n'a pas été généré. ";
+        }
+    }
+
+    public function _reporting_sfpmei()
+    {
+        $directoryPath       = $this->getParameter('path.protected') . '/queries/';
+        $this->reportingList = [];
+
+        if (
+            isset($this->params[0], $this->params[1])
+            && 'file' === $this->params[0]
+            && is_string($this->params[1])
+            && false !== strpos($this->params[1], 'reporting_mensuel_sfpmei')
+        ) {
+            $this->download($directoryPath . $this->params[1]);
+        }
+
+        $files = scandir($directoryPath);
+        foreach ($files as $file) {
+            if ('reporting_mensuel_sfpmei' == substr($file, 0, 24)) {
+                $fileDate = \DateTime::createFromFormat('Ymd', substr($file, -13, 8));
+                $this->reportingList[$fileDate->format('Ym')] = [
+                    'displayDate' => strftime('%B %Y', $fileDate->getTimestamp()),
+                    'link'        => '/stats/reporting_sfpmei/file/' . $file,
+                    'name'        => $file
+                ];
+                krsort($this->reportingList, SORT_NUMERIC);
+            }
+        }
     }
 }

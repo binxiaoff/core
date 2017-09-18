@@ -40,7 +40,9 @@ class InfolegaleManager
     /** @var ResourceManager */
     private $resourceManager;
     /** @var bool */
-    private $useCache = true;
+    private $saveToCache = true;
+    /** @var bool */
+    private $readFromCache = true;
 
     /**
      * @param ClientInterface    $client
@@ -68,13 +70,27 @@ class InfolegaleManager
     }
 
     /**
-     * @param bool $useCache
+     * Should be replaced by method parameters instead of class parameters
+     * @param bool $saveToCache
      *
      * @return InfolegaleManager
      */
-    public function setUseCache($useCache)
+    public function setSaveToCache($saveToCache)
     {
-        $this->useCache = $useCache;
+        $this->saveToCache = $saveToCache;
+
+        return $this;
+    }
+
+    /**
+     * Should be replaced by method parameters instead of class parameters
+     * @param bool $readFromCache
+     *
+     * @return InfolegaleManager
+     */
+    public function setReadFromCache($readFromCache)
+    {
+        $this->readFromCache = $readFromCache;
 
         return $this;
     }
@@ -210,7 +226,7 @@ class InfolegaleManager
                     return $storedData['content'];
                 }
             }
-            $callback = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
+            $callback = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->saveToCache);
             /** @var ResponseInterface $response */
             $response = $this->client->{strtolower($wsResource->getMethod())} (
                 $wsResource->getResourceName(),
@@ -253,7 +269,8 @@ class InfolegaleManager
     {
         $storedResponse = $this->callHistoryManager->getStoredResponse($resource, $siren, $parameters);
 
-        if ($this->useCache
+        if (
+            $this->readFromCache
             && false !== $storedResponse
             && false !== simplexml_load_string($storedResponse)
         ) {

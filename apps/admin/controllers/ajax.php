@@ -1,5 +1,6 @@
 <?php
 
+use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsNotes;
@@ -1249,5 +1250,44 @@ class ajaxController extends bootstrap
 
             $this->get('unilend.service.email_manager')->sendBorrowerAccount($oClients, $sTypeEmail);
         }
+    }
+
+    public function _quick_search()
+    {
+        $this->autoFireView = false;
+
+        $result = [
+            'projects' => [],
+            'lenders'  => []
+        ];
+
+        if ($search = filter_input(INPUT_GET, 'q', FILTER_SANITIZE_STRING)) {
+            /** @var EntityManager $entityManager */
+            $entityManager      = $this->get('doctrine.orm.entity_manager');
+            $projectsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $clientsRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+
+            foreach ($projectsRepository->findByAutocomplete($search, 5) as $project) {
+                $result['projects'][] = [
+                    'id'       => $project['idProject'],
+                    'title'    => empty($project['title']) ? $project['name'] : $project['title'],
+                    'amount'   => $this->ficelle->formatNumber($project['amount'], 0),
+                    'duration' => $project['period'],
+                    'siren'    => $project['siren'],
+                    'status'   => $project['label']
+                ];
+            }
+
+            foreach ($clientsRepository->findLendersByAutocomplete($search, 5) as $lender) {
+                $result['lenders'][] = [
+                    'id'   => $lender['idClient'],
+                    'name' => $lender['name'],
+                    'type' => in_array($lender['type'], [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER]) ? 'Personne morale' : 'Personne physique'
+                ];
+            }
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode($result);
     }
 }

@@ -424,6 +424,13 @@ class Projects
     private $invoices;
 
     /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="close_out_netting_date", type="datetime", nullable=true)
+     */
+    private $closeOutNettingDate;
+
+    /**
      * Projects constructor.
      */
     public function __construct()
@@ -1651,5 +1658,25 @@ class Projects
     public function getInvoices()
     {
         return $this->invoices;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getCloseOutNettingDate()
+    {
+        return $this->closeOutNettingDate;
+    }
+
+    /**
+     * @param \DateTime $closeOutNettingDate
+     *
+     * @return Projects
+     */
+    public function setCloseOutNettingDate(\DateTime $closeOutNettingDate = null)
+    {
+        $this->closeOutNettingDate = $closeOutNettingDate;
+
+        return $this;
     }
 }
