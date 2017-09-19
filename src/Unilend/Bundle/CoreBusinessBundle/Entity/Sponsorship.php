@@ -18,7 +18,7 @@ class Sponsorship
     const STATUS_SPONSOR_PAID    = 2;
 
     /**
-     * @var boolean
+     * @var integer
      *
      * @ORM\Column(name="status", type="integer", nullable=false)
      */
