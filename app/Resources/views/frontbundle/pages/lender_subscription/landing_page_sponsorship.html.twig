@@ -26,7 +26,7 @@
                             </h2>
 
                             <div class="stamp hide-xs ui-is-visible" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
-                                {% trans with {'sponseeAmount' : currentCampaign.amountSponsee}%} lender-landing-page_sponsorship-offer-text {% endtrans %}
+                                {% trans with {'%sponseeAmount%' : currentCampaign.amountSponsee|localizednumber }%} lender-landing-page_sponsorship-offer-text {% endtrans %}
                             </div>
 
                             <div class="block-copy-lp">
