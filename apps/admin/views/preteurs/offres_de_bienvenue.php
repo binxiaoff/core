@@ -172,7 +172,7 @@
                             </tr>
                             <tr>
                                 <td>Total alloué</td>
-                                <td><?= $this->currencyFormatter->format($this->currentOfferHomepage->getMontantLimit()) ?></td>
+                                <td><?= $this->currencyFormatter->format($this->currentOfferHomepage->getMontantLimit() / 100) ?></td>
                             </tr>
                             <tr>
                                 <td>Déjà distribué</td>
@@ -210,7 +210,7 @@
                             </tr>
                             <tr>
                                 <td>Total alloué</td>
-                                <td><?= $this->currencyFormatter->format($this->currentOfferLandingPage->getMontantLimit()) ?></td>
+                                <td><?= $this->currencyFormatter->format($this->currentOfferLandingPage->getMontantLimit() / 100) ?></td>
                             </tr>
                             <tr>
                                 <td>Déjà distribué</td>

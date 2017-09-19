@@ -83,7 +83,7 @@ class WelcomeOfferManager
             'type'   => $type
         ]);
 
-        return null !== $welcomeOffer ? $welcomeOffer->getMontant() : 0;
+        return null !== $welcomeOffer ? $welcomeOffer->getMontant() / 100 : 0;
     }
 
     /**
@@ -137,7 +137,8 @@ class WelcomeOfferManager
             $unilendPromotionalWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendPromotionalWalletType]);
 
             $alreadyPaidOutOffer = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->getSumPaidOutForOffer($welcomeOffer);
-            $hasEnoughMoneyLeft  = $alreadyPaidOutOffer + $welcomeOffer->getMontant() <= $welcomeOffer->getMontantLimit() && $unilendPromotionalWallet->getAvailableBalance() >= $welcomeOffer->getMontant();
+            $hasEnoughMoneyLeft  = bcadd($alreadyPaidOutOffer, bcdiv($welcomeOffer->getMontant(),100, 2), 2) <= bcdiv($welcomeOffer->getMontantLimit(), 100, 2)
+                && $unilendPromotionalWallet->getAvailableBalance() >= bcdiv($welcomeOffer->getMontant(), 100, 2);
 
             if ($hasEnoughMoneyLeft) {
                 $paidOutWelcomeOffer = new OffresBienvenuesDetails();
@@ -165,7 +166,7 @@ class WelcomeOfferManager
         }
 
         if (0 < $alreadyReceivedPromotion) {
-            $this->logger->info('Client ID: ' . $client->getIdClient() . ' Welcome offer not paid out. The client has realdy received a promotional operation', [ 'class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $client->getIdClient()]);
+            $this->logger->info('Client ID: ' . $client->getIdClient() . ' Welcome offer not paid out. The client has already received a promotional operation', [ 'class'     => __CLASS__, 'function'  => __FUNCTION__, 'id_lender' => $client->getIdClient()]);
             return ['code' => 3, 'message' => "Le client a déjà reçu une offre commerciale. "];
         }
 

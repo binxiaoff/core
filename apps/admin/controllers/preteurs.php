@@ -902,7 +902,7 @@ class preteursController extends bootstrap
         $welcomeOffer = new OffresBienvenues();
         $welcomeOffer->setDebut($startDate);
         $welcomeOffer->setMontant(bcmul($amount, 100));
-        $welcomeOffer->setMontantLimit($maxAmount);
+        $welcomeOffer->setMontantLimit(bcmul($maxAmount, 100));
         $welcomeOffer->setType($type);
         $welcomeOffer->setIdUser($this->userEntity->getIdUser());
         $welcomeOffer->setStatus(OffresBienvenues::STATUS_ONLINE);
