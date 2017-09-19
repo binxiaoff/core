@@ -1,0 +1,227 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/summernote/summernote.min.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
+{% endblock %}
+
+{% block pluginsJS %}
+    <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="{{ adminUrl }}/oneui/js/plugins/datatables/dataTables.buttons.min.js"></script>
+    <script src="{{ adminUrl }}/oneui/js/plugins/summernote/summernote.min.js"></script>
+    <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
+    <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.js"></script>
+{% endblock %}
+
+{% block pageScripts %}
+    <script>
+        $(function(){
+            App.initHelpers(['validation', 'datatables', 'summernote', 'treeview', 'datepicker'])
+            var $usersTable = $('#table-users')
+            var $sendPasswordModal = $('#modal-send-password')
+            $usersTable.DT({
+                before: function() {
+                    $usersTable.find('tbody tr').each(function(){
+                        var $tr = $(this)
+                        $tr.find('td:last-child .btn-group').prepend('<a class="btn btn-xs btn-default password-btn"><span class="fa fa-lock"></span></a>')
+                    })
+                }
+            })
+            $usersTable.on('click', '.password-btn', function(){
+                var id = $(this).closest('tr').data('id')
+                $sendPasswordModal.find('input[name=id]').val(id)
+                $sendPasswordModal.modal('show')
+            })
+        })
+    </script>
+{% endblock %}
+
+{% block modals %}
+    <div class="modal" id="modal-send-password" tabindex="-1" role="dialog" aria-hidden="true">
+        <form class="modal-dialog" method="post" action="/partnerEdit/users/">
+            <div class="modal-content">
+                <div class="block block-bordered remove-margin-b">
+                    <div class="block-header">
+                        <h3 class="block-title">Envoyer le mot de pass</h3>
+                    </div>
+                    <div class="block-content">
+                        <p>Étes-vous sûr de vouloir renvoyer le mot de pass à cet utilisateur ?</p>
+                        <input type="hidden" name="id">
+                        <input type="hidden" name="action" value="password">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                    <button class="btn btn-sm btn-primary" type="button" data-dismiss="modal">Valider</button>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block pageHeader %}
+    <div class="push-15-r pull-left">
+        <img class="img-avatar img-avatar-thumb" style="border-radius: 0" src="https://placehold.it/120x120" alt="">
+    </div>
+    <div class="push clearfix">
+        <h1 class="h2 push-20-t">AXA Banque</h1>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <div class="row">
+            <div class="col-md-2">
+                <div class="block block-bordered">
+                    <div class="block-header">
+                        <h3 class="block-title">Statut du partenaire</h3>
+                    </div>
+                    <div class="block-content block-content-full">
+                        <label class="css-input switch switch-primary">
+                            <input type="checkbox" checked><span></span> Actif
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="block block-bordered">
+                    <div class="block-header">
+                        <h3 class="block-title">Prospection des dossiers</h3>
+                    </div>
+                    <div class="block-content block-content-full">
+                        <label class="css-input switch switch-primary">
+                            <input type="checkbox" checked><span></span> Actif
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="block block-bordered">
+                    <div class="block-header">
+                        <h3 class="block-title">Produit 1</h3>
+                    </div>
+                    <div class="block-content block-content-full">
+                        <label class="css-input switch switch-primary">
+                            <input type="checkbox" checked><span></span> Débl. 9% / Remb. 12%
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="block block-bordered">
+                    <div class="block-header">
+                        <h3 class="block-title">Produit 2</h3>
+                    </div>
+                    <div class="block-content block-content-full">
+                        <label class="css-input switch switch-primary">
+                            <input type="checkbox" checked><span></span> Débl. 9% / Remb. 12%
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="block block-bordered">
+                    <div class="block-header">
+                        <h3 class="block-title">Produit 3</h3>
+                    </div>
+                    <div class="block-content block-content-full">
+                        <label class="css-input switch switch-primary">
+                            <input type="checkbox" checked><span></span> Débl. 9% / Remb. 12%
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="block block-bordered">
+                    <div class="block-header">
+                        <h3 class="block-title">Produit 4</h3>
+                    </div>
+                    <div class="block-content block-content-full">
+                        <label class="css-input switch switch-primary">
+                            <input type="checkbox" checked><span></span> Débl. 9% / Remb. 12%
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Instructions</h3>
+            </div>
+            <div class="block-content block-content-full">
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <p>Description de dossier :</p>
+                        <div class="js-summernote-simple">Instructions ...</div>
+                    </div>
+                    <div class="col-md-6">
+                        <p>Pièces à fournir :</p>
+                        <div class="js-summernote-simple">Instructions ...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Pièces à fournir</h3>
+            </div>
+            <div class="block-content block-content-full">
+                <table class="table table-bordered table-striped" data-table data-table-search="false" data-table-editor data-table-editor-url="/partnerEdit/documents" data-table-editor-actions="add, modify, delete">
+                    <thead>
+                    <tr>
+                        <th data-editor-name="type" data-editor-type="select" data-editor-options="CNI, Passport, Relevé bancaire, RIB">Type de pièce</th>
+                        <th data-editor-name="mandatory" data-editor-type="radio" data-editor-options="Oui, Non">Obligatoire</th>
+                        <th data-editor-name="date" data-editor-type="date">Date d'ajout</th>
+                        <th data-editor-name="file" data-editor-type="file">Fichier</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr data-id="342342">
+                        <td>CNI</td>
+                        <td>Oui</td>
+                        <td>24/03/2017</td>
+                        <td><a href="/path/to/document">CNI.jpg</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Utilisateurs</h3>
+            </div>
+            <div class="block-content block-content-full">
+                <table id="table-users" class="table table-bordered table-striped" data-table-search="true" data-table-editor data-table-editor-url="/partnerEdit/users" data-table-editor-actions="add, modify, toggle">
+                    <thead>
+                    <tr>
+                        <th data-editor-name="name" data-editor-type="text">Prénom et nom</th>
+                        <th data-editor-name="position" data-editor-type="text">Rôle</th>
+                        <th data-editor-name="group" data-editor-type="select" data-editor-options="Sub Group 1, Sub Group 2, Sub Group 3">Entité de rattachement</th>
+                        <th data-editor-name="date_added" data-editor-type="date">Date d'ajout</th>
+                        <th data-editor-name="date_last_connection" data-editor-type="date">Dernière connexion</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr data-id="342342" data-state="active">
+                        <td>Sara Holland</td>
+                        <td>Director</td>
+                        <td>Sub Group 1</td>
+                        <td>13/02/2017</td>
+                        <td>24/09/2017</td>
+                    </tr>
+                    <tr data-id="342442" data-state="inactive">
+                        <td>Henry Gordon</td>
+                        <td>Manager</td>
+                        <td>Sub Group 2</td>
+                        <td>15/05/2017</td>
+                        <td>15/08/2017</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

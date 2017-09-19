@@ -13,7 +13,6 @@
 
 {% block pluginsJS %}
 <script src="{{ adminUrl }}/oneui/js/plugins/select2/select2.min.js"></script>
-<script src="{{ adminUrl }}/oneui/js/plugins/jquery-validation/jquery.validate.min.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/masked-inputs/jquery.maskedinput.min.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
@@ -969,7 +968,7 @@
                         <h2 class="content-heading">Simple</h2>
                         <div class="block block-bordered">
                             <div class="block-content block-content-full">
-                                <table class="table table-bordered table-striped js-dataTable-simple">
+                                <table class="table table-bordered table-striped" data-table>
                                     <thead>
                                     <tr>
                                         <th>Name</th>
@@ -1026,11 +1025,11 @@
                         <h2 class="content-heading">Advanced</h2>
                         <div class="block block-bordered">
                             <div class="block-content block-content-full">
-                                <table class="table table-bordered table-striped js-dataTable-advanced">
+                                <table class="table table-bordered table-striped" data-table data-table-search="true" data-table-pagelength="5" data-table-lengthchange="true">
                                     <thead>
                                     <tr>
                                         <th>Name</th>
-                                        <th class="hidden-xs">Email</th>
+                                        <th>Email</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -1084,7 +1083,7 @@
                     <h2 class="content-heading">Editor</h2>
                     <div class="block block-bordered">
                         <div class="block-content block-content-full">
-                            <table class="table table-bordered table-striped" data-editor data-editor-url="/oneui/editor_table/" data-table-pagelength="5">
+                            <table class="table table-bordered table-striped" data-table data-table-search="true" data-table-editor data-table-editor-url="/oneui/editor_table/" data-table-editor-actions="add, modify, delete, toggle">
                                 <thead>
                                 <tr>
                                     <th data-editor-name="name" data-editor-type="text">Name</th>

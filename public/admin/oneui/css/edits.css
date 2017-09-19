@@ -115,3 +115,9 @@
         background: #fdf5cb;
     }
 }
+
+/* Modals */
+.modal-footer {
+    border-top: 0;
+    padding-top: 10px; padding-bottom: 10px;
+}

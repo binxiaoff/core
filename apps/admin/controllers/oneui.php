@@ -87,7 +87,7 @@ class oneuiController extends bootstrap
                 'success' => true, // If false, then errors must be present (line below)
                 'error' => ['Error 1', 'Error 2'], // Errors must be an array, even if there's only one
                 'id' => $id, // ID must be separate from the data in the response
-                'state' => $state, // ID must be separate from the data in the response
+                'state' => $state, // State must be separate from the data in the response
                 'data' => $responseData // Values must be in the same order as in the request
             ]);
         }

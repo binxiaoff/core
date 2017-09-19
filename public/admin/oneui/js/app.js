@@ -914,7 +914,7 @@ var App = function() {
                 }
             })
         }
-        
+
         // See the row in datable by display the right pagination page
         $DataTable.Api.register('row().show()', function() {
             var page_info = this.table().page.info()
@@ -930,91 +930,111 @@ var App = function() {
             return this
         })
 
-
-        $DataTable.Api.register( 'page.jumpToDataId()', function (id) {
-            var pos = this.column(column, {order:'current'}).data().indexOf( data );
-
-            if ( pos >= 0 ) {
-                var page = Math.floor( pos / this.page.info().length );
-                this.page( page ).draw( false );
-            }
-
-            return this;
-        } );
-
-        // Simple
-        $('.js-dataTable-simple').DataTable({
-            pageLength: 5,
-            lengthMenu: [[5, 10], [15, 20]],
-            searching: false,
-            dom:
-            "<'row'<'col-sm-12'tr>>" +
-            "<'row'<'col-sm-6'i><'col-sm-6'p>>"
-        })
-
-        // Advanced
-        $('.js-dataTable-advanced').DataTable({
-            columnDefs: [ { orderable: false } ],
-            pageLength: 4,
-            lengthMenu: [[5, 10], [5, 10]]
-        })
-
-        function Editor(elem) {
+        function DT(elem, options) {
             var self = this
             self.$elem = $(elem)
 
-            // Prevent multiple inits
-            if (self.$elem[0].Editor)
+            if (self.$elem[0].DT)
                 return false
 
-            // Add actions
-            self.$elem.find('thead tr').append('<th data-editor-actions>Actions</th>')
-            self.$elem.find('tbody tr').each(function () {
-                var $tr = $(this)
-                var state = $tr.data('state')
-                $tr.append('<td>' + self.buttons(state) + '</td>')
-            })
-
-            // Init
+            // PLUGIN SETTINGS
+            // Unorderable actions column
+            var columnDefs
+            self.actions = self.$elem.data('table-actions')
+            if (typeof self.actions !== 'undefined' && self.actions !== false) {
+                columnDefs = [{targets: [self.$elem.find('thead td:last-child').index()], orderable: false}]
+            } else {
+                self.actions = self.$elem.data('table-editor-actions')
+                if (typeof self.actions !== 'undefined' && self.actions !== false) {
+                    self.$elem.find('thead tr').append('<th data-table-actionscolumn>Actions</th>')
+                    self.$elem.find('tbody tr').each(function () {
+                        var $tr = $(this)
+                        var state = null
+                        if (~(self.actions.indexOf('toggle'))) {
+                            state = $tr.data('state')
+                            if (typeof state === 'undefined') {
+                                console.log('Missing data-state attr on each row')
+                                return false
+                            }
+                        }
+                        $tr.append('<td>' + self.buttons(state) + '</td>')
+                    })
+                    columnDefs = [{targets: [self.$elem.find('thead td:last-child').index()], orderable: false}]
+                }
+            }
+            // Rows per page
             var pageLength = self.$elem.data('table-pagelength')
-            if (typeof pageLength === 'undefined') pageLength = 10
-            var actionsIndex = self.$elem.find('th:last-child').index()
-            self.$elem[0].Editor = self
+            if (typeof pageLength === 'undefined')
+                pageLength = 10
+            // Dynamic control (per page)
+            var lengthChange = self.$elem.data('table-lengthchange')
+            if (typeof pageLength === 'undefined')
+                lengthChange = false
+            // Search
+            var search = self.$elem.data('table-search')
+            if (typeof search === 'undefined') {
+                search = false
+            }
+
+            // BEFORE CALLBACK
+            if (typeof options !== 'undefined') {
+                if (options.before)
+                    options.before()
+            }
+
+            // PLUGIN INIT
+            self.$elem[0].DT = self
             self.dtInstance = self.$elem.DataTable({
-                lengthChange: false,
+                lengthChange: lengthChange,
                 pageLength: pageLength,
-                columnDefs: [{targets: [actionsIndex], orderable: false}]
+                columnDefs: columnDefs,
+                searching: search
             })
 
-            // Some vars
-            self.submitUrl = self.$elem.data('editor-url')
+            var editor = self.$elem.data('table-editor')
+            if (typeof editor === 'undefined' || editor === false) {
+                return false
+            }
+
+            // EDITOR
+            // Vars
+            self.submitUrl = self.$elem.data('table-editor-url')
             self.randomModalId = Math.floor((Math.random() * 10) + 1)
             self.delay = 900
-
             // Append to wrapper
             self.$wrapper = self.$elem.closest('.dataTables_wrapper')
-            self.$wrapper.find('.col-sm-6:eq(0)').append('<a role="button" class="btn btn-default add-btn"><span class="fa fa-plus"></span> Ajouter</a>')
+            if (~(self.actions.indexOf('add')) || ~(self.actions.indexOf('create'))) {
+                self.$wrapper.find('.col-sm-6:eq(0)').append('<a role="button" class="btn btn-default add-btn"><span class="fa fa-plus"></span> Ajouter</a>')
+            }
             self.$wrapper.prepend('<div class="messages" />')
-
             // Append Modal
             $('body').append(self.modal())
             self.$modal = $('#modal-editor-' + self.randomModalId)
-
             // Activate event listeners
             self.events()
+
+            // AFTER CALLBACK
+            if (typeof options !== 'undefined') {
+                if (options.after)
+                    options.after()
+            }
         }
-        Editor.prototype.buttons = function (state) {
-            var btn = (state === 'inactive') ? 'activate-btn' : 'deactivate-btn'
-            var tooltip = (state === 'inactive') ? 'Activer' : 'Dèsactiver'
-            var icon = (state === 'inactive') ? 'off' : 'on'
-            var html = '<div class="btn-group">' +
-                '<a class="btn btn-xs btn-default edit-btn" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>' +
-                '<a class="btn btn-xs btn-default delete-btn" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>' +
-                '<a class="btn btn-xs btn-default ' + btn + '" data-toggle="tooltip" title="' + tooltip + '"><i class="fa fa-toggle-' + icon + '"></i></a>'
-                '</div>'
+        DT.prototype.buttons = function (state) {
+            var self = this
+            var html = '<div class="btn-group">'
+            if (~(self.actions.indexOf('edit')) || ~(self.actions.indexOf('modify')))
+                html += '<a class="btn btn-xs btn-default edit-btn" title="Modifier"><i class="fa fa-pencil"></i></a>'
+            if (~(self.actions.indexOf('delete')))
+                html += '<a class="btn btn-xs btn-default delete-btn" title="Supprimer"><i class="fa fa-times"></i></a>'
+            if (~(self.actions.indexOf('toggle')) && state !== null) {
+                var btn = (state === 'inactive') ? 'activate-btn' : 'deactivate-btn'
+                var tooltip = (state === 'inactive') ? 'Activer' : 'Dèsactiver'
+                var icon = (state === 'inactive') ? 'off' : 'on'
+                html += '<a class="btn btn-xs btn-default ' + btn + '" title="' + tooltip + '"><i class="fa fa-toggle-' + icon + '"></i></a>'
+            }
             return html
         }
-        Editor.prototype.fields = function() {
+        DT.prototype.fields = function() {
             var self = this
             var fields = []
             self.$elem.find('th').each(function(){
@@ -1024,7 +1044,7 @@ var App = function() {
                 var options = $th.data('editor-options')
                 var label = $th.text()
                 if (typeof name === 'undefined' || typeof type === 'undefined') {
-                    if (!$th.is('[data-editor-actions]')) {
+                    if (!$th.is('[data-table-actionscolumn]')) {
                         console.log('Missing data-editor attributes')
                         return false
                     }
@@ -1034,7 +1054,7 @@ var App = function() {
             })
             return fields
         }
-        Editor.prototype.form = function(fields) {
+        DT.prototype.form = function(fields) {
             var self = this
             var fields = (typeof fields === 'undefined') ? fields = self.fields() : fields
             var html = ''
@@ -1044,13 +1064,17 @@ var App = function() {
                 var type = fields[$i].type
                 var val = (typeof fields[$i].val === 'undefined') ? '' : fields[$i].val
                 html += '<div class="form-group"><label>' + label + '</label>'
+                // Text / Email
                 if (type === 'text' || type === 'email') {
                     html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control required">'
+                // Datepicker
                 } else if (type === 'date') {
                     html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control required" data-date-format="dd/mm/yyyy">'
+                // Numerical - currency, number of days, etc.
                 } else if (type === 'numerical') {
                     val = (typeof fields[$i].val === 'undefined') ? '' : parseFloat(fields[$i].val.replace(/[A-Za-z$-\s+]/g, '').replace(',', '.'))
                     html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control required">'
+                // Radio
                 } else if (type === 'radio') {
                     var options = fields[$i].options.split(',')
                     html += '<br>'
@@ -1058,6 +1082,27 @@ var App = function() {
                         var option = options[$l].trim()
                         var checked = (val === option) ? 'checked' : ''
                         html += '<label class="css-input css-radio css-radio-sm css-radio-default push-10-r"><input type="radio"  name="' + name + '" value="' + option + '" ' + checked + ' class="required"><span></span>' + option + '</label>'
+                    }
+                // Select
+                } else if (type === 'select') {
+                    var options = fields[$i].options.split(',')
+                    html += '<select class="form-control required" name="' + name + '">' +
+                            '<option value="0">Selectionner</option>'
+                    for (var $l=0; $l < options.length; $l++) {
+                        var option = options[$l].trim()
+                        var selected = (val === option) ? 'selected' : ''
+                        html += '<option value="' + option + '" ' + selected + '>' + option + '</option>'
+                    }
+                    html += '</select>'
+                // File
+                } else if (type === 'file') {
+                    if (val === '') {
+                        html += '<input type="file" name="' + name + '" value="" class="form-control required">'
+                    } else {
+                        html += '<div class="clearfix"><div class="pull-left">' +
+                            '<div class="file">' + val + '</div>' +
+                            '<input type="hidden" name="' + name + '" value="no_change"></div>' +
+                            '<div class="pull-left push-15-l"><a class="btn btn-xs btn-default file-edit-btn edit">Modifier</a></div></div>'
                     }
                 } else {
                     console.log('Unknown input type')
@@ -1070,30 +1115,32 @@ var App = function() {
             html += '<input type="hidden" name="action" value="">'
             return html
         }
-        Editor.prototype.modal = function() {
+        DT.prototype.modal = function() {
             var self = this
             var html = '<div class="modal fade" id="modal-editor-' + self.randomModalId + '" tabindex="-1" role="dialog" aria-hidden="true">' +
-                '<form class="modal-dialog validate" action="' + self.submitUrl + '" method="post">' +
-                '<div class="modal-content"><div class="block block-themed block-transparent remove-margin-b">' +
-                '<div class="block-header bg-primary-light">' +
-                '<h3 class="block-title"></h3></div>' +
+                '<form class="modal-dialog validate" action="' + self.submitUrl + '" method="post" enctype="multipart/form-data">' +
+                '<div class="modal-content"><div class="block block-bordered remove-margin-b">' +
+                '<div class="block-header"><h3 class="block-title"></h3></div>' +
                 '<div class="block-content">' + self.form() + '</div></div>' +
                 '<div class="modal-footer">' +
                 '<button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>' +
                 '<button class="btn btn-sm btn-primary" type="submit">Valider</button></div></div></form></div>'
             return(html)
         }
-        Editor.prototype.getCellValues = function(id) {
+        DT.prototype.getCellValues = function(id) {
             var self = this
             var $row = self.$elem.find('tr[data-id=' + id + ']')
             var fields = self.fields()
             for (var $i=0; $i < fields.length; $i++) {
                 var val = $row.find('td:eq(' + $i + ')').text()
+                if (fields[$i].type === 'file') {
+                    val = $row.find('td:eq(' + $i + ')').html()
+                }
                 fields[$i].val = val
             }
             return fields
         }
-        Editor.prototype.openModal = function(type, id) {
+        DT.prototype.openModal = function(type, id) {
             var self = this
             var title, content, hiddenAction, hiddenId
             if (id)
@@ -1141,7 +1188,7 @@ var App = function() {
             self.$modal.find('input[name=action]').val(hiddenAction)
             self.$modal.modal('show')
         }
-        Editor.prototype.submit = function() {
+        DT.prototype.submit = function() {
             var self = this
             var $form = self.$modal.find('form')
             if (!$form.find('.has-error').length) {
@@ -1149,9 +1196,13 @@ var App = function() {
                 $.ajax({
                     url: $form.attr('action'),
                     type: 'POST',
-                    data: $form.serialize(),
+                    data: new FormData($form[0]),
                     dataType: 'json',
+                    cache: false,
+                    contentType: false,
+                    processData: false,
                     success: function(response) {
+                        console.log(response)
                         if (response.success) {
                             self.update(response.id, response.data)
                         } else {
@@ -1167,7 +1218,7 @@ var App = function() {
                 })
             }
         }
-        Editor.prototype.update = function(id, data) {
+        DT.prototype.update = function(id, data) {
             var self = this
             var tr = self.dtInstance.row('[data-id=' + id + ']')
             var $tr = self.$elem.find('[data-id=' + id + ']')
@@ -1180,6 +1231,10 @@ var App = function() {
             if (data === 'active' || data === 'inactive') {
                 $tr.addClass('animated flash-bg').find('td:last-child').html(self.buttons(data))
                 setTimeout(function(){ $tr.removeClass('animated flash-bg') }, self.delay)
+                return false
+            }
+            if (!$.isArray(data)) {
+                console.log('response.data must be an array')
                 return false
             }
             // Add or modify row
@@ -1196,7 +1251,7 @@ var App = function() {
             // Go to the page on which the row is
             self.page(tr.index(), $tr)
         }
-        Editor.prototype.page = function(index, $tr) {
+        DT.prototype.page = function(index, $tr) {
             var self = this
             var position = self.dtInstance.rows()[0].indexOf(index)
             var page = Math.floor(position / self.dtInstance.page.len())
@@ -1204,7 +1259,7 @@ var App = function() {
             $tr.addClass('animated flash-bg')
             setTimeout(function() {$tr.removeClass('animated flash-bg')}, 1000)
         }
-        Editor.prototype.events = function() {
+        DT.prototype.events = function() {
             var self = this
             self.$wrapper.on('click', '.add-btn', function(){
                 self.openModal('create')
@@ -1238,9 +1293,55 @@ var App = function() {
                 e.preventDefault()
                 self.submit()
             })
+            self.$modal.on('change', 'input[type=file]', function () {
+                var $input = $(this)
+                var file = this.files[0];
+                if (file.size > 5*1024) {
+                    $input.closest('form-group').addClass('has-error').append('<p class="text-danger">Taille max 5 Mb.</p>')
+
+                } else {
+                    $input.closest('form-group').removeClass('has-error').find('.text-danger').remove()
+                }
+            })
+            self.$modal.on('click', '.file-edit-btn', function(){
+                var $btn = $(this)
+                var $parent = $(this).closest('.form-group')
+                var $link = $parent.find('.file')
+                var $input = $parent.find('input')
+                if ($btn.is('.edit')) {
+                    $btn.removeClass('edit').addClass('cancel').text('Annuler')
+                    $link.hide()
+                    $input.attr('type', 'file').attr('class', 'form-control required')
+                } else {
+                    $btn.removeClass('cancel').addClass('edit').text('Modifier')
+                    $link.show()
+                    $parent.removeClass('has-error')
+                    $input.attr('type', 'hidden').attr('class', '').val('no_change')
+                }
+            })
         }
-        $('[data-editor]').each(function(){
-            new Editor($(this)[0])
+        // jQuery Plugin
+        $.fn.DT = function(op) {
+            if (typeof op === 'string' && /^(before|after)$/.test(op)) {
+                var args = Array.prototype.slice.call(arguments)
+                args.shift()
+                return this.each(function(i, elem) {
+                    if (elem.hasOwnProperty('DT') && typeof elem.DT[op] === 'function') {
+                        elem.DT[op].apply(elem.DT, args)
+                    }
+                })
+
+                // Set up a new Pager instance per elem (if one doesn't already exist)
+            } else {
+                return this.each(function(i, elem) {
+                    if (!elem.hasOwnProperty('DT')) {
+                        new DT(elem, op)
+                    }
+                })
+            }
+        }
+        $('[data-table]').each(function(){
+            $(this).DT()
         })
     };
 
@@ -1375,7 +1476,31 @@ var App = function() {
      * App.initHelper('summernote');
      *
      */
+
+    // toolbar: [
+    //     ['style', ['style']],
+    //     ['font', ['bold', 'underline', 'clear']],
+    //     ['fontname', ['fontname']],
+    //     ['color', ['color']],
+    //     ['para', ['ul', 'ol', 'paragraph']],
+    //     ['table', ['table']],
+    //     ['insert', ['link', 'picture', 'video']],
+    //     ['view', ['fullscreen', 'codeview', 'help']]
+    // ]
+        
     var uiHelperSummernote = function(){
+        // Init text editor in air mode (inline)
+        jQuery('.js-summernote-simple').summernote({
+            height: 100,
+            minHeight: null,
+            maxHeight: null,
+            toolbar: [
+                ['para', ['ul', 'ol']],
+                ['font', ['bold', 'underline', 'clear']],
+                ['view', ['codeview']]
+            ],
+        });
+
         // Init text editor in air mode (inline)
         jQuery('.js-summernote-air').summernote({
             airMode: true
@@ -1784,10 +1909,10 @@ var App = function() {
             var valid = true
             $(this).find('.required').each(function(){
                 var $input = $(this)
-                if ($input.is('input[type=text]') || $input.is('input[type=number]') || $input.is('input[type=email]') || $input.is('textarea') || $input.is('input[type=password]')) {
+                if ($input.is('input[type=text]') || $input.is('input[type=number]') || $input.is('input[type=email]') || $input.is('input[type=file]') || $input.is('textarea') || $input.is('input[type=password]')) {
                     var attrName = $(this).attr('name');
                     if (!$input.val() || $input.val() === '') {
-                        if (typeof attrName !== typeof undefined && attrName !== false) {
+                        if (typeof attrName !== 'undefined' && attrName !== false) {
                             $input.closest('.form-group').removeClass('has-error').addClass('has-error')
                             valid = false
                         }
