@@ -224,17 +224,17 @@
                                 {'source' : constant('\\Unilend\\Bundle\\FrontBundle\\Service\\SourceManager::HP_SOURCE_PARAMETER')}) }}" class="btn-primary btn-shape-md">{% trans %} site-general_unilend-advantages-welcome-offer-title {% endtrans %}</a>
                                 {% if showWelcomeOffer == true %}
                                     <div class="stamp" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
-                                        {% trans with {'%amount%' : welcomeOfferAmount} %} site-general_unilend-advantages-welcome-offer-description {% endtrans %}
+                                        {% trans with {'%amount%' : welcomeOfferAmount|localizednumber } %} site-general_unilend-advantages-welcome-offer-description {% endtrans %}
                                     </div><!-- /.stamp -->
                                 {% endif %}
                             </div><!-- /.card -->
                         </div>
                         <div class="col-lg-5 col-md-5">
                             <div class="card card-emprunter">
-                                <h4>{% trans %} site-general_unilend-advatanges-borrow-title {% endtrans %}</h4>
+                                <h4>{% trans %} site-general_unilend-advantages-borrow-title {% endtrans %}</h4>
                                 <div class="card-text">
                                     <ul class="list-checked">
-                                        {% trans %} site-general_unilend-advatanges-borrow-description {% endtrans %}
+                                        {% trans %} site-general_unilend-advantages-borrow-description {% endtrans %}
                                     </ul>
                                 </div><!-- /.card-text -->
                                 <a href="{{ path('home_borrower') }}#homeemp-section-esim" class="btn-alternate btn-shape-md">{% trans %} site-general_unilend-advantages-borrower-test-button {% endtrans %}</a>
