@@ -243,27 +243,19 @@ class ProjectManager
 
         if ($oProjectPeriods->getPeriod($oProject->period)) {
             $rateRange = $this->bidManager->getProjectRateRange($oProject);
-            $iOffset = 0;
-            $iLimit  = 100;
+            $iOffset   = 0;
+            $iLimit    = 100;
             while ($aAutoBidList = $oAutoBid->getSettings(null, $oProject->risk, $oProjectPeriods->id_period, array(\autobid::STATUS_ACTIVE), ['id_autobid' => 'ASC'], $iLimit, $iOffset)) {
                 $iOffset += $iLimit;
-                $this->entityManager->getConnection()->beginTransaction();
-                try {
-                    foreach ($aAutoBidList as $aAutoBidSetting) {
-                        $autobid = $autobidRepo->find($aAutoBidSetting['id_autobid']);
-                        if ($autobid) {
-                            try {
-                                $this->bidManager->bidByAutoBidSettings($autobid, $project, $rateRange['rate_max'], false);
-                            } catch (\Exception $exception) {
-                                continue;
-                            }
+                foreach ($aAutoBidList as $aAutoBidSetting) {
+                    $autobid = $autobidRepo->find($aAutoBidSetting['id_autobid']);
+                    if ($autobid) {
+                        try {
+                            $this->bidManager->bidByAutoBidSettings($autobid, $project, $rateRange['rate_max'], false);
+                        } catch (\Exception $exception) {
+                            continue;
                         }
                     }
-                    $this->entityManager->flush();
-                    $this->entityManager->getConnection()->commit();
-                } catch (\Exception $e) {
-                    $this->entityManager->getConnection()->rollBack();
-                    throw $e;
                 }
             }
 
@@ -278,26 +270,19 @@ class ProjectManager
         /** @var \settings $oSettings */
         $oSettings = $this->entityManagerSimulator->getRepository('settings');
         /** @var \bids $legacyBid */
-        $legacyBid = $this->entityManagerSimulator->getRepository('bids');
-        $bidRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
+        $legacyBid     = $this->entityManagerSimulator->getRepository('bids');
+        $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
 
         $oSettings->get('Auto-bid step', 'type');
-        $fStep       = (float)$oSettings->value;
+        $fStep       = (float) $oSettings->value;
         $currentRate = bcsub($legacyBid->getProjectMaxRate($oProject), $fStep, 1);
 
         while ($aAutoBidList = $legacyBid->getAutoBids($oProject->id_project, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY)) {
-            $this->entityManager->getConnection()->beginTransaction();
-            try {
-                foreach ($aAutoBidList as $aAutobid) {
-                    $bid = $bidRepository->find($aAutobid['id_bid']);
-                    if ($bid) {
-                        $this->bidManager->reBidAutoBidOrReject($bid, $currentRate, $iMode, $bSendNotification);
-                    }
+            foreach ($aAutoBidList as $aAutobid) {
+                $bid = $bidRepository->find($aAutobid['id_bid']);
+                if ($bid) {
+                    $this->bidManager->reBidAutoBidOrReject($bid, $currentRate, $iMode, $bSendNotification);
                 }
-                $this->entityManager->getConnection()->commit();
-            } catch (\Exception $e) {
-                $this->entityManager->getConnection()->rollBack();
-                throw $e;
             }
         }
     }

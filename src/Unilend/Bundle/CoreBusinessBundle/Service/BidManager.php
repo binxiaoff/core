@@ -266,12 +266,15 @@ class BidManager
      * @param Projects $project
      * @param float    $rate
      * @param bool     $sendNotification
+     *
      * @return Bids|false
      */
     public function bidByAutoBidSettings(Autobid $autoBid, Projects $project, $rate, $sendNotification = true)
     {
+        $biddenAutobid = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findOneBy(['idProject' => $project, 'idAutobid' => $autoBid]);
         if (
-            bccomp($autoBid->getRateMin(), $rate, 1) <= 0
+            null === $biddenAutobid
+            && bccomp($autoBid->getRateMin(), $rate, 1) <= 0
             && WalletType::LENDER === $autoBid->getIdLender()->getIdType()->getLabel()
             && bccomp($autoBid->getIdLender()->getAvailableBalance(), $autoBid->getAmount()) >= 0
             && $this->oAutoBidSettingsManager->isOn($autoBid->getIdLender()->getIdClient())
