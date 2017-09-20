@@ -351,7 +351,7 @@ class pdfController extends bootstrap
                     $this->ReadPdf($return['path'], $return['name']);
                     exit;
                 case 'sign':
-                    $regenerationUniversign = $return['regenerate'] ? '' : 'NoUpdateUniversign';
+                    $regenerationUniversign = $return['regenerate'] ? '' : '/NoUpdateUniversign';
                     header('Location: ' . $this->url . '/universign/pouvoir/' . $return['proxy']->id_pouvoir . $regenerationUniversign);
                     exit;
             }

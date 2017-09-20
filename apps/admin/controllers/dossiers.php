@@ -17,6 +17,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
 use \Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 
 class dossiersController extends bootstrap
 {
