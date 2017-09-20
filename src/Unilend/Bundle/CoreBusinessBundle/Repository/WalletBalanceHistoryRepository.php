@@ -196,9 +196,8 @@ class WalletBalanceHistoryRepository extends EntityRepository
                 -ROUND((f.montantHt/100), 2) AS netCommission,
                 -ROUND((f.tva/100), 2) AS vat,
                 e.ordre,
-                IDENTITY(r.rejectionIsoCode),
-                srr.label as rejectionReasonLabel,
-                wbh.availableBalance'
+                IDENTITY(r.rejectionIsoCode) AS rejectionIsoCode,
+                srr.label as rejectionReasonLabel'
         )
             ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.id = wbh.idOperation')
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
