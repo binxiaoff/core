@@ -174,10 +174,7 @@ class OperationManager
         $amount        = round(bcdiv($amountInCent, 100, 4), 2);
         $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_PROVISION]);
 
-        $operation = null;
-        if ($origin instanceof Backpayline) { // Do it only for payline, because the reception can have an operation and then it can be cancelled.
-            $operation = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy([$originField => $origin, 'idType' => $operationType]);
-        }
+        $operation = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy([$originField => $origin, 'idType' => $operationType]);
 
         if (null === $operation) {
             $this->newOperation($amount, $operationType, null, null, $wallet, $origin);
@@ -366,9 +363,15 @@ class OperationManager
 
         $amount        = round(bcdiv($reception->getMontant(), 100, 4), 2);
         $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_PROVISION]);
-        $this->newOperation($amount, $operationType, null, null, $wallet, $reception);
 
-        return true;
+        $operation = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWireTransferIn' => $reception, 'idType' => $operationType]);
+
+        if (null === $operation) {
+            $this->newOperation($amount, $operationType, null, null, $wallet, $reception);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
