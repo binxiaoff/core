@@ -257,14 +257,16 @@ class ProjectStatusManager
      */
     public function sendProblemStatusEmailToBorrower(Projects $project)
     {
-        $mailType      = 'emprunteur-projet-statut-probleme';
+        $mailType                             = 'emprunteur-projet-statut-probleme';
+        $replacements['delai_regularisation'] = 5;
+
         $nextRepayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')
             ->getNextPaymentSchedule($project);
-        /** @todo préciser combien de jours doit-on mettre comme délai de régularisation */
-        if (null === $nextRepayment) {
-            throw new \Exception('There is no upcoming payment schedule on project ' . $project->getIdProject());
+
+        if (null !== $nextRepayment) {
+            $replacements['delai_regularisation'] = (new \DateTime())->diff($nextRepayment->getDateEcheanceEmprunteur())->days;
         }
-        $replacements['delai_regularisation'] = (new \DateTime())->diff($nextRepayment->getDateEcheanceEmprunteur())->days;
+
         if ($replacements['delai_regularisation'] >= 2) {
             $replacements['delai_regularisation'] .= ' jours';
         } else {
