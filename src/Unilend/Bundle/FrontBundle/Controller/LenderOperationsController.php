@@ -40,7 +40,7 @@ class LenderOperationsController extends Controller
         'repaid'         => [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE],
         'late-repayment' => [ProjectsStatus::PROBLEME],
         'incidents'      => [ProjectsStatus::PROBLEME],
-        'loss'           => [ProjectsStatus::PERTE]
+        'loss'           => [ProjectsStatus::LOSS]
     ];
 
     const LOAN_STATUS_AGGREGATE = [
@@ -350,9 +350,8 @@ class LenderOperationsController extends Controller
         $filters            = $request->request->get('filter', []);
         $year               = isset($filters['date']) && false !== filter_var($filters['date'], FILTER_VALIDATE_INT) ? $filters['date'] : null;
         $statusFilter       = isset($filters['status']) ? $filters['status'] : null;
-        $status             = in_array($statusFilter, array_keys(self::LOAN_STATUS_FILTER)) ? [self::LOAN_STATUS_FILTER[$statusFilter]] : null;
         $loanStatus         = array_fill_keys(array_keys(self::LOAN_STATUS_FILTER), 0);
-        $lenderLoans        = $loan->getSumLoansByProject($wallet->getId(), 'debut ASC, p.title ASC', $year, $status);
+        $lenderLoans        = $loan->getSumLoansByProject($wallet->getId(), 'debut ASC, p.title ASC', $year);
         $lenderProjectLoans = [];
 
         foreach ($lenderLoans as $projectLoans) {

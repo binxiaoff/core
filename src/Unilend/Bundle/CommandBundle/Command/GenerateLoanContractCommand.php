@@ -54,7 +54,7 @@ EOF
             ProjectsStatus::REMBOURSE,
             ProjectsStatus::REMBOURSEMENT_ANTICIPE,
             ProjectsStatus::PROBLEME,
-            ProjectsStatus::PERTE
+            ProjectsStatus::LOSS
         ];
 
         $projects = $project->selectProjectsByStatus($status, '', [], '', '', false);

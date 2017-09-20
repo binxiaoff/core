@@ -390,7 +390,7 @@ class EcheanciersRepository extends EntityRepository
                     AND e.date_echeance >= NOW()
                     AND IF(
                         (cs.label IN (:companyStatus)
-                        OR p.status = ' . ProjectsStatus::PERTE . '
+                        OR p.status = ' . ProjectsStatus::LOSS . '
                         OR (p.status = ' . ProjectsStatus::PROBLEME . '
                         AND DATEDIFF(NOW(), (
                         SELECT psh2.added
@@ -574,25 +574,5 @@ class EcheanciersRepository extends EntityRepository
             ->orderBy('e.ordre', 'ASC')
             ->setMaxResults(1);
         return $queryBuilder->getQuery()->getOneOrNullResult();
-    }
-
-    /**
-     * @param array $loans
-     * @param int   $projectId
-     * @param int   $status
-     *
-     * @return Echeanciers[]
-     */
-    public function findRepaymentsByLoansAndProject(array $loans, $projectId, $status)
-    {
-        $queryBuilder = $this->createQueryBuilder('e')
-            ->where('e.idProject = :projectId')
-            ->setParameter('projectId', $projectId)
-            ->andWhere('e.status = :status')
-            ->setParameter('status', $status)
-            ->andWhere('e.idLoan IN (:loans)')
-            ->setParameter('loans', $loans);
-
-        return $queryBuilder->getQuery()->getResult();
     }
 }

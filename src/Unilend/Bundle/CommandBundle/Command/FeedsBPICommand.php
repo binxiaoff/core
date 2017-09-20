@@ -53,7 +53,7 @@ class FeedsBPICommand extends ContainerAwareCommand
             ProjectsStatus::REMBOURSE,
             ProjectsStatus::REMBOURSEMENT_ANTICIPE,
             ProjectsStatus::PROBLEME,
-            ProjectsStatus::PERTE
+            ProjectsStatus::LOSS
         ];
 
         $partner    = strtolower($input->getArgument('partner'));
@@ -204,7 +204,7 @@ class FeedsBPICommand extends ContainerAwareCommand
             case ProjectsStatus::REMBOURSE:
             case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
             case ProjectsStatus::FUNDE:
-            case ProjectsStatus::PERTE:
+            case ProjectsStatus::LOSS:
                 return 'OUI';
             case ProjectsStatus::FUNDING_KO:
                 return 'NON';

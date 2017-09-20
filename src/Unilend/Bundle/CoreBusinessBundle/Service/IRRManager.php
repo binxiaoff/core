@@ -30,7 +30,7 @@ class IRRManager
     const PROJECT_STATUS_TRIGGERING_CHANGE = [
         ProjectsStatus::REMBOURSEMENT,
         ProjectsStatus::PROBLEME,
-        ProjectsStatus::PERTE
+        ProjectsStatus::LOSS
     ];
     const COMPANY_STATUS_TRIGGERING_CHANGE = [
         CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,

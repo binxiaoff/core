@@ -203,8 +203,8 @@ class ProjectsRepository extends EntityRepository
             'projectStatus' => $projectStatus
         ];
         $bindTypes = [
-            'startPeriod'   => \PDO::PARAM_STR,
-            'projectStatus' => \PDO::PARAM_INT
+            'startPeriod'   => PDO::PARAM_STR,
+            'projectStatus' => PDO::PARAM_INT
         ];
         $query = '
             SELECT COUNT(*) AS count,
@@ -230,7 +230,7 @@ class ProjectsRepository extends EntityRepository
         if (null !== $client) {
             $query               .= ' AND id_client_submitter = :client';
             $binds['client']     = $client;
-            $bindTypes['client'] = \PDO::PARAM_INT;
+            $bindTypes['client'] = PDO::PARAM_INT;
         }
 
         $query .= ' GROUP BY month';
@@ -334,7 +334,7 @@ class ProjectsRepository extends EntityRepository
             'status' => $projectStatus,
             'start'  => $start->format('Y-m-d H:i:s'),
             'end'    => $end->format('Y-m-d H:i:s')
-        ])->fetchAll(\PDO::FETCH_ASSOC);
+        ])->fetchAll(PDO::FETCH_ASSOC);
 
         return $result[0];
     }
@@ -370,8 +370,8 @@ class ProjectsRepository extends EntityRepository
             'end'    => $end->format('Y-m-d H:i:s')
         ], [
             'status' => Connection::PARAM_INT_ARRAY,
-            'start'  => \PDO::PARAM_STR,
-            'end'    => \PDO::PARAM_STR
+            'start'  => PDO::PARAM_STR,
+            'end'    => PDO::PARAM_STR
         ])->fetchAll();
 
         return $result;
@@ -395,21 +395,19 @@ class ProjectsRepository extends EntityRepository
                       INNER JOIN companies c ON c.id_company = p.id_company
                       INNER JOIN company_status cs ON cs.id = c.id_status
                       WHERE p.id_project IN
-                            (SELECT DISTINCT dcm.id_project FROM debt_collection_mission dcm WHERE dcm.status = :ongoing AND dcm.added BETWEEN :start AND :end)
+                            (SELECT DISTINCT dcm.id_project FROM debt_collection_mission dcm WHERE dcm.added BETWEEN :start AND :end)
                       AND cs.label = :inBonis';
 
         $result = $this->getEntityManager()->getConnection()
             ->executeQuery($query,
                 [
                     'inBonis' => CompanyStatus::STATUS_IN_BONIS,
-                    'ongoing' => DebtCollectionMission::STATUS_ONGOING,
                     'start'   => $start->format('Y-m-d H:i:s'),
                     'end'     => $end->format('Y-m-d H:i:s')
                 ], [
-                    'inBonis' => \PDO::PARAM_STR,
-                    'ongoing' => \PDO::PARAM_INT,
-                    'start'   => \PDO::PARAM_STR,
-                    'end'     => \PDO::PARAM_STR
+                    'inBonis' => PDO::PARAM_STR,
+                    'start'   => PDO::PARAM_STR,
+                    'end'     => PDO::PARAM_STR
                 ])->fetchAll();
 
         return $result;
@@ -434,21 +432,21 @@ class ProjectsRepository extends EntityRepository
                       INNER JOIN company_status cs ON csh.id_status = cs.id
                       INNER JOIN projects p ON p.id_company = csh.id_company
                     WHERE
-                      p.status >= :statusRepayment
+                      p.status IN (:projectStatus)
                       AND cs.label IN (:collectiveProceeding)
                       AND csh.added BETWEEN :start AND :end';
 
         $result = $this->getEntityManager()->getConnection()
             ->executeQuery($query, [
                 'collectiveProceeding' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION],
-                'statusRepayment'      => ProjectsStatus::REMBOURSEMENT,
+                'projectStatus'        => [ProjectsStatus::PROBLEME, ProjectsStatus::LOSS],
                 'start'                => $start->format('Y-m-d H:i:s'),
                 'end'                  => $end->format('Y-m-d H:i:s')
             ], [
                 'collectiveProceeding' => Connection::PARAM_STR_ARRAY,
-                'statusRepayment'      => \PDO::PARAM_INT,
-                'start'                => \PDO::PARAM_STR,
-                'end'                  => \PDO::PARAM_STR
+                'projectStatus'        => Connection::PARAM_INT_ARRAY,
+                'start'                => PDO::PARAM_STR,
+                'end'                  => PDO::PARAM_STR
             ])->fetchAll();
 
         return $result;
@@ -471,9 +469,20 @@ class ProjectsRepository extends EntityRepository
                                   GROUP BY id_project) t ON t.max_id_project_status_history = psh.id_project_status_history
                       INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                     WHERE psh.added <= :end AND ps.status >= ' . ProjectsStatus::REMBOURSEMENT . '
-                    AND ps.status NOT IN (' . implode(',', [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::PERTE]) . ')';
+                    AND ps.status NOT IN (:projectStatus)';
 
-        $result = $this->getEntityManager()->getConnection()->executeQuery($query, ['end' => $end->format('Y-m-d H:i:s')])->fetchAll();
+        $result = $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery(
+                $query,
+                [
+                    'end'           => $end->format('Y-m-d H:i:s'),
+                    'projectStatus' => [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::LOSS]
+                ], [
+                    'end'           => PDO::PARAM_STR,
+                    'projectStatus' => Connection::PARAM_INT_ARRAY
+                ]
+            )->fetchAll();
 
         return $result;
     }
@@ -512,7 +521,7 @@ class ProjectsRepository extends EntityRepository
     }
 
     /**
-     * @param int $companyId
+     * @param int|Companies $companyId
      *
      * @return Projects[]
      */
@@ -522,7 +531,7 @@ class ProjectsRepository extends EntityRepository
             ->where('p.idCompany = :companyId')
             ->setParameter('companyId', $companyId)
             ->andWhere('p.status IN (:projectStatus)')
-            ->setParameter('projectStatus', [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME, ProjectsStatus::PERTE]);
+            ->setParameter('projectStatus', [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME, ProjectsStatus::LOSS]);
 
         return $queryBuilder->getQuery()->getResult();
     }

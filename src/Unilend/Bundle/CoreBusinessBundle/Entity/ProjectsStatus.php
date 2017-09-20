@@ -40,7 +40,7 @@ class ProjectsStatus
     const REMBOURSEMENT_ANTICIPE     = 95;
     const PROBLEME                   = 100;
     const RECOUVREMENT               = 120;
-    const PERTE                      = 160;
+    const LOSS                       = 160;
 
     const NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND                     = 'product_not_found';
     const NON_ELIGIBLE_REASON_PRODUCT_BLEND                         = 'product_blend';
@@ -76,7 +76,7 @@ class ProjectsStatus
         ProjectsStatus::REMBOURSE,
         ProjectsStatus::REMBOURSEMENT_ANTICIPE,
         ProjectsStatus::PROBLEME,
-        ProjectsStatus::PERTE
+        ProjectsStatus::LOSS
     ];
 
     /**

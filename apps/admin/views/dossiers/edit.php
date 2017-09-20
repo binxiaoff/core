@@ -290,7 +290,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 
             if (
                 status == <?= ProjectsStatus::PROBLEME ?>
-                || status == <?= \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::PERTE ?>
+                || status == <?= \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::LOSS ?>
             ) {
                 $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_update/<?= $this->projects->id_project ?>/" + status});
             }

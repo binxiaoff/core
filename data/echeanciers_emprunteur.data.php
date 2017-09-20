@@ -222,8 +222,8 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                               AND echeanciers_emprunteur.id_project = e2.id_project
                             LIMIT 1 ) = 0
                         AND IF(
-                                (cs.label IN (\'' . implode('\',\'', [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]) . '\')
-                                OR projects.status = ' . ProjectsStatus::PERTE . '
+                                (cs.label IN (:companyStatus)
+                                OR projects.status = ' . ProjectsStatus::LOSS . '
                                 OR (projects.status = '. ProjectsStatus::PROBLEME . '
                                     AND DATEDIFF(NOW(), (
                                                           SELECT psh2.added
@@ -236,7 +236,11 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                                                           )) > 180)), TRUE, FALSE) = FALSE
                         GROUP BY cohort';
 
-        $statement = $this->bdd->executeQuery($query);
+        $statement = $this->bdd->executeQuery(
+            $query,
+            ['companyStatus' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]],
+            ['companyStatus' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_STR_ARRAY]
+        );
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -279,8 +283,8 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                        LIMIT 1
                       ) >= NOW()
                     AND IF(
-                            (cs.label IN (\'' . implode('\',\'', [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]) . '\')
-                            OR projects.status = ' . ProjectsStatus::PERTE . '
+                            (cs.label IN (:companyStatus)
+                            OR projects.status = ' . ProjectsStatus::LOSS . '
                             OR (projects.status = '. ProjectsStatus::PROBLEME . '
                                 AND DATEDIFF(NOW(), (
                                                       SELECT psh2.added
@@ -293,7 +297,11 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                                                       )) > 180)), TRUE, FALSE) = FALSE
                         GROUP BY cohort';
 
-        $statement = $this->bdd->executeQuery($query);
+        $statement = $this->bdd->executeQuery(
+            $query,
+            ['companyStatus' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]],
+            ['companyStatus' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_STR_ARRAY]
+        );
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -333,8 +341,8 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                           AND echeanciers_emprunteur.id_project = lender_payment_date.id_project
                         LIMIT 1) >= NOW()
                     AND IF(
-                            cs.label IN (\'' . implode('\',\'', [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]) . '\')
-                            OR projects.status = ' . ProjectsStatus::PERTE . '
+                            cs.label IN (:companyStatus)
+                            OR projects.status = ' . ProjectsStatus::LOSS . '
                             OR (projects.status = ' . ProjectsStatus::PROBLEME . '
                                 AND DATEDIFF(NOW(),(
                                         SELECT psh2.added
@@ -346,7 +354,11 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                                         LIMIT 1)) > 180), TRUE, FALSE) = TRUE
                     GROUP BY cohort';
 
-        $statement = $this->bdd->executeQuery($query);
+        $statement = $this->bdd->executeQuery(
+            $query,
+            ['companyStatus' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]],
+            ['companyStatus' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_STR_ARRAY]
+        );
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -387,8 +399,8 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                         LIMIT 1) < NOW()
                     AND
                         IF(
-                           (cs.label IN (\'' . implode('\',\'', [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]) . '\')
-                                OR projects.status = ' . ProjectsStatus::PERTE . '
+                           (cs.label IN (:companyStatus)
+                                OR projects.status = ' . ProjectsStatus::LOSS . '
                                 OR (projects.status = ' . ProjectsStatus::PROBLEME . '
                                     AND DATEDIFF(NOW(),(
                                                         SELECT psh2.added
@@ -400,7 +412,11 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                                                         LIMIT 1)) > 180)), TRUE, FALSE) = TRUE
                     GROUP BY cohort';
 
-        $statement = $this->bdd->executeQuery($query);
+        $statement = $this->bdd->executeQuery(
+            $query,
+            ['companyStatus' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]],
+            ['companyStatus' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_STR_ARRAY]
+        );
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -440,8 +456,8 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                           AND echeanciers_emprunteur.id_project = lender_payment_date.id_project
                         LIMIT 1) < NOW()
                       AND IF(
-                            cs.label IN (\'' . implode('\',\'', [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]) . '\')
-                            OR projects.status = ' . ProjectsStatus::PERTE . '
+                            cs.label IN (:companyStatus)
+                            OR projects.status = ' . ProjectsStatus::LOSS . '
                             OR (projects.status = ' . ProjectsStatus::PROBLEME . '
                                 AND DATEDIFF(NOW(), (
                                                     SELECT psh2.added
@@ -453,7 +469,11 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                                                     LIMIT 1)) > 180), TRUE, FALSE) = FALSE
                     GROUP BY cohort';
 
-        $statement = $this->bdd->executeQuery($query);
+        $statement = $this->bdd->executeQuery(
+            $query,
+            ['companyStatus' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]],
+            ['companyStatus' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_STR_ARRAY]
+        );
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 }

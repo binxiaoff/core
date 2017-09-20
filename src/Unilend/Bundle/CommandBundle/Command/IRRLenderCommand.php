@@ -11,10 +11,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatusHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatisticQueue;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatusHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsStatusHistoryRepository;
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\IRRManager;
 use Unilend\librairies\CacheKeys;
@@ -151,7 +149,7 @@ EOF
         }
         foreach ($companyStatusHistory as $statusHistory) {
             /** @var Projects[] $companyProjects */
-            $companyProjects = $projectsRepository->findFundedButNotRepaidProjectsByCompany($statusHistory->getIdCompany()->getIdCompany());
+            $companyProjects = $projectsRepository->findFundedButNotRepaidProjectsByCompany($statusHistory->getIdCompany());
             foreach ($companyProjects as $project) {
                 $projects[$project->getIdProject()] = $project;
             }

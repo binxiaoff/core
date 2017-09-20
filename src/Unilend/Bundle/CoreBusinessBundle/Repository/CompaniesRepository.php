@@ -118,7 +118,7 @@ class CompaniesRepository extends EntityRepository
             ->andWhere('cs.label != :inBonis')
             ->setParameter('inBonis', CompanyStatus::STATUS_IN_BONIS)
             ->andWhere('ps.status IN (:projectStatus)')
-            ->setParameter('projectStatus', [ProjectsStatus::PROBLEME]);
+            ->setParameter('projectStatus', [ProjectsStatus::PROBLEME, ProjectsStatus::LOSS]);
 
         return $queryBuilder->getQuery()->getSingleScalarResult() > 0;
     }

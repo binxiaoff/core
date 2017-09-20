@@ -218,7 +218,7 @@ class projects extends projects_crud
             case self::SORT_FIELD_RATE:
                 $select .= ',
                     CASE
-                        WHEN p.status IN (' . implode(', ', [ProjectsStatus::FUNDE, ProjectsStatus::REMBOURSEMENT, ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::PROBLEME, ProjectsStatus::PERTE]) . ') THEN (SELECT SUM(amount * rate) / SUM(amount) AS avg_rate FROM loans WHERE id_project = p.id_project)
+                        WHEN p.status IN (' . implode(', ', [ProjectsStatus::FUNDE, ProjectsStatus::REMBOURSEMENT, ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::PROBLEME, ProjectsStatus::LOSS]) . ') THEN (SELECT SUM(amount * rate) / SUM(amount) AS avg_rate FROM loans WHERE id_project = p.id_project)
                         WHEN p.status IN (' . implode(', ', [ProjectsStatus::PRET_REFUSE, ProjectsStatus::EN_FUNDING, ProjectsStatus::AUTO_BID_PLACED, ProjectsStatus::A_FUNDER]) . ') THEN (SELECT SUM(amount * rate) / SUM(amount) AS avg_rate FROM bids WHERE id_project = p.id_project AND status IN (0, 1))
                         WHEN p.status IN (' . implode(', ', [ProjectsStatus::FUNDING_KO]) . ') THEN (SELECT SUM(amount * rate) / SUM(amount) AS avg_rate FROM bids WHERE id_project = p.id_project)
                     END AS avg_rate';
@@ -535,7 +535,7 @@ class projects extends projects_crud
             case ProjectsStatus::REMBOURSE:
             case ProjectsStatus::PROBLEME:
             case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
-            case ProjectsStatus::PERTE:
+            case ProjectsStatus::LOSS:
                 $queryBuilder
                     ->from('loans');
                 break;

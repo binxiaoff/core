@@ -529,7 +529,7 @@ class LenderOperationsManager
                         break;
                 }
                 break;
-            case ProjectsStatus::PERTE:
+            case ProjectsStatus::LOSS:
                 $statusToDisplay = self::LOAN_STATUS_DISPLAY_LOSS;
                 break;
             case ProjectsStatus::REMBOURSE:

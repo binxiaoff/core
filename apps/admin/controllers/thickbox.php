@@ -106,14 +106,14 @@ class thickboxController extends bootstrap
     public function _company_status_update()
     {
         $this->clientId        = filter_var($this->params[0], FILTER_VALIDATE_INT);
-        $this->companyId       = filter_var($this->params[1], FILTER_VALIDATE_INT);
+        $companyId             = filter_var($this->params[1], FILTER_VALIDATE_INT);
         $this->companyStatusId = filter_var($this->params[2], FILTER_VALIDATE_INT);
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus $companyStatusEntity */
         $companyStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')->find($this->companyStatusId);
-        $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companyId);
+        $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($companyId);
 
         if (null === $companyStatus || null === $company || $company->getIdClientOwner() != $this->clientId) {
             return;
@@ -124,7 +124,7 @@ class thickboxController extends bootstrap
 
         if (in_array($companyStatus->getLabel(), array(CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION))) {
             $companyStatusHistory   = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')
-                ->findOneBy(['idCompany' => $this->companyId], ['added' => 'DESC']);
+                ->findOneBy(['idCompany' => $companyId], ['added' => 'DESC']);
             $this->previousReceiver = '';
             if (null !== $companyStatusHistory) {
                 $this->previousReceiver = $companyStatusHistory->getReceiver();

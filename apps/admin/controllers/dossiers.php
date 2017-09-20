@@ -871,7 +871,7 @@ class dossiersController extends bootstrap
             }
         }
 
-        if (false === empty($_POST['send_email']) || ProjectsStatus::PERTE == $_POST['problematic_status']) {
+        if (false === empty($_POST['send_email']) || ProjectsStatus::LOSS == $_POST['problematic_status']) {
             try {
                 $projectStatusManager->sendProblemStatusNotificationsToLenders($project);
             } catch (\Exception $exception) {
@@ -1399,7 +1399,6 @@ class dossiersController extends bootstrap
             $entityManager->flush($companyEntity);
 
             $this->get('unilend.service.wallet_creation_manager')->createWallet($clientEntity, WalletType::BORROWER);
-            $entityManager->getConnection()->commit();
 
             $companyStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus');
             $userRepository          = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
@@ -1407,10 +1406,12 @@ class dossiersController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
             $companyManager = $this->get('unilend.service.company_manager');
             $companyManager->addCompanyStatus(
-            $companyEntity,
-            $companyStatusRepository->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus::STATUS_IN_BONIS]),
-            $userRepository->find($_SESSION['user']['id_user'])
+                $companyEntity,
+                $companyStatusRepository->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus::STATUS_IN_BONIS]),
+                $userRepository->find($_SESSION['user']['id_user'])
             );
+
+            $entityManager->getConnection()->commit();
         } catch (Exception $exception) {
             $entityManager->getConnection()->rollBack();
             $this->get('logger')->error('An error occurred while creating client: ' . $exception->getMessage(), [['class' => __CLASS__, 'function' => __FUNCTION__]]);
@@ -1461,7 +1462,7 @@ class dossiersController extends bootstrap
     {
         $this->setView('remboursements');
         $this->pageTitle = 'Incidents de remboursement';
-        $this->listing([ProjectsStatus::PROBLEME, ProjectsStatus::PERTE]);
+        $this->listing([ProjectsStatus::PROBLEME, ProjectsStatus::LOSS]);
     }
 
     private function listing(array $aStatus)

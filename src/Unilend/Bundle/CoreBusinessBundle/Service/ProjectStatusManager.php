@@ -100,7 +100,7 @@ class ProjectStatusManager
                 break;
             case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
             case ProjectsStatus::REMBOURSE:
-            case ProjectsStatus::PERTE:
+            case ProjectsStatus::LOSS:
                 return [];
             default:
                 if ($project->status < ProjectsStatus::REMBOURSEMENT) {
@@ -259,7 +259,8 @@ class ProjectStatusManager
     {
         $mailType      = 'emprunteur-projet-statut-probleme';
         $nextRepayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')
-            ->getNextPaymentSchedule($project->getIdProject());
+            ->getNextPaymentSchedule($project);
+        /** @todo préciser combien de jours doit-on mettre comme délai de régularisation */
         if (null === $nextRepayment) {
             throw new \Exception('There is no upcoming payment schedule on project ' . $project->getIdProject());
         }
@@ -392,7 +393,7 @@ class ProjectStatusManager
             case ProjectsStatus::PROBLEME:
                 $this->sendLenderNotifications($project, Notifications::TYPE_PROJECT_PROBLEM, 'preteur-projet-statut-probleme', 'preteur-projet-statut-probleme', $replacements);
                 break;
-            case ProjectsStatus::PERTE:
+            case ProjectsStatus::LOSS:
                 $this->sendProjectLossNotificationToLenders($project, $replacements);
         }
     }
@@ -546,8 +547,14 @@ class ProjectStatusManager
                 $netRepayment = 0.0;
                 $loansCount   = $aLoans['cnt'];
                 $loansAmount  = round(bcdiv($aLoans['amount'], 100, 4), 2);
+                $repaidLoans  = $lenderRepaymentRepository->findBy(
+                    [
+                        'idLoan' => explode(',', $aLoans['loans']),
+                        'status' => Echeanciers::STATUS_REPAID
+                    ]
+                );
 
-                foreach ($lenderRepaymentRepository->findRepaymentsByLoansAndProject(explode(',', $aLoans['loans']), $project->getIdProject(), Echeanciers::STATUS_REPAID) as $aPayment) {
+                foreach ($repaidLoans as $aPayment) {
                     $netRepayment += $operationRepository->getNetAmountByRepaymentScheduleId($aPayment->getIdEcheancier());
                 }
 

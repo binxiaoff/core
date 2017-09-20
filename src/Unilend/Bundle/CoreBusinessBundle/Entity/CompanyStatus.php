@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * CompanyStatus
  *
  * @ORM\Table(name="company_status", uniqueConstraints={@ORM\UniqueConstraint(name="label_UNIQUE", columns={"label"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\CompanyStatusRepository")
+ * @ORM\Entity
  */
 class CompanyStatus
 {

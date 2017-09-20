@@ -54,7 +54,7 @@ class CompanyManager
                 $possibleStatus = [CompanyStatus::STATUS_IN_BONIS, CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION];
         }
 
-        return $companyStatus->findCompanyStatusByLabel($possibleStatus);
+        return $companyStatus->findBy(['label' => $possibleStatus]);
     }
 
     /**
@@ -99,7 +99,7 @@ class CompanyManager
             && in_array($companyStatus->getLabel(), [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION])
         ) {
             $this->riskDataMonitoringManger->stopMonitoringForSiren($company->getSiren());
-            $companyProjects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findFundedButNotRepaidProjectsByCompany($company->getIdCompany());
+            $companyProjects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findFundedButNotRepaidProjectsByCompany($company);
 
             foreach ($companyProjects as $project) {
                 if (ProjectsStatus::PROBLEME !== $project->getStatus()) {

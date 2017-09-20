@@ -81,7 +81,7 @@ class rootController extends bootstrap
         $this->projects_status = $this->loadData('projects_status');
         $this->projects        = $this->loadData('projects');
 
-        $this->lProjectsNok = $this->projects->selectProjectsByStatus([\Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::PROBLEME, \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::PERTE]);
+        $this->lProjectsNok = $this->projects->selectProjectsByStatus([\Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::PROBLEME, \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::LOSS]);
         $this->lStatus      = $this->projects_status->select('', 'status ASC');
     }
 

@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 
 class EcheanciersEmprunteurRepository extends EntityRepository
@@ -71,7 +72,7 @@ class EcheanciersEmprunteurRepository extends EntityRepository
     }
 
     /**
-     * @param int $projectId
+     * @param int|Projects $projectId
      *
      * @return null|EcheanciersEmprunteur
      */
@@ -82,7 +83,8 @@ class EcheanciersEmprunteurRepository extends EntityRepository
             ->setParameter('projectId', $projectId)
             ->andWhere('DATE(ee.dateEcheanceEmprunteur) > :now')
             ->setParameter('now', (new \DateTime())->format('Y-m-d'))
-            ->orderBy('ee.dateEcheanceEmprunteur', 'ASC');
+            ->orderBy('ee.dateEcheanceEmprunteur', 'ASC')
+            ->setMaxResults(1);
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
     }

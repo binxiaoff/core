@@ -49,8 +49,8 @@ class ProjectDisplayManager
         ProjectsStatus::REMBOURSEMENT,
         ProjectsStatus::REMBOURSE,
         ProjectsStatus::PROBLEME,
-        ProjectsStatus::PERTE,
-        ProjectsStatus::REMBOURSEMENT_ANTICIPE,
+        ProjectsStatus::LOSS,
+        ProjectsStatus::REMBOURSEMENT_ANTICIPE
     ];
 
     /**

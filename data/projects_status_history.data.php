@@ -54,7 +54,7 @@ class projects_status_history extends projects_status_history_crud
                 psh.added AS added,
                 IFNULL(pshd.mail_content, "") AS mail_content,
                 IFNULL(pshd.site_content, "") AS site_content,
-                IF (ps.status = ' . ProjectsStatus::PERTE . ', 1, 0) AS failure
+                IF (ps.status = ' . ProjectsStatus::LOSS . ', 1, 0) AS failure
             FROM projects_status_history psh
             LEFT JOIN projects_status_history_details pshd ON psh.id_project_status_history = pshd.id_project_status_history
             INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status

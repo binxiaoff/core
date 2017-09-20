@@ -39,7 +39,7 @@ class projects_status extends projects_status_crud
         ProjectsStatus::REMBOURSE,
         ProjectsStatus::REMBOURSEMENT_ANTICIPE,
         ProjectsStatus::PROBLEME,
-        ProjectsStatus::PERTE
+        ProjectsStatus::LOSS
     ];
 
     public function __construct($bdd, $params = '')
