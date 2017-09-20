@@ -121,3 +121,8 @@
     border-top: 0;
     padding-top: 10px; padding-bottom: 10px;
 }
+
+.tree-js-add-item .form-control {
+    width: calc(100% - 62px);
+    float: left;
+}

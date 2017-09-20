@@ -3,29 +3,28 @@
 {% block pluginsCSS %}
     <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
     <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/summernote/summernote.min.css">
-    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.css">
     <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/nestable/nestable.css">
 {% endblock %}
 
 {% block pluginsJS %}
     <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
-    <script src="{{ adminUrl }}/oneui/js/plugins/datatables/dataTables.buttons.min.js"></script>
     <script src="{{ adminUrl }}/oneui/js/plugins/summernote/summernote.min.js"></script>
     <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
-    <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.js"></script>
+    <script src="{{ adminUrl }}/oneui/js/plugins/nestable/jquery.nestable.js"></script>
 {% endblock %}
 
 {% block pageScripts %}
     <script>
         $(function(){
-            App.initHelpers(['validation', 'datatables', 'summernote', 'treeview', 'datepicker'])
+            App.initHelpers(['validation', 'datatables', 'summernote', 'datepicker'])
             var $usersTable = $('#table-users')
             var $sendPasswordModal = $('#modal-send-password')
             $usersTable.DT({
                 before: function() {
                     $usersTable.find('tbody tr').each(function(){
                         var $tr = $(this)
-                        $tr.find('td:last-child .btn-group').prepend('<a class="btn btn-xs btn-default password-btn"><span class="fa fa-lock"></span></a>')
+                        $tr.find('td:last-child .btn-group').prepend('<a class="btn btn-xs btn-default password-btn" title="Mot de passe"><span class="fa fa-lock"></span></a>')
                     })
                 }
             })
@@ -33,6 +32,42 @@
                 var id = $(this).closest('tr').data('id')
                 $sendPasswordModal.find('input[name=id]').val(id)
                 $sendPasswordModal.modal('show')
+            })
+            $('.tree-js').each(function(){
+                var $tree = $(this)
+                var initialTree = $tree.html()
+                var $dd = $tree.find('.tree-js-dd')
+                $tree.before('<div class="tree-js-original hide">' + initialTree + '</div>')
+                $tree.attr('data-count', $tree.attr('data-original-count'))
+                $dd.nestable().nestable('collapseAll')
+            })
+            $(document).on('click', '.submit-btn', function(){
+                var $tree = $(this).closest('.tree-js')
+                var $formGroup = $tree.find('.tree-js-add-item')
+                var count = $tree.attr('data-count')
+                var handle = $formGroup.find('input').val()
+                if (handle === '' || handle.length < 2) {
+                    $formGroup.addClass('has-error')
+                    return false
+                } else {
+                    $formGroup.removeClass('has-error')
+                }
+                $tree.find('.tree-js-reset-btn').removeClass('hide')
+                $tree.find('.tree-js-outer').prepend('<li class="dd-item" data-id="' + count + '"><div class="dd-handle">' + handle + '</div></li>')
+                count++
+                $tree.attr('data-count', count)
+            })
+            $(document).on('click', '.tree-js-reset-btn', function(){
+                var $tree = $(this).closest('.tree-js')
+                $(this).addClass('hide')
+                $tree.html($tree.siblings('.tree-js-original').html())
+                $tree.attr('count', $tree.attr('data-original-count'))
+                $tree.find('.tree-js-dd').nestable().nestable('collapseAll')
+            })
+            $(document).on('change', '.tree-js-dd', function() {
+                console.log($(this).nestable('serialize'))
+                var $tree = $(this).closest('.tree-js')
+                $tree.find('.tree-js-reset-btn').removeClass('hide')
             })
         })
     </script>
@@ -73,77 +108,146 @@
 {% block content %}
     <div class="content">
         <div class="row">
-            <div class="col-md-2">
+            <div class="col-md-6">
                 <div class="block block-bordered">
                     <div class="block-header">
-                        <h3 class="block-title">Statut du partenaire</h3>
+                        <h3 class="block-title">Paramètres partenaire</h3>
                     </div>
                     <div class="block-content block-content-full">
-                        <label class="css-input switch switch-primary">
-                            <input type="checkbox" checked><span></span> Actif
-                        </label>
+                        <form action="/partnerEdit/settings/" method="post">
+                            {%  if formErrors is defined %}
+                                <div class="alert">
+                                    <p>Errors</p>
+                                </div>
+                            {% endif %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <p style="margin-bottom: 5px">Statut du partenaire</p>
+                                        <label class="css-input switch switch-primary">
+                                            <input type="checkbox" name="status" checked><span></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group push-">
+                                        <p style="margin-bottom: 5px">Prospections</p>
+                                        <label class="css-input switch switch-primary push">
+                                            <input type="checkbox" name="prospections" checked><span></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-left">
+                                <button class="btn btn-primary" type="submit">Mise à jour</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
-            <div class="col-md-2">
+            <div class="col-md-6">
                 <div class="block block-bordered">
                     <div class="block-header">
-                        <h3 class="block-title">Prospection des dossiers</h3>
+                        <h3 class="block-title">Organisation</h3>
                     </div>
                     <div class="block-content block-content-full">
-                        <label class="css-input switch switch-primary">
-                            <input type="checkbox" checked><span></span> Actif
-                        </label>
+                        <form action="/partnerEdit/organisation_structure/" method="post" class="tree-js" data-original-count="7">
+                            {%  if formErrors is defined %}
+                                <div class="alert">
+                                    <p>Errors</p>
+                                </div>
+                            {% endif %}
+                            <div class="row push">
+                                <div class="col-md-12">
+                                    <div class="form-group tree-js-add-item" style="margin-bottom: 10px;">
+                                        <input type="text" class="form-control input-sm" placeholder="Nom de l'entité">
+                                        <div class="btn-group">
+                                            <a class="btn btn-sm btn-primary submit-btn"><span class="fa fa-plus"></span></a>
+                                        </div>
+                                    </div>
+                                    <div class="dd tree-js-dd">
+                                        <ol class="dd-list tree-js-outer">
+                                            <li class="dd-item" data-id="1">
+                                                <div class="dd-handle">AXA Banque</div>
+                                                <ol class="dd-list">
+                                                    <li class="dd-item" data-id="2">
+                                                        <div class="dd-handle">AXA Banque Nord</div>
+                                                        <ol class="dd-list">
+                                                            <li class="dd-item" data-id="3">
+                                                                <div class="dd-handle">Paris</div>
+                                                            </li>
+                                                            <li class="dd-item" data-id="4">
+                                                                <div class="dd-handle">Nantes</div>
+                                                            </li>
+                                                        </ol>
+                                                    </li>
+                                                    <li class="dd-item" data-id="5">
+                                                        <div class="dd-handle">AXA Banque Sud</div>
+                                                        <ol class="dd-list">
+                                                            <li class="dd-item" data-id="6">
+                                                                <div class="dd-handle">Marseille</div>
+                                                            </li>
+                                                            <li class="dd-item" data-id="7">
+                                                                <div class="dd-handle">Lyon</div>
+                                                            </li>
+                                                        </ol>
+                                                    </li>
+                                                </ol>
+                                            </li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-left">
+                                <button class="btn btn-primary" type="submit">Mise à jour</button>
+                                <button class="btn btn-default tree-js-reset-btn hide" type="button"><span class="fa fa-close"></span> Réinitialiser</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
-            <div class="col-md-2">
-                <div class="block block-bordered">
-                    <div class="block-header">
-                        <h3 class="block-title">Produit 1</h3>
-                    </div>
-                    <div class="block-content block-content-full">
-                        <label class="css-input switch switch-primary">
-                            <input type="checkbox" checked><span></span> Débl. 9% / Remb. 12%
-                        </label>
-                    </div>
-                </div>
+        </div>
+        <div class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Produits</h3>
             </div>
-            <div class="col-md-2">
-                <div class="block block-bordered">
-                    <div class="block-header">
-                        <h3 class="block-title">Produit 2</h3>
+            <div class="block-content block-content-full">
+                <form action="/partnerEdit/products/" method="post">
+                    {%  if formErrors is defined %}
+                        <div class="alert">
+                            <p>Errors</p>
+                        </div>
+                    {% endif %}
+                    <div class="row push">
+                        <div class="col-md-3">
+                            <p style="margin-bottom: 5px">Produit 1</p>
+                            <label class="css-input switch switch-primary">
+                                <input type="checkbox" name="product_1" hecked><span></span> Débl. 9% / Remb. 12%
+                            </label>
+                        </div>
+                        <div class="col-md-3">
+                            <p style="margin-bottom: 5px">Produit 2</p>
+                            <label class="css-input switch switch-primary">
+                                <input type="checkbox" name="product_2" checked><span></span> Débl. 9% / Remb. 12%
+                            </label>
+                        </div>
+                        <div class="col-md-3">
+                            <p style="margin-bottom: 5px">Produit 3</p>
+                            <label class="css-input switch switch-primary">
+                                <input type="checkbox" name="product_3" checked><span></span> Débl. 9% / Remb. 12%
+                            </label>
+                        </div>
+                        <div class="col-md-3">
+                            <p style="margin-bottom: 5px">Produit 4</p>
+                            <label class="css-input switch switch-primary">
+                                <input type="checkbox" name="product_4" checked><span></span> Débl. 9% / Remb. 12%
+                            </label>
+                        </div>
                     </div>
-                    <div class="block-content block-content-full">
-                        <label class="css-input switch switch-primary">
-                            <input type="checkbox" checked><span></span> Débl. 9% / Remb. 12%
-                        </label>
+                    <div class="text-left">
+                        <button class="btn btn-primary" type="submit">Mise à jour</button>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="block block-bordered">
-                    <div class="block-header">
-                        <h3 class="block-title">Produit 3</h3>
-                    </div>
-                    <div class="block-content block-content-full">
-                        <label class="css-input switch switch-primary">
-                            <input type="checkbox" checked><span></span> Débl. 9% / Remb. 12%
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="block block-bordered">
-                    <div class="block-header">
-                        <h3 class="block-title">Produit 4</h3>
-                    </div>
-                    <div class="block-content block-content-full">
-                        <label class="css-input switch switch-primary">
-                            <input type="checkbox" checked><span></span> Débl. 9% / Remb. 12%
-                        </label>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
         <div class="block block-bordered">

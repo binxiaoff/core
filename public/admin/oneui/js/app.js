@@ -809,50 +809,41 @@ var App = function() {
                         api.page(e.data.action).draw(false)
                     }
                 }
-
                 for (i = 0, ien = buttons.length; i < ien; i++) {
                     button = buttons[i]
-
                     if ($.isArray(button)) {
                         attach(container, button)
                     }
                     else {
                         btnDisplay = ''
                         btnClass = ''
-
                         switch (button) {
                             case 'ellipsis':
                                 btnDisplay = '&hellip'
                                 btnClass = 'disabled'
                                 break
-
                             case 'first':
                                 btnDisplay = lang.sFirst
                                 btnClass = button + (page > 0 ? '' : ' disabled')
                                 break
-
                             case 'previous':
                                 btnDisplay = lang.sPrevious
                                 btnClass = button + (page > 0 ? '' : ' disabled')
                                 break
-
                             case 'next':
                                 btnDisplay = lang.sNext
                                 btnClass = button + (page < pages - 1 ? '' : ' disabled')
                                 break
-
                             case 'last':
                                 btnDisplay = lang.sLast
                                 btnClass = button + (page < pages - 1 ? '' : ' disabled')
                                 break
-
                             default:
                                 btnDisplay = button + 1
                                 btnClass = page === button ?
                                     'active' : ''
                                 break
                         }
-
                         if (btnDisplay) {
                             node = jQuery('<li>', {
                                 'class': classes.sPageButton + ' ' + btnClass,
@@ -876,7 +867,6 @@ var App = function() {
                     }
                 }
             }
-
             attach(
                 jQuery(host).empty().html('<ul class="pagination"/>').children('ul'),
                 buttons
@@ -915,7 +905,7 @@ var App = function() {
             })
         }
 
-        // See the row in datable by display the right pagination page
+        // Show page of row
         $DataTable.Api.register('row().show()', function() {
             var page_info = this.table().page.info()
             var new_row_index = this.index()
@@ -930,6 +920,7 @@ var App = function() {
             return this
         })
 
+        // Constructor
         function DT(elem, options) {
             var self = this
             self.$elem = $(elem)
@@ -991,6 +982,7 @@ var App = function() {
                 searching: search
             })
 
+            // Stop here if this is not an editable datatable (Editor)
             var editor = self.$elem.data('table-editor')
             if (typeof editor === 'undefined' || editor === false) {
                 return false
@@ -1017,6 +1009,12 @@ var App = function() {
             if (typeof options !== 'undefined') {
                 if (options.after)
                     options.after()
+            }
+            if (typeof self.actions !== 'undefined' && self.actions !== false) {
+                self.$elem.find('.btn').tooltip({
+                    container: 'body',
+                    animation: false
+                });
             }
         }
         DT.prototype.buttons = function (state) {
@@ -1330,8 +1328,6 @@ var App = function() {
                         elem.DT[op].apply(elem.DT, args)
                     }
                 })
-
-                // Set up a new Pager instance per elem (if one doesn't already exist)
             } else {
                 return this.each(function(i, elem) {
                     if (!elem.hasOwnProperty('DT')) {
@@ -1343,7 +1339,7 @@ var App = function() {
         $('[data-table]').each(function(){
             $(this).DT()
         })
-    };
+    }
 
     // Checkable table functionality
     var uiHelperTableToolsCheckable = function() {
