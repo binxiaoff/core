@@ -2,34 +2,26 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * DebtCollectionMission
  *
- * @ORM\Table(name="debt_collection_mission", indexes={@ORM\Index(name="idx_dc_mission_id_project", columns={"id_project"}), @ORM\Index(name="idx_dc_mission_id_client", columns={"id_client_debt_collector"}), @ORM\Index(name="idx_dc_mission_id_status", columns={"status"})})
+ * @ORM\Table(name="debt_collection_mission", indexes={@ORM\Index(name="idx_dc_mission_id_status", columns={"status"}), @ORM\Index(name="idx_dc_mission_id_project", columns={"id_project"}), @ORM\Index(name="idx_dc_mission_id_client", columns={"id_client_debt_collector"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
 class DebtCollectionMission
 {
-    const STATUS_ONGOING   = 0;
-    const STATUS_ARCHIVED  = 1;
+    const STATUS_ONGOING  = 0;
+    const STATUS_ARCHIVED = 1;
 
     const TYPE_AMICABLE   = 0;
     const TYPE_LITIGATION = 1;
 
     /**
      * @var integer
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
-    private $id;
-
-    /**
-     * @var string
      *
      * @ORM\Column(name="type", type="integer", nullable=false)
      */
@@ -71,9 +63,18 @@ class DebtCollectionMission
     private $updated;
 
     /**
-     * @var \Projects
+     * @var integer
      *
-     * @ORM\ManyToOne(targetEntity="Projects")
+     * @ORM\Column(name="id", type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="IDENTITY")
+     */
+    private $id;
+
+    /**
+     * @var Projects
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
      * })
@@ -81,9 +82,9 @@ class DebtCollectionMission
     private $idProject;
 
     /**
-     * @var \Clients
+     * @var Clients
      *
-     * @ORM\ManyToOne(targetEntity="Clients")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_client_debt_collector", referencedColumnName="id_client")
      * })
@@ -91,23 +92,22 @@ class DebtCollectionMission
     private $idClientDebtCollector;
 
     /**
-     * @return int
+     * @var DebtCollectionMissionPaymentSchedule[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMissionPaymentSchedule", mappedBy="idMission")
+     *
      */
-    public function getId()
+    private $debtCollectionMissionPaymentSchedules;
+
+    public function __construct()
     {
-        return $this->id;
+        $this->debtCollectionMissionPaymentSchedules = new ArrayCollection();
     }
 
     /**
-     * @return int
-     */
-    public function getType()
-    {
-        return $this->type;
-    }
-
-    /**
-     * @param int $type
+     * Set type
+     *
+     * @param boolean $type
      *
      * @return DebtCollectionMission
      */
@@ -119,15 +119,19 @@ class DebtCollectionMission
     }
 
     /**
-     * @return int
+     * Get type
+     *
+     * @return boolean
      */
-    public function getStatus()
+    public function getType()
     {
-        return $this->status;
+        return $this->type;
     }
 
     /**
-     * @param int $status
+     * Set status
+     *
+     * @param boolean $status
      *
      * @return DebtCollectionMission
      */
@@ -139,14 +143,18 @@ class DebtCollectionMission
     }
 
     /**
-     * @return string
+     * Get status
+     *
+     * @return boolean
      */
-    public function getFeesRate()
+    public function getStatus()
     {
-        return $this->feesRate;
+        return $this->status;
     }
 
     /**
+     * Set feesRate
+     *
      * @param string $feesRate
      *
      * @return DebtCollectionMission
@@ -159,14 +167,18 @@ class DebtCollectionMission
     }
 
     /**
+     * Get feesRate
+     *
      * @return string
      */
-    public function getAttachment()
+    public function getFeesRate()
     {
-        return $this->attachment;
+        return $this->feesRate;
     }
 
     /**
+     * Set attachment
+     *
      * @param string $attachment
      *
      * @return DebtCollectionMission
@@ -179,14 +191,18 @@ class DebtCollectionMission
     }
 
     /**
-     * @return \DateTime
+     * Get attachment
+     *
+     * @return string
      */
-    public function getAdded()
+    public function getAttachment()
     {
-        return $this->added;
+        return $this->attachment;
     }
 
     /**
+     * Set added
+     *
      * @param \DateTime $added
      *
      * @return DebtCollectionMission
@@ -199,14 +215,18 @@ class DebtCollectionMission
     }
 
     /**
+     * Get added
+     *
      * @return \DateTime
      */
-    public function getUpdated()
+    public function getAdded()
     {
-        return $this->updated;
+        return $this->added;
     }
 
     /**
+     * Set updated
+     *
      * @param \DateTime $updated
      *
      * @return DebtCollectionMission
@@ -219,19 +239,33 @@ class DebtCollectionMission
     }
 
     /**
-     * @return \Projects
+     * Get updated
+     *
+     * @return \DateTime
      */
-    public function getIdProject()
+    public function getUpdated()
     {
-        return $this->idProject;
+        return $this->updated;
     }
 
     /**
-     * @param \Projects $idProject
+     * Get id
+     *
+     * @return integer
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set idProject
+     *
+     * @param Projects $idProject
      *
      * @return DebtCollectionMission
      */
-    public function setIdProject($idProject)
+    public function setIdProject(Projects $idProject)
     {
         $this->idProject = $idProject;
 
@@ -239,7 +273,33 @@ class DebtCollectionMission
     }
 
     /**
-     * @return \Clients
+     * Get idProject
+     *
+     * @return Projects
+     */
+    public function getIdProject()
+    {
+        return $this->idProject;
+    }
+
+    /**
+     * Set idClientDebtCollector
+     *
+     * @param Clients $idClientDebtCollector
+     *
+     * @return DebtCollectionMission
+     */
+    public function setIdClientDebtCollector(Clients $idClientDebtCollector)
+    {
+        $this->idClientDebtCollector = $idClientDebtCollector;
+
+        return $this;
+    }
+
+    /**
+     * Get idClientDebtCollector
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      */
     public function getIdClientDebtCollector()
     {
@@ -247,13 +307,25 @@ class DebtCollectionMission
     }
 
     /**
-     * @param \Clients $idClientDebtCollector
+     * Get debtCollectionMissionPaymentSchedules
+     *
+     * @return DebtCollectionMissionPaymentSchedule[]
+     */
+    public function getDebtCollectionMissionPaymentSchedules()
+    {
+        return $this->debtCollectionMissionPaymentSchedules;
+    }
+
+    /**
+     * Set debtCollectionMissionPaymentSchedules
+     *
+     * @param DebtCollectionMissionPaymentSchedule[] $debtCollectionMissionPaymentSchedules
      *
      * @return DebtCollectionMission
      */
-    public function setIdClientDebtCollector($idClientDebtCollector)
+    public function setDebtCollectionMissionPaymentSchedules($debtCollectionMissionPaymentSchedules)
     {
-        $this->idClientDebtCollector = $idClientDebtCollector;
+        $this->debtCollectionMissionPaymentSchedules = $debtCollectionMissionPaymentSchedules;
 
         return $this;
     }
