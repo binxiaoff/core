@@ -828,6 +828,10 @@ class LenderSubscriptionController extends Controller
         $template['isSponsorship']   = false;
         $template['currentCampaign'] = $this->get('unilend.service.sponsorship_manager')->getCurrentSponsorshipCampaign();
 
+        if (null === $template['currentCampaign']) {
+            return $this->redirectToRoute('lender_landing_page');
+        }
+
         if (
             SponsorshipManager::UTM_SOURCE === $request->query->get('utm_source')
             && SponsorshipManager::UTM_MEDIUM === $request->query->get('utm_medium')

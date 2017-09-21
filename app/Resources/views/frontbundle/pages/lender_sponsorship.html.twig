@@ -102,7 +102,14 @@
                         <div class="col-md-10 col-lg-10">
                             <p class="c-t2 margin-10-b" style="line-height: 20px; text-align: justify;">
                                 <small>
-                                    {% trans %} lender-sponsorship_section-conditions-text {% endtrans %}
+                                    {% trans with { '%amountSponsee%' : currentCampaign.amountSponsee|localizednumber,
+                                    '%campaignEnd%' : currentCampaign.end|localizeddate('short', 'none', app.request.locale),
+                                    '%validityDays%' : currentCampaign.validityDays,
+                                    '%amountSponsee%' : currentCampaign.amountSponsee|localizednumber,
+                                    '%amountSponsor%' : currentCampaign.amountSponsor|localizednumber,
+                                    '%maxNumberSponsee%' : currentCampaign.maxNumberSponsee }%}
+                                        lender-sponsorship_section-conditions-text
+                                    {% endtrans %}
                                 </small>
                             </p>
                         </div>

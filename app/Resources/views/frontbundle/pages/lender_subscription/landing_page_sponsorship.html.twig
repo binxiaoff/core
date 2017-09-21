@@ -18,7 +18,9 @@
                     <div class="row row-multi-col-computer">
                         <div class="col-lg-6 col-md-6">
                             <div class="stamp show-xs" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
-                                {% trans with {'%amountSponsee%' : currentCampaign.amountSponsee|localizednumber }%}%} lender-landing-page_sponsorship-offer-text {% endtrans %}
+                                {% trans with { '%amountSponsee%' : currentCampaign.amountSponsee|localizednumber }%}
+                                lender-landing-page_sponsorship-offer-text
+                                {% endtrans %}
                             </div>
 
                             <h2 class="h3">
@@ -81,11 +83,7 @@
                     </div>
                 </div>
                 <div class="col-conditions col-lg-4 col-md-4">
-                    {% if isSponsorship == true %}
-                        <p>* <a href="#dialog-conditions-content" class="fancybox-html">{% trans %} lender-landing-page_sponsorship-conditions-title {% endtrans %}</a></p>
-                    {% else  %}
-                        <p>* <a href="#dialog-conditions-content" class="fancybox-html">{% trans %} lender-landing-page_welcome-offer-conditions-title {% endtrans %}</a></p>
-                    {% endif %}
+                    <p>* <a href="#dialog-conditions-content" class="fancybox-html">{% trans %} lender-landing-page_sponsorship-conditions-title {% endtrans %}</a></p>
                 </div>
             </div>
         </div><!-- /.block-copy-lp-footer -->
@@ -94,7 +92,12 @@
         <div class="hide-accessible">
             <div id="dialog-conditions-content" class="dialog-content readable-wrap text-align-center">
                 <h3>{% trans %} lender-landing-page_sponsorship-conditions-title {% endtrans %} </h3>
-                {% trans %} lender-landing-page_sponsorship-conditions-text {% endtrans %}
+                {% trans with { '%amountSponsee%' : currentCampaign.amountSponsee|localizednumber,
+                '%campaignEnd%' : currentCampaign.end|localizeddate('short', 'none', app.request.locale),
+                '%validityDays%' : currentCampaign.validityDays,
+                '%amountSponsee%' : currentCampaign.amountSponsee|localizednumber,
+                '%amountSponsor%' : currentCampaign.amountSponsor|localizednumber,
+                '%maxNumberSponsee%' : currentCampaign.maxNumberSponsee }%} lender-landing-page_sponsorship-conditions-text {% endtrans %}
             </div><!-- /#dialog-conditions-content -->
         </div><!-- /.hide-accessible -->
     </article><!-- /.page -->
