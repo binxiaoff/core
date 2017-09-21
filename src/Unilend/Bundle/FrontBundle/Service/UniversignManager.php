@@ -544,7 +544,7 @@ class UniversignManager
             'successURL'         => new Value($returnPage['success'], 'string'),
             'failURL'            => new Value($returnPage['fail'], 'string'),
             'cancelURL'          => new Value($returnPage['cancel'], 'string'),
-            'certificateTypes'   => new Value([new Value('timestamp', 'string')], 'array'),
+            'certificateType'    => new Value('simple', 'string'),
             'language'           => new Value('fr', 'string'),
             'identificationType' => new Value('sms', 'string'),
             'description'        => new Value('Signature type : ' . $signatureType . ' - id : ' . $signatureId, 'string')
