@@ -179,8 +179,8 @@ class DebtCollectionMissionManager
                 $remainingCapital  = round(bcsub($remainingCapital, $pendingCapital, 4), 2);
                 $remainingInterest = round(bcsub($remainingInterest, $pendingInterest, 4), 2);
 
-                $loanDetails[$loan->getIdLoan()][$sequence]['remaining_capital']  = $remainingCapital;
-                $loanDetails[$loan->getIdLoan()][$sequence]['remaining_interest'] = $remainingInterest;
+                $loanDetails[$loan->getIdLoan()]['schedule'][$sequence]['remaining_capital']  = $remainingCapital;
+                $loanDetails[$loan->getIdLoan()]['schedule'][$sequence]['remaining_interest'] = $remainingInterest;
 
                 $totalRemainingAmount = round(bcadd($totalRemainingAmount, bcadd($remainingCapital, $remainingInterest, 4), 4), 2);
             }
