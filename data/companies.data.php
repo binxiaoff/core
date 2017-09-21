@@ -325,7 +325,7 @@ class companies extends companies_crud
             FROM projects
                INNER JOIN companies c ON c.id_company = projects.id_company
                INNER JOIN company_status cs ON cs.id = c.id_status 
-            WHERE projects.status IN (' . [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME, ProjectsStatus::LOSS] . ')
+            WHERE projects.status IN (:projectStatus)
                AND cs.label IN (:companyStatus)
                OR
                (projects.status = ' . ProjectsStatus::PROBLEME . ' AND
@@ -345,8 +345,14 @@ class companies extends companies_crud
 
         $statement = $this->bdd->executeQuery(
             $query,
-            ['companyStatus' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]],
-            ['companyStatus' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_STR_ARRAY]
+            [
+                'companyStatus' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION],
+                'projectStatus' => [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME, ProjectsStatus::LOSS]
+            ],
+            [
+                'companyStatus' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_STR_ARRAY,
+                'projectStatus' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_INT_ARRAY
+            ]
         );
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }

@@ -1697,7 +1697,7 @@ class Projects
     {
         if (false === $includeArchived) {
             $criteria = Criteria::create()
-                ->where(Criteria::expr()->eq('status', DebtCollectionMission::STATUS_ONGOING));
+                ->where(Criteria::expr()->isNull('archived'));
 
             return $this->debtCollectionMissions->matching($criteria)->toArray();
         }
@@ -1716,7 +1716,7 @@ class Projects
             ->where(Criteria::expr()->eq('type', DebtCollectionMission::TYPE_AMICABLE));
 
         if (false === $includeArchived) {
-            $criteria->andWhere(Criteria::expr()->eq('status', DebtCollectionMission::STATUS_ONGOING));
+            $criteria->andWhere(Criteria::expr()->isNull('archived'));
         }
 
         return $this->debtCollectionMissions->matching($criteria)->toArray();
@@ -1733,7 +1733,7 @@ class Projects
             ->where(Criteria::expr()->eq('type', DebtCollectionMission::TYPE_LITIGATION));
 
         if (false === $includeArchived) {
-            $criteria->andWhere(Criteria::expr()->eq('status', DebtCollectionMission::STATUS_ONGOING));
+            $criteria->andWhere(Criteria::expr()->isNull('archived'));
         }
 
         return $this->debtCollectionMissions->matching($criteria)->toArray();

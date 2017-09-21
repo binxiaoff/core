@@ -936,14 +936,9 @@ class pdfController extends bootstrap
             $this->date            = $companyStatusHistory->getChangedOn();
             $this->mandataires_var = $companyStatusHistory->getReceiver();
 
-            /** @var projects_status $projectStatusType */
-            $projectStatusType = $this->loadData('projects_status');
-            $projectStatusType->get(ProjectsStatus::RECOUVREMENT, 'status');
-            /** @todo utiliser la date de déchéance du terme à la place de celle ci */
-            $debtCollectionStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
-                ->findOneBy(['idProject' => $this->projects->id_project, 'idProjectStatus' => $projectStatusType->id_project_status]);
-            if ($debtCollectionStatus) {
-                $expiration = $debtCollectionStatus->getAdded();
+            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
+            if ($project->getCloseOutNettingDate() instanceof \DateTime && (new \DateTime()) > $project->getCloseOutNettingDate()) {
+                $expiration = $project->getCloseOutNettingDate();
             } else {
                 $expiration = $this->date;
             }

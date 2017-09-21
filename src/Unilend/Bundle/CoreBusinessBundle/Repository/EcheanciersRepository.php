@@ -471,25 +471,23 @@ class EcheanciersRepository extends EntityRepository
                     INNER JOIN projects p ON p.id_project = psh2.id_project
                     INNER JOIN companies c ON c.id_company = p.id_company
                     INNER JOIN company_status cs ON cs.id = c.id_status
-                    LEFT JOIN debt_collection_mission dcm ON p.id_project = dcm.id_project AND dcm.status = :ongoing
-                  WHERE psh2.added <= :end
+                    LEFT JOIN debt_collection_mission dcm ON p.id_project = dcm.id_project AND (dcm.archived IS NULL OR (dcm.adde <= :endDate AND dcm.archived > :endDate))
+                  WHERE psh2.added <= :endDate
                     AND ps2.status IN (:status)
                     AND cs.label = :inBonis
                     AND dcm.id_project IS NULL
                     AND e.status = :pending
-                    AND e.date_echeance <= :end';
+                    AND e.date_echeance <= :endDate';
 
         return $this->getEntityManager()->getConnection()->executeQuery($query, [
-            'end'     => $end->format('Y-m-d H:i:s'),
+            'endDate' => $end->format('Y-m-d H:i:s'),
             'status'  => [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME],
             'inBonis' => CompanyStatus::STATUS_IN_BONIS,
-            'ongoing' => DebtCollectionMission::STATUS_ONGOING,
             'pending' => Echeanciers::STATUS_PENDING
         ], [
-            'end'     => \PDO::PARAM_STR,
+            'endDate' => \PDO::PARAM_STR,
             'status'  => Connection::PARAM_INT_ARRAY,
             'inBonis' => \PDO::PARAM_STR,
-            'ongoing' => \PDO::PARAM_INT,
             'pending' => \PDO::PARAM_INT
         ])->fetchAll(\PDO::FETCH_ASSOC)[0];
     }
