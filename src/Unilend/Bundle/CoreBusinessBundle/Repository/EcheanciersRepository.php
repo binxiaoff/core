@@ -471,11 +471,11 @@ class EcheanciersRepository extends EntityRepository
                     INNER JOIN projects p ON p.id_project = psh2.id_project
                     INNER JOIN companies c ON c.id_company = p.id_company
                     INNER JOIN company_status cs ON cs.id = c.id_status
-                    LEFT JOIN debt_collection_mission dcm ON p.id_project = dcm.id_project AND (dcm.archived IS NULL OR (dcm.adde <= :endDate AND dcm.archived > :endDate))
+                    LEFT JOIN debt_collection_mission dcm ON p.id_project = dcm.id_project
                   WHERE psh2.added <= :endDate
                     AND ps2.status IN (:status)
                     AND cs.label = :inBonis
-                    AND dcm.id_project IS NULL
+                    AND (dcm.id_project IS NULL OR dcm.added > :endDate OR (dcm.archived IS NOT NULL AND dcm.archived < :endDate))
                     AND e.status = :pending
                     AND e.date_echeance <= :endDate';
 

@@ -518,9 +518,9 @@ class LenderOperationsManager
                         break;
                     case CompanyStatus::STATUS_IN_BONIS:
                     default:
-                        if (0 === count($project->getDebtCollectionMissions())) {
+                        if (0 === $project->getDebtCollectionMissions()->count()) {
                             $statusToDisplay = self::LOAN_STATUS_DISPLAY_LATE;
-                        } elseif(0 < count($project->getLitigationDebtCollectionMissions())) {
+                        } elseif(0 < $project->getLitigationDebtCollectionMissions()->count()) {
                             $statusToDisplay = self::LOANS_STATUS_DISPLAY_LITIGATION_DC;
                         } else {
                             $statusToDisplay = self::LOANS_STATUS_DISPLAY_AMICABLE_DC;

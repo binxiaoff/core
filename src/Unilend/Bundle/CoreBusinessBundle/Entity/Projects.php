@@ -1691,7 +1691,7 @@ class Projects
     /**
      * @param bool $includeArchived
      *
-     * @return DebtCollectionMission[]
+     * @return ArrayCollection|DebtCollectionMission[]
      */
     public function getDebtCollectionMissions($includeArchived = false)
     {
@@ -1699,16 +1699,16 @@ class Projects
             $criteria = Criteria::create()
                 ->where(Criteria::expr()->isNull('archived'));
 
-            return $this->debtCollectionMissions->matching($criteria)->toArray();
+            return $this->debtCollectionMissions->matching($criteria);
         }
 
-        return $this->debtCollectionMissions->toArray();
+        return $this->debtCollectionMissions;
     }
 
     /**
      * @param bool $includeArchived
      *
-     * @return DebtCollectionMission[]
+     * @return ArrayCollection|DebtCollectionMission[]
      */
     public function getAmicableDebtCollectionMissions($includeArchived = false)
     {
@@ -1719,13 +1719,13 @@ class Projects
             $criteria->andWhere(Criteria::expr()->isNull('archived'));
         }
 
-        return $this->debtCollectionMissions->matching($criteria)->toArray();
+        return $this->debtCollectionMissions->matching($criteria);
     }
 
     /**
      * @param bool $includeArchived
      *
-     * @return DebtCollectionMission[]
+     * @return ArrayCollection|DebtCollectionMission[]
      */
     public function getLitigationDebtCollectionMissions($includeArchived = false)
     {
@@ -1736,6 +1736,6 @@ class Projects
             $criteria->andWhere(Criteria::expr()->isNull('archived'));
         }
 
-        return $this->debtCollectionMissions->matching($criteria)->toArray();
+        return $this->debtCollectionMissions->matching($criteria);
     }
 }
