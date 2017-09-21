@@ -691,6 +691,13 @@ class OperationRepository extends EntityRepository
                                 "lender_provision_wire_transfer_in",
                                 NULL)
                           )
+                          WHEN "' . OperationType::LENDER_PROVISION_CANCEL . '" THEN
+                          IF(o.id_backpayline IS NOT NULL,
+                             "lender_provision_cancel_credit_card",
+                             IF(o.id_wire_transfer_in IS NOT NULL,
+                                "lender_provision_cancel_wire_transfer_in",
+                                NULL)
+                          )
                           WHEN "'. OperationType::BORROWER_COMMISSION . '" THEN ost.label
                           WHEN "'. OperationType::BORROWER_COMMISSION_REGULARIZATION . '" THEN ost.label
                      ELSE ot.label END AS movement
