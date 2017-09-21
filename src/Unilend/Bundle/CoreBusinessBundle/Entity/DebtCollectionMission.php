@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * DebtCollectionMission
  *
- * @ORM\Table(name="debt_collection_mission", indexes={@ORM\Index(name="idx_dc_mission_id_status", columns={"status"}), @ORM\Index(name="idx_dc_mission_id_project", columns={"id_project"}), @ORM\Index(name="idx_dc_mission_id_client", columns={"id_client_debt_collector"})})
+ * @ORM\Table(name="debt_collection_mission", indexes={@ORM\Index(name="idx_dc_mission_id_user_creation", columns={"id_user_creation"}), @ORM\Index(name="idx_dc_mission_id_user_archiving", columns={"id_user_archiving"}), @ORM\Index(name="idx_dc_mission_id_project", columns={"id_project"}), @ORM\Index(name="idx_dc_mission_id_client", columns={"id_client_debt_collector"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
@@ -26,13 +26,6 @@ class DebtCollectionMission
      * @ORM\Column(name="type", type="integer", nullable=false)
      */
     private $type;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="status", type="integer", nullable=false)
-     */
-    private $status;
 
     /**
      * @var string
@@ -92,6 +85,26 @@ class DebtCollectionMission
     private $idClientDebtCollector;
 
     /**
+     * @var Users
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_user_creation", referencedColumnName="id_user")
+     * })
+     */
+    private $idUserCreation;
+
+    /**
+     * @var Users
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_user_archiving", referencedColumnName="id_user")
+     * })
+     */
+    private $idUserArchiving;
+
+    /**
      * @var DebtCollectionMissionPaymentSchedule[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMissionPaymentSchedule", mappedBy="idMission")
@@ -126,30 +139,6 @@ class DebtCollectionMission
     public function getType()
     {
         return $this->type;
-    }
-
-    /**
-     * Set status
-     *
-     * @param boolean $status
-     *
-     * @return DebtCollectionMission
-     */
-    public function setStatus($status)
-    {
-        $this->status = $status;
-
-        return $this;
-    }
-
-    /**
-     * Get status
-     *
-     * @return boolean
-     */
-    public function getStatus()
-    {
-        return $this->status;
     }
 
     /**
@@ -346,5 +335,53 @@ class DebtCollectionMission
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * Set idUserCreation
+     *
+     * @param Users $idUserCreation
+     *
+     * @return DebtCollectionMission
+     */
+    public function setIdUserCreation($idUserCreation)
+    {
+        $this->idUserCreation = $idUserCreation;
+
+        return $this;
+    }
+
+    /**
+     * Get idUserCreation
+     *
+     * @return Users
+     */
+    public function getIdUserCreation()
+    {
+        return $this->idUserCreation;
+    }
+
+    /**
+     * Set idUserArchiving
+     *
+     * @param Users $idUserArchiving
+     *
+     * @return DebtCollectionMission
+     */
+    public function setIdUserArchiving($idUserArchiving)
+    {
+        $this->idUserArchiving = $idUserArchiving;
+
+        return $this;
+    }
+
+    /**
+     * Get idUserArchiving
+     *
+     * @return Users
+     */
+    public function getIdUserArchiving()
+    {
+        return $this->idUserArchiving;
     }
 }
