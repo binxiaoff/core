@@ -30,7 +30,7 @@ class debt_cllection_missionController extends bootstrap
                 $excel       = new \PHPExcel();
                 $activeSheet = $excel->setActiveSheetIndex(0);
 
-                $titles      = [
+                $titles            = [
                     'ID de prêt',
                     'Nom',
                     'Prénom',
@@ -45,8 +45,12 @@ class debt_cllection_missionController extends bootstrap
                     'Ville',
                     'montant de prêt'
                 ];
-                $titleColumn = 'A';
-                $titleRow    = 2;
+                $titleColumn       = 'A';
+                $titleRow          = 2;
+                $commissionColumns = [];
+                $feeColumn         = [];
+                $chargeColumn      = null;
+                $totalColumn       = null;
                 foreach ($titles as $title) {
                     $activeSheet->setCellValue($titleColumn . $titleRow, $title);
                     $titleColumn++;
@@ -138,19 +142,52 @@ class debt_cllection_missionController extends bootstrap
                         $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['schedule'][$sequence]['remaining_interest'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
                         $dataColumn++; // commission
+                        if (empty($commissionColumns['schedule'][$sequence])) {
+                            $commissionColumns['schedule'][$sequence] = $dataColumn;
+                        }
                     }
 
-                    $dataColumn++; // frais
+                    $dataColumn++;
+                    if (empty($chargeColumn)) {
+                        $chargeColumn = $dataColumn;
+                    }
 
                     $dataColumn++;
+                    if (empty($feeColumn['fee_tax_excl'])) {
+                        $feeColumn['fee_tax_excl'] = $dataColumn;
+                    }
                     $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['fee_tax_excl'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
                     $dataColumn++;
+                    if (empty($feeColumn['fee_vat'])) {
+                        $feeColumn['fee_vat'] = $dataColumn;
+                    }
                     $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['fee_vat'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
                     $dataColumn++;
+                    if (empty($totalColumn)) {
+                        $totalColumn = $dataColumn;
+                    }
                     $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['total'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
                 }
+
+                $commissionDetails = $creditorDetails['commission'];
+                $dataRow++;
+                $activeSheet->setCellValueByColumnAndRow(0, $dataRow, 'Unilend commission');
+                foreach ($commissionColumns['schedule'] as $sequence => $column) {
+                    $activeSheet->setCellValueExplicitByColumnAndRow($column, $dataRow, $commissionDetails['schedule'][$sequence], PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                }
+                $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_tax_excl'], $dataRow, $commissionDetails['fee_tax_excl'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_vat'], $dataRow, $commissionDetails['fee_vat'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $activeSheet->setCellValueExplicitByColumnAndRow($totalColumn, $dataRow, $commissionDetails['total'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
+
+                $chargeDetails = $creditorDetails['charge'];
+                $dataRow++;
+                $activeSheet->setCellValueByColumnAndRow(0, $dataRow, 'Frais');
+                $activeSheet->setCellValueExplicitByColumnAndRow($chargeColumn, $dataRow, $chargeDetails['charge'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_tax_excl'], $dataRow, $chargeDetails['fee_tax_excl'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_vat'], $dataRow, $chargeDetails['fee_vat'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $activeSheet->setCellValueExplicitByColumnAndRow($totalColumn, $dataRow, $chargeDetails['total'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
                 $fileName = 'recouvrement_' . $missionId;
 

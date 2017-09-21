@@ -39,17 +39,29 @@ class DebtCollectionMissionManager
             'status'    => ProjectCharge::STATUS_PENDING
         ]);
 
-        $totalChargesTaxIncl = 0;
-        $totalChargesVat     = 0;
+        $totalCharges = 0;
 
         foreach ($charges as $charge) {
-            $totalChargesTaxIncl = round(bcadd($totalChargesTaxIncl, $charge->getAmountInclVat(), 4), 2);
-            $totalChargesVat     = round(bcadd($totalChargesVat, $charge->getAmountVat(), 4), 2);
+            $totalCharges = round(bcadd($totalCharges, $charge->getAmountInclVat(), 4), 2);
         }
 
+        $vatTax = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+        if (null === $vatTax) {
+            throw new \Exception('The VAT rate is not defined.');
+        }
+
+        $vatTaxRate = round(bcdiv($vatTax->getRate(), 100, 5), 4);
+
+        $totalFeeTaxIncl = round(bcmul($totalCharges, $debtCollectionMission->getFeesRate(), 4), 2);
+        $totalFeeVat     = round(bcmul($totalFeeTaxIncl, $vatTaxRate, 4), 2);
+
+        $total = round(bcadd($totalCharges, bcadd($totalFeeTaxIncl, $totalFeeVat, 4), 4), 2);
+
         return [
-            'fee_tax_excl' => round(bcsub($totalChargesTaxIncl, $totalChargesVat, 4), 2),
-            'fee_vat'      => $totalChargesVat
+            'charge'       => $totalCharges,
+            'fee_tax_excl' => $totalFeeTaxIncl,
+            'fee_vat'      => $totalFeeVat,
+            'total'        => $total
         ];
     }
 
@@ -82,8 +94,12 @@ class DebtCollectionMissionManager
 
         $vatTaxRate = round(bcdiv($vatTax->getRate(), 100, 5), 4);
 
-        $commissionDetails['fee_tax_excl'] = round(bcmul($totalRemainingCommission, $debtCollectionMission->getFeesRate(), 4), 2);
-        $commissionDetails['fee_vat']      = round(bcmul($commissionDetails['fee_tax_excl'], $vatTaxRate, 4), 2);
+        $totalFeeTaxIncl = round(bcmul($totalRemainingCommission, $debtCollectionMission->getFeesRate(), 4), 2);
+        $totalFeeVat     = round(bcmul($totalFeeTaxIncl, $vatTaxRate, 4), 2);
+
+        $commissionDetails['fee_tax_excl'] = $totalFeeTaxIncl;
+        $commissionDetails['fee_vat']      = $totalFeeVat;
+        $commissionDetails['total']        = round(bcadd($totalRemainingCommission, bcadd($totalFeeTaxIncl, $totalFeeVat, 4), 4), 2);
 
         return $commissionDetails;
     }
