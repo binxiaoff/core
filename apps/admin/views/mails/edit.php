@@ -1,48 +1,34 @@
 <div id="contenu">
-    <form method="post" name="mod_mail" enctype="multipart/form-data">
-        <fieldset>
-            <h1>Modifier <?= $this->oMailTemplate->type ?></h1>
-            <table class="large">
-                <tr>
-                    <th><label for="sender_name">Nom d'expéditeur</label></th>
-                </tr>
-                <tr>
-                    <td>
-                        <input type="text" name="sender_name" id="sender_name" value="<?= $this->oMailTemplate->sender_name ?>" class="input_big"/>
-                    </td>
-                </tr>
-                <tr>
-                    <th><label for="sender_email">Adresse d'expéditeur</label></th>
-                </tr>
-                <tr>
-                    <td>
-                        <input type="text" name="sender_email" id="sender_email" value="<?= $this->oMailTemplate->sender_email ?>" class="input_big"/>
-                    </td>
-                </tr>
-                <tr>
-                    <th><label for="subject">Sujet</label></th>
-                </tr>
-                <tr>
-                    <td>
-                        <input type="text" name="subject" id="subject" value="<?= $this->oMailTemplate->subject ?>" class="input_big"/>
-                    </td>
-                </tr>
-                <tr>
-                    <th><label for="content">Contenu</label></th>
-                </tr>
-                <tr>
-                    <td>
-                        <textarea name="content" id="content" class="textarea_big"><?= htmlentities($this->oMailTemplate->content, ENT_COMPAT, 'UTF-8') ?></textarea>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <input type="hidden" name="form_mod_mail"/>
-                        <input type="hidden" name="lng_encours" value="<?= $this->language ?>"/>
-                        <button type="submit" class="btn-primary">Valider</button>
-                    </td>
-                </tr>
-            </table>
-        </fieldset>
+    <h1>Modifier <?= $this->mailTemplate->type ?></h1>
+    <form method="post" action="<?= $this->lurl ?>/mails/edit/<?= $this->mailTemplate->type ?>">
+        <div class="row">
+            <div class="form-group col-md-6">
+                <label for="sender-name">Nom expéditeur</label>
+                <input type="text" value="<?= $this->mailTemplate->sender_name ?>" id="sender-name" name="sender_name" class="form-control">
+            </div>
+            <div class="form-group col-md-6">
+                <label for="sender-email">Email expéditeur</label>
+                <input type="text" value="<?= $this->mailTemplate->sender_email ?>" id="sender-email" name="sender_email" class="form-control">
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-md-12">
+                <label for="subject">Sujet</label>
+                <input type="text" value="<?= $this->mailTemplate->subject ?>" id="subject" name="subject" class="form-control">
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-md-12">
+                <label for="content">Contenu</label>
+                <textarea id="content" name="content" class="form-control input-sm" rows="20" style="font-family: Courier New, monospace; width: 100%;"><?= htmlentities($this->mailTemplate->content, ENT_COMPAT, 'UTF-8') ?></textarea>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-md-12">
+                <button type="submit" class="btn-primary pull-right">Valider</button>
+                <button type="button" id="preview-button" class="btn-default pull-right" style="margin-right: 5px;">Prévisualiser</button>
+            </div>
+        </div>
     </form>
 </div>
+<?php $this->fireView('preview'); ?>

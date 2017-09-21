@@ -1,11 +1,27 @@
-<script type="text/javascript">
+<style>
+    @font-face {
+        font-family: 'FontAwesome';
+        src: url('https://admin.local.unilend.fr/oneui/fonts/fontawesome-webfont.eot');
+        src: url('https://admin.local.unilend.fr/oneui/fonts/fontawesome-webfont.eot?#iefix&v=4.7.0') format('embedded-opentype'),
+        url('https://admin.local.unilend.fr/oneui/fonts/fontawesome-webfont.woff2') format('woff2'),
+        url('https://admin.local.unilend.fr/oneui/fonts/fontawesome-webfont.woff') format('woff'),
+        url('https://admin.local.unilend.fr/oneui/fonts/fontawesome-webfont.ttf') format('truetype'),
+        url('https://admin.local.unilend.fr/oneui/fonts/fontawesome-webfont.svg#fontawesomeregular') format('svg');
+        font-weight: normal;
+        font-style: normal;
+    }
+</style>
+<link rel="stylesheet" href="<?= $this->url ?>/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+<script src="<?= $this->url ?>/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+<script>
     $(function() {
-        $(".tablesorter").tablesorter({headers: {5: {sorter: false}}});
-
-        <?php if ($this->nb_lignes != '') : ?>
-            $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
-        <?php endif; ?>
-    });
+        $('.js-datatable').dataTable({
+            info: false,
+            paging: false,
+            searching: false,
+            columnDefs: [{targets: 7, orderable: false}]
+        })
+    })
 </script>
 <div id="contenu">
     <div class="row">
@@ -16,103 +32,53 @@
             <a href="<?= $this->lurl ?>/mails/add" class="btn-primary pull-right">Ajouter un email</a>
         </div>
     </div>
-
-    <div id="external_emails">
-        <h2>Emails externes</h2>
-        <?php if (count($this->externalEmails) > 0) : ?>
-            <table class="tablesorter">
-                <thead>
-                <tr>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th colspan="3">Nombre d'emails envoyés dans la periode 24h</th>
-                    <th>&nbsp;</th>
-                </tr>
-                <tr>
-                    <th>Type</th>
-                    <th>Nom Expéditeur</th>
-                    <th>Email Expéditeur</th>
-                    <th>Sujet</th>
-                    <th>Mise à jour</th>
-                    <th>24h</th>
-                    <th>7 jours</th>
-                    <th>30 jours</th>
-                    <th>&nbsp;</th>
-                </tr>
-                </thead>
-                <tbody>
-                <?php $i = 1; ?>
-                <?php foreach ($this->externalEmails as $mailTemplate) : ?>
-                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-                        <td><?= $mailTemplate->getType() ?></td>
-                        <td><?= $mailTemplate->getSenderName() ?></td>
-                        <td><?= $mailTemplate->getSenderEmail() ?></td>
-                        <td><?= $mailTemplate->getSubject() ?></td>
-                        <td><?= $mailTemplate->getUpdated()->format('d/m/Y H:i') ?></td>
-                        <td><?= $this->externalEmailUsage[$mailTemplate->getType()]['24h'] ?></td>
-                        <td><?= $this->externalEmailUsage[$mailTemplate->getType()]['7d'] ?></td>
-                        <td><?= $this->externalEmailUsage[$mailTemplate->getType()]['30d'] ?></td>
-                        <td align="center">
-                            <a href="<?= $this->lurl ?>/mails/edit/<?= $mailTemplate->getType() ?>" title="Modifier <?= $mailTemplate->getType() ?>">
-                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $mailTemplate->getType() ?>"/>
-                            </a>
-                            <a href="<?= $this->lurl ?>/mails/delete/<?= $mailTemplate->getType() ?>" title="Archiver <?= $mailTemplate->getType() ?>" onclick="return confirm('Etes vous sur de vouloir archiver <?= $mailTemplate->getType() ?> ?')">
-                                <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer <?= $mailTemplate->getType() ?>"/>
-                            </a>
-                        </td>
-                    </tr>
-                    <?php $i++; ?>
-                <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php else : ?>
-            <p>Il n'y a aucun email pour le moment.</p>
-        <?php endif; ?>
-    </div>
-
-    <div id="internal_emails">
-        <h2>Emails internes</h2>
-        <?php if (count($this->internalEmails) > 0) : ?>
-            <table class="tablesorter">
-                <thead>
-                <tr>
-                    <th>Type</th>
-                    <th>Nom Expéditeur</th>
-                    <th>Email Expéditeur</th>
-                    <th>Sujet</th>
-                    <th>Mise à jour</th>
-                    <th>Nombre d'envois dans les 30 denriers jours</th>
-                    <th>&nbsp;</th>
-                </tr>
-                </thead>
-                <tbody>
-                <?php $i = 1; ?>
-                <?php foreach ($this->internalEmails as $mailTemplate) : ?>
-                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-                        <td><?= $mailTemplate->getType() ?></td>
-                        <td><?= $mailTemplate->getSenderName() ?></td>
-                        <td><?= $mailTemplate->getSenderEmail() ?></td>
-                        <td><?= $mailTemplate->getSubject() ?></td>
-                        <td><?= $mailTemplate->getUpdated()->format('d/m/Y H:i') ?></td>
-                        <td><?= $this->internalEmailUsage[$mailTemplate->getType()]['30d'] ?></td>
-                        <td align="center">
-                            <a href="<?= $this->lurl ?>/mails/edit/<?= $mailTemplate->getType() ?>" title="Modifier <?= $mailTemplate->getType() ?>">
-                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $mailTemplate->getType() ?>"/>
-                            </a>
-                            <a href="<?= $this->lurl ?>/mails/delete/<?= $mailTemplate->getType() ?>" title="Archiver <?= $mailTemplate->getType() ?>" onclick="return confirm('Etes vous sur de vouloir archiver <?= $mailTemplate->getType() ?> ?')">
-                                <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer <?= $mailTemplate->getType() ?>"/>
-                            </a>
-                        </td>
-                    </tr>
-                    <?php $i++; ?>
-                <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php else : ?>
-            <p>Il n'y a aucun email pour le moment.</p>
-        <?php endif; ?>
-    </div>
+    <?php foreach ($this->sections as $section) : ?>
+        <div class="row">
+            <div class="col-md-12">
+                <h2><?= $section['title'] ?></h2>
+                <?php if (count($section['emails']) > 0) : ?>
+                    <table class="table table-bordered table-striped js-datatable">
+                        <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Sujet</th>
+                            <th>Expéditeur</th>
+                            <th>Mise à jour</th>
+                            <th>24h</th>
+                            <th>7j</th>
+                            <th>30j</th>
+                            <th>&nbsp;</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($section['emails'] as $mailTemplate) : ?>
+                            <tr>
+                                <td><?= $mailTemplate->getType() ?></td>
+                                <td><?= $mailTemplate->getSubject() ?></td>
+                                <td class="text-nowrap">
+                                    <?= $mailTemplate->getSenderName() ?><br>
+                                    <em><?= $mailTemplate->getSenderEmail() ?></em>
+                                </td>
+                                <td><?= $mailTemplate->getUpdated()->format('d/m/Y H:i') ?></td>
+                                <td><?= $section['stats'][$mailTemplate->getType()]['24h'] ?></td>
+                                <td><?= $section['stats'][$mailTemplate->getType()]['7d'] ?></td>
+                                <td><?= $section['stats'][$mailTemplate->getType()]['30d'] ?></td>
+                                <td align="center">
+                                    <a href="<?= $this->lurl ?>/mails/edit/<?= $mailTemplate->getType() ?>" title="Modifier <?= $mailTemplate->getType() ?>">
+                                        <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $mailTemplate->getType() ?>"/>
+                                    </a>
+                                    <a href="<?= $this->lurl ?>/mails/delete/<?= $mailTemplate->getType() ?>" title="Archiver <?= $mailTemplate->getType() ?>" onclick="return confirm('Etes vous sur de vouloir archiver <?= $mailTemplate->getType() ?> ?')">
+                                        <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer <?= $mailTemplate->getType() ?>"/>
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php else : ?>
+                    <p>Aucun email</p>
+                <?php endif; ?>
+            </div>
+        </div>
+    <?php endforeach; ?>
 </div>

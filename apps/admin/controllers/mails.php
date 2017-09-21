@@ -1,10 +1,27 @@
 <?php
 
+use Symfony\Component\HttpFoundation\Request;
 use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class mailsController extends bootstrap
 {
+    /**
+     * @var \mail_templates
+     */
+    public $mailTemplate;
+
+    public function initialize()
+    {
+        parent::initialize();
+
+        $this->settings->get('Facebook', 'type');
+        $this->facebookUrl = $this->settings->value;
+
+        $this->settings->get('Twitter', 'type');
+        $this->twitterUrl = $this->settings->value;
+    }
+
     public function _default()
     {
         $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
@@ -27,11 +44,23 @@ class mailsController extends bootstrap
             die;
         }
 
-        $this->externalEmails = $mailTemplateManager->getActiveMailTemplates(MailTemplates::RECIPIENT_TYPE_EXTERNAL);
-        $this->internalEmails = $mailTemplateManager->getActiveMailTemplates(MailTemplates::RECIPIENT_TYPE_INTERNAL);
+        $externalEmails     = $mailTemplateManager->getActiveMailTemplates(MailTemplates::RECIPIENT_TYPE_EXTERNAL);
+        $internalEmails     = $mailTemplateManager->getActiveMailTemplates(MailTemplates::RECIPIENT_TYPE_INTERNAL);
+        $externalEmailUsage = $mailTemplateManager->getMailTemplateUsage($externalEmails);
+        $internalEmailUsage = $mailTemplateManager->getMailTemplateUsage($internalEmails);
 
-        $this->externalEmailUsage = $mailTemplateManager->getMailTemplateUsage($this->externalEmails);
-        $this->internalEmailUsage = $mailTemplateManager->getMailTemplateUsage($this->internalEmails);
+        $this->sections = [
+            [
+                'title'  => 'Emails externes',
+                'emails' => $externalEmails,
+                'stats'  => $externalEmailUsage
+            ],
+            [
+                'title'  => 'Emails internes',
+                'emails' => $internalEmails,
+                'stats'  => $internalEmailUsage
+            ]
+        ];
     }
 
     public function _add()
@@ -39,7 +68,7 @@ class mailsController extends bootstrap
         $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
         $this->menu_admin = 'edition';
 
-        if (isset($_POST['form_add_mail'])) {
+        if ($this->request->isMethod(Request::METHOD_POST)) {
             $aPost = $this->handlePost();
             /** @var \Unilend\Bundle\MessagingBundle\Service\MailTemplateManager $mailTemplateManager */
             $mailTemplateManager = $this->get('unilend.service.mail_template');
@@ -73,18 +102,17 @@ class mailsController extends bootstrap
         $mailTemplateManager = $this->get('unilend.service.mail_template');
 
         if (false === empty($this->params[0])) {
-            /** @var \mail_templates oMailTemplate */
-            $this->oMailTemplate = $this->loadData('mail_templates');
-            $this->oMailTemplate->get($this->params[0], 'status = ' . MailTemplates::STATUS_ACTIVE . ' AND type');
+            $this->mailTemplate = $this->loadData('mail_templates');
+            $this->mailTemplate->get($this->params[0], 'status = ' . MailTemplates::STATUS_ACTIVE . ' AND type');
 
-            if (isset($_POST['form_mod_mail']) && false === empty($this->oMailTemplate->id_mail_template)) {
+            if ($this->mailTemplate->id_mail_template && $this->request->isMethod(Request::METHOD_POST)) {
                 $aPost = $this->handlePost();
 
                 if (empty($aPost['sender_name']) || empty($aPost['sender_email']) || empty($aPost['subject'])) {
                     $_SESSION['freeow']['title']   = 'Modification d\'un mail';
                     $_SESSION['freeow']['message'] = 'Modification impossible : tous les champs n\'ont &eacute;t&eacute; remplis';
                 } else {
-                    $mailTemplateManager->modifyTemplate($this->oMailTemplate, $aPost['sender_name'], $aPost['sender_email'], $aPost['subject'], $aPost['content']);
+                    $mailTemplateManager->modifyTemplate($this->mailTemplate, $aPost['sender_name'], $aPost['sender_email'], $aPost['subject'], $aPost['content']);
 
                     $_SESSION['freeow']['title']   = 'Modification d\'un mail';
                     $_SESSION['freeow']['message'] = 'Le mail a bien &eacute;t&eacute; modifi&eacute;';

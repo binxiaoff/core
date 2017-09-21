@@ -1,56 +1,41 @@
 <div id="contenu">
-    <form method="post" name="add_mail" id="add_mail" enctype="multipart/form-data">
-        <input type="hidden" name="lng_encours" id="lng_encours" value="<?= $this->language ?>"/>
-        <fieldset>
-            <h1>Ajouter un email</h1>
-            <table class="large">
-                <tr>
-                    <th><label for="name">Type:</label><br/>
-                        <span><em>Utiliser que des minuscules et des "-" et non des "_"</em></span></th>
-                </tr>
-                <tr>
-                    <td><input type="text" name="type" id="type" class="input_big"/>
-                    </td>
-                </tr>
-                <tr>
-                    <th><label for="sender_name>">Nom d'expéditeur :</label></th>
-                </tr>
-                <tr>
-                    <td>
-                        <input type="text" name="sender_name" id="sender_name" class="input_big"/>
-                    </td>
-                </tr>
-                <tr>
-                    <th><label for="sender_email">Adresse d'expéditeur :</label></th>
-                </tr>
-                <tr>
-                    <td>
-                        <input type="text" name="sender_email" id="sender_email" class="input_big"/>
-                    </td>
-                </tr>
-                <tr>
-                    <th><label for="subject">Sujet :</label></th>
-                </tr>
-                <tr>
-                    <td>
-                        <input type="text" name="subject" id="subject" class="input_big"/>
-                    </td>
-                </tr>
-                <tr>
-                    <th><label for="content">Contenu :</label></th>
-                </tr>
-                <tr>
-                    <td>
-                        <textarea name="content" id="content" class="textarea_big"></textarea>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <input type="hidden" name="form_add_mail" id="form_add_mail"/>
-                        <button type="submit" class="btn-primary">Valider</button>
-                    </td>
-                </tr>
-            </table>
-        </fieldset>
+    <h1>Ajouter un email</h1>
+    <form method="post" action="<?= $this->lurl ?>/mails/add">
+        <div class="row">
+            <div class="form-group col-md-12">
+                <label for="type">Type</label>
+                <span class="help-block">Utiliser uniquement des minuscules et des "-"</span>
+                <input type="text" id="type" name="type" class="form-control">
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-md-6">
+                <label for="sender-name">Nom expéditeur</label>
+                <input type="text" id="sender-name" name="sender_name" class="form-control">
+            </div>
+            <div class="form-group col-md-6">
+                <label for="sender-email">Email expéditeur</label>
+                <input type="text" id="sender-email" name="sender_email" class="form-control">
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-md-12">
+                <label for="subject">Sujet</label>
+                <input type="text" id="subject" name="subject" class="form-control">
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-md-12">
+                <label for="content">Contenu</label>
+                <textarea id="content" name="content" class="form-control input-sm" rows="20" style="font-family: Courier New, monospace; width: 100%;"></textarea>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-md-12">
+                <button type="submit" class="btn-primary pull-right">Valider</button>
+                <button type="button" id="preview-button" class="btn-default pull-right" style="margin-right: 5px;">Prévisualiser</button>
+            </div>
+        </div>
     </form>
 </div>
+<?php $this->fireView('preview'); ?>
