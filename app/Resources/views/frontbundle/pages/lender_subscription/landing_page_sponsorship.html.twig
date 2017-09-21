@@ -95,8 +95,8 @@
                 {% trans with { '%amountSponsee%' : currentCampaign.amountSponsee|localizednumber,
                 '%campaignEnd%' : currentCampaign.end|localizeddate('short', 'none', app.request.locale),
                 '%validityDays%' : currentCampaign.validityDays,
-                '%amountSponsee%' : currentCampaign.amountSponsee|localizednumber,
-                '%amountSponsor%' : currentCampaign.amountSponsor|localizednumber,
+                '%amountSponsee%' : currentCampaign.amountSponsee|localizedcurrency('EUR'),
+                '%amountSponsor%' : currentCampaign.amountSponsor|localizedcurrency('EUR'),
                 '%maxNumberSponsee%' : currentCampaign.maxNumberSponsee }%} lender-landing-page_sponsorship-conditions-text {% endtrans %}
             </div><!-- /#dialog-conditions-content -->
         </div><!-- /.hide-accessible -->
