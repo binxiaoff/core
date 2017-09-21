@@ -348,6 +348,7 @@ class simulationController extends bootstrap
     {
         parent::initialize();
 
+        $this->menu_admin = 'emprunteurs';
         $this->users->checkAccess(Zones::ZONE_LABEL_SIMULATOR);
     }
 
