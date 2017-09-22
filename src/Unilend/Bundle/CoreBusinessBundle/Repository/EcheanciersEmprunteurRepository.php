@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
@@ -118,15 +119,19 @@ class EcheanciersEmprunteurRepository extends EntityRepository
      */
     public function findPaymentSchedulesToInvoice($limit)
     {
-        /** @todo To test suite merge **/
         $queryBuilder = $this->createQueryBuilder('ee');
         $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'ee.idProject = p.idProject')
+            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'c.idCompany = p.idCompany')
+            ->innerJoin('UnilendCoreBusinessBundle:CompanyStatus', 'cs', Join::WITH, 'cs.id = c.idStatus')
             ->leftJoin('UnilendCoreBusinessBundle:Factures', 'f', Join::WITH, 'ee.idProject = f.idProject AND f.ordre = ee.ordre')
             ->where('DATE(ee.dateEcheanceEmprunteur) <= :today')
             ->andWhere('p.status in (:status)')
+            ->andWhere('p.closeOutNettingDate IS NULL')
+            ->andWhere('cs.label = :inBonis')
             ->andWhere('f.idFacture IS NULL')
             ->setParameter('today', (new \DateTime())->format('Y-m-d'))
-            ->setParameter('status', [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME, ProjectsStatus::PROBLEME_J_X])
+            ->setParameter('status', [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME])
+            ->setParameter('inBonis', CompanyStatus::STATUS_IN_BONIS)
             ->setMaxResults($limit);
 
         return $queryBuilder->getQuery()->getResult();
