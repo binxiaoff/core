@@ -231,7 +231,11 @@ class dossiersController extends bootstrap
             $this->aSalesPersons        = $this->users->select('(status = 1 AND id_user_type = 3) OR id_user = 23 OR id_user = ' . $this->projects->id_commercial); // ID user 23 corresponds to Arnaud
             $this->projectComments      = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ProjectsComments')->findBy(['idProject' => $this->projects->id_project], ['added' => 'DESC']);
             $this->aAllAnnualAccounts   = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
-            $this->lProjects_status     = $projectStatusManager->getPossibleStatus($this->projects);
+
+            $this->possibleProjectStatus = $projectStatusManager->getPossibleStatus($this->projectEntity);
+            if ($this->projectEntity->getStatus()) {
+                $this->currentProjectStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $this->projectEntity->getStatus()]);
+            }
 
             if (empty($this->projects->id_dernier_bilan)) {
                 $this->lbilans = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC', 0, 3);
@@ -1895,9 +1899,9 @@ class dossiersController extends bootstrap
                     $projectRepaymentTask = $projectRepaymentTaskManager->planEarlyRepaymentTask($project, $reception, $user);
                 }
 
-                $borrowerOwedCapital = $this->echeanciers_emprunteur->reste_a_payer_ra($this->projects->id_project, $nextRepayment[0]['ordre']);
+                $borrowerOwedCapital = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getRemainingCapitalFrom($this->projects->id_project, $nextRepayment[0]['ordre']);
 
-                if (0 === bccomp($borrowerOwedCapital, $projectRepaymentTask->getAmount(), 2)) {
+                if (0 === bccomp($borrowerOwedCapital, $projectRepaymentTask->getCapital(), 2)) {
                     $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_READY)->setIdUserValidation($user);
                     $entityManager->flush($projectRepaymentTask);
 
@@ -2052,15 +2056,15 @@ class dossiersController extends bootstrap
 
                 return;
             }
-            /** @var \echeanciers_emprunteur $paymentSchedule */
-            $paymentSchedule = $this->loadData('echeanciers_emprunteur');
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
             $nextRepayment   = $repaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND status = ' . \echeanciers::STATUS_PENDING . ' AND date_echeance >= "' . $this->getLimitDate(new \DateTime('today midnight'))->format('Y-m-d H:i:s') . '"', ' ordre ASC', 0, 1);
 
             if (false === empty($nextRepayment)) {
                 $this->earlyRepaymentLimitDate    = $this->getLimitDate(\DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance']), true);
                 $this->nextScheduledRepaymentDate = \DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance']);
                 $this->lenderOwedCapital          = $repaymentSchedule->getRemainingCapitalAtDue($this->projects->id_project, $nextRepayment[0]['ordre'] + 1);
-                $this->borrowerOwedCapital        = $paymentSchedule->reste_a_payer_ra($this->projects->id_project, $nextRepayment[0]['ordre'] + 1);
+                $this->borrowerOwedCapital        = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getRemainingCapitalFrom($this->projects->id_project, $nextRepayment[0]['ordre'] + 1);
 
                 if (0 === bccomp($this->lenderOwedCapital, $this->borrowerOwedCapital, 2)) {
                     $this->message = '<div style="color:green;">Remboursement possible</div>';
@@ -2087,7 +2091,7 @@ class dossiersController extends bootstrap
                     $lastPaidRepayment = $repaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND status = ' . Echeanciers::STATUS_REPAID, ' ordre DESC', 0, 1);
 
                     $currentLenderOwedCapital   = $repaymentSchedule->getRemainingCapitalAtDue($this->projects->id_project, $lastPaidRepayment[0]['ordre'] + 1);
-                    $currentBorrowerOwedCapital = $paymentSchedule->reste_a_payer_ra($this->projects->id_project, $lastPaidRepayment[0]['ordre'] + 1);
+                    $currentBorrowerOwedCapital = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getRemainingCapitalFrom($this->projects->id_project, $lastPaidRepayment[0]['ordre'] + 1);
 
                     $projectRepaymentTask = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
                         'idProject' => $this->projects->id_project,

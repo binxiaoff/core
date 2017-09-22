@@ -249,7 +249,7 @@
         </tbody>
     </table>
     <br>
-    <h2>Relevé des opérations</h2>
+    <h2>Relevé des opérations (Solde: <?= $this->currencyFormatter->formatCurrency($this->availableBalance, 'EUR') ?>)</h2>
     <?php if (count($this->operations) > 0) : ?>
         <div style="float: left">
             <form method="post" id="operation-date-form" action="" class="form-inline">

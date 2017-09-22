@@ -8,10 +8,17 @@ use Doctrine\ORM\Mapping as ORM;
  * OffresBienvenues
  *
  * @ORM\Table(name="offres_bienvenues", indexes={@ORM\Index(name="id_user", columns={"id_user"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\OffresBienvenuesRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class OffresBienvenues
 {
+    const STATUS_OFFLINE = 0;
+    const STATUS_ONLINE  = 1;
+
+    const TYPE_HOME         = 'home_page';
+    const TYPE_LANDING_PAGE = 'landing_page';
+
     /**
      * @var integer
      *
@@ -22,9 +29,16 @@ class OffresBienvenues
     /**
      * @var integer
      *
-     * @ORM\Column(name="montant_limit", type="integer", nullable=false)
+     * @ORM\Column(name="montant_limit", type="integer", nullable=true)
      */
     private $montantLimit;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="type", type="string", length=45, nullable=false)
+     */
+    private $type;
 
     /**
      * @var \DateTime
@@ -36,7 +50,7 @@ class OffresBienvenues
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="fin", type="date", nullable=false)
+     * @ORM\Column(name="fin", type="date", nullable=true)
      */
     private $fin;
 
@@ -64,7 +78,7 @@ class OffresBienvenues
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -125,6 +139,30 @@ class OffresBienvenues
     public function getMontantLimit()
     {
         return $this->montantLimit;
+    }
+
+    /**
+     * Set type
+     *
+     * @param string $type
+     *
+     * @return OffresBienvenues
+     */
+    public function setType($type)
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    /**
+     * Get type
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return $this->type;
     }
 
     /**
@@ -279,5 +317,23 @@ class OffresBienvenues
     public function getIdOffreBienvenue()
     {
         return $this->idOffreBienvenue;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

@@ -86,4 +86,22 @@ class BidsRepository extends EntityRepository
 
         return $qb->getQuery()->getSingleScalarResult();
     }
+
+    /**
+     * @param Wallet|int $wallet
+     * @param int        $status
+     *
+     * @return mixed
+     */
+    public function getSumBidsForLenderAndStatus($wallet, $status)
+    {
+        $qb = $this->createQueryBuilder('b');
+        $qb->select('ROUND(SUM(b.amount) / 100, 2)')
+            ->where('b.idLenderAccount = :wallet')
+            ->andWhere('b.status = :status')
+            ->setParameter('wallet', $wallet)
+            ->setParameter('status', $status);
+
+        return $qb->getQuery()->getSingleScalarResult();
+    }
 }

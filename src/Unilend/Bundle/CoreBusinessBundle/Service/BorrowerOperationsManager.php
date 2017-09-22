@@ -120,7 +120,7 @@ class BorrowerOperationsManager
                 ) {
                     $thirdPartyClient                 = $operationEntity->getWireTransferOut()->getBankAccount()->getIdClient();
                     $thirdPartyCompany                = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $thirdPartyClient->getIdClient()]);
-                    $operation['third_party_company'] = $thirdPartyCompany;
+                    $operation['third_party_company'] = $thirdPartyCompany->getName();
                 }
             }
             if ($borrowerOperationType === 'all' || $borrowerOperationType === $operation['label']) {
