@@ -7,15 +7,18 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * DebtCollectionMission
  *
- * @ORM\Table(name="debt_collection_mission", indexes={@ORM\Index(name="idx_dc_mission_id_project", columns={"id_project"}), @ORM\Index(name="idx_dc_mission_id_client", columns={"id_client_debt_collector"}), @ORM\Index(name="idx_dc_mission_id_status", columns={"status"})})
+ * @ORM\Table(name="debt_collection_mission", indexes={
+ *     @ORM\Index(name="idx_dc_mission_id_project", columns={"id_project"}),
+ *      @ORM\Index(name="idx_dc_mission_id_client", columns={"id_client_debt_collector"}),
+ *      @ORM\Index(name="idx_dc_mission_id_status", columns={"status"}),
+ *      @ORM\Index(name="idx_dc_mission_id_user_creation", columns={"id_user_creation"}),
+ *      @ORM\Index(name="idx_dc_mission_id_user_archiving", columns={"id_user_archiving"}),
+ * })
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
 class DebtCollectionMission
 {
-    const STATUS_ONGOING   = 0;
-    const STATUS_ARCHIVED  = 1;
-
     const TYPE_AMICABLE   = 0;
     const TYPE_LITIGATION = 1;
 
@@ -34,13 +37,6 @@ class DebtCollectionMission
      * @ORM\Column(name="type", type="integer", nullable=false)
      */
     private $type;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="status", type="integer", nullable=false)
-     */
-    private $status;
 
     /**
      * @var string
@@ -91,6 +87,33 @@ class DebtCollectionMission
     private $idClientDebtCollector;
 
     /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="archived" type="datetime", nullable=true)
+     */
+    private $archived;
+
+    /**
+     * @var Users
+     *
+     * @ORM\ManyToOne(targetEntity="Users")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_user_creation", type int, nullable=false)
+     * })
+     */
+    private $idUserCreation;
+
+    /**
+     * @var Users
+     *
+     * @ORM\ManyToOne(targetEntity="Users")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_user_archiving", type int, nullable=true)
+     * })
+     */
+    private $idUserArchiving;
+
+    /**
      * @return int
      */
     public function getId()
@@ -114,26 +137,6 @@ class DebtCollectionMission
     public function setType($type)
     {
         $this->type = $type;
-
-        return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getStatus()
-    {
-        return $this->status;
-    }
-
-    /**
-     * @param int $status
-     *
-     * @return DebtCollectionMission
-     */
-    public function setStatus($status)
-    {
-        $this->status = $status;
 
         return $this;
     }
@@ -274,5 +277,65 @@ class DebtCollectionMission
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getArchived()
+    {
+        return $this->archived;
+    }
+
+    /**
+     * @param \DateTime|null $archived
+     *
+     * @return DebtCollectionMission
+     */
+    public function setArchived(\DateTime $archived = null)
+    {
+        $this->archived = $archived;
+
+        return $this;
+    }
+
+    /**
+     * @return Users
+     */
+    public function getIdUserCreation()
+    {
+        return $this->idUserCreation;
+    }
+
+    /**
+     * @param Users $idUserCreation
+     *
+     * @return DebtCollectionMission
+     */
+    public function setIdUserCreation(Users $idUserCreation)
+    {
+        $this->idUserCreation = $idUserCreation;
+
+        return $this;
+    }
+
+    /**
+     * @return Users
+     */
+    public function getIdUserArchiving()
+    {
+        return $this->idUserArchiving;
+    }
+
+    /**
+     * @param Users|null $idUserArchiving
+     *
+     * @return DebtCollectionMission
+     */
+    public function setIdUserArchiving(Users $idUserArchiving = null)
+    {
+        $this->idUserArchiving = $idUserArchiving;
+
+        return $this;
     }
 }

@@ -7,7 +7,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectNotification;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
@@ -291,7 +291,7 @@ class dossiersController extends bootstrap
             $this->projectHasMonitoringEvent = $this->get('unilend.service.risk_data_monitoring_manager')->hasMonitoringEvent($this->companies->siren);
 
             if (isset($_POST['problematic_status']) && $this->projects->status != $_POST['problematic_status']) {
-                $this->problematicStatusForm($_POST['problematic_status']);
+                $this->problematicStatusForm();
             } elseif (isset($_POST['last_annual_accounts'])) {
                 $this->projects->id_dernier_bilan = $_POST['last_annual_accounts'];
                 $this->projects->update();
@@ -697,7 +697,8 @@ class dossiersController extends bootstrap
             $this->aCompanyProjects      = $this->companies->getProjectsBySIREN();
             $this->iCompanyProjectsCount = count($this->aCompanyProjects);
             $this->fCompanyOwedCapital   = $this->companies->getOwedCapitalBySIREN();
-            $this->bIsProblematicCompany = $this->companies->countProblemsBySIREN() > 0;
+            $companiesRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+            $this->bIsProblematicCompany = $companiesRepository->isProblematicCompany($this->companies->siren);
 
             /** @var \product $product */
             $product = $this->loadData('product');
@@ -833,14 +834,12 @@ class dossiersController extends bootstrap
         return $total;
     }
 
-    private function problematicStatusForm($iStatus)
+    private function problematicStatusForm()
     {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
-        $projectManager = $this->get('unilend.service.project_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager $projectRepaymentTaskManager */
-        $projectRepaymentTaskManager = $this->get('unilend.service_repayment.project_repayment_task_manager');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+        $projectManager = $this->get('unilend.service.project_manager');
         $projectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['problematic_status'], $this->projects);
 
         $this->projects_status_history->loadLastProjectHistory($this->projects->id_project);
@@ -848,316 +847,47 @@ class dossiersController extends bootstrap
         /** @var \projects_status_history_details $projectStatusHistoryDetails */
         $projectStatusHistoryDetails                            = $this->loadData('projects_status_history_details');
         $projectStatusHistoryDetails->id_project_status_history = $this->projects_status_history->id_project_status_history;
-        $projectStatusHistoryDetails->date                      = isset($_POST['decision_date']) ? date('Y-m-d', strtotime(str_replace('/', '-', $_POST['decision_date']))) : null;
-        $projectStatusHistoryDetails->receiver                  = isset($_POST['receiver']) ? $_POST['receiver'] : '';
         $projectStatusHistoryDetails->mail_content              = isset($_POST['mail_content']) ? $_POST['mail_content'] : '';
-        $projectStatusHistoryDetails->site_content              = isset($_POST['site_content']) ? $_POST['site_content'] : '';
         $projectStatusHistoryDetails->create();
 
-        // Disable automatic repayment
         $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
-        $projectRepaymentTaskManager->disableAutomaticRepayment($project);
 
-        // Disable automatic debits
-        if (in_array($iStatus, array(ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE, ProjectsStatus::DEFAUT))) {
-            /** @var \prelevements $prelevements */
-            $prelevements  = $this->loadData('prelevements');
-            $aDirectDebits = $prelevements->select('id_project = ' . $this->projects->id_project . ' AND status = 0 AND type_prelevement = 1 AND date_execution_demande_prelevement > NOW()');
-
-            if (is_array($aDirectDebits)) {
-                foreach ($aDirectDebits as $aDirectDebit) {
-                    $prelevements->get($aDirectDebit['id_prelevement']);
-                    $prelevements->status = \prelevements::STATUS_TEMPORARILY_BLOCKED;
-                    $prelevements->update();
-                }
-            }
+        // This will be displayed on lender loans notifications table
+        if (false === empty($_POST['site_content'])) {
+            $user                = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+            $projectNotification = new ProjectNotification();
+            $projectNotification->setIdProject($project)
+                ->setSubject('Remboursement en retard')
+                ->setContent($_POST['site_content'])
+                ->setIdUser($user);
         }
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        $projectStatusManager = $this->get('unilend.service.project_status_manager');
 
         if (1 == $_POST['send_email_borrower']) {
-            $this->sendProblemStatusEmailBorrower($iStatus);
+            try {
+                $projectStatusManager->sendProblemStatusEmailToBorrower($project);
+            } catch (\Exception $exception) {
+                $this->get('logger')->warning(
+                    'Problem status email was not sent to borrower. Error : ' . $exception->getMessage(),
+                    ['id_project' => $project->getIdProject(), 'method' => __METHOD__]
+                );
+            }
         }
 
-        if (false === empty($_POST['send_email'])) {
-            $this->sendProblemStatusEmailLender($iStatus, $projectStatusHistoryDetails);
+        if (false === empty($_POST['send_email']) || ProjectsStatus::LOSS == $_POST['problematic_status']) {
+            try {
+                $projectStatusManager->sendProblemStatusNotificationsToLenders($project);
+            } catch (\Exception $exception) {
+                $this->get('logger')->warning(
+                    'Problem status email was not sent to lenders. Error : ' . $exception->getMessage(),
+                    ['id_project' => $project->getIdProject(), 'method' => __METHOD__]
+                );
+            }
         }
 
-        header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+        header('Location: ' . $this->lurl . '/dossiers/edit/' . $project->getIdProject());
         die;
-    }
-
-    private function sendProblemStatusEmailBorrower($iStatus)
-    {
-        $aReplacements = array();
-
-        switch ($iStatus) {
-            case ProjectsStatus::PROBLEME:
-                $sMailType = 'emprunteur-projet-statut-probleme';
-                break;
-            case ProjectsStatus::PROBLEME_J_X:
-                $sMailType = 'emprunteur-projet-statut-probleme-j-x';
-                break;
-            case ProjectsStatus::RECOUVREMENT:
-                $sMailType = 'emprunteur-projet-statut-recouvrement';
-                break;
-            case ProjectsStatus::PROCEDURE_SAUVEGARDE:
-                $sMailType = 'emprunteur-projet-statut-procedure-sauvegarde';
-                break;
-            case ProjectsStatus::REDRESSEMENT_JUDICIAIRE:
-                $sMailType = 'emprunteur-projet-statut-redressement-judiciaire';
-                break;
-            case ProjectsStatus::LIQUIDATION_JUDICIAIRE:
-                $sMailType = 'emprunteur-projet-statut-liquidation-judiciaire';
-                break;
-            default:
-                return;
-        }
-
-        $this->settings->get('Facebook', 'type');
-        $sFacebookURL = $this->settings->value;
-
-        $this->settings->get('Twitter', 'type');
-        $sTwitterURL = $this->settings->value;
-
-        $this->settings->get('Virement - BIC', 'type');
-        $sBIC = $this->settings->value;
-
-        $this->settings->get('Virement - IBAN', 'type');
-        $sIBAN = $this->settings->value;
-
-        $this->settings->get('Téléphone emprunteur', 'type');
-        $sBorrowerPhoneNumber = $this->settings->value;
-
-        $this->settings->get('Adresse emprunteur', 'type');
-        $sBorrowerEmail = $this->settings->value;
-
-        $oPaymentSchedule = $this->loadData('echeanciers_emprunteur');
-        $oPaymentSchedule->get($this->projects->id_project, 'ordre = 1 AND id_project');
-
-        if (in_array($iStatus, array(ProjectsStatus::PROBLEME, ProjectsStatus::PROBLEME_J_X))) {
-            $aNextRepayment = $oPaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND date_echeance_emprunteur > "' . date('Y-m-d') . '"', 'date_echeance_emprunteur ASC', 0, 1);
-            $oNow           = new \DateTime();
-            $aReplacements['delai_regularisation'] = $oNow->diff(new \DateTime($aNextRepayment[0]['date_echeance_emprunteur']))->days;
-            if ($aReplacements['delai_regularisation'] >= 2) {
-                $aReplacements['delai_regularisation'] .= ' jours';
-            } else {
-                $aReplacements['delai_regularisation'] .= ' jour';
-            }
-        }
-
-        if (in_array($iStatus, array(ProjectsStatus::RECOUVREMENT, ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE))) {
-            /** @var \echeanciers $oLenderRepaymentSchedule */
-            $oLenderRepaymentSchedule = $this->loadData('echeanciers');
-            $aReplacements['CRD'] = $this->ficelle->formatNumber($oLenderRepaymentSchedule->getOwedCapital(array('id_project' => $this->projects->id_project)));
-
-            if (ProjectsStatus::RECOUVREMENT == $iStatus) {
-                $aReplacements['mensualites_impayees'] = $this->ficelle->formatNumber($oLenderRepaymentSchedule->getUnpaidAmountAtDate($this->projects->id_project, new \DateTime('NOW')));
-            }
-        }
-
-        $aFundingDate = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . ProjectsStatus::REMBOURSEMENT . ')', 'added ASC, id_project_status_history ASC', 0, 1);
-        $iFundingTime = strtotime($aFundingDate[0]['added']);
-
-        $aReplacements = $aReplacements + array(
-                'url'                  => $this->furl,
-                'surl'                 => $this->surl,
-                'civilite_e'           => $this->clients->civilite,
-                'nom_e'                => $this->clients->nom,
-                'prenom_e'             => $this->clients->prenom,
-                'entreprise'           => $this->companies->name,
-                'montant_emprunt'      => $this->ficelle->formatNumber($this->projects->amount, 0),
-                'mensualite_e'         => $this->ficelle->formatNumber(($oPaymentSchedule->montant + $oPaymentSchedule->commission + $oPaymentSchedule->tva) / 100),
-                'num_dossier'          => $this->projects->id_project,
-                'nb_preteurs'          => $this->loans->getNbPreteurs($this->projects->id_project),
-                'date_financement'     => htmlentities($this->dates->tableauMois['fr'][date('n', $iFundingTime)], null, 'UTF-8') . date(' Y', $iFundingTime), // @todo intl
-                'lien_pouvoir'         => $this->furl . '/pdf/pouvoir/' . $this->clients->hash . '/' . $this->projects->id_project,
-                'societe_recouvrement' => $this->cab,
-                'bic_sfpmei'           => $sBIC,
-                'iban_sfpmei'          => $sIBAN,
-                'tel_emprunteur'       => $sBorrowerPhoneNumber,
-                'email_emprunteur'     => $sBorrowerEmail,
-                'lien_fb'              => $sFacebookURL,
-                'lien_tw'              => $sTwitterURL,
-                'annee'                => date('Y')
-            );
-
-        $this->mail_template->get($sMailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
-        $aReplacements['sujet'] = $this->mail_template->subject;
-
-        /** @var LoggerInterface $logger */
-        $logger = $this->get('logger');
-        $logger->debug('Mail to send : ' . $sMailType . ' Variables : ' . json_encode($aReplacements), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project]);
-
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMailType, $aReplacements);
-        try {
-            $message->setTo($this->clients->email);
-            $mailer = $this->get('mailer');
-            $mailer->send($message);
-        } catch (\Exception $exception) {
-            $this->get('logger')->warning(
-                'Could not send email: ' . $sMailType . ' - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $this->clients->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
-        }
-    }
-
-    private function sendProblemStatusEmailLender($iStatus, $projectStatusHistoryDetails)
-    {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager       = $this->get('doctrine.orm.entity_manager');
-        /** @var NumberFormatter $numberFormatter */
-        $numberFormatter     = $this->get('number_formatter');
-        $walletRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-
-
-        $this->settings->get('Facebook', 'type');
-        $sFacebookURL = $this->settings->value;
-
-        $this->settings->get('Twitter', 'type');
-        $sTwitterURL = $this->settings->value;
-
-        $aCommonReplacements = array(
-            'url'                    => $this->furl,
-            'surl'                   => $this->surl,
-            'lien_fb'                => $sFacebookURL,
-            'lien_tw'                => $sTwitterURL,
-            'societe_recouvrement'   => $this->cab,
-            'contenu_mail'           => nl2br($projectStatusHistoryDetails->mail_content),
-            'coordonnees_mandataire' => nl2br($projectStatusHistoryDetails->receiver)
-        );
-
-        switch ($iStatus) {
-            case ProjectsStatus::PROBLEME:
-                $iNotificationType = Notifications::TYPE_PROJECT_PROBLEM;
-                $sEmailTypePerson  = 'preteur-projet-statut-probleme';
-                $sEmailTypeSociety = 'preteur-projet-statut-probleme';
-                break;
-            case ProjectsStatus::PROBLEME_J_X:
-                $iNotificationType = Notifications::TYPE_PROJECT_PROBLEM_REMINDER;
-                $sEmailTypePerson  = 'preteur-projet-statut-probleme-j-x';
-                $sEmailTypeSociety = 'preteur-projet-statut-probleme-j-x';
-                break;
-            case ProjectsStatus::RECOUVREMENT:
-                $iNotificationType = Notifications::TYPE_PROJECT_RECOVERY;
-                $sEmailTypePerson  = 'preteur-projet-statut-recouvrement';
-                $sEmailTypeSociety = 'preteur-projet-statut-recouvrement';
-                break;
-            case ProjectsStatus::PROCEDURE_SAUVEGARDE:
-                $iNotificationType = Notifications::TYPE_PROJECT_PRECAUTIONARY_PROCESS;
-                $sEmailTypePerson  = 'preteur-projet-statut-procedure-sauvegarde';
-                $sEmailTypeSociety = 'preteur-projet-statut-procedure-sauvegarde';
-                break;
-            case ProjectsStatus::REDRESSEMENT_JUDICIAIRE:
-                $iNotificationType  = Notifications::TYPE_PROJECT_RECEIVERSHIP;
-                $aCollectiveProcess = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status = ' . ProjectsStatus::PROCEDURE_SAUVEGARDE . ')', 'added ASC, id_project_status_history ASC', 0, 1);
-
-                if (empty($aCollectiveProcess)) {
-                    $sEmailTypePerson  = 'preteur-projet-statut-redressement-judiciaire';
-                    $sEmailTypeSociety = 'preteur-projet-statut-redressement-judiciaire';
-                } else {
-                    $sEmailTypePerson  = 'preteur-projet-statut-redressement-judiciaire-post-procedure';
-                    $sEmailTypeSociety = 'preteur-projet-statut-redressement-judiciaire-post-procedure';
-                }
-                break;
-            case ProjectsStatus::LIQUIDATION_JUDICIAIRE:
-                $iNotificationType  = Notifications::TYPE_PROJECT_COMPULSORY_LIQUIDATION;
-                $aCollectiveProcess = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status IN (' . ProjectsStatus::PROCEDURE_SAUVEGARDE . ', ' . ProjectsStatus::REDRESSEMENT_JUDICIAIRE . '))', 'added ASC, id_project_status_history ASC', 0, 1);
-
-                if (empty($aCollectiveProcess)) {
-                    $sEmailTypePerson  = 'preteur-projet-statut-liquidation-judiciaire';
-                    $sEmailTypeSociety = 'preteur-projet-statut-liquidation-judiciaire';
-                } else {
-                    $sEmailTypePerson  = 'preteur-projet-statut-liquidation-judiciaire-post-procedure';
-                    $sEmailTypeSociety = 'preteur-projet-statut-liquidation-judiciaire-post-procedure';
-                }
-                break;
-            case ProjectsStatus::DEFAUT:
-                $iNotificationType = Notifications::TYPE_PROJECT_FAILURE;
-                $sEmailTypePerson  = 'preteur-projet-statut-defaut-personne-physique';
-                $sEmailTypeSociety = 'preteur-projet-statut-defaut-personne-morale';
-
-                $aCompulsoryLiquidation = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . ProjectsStatus::LIQUIDATION_JUDICIAIRE . ')', 'added ASC, id_project_status_history ASC', 0, 1);
-                $aCommonReplacements['date_annonce_liquidation_judiciaire'] = date('d/m/Y', strtotime($aCompulsoryLiquidation[0]['added']));
-                break;
-        }
-
-        $aRepaymentStatus = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . ProjectsStatus::REMBOURSEMENT . ')', 'added ASC, id_project_status_history ASC', 0, 1);
-        $aCommonReplacements['annee_projet'] = date('Y', strtotime($aRepaymentStatus[0]['added']));
-
-        if (in_array($iStatus, [ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE])) {
-            $oMaxClaimsSendingDate = new \DateTime($projectStatusHistoryDetails->date);
-            $aCommonReplacements['date_max_envoi_declaration_creances'] = date('d/m/Y', $oMaxClaimsSendingDate->add(new \DateInterval('P2M'))->getTimestamp());
-        }
-
-        $aLenderLoans = $this->loans->getProjectLoansByLender($this->projects->id_project);
-
-        if (is_array($aLenderLoans)) {
-            $aNextRepayment = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND date_echeance > "' . date('Y-m-d') . '"', 'date_echeance ASC', 0, 1);
-            /** @var LoggerInterface $logger */
-            $logger = $this->get('logger');
-
-            foreach ($aLenderLoans as $aLoans) {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
-                $wallet = $walletRepository->find($aLoans['id_lender']);
-
-                $netRepayment = 0.0;
-                $loansCount   = $aLoans['cnt'];
-                $loansAmount  = round(bcdiv($aLoans['amount'], 100, 4), 2);
-
-                foreach ($this->echeanciers->select('id_loan IN (' . $aLoans['loans'] . ') AND id_project = ' . $this->projects->id_project . ' AND status = 1') as $aPayment) {
-                    $netRepayment += $operationRepository->getNetAmountByRepaymentScheduleId($aPayment['id_echeancier']);
-                }
-
-                $this->notifications->type       = $iNotificationType;
-                $this->notifications->id_lender  = $aLoans['id_lender'];
-                $this->notifications->id_project = $this->projects->id_project;
-                $this->notifications->amount     = bcsub($loansAmount, 100);
-                $this->notifications->id_bid     = 0;
-                $this->notifications->create();
-
-                if (
-                    in_array($iStatus, [ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE, ProjectsStatus::DEFAUT])
-                    || $this->clients_gestion_notifications->getNotif($wallet->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM, 'immediatement')
-                ) {
-                    $this->clients_gestion_mails_notif->id_client       = $wallet->getIdClient()->getIdClient();
-                    $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM;
-                    $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                    $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
-                    $this->clients_gestion_mails_notif->id_loan         = 0;
-                    $this->clients_gestion_mails_notif->immediatement   = 1;
-                    $this->clients_gestion_mails_notif->create();
-
-                    $aReplacements = $aCommonReplacements + [
-                        'prenom_p'                    => $wallet->getIdClient()->getPrenom(),
-                        'entreprise'                  => $this->companies->name,
-                        'montant_pret'                => $numberFormatter->format($loansAmount),
-                        'montant_rembourse'           => '<span style=\'color:#b20066;\'>' . $numberFormatter->format($netRepayment) . '&nbsp;euros</span> vous ont d&eacute;j&agrave; &eacute;t&eacute; rembours&eacute;s.<br/><br/>',
-                        'nombre_prets'                => $loansCount . ' ' . (($loansCount > 1) ? 'pr&ecirc;ts' : 'pr&ecirc;t'), // @todo intl
-                        'date_prochain_remboursement' => $this->dates->formatDate($aNextRepayment[0]['date_echeance'], 'd/m/Y'), // @todo intl
-                        'CRD'                         => $numberFormatter->format($loansAmount - $netRepayment)
-                    ];
-
-                    $sMailType = ($wallet->getIdClient()->isNaturalPerson()) ? $sEmailTypePerson : $sEmailTypeSociety;
-                    $locale    = $this->getParameter('locale');
-                    $this->mail_template->get($sMailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $locale . '" AND type');
-                    $aReplacements['sujet'] = $this->mail_template->subject;
-
-                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMailType, $aReplacements);
-                    try {
-                        $message->setTo($wallet->getIdClient()->getEmail());
-                        $mailer = $this->get('mailer');
-                        $mailer->send($message);
-                    } catch (\Exception $exception) {
-                        $logger->warning(
-                            'Could not send email: ' . $sMailType . ' - Exception: ' . $exception->getMessage(),
-                            ['id_mail_template' => $message->getTemplateId(), 'id_client' => $wallet->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-                        );
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -1286,11 +1016,13 @@ class dossiersController extends bootstrap
         $oCompanyRating = $this->loadData('company_rating');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\CompaniesRepository $companiesRepository */
+        $companiesRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies');
 
-        $this->ratings                 = $oCompanyRating->getHistoryRatingsByType($this->oProject->id_company_rating_history);
+        $this->ratings                  = $oCompanyRating->getHistoryRatingsByType($this->oProject->id_company_rating_history);
         $this->aAnnualAccounts          = $oAnnualAccounts->select('id_company = ' . $this->oCompany->id_company . ' AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $this->oProject->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
         $aAnnualAccountsIds             = array_column($this->aAnnualAccounts, 'id_bilan');
-        $this->bIsProblematicCompany    = $this->oCompany->countProblemsBySIREN() > 0;
+        $this->bIsProblematicCompany    = $companiesRepository->isProblematicCompany($this->oCompany->siren);
         $this->iDeclaredRevenue         = $this->oProject->ca_declara_client;
         $this->iDeclaredOperatingIncome = $this->oProject->resultat_exploitation_declara_client;
         $this->iDeclaredCapitalStock    = $this->oProject->fonds_propres_declara_client;
@@ -1595,7 +1327,7 @@ class dossiersController extends bootstrap
                 if (null !== $clientEntity && $clientManager->isBorrower($clientEntity)) {
                     $companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity->getIdClient()]);
                 } else {
-                    $_SESSION['freeow']['title']   = 'La création n\' pas abouti';
+                    $_SESSION['freeow']['title']   = 'Erreur';
                     $_SESSION['freeow']['message'] = 'Le client selectioné n\'est pas un emprunteur.';
                     header('Location: ' . $this->lurl . '/dossiers/add/create');
                     die;
@@ -1671,6 +1403,18 @@ class dossiersController extends bootstrap
             $entityManager->flush($companyEntity);
 
             $this->get('unilend.service.wallet_creation_manager')->createWallet($clientEntity, WalletType::BORROWER);
+
+            $companyStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus');
+            $userRepository          = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
+            $companyManager = $this->get('unilend.service.company_manager');
+            $companyManager->addCompanyStatus(
+                $companyEntity,
+                $companyStatusRepository->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus::STATUS_IN_BONIS]),
+                $userRepository->find($_SESSION['user']['id_user'])
+            );
+
             $entityManager->getConnection()->commit();
         } catch (Exception $exception) {
             $entityManager->getConnection()->rollBack();
@@ -1722,7 +1466,7 @@ class dossiersController extends bootstrap
     {
         $this->setView('remboursements');
         $this->pageTitle = 'Incidents de remboursement';
-        $this->listing([ProjectsStatus::PROBLEME, ProjectsStatus::RECOUVREMENT, ProjectsStatus::PROBLEME_J_X, ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE, ProjectsStatus::DEFAUT]);
+        $this->listing([ProjectsStatus::PROBLEME, ProjectsStatus::LOSS]);
     }
 
     private function listing(array $aStatus)
@@ -2859,6 +2603,20 @@ class dossiersController extends bootstrap
                     $company->siren                         = filter_var($_POST['siren'], FILTER_SANITIZE_NUMBER_INT);
                     $company->status_adresse_correspondance = 1;
                     $company->create();
+
+                    /** @var \Doctrine\ORM\EntityManager $entityManager */
+                    $entityManager           = $this->get('doctrine.orm.entity_manager');
+                    $companyRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+                    $companyStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus');
+                    $userRepository          = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
+                    $companyManager = $this->get('unilend.service.company_manager');
+                    $companyManager->addCompanyStatus(
+                        $companyRepository->find($company->id_company),
+                        $companyStatusRepository->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus::STATUS_IN_BONIS]),
+                        $userRepository->find($_SESSION['user']['id_user'])
+                    );
 
                     $this->projects->id_target_company = $company->id_company;
                     $this->projects->update();

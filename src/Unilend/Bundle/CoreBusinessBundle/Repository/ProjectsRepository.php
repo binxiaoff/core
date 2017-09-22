@@ -2,10 +2,13 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
+use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\ORM\Query\Expr\Join;
 use PDO;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
 use Unilend\librairies\CacheKeys;
 use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
@@ -200,8 +203,8 @@ class ProjectsRepository extends EntityRepository
             'projectStatus' => $projectStatus
         ];
         $bindTypes = [
-            'startPeriod'   => \PDO::PARAM_STR,
-            'projectStatus' => \PDO::PARAM_INT
+            'startPeriod'   => PDO::PARAM_STR,
+            'projectStatus' => PDO::PARAM_INT
         ];
         $query = '
             SELECT COUNT(*) AS count,
@@ -227,7 +230,7 @@ class ProjectsRepository extends EntityRepository
         if (null !== $client) {
             $query               .= ' AND id_client_submitter = :client';
             $binds['client']     = $client;
-            $bindTypes['client'] = \PDO::PARAM_INT;
+            $bindTypes['client'] = PDO::PARAM_INT;
         }
 
         $query .= ' GROUP BY month';
@@ -262,19 +265,30 @@ class ProjectsRepository extends EntityRepository
 
     /**
      * @param string $siren
-     * @param array  $status
+     * @param array  $projectStatus
+     * @param array  $companyStatusLabel
      *
      * @return mixed
      */
-    public function getCountProjectsBySirenAndNotInStatus($siren, array $status)
+    public function getCountProjectsBySirenAndNotInStatus($siren, array $projectStatus, array $companyStatusLabel)
     {
+        $companyStatusId = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('cs.id')
+            ->from('UnilendCoreBusinessBundle:CompanyStatus', 'cs')
+            ->where('cs.label IN (:companyStatusLabel)')
+            ->setParameter('companyStatusLabel', $companyStatusLabel, Connection::PARAM_STR_ARRAY)
+            ->getQuery()->getResult(AbstractQuery::HYDRATE_ARRAY);
+
         $queryBuilder = $this->createQueryBuilder('p');
         $queryBuilder->select('COUNT(p.idProject)')
             ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'co.idCompany = p.idCompany')
-            ->where('p.status NOT IN (:status)')
+            ->where('p.status NOT IN (:projectStatus)')
             ->andWhere('co.siren = :siren')
+            ->andWhere('co.idStatus NOT IN (:companyStatusId)')
             ->setParameter('siren', $siren)
-            ->setParameter('status', $status);
+            ->setParameter('projectStatus', $projectStatus)
+            ->setParameter('companyStatusId', $companyStatusId);
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }
@@ -364,6 +378,81 @@ class ProjectsRepository extends EntityRepository
     }
 
     /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return array
+     */
+    public function findProjectsWithDebtCollectionMissionBetweenDates(\DateTime $start, \DateTime $end)
+    {
+        $start->setTime(0, 0, 0);
+        $end->setTime(23, 59, 59);
+
+        $query = 'SELECT
+                      *
+                    FROM
+                      projects p
+                      INNER JOIN companies c ON c.id_company = p.id_company
+                      INNER JOIN company_status cs ON cs.id = c.id_status
+                      WHERE p.id_project IN
+                            (SELECT DISTINCT dcm.id_project FROM debt_collection_mission dcm WHERE dcm.added BETWEEN :start AND :end)
+                      AND cs.label = :inBonis';
+
+        $result = $this->getEntityManager()->getConnection()
+            ->executeQuery($query,
+                [
+                    'inBonis' => CompanyStatus::STATUS_IN_BONIS,
+                    'start'   => $start->format('Y-m-d H:i:s'),
+                    'end'     => $end->format('Y-m-d H:i:s')
+                ], [
+                    'inBonis' => PDO::PARAM_STR,
+                    'start'   => PDO::PARAM_STR,
+                    'end'     => PDO::PARAM_STR
+                ])->fetchAll();
+
+        return $result;
+    }
+
+    /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return array
+     */
+    public function findProjectsHavingHadCompanyStatusInCollectiveProceeding(\DateTime $start, \DateTime $end)
+    {
+        $start->setTime(0, 0, 0);
+        $end->setTime(23, 59, 59);
+
+        $query = 'SELECT *
+                    FROM (SELECT MAX(id) AS max_id
+                          FROM company_status_history csh_max
+                          GROUP BY id_company) AS csh_max
+                      INNER JOIN company_status_history csh ON csh_max.max_id = csh.id
+                      INNER JOIN company_status cs ON csh.id_status = cs.id
+                      INNER JOIN projects p ON p.id_company = csh.id_company
+                    WHERE
+                      p.status IN (:projectStatus)
+                      AND cs.label IN (:collectiveProceeding)
+                      AND csh.added BETWEEN :start AND :end';
+
+        $result = $this->getEntityManager()->getConnection()
+            ->executeQuery($query, [
+                'collectiveProceeding' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION],
+                'projectStatus'        => [ProjectsStatus::PROBLEME, ProjectsStatus::LOSS],
+                'start'                => $start->format('Y-m-d H:i:s'),
+                'end'                  => $end->format('Y-m-d H:i:s')
+            ], [
+                'collectiveProceeding' => Connection::PARAM_STR_ARRAY,
+                'projectStatus'        => Connection::PARAM_INT_ARRAY,
+                'start'                => PDO::PARAM_STR,
+                'end'                  => PDO::PARAM_STR
+            ])->fetchAll();
+
+        return $result;
+    }
+
+    /**
      * @param \DateTime $end
      *
      * @return array
@@ -380,9 +469,20 @@ class ProjectsRepository extends EntityRepository
                                   GROUP BY id_project) t ON t.max_id_project_status_history = psh.id_project_status_history
                       INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                     WHERE psh.added <= :end AND ps.status >= ' . ProjectsStatus::REMBOURSEMENT . '
-                    AND ps.status NOT IN (' . implode(',', [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::DEFAUT]) . ')';
+                    AND ps.status NOT IN (:projectStatus)';
 
-        $result = $this->getEntityManager()->getConnection()->executeQuery($query, ['end' => $end->format('Y-m-d H:i:s')])->fetchAll();
+        $result = $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery(
+                $query,
+                [
+                    'end'           => $end->format('Y-m-d H:i:s'),
+                    'projectStatus' => [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::LOSS]
+                ], [
+                    'end'           => PDO::PARAM_STR,
+                    'projectStatus' => Connection::PARAM_INT_ARRAY
+                ]
+            )->fetchAll();
 
         return $result;
     }
@@ -416,6 +516,22 @@ class ProjectsRepository extends EntityRepository
         if (is_int($limit)) {
             $queryBuilder->setMaxResults($limit);
         }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param int|Companies $companyId
+     *
+     * @return Projects[]
+     */
+    public function findFundedButNotRepaidProjectsByCompany($companyId)
+    {
+        $queryBuilder = $this->createQueryBuilder('p')
+            ->where('p.idCompany = :companyId')
+            ->setParameter('companyId', $companyId)
+            ->andWhere('p.status IN (:projectStatus)')
+            ->setParameter('projectStatus', [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME, ProjectsStatus::LOSS]);
 
         return $queryBuilder->getQuery()->getResult();
     }

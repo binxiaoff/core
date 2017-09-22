@@ -118,6 +118,7 @@ class EcheanciersEmprunteurRepository extends EntityRepository
      */
     public function findPaymentSchedulesToInvoice($limit)
     {
+        /** @todo To test suite merge **/
         $queryBuilder = $this->createQueryBuilder('ee');
         $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'ee.idProject = p.idProject')
             ->leftJoin('UnilendCoreBusinessBundle:Factures', 'f', Join::WITH, 'ee.idProject = f.idProject AND f.ordre = ee.ordre')
@@ -129,5 +130,41 @@ class EcheanciersEmprunteurRepository extends EntityRepository
             ->setMaxResults($limit);
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param int $projectId
+     *
+     * @return mixed
+     */
+    public function getUnpaidPaymentScheduleCount($projectId)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee')
+            ->select('COUNT(ee.idEcheancierEmprunteur)')
+            ->where('ee.idProject = :projectId')
+            ->setParameter('projectId', $projectId)
+            ->andWhere('ee.statusEmprunteur = :pending')
+            ->setParameter('pending', EcheanciersEmprunteur::STATUS_PENDING)
+            ->andWhere('ee.dateEcheanceEmprunteur <= NOW()');
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param int|Projects $projectId
+     *
+     * @return null|EcheanciersEmprunteur
+     */
+    public function getNextPaymentSchedule($projectId)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee')
+            ->where('ee.idProject = :projectId')
+            ->setParameter('projectId', $projectId)
+            ->andWhere('DATE(ee.dateEcheanceEmprunteur) > :now')
+            ->setParameter('now', (new \DateTime())->format('Y-m-d'))
+            ->orderBy('ee.dateEcheanceEmprunteur', 'ASC')
+            ->setMaxResults(1);
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 }

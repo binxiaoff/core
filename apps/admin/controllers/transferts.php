@@ -673,7 +673,7 @@ class transfertsController extends bootstrap
 
             /** @var \loans $loans */
             $loans                 = $this->loadData('loans');
-            $loansInRepayment      = $loans->getLoansForProjectsWithStatus($originalWallet->getId(), array_merge(\projects_status::$runningRepayment, [\projects_status::FUNDE]));
+            $loansInRepayment      = $loans->getLoansForProjectsWithStatus($originalWallet->getId(), [ProjectsStatus::FUNDE, ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME]);
             $originalClientBalance = $originalWallet->getAvailableBalance();
 
             if (isset($_POST['succession_check'])) {

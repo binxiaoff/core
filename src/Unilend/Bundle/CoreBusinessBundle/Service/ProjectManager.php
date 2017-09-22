@@ -17,6 +17,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use PhpXmlRpc\Client as soapClient;
@@ -57,6 +58,8 @@ class ProjectManager
     private $logger;
     /** @var SponsorshipManager */
     private $sponsorshipManager;
+    /** @var ProjectRepaymentTaskManager */
+    private $projectRepaymentTaskManager;
 
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -71,7 +74,8 @@ class ProjectManager
         SlackManager $slackManager,
         RiskDataMonitoringManager $riskDataMonitoringManager,
         SponsorshipManager $sponsorshipManager,
-        $universignUrl
+        $universignUrl,
+        ProjectRepaymentTaskManager $projectRepaymentTaskManager
     )
     {
         $this->entityManagerSimulator     = $entityManagerSimulator;
@@ -87,6 +91,7 @@ class ProjectManager
         $this->riskDataMonitoringManger   = $riskDataMonitoringManager;
         $this->sponsorshipManager         = $sponsorshipManager;
         $this->universignUrl              = $universignUrl;
+        $this->projectRepaymentTaskManager = $projectRepaymentTaskManager;
 
         $this->datesManager = Loader::loadLib('dates');
         $this->workingDay   = Loader::loadLib('jours_ouvres');
@@ -973,10 +978,10 @@ class ProjectManager
                 break;
             case ProjectsStatus::REMBOURSE:
             case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
-            case ProjectsStatus::LIQUIDATION_JUDICIAIRE:
-            case ProjectsStatus::REDRESSEMENT_JUDICIAIRE:
-            case ProjectsStatus::PROCEDURE_SAUVEGARDE:
                 $this->riskDataMonitoringManger->stopMonitoringForSiren($project->getIdCompany()->getSiren());
+                break;
+            case ProjectsStatus::PROBLEME:
+                $this->projectRepaymentTaskManager->disableAutomaticRepayment($project);
                 break;
         }
     }

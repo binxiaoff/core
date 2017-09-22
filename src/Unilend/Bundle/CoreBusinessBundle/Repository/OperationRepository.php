@@ -121,7 +121,7 @@ class OperationRepository extends EntityRepository
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                         WHERE ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
                         AND psh.added <= :end
-                        AND p.status != ' . ProjectsStatus::DEFAUT;
+                        AND p.status != ' . ProjectsStatus::LOSS;
 
         $query = '
             SELECT IFNULL(SUM(o_loan.amount), 0) - (

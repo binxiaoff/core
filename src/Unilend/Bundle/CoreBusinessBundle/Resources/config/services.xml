@@ -89,6 +89,7 @@
             <argument type="service" id="unilend.service.risk_data_monitoring_manager"/>
             <argument type="service" id="unilend.service.sponsorship_manager"/>
             <argument>%url.universign%</argument>
+            <argument type="service" id="unilend.service_repayment.project_repayment_task_manager"/>
             <call method="setLogger">
                 <argument type="service" id="logger" on-invalid="null"/>
             </call>
@@ -216,6 +217,13 @@
         <service id="unilend.service.project_status_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="translator"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="number_formatter"/>
+            <argument type="service" id="assets.packages"/>
+            <argument type="service" id="unilend.swiftmailer.message_provider"/>
+            <argument type="service" id="mailer"/>
+            <argument type="service" id="logger"/>
+            <argument>%router.request_context.scheme%://%url.host_default%</argument>
         </service>
 
         <service id="unilend.service.partner_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager">
@@ -397,5 +405,11 @@
             <argument type="service" id="logger"/>
         </service>
 
+        <service id="unilend.service.company_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="translator"/>
+            <argument type="service" id="unilend.service.project_manager"/>
+            <argument type="service" id="unilend.service.risk_data_monitoring_manager"/>
+        </service>
     </services>
 </container>

@@ -135,7 +135,7 @@
   }
 }
 .table-myloans-item, .table-myloans-view-details {
-  &.ui-loan-status-inprogress {
+  &.ui-loan-status-in-progress {
     td:first-child {
       border-color: $c-chart-teal-d;
     }
@@ -153,23 +153,23 @@
     }
   }
 
-  &.ui-loan-status-completing,
+  &.ui-loan-status-amicable-dc,
+  &.ui-loan-status-litigation-dc,
   &.ui-loan-status-recovery {
     td:first-child {
       border-color: $c-chart-yellow;
     }
   }
 
-  &.ui-loan-status-problem,
-  &.ui-loan-status-defaulting {
+  &.ui-loan-status-proceeding {
     td:first-child {
       border-color: $c-chart-orange;
     }
   }
 
-  &.ui-loan-status-defaulted {
+  &.ui-loan-status-loass {
     td:first-child {
-      border-color: $c-chart-red;
+      border-color: $c-chart-grey;
     }
   }
 
@@ -347,7 +347,7 @@
   background-repeat: no-repeat;
   background-position: center center;
   vertical-align: middle;
-  
+
   .pip {
     top: -2px;
   }
