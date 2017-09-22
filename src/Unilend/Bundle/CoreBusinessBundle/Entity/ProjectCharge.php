@@ -14,6 +14,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ProjectCharge
 {
+    const STATUS_PENDING = 0;
+    const STATUS_PAID    = 1;
+
     /**
      * @var int
      *
