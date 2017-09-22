@@ -24,7 +24,7 @@ class DebtCollectionMissionPaymentSchedule
     /**
      * @var DebtCollectionMission
      *
-     * @ORM\ManyToOne(targetEntity="DebtCollectionMission")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_mission", referencedColumnName="id")
      * })
@@ -34,7 +34,7 @@ class DebtCollectionMissionPaymentSchedule
     /**
      * @var EcheanciersEmprunteur
      *
-     * @ORM\ManyToOne(targetEntity="EcheanciersEmprunteur")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_payment_schedule", referencedColumnName="id_echeancier_emprunteur")
      * })
