@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 
 class EcheanciersEmprunteurRepository extends EntityRepository
@@ -50,5 +51,41 @@ class EcheanciersEmprunteurRepository extends EntityRepository
         );
 
         return $resultPaymentSchedule && $resultRepaymentSchedule;
+    }
+
+    /**
+     * @param int $projectId
+     *
+     * @return mixed
+     */
+    public function getUnpaidPaymentScheduleCount($projectId)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee')
+            ->select('COUNT(ee.idEcheancierEmprunteur)')
+            ->where('ee.idProject = :projectId')
+            ->setParameter('projectId', $projectId)
+            ->andWhere('ee.statusEmprunteur = :pending')
+            ->setParameter('pending', EcheanciersEmprunteur::STATUS_PENDING)
+            ->andWhere('ee.dateEcheanceEmprunteur <= NOW()');
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param int|Projects $projectId
+     *
+     * @return null|EcheanciersEmprunteur
+     */
+    public function getNextPaymentSchedule($projectId)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee')
+            ->where('ee.idProject = :projectId')
+            ->setParameter('projectId', $projectId)
+            ->andWhere('DATE(ee.dateEcheanceEmprunteur) > :now')
+            ->setParameter('now', (new \DateTime())->format('Y-m-d'))
+            ->orderBy('ee.dateEcheanceEmprunteur', 'ASC')
+            ->setMaxResults(1);
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 }

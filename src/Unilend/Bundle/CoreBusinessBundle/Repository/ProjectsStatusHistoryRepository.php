@@ -5,7 +5,6 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use DateTime;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
@@ -69,30 +68,6 @@ class ProjectsStatusHistoryRepository extends EntityRepository
     }
 
     /**
-     * @param Projects|int $project
-     * @param int          $projectStatus
-     *
-     * @return array
-     */
-    public function getHistoryAfterGivenStatus($project, $projectStatus)
-    {
-        if ($project instanceof Projects) {
-            $project = $project->getIdProject();
-        }
-
-        $queryBuilder = $this->createQueryBuilder('psh');
-        $queryBuilder->select('psh.idProject, psh.idProjectStatusHistory, ps.status, ps.label, pshd.siteContent, psh.added')
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'ps.idProjectStatus = psh.idProjectStatus')
-            ->leftJoin('UnilendCoreBusinessBundle:ProjectsStatusHistoryDetails', 'pshd', Join::WITH, 'psh.idProjectStatusHistory = pshd.idProjectStatusHistory')
-            ->where('psh.idProject = :projectId')
-            ->andWhere('ps.status > :status')
-            ->setParameters(['projectId' => $project, 'status' => $projectStatus])
-            ->orderBy('psh.added', 'DESC');
-
-        return $queryBuilder->getQuery()->getResult(Query::HYDRATE_ARRAY);
-    }
-
-    /**
      * @param DateTime $dateAdded
      * @param array    $projectStatus
      *
@@ -122,6 +97,8 @@ class ProjectsStatusHistoryRepository extends EntityRepository
     /**
      * @param DateTime $start
      * @param DateTime $end
+     *
+     * @return int
      */
     public function getCountProjectsInRiskReviewBetweenDates(\DateTime $start, \DateTime $end)
     {

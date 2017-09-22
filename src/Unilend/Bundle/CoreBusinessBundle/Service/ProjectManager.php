@@ -17,6 +17,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use PhpXmlRpc\Client as soapClient;
@@ -55,6 +56,8 @@ class ProjectManager
     private $workingDay;
     /** @var LoggerInterface */
     private $logger;
+    /** @var ProjectRepaymentTaskManager */
+    private $projectRepaymentTaskManager;
 
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -68,21 +71,23 @@ class ProjectManager
         ContractAttributeManager $contractAttributeManager,
         SlackManager $slackManager,
         RiskDataMonitoringManager $riskDataMonitoringManager,
-        $universignUrl
+        $universignUrl,
+        ProjectRepaymentTaskManager $projectRepaymentTaskManager
     )
     {
-        $this->entityManagerSimulator     = $entityManagerSimulator;
-        $this->entityManager              = $entityManager;
-        $this->bidManager                 = $bidManager;
-        $this->loanManager                = $loanManager;
-        $this->notificationManager        = $notificationManager;
-        $this->mailerManager              = $mailerManager;
-        $this->projectRateSettingsManager = $projectRateSettingsManager;
-        $this->productManager             = $productManager;
-        $this->contractAttributeManager   = $contractAttributeManager;
-        $this->slackManager               = $slackManager;
-        $this->riskDataMonitoringManger   = $riskDataMonitoringManager;
-        $this->universignUrl              = $universignUrl;
+        $this->entityManagerSimulator      = $entityManagerSimulator;
+        $this->entityManager               = $entityManager;
+        $this->bidManager                  = $bidManager;
+        $this->loanManager                 = $loanManager;
+        $this->notificationManager         = $notificationManager;
+        $this->mailerManager               = $mailerManager;
+        $this->projectRateSettingsManager  = $projectRateSettingsManager;
+        $this->productManager              = $productManager;
+        $this->contractAttributeManager    = $contractAttributeManager;
+        $this->slackManager                = $slackManager;
+        $this->riskDataMonitoringManger    = $riskDataMonitoringManager;
+        $this->universignUrl               = $universignUrl;
+        $this->projectRepaymentTaskManager = $projectRepaymentTaskManager;
 
         $this->datesManager = Loader::loadLib('dates');
         $this->workingDay   = Loader::loadLib('jours_ouvres');
@@ -969,10 +974,10 @@ class ProjectManager
                 break;
             case ProjectsStatus::REMBOURSE:
             case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
-            case ProjectsStatus::LIQUIDATION_JUDICIAIRE:
-            case ProjectsStatus::REDRESSEMENT_JUDICIAIRE:
-            case ProjectsStatus::PROCEDURE_SAUVEGARDE:
                 $this->riskDataMonitoringManger->stopMonitoringForSiren($project->getIdCompany()->getSiren());
+                break;
+            case ProjectsStatus::PROBLEME:
+                $this->projectRepaymentTaskManager->disableAutomaticRepayment($project);
                 break;
         }
     }

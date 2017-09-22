@@ -14,6 +14,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
@@ -191,6 +192,16 @@ class ProjectRequestController extends Controller
             ->setStatusAdresseCorrespondance(1)
             ->setEmailDirigeant($email)
             ->setEmailFacture($email);
+
+        $companyStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus');
+        $userRepository          = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+
+        $companyManager = $this->get('unilend.service.company_manager');
+        $companyManager->addCompanyStatus(
+            $this->company,
+            $companyStatusRepository->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]),
+            $userRepository->find(Users::USER_ID_FRONT)
+        );
 
         $entityManager->beginTransaction();
         try {

@@ -1,30 +1,6 @@
 <?php
-// **************************************************************************************************** //
-// ***************************************    ASPARTAM    ********************************************* //
-// **************************************************************************************************** //
-//
-// Copyright (c) 2008-2011, equinoa
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-// associated documentation files (the "Software"), to deal in the Software without restriction,
-// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
-// subject to the following conditions:
-// The above copyright notice and this permission notice shall be included in all copies
-// or substantial portions of the Software.
-// The Software is provided "as is", without warranty of any kind, express or implied, including but
-// not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.
-// In no event shall the authors or copyright holders equinoa be liable for any claim,
-// damages or other liability, whether in an action of contract, tort or otherwise, arising from,
-// out of or in connection with the software or the use or other dealings in the Software.
-// Except as contained in this notice, the name of equinoa shall not be used in advertising
-// or otherwise to promote the sale, use or other dealings in this Software without
-// prior written authorization from equinoa.
-//
-//  Version : 2.4.0
-//  Date : 21/03/2011
-//  Coupable : CM
-//
-// **************************************************************************************************** //
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
 class echeanciers_emprunteur extends echeanciers_emprunteur_crud
 {
@@ -179,7 +155,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                       END AS date_range
                     FROM projects_status_history
                     INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                    WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
+                    WHERE  projects_status.status = '. ProjectsStatus::REMBOURSEMENT .'
                       AND echeanciers_emprunteur.id_project = projects_status_history.id_project
                     ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                   ) AS cohort
@@ -228,12 +204,14 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                           END AS date_range
                         FROM projects_status_history
                           INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                        WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
+                        WHERE  projects_status.status = '. ProjectsStatus::REMBOURSEMENT .'
                           AND echeanciers_emprunteur.id_project = projects_status_history.id_project
                         ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM echeanciers_emprunteur
-                      INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= '. \projects_status::REMBOURSEMENT .'
+                      INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= '. ProjectsStatus::REMBOURSEMENT .'
+                      INNER JOIN companies c ON c.id_company = projects.id_company
+                      INNER JOIN company_status cs ON cs.id = c.id_status
                     WHERE
                         echeanciers_emprunteur.status_ra = 0
                         AND
@@ -244,20 +222,25 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                               AND echeanciers_emprunteur.id_project = e2.id_project
                             LIMIT 1 ) = 0
                         AND IF(
-                                (projects.status IN ('. implode(',', [\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::DEFAUT]).')
-                                OR (projects.status >= '. \projects_status::PROBLEME . '
+                                (cs.label IN (:companyStatus)
+                                OR projects.status = ' . ProjectsStatus::LOSS . '
+                                OR (projects.status = '. ProjectsStatus::PROBLEME . '
                                     AND DATEDIFF(NOW(), (
                                                           SELECT psh2.added
                                                           FROM projects_status_history psh2
                                                             INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                                                          WHERE ps2.status = '. \projects_status::PROBLEME . '
+                                                          WHERE ps2.status = '. ProjectsStatus::PROBLEME . '
                                                             AND psh2.id_project = echeanciers_emprunteur.id_project
                                                           ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                                                           LIMIT 1
                                                           )) > 180)), TRUE, FALSE) = FALSE
                         GROUP BY cohort';
 
-        $statement = $this->bdd->executeQuery($query);
+        $statement = $this->bdd->executeQuery(
+            $query,
+            ['companyStatus' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]],
+            ['companyStatus' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_STR_ARRAY]
+        );
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -275,12 +258,14 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                           END AS date_range
                         FROM projects_status_history
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                        WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
+                        WHERE  projects_status.status = '. ProjectsStatus::REMBOURSEMENT .'
                           AND echeanciers_emprunteur.id_project = projects_status_history.id_project
                         ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM echeanciers_emprunteur
-                      INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= '. \projects_status::REMBOURSEMENT .'
+                      INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= '. ProjectsStatus::REMBOURSEMENT .'
+                      INNER JOIN companies c ON c.id_company = projects.id_company
+                      INNER JOIN company_status cs ON cs.id = c.id_status
                     WHERE
                         (
                         SELECT e2.status
@@ -298,20 +283,25 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                        LIMIT 1
                       ) >= NOW()
                     AND IF(
-                            (projects.status IN ('. implode(',', [\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::DEFAUT]).')
-                            OR (projects.status >= '. \projects_status::PROBLEME . '
+                            (cs.label IN (:companyStatus)
+                            OR projects.status = ' . ProjectsStatus::LOSS . '
+                            OR (projects.status = '. ProjectsStatus::PROBLEME . '
                                 AND DATEDIFF(NOW(), (
                                                       SELECT psh2.added
                                                       FROM projects_status_history psh2
                                                         INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                                                      WHERE ps2.status = '. \projects_status::PROBLEME . '
+                                                      WHERE ps2.status = '. ProjectsStatus::PROBLEME . '
                                                         AND psh2.id_project = echeanciers_emprunteur.id_project
                                                       ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                                                       LIMIT 1
                                                       )) > 180)), TRUE, FALSE) = FALSE
                         GROUP BY cohort';
 
-        $statement = $this->bdd->executeQuery($query);
+        $statement = $this->bdd->executeQuery(
+            $query,
+            ['companyStatus' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]],
+            ['companyStatus' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_STR_ARRAY]
+        );
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -329,12 +319,14 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                             END AS date_range
                         FROM projects_status_history
                             INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                        WHERE projects_status.status = ' . \projects_status::REMBOURSEMENT . '
+                        WHERE projects_status.status = ' . ProjectsStatus::REMBOURSEMENT . '
                             AND echeanciers_emprunteur.id_project = projects_status_history.id_project
                         ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM echeanciers_emprunteur
-                      INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= 80
+                      INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= ' . ProjectsStatus::REMBOURSEMENT . '
+                      INNER JOIN companies c ON c.id_company = projects.id_company
+                      INNER JOIN company_status cs ON cs.id = c.id_status
                     WHERE
                         (
                         SELECT lender_payment_status.status
@@ -349,19 +341,24 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                           AND echeanciers_emprunteur.id_project = lender_payment_date.id_project
                         LIMIT 1) >= NOW()
                     AND IF(
-                            projects.status IN ('. implode(',', [\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::DEFAUT]).')
-                            OR (projects.status IN ('. implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X, \projects_status::RECOUVREMENT]).')
+                            cs.label IN (:companyStatus)
+                            OR projects.status = ' . ProjectsStatus::LOSS . '
+                            OR (projects.status = ' . ProjectsStatus::PROBLEME . '
                                 AND DATEDIFF(NOW(),(
                                         SELECT psh2.added
                                         FROM projects_status_history psh2
                                           INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                                        WHERE ps2.status = ' . \projects_status::PROBLEME . '
+                                        WHERE ps2.status = ' . ProjectsStatus::PROBLEME . '
                                           AND psh2.id_project = echeanciers_emprunteur.id_project
                                         ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                                         LIMIT 1)) > 180), TRUE, FALSE) = TRUE
                     GROUP BY cohort';
 
-        $statement = $this->bdd->executeQuery($query);
+        $statement = $this->bdd->executeQuery(
+            $query,
+            ['companyStatus' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]],
+            ['companyStatus' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_STR_ARRAY]
+        );
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -378,12 +375,14 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                           END AS date_range
                         FROM projects_status_history
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                        WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
+                        WHERE  projects_status.status = '. ProjectsStatus::REMBOURSEMENT .'
                           AND echeanciers_emprunteur.id_project = projects_status_history.id_project
                         ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM echeanciers_emprunteur
-                      INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= '. \projects_status::REMBOURSEMENT .'
+                      INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= '. ProjectsStatus::REMBOURSEMENT .'
+                      INNER JOIN companies c ON c.id_company = projects.id_company
+                      INNER JOIN company_status cs ON cs.id = c.id_status
                     WHERE
                         (
                         SELECT lender_payment_status.status
@@ -400,19 +399,24 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                         LIMIT 1) < NOW()
                     AND
                         IF(
-                           (projects.status IN ('. implode(',', [\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::DEFAUT]).')
-                                OR (projects.status IN ('. implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X, \projects_status::RECOUVREMENT]).')
+                           (cs.label IN (:companyStatus)
+                                OR projects.status = ' . ProjectsStatus::LOSS . '
+                                OR (projects.status = ' . ProjectsStatus::PROBLEME . '
                                     AND DATEDIFF(NOW(),(
                                                         SELECT psh2.added
                                                         FROM projects_status_history psh2
                                                           INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                                                        WHERE ps2.status = ' . \projects_status::PROBLEME . '
+                                                        WHERE ps2.status = ' . ProjectsStatus::PROBLEME . '
                                                           AND psh2.id_project = echeanciers_emprunteur.id_project
                                                         ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                                                         LIMIT 1)) > 180)), TRUE, FALSE) = TRUE
                     GROUP BY cohort';
 
-        $statement = $this->bdd->executeQuery($query);
+        $statement = $this->bdd->executeQuery(
+            $query,
+            ['companyStatus' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]],
+            ['companyStatus' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_STR_ARRAY]
+        );
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -429,12 +433,14 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                           END AS date_range
                         FROM projects_status_history
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                        WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
+                        WHERE  projects_status.status = '. ProjectsStatus::REMBOURSEMENT .'
                           AND echeanciers_emprunteur.id_project = projects_status_history.id_project
                         ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM echeanciers_emprunteur
-                      INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= '. \projects_status::REMBOURSEMENT .'
+                      INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= '. ProjectsStatus::REMBOURSEMENT .'
+                      INNER JOIN companies c ON c.id_company = projects.id_company
+                      INNER JOIN company_status cs ON cs.id = c.id_status
                     WHERE
                         (
                         SELECT lender_payment_status.status
@@ -450,19 +456,24 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                           AND echeanciers_emprunteur.id_project = lender_payment_date.id_project
                         LIMIT 1) < NOW()
                       AND IF(
-                            projects.status IN ('. implode(',', [\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::DEFAUT]).')
-                            OR (projects.status IN ('. implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X, \projects_status::RECOUVREMENT]).')
+                            cs.label IN (:companyStatus)
+                            OR projects.status = ' . ProjectsStatus::LOSS . '
+                            OR (projects.status = ' . ProjectsStatus::PROBLEME . '
                                 AND DATEDIFF(NOW(), (
                                                     SELECT psh2.added
                                                     FROM projects_status_history psh2
                                                       INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                                                    WHERE ps2.status = ' . \projects_status::PROBLEME . '
+                                                    WHERE ps2.status = ' . ProjectsStatus::PROBLEME . '
                                                       AND psh2.id_project = echeanciers_emprunteur.id_project
                                                     ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                                                     LIMIT 1)) > 180), TRUE, FALSE) = FALSE
                     GROUP BY cohort';
 
-        $statement = $this->bdd->executeQuery($query);
+        $statement = $this->bdd->executeQuery(
+            $query,
+            ['companyStatus' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]],
+            ['companyStatus' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_STR_ARRAY]
+        );
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 }
