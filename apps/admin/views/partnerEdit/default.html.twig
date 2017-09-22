@@ -33,47 +33,104 @@
                 $sendPasswordModal.find('input[name=id]').val(id)
                 $sendPasswordModal.modal('show')
             })
-            $('.tree-js').each(function(){
-                var $tree = $(this)
-                var initialTree = $tree.html()
-                var $dd = $tree.find('.tree-js-dd')
-                $tree.before('<div class="tree-js-original hide">' + initialTree + '</div>')
-                $tree.attr('data-count', $tree.attr('data-original-count'))
-                $dd.nestable().nestable('collapseAll')
+
+            var $tree = $('#organisation .tree-js')
+            var treeBackupHtml = $tree.html()
+            $tree.before('<div class="tree-js-backup hide">' + treeBackupHtml + '</div>')
+            $tree.find('.tree-js-dd').nestable()
+//            $tree.find('.structure-input').val()
+
+            function treeAppendItem(agencyName) {
+                $tree.find('.tree-js-outer').prepend('<li class="dd-item new" data-id="newID"><div class="dd-handle">' + agencyName + '</div></li>')
+            }
+            function treeReset() {
+                $tree.html(treeBackupHtml)
+                $tree.find('.new-item-input').remove()
+                $tree.find('.tree-js-dd').nestable()
+            }
+
+            $(document).on('change', '.tree-js-dd', function(){
+                $tree.find('.reset-btn, .submit-btn').removeClass('hide')
             })
-            $(document).on('click', '.submit-btn', function(){
-                var $tree = $(this).closest('.tree-js')
-                var $formGroup = $tree.find('.tree-js-add-item')
-                var count = $tree.attr('data-count')
-                var handle = $formGroup.find('input').val()
-                if (handle === '' || handle.length < 2) {
-                    $formGroup.addClass('has-error')
-                    return false
-                } else {
-                    $formGroup.removeClass('has-error')
+
+            $(document).on('click', '.reset-btn', function(){
+                treeReset()
+            })
+
+            $(document).on('submit', '#modal-create-agency form', function(e){
+                e.preventDefault()
+                var $modal = $(this).closest('.modal')
+                var $form = $(this)
+                if (!$form.find('.has-error').length) {
+                    var name = $form.find('input[name=name]').val()
+                    treeAppendItem(name)
+                    var index = $tree.find('.new-item-input').length
+                    var $hiddenInput = $('<input type="hidden" name="new_item[' + index + ']" class="new-item-input">')
+                    $hiddenInput.val($form.serialize())
+                    $tree.append($hiddenInput)
+                    $tree.find('.tree-js-dd').trigger('change')
+                    $modal.modal('hide')
                 }
-                $tree.find('.tree-js-reset-btn').removeClass('hide')
-                $tree.find('.tree-js-outer').prepend('<li class="dd-item" data-id="' + count + '"><div class="dd-handle">' + handle + '</div></li>')
-                count++
-                $tree.attr('data-count', count)
             })
-            $(document).on('click', '.tree-js-reset-btn', function(){
-                var $tree = $(this).closest('.tree-js')
-                $(this).addClass('hide')
-                $tree.html($tree.siblings('.tree-js-original').html())
-                $tree.attr('count', $tree.attr('data-original-count'))
-                $tree.find('.tree-js-dd').nestable().nestable('collapseAll')
-            })
-            $(document).on('change', '.tree-js-dd', function() {
-                console.log($(this).nestable('serialize'))
-                var $tree = $(this).closest('.tree-js')
-                $tree.find('.tree-js-reset-btn').removeClass('hide')
+            $(document).on('submit', '#organisation form', function(e) {
+                $tree.find('.structure-input').val(JSON.stringify($tree.find('.tree-js-dd').nestable('serialize')))
             })
         })
     </script>
 {% endblock %}
 
 {% block modals %}
+    <div class="modal" id="modal-create-agency" tabindex="-1" role="dialog" aria-hidden="true">
+        <form class="modal-dialog validate">
+            <div class="modal-content">
+                <div class="block block-bordered remove-margin-b">
+                    <div class="block-header">
+                        <h3 class="block-title">Envoyer le mot de pass</h3>
+                    </div>
+                    <div class="block-content">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group" style="margin-bottom: 10px">
+                                    <label>Nom de l'entité</label>
+                                    <input type="text" class="form-control input-sm required" name="name">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 10px">
+                                    <label>SIREN</label>
+                                    <input type="text" class="form-control input-sm required" name="siren">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 10px">
+                                    <label>Ville</label>
+                                    <input type="text" class="form-control input-sm required" name="city">
+                                </div>
+                                <div class="form-group">
+                                    <label>Code postal</label>
+                                    <input type="text" class="form-control input-sm required" name="postcode">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group" style="margin-bottom: 10px">
+                                    <label>Raison sociale</label>
+                                    <input type="text" class="form-control input-sm required" name="company">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 10px">
+                                    <label>Téléphone</label>
+                                    <input type="text" class="form-control input-sm required" name="phone">
+                                </div>
+                                <div class="form-group">
+                                    <label>Adresse</label>
+                                    <input type="text" class="form-control input-sm required" name="address">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-default" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-sm btn-primary" >Valider</button>
+                </div>
+            </div>
+        </form>
+    </div>
     <div class="modal" id="modal-send-password" tabindex="-1" role="dialog" aria-hidden="true">
         <form class="modal-dialog" method="post" action="/partnerEdit/users/">
             <div class="modal-content">
@@ -96,6 +153,44 @@
     </div>
 {% endblock %}
 
+{% set products = [
+    {label: 'Product 1', description: 'Débl. 9% / Remb. 12%', value: '1', status: 'inactive'},
+    {label: 'Product 2', description: 'Débl. 9% / Remb. 12%', value: '2', status: 'active'},
+    {label: 'Product 3', description: 'Débl. 9% / Remb. 12%', value: '3', status: 'active'},
+    {label: 'Product 4', description: 'Débl. 9% / Remb. 12%', value: '4', status: 'active'}
+] %}
+
+ {% set organisation = [
+     {text: 'Axa Nord', id: '10', children: [
+         {text: 'Paris', id: '101', children:[
+             {text: 'Paris Centre', id: '1011'},
+             {text: 'Paris 16ème', id: '1012', children: [
+                 {text: 'Victor Hugo', id: '10121'},
+                 {text: 'Boissière', id: '10122'}
+             ]}
+         ]},
+     ]},
+     {text: 'Axa Sud', id: '11', children: [
+         {text: 'Marseille', id: '111', children:[
+            {text: 'La Pleine', id: '1111'},
+            {text: 'Vieux Port', id: '1112'}
+         ]}
+     ]}
+ ] %}
+
+{% set users = [
+    {id: 342442, status: 'inactive', name: 'Henry Gordon', position: 'Manager', group: 'Paris Centre', date_added: '15/05/2017', last_connection: '15/08/2017'},
+    {id: 586472, status: 'active', name: 'Sara Holland', position: 'Director', group: 'La Pleine', date_added: '13/02/2017', last_connection: '24/09/2017'}
+] %}
+
+{% set instructionsProjectSubmissions = '<p>Je pense donc <b>je suis</b>.</p>' %}
+{% set instructionsDocuments = '<p>C\'est pas vrai !</p>' %}
+
+
+{% set documents = [
+    {id: 3434879, type: 'CNI', mandatory: 'Oui', date_added: '24/03/2017', file: '/path/to/document.jpg'}
+] %}
+
 {% block pageHeader %}
     <div class="push-15-r pull-left">
         <img class="img-avatar img-avatar-thumb" style="border-radius: 0" src="https://placehold.it/120x120" alt="">
@@ -107,107 +202,42 @@
 
 {% block content %}
     <div class="content">
-        <div class="row">
-            <div class="col-md-6">
-                <div class="block block-bordered">
-                    <div class="block-header">
-                        <h3 class="block-title">Paramètres partenaire</h3>
-                    </div>
-                    <div class="block-content block-content-full">
-                        <form action="/partnerEdit/settings/" method="post">
-                            {%  if formErrors is defined %}
-                                <div class="alert">
-                                    <p>Errors</p>
-                                </div>
-                            {% endif %}
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <p style="margin-bottom: 5px">Statut du partenaire</p>
-                                        <label class="css-input switch switch-primary">
-                                            <input type="checkbox" name="status" checked><span></span>
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group push-">
-                                        <p style="margin-bottom: 5px">Prospections</p>
-                                        <label class="css-input switch switch-primary push">
-                                            <input type="checkbox" name="prospections" checked><span></span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="text-left">
-                                <button class="btn btn-primary" type="submit">Mise à jour</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+        <div id="settings" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Paramètres partenaire</h3>
             </div>
-            <div class="col-md-6">
-                <div class="block block-bordered">
-                    <div class="block-header">
-                        <h3 class="block-title">Organisation</h3>
-                    </div>
-                    <div class="block-content block-content-full">
-                        <form action="/partnerEdit/organisation_structure/" method="post" class="tree-js" data-original-count="7">
-                            {%  if formErrors is defined %}
-                                <div class="alert">
-                                    <p>Errors</p>
-                                </div>
-                            {% endif %}
-                            <div class="row push">
-                                <div class="col-md-12">
-                                    <div class="form-group tree-js-add-item" style="margin-bottom: 10px;">
-                                        <input type="text" class="form-control input-sm" placeholder="Nom de l'entité">
-                                        <div class="btn-group">
-                                            <a class="btn btn-sm btn-primary submit-btn"><span class="fa fa-plus"></span></a>
-                                        </div>
-                                    </div>
-                                    <div class="dd tree-js-dd">
-                                        <ol class="dd-list tree-js-outer">
-                                            <li class="dd-item" data-id="1">
-                                                <div class="dd-handle">AXA Banque</div>
-                                                <ol class="dd-list">
-                                                    <li class="dd-item" data-id="2">
-                                                        <div class="dd-handle">AXA Banque Nord</div>
-                                                        <ol class="dd-list">
-                                                            <li class="dd-item" data-id="3">
-                                                                <div class="dd-handle">Paris</div>
-                                                            </li>
-                                                            <li class="dd-item" data-id="4">
-                                                                <div class="dd-handle">Nantes</div>
-                                                            </li>
-                                                        </ol>
-                                                    </li>
-                                                    <li class="dd-item" data-id="5">
-                                                        <div class="dd-handle">AXA Banque Sud</div>
-                                                        <ol class="dd-list">
-                                                            <li class="dd-item" data-id="6">
-                                                                <div class="dd-handle">Marseille</div>
-                                                            </li>
-                                                            <li class="dd-item" data-id="7">
-                                                                <div class="dd-handle">Lyon</div>
-                                                            </li>
-                                                        </ol>
-                                                    </li>
-                                                </ol>
-                                            </li>
-                                        </ol>
-                                    </div>
-                                </div>
+            <div class="block-content block-content-full">
+                <form action="/partnerEdit/settings/" method="post">
+                    {%  if formErrors is defined %}
+                        <div class="alert">
+                            <p>Errors</p>
+                        </div>
+                    {% endif %}
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <p style="margin-bottom: 5px">Statut du partenaire</p>
+                                <label class="css-input switch switch-primary">
+                                    <input type="checkbox" name="status" checked><span></span>
+                                </label>
                             </div>
-                            <div class="text-left">
-                                <button class="btn btn-primary" type="submit">Mise à jour</button>
-                                <button class="btn btn-default tree-js-reset-btn hide" type="button"><span class="fa fa-close"></span> Réinitialiser</button>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <p style="margin-bottom: 5px">Prospections</p>
+                                <label class="css-input switch switch-primary">
+                                    <input type="checkbox" name="prospections"><span></span>
+                                </label>
                             </div>
-                        </form>
+                        </div>
                     </div>
-                </div>
+                    <div class="text-left">
+                        <button class="btn btn-primary" type="submit">Mise à jour</button>
+                    </div>
+                </form>
             </div>
         </div>
-        <div class="block block-bordered">
+        <div id="products" class="block block-bordered">
             <div class="block-header">
                 <h3 class="block-title">Produits</h3>
             </div>
@@ -219,30 +249,14 @@
                         </div>
                     {% endif %}
                     <div class="row push">
-                        <div class="col-md-3">
-                            <p style="margin-bottom: 5px">Produit 1</p>
-                            <label class="css-input switch switch-primary">
-                                <input type="checkbox" name="product_1" hecked><span></span> Débl. 9% / Remb. 12%
-                            </label>
-                        </div>
-                        <div class="col-md-3">
-                            <p style="margin-bottom: 5px">Produit 2</p>
-                            <label class="css-input switch switch-primary">
-                                <input type="checkbox" name="product_2" checked><span></span> Débl. 9% / Remb. 12%
-                            </label>
-                        </div>
-                        <div class="col-md-3">
-                            <p style="margin-bottom: 5px">Produit 3</p>
-                            <label class="css-input switch switch-primary">
-                                <input type="checkbox" name="product_3" checked><span></span> Débl. 9% / Remb. 12%
-                            </label>
-                        </div>
-                        <div class="col-md-3">
-                            <p style="margin-bottom: 5px">Produit 4</p>
-                            <label class="css-input switch switch-primary">
-                                <input type="checkbox" name="product_4" checked><span></span> Débl. 9% / Remb. 12%
-                            </label>
-                        </div>
+                        {% for product in products %}
+                            <div class="col-md-3">
+                                <p style="margin-bottom: 5px">{{ product.name }}</p>
+                                <label class="css-input switch switch-primary">
+                                    <input type="checkbox" name="products[]" value="{{ product.value }}"{% if product.status == 'active' %} checked{% endif %}><span></span> {{ product.description }}
+                                </label>
+                            </div>
+                        {% endfor %}
                     </div>
                     <div class="text-left">
                         <button class="btn btn-primary" type="submit">Mise à jour</button>
@@ -250,7 +264,70 @@
                 </form>
             </div>
         </div>
-        <div class="block block-bordered">
+        <div id="organisation" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Organisation</h3>
+            </div>
+            <div class="block-content block-content-full">
+                <form action="/partnerEdit/organisation/" method="post" class="tree-js">
+                    <div class="messages">
+                        {%  if formErrors is defined %}
+                            <div class="alert">
+                                <p>Errors</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <button class="btn btn-default push-5" type="button" data-toggle="modal" data-target="#modal-create-agency"><span class="fa fa-plus"></span> Ajouter une entité</button>
+                    <div class="row push">
+                        <div class="col-md-12">
+                            <li class="dd-item static">
+                                <div class="dd-handle">AXA Banque</div>
+                            </li>
+                            <div class="dd tree-js-dd">
+                                <ol class="dd-list tree-js-outer">
+                                    {% include "partnerEdit/organisationItems.html.twig" with {'items':organisation} only %}
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-left">
+                        <input type="hidden" name="structure" class="structure-input">
+                        <button class="btn btn-default reset-btn hide" type="button"><span class="fa fa-close"></span> Réinitialiser</button>
+                        <button class="btn btn-primary submit-btn hide" type="submit">Mise à jour</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div id="users" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Utilisateurs</h3>
+            </div>
+            <div class="block-content block-content-full">
+                <table id="table-users" class="table table-bordered table-striped" data-table-search="true" data-table-editor data-table-editor-url="/partnerEdit/users" data-table-editor-actions="add, modify, toggle">
+                    <thead>
+                    <tr>
+                        <th data-editor-name="name" data-editor-type="text">Prénom et nom</th>
+                        <th data-editor-name="position" data-editor-type="text">Rôle</th>
+                        <th data-editor-name="group" data-editor-type="selectArray" data-editor-options="{{ organisation|json_encode|escape('html_attr') }}">Entité de rattachement</th>
+                        <th data-editor-name="date_added" data-editor-type="date">Date d'ajout</th>
+                        <th data-editor-name="last_connection" data-editor-type="date">Dernière connexion</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for user in users %}
+                        <tr data-id="{{ user.id }}" data-state="{{ user.status }}">
+                            <td>{{ user.name }}</td>
+                            <td>{{ user.position }}</td>
+                            <td>{{ user.group }}</td>
+                            <td>{{ user.date_added }}</td>
+                            <td>{{ user.last_connection }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div id="instructions" class="block block-bordered">
             <div class="block-header">
                 <h3 class="block-title">Instructions</h3>
             </div>
@@ -259,16 +336,16 @@
                 <div class="row">
                     <div class="col-md-6">
                         <p>Description de dossier :</p>
-                        <div class="js-summernote-simple">Instructions ...</div>
+                        <div class="js-summernote-simple">{{ instructionsProjectSubmissions }}</div>
                     </div>
                     <div class="col-md-6">
                         <p>Pièces à fournir :</p>
-                        <div class="js-summernote-simple">Instructions ...</div>
+                        <div class="js-summernote-simple">{{ instructionsDocuments }}</div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="block block-bordered">
+        <div id="documents" class="block block-bordered">
             <div class="block-header">
                 <h3 class="block-title">Pièces à fournir</h3>
             </div>
@@ -283,47 +360,14 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr data-id="342342">
-                        <td>CNI</td>
-                        <td>Oui</td>
-                        <td>24/03/2017</td>
-                        <td><a href="/path/to/document">CNI.jpg</a></td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="block block-bordered">
-            <div class="block-header">
-                <h3 class="block-title">Utilisateurs</h3>
-            </div>
-            <div class="block-content block-content-full">
-                <table id="table-users" class="table table-bordered table-striped" data-table-search="true" data-table-editor data-table-editor-url="/partnerEdit/users" data-table-editor-actions="add, modify, toggle">
-                    <thead>
-                    <tr>
-                        <th data-editor-name="name" data-editor-type="text">Prénom et nom</th>
-                        <th data-editor-name="position" data-editor-type="text">Rôle</th>
-                        <th data-editor-name="group" data-editor-type="select" data-editor-options="Sub Group 1, Sub Group 2, Sub Group 3">Entité de rattachement</th>
-                        <th data-editor-name="date_added" data-editor-type="date">Date d'ajout</th>
-                        <th data-editor-name="date_last_connection" data-editor-type="date">Dernière connexion</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr data-id="342342" data-state="active">
-                        <td>Sara Holland</td>
-                        <td>Director</td>
-                        <td>Sub Group 1</td>
-                        <td>13/02/2017</td>
-                        <td>24/09/2017</td>
-                    </tr>
-                    <tr data-id="342442" data-state="inactive">
-                        <td>Henry Gordon</td>
-                        <td>Manager</td>
-                        <td>Sub Group 2</td>
-                        <td>15/05/2017</td>
-                        <td>15/08/2017</td>
-                    </tr>
-                    </tbody>
+                    {% for document in documents %}
+                        <tr data-id="{{ document.id }}">
+                            <td>{{ document.type }}</td>
+                            <td>{{ document.mandatory }}</td>
+                            <td>{{ document.date_added }}</td>
+                            <td><a href="{{ document.file }}">{{ document.file|split('/')|last }}</a></td>
+                        </tr>
+                    {% endfor %}
                 </table>
             </div>
         </div>

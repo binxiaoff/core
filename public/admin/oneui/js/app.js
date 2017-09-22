@@ -1061,7 +1061,7 @@ var App = function() {
                 var label = fields[$i].label
                 var type = fields[$i].type
                 var val = (typeof fields[$i].val === 'undefined') ? '' : fields[$i].val
-                html += '<div class="form-group"><label>' + label + '</label>'
+                html += '<div class="form-group push-10"><label>' + label + '</label>'
                 // Text / Email
                 if (type === 'text' || type === 'email') {
                     html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control required">'
@@ -1085,12 +1085,33 @@ var App = function() {
                 } else if (type === 'select') {
                     var options = fields[$i].options.split(',')
                     html += '<select class="form-control required" name="' + name + '">' +
-                            '<option value="0">Selectionner</option>'
-                    for (var $l=0; $l < options.length; $l++) {
+                        '<option value="0">Selectionner</option>'
+                    for (var $l = 0; $l < options.length; $l++) {
                         var option = options[$l].trim()
                         var selected = (val === option) ? 'selected' : ''
                         html += '<option value="' + option + '" ' + selected + '>' + option + '</option>'
                     }
+                    html += '</select>'
+                // Select 2
+                } else if (type === 'selectArray') {
+                    var optionsHtml = ''
+                    function recurse(object) {
+                        for (var i in object) {
+                            if (typeof object[i].children !== 'undefined') {
+                                optionsHtml += '<optgroup label="' + object[i].text + '">'
+                                recurse(object[i].children)
+                                optionsHtml += '</optgroup>'
+                            } else {
+                                console.log(object[i].text)
+                                var selected = (val === object[i].text) ? 'selected' : ''
+                                var id = (typeof object[i].id !== 'undefined') ? object[i].id : object[i].text
+                                optionsHtml += '<option value="' + id + '" ' + selected + '>' + object[i].text + '</option>'
+                            }
+                        }
+                        return optionsHtml
+                    }
+                    html += '<select class="form-control required" name="' + name + '"><option value="0">Selectionner</option>'
+                    html += recurse(fields[$i].options)
                     html += '</select>'
                 // File
                 } else if (type === 'file') {
@@ -1200,7 +1221,6 @@ var App = function() {
                     contentType: false,
                     processData: false,
                     success: function(response) {
-                        console.log(response)
                         if (response.success) {
                             self.update(response.id, response.data)
                         } else {
@@ -1941,7 +1961,6 @@ var App = function() {
                     }
                 }
                 if (!valid) {
-                    console.log('has errors')
                     e.preventDefault()
                 }
             })

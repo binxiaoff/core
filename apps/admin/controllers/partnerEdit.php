@@ -16,6 +16,24 @@ class partnerEditController extends bootstrap
         $this->render();
     }
 
+    public function _organisation() {
+        $this->autoFireView = false;
+        $this->hideDecoration();
+
+        // Structure
+        $structure = $_POST['structure'];
+
+        // New items can be an array or single element
+        if (isset($_POST['newItems'])){
+            if (is_array($_POST['newItems']))
+                $newItems = implode(", ", noescape($_POST['newItems']));
+            else
+                $newItems = $_POST['newItems'];
+        }
+        // header("Location: /partnerEdit");
+        // die;
+    }
+
     public function _documents()
     {
         $this->autoFireView = false;
@@ -61,10 +79,10 @@ class partnerEditController extends bootstrap
         // Response - JSON
         if ($this->request->isXmlHttpRequest()) {
             echo json_encode([
-                'success' => true, // If false, then errors must be present (line below)
-                'error' => ['Error 1', 'Error 2'], // Errors must be an array, even if there's only one
-                'id' => $id, // ID must be separate from the data in the response
-                'data' => $responseData // Values must be in the same order as in the request
+                'success' => true,
+                'error' => ['Error 1', 'Error 2'],
+                'id' => $id,
+                'data' => $responseData
             ]);
         }
     }
@@ -83,7 +101,7 @@ class partnerEditController extends bootstrap
         if ($action === 'create' || $action === 'modify') {
 
             if ($action === 'create') {
-                $id = '4382728b'; // Generate new ID
+                $id = '4382728'; // Generate new ID
             } else if ($action === 'modify') {
                 $id = $_POST['id']; // Existing ID
             }
@@ -98,7 +116,7 @@ class partnerEditController extends bootstrap
                 $url = '/upload/dir/newFile.jpg';
                 $uploadedFile = '<a href="' . $url . '">' . $file['name'] . '</a>';
             } else {
-                // No change to file (already exists)
+                // No change to file (already exists), just return the same url
                 $url = '/upload/dir/existingFile.jpg';
                 $name = 'Existing file';
                 $uploadedFile = '<a href="' . $url . '">' . $name . '</a>';
@@ -114,10 +132,10 @@ class partnerEditController extends bootstrap
         // Response - JSON
         if ($this->request->isXmlHttpRequest()) {
             echo json_encode([
-                'success' => true, // If false, then errors must be present (line below)
-                'error' => ['Error 1', 'Error 2'], // Errors must be an array, even if there's only one
-                'id' => $id, // ID must be separate from the data in the response
-                'data' => $responseData // Values must be in the same order as in the request
+                'success' => true,
+                'error' => ['Error 1', 'Error 2'],
+                'id' => $id,
+                'data' => $responseData
             ]);
         }
     }

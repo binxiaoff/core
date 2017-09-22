@@ -1,0 +1,10 @@
+{% for item in items %}
+    <li class="dd-item" data-id="{{ item.id }}">
+        <div class="dd-handle">{{ item.text }}</div>
+        {% if item.children %}
+            <ol class="dd-list">
+                {% include "partnerEdit/organisationItems.html.twig" with {'items': item.children} %}
+            </ol>
+        {% endif %}
+    </li>
+{% endfor %}

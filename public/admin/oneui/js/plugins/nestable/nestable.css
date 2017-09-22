@@ -2,7 +2,7 @@
 /**
  * Nestable
  */
-.dd { position: relative; display: block; margin: 0; padding: 0; max-width: 600px; list-style: none; font-size: 13px; line-height: 20px; }
+.dd { position: relative; display: block; margin: 0; padding: 0; max-width: 450px; list-style: none; font-size: 13px; line-height: 20px; }
 .dd-list { display: block; position: relative; margin: 0; padding: 0; list-style: none; }
 .dd-list .dd-list { padding-left: 30px; }
 .dd-collapsed .dd-list { display: none; }
@@ -15,6 +15,19 @@
     border-radius: 3px;
     box-sizing: border-box;
     cursor: move;
+}
+.dd-item.static {
+    max-width: 450px;
+}
+.dd-item.static .dd-handle {
+    cursor: default;
+}
+.dd-item.new {
+
+}
+.dd-item.new .dd-handle {
+    border-color: #f3d17a;
+    background: #fdf5cb;
 }
 .dd-handle:hover { background: #e1e1e1; border-color: #cacaca; color: #444; }
 .dd-item > button { display: block; position: relative; cursor: pointer; float: left; width: 25px; height: 20px; margin: 5px 0; padding: 0; text-indent: 100%; white-space: nowrap; overflow: hidden; border: 0; background: transparent; font-size: 12px; line-height: 1; text-align: center; font-weight: bold; }
