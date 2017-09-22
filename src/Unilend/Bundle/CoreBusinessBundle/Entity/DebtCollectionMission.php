@@ -120,7 +120,7 @@ class DebtCollectionMission
     /**
      * Set type
      *
-     * @param boolean $type
+     * @param int $type
      *
      * @return DebtCollectionMission
      */
@@ -134,7 +134,7 @@ class DebtCollectionMission
     /**
      * Get type
      *
-     * @return boolean
+     * @return int
      */
     public function getType()
     {

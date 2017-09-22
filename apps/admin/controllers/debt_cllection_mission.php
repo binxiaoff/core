@@ -1,5 +1,6 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class debt_cllection_missionController extends bootstrap
@@ -31,7 +32,7 @@ class debt_cllection_missionController extends bootstrap
                 $activeSheet = $excel->setActiveSheetIndex(0);
 
                 $titles            = [
-                    'ID de prêt',
+                    'Identifiant du prêt',
                     'Nom',
                     'Prénom',
                     'Email',
@@ -43,7 +44,7 @@ class debt_cllection_missionController extends bootstrap
                     'Adresse',
                     'Code postal',
                     'Ville',
-                    'montant de prêt'
+                    'Montant du prêt'
                 ];
                 $titleColumn       = 'A';
                 $titleRow          = 2;
@@ -106,7 +107,8 @@ class debt_cllection_missionController extends bootstrap
                     $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['email']);
 
                     $dataColumn++;
-                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, in_array($loanDetails['type'], [1, 3]) ? 'Physique' : 'Moral');
+                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow,
+                        in_array($loanDetails['type'], [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 'Physique' : 'Morale');
 
                     $dataColumn++;
                     $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['company_name']);
@@ -173,7 +175,7 @@ class debt_cllection_missionController extends bootstrap
 
                 $commissionDetails = $creditorDetails['commission'];
                 $dataRow++;
-                $activeSheet->setCellValueByColumnAndRow(0, $dataRow, 'Unilend commission');
+                $activeSheet->setCellValueByColumnAndRow(0, $dataRow, 'Commission unilend');
                 foreach ($commissionColumns['schedule'] as $sequence => $column) {
                     $activeSheet->setCellValueExplicitByColumnAndRow($column, $dataRow, $commissionDetails['schedule'][$sequence], PHPExcel_Cell_DataType::TYPE_NUMERIC);
                 }
@@ -189,7 +191,7 @@ class debt_cllection_missionController extends bootstrap
                 $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_vat'], $dataRow, $chargeDetails['fee_vat'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
                 $activeSheet->setCellValueExplicitByColumnAndRow($totalColumn, $dataRow, $chargeDetails['total'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
-                $fileName = 'recouvrement_' . $missionId;
+                $fileName = 'recouvrement_' . $missionId . '_' . (new DateTime())->format('Y-m-d');
 
                 /** @var \PHPExcel_Writer_Excel2007 $writer */
                 $writer = PHPExcel_IOFactory::createWriter($excel, 'Excel2007');
