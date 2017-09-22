@@ -106,10 +106,41 @@ class ProjectRepaymentDetailRepository extends EntityRepository
      *
      * @return int
      */
-    public function deleteFinishedDetails(\DateTime $dateTime)
+    public function deleteFinished(\DateTime $dateTime)
     {
         $delete = 'DELETE FROM project_repayment_detail WHERE status = :finished AND updated < :someTime';
 
         return $this->getEntityManager()->getConnection()->executeUpdate($delete, ['finished' => ProjectRepaymentDetail::STATUS_NOTIFIED, 'someTime' => $dateTime->format('Y-m-d H:i:s')]);
+    }
+
+    /**
+     * @param ProjectRepaymentTask|int $projectRepaymentTask
+     *
+     * @return int
+     */
+    public function deleteByTask($projectRepaymentTask)
+    {
+        if ($projectRepaymentTask instanceof ProjectRepaymentDetail) {
+            $projectRepaymentTask = $projectRepaymentTask->getId();
+        }
+
+        $delete = 'DELETE FROM project_repayment_detail WHERE id_task = :task';
+
+        return $this->getEntityManager()->getConnection()->executeUpdate($delete, ['task' => $projectRepaymentTask]);
+    }
+
+    /**
+     * @param ProjectRepaymentTask|int $projectRepaymentTask
+     *
+     * @return float
+     */
+    public function getTotalDebtCollectionFeeToPayByTask($projectRepaymentTask)
+    {
+        $queryBuilder = $this->createQueryBuilder('prd');
+        $queryBuilder->select('SUM(prd.debtCollectionFee)')
+            ->where('prd.idTask = :task')
+            ->setParameter('task', $projectRepaymentTask);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }

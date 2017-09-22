@@ -100,7 +100,9 @@ class transfertsController extends bootstrap
                         $projectRepaymentTaskManager->planEarlyRepaymentTask($project, $reception, $user);
                     } elseif ($_POST['type_remb'] === 'regularisation') {
                         $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_REGULARISATION);
-                        $projectPaymentManager->pay($reception, $user);
+                        if ($project->getStatus() === ProjectsStatus::REMBOURSEMENT) {
+                            $projectPaymentManager->pay($reception, $user);
+                        }
                     }
                     $entityManager->flush();
                     $entityManager->getConnection()->commit();

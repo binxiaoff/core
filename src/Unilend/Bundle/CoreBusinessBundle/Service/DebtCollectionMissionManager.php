@@ -6,12 +6,16 @@ use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentManager;
 
 class DebtCollectionMissionManager
 {
+    const DEBT_COLLECTION_CONDITION_CHANGEMENT_DATE = '2016-04-19';
+
     /**
      * @var EntityManager
      */
@@ -114,7 +118,7 @@ class DebtCollectionMissionManager
     private function getLoanDetails(DebtCollectionMission $debtCollectionMission)
     {
         $projectRepaymentTaskRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask');
-        $missionPaymentSchedules        = $debtCollectionMission->getDebtCollectionMissionPaymentSchedules();
+        $missionPaymentSchedules          = $debtCollectionMission->getDebtCollectionMissionPaymentSchedules();
 
         foreach ($missionPaymentSchedules as $missionPaymentSchedule) {
             $repaymentTasks = $projectRepaymentTaskRepository->findBy([
@@ -138,10 +142,10 @@ class DebtCollectionMissionManager
         $repaymentScheduleRepository      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
         $projectRepaymentDetailRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail');
 
-        $loanDetails             = [];
-        $project                 = $debtCollectionMission->getIdProject();
-        $loans                   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project, 'status' => Loans::STATUS_ACCEPTED]);
-        $vatTax                  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+        $loanDetails = [];
+        $project     = $debtCollectionMission->getIdProject();
+        $loans       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project, 'status' => Loans::STATUS_ACCEPTED]);
+        $vatTax      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
 
         if (null === $vatTax) {
             throw new \Exception('The VAT rate is not defined.');
@@ -209,5 +213,27 @@ class DebtCollectionMissionManager
         }
 
         return $loanDetails;
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @return bool
+     */
+    public function isDebtCollectionFeeDueToBorrower(Projects $project)
+    {
+        $statusHistory = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+            ->findStatusFirstOccurrence($project, ProjectsStatus::EN_FUNDING);
+        $putOnlineDate = $statusHistory->getAdded();
+        $putOnlineDate->setTime(0, 0, 0);
+        $dateOfChange = new \DateTime(self::DEBT_COLLECTION_CONDITION_CHANGEMENT_DATE);
+        $dateOfChange->setTime(0, 0, 0);
+
+        if ($putOnlineDate >= $dateOfChange) {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -4,13 +4,16 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentDetail;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\core\Loader;
 
@@ -48,16 +51,29 @@ class ProjectRepaymentTaskManager
     }
 
     /**
-     * @param Echeanciers $repaymentSchedule
-     * @param float       $capitalToRepay
-     * @param float       $interestToRepay
-     * @param float       $commissionToPay
-     * @param Receptions  $reception
-     * @param Users       $user
+     * @param Echeanciers                $repaymentSchedule
+     * @param float                      $capitalToRepay
+     * @param float                      $interestToRepay
+     * @param float                      $commissionToPay
+     * @param Receptions                 $reception
+     * @param Users                      $user
+     * @param DebtCollectionMission|null $debtCollectionMission
+     * @param float|null                 $debtCollectionFeeRate
+     *
+     * @return ProjectRepaymentTask
      *
      * @throws \Exception
      */
-    public function planRepaymentTask(Echeanciers $repaymentSchedule, $capitalToRepay, $interestToRepay, $commissionToPay, Receptions $reception, Users $user)
+    public function planRepaymentTask(
+        Echeanciers $repaymentSchedule,
+        $capitalToRepay,
+        $interestToRepay,
+        $commissionToPay,
+        Receptions $reception,
+        Users $user,
+        DebtCollectionMission $debtCollectionMission = null,
+        $debtCollectionFeeRate = null
+    )
     {
         $project = $repaymentSchedule->getIdLoan()->getProject();
 
@@ -67,6 +83,17 @@ class ProjectRepaymentTaskManager
             && 0 === bccomp($commissionToPay, 0, 2)
         ) {
             throw new \Exception('The repayment amount of project (id: ' . $project->getIdProject() . ') sequence ' . $repaymentSchedule->getOrdre() . ' is 0. Please check the data consistency.');
+        }
+
+        $vatTaxRate = null;
+        if ($debtCollectionFeeRate) {
+            $vatTax = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+
+            if (null === $vatTax) {
+                throw new \Exception('The VAT rate is not defined.');
+            }
+
+            $vatTaxRate = round(bcdiv($vatTax->getRate(), 100, 5), 4);
         }
 
         $projectRepaymentTask = new ProjectRepaymentTask();
@@ -79,6 +106,9 @@ class ProjectRepaymentTaskManager
             ->setStatus(projectRepaymentTask::STATUS_PENDING)
             ->setRepayAt($repaymentSchedule->getDateEcheance())
             ->setIdUserCreation($user)
+            ->setIdDebtCollectionMission($debtCollectionMission)
+            ->setDebtCollectionFeeRate($debtCollectionFeeRate)
+            ->setVatRate($vatTaxRate)
             ->setIdWireTransferIn($reception);
 
         $paymentSchedule   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy(['idProject' => $project, 'ordre' => $repaymentSchedule->getOrdre()]);
@@ -100,7 +130,7 @@ class ProjectRepaymentTaskManager
         $this->entityManager->persist($projectRepaymentTask);
         $this->entityManager->flush($projectRepaymentTask);
 
-        $this->checkPlannedTaskAmount($project, $repaymentSchedule->getOrdre());
+        return $projectRepaymentTask;
     }
 
     /**
@@ -466,7 +496,7 @@ class ProjectRepaymentTaskManager
      *
      * @throws \Exception
      */
-    private function checkPlannedTaskAmount(Projects $project, $sequence)
+    public function checkPlannedTaskAmount(Projects $project, $sequence)
     {
         $repaymentTasks = $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
@@ -510,5 +540,191 @@ class ProjectRepaymentTaskManager
         if (1 === $compareCommission) {
             throw new \Exception('The total commission (' . $plannedCommission . ') of all the repayment tasks for project (id: ' . $project->getIdProject() . ') sequence ' . $sequence . ' is more then the monthly commission (' . $monthlyCommission . '). Please check the data consistency.');
         }
+    }
+
+    /**
+     * @param ProjectRepaymentTask $projectRepaymentTask
+     * @param boolean              $overwrite
+     */
+    public function prepare(ProjectRepaymentTask $projectRepaymentTask, $overwrite = false)
+    {
+        if (0 < count($this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail')->findBy(['idTask' => $projectRepaymentTask]))) {
+            if ($overwrite) {
+                $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail')->deleteByTask($projectRepaymentTask);
+            } else {
+                return;
+            }
+        }
+
+        $repaidCapital               = 0;
+        $repaidInterest              = 0;
+        $notRepaidCapitalProportion  = $this->getNotRepaidCapitalProportion($projectRepaymentTask);
+        $notRepaidInterestProportion = $this->getNotRepaidInterestProportion($projectRepaymentTask);
+
+        $repaymentSchedules = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')
+            ->findByProject($projectRepaymentTask->getIdProject(), $projectRepaymentTask->getSequence(), null, [Echeanciers::STATUS_PENDING, Echeanciers::STATUS_PARTIALLY_REPAID]);
+
+        foreach ($repaymentSchedules as $repaymentSchedule) {
+            $unRepaidCapital  = round(bcdiv($repaymentSchedule->getCapital() - $repaymentSchedule->getCapitalRembourse(), 100, 4), 2);
+            $unRepaidInterest = round(bcdiv($repaymentSchedule->getInterets() - $repaymentSchedule->getInteretsRembourses(), 100, 4), 2);
+
+            $capitalProportion  = round(bcmul($unRepaidCapital, $notRepaidCapitalProportion, 4), 2);
+            $interestProportion = round(bcmul($unRepaidInterest, $notRepaidInterestProportion, 4), 2);
+
+            $capitalToRepay  = min($capitalProportion, $unRepaidCapital);
+            $interestToRepay = min($interestProportion, $unRepaidInterest);
+
+            $projectRepaymentDetail = new ProjectRepaymentDetail();
+
+            $projectRepaymentDetail->setIdTask($projectRepaymentTask)
+                ->setIdloan($repaymentSchedule->getIdLoan())
+                ->setIdRepaymentSchedule($repaymentSchedule)
+                ->setCapital($capitalToRepay)
+                ->setInterest($interestToRepay)
+                ->setStatus(ProjectRepaymentDetail::STATUS_PENDING)
+                ->setCapitalCompleted(ProjectRepaymentDetail::CAPITAL_UNCOMPLETED)
+                ->setInterestCompleted(ProjectRepaymentDetail::INTEREST_UNCOMPLETED);
+
+            if (0 === bccomp($capitalToRepay, $unRepaidCapital, 2)) {
+                $projectRepaymentDetail->setCapitalCompleted(ProjectRepaymentDetail::CAPITAL_COMPLETED);
+            }
+
+            if (0 === bccomp($interestToRepay, $unRepaidInterest, 2)) {
+                $projectRepaymentDetail->setInterestCompleted(ProjectRepaymentDetail::INTEREST_COMPLETED);
+            }
+
+            $this->entityManager->persist($projectRepaymentDetail);
+            $this->entityManager->flush($projectRepaymentDetail);
+
+            $repaidCapital  = round(bcadd($repaidCapital, $capitalToRepay, 4), 2);
+            $repaidInterest = round(bcadd($repaidInterest, $interestToRepay, 4), 2);
+        }
+
+        $this->adjustRepaymentAmount($projectRepaymentTask, $repaidCapital, $repaidInterest);
+        $this->applyDebtCollectionFee($projectRepaymentTask);
+    }
+
+    /**
+     * @param ProjectRepaymentTask $projectRepaymentTask
+     */
+    private function applyDebtCollectionFee(ProjectRepaymentTask $projectRepaymentTask)
+    {
+        if ($projectRepaymentTask->getDebtCollectionFeeRate()) {
+            $projectRepaymentDetails = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail')->findBy(['idTask' => $projectRepaymentTask]);
+
+            foreach ($projectRepaymentDetails as $projectRepaymentDetail) {
+
+                $debtCollectionFee = round(bcmul(bcadd($projectRepaymentDetail->getCapital(), $projectRepaymentDetail->getInterest(), 4), $projectRepaymentTask->getDebtCollectionFeeRate(), 4), 2);
+
+                $projectRepaymentDetail->setDebtCollectionFee($debtCollectionFee);
+
+                $this->entityManager->flush($projectRepaymentDetail);
+            }
+        }
+    }
+
+    /**
+     * @param ProjectRepaymentTask $projectRepaymentTask
+     * @param float                $repaidCapital
+     * @param float                $repaidInterest
+     */
+    private function adjustRepaymentAmount(ProjectRepaymentTask $projectRepaymentTask, $repaidCapital, $repaidInterest)
+    {
+        $capitalCompareResult  = bccomp($projectRepaymentTask->getCapital(), $repaidCapital, 2);
+        $interestCompareResult = bccomp($projectRepaymentTask->getInterest(), $repaidInterest, 2);
+
+        if (0 !== $capitalCompareResult || 0 !== $interestCompareResult) {
+            $projectRepaymentDetailRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail');
+
+            $capitalNumberOfCents = abs(round(bcdiv(round(bcsub($projectRepaymentTask->getCapital(), $repaidCapital, 4), 2), 0.01, 4)));
+            if ($capitalNumberOfCents > 0) {
+                $randomRepayments = $projectRepaymentDetailRepository->findRandomlyUncompletedByTaskExecutionForCapital($projectRepaymentTask, $capitalNumberOfCents);
+
+                foreach ($randomRepayments as $projectRepaymentDetail) {
+                    if (1 === $capitalCompareResult) {
+                        $adjustAmount = 0.01;
+                    } else {
+                        $adjustAmount = -0.01;
+                    }
+
+                    $capital = round(bcadd($projectRepaymentDetail->getCapital(), $adjustAmount, 4), 2);
+                    $projectRepaymentDetail->setCapital($capital);
+
+                    $repaymentSchedule = $projectRepaymentDetail->getIdRepaymentSchedule();
+                    $unRepaidCapital   = round(bcdiv($repaymentSchedule->getCapital() - $repaymentSchedule->getCapitalRembourse(), 100, 4), 2);
+
+                    if (0 === bccomp($projectRepaymentDetail->getCapital(), $unRepaidCapital, 2)) {
+                        $projectRepaymentDetail->setCapitalCompleted(ProjectRepaymentDetail::CAPITAL_COMPLETED);
+                    }
+
+                    $repaidCapital = round(bcadd($repaidCapital, $adjustAmount, 4), 2);
+
+                    $this->entityManager->flush($projectRepaymentDetail);
+                }
+            }
+
+            $interestNumberOfCents = abs(round(bcdiv(round(bcsub($projectRepaymentTask->getInterest(), $repaidInterest, 4), 2), 0.01, 4)));
+            if ($interestNumberOfCents > 0) {
+                $randomRepayments = $projectRepaymentDetailRepository->findRandomlyUncompletedByTaskExecutionForInterest($projectRepaymentTask, $interestNumberOfCents);
+
+                foreach ($randomRepayments as $projectRepaymentDetail) {
+                    if (1 === $interestCompareResult) {
+                        $adjustAmount = 0.01;
+                    } else {
+                        $adjustAmount = -0.01;
+                    }
+
+                    $interest = round(bcadd($projectRepaymentDetail->getInterest(), $adjustAmount, 4), 2);
+                    $projectRepaymentDetail->setInterest($interest);
+
+                    $repaymentSchedule = $projectRepaymentDetail->getIdRepaymentSchedule();
+                    $unRepaidInterest  = round(bcdiv($repaymentSchedule->getInterets() - $repaymentSchedule->getInteretsRembourses(), 100, 4), 2);
+
+                    if (0 === bccomp($projectRepaymentDetail->getInterest(), $unRepaidInterest, 2)) {
+                        $projectRepaymentDetail->setInterestCompleted(ProjectRepaymentDetail::INTEREST_COMPLETED);
+                    }
+
+                    $repaidInterest = round(bcadd($repaidInterest, $adjustAmount, 4), 2);
+
+                    $this->entityManager->flush($projectRepaymentDetail);
+                }
+            }
+
+            $this->adjustRepaymentAmount($projectRepaymentTask, $repaidCapital, $repaidInterest);
+        }
+    }
+
+    /**
+     * @param ProjectRepaymentTask $projectRepaymentTask
+     *
+     * @return string
+     */
+    private function getNotRepaidCapitalProportion(ProjectRepaymentTask $projectRepaymentTask)
+    {
+        $unpaidNetRepaymentAmount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')
+            ->getNotRepaidCapitalByProjectAndSequence($projectRepaymentTask->getIdProject(), $projectRepaymentTask->getSequence());
+
+        if (0 === bccomp($unpaidNetRepaymentAmount, 0, 2)) {
+            return 0;
+        }
+
+        return bcdiv($projectRepaymentTask->getCapital(), $unpaidNetRepaymentAmount, 10);
+    }
+
+    /**
+     * @param ProjectRepaymentTask $projectRepaymentTask
+     *
+     * @return string
+     */
+    private function getNotRepaidInterestProportion(ProjectRepaymentTask $projectRepaymentTask)
+    {
+        $unpaidNetRepaymentAmount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')
+            ->getNotRepaidInterestByProjectAndSequence($projectRepaymentTask->getIdProject(), $projectRepaymentTask->getSequence());
+
+        if (0 === bccomp($unpaidNetRepaymentAmount, 0, 2)) {
+            return 0;
+        }
+
+        return bcdiv($projectRepaymentTask->getInterest(), $unpaidNetRepaymentAmount, 10);
     }
 }

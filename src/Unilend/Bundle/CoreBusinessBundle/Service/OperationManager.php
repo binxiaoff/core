@@ -498,7 +498,8 @@ class OperationManager
         $operationType    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_COMMISSION]);
         $operationSubType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::BORROWER_COMMISSION_REPAYMENT]);
 
-        $this->newOperation($projectRepaymentTaskLog->getIdTask()->getCommissionUnilend(), $operationType, $operationSubType, $borrowerWallet, $unilendWallet, [$paymentSchedule, $projectRepaymentTaskLog]);
+        $this->newOperation($projectRepaymentTaskLog->getIdTask()->getCommissionUnilend(), $operationType, $operationSubType, $borrowerWallet, $unilendWallet,
+            [$paymentSchedule, $projectRepaymentTaskLog]);
     }
 
     /**
@@ -619,15 +620,15 @@ class OperationManager
     }
 
     /**
-     * @param Wallet   $borrower
-     * @param Wallet   $collector
-     * @param          $commission
-     * @param Projects $project
+     * @param Wallet       $borrower
+     * @param Wallet       $collector
+     * @param              $commission
+     * @param array|object $origins
      */
-    public function payCollectionCommissionByBorrower(Wallet $borrower, Wallet $collector, $commission, Projects $project)
+    public function payCollectionCommissionByBorrower(Wallet $borrower, Wallet $collector, $commission, $origins = [])
     {
         $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::COLLECTION_COMMISSION_BORROWER]);
-        $this->newOperation($commission, $operationType, null, $borrower, $collector, $project);
+        $this->newOperation($commission, $operationType, null, $borrower, $collector, $origins);
     }
 
     /**

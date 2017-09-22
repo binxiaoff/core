@@ -13,9 +13,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ProjectRepaymentDetail
 {
-    const STATUS_PENDING  = 0;
-    const STATUS_TREATED  = 1;
-    const STATUS_NOTIFIED = 2;
+    const STATUS_PENDING    = 0;
+    const STATUS_TREATED    = 1;
+    const STATUS_NOTIFIED   = 2;
 
     const CAPITAL_UNCOMPLETED = 0;
     const CAPITAL_COMPLETED   = 1;
@@ -36,6 +36,13 @@ class ProjectRepaymentDetail
      * @ORM\Column(name="interest", type="decimal", precision=10, scale=2, nullable=false)
      */
     private $interest;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="debt_collection_fee", type="decimal", precision=10, scale=2, nullable=true)
+     */
+    private $debtCollectionFee;
 
     /**
      * If the repayment schedule will be completed after the repayment
@@ -171,6 +178,30 @@ class ProjectRepaymentDetail
     public function getInterest()
     {
         return $this->interest;
+    }
+
+    /**
+     * Set debtCollectionFee
+     *
+     * @param string $debtCollectionFee
+     *
+     * @return ProjectRepaymentDetail
+     */
+    public function setDebtCollectionFee($debtCollectionFee)
+    {
+        $this->debtCollectionFee = $debtCollectionFee;
+
+        return $this;
+    }
+
+    /**
+     * Get debtCollectionFee
+     *
+     * @return string
+     */
+    public function getDebtCollectionFee()
+    {
+        return $this->debtCollectionFee;
     }
 
     /**

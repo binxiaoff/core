@@ -8,7 +8,16 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ProjectRepaymentTask
  *
- * @ORM\Table(name="project_repayment_task", indexes={@ORM\Index(name="idx_project_repayment_task_id_project", columns={"id_project"}), @ORM\Index(name="idx_project_repayment_task_id_project_sequence", columns={"id_project", "sequence"}), @ORM\Index(name="idx_project_repayment_task_id_wire_transfer_in", columns={"id_wire_transfer_in"}), @ORM\Index(name="idx_project_repayment_task_id_user_suspending", columns={"id_user_suspending"}), @ORM\Index(name="idx_project_repayment_task_id_user_validation", columns={"id_user_validation"}), @ORM\Index(name="idx_project_repayment_task_id_user_creation", columns={"id_user_creation"}), @ORM\Index(name="idx_project_repayment_task_id_user_cancellation", columns={"id_user_cancellation"})})
+ * @ORM\Table(name="project_repayment_task", indexes={
+ *     @ORM\Index(name="idx_project_repayment_task_id_project", columns={"id_project"}),
+ *     @ORM\Index(name="idx_project_repayment_task_id_project_sequence", columns={"id_project", "sequence"}),
+ *     @ORM\Index(name="idx_project_repayment_task_id_wire_transfer_in", columns={"id_wire_transfer_in"}),
+ *     @ORM\Index(name="idx_project_repayment_task_id_user_suspending", columns={"id_user_suspending"}),
+ *     @ORM\Index(name="idx_project_repayment_task_id_user_validation", columns={"id_user_validation"}),
+ *     @ORM\Index(name="idx_project_repayment_task_id_user_creation", columns={"id_user_creation"}),
+ *     @ORM\Index(name="idx_project_repayment_task_id_user_cancellation", columns={"id_user_cancellation"}),
+ *     @ORM\Index(name="idx_project_repayment_task_id_debt_collection_mission", columns={"id_debt_collection_mission"})
+ * })
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectRepaymentTaskRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -159,11 +168,35 @@ class ProjectRepaymentTask
     private $idProject;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="debt_collection_fee_rate", type="decimal", precision=4, scale=4, nullable=true)
+     */
+    private $debtCollectionFeeRate;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="vat_rate", type="decimal", precision=4, scale=4, nullable=true)
+     */
+    private $vatRate;
+
+    /**
      * @var ProjectRepaymentTaskLog[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog", mappedBy="idTask")
      */
     private $taskLogs;
+
+    /**
+     * @var DebtCollectionMission
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_debt_collection_mission", referencedColumnName="id")
+     * })
+     */
+    private $idDebtCollectionMission;
 
     public function __construct()
     {
@@ -564,5 +597,77 @@ class ProjectRepaymentTask
     public function getTaskLogs()
     {
         return $this->taskLogs;
+    }
+
+    /**
+     * Set debtCollectionFeeRate
+     *
+     * @param string $debtCollectionFeeRate
+     *
+     * @return ProjectRepaymentTask
+     */
+    public function setDebtCollectionFeeRate($debtCollectionFeeRate)
+    {
+        $this->debtCollectionFeeRate = $debtCollectionFeeRate;
+
+        return $this;
+    }
+
+    /**
+     * Get debtCollectionFeeRate
+     *
+     * @return string
+     */
+    public function getDebtCollectionFeeRate()
+    {
+        return $this->debtCollectionFeeRate;
+    }
+
+    /**
+     * Set vatRate
+     *
+     * @param string $vatRate
+     *
+     * @return ProjectRepaymentTask
+     */
+    public function setVatRate($vatRate)
+    {
+        $this->vatRate = $vatRate;
+
+        return $this;
+    }
+
+    /**
+     * Get vatRate
+     *
+     * @return string
+     */
+    public function getVatRate()
+    {
+        return $this->vatRate;
+    }
+
+    /**
+     * Set idDebtCollectionMission
+     *
+     * @param DebtCollectionMission $idDebtCollectionMission
+     *
+     * @return ProjectRepaymentTask
+     */
+    public function setIdDebtCollectionMission(DebtCollectionMission $idDebtCollectionMission = null)
+    {
+        $this->idDebtCollectionMission = $idDebtCollectionMission;
+
+        return $this;
+    }
+
+    /**
+     * Get idDebtCollectionMission
+     *
+     * @return DebtCollectionMission
+     */
+    public function getIdDebtCollectionMission()
+    {
+        return $this->idDebtCollectionMission;
     }
 }

@@ -9,12 +9,12 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager;
 
 class DevDebtCollectionCreationCommand extends ContainerAwareCommand
 {
@@ -194,7 +194,7 @@ EOF
         $statusHistory   = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->findStatusFirstOccurrence($projectId, ProjectsStatus::REMBOURSEMENT);
         $fundReleaseDate = $statusHistory->getAdded();
         $fundReleaseDate->setTime(0, 0, 0);
-        $dateOfChange = new \DateTime(Projects::DEBT_COLLECTION_CONDITION_CHANGEMENT_DATE);
+        $dateOfChange = new \DateTime(DebtCollectionMissionManager::DEBT_COLLECTION_CONDITION_CHANGEMENT_DATE);
         $dateOfChange->setTime(0, 0, 0);
 
         $entityManager->getConnection()->beginTransaction();
