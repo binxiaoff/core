@@ -87,7 +87,7 @@ class DebtCollectionMission
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="archived" type="datetime", nullable=true)
+     * @ORM\Column(name="archived", type="datetime", nullable=true)
      */
     private $archived;
 
