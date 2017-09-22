@@ -3,7 +3,7 @@
         <div class="dd-handle">{{ item.text }}</div>
         {% if item.children %}
             <ol class="dd-list">
-                {% include "partnerEdit/organisationItems.html.twig" with {'items': item.children} %}
+                {% include "partnerEdit/partnerAgencies.html.twig" with {'items': item.children} %}
             </ol>
         {% endif %}
     </li>

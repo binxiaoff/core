@@ -1102,7 +1102,6 @@ var App = function() {
                                 recurse(object[i].children)
                                 optionsHtml += '</optgroup>'
                             } else {
-                                console.log(object[i].text)
                                 var selected = (val === object[i].text) ? 'selected' : ''
                                 var id = (typeof object[i].id !== 'undefined') ? object[i].id : object[i].text
                                 optionsHtml += '<option value="' + id + '" ' + selected + '>' + object[i].text + '</option>'

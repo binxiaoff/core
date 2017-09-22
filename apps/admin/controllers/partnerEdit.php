@@ -106,22 +106,7 @@ class partnerEditController extends bootstrap
                 $id = $_POST['id']; // Existing ID
             }
 
-            // Data
-            $doc = $_POST['type'];
-            $mandatory = $_POST['mandatory'];
-            $date = $_POST['date'];
-            if (isset($_FILES['file'])) {
-                // Newly uploaded file
-                $file = $_FILES['file'];
-                $url = '/upload/dir/newFile.jpg';
-                $uploadedFile = '<a href="' . $url . '">' . $file['name'] . '</a>';
-            } else {
-                // No change to file (already exists), just return the same url
-                $url = '/upload/dir/existingFile.jpg';
-                $name = 'Existing file';
-                $uploadedFile = '<a href="' . $url . '">' . $name . '</a>';
-            }
-            $responseData = [$doc, $mandatory, $date, $uploadedFile];
+            // $responseData = $name, $position, $agency, $date_added, $last_connection, $id, $status;
         }
         // Delete
         if ($action === 'delete') {

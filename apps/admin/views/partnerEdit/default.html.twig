@@ -38,7 +38,6 @@
             var treeBackupHtml = $tree.html()
             $tree.before('<div class="tree-js-backup hide">' + treeBackupHtml + '</div>')
             $tree.find('.tree-js-dd').nestable()
-//            $tree.find('.structure-input').val()
 
             function treeAppendItem(agencyName) {
                 $tree.find('.tree-js-outer').prepend('<li class="dd-item new" data-id="newID"><div class="dd-handle">' + agencyName + '</div></li>')
@@ -160,7 +159,7 @@
     {label: 'Product 4', description: 'Débl. 9% / Remb. 12%', value: '4', status: 'active'}
 ] %}
 
- {% set organisation = [
+ {% set partnerAgencies = [
      {text: 'Axa Nord', id: '10', children: [
          {text: 'Paris', id: '101', children:[
              {text: 'Paris Centre', id: '1011'},
@@ -285,7 +284,7 @@
                             </li>
                             <div class="dd tree-js-dd">
                                 <ol class="dd-list tree-js-outer">
-                                    {% include "partnerEdit/organisationItems.html.twig" with {'items':organisation} only %}
+                                    {% include "partnerEdit/partnerAgencies.html.twig" with {'items':partnerAgencies} only %}
                                 </ol>
                             </div>
                         </div>
@@ -308,7 +307,7 @@
                     <tr>
                         <th data-editor-name="name" data-editor-type="text">Prénom et nom</th>
                         <th data-editor-name="position" data-editor-type="text">Rôle</th>
-                        <th data-editor-name="group" data-editor-type="selectArray" data-editor-options="{{ organisation|json_encode|escape('html_attr') }}">Entité de rattachement</th>
+                        <th data-editor-name="agency" data-editor-type="selectArray" data-editor-options="{{ partnerAgencies|json_encode|escape('html_attr') }}">Entité de rattachement</th>
                         <th data-editor-name="date_added" data-editor-type="date">Date d'ajout</th>
                         <th data-editor-name="last_connection" data-editor-type="date">Dernière connexion</th>
                     </tr>
@@ -318,7 +317,7 @@
                         <tr data-id="{{ user.id }}" data-state="{{ user.status }}">
                             <td>{{ user.name }}</td>
                             <td>{{ user.position }}</td>
-                            <td>{{ user.group }}</td>
+                            <td>{{ user.agency }}</td>
                             <td>{{ user.date_added }}</td>
                             <td>{{ user.last_connection }}</td>
                         </tr>

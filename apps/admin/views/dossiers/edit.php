@@ -37,6 +37,18 @@
         width: 340px;
     }
 
+    .project-partner th {
+        vertical-align: top!important;
+    }
+
+    .project-partner .select + .select {
+        margin-top: 10px;
+    }
+
+    .hide {
+        display: none;
+    }
+
     .lanote {
         color: #5591EC;
         font-size: 17px;
@@ -164,6 +176,7 @@
     .takeover-popup {
         width: 400px;
     }
+
 </style>
 <script>
     function deleteWordingli(id) {
@@ -413,7 +426,116 @@
                 $(this).parents('form').submit()
             }
         })
-    });
+
+        // Partner Agency & Submitter
+        /// FAKE DATA ---- >>>
+            var selectPartnerUrl = '/dossiers/edit/'
+            var selectAgencyUrl = '/dossiers/edit/'
+            var selectPartnerResponse = {
+                success: true,
+                error: ['Error 1', 'Error 2'],
+                data: [
+                    {name: 'Axa Paris', id: 10, children: [
+                        {name: 'Paris 16ème', id: 101, children: [
+                            {name: 'Victor Hugo', id: 1011}
+                        ]}
+                    ]},
+                    {name: 'Axa Marseille', id: 11, children: [
+                        {name: 'La Pleine', id: 111}
+                    ]}
+                ]
+            }
+            var selectAgencyResponse = {
+                success: true,
+                error: ['Error 1', 'Error 2'],
+                data: [
+                    {name: 'Pierre Dupont', id: 10},
+                    {name: 'Alain Dupont', id: 10},
+                    {name: 'Pascal Dupont', id: 10}
+                ]
+            }
+        /// END FAKE DATA
+        var $partnerSelect = $('select#partner')
+        var $agencySelect = $('select#partner-agency')
+        var $submitterSelect = $('select#partner-submitter')
+        var $partnerMessages = $('.project-partner .messages')
+        function recursivePartnerAgencies(data) {
+            var html = ''
+            for (var i in data) {
+                if (typeof data[i].children !== 'undefined') {
+                    html += '<optgroup label="' + data[i].name + '">'
+                    html += recursivePartnerAgencies(data[i].children)
+                    html += '</optgroup>'
+                } else {
+                    html += '<option value="' + data[i].id + '">' + data[i].name + '</option>'
+                }
+            }
+            return html
+        }
+        $partnerSelect.change(function() {
+            var $select = $(this)
+            var name = $select.attr('name')
+            if ($select.val() === 0)
+                return false
+            $select.siblings('.select').each(function(){
+                if (!$(this).is('.hide'))
+                    $(this).addClass('hide').val('').html('')
+            })
+            $.ajax({
+                url: selectPartnerUrl,
+                type: 'POST',
+                data: {name: $select.val()},
+                dataType:'json',
+                complete: function(response) {
+                    var response = selectPartnerResponse
+                    if (response.success) {
+                        var options = '<option value="0"></option>'
+                        options += recursivePartnerAgencies(response.data)
+                        $agencySelect.html(options).removeClass('hide')
+                    } else {
+                        var html = ''
+                        for (var i in response.error) {
+                            html += '<p>' + response.error[i] + '</p>'
+                        }
+                        $partnerMessages.html(html)
+                    }
+                }
+            })
+        })
+        $agencySelect.change(function() {
+            var $select = $(this)
+            var name = $select.attr('name')
+            if ($select.val() === 0)
+                return false
+            if ($select.next().is('.select')) {
+                if (!$select.next().is('.hide'))
+                    $select.next().addClass('hide').val('').html('')
+            }
+            $.ajax({
+                url: selectAgencyUrl,
+                type: 'POST',
+                data: {name: $select.val()},
+                dataType:'json',
+                complete: function(response) {
+                    var response = selectAgencyResponse
+                    if (response.success) {
+                        var users = response.data
+                        var options = '<option value="0"></option>'
+                        for (var i in users) {
+                            options += '<option value="' + users[i].id + '">' + users[i].name + '</option>'
+                        }
+                        $submitterSelect.html(options).removeClass('hide')
+                    } else {
+                        var html = ''
+                        for (var i in response.error) {
+                            html += '<p>' + response.error[i] + '</p>'
+                        }
+                        $partnerMessages.html(html)
+                    }
+                }
+            })
+    })
+    })
 </script>
 <script type="text/javascript" src="<?= $this->url ?>/ckeditor/ckeditor.js"></script>
 <div id="contenu">
@@ -605,7 +727,8 @@
                         <tr>
                             <th><label for="partner">Partenaire *</label></th>
                             <td>
-                                <select name="partner" id="partner" class="select"<?php if ($this->projects->status >= \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::PREP_FUNDING) : ?> disabled<?php endif; ?>>
+                                <div class="messages"></div>
+                                <select id="partner" class="select"<?php if ($this->projects->status >= \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::PREP_FUNDING) : ?> disabled<?php endif; ?> name="partner">
                                     <?php if (empty($this->projects->id_partner)) : ?>
                                         <option value="" selected></option>
                                     <?php endif; ?>
@@ -613,6 +736,21 @@
                                         <option value="<?= $partner->getId() ?>"<?= $this->projects->id_partner == $partner->getId() ? ' selected' : '' ?>><?= $partner->getIdCompany()->getName() ?></option>
                                     <?php endforeach; ?>
                                 </select>
+
+                                <?php /*** FAKE CONDITIONALS ***/ ?>
+                                <?php $partner_agency = false; $partner_agency_options = ''; $partner_submitter = false; $partner_submitter_options = ''; ?>
+                                <select id="partner-agency" class="select<?php if (!$partner_agency) { echo ' hide'; } ?>" name="partner_agency">
+                                    <?php if ($partner_agency_options !== '') : foreach ($partner_agency_options as $option) : ?>
+                                        <option><?= $option ?></option>
+                                    <?php endforeach; endif; ?>
+                                </select>
+                                <select id="partner-submitter" class="select<?php if (!$partner_submitter) { echo ' hide'; } ?>" name="partner_submitter">
+                                    <?php if ($partner_submitter_options !== '') : foreach ($partner_submitter_options as $option) : ?>
+                                        <option><?= $option ?></option>
+                                    <?php endforeach; endif; ?>
+                                </select>
+                                <?php /*** END FAKE CONDITIONALS ***/ ?>
+
                             </td>
                         </tr>
                         <?php if (false === empty($this->projectEntity->getIdCompanySubmitter()) && false === empty($this->projectEntity->getIdCompanySubmitter()->getIdCompany())) : ?>
