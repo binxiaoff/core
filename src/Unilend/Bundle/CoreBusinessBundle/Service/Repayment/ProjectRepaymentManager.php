@@ -326,7 +326,7 @@ class ProjectRepaymentManager
                 }
             }
 
-            $interestNumberOfCents = abs(round(bcdiv(round(bcsub($projectRepaymentTask->getIdTask()->getInterest(), $repaidInterest, 4), 2), 0.01, 4)));
+            $interestNumberOfCents = abs(round(bcdiv(round(bcsub($projectRepaymentTask->getInterest(), $repaidInterest, 4), 2), 0.01, 4)));
             if ($interestNumberOfCents > 0) {
                 $randomRepayments = $projectRepaymentDetailRepository->findRandomlyUncompletedByTaskExecutionForInterest($projectRepaymentTask, $interestNumberOfCents);
 
