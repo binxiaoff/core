@@ -952,17 +952,18 @@ class pdfController extends bootstrap
             $this->echu        = $repaymentSchedule->getNonRepaidAmountInDateRange($wallet->getId(), new \DateTime($this->oLoans->added), $expiration, $this->oLoans->id_loan);
             $this->echoir      = $repaymentSchedule->getTotalComingCapital($wallet->getId(), $this->oLoans->id_loan, $expiration);
 
-            if ($debtCollectionStatus) {
-                $clients = [$wallet->getIdClient()];
+            $clients = [$wallet->getIdClient()];
 
-                if (false === empty($this->oLoans->id_transfer)) {
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager $loanManager */
-                    $loanManager = $this->get('unilend.service.loan_manager');
-                    $clients[]   = $loanManager->getFirstOwner($this->oLoans);
-                }
+            if (false === empty($this->oLoans->id_transfer)) {
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager $loanManager */
+                $loanManager = $this->get('unilend.service.loan_manager');
+                $clients[]   = $loanManager->getFirstOwner($this->oLoans);
+            }
+            $totalGrossDebtCollectionRepayment = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getTotalGrossDebtCollectionRepayment($this->projects->id_project, $clients);
+
+            if (0 < $totalGrossDebtCollectionRepayment) {
 
                 $loanRepository                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
-                $totalGrossDebtCollectionRepayment = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getTotalGrossDebtCollectionRepayment($this->projects->id_project, $clients);
                 $allLoans                          = $loanRepository->findLoansByClients($this->projects->id_project, $clients);
                 $totalLoans                        = $loanRepository->getLoansSumByClients($this->projects->id_project, $clients);
 
