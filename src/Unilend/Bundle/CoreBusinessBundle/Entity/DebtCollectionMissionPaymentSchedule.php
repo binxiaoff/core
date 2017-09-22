@@ -15,24 +15,14 @@ class DebtCollectionMissionPaymentSchedule
     /**
      * @var integer
      *
-     * @ORM\Column(name="id", type="integer", nullable=false)
+     * @ORM\Column(name="id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $id;
 
     /**
-     * @var DebtCollectionMission
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_mission", referencedColumnName="id")
-     * })
-     */
-    private $idMission;
-
-    /**
-     * @var EcheanciersEmprunteur
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur")
      * @ORM\JoinColumns({
@@ -42,7 +32,21 @@ class DebtCollectionMissionPaymentSchedule
     private $idPaymentSchedule;
 
     /**
-     * @return int
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission", inversedBy="debtCollectionMissionPaymentSchedules")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_mission", referencedColumnName="id")
+     * })
+     */
+    private $idMission;
+
+
+
+    /**
+     * Get id
+     *
+     * @return integer
      */
     public function getId()
     {
@@ -50,27 +54,23 @@ class DebtCollectionMissionPaymentSchedule
     }
 
     /**
-     * @return DebtCollectionMission
-     */
-    public function getIdMission()
-    {
-        return $this->idMission;
-    }
-
-    /**
-     * @param DebtCollectionMission $idMission
+     * Set idPaymentSchedule
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur $idPaymentSchedule
      *
      * @return DebtCollectionMissionPaymentSchedule
      */
-    public function setIdMission(DebtCollectionMission $idMission)
+    public function setIdPaymentSchedule(EcheanciersEmprunteur $idPaymentSchedule = null)
     {
-        $this->idMission = $idMission;
+        $this->idPaymentSchedule = $idPaymentSchedule;
 
         return $this;
     }
 
     /**
-     * @return EcheanciersEmprunteur
+     * Get idPaymentSchedule
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur
      */
     public function getIdPaymentSchedule()
     {
@@ -78,14 +78,26 @@ class DebtCollectionMissionPaymentSchedule
     }
 
     /**
-     * @param EcheanciersEmprunteur $idPaymentSchedule
+     * Set idMission
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission $idMission
      *
      * @return DebtCollectionMissionPaymentSchedule
      */
-    public function setIdPaymentSchedule(EcheanciersEmprunteur $idPaymentSchedule)
+    public function setIdMission(DebtCollectionMission $idMission = null)
     {
-        $this->idPaymentSchedule = $idPaymentSchedule;
+        $this->idMission = $idMission;
 
         return $this;
+    }
+
+    /**
+     * Get idMission
+     *
+     * @return DebtCollectionMission
+     */
+    public function getIdMission()
+    {
+        return $this->idMission;
     }
 }
