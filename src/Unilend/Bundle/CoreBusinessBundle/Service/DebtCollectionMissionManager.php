@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
@@ -139,9 +140,8 @@ class DebtCollectionMissionManager
 
         $loanDetails             = [];
         $project                 = $debtCollectionMission->getIdProject();
-        $loans                   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project]);
+        $loans                   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project, 'status' => Loans::STATUS_ACCEPTED]);
         $vatTax                  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
-        $missionPaymentSchedules = $debtCollectionMission->getDebtCollectionMissionPaymentSchedules();
 
         if (null === $vatTax) {
             throw new \Exception('The VAT rate is not defined.');
