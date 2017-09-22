@@ -215,11 +215,10 @@ class loans extends loans_crud
      * @param int         $idLender
      * @param string|null $order
      * @param int|null    $year
-     * @param array|null  $projectStatus
      *
      * @return array
      */
-    public function getSumLoansByProject($idLender, $order = null, $year = null, array $projectStatus = null)
+    public function getSumLoansByProject($idLender, $order = null, $year = null)
     {
         $query = '
             SELECT
@@ -252,20 +251,17 @@ class loans extends loans_crud
             WHERE l.id_lender = :idLender
                 AND l.status = ' . self::STATUS_ACCEPTED . '
                 ' . (null === $year ? '' : 'AND YEAR(l.added) = :year') . '
-                ' . (null === $projectStatus ? '' : 'AND p.status IN (:projectStatus)') . '
             GROUP BY l.id_project
             ORDER BY ' . (null === $order ? 'l.added DESC' : $order);
 
         $statement = $this->bdd->executeQuery($query, [
                 'repaidStatus'  => [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE],
                 'idLender'      => $idLender,
-                'year'          => $year,
-                'projectStatus' => $projectStatus
+                'year'          => $year
             ], [
                 'repaidStatus'  => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
                 'idLender'      => PDO::PARAM_INT,
-                'year'          => PDO::PARAM_INT,
-                'projectStatus' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY
+                'year'          => PDO::PARAM_INT
             ]
         );
 

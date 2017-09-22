@@ -45,6 +45,14 @@
                     </a>
                 </li>
             {%  endif %}
+            {% if currentSponsorshipCampaign is defined and currentSponsorshipCampaign is not empty and isValidatedClient and false == isBlacklisted %}
+                <li role="presentation" class="dashboard-nav-sponsorship {% if route == 'lender_sponsorship' %}active{% else %}complete{% endif %}">
+                    <a href="{{ path('lender_sponsorship') }}">
+                        <span class="icon fa-network-u"></span>
+                        <span class="label">{% trans %} lender-dashboard-navigation_sponsorship-link {% endtrans %}</span>
+                    </a>
+                </li>
+            {% endif %}
         </ul>
     {% endblock %}
 </nav>

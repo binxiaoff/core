@@ -696,6 +696,24 @@ var App = function() {
         return false;
     };
 
+    // Collapse details of alerts
+    var uiAlertCollapse = function() {
+        $alert = jQuery('.alert')
+        $alert.each(function(){
+            if ($(this).find('ul.hide').length) {
+                $(this).addClass('alert-collapse').append('<button></button>').find('ul.hide').removeClass('hide')
+                $(this).find('button').click(function(){
+                    var $alert = $(this).closest('.alert')
+                    var $target = $alert.find('ul')
+                    if ($target.is(':visible'))
+                        $target.slideUp(150)
+                    else
+                        $target.slideDown(150)
+                })
+            }
+        })
+    };
+
 
     /*
      ********************************************************************************************
@@ -1217,31 +1235,25 @@ var App = function() {
         jQuery('.js-notify').on('click', function(){
             var $notify         = jQuery(this);
             var $notifyMsg      = $notify.data('notify-message');
-            var $notifyType     = $notify.data('notify-type') ? $notify.data('notify-type') : 'info';
-            var $notifyFrom     = $notify.data('notify-from') ? $notify.data('notify-from') : 'top';
-            var $notifyAlign    = $notify.data('notify-align') ? $notify.data('notify-align') : 'right';
-            var $notifyIcon     = $notify.data('notify-icon') ? $notify.data('notify-icon') : '';
-            var $notifyUrl      = $notify.data('notify-url') ? $notify.data('notify-url') : '';
 
             jQuery.notify({
-                    icon: $notifyIcon,
                     message: $notifyMsg,
-                    url: $notifyUrl
+                    url: ''
                 },
                 {
                     element: 'body',
-                    type: $notifyType,
+                    type: 'danger',
                     allow_dismiss: true,
                     newest_on_top: true,
                     showProgressbar: false,
                     placement: {
-                        from: $notifyFrom,
-                        align: $notifyAlign
+                        from: 'top',
+                        align: 'right'
                     },
-                    offset: 20,
+                    offset: 100,
                     spacing: 10,
                     z_index: 1033,
-                    delay: 5000,
+                    delay: 0,
                     timer: 1000,
                     animate: {
                         enter: 'animated fadeIn',
@@ -1359,6 +1371,7 @@ var App = function() {
      */
     var uiHelperFormValidate = function(){
         $('form.validate').submit(function(e){
+            var $form = $(this)
             var valid = true
             $(this).find('.required').each(function(){
                 var $input = $(this)
@@ -1386,9 +1399,19 @@ var App = function() {
                 if (!valid) {
                     console.log('has errors')
                     e.preventDefault()
+                    $form.addClass('has-errors')
+                } else {
+                    $form.removeClass('has-errors')
                 }
             })
         })
+    };
+
+    var utility = {
+        currencyToInteger: function(currency) {
+            var number = parseFloat(currency.replace(',', '.').replace('€', '').replace(/\s+/g, ''))
+            return number
+        }
     };
 
     return {
@@ -1424,6 +1447,9 @@ var App = function() {
                 case 'uiLoader':
                     uiLoader('hide');
                     break;
+                case 'uiAlertCollapse':
+                    uiAlertCollapse();
+                    break;
                 default:
                     // Init all vital functions
                     uiInit();
@@ -1436,6 +1462,7 @@ var App = function() {
                     uiScrollTo();
                     uiYearCopy();
                     uiLoader('hide');
+                    uiAlertCollapse();
             }
         },
         layout: function($mode) {
@@ -1519,7 +1546,8 @@ var App = function() {
             } else {
                 App.initHelper($helpers);
             }
-        }
+        },
+        utility: utility
     };
 
 

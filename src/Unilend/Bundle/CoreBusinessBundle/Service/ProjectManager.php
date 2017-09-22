@@ -17,6 +17,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use PhpXmlRpc\Client as soapClient;
@@ -55,6 +56,10 @@ class ProjectManager
     private $workingDay;
     /** @var LoggerInterface */
     private $logger;
+    /** @var SponsorshipManager */
+    private $sponsorshipManager;
+    /** @var ProjectRepaymentTaskManager */
+    private $projectRepaymentTaskManager;
 
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -68,7 +73,9 @@ class ProjectManager
         ContractAttributeManager $contractAttributeManager,
         SlackManager $slackManager,
         RiskDataMonitoringManager $riskDataMonitoringManager,
-        $universignUrl
+        SponsorshipManager $sponsorshipManager,
+        $universignUrl,
+        ProjectRepaymentTaskManager $projectRepaymentTaskManager
     )
     {
         $this->entityManagerSimulator     = $entityManagerSimulator;
@@ -82,7 +89,9 @@ class ProjectManager
         $this->contractAttributeManager   = $contractAttributeManager;
         $this->slackManager               = $slackManager;
         $this->riskDataMonitoringManger   = $riskDataMonitoringManager;
+        $this->sponsorshipManager         = $sponsorshipManager;
         $this->universignUrl              = $universignUrl;
+        $this->projectRepaymentTaskManager = $projectRepaymentTaskManager;
 
         $this->datesManager = Loader::loadLib('dates');
         $this->workingDay   = Loader::loadLib('jours_ouvres');
@@ -239,27 +248,19 @@ class ProjectManager
 
         if ($oProjectPeriods->getPeriod($oProject->period)) {
             $rateRange = $this->bidManager->getProjectRateRange($oProject);
-            $iOffset = 0;
-            $iLimit  = 100;
+            $iOffset   = 0;
+            $iLimit    = 100;
             while ($aAutoBidList = $oAutoBid->getSettings(null, $oProject->risk, $oProjectPeriods->id_period, array(\autobid::STATUS_ACTIVE), ['id_autobid' => 'ASC'], $iLimit, $iOffset)) {
                 $iOffset += $iLimit;
-                $this->entityManager->getConnection()->beginTransaction();
-                try {
-                    foreach ($aAutoBidList as $aAutoBidSetting) {
-                        $autobid = $autobidRepo->find($aAutoBidSetting['id_autobid']);
-                        if ($autobid) {
-                            try {
-                                $this->bidManager->bidByAutoBidSettings($autobid, $project, $rateRange['rate_max'], false);
-                            } catch (\Exception $exception) {
-                                continue;
-                            }
+                foreach ($aAutoBidList as $aAutoBidSetting) {
+                    $autobid = $autobidRepo->find($aAutoBidSetting['id_autobid']);
+                    if ($autobid) {
+                        try {
+                            $this->bidManager->bidByAutoBidSettings($autobid, $project, $rateRange['rate_max'], false);
+                        } catch (\Exception $exception) {
+                            continue;
                         }
                     }
-                    $this->entityManager->flush();
-                    $this->entityManager->getConnection()->commit();
-                } catch (\Exception $e) {
-                    $this->entityManager->getConnection()->rollBack();
-                    throw $e;
                 }
             }
 
@@ -274,26 +275,19 @@ class ProjectManager
         /** @var \settings $oSettings */
         $oSettings = $this->entityManagerSimulator->getRepository('settings');
         /** @var \bids $legacyBid */
-        $legacyBid = $this->entityManagerSimulator->getRepository('bids');
-        $bidRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
+        $legacyBid     = $this->entityManagerSimulator->getRepository('bids');
+        $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
 
         $oSettings->get('Auto-bid step', 'type');
-        $fStep       = (float)$oSettings->value;
+        $fStep       = (float) $oSettings->value;
         $currentRate = bcsub($legacyBid->getProjectMaxRate($oProject), $fStep, 1);
 
         while ($aAutoBidList = $legacyBid->getAutoBids($oProject->id_project, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY)) {
-            $this->entityManager->getConnection()->beginTransaction();
-            try {
-                foreach ($aAutoBidList as $aAutobid) {
-                    $bid = $bidRepository->find($aAutobid['id_bid']);
-                    if ($bid) {
-                        $this->bidManager->reBidAutoBidOrReject($bid, $currentRate, $iMode, $bSendNotification);
-                    }
+            foreach ($aAutoBidList as $aAutobid) {
+                $bid = $bidRepository->find($aAutobid['id_bid']);
+                if ($bid) {
+                    $this->bidManager->reBidAutoBidOrReject($bid, $currentRate, $iMode, $bSendNotification);
                 }
-                $this->entityManager->getConnection()->commit();
-            } catch (\Exception $e) {
-                $this->entityManager->getConnection()->rollBack();
-                throw $e;
             }
         }
     }
@@ -319,7 +313,7 @@ class ProjectManager
         $this->addProjectStatus(Users::USER_ID_CRON, \projects_status::FUNDE, $oProject);
 
         if ($this->logger instanceof LoggerInterface) {
-            $this->logger->info('Project ' . $oProject->id_project . ' is now changed to status funded', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+            $this->logger->info('Project ' . $oProject->id_project . ' is now changed to status funded', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project]);
         }
 
         $criteria     = ['idProject' => $oProject->id_project, 'status' => Bids::STATUS_BID_PENDING];
@@ -329,7 +323,7 @@ class ProjectManager
         $treatedBidNb = 0;
 
         if ($this->logger instanceof LoggerInterface) {
-            $this->logger->info($iBidNbTotal . ' bids created (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+            $this->logger->info($iBidNbTotal . ' bids created (project ' . $oProject->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project]);
         }
 
         foreach ($bids as $bid) {
@@ -342,10 +336,18 @@ class ProjectManager
                     } else {
                         $bid->setStatus(Bids::STATUS_BID_ACCEPTED);
                         $this->entityManager->flush($bid);
+
+                        if (null !== $this->entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $bid->getIdLenderAccount()->getIdClient()])) {
+                            try {
+                                $this->sponsorshipManager->attributeSponsorReward($bid->getIdLenderAccount()->getIdClient());
+                            } catch (\Exception $exception) {
+                                $this->logger->info('Sponsor reward could not be attributed for bid ' . $bid->getIdBid() . '. Reason: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project]);
+                            }
+                        }
                     }
 
                     if ($this->logger instanceof LoggerInterface) {
-                        $this->logger->info('The bid status has been updated to 1' . $bid->getIdBid() . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+                        $this->logger->info('The bid status has been updated to 1' . $bid->getIdBid() . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project]);
                     }
                 } else {
                     $this->bidManager->reject($bid, true);
@@ -354,7 +356,7 @@ class ProjectManager
                 $treatedBidNb ++;
 
                 if ($this->logger instanceof LoggerInterface) {
-                    $this->logger->info($treatedBidNb . '/' . $iBidNbTotal . ' bids treated (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+                    $this->logger->info($treatedBidNb . '/' . $iBidNbTotal . ' bids treated (project ' . $oProject->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project]);
                 }
             }
         }
@@ -893,6 +895,13 @@ class ProjectManager
             $projectEntity = $project;
         }
 
+        if (
+            $projectStatus === ProjectsStatus::REMBOURSEMENT
+            && 0 < $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getOverdueScheduleCount($project)
+        ) {
+            return;
+        }
+
         $originStatus = $projectEntity->getStatus();
         /** @var \projects_status_history $projectsStatusHistory */
         $projectsStatusHistory = $this->entityManagerSimulator->getRepository('projects_status_history');
@@ -969,10 +978,10 @@ class ProjectManager
                 break;
             case ProjectsStatus::REMBOURSE:
             case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
-            case ProjectsStatus::LIQUIDATION_JUDICIAIRE:
-            case ProjectsStatus::REDRESSEMENT_JUDICIAIRE:
-            case ProjectsStatus::PROCEDURE_SAUVEGARDE:
                 $this->riskDataMonitoringManger->stopMonitoringForSiren($project->getIdCompany()->getSiren());
+                break;
+            case ProjectsStatus::PROBLEME:
+                $this->projectRepaymentTaskManager->disableAutomaticRepayment($project);
                 break;
         }
     }

@@ -7,26 +7,17 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * EcheanciersEmprunteur
  *
- * @ORM\Table(name="echeanciers_emprunteur", indexes={@ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="date_echeance_emprunteur_reel", columns={"date_echeance_emprunteur_reel"}), @ORM\Index(name="ordre", columns={"ordre"}), @ORM\Index(name="status_emprunteur", columns={"status_emprunteur"})})
+ * @ORM\Table(name="echeanciers_emprunteur", indexes={@ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="date_echeance_emprunteur_reel", columns={"date_echeance_emprunteur_reel"}), @ORM\Index(name="ordre", columns={"ordre"}), @ORM\Index(name="status_emprunteur", columns={"status_emprunteur"}), @ORM\Index(name="project_status_emprunteur", columns={"id_project", "status_emprunteur"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\EcheanciersEmprunteurRepository")
  */
 class EcheanciersEmprunteur
 {
-    const STATUS_PENDING = 0;
-    const STATUS_PAID    = 1;
+    const STATUS_PENDING        = 0;
+    const STATUS_PAID           = 1;
+    const STATUS_PARTIALLY_PAID = 2;
 
     const STATUS_NO_EARLY_REPAYMENT   = 0;
     const STATUS_EARLY_REPAYMENT_DONE = 1;
-
-    /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
-     * })
-     */
-    private $idProject;
 
     /**
      * @var integer
@@ -37,6 +28,8 @@ class EcheanciersEmprunteur
 
     /**
      * @var integer
+     *
+     * @deprecated This column will be deleted. Use the summary of EcheanciersEmprunteur::$capital and EcheanciersEmprunteur::$interets instead
      *
      * @ORM\Column(name="montant", type="integer", nullable=false)
      */
@@ -52,9 +45,23 @@ class EcheanciersEmprunteur
     /**
      * @var integer
      *
+     * @ORM\Column(name="paid_capital", type="integer", nullable=false)
+     */
+    private $paidCapital;
+
+    /**
+     * @var integer
+     *
      * @ORM\Column(name="interets", type="integer", nullable=false)
      */
     private $interets;
+
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="paid_interest", type="integer", nullable=false)
+     */
+    private $paidInterest;
 
     /**
      * @var integer
@@ -69,6 +76,13 @@ class EcheanciersEmprunteur
      * @ORM\Column(name="tva", type="integer", nullable=false)
      */
     private $tva;
+
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="paid_commission_vat_incl", type="integer", nullable=false)
+     */
+    private $paidCommissionVatIncl;
 
     /**
      * @var \DateTime
@@ -122,28 +136,14 @@ class EcheanciersEmprunteur
     private $idEcheancierEmprunteur;
 
     /**
-     * Set idProject
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @param Projects $idProject
-     *
-     * @return EcheanciersEmprunteur
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
      */
-    public function setIdProject($idProject)
-    {
-        $this->idProject = $idProject;
-
-        return $this;
-    }
-
-    /**
-     * Get idProject
-     *
-     * @return Projects
-     */
-    public function getIdProject()
-    {
-        return $this->idProject;
-    }
+    private $idProject;
 
     /**
      * Set ordre
@@ -172,6 +172,8 @@ class EcheanciersEmprunteur
     /**
      * Set montant
      *
+     * @deprecated This column will be deleted. Use the summary of EcheanciersEmprunteur::$capital and EcheanciersEmprunteur::$interets instead
+     *
      * @param integer $montant
      *
      * @return EcheanciersEmprunteur
@@ -185,6 +187,8 @@ class EcheanciersEmprunteur
 
     /**
      * Get montant
+     *
+     * @deprecated This column will be deleted. Use the summary of EcheanciersEmprunteur::$capital and EcheanciersEmprunteur::$interets instead
      *
      * @return integer
      */
@@ -218,6 +222,30 @@ class EcheanciersEmprunteur
     }
 
     /**
+     * Set paidCapital
+     *
+     * @param integer $paidCapital
+     *
+     * @return EcheanciersEmprunteur
+     */
+    public function setPaidCapital($paidCapital)
+    {
+        $this->paidCapital = $paidCapital;
+
+        return $this;
+    }
+
+    /**
+     * Get paidCapital
+     *
+     * @return integer
+     */
+    public function getPaidCapital()
+    {
+        return $this->paidCapital;
+    }
+
+    /**
      * Set interets
      *
      * @param integer $interets
@@ -239,6 +267,30 @@ class EcheanciersEmprunteur
     public function getInterets()
     {
         return $this->interets;
+    }
+
+    /**
+     * Set paidInterest
+     *
+     * @param integer $paidInterest
+     *
+     * @return EcheanciersEmprunteur
+     */
+    public function setPaidInterest($paidInterest)
+    {
+        $this->paidInterest = $paidInterest;
+
+        return $this;
+    }
+
+    /**
+     * Get paidInterest
+     *
+     * @return integer
+     */
+    public function getPaidInterest()
+    {
+        return $this->paidInterest;
     }
 
     /**
@@ -287,6 +339,30 @@ class EcheanciersEmprunteur
     public function getTva()
     {
         return $this->tva;
+    }
+
+    /**
+     * Set paidCommissionVatIncl
+     *
+     * @param integer $paidCommissionVatIncl
+     *
+     * @return EcheanciersEmprunteur
+     */
+    public function setPaidCommissionVatIncl($paidCommissionVatIncl)
+    {
+        $this->paidCommissionVatIncl = $paidCommissionVatIncl;
+
+        return $this;
+    }
+
+    /**
+     * Get paidCommissionVatIncl
+     *
+     * @return integer
+     */
+    public function getPaidCommissionVatIncl()
+    {
+        return $this->paidCommissionVatIncl;
     }
 
     /**
@@ -441,5 +517,29 @@ class EcheanciersEmprunteur
     public function getIdEcheancierEmprunteur()
     {
         return $this->idEcheancierEmprunteur;
+    }
+
+    /**
+     * Set idProject
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject
+     *
+     * @return EcheanciersEmprunteur
+     */
+    public function setIdProject(\Unilend\Bundle\CoreBusinessBundle\Entity\Projects $idProject = null)
+    {
+        $this->idProject = $idProject;
+
+        return $this;
+    }
+
+    /**
+     * Get idProject
+     *
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
+     */
+    public function getIdProject()
+    {
+        return $this->idProject;
     }
 }

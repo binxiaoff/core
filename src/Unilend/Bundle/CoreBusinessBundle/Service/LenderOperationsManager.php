@@ -10,9 +10,12 @@ use PHPExcel_Style_Conditional;
 use PHPExcel_Style_NumberFormat;
 use Symfony\Component\Translation\Translator;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
@@ -62,8 +65,12 @@ class LenderOperationsManager
         OperationType::LENDER_PROVISION_CANCEL,
         OperationType::LENDER_TRANSFER,
         OperationType::LENDER_WITHDRAW,
-        OperationType::UNILEND_PROMOTIONAL_OPERATION,
-        OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL,
+        OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR,
+        OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_SPONSORSHIP_REWARD_SPONSOR,
+        OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSEE,
+        OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_SPONSORSHIP_REWARD_SPONSEE,
+        OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER,
+        OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_WELCOME_OFFER,
         OperationType::UNILEND_LENDER_REGULARIZATION,
         self::OP_REPAYMENT,
         self::OP_EARLY_REPAYMENT,
@@ -86,6 +93,14 @@ class LenderOperationsManager
     const FILTER_WITHDRAW           = 4;
     const FILTER_OFFERS             = 5;
     const FILTER_REPAYMENT          = 6;
+
+    const LOAN_STATUS_DISPLAY_IN_PROGRESS     = 'in-progress';
+    const LOAN_STATUS_DISPLAY_LATE            = 'late';
+    const LOANS_STATUS_DISPLAY_AMICABLE_DC    = 'amicable-dc';
+    const LOANS_STATUS_DISPLAY_LITIGATION_DC  = 'litigation-dc';
+    const LOAN_STATUS_DISPLAY_COMPLETED       = 'completed';
+    const LOAN_STATUS_DISPLAY_PROCEEDING      = 'proceeding';
+    const LOAN_STATUS_DISPLAY_LOSS            = 'loss';
 
     /** @var EntityManager */
     private $entityManager;
@@ -128,19 +143,18 @@ class LenderOperationsManager
         $previousHistoryLineIndex       = null;
 
         foreach ($walletHistory as $index => $historyLine) {
-            if (in_array(self::OP_REPAYMENT, $operations) && false === empty($historyLine['id_repayment_schedule'])) {
-                if (false == in_array($historyLine['label'], [OperationType::CAPITAL_REPAYMENT_REGULARIZATION, OperationType::CAPITAL_REPAYMENT])) {
-                    continue;
-                } else {
-                    $regularization = false;
-                    $type           = self::OP_REPAYMENT;
-                    if (OperationType::CAPITAL_REPAYMENT_REGULARIZATION == $historyLine['label']) {
-                        $regularization = true;
-                        $type           = self::OP_REPAYMENT_REGULARIZATION;
-                    }
-                    $repaymentDetails = $operationRepository->getDetailByRepaymentScheduleAndRepaymentLog($historyLine['id_repayment_schedule'], $historyLine['id_repayment_task_log'], $regularization);
-                    $historyLine      = $this->formatRepaymentOperation($wallet, $repaymentDetails, $historyLine, $type);
+            if (
+                in_array(self::OP_REPAYMENT, $operations)
+                && false === empty($historyLine['id_repayment_task_log'])
+                && $historyLine['id'] !== $historyLine['id_repayment_task_log']
+            ) {
+                $type = self::OP_REPAYMENT;
+
+                if (false !== strpos($historyLine['label'], '_regularization')) {
+                    $type = self::OP_REPAYMENT_REGULARIZATION;
                 }
+                $repaymentDetails = $operationRepository->getDetailByLoanAndRepaymentLog($historyLine['id_loan'], $wallet->getId(), $historyLine['id_repayment_task_log']);
+                $historyLine      = $this->formatRepaymentOperation($wallet, $repaymentDetails, $historyLine, $type);
             }
 
             if (OperationSubType::CAPITAL_REPAYMENT_EARLY === $historyLine['sub_type_label']) {
@@ -153,6 +167,10 @@ class LenderOperationsManager
 
             if (OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION_REGULARIZATION === $historyLine['sub_type_label']) {
                 $historyLine['label'] = self::OP_RECOVERY_REPAYMENT_REGULARIZATION;
+            }
+
+            if (in_array($historyLine['label'], [OperationType::UNILEND_PROMOTIONAL_OPERATION, OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL])) {
+                $historyLine['label'] = $historyLine['sub_type_label'];
             }
 
             if (self::OP_REFUSED_BID === $historyLine['label']) {
@@ -230,7 +248,7 @@ class LenderOperationsManager
             if ($repaymentDetail['taxes']) {
                 $taxLabel = $this->translator->trans('lender-operations_tax-and-social-deductions-label');
                 if ($wallet->getIdClient()->isNaturalPerson()) {
-                    if ($taxExemptionRepository->isLenderExemptedInYear($wallet, substr($historyLine['date'], 0, 4))) {
+                    if ($taxExemptionRepository->isLenderExemptedInYear($wallet, substr($historyLine['operationDate'], 0, 4))) {
                         $taxLabel = $this->translator->trans('lender-operations_social-deductions-label');
                     }
                 } else {
@@ -358,7 +376,7 @@ class LenderOperationsManager
             $this->addConditionalStyleToCell($activeSheet, 5, $row);
 
             if (self::OP_REPAYMENT === $operation['label']) {
-                $details = $operationRepository->findBy(['idRepaymentSchedule' => $operation['id_repayment_schedule']]);
+                $details = $operationRepository->findBy(['idRepaymentTaskLog' => $operation['id_repayment_task_log']]);
                 /** @var Operation $operationDetail */
                 foreach ($details as $operationDetail) {
                     if (in_array($operationDetail->getType()->getLabel(), OperationType::TAX_TYPES_FR)) {
@@ -384,7 +402,7 @@ class LenderOperationsManager
             }
 
             if (self::OP_REPAYMENT_REGULARIZATION === $operation['label']) {
-                $details = $operationRepository->findBy(['idRepaymentSchedule' => $operation['id_repayment_schedule']]);
+                $details = $operationRepository->findBy(['idRepaymentSchedule' => $operation['id_repayment_task_log']]);
                 /** @var Operation $operationDetail */
                 foreach ($details as $operationDetail) {
                     switch ($operationDetail->getType()->getLabel()) {
@@ -487,5 +505,55 @@ class LenderOperationsManager
         array_push($conditionalStyles, $negativeValue);
         array_push($conditionalStyles, $positiveValue);
         $activeSheet->getCellByColumnAndRow($column, $row)->getStyle()->setConditionalStyles($conditionalStyles);
+    }
+
+    /**
+     * @param Projects    $project
+     *
+     * @return array
+     */
+    public function getLenderLoanStatusToDisplay(Projects $project)
+    {
+        switch ($project->getStatus()) {
+            case ProjectsStatus::PROBLEME:
+                switch ($project->getIdCompany()->getIdStatus()->getLabel()) {
+                    case CompanyStatus::STATUS_PRECAUTIONARY_PROCESS:
+                    case CompanyStatus::STATUS_RECEIVERSHIP:
+                    case CompanyStatus::STATUS_COMPULSORY_LIQUIDATION:
+                        $statusToDisplay = self::LOAN_STATUS_DISPLAY_PROCEEDING;
+                        $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-'  .str_replace('_', '-', $project->getIdCompany()->getIdStatus()->getLabel()));
+                        break;
+                    case CompanyStatus::STATUS_IN_BONIS:
+                    default:
+                        if (0 === $project->getDebtCollectionMissions()->count()) {
+                            $statusToDisplay = self::LOAN_STATUS_DISPLAY_LATE;
+                        } elseif(0 < $project->getLitigationDebtCollectionMissions()->count()) {
+                            $statusToDisplay = self::LOANS_STATUS_DISPLAY_LITIGATION_DC;
+                        } else {
+                            $statusToDisplay = self::LOANS_STATUS_DISPLAY_AMICABLE_DC;
+                        }
+                        $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-' . $statusToDisplay);
+                        break;
+                }
+                break;
+            case ProjectsStatus::LOSS:
+                $statusToDisplay = self::LOAN_STATUS_DISPLAY_LOSS;
+                break;
+            case ProjectsStatus::REMBOURSE:
+                $statusToDisplay = self::LOAN_STATUS_DISPLAY_COMPLETED;
+                $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-repaid');
+                break;
+            case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
+                $statusToDisplay = self::LOAN_STATUS_DISPLAY_COMPLETED;
+                $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-early-r');
+                break;
+            case ProjectsStatus::REMBOURSEMENT:
+            default:
+                $statusToDisplay = self::LOAN_STATUS_DISPLAY_IN_PROGRESS;
+                $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-' . $statusToDisplay);
+                break;
+        }
+
+        return ['status' => $statusToDisplay, 'statusLabel' => $loanStatusLabel];
     }
 }

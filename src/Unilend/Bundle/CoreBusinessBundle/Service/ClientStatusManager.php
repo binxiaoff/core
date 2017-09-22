@@ -118,4 +118,16 @@ class ClientStatusManager
         }
     }
 
+    /**
+     * @param Clients $client
+     *
+     * @return bool
+     */
+    public function hasBeenValidatedAtLeastOnce(Clients $client)
+    {
+        $clientStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory');
+        $previousValidation  = $clientStatusHistory->getFirstClientValidation($client);
+
+        return null !== $previousValidation;
+    }
 }

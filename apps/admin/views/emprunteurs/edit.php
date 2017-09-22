@@ -1,5 +1,9 @@
-<?php use \Unilend\Bundle\CoreBusinessBundle\Entity\OperationType; ?>
 <script>
+<?php
+
+use \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
+
+?>
     $(function () {
         $(".listeProjets").tablesorter({headers: {4: {sorter: false}, 5: {sorter: false}}});
         $(".listeMandats").tablesorter();
@@ -26,6 +30,16 @@
                     $(".borrower-operation-table").html(data);
                 }
             });
+        });
+
+        $('#status').change(function () {
+            var status = $(this).val();
+
+            if (
+                status != '<?= $this->companyStatusInBonis->getId() ?>'
+            ) {
+                $.colorbox({href: "<?= $this->lurl ?>/thickbox/company_status_update/<?= $this->clients->id_client ?>/<?= $this->companies->id_company ?>/" + status});
+            }
         });
 
         $('.operation-tooltip').tooltip({
@@ -141,6 +155,42 @@
         </table>
     </form>
     <br/><br/>
+
+    <div class="company">
+        <h2>Société</h2>
+        <table class="tablesorter">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Raison sociale</th>
+                <th>Statut</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tr>
+                <td><?= $this->companyEntity->getIdCompany() ?></td>
+                <td><?= $this->companyEntity->getName() ?></td>
+                <td><?= (null !== $this->companyEntity->getIdStatus()) ? $this->companyManager->getCompanyStatusNameByLabel($this->companyEntity->getIdStatus()->getLabel()) : '' ?></td>
+                <td>
+                    <div class="form-group">
+                        <form class="form-inline">
+                            <label for="status">Statut</label>
+                            <select id="status" name="status" class="select">
+                                <?php /** @var $status CompanyStatus */ ?>
+                                <?php if (false === empty($this->companyEntity->getIdStatus()) && false === in_array($this->companyEntity->getIdStatus(), $this->possibleCompanyStatus)) : ?>
+                                    <option selected disabled value="<?= $this->companyEntity->getIdStatus()->getId() ?>"><?= $this->companyManager->getCompanyStatusNameByLabel($this->companyEntity->getIdStatus()->getLabel()) ?></option>
+                                <?php endif; ?>
+                                <?php foreach ($this->possibleCompanyStatus as $status) : ?>
+                                    <option <?= $this->companyEntity->getIdStatus()->getId() == $status->getId() ? 'selected' : '' ?> value="<?= $status->getId() ?>"><?= $this->companyManager->getCompanyStatusNameByLabel($status->getLabel()) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <br><br>
 
     <?php $this->fireView('../bank_account/blocks/validated_bank_account'); ?>
     <?php $this->fireView('../bank_account/blocks/other_bank_account'); ?>
@@ -261,7 +311,7 @@
         </tbody>
     </table>
     <br>
-    <h2>Relevé des opérations</h2>
+    <h2>Relevé des opérations (Solde: <?= $this->currencyFormatter->formatCurrency($this->availableBalance, 'EUR') ?>)</h2>
     <?php if (count($this->operations) > 0) : ?>
         <div style="float: left">
             <form method="post" id="operation-date-form" action="" class="form-inline">
@@ -282,4 +332,3 @@
         <p>Aucune opération</p>
     <?php endif; ?>
 </div>
-

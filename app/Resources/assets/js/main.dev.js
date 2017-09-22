@@ -848,4 +848,12 @@ $doc.ready(function ($) {
     }
   }
 
+  // Page Dashboard > Sponsorship - Dynamic Popup
+  $doc.on('Modal:open:before', '#preview-email-dialog', function () {
+    var $modal = $(this)
+    $modal.find('.sponsee-names').text($('#form-sponsorship-sponsee-names').val())
+    $modal.find('.sponsor-names').text($('#form-sponsorship-sponsor-names').val())
+    $modal.find('.sponsor-message').text($('#form-sponsorship-message').val())
+  })
 })
+

@@ -20,6 +20,7 @@ class transfertsController extends bootstrap
     {
         parent::initialize();
 
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
         $this->menu_admin       = 'transferts';
         $this->statusOperations = [
             Receptions::STATUS_PENDING         => 'En attente',
@@ -41,8 +42,6 @@ class transfertsController extends bootstrap
 
     public function _preteurs()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
-
         $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->getLenderAttributions();
         if (isset($this->params[0]) && 'csv' === $this->params[0]) {
             $this->hideDecoration();
@@ -52,8 +51,6 @@ class transfertsController extends bootstrap
 
     public function _emprunteurs()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
-
         $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->getBorrowerAttributions();
         if (isset($this->params[0]) && 'csv' === $this->params[0]) {
             $this->hideDecoration();
@@ -63,8 +60,6 @@ class transfertsController extends bootstrap
 
     public function _non_attribues()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
-
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
@@ -74,8 +69,8 @@ class transfertsController extends bootstrap
         if (isset($_POST['id_project'], $_POST['id_reception'])) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
             $operationManager = $this->get('unilend.service.operation_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentScheduleManager $projectRepaymentScheduleManager */
-            $projectRepaymentScheduleManager = $this->get('unilend.service_repayment.project_repayment_schedule_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectPaymentManager $projectPaymentManager */
+            $projectPaymentManager = $this->get('unilend.service_repayment.project_payment_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager $projectRepaymentTaskManager */
             $projectRepaymentTaskManager = $this->get('unilend.service_repayment.project_repayment_task_manager');
 
@@ -100,11 +95,12 @@ class transfertsController extends bootstrap
                         $projectRepaymentTaskManager->planEarlyRepaymentTask($project, $reception, $user);
                     } elseif ($_POST['type_remb'] === 'regularisation') {
                         $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_REGULARISATION);
-                        $projectRepaymentScheduleManager->pay($reception, $user);
+                        $projectPaymentManager->pay($reception, $user);
                     }
                     $entityManager->flush();
                     $entityManager->getConnection()->commit();
                 } catch (Exception $exception) {
+                    $this->get('logger')->error('Cannot affect the amount to a borrower. Error : ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
                     $entityManager->getConnection()->rollBack();
                 }
             }
@@ -116,8 +112,6 @@ class transfertsController extends bootstrap
 
     public function _attribution()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
-
         $this->hideDecoration();
 
         $this->receptions = $this->loadData('receptions');
@@ -126,8 +120,6 @@ class transfertsController extends bootstrap
 
     public function _attribution_preteur()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
-
         $this->hideDecoration();
         $this->lPreteurs = [];
 
@@ -180,8 +172,6 @@ class transfertsController extends bootstrap
 
     public function _attribuer_preteur()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
-
         $this->hideDecoration();
         $this->autoFireView = false;
 
@@ -292,8 +282,6 @@ class transfertsController extends bootstrap
 
     public function _annuler_attribution_preteur()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
-
         $this->hideDecoration();
         $this->autoFireView = false;
 
@@ -363,150 +351,8 @@ class transfertsController extends bootstrap
         exit;
     }
 
-    public function _rattrapage_offre_bienvenue()
-    {
-        $this->users->checkAccess(Zones::ZONE_LABEL_LENDERS);
-        $this->menu_admin = isset($this->lZonesHeader) && in_array(Zones::ZONE_LABEL_TRANSFERS, $this->lZonesHeader) ? 'transferts' : 'preteurs';
-
-        /** @var \clients clients */
-        $this->clients = $this->loadData('clients');
-
-        unset($_SESSION['forms']['rattrapage_offre_bienvenue']);
-
-        if (isset($_POST['spy_search'])) {
-            if (false === empty($_POST['dateStart']) && false === empty($_POST['dateEnd'])) {
-                $oDateTimeStart                                                   = \DateTime::createFromFormat('d/m/Y', $_POST['dateStart']);
-                $oDateTimeEnd                                                     = \DateTime::createFromFormat('d/m/Y', $_POST['dateEnd']);
-                $sStartDateSQL                                                    = $oDateTimeStart->format('Y-m-d');
-                $sEndDateSQL                                                      = $oDateTimeEnd->format('Y-m-d');
-                $_SESSION['forms']['rattrapage_offre_bienvenue']['sStartDateSQL'] = $sStartDateSQL;
-                $_SESSION['forms']['rattrapage_offre_bienvenue']['sEndDateSQL']   = $sEndDateSQL;
-
-                $this->aClientsWithoutWelcomeOffer = $this->clients->getClientsWithNoWelcomeOffer(null, $sStartDateSQL, $sEndDateSQL);
-            } elseif (false === empty($_POST['id'])) {
-                $this->aClientsWithoutWelcomeOffer                     = $this->clients->getClientsWithNoWelcomeOffer($_POST['id']);
-                $_SESSION['forms']['rattrapage_offre_bienvenue']['id'] = $_POST['id'];
-            } else {
-                $_SESSION['freeow']['title']   = 'Recherche non aboutie. Indiquez soit la liste des ID clients soit un interval de date';
-                $_SESSION['freeow']['message'] = 'Il faut une date de d&eacutebut et de fin ou ID(s)!';
-            }
-        }
-
-        if (isset($_POST['affect_welcome_offer']) && isset($this->params[0])&& is_numeric($this->params[0])) {
-            if ($this->clients->get($this->params[0])) {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager $welcomeOfferManager */
-                $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
-                $response            = $welcomeOfferManager->createWelcomeOffer($this->clients);
-
-                switch ($response['code']) {
-                    case 0:
-                        $_SESSION['freeow']['title'] = 'Offre de bienvenue cr&eacute;dit&eacute;';
-                        break;
-                    default:
-                        $_SESSION['freeow']['title'] = 'Offre de bienvenue non cr&eacute;dit&eacute;';
-                        break;
-                }
-                $_SESSION['freeow']['message'] = $response['message'];
-            }
-        }
-    }
-
-    public function _csv_rattrapage_offre_bienvenue()
-    {
-        $this->users->checkAccess(Zones::ZONE_LABEL_LENDERS);
-        $this->menu_admin = isset($this->lZonesHeader) && in_array(Zones::ZONE_LABEL_TRANSFERS, $this->lZonesHeader) ? 'transferts' : 'preteurs';
-
-        $this->autoFireView = false;
-        $this->hideDecoration();
-
-        /** @var \clients $oClients */
-        $oClients                    = $this->loadData('clients');
-        $aClientsWithoutWelcomeOffer = array();
-
-        if (isset($_SESSION['forms']['rattrapage_offre_bienvenue']['sStartDateSQL']) && isset($_SESSION['forms']['rattrapage_offre_bienvenue']['sEndDateSQL'])) {
-            $aClientsWithoutWelcomeOffer = $oClients->getClientsWithNoWelcomeOffer(
-                null,
-                $_SESSION['forms']['rattrapage_offre_bienvenue']['sStartDateSQL'],
-                $_SESSION['forms']['rattrapage_offre_bienvenue']['sEndDateSQL']
-            );
-        }
-
-        if (isset($_SESSION['forms']['rattrapage_offre_bienvenue']['id'])) {
-            $aClientsWithoutWelcomeOffer = $oClients->getClientsWithNoWelcomeOffer($_SESSION['forms']['rattrapage_offre_bienvenue']['id']);
-        }
-
-        $sFileName      = 'ratrappage_offre_bienvenue';
-        $aColumnHeaders = array('ID Client', 'Nom ou Raison Sociale', 'Prénom', 'Email', 'Date de création', 'Date de validation');
-        $aData          = array();
-
-        foreach ($aClientsWithoutWelcomeOffer as $key => $aClient) {
-            $aData[] = array(
-                $aClient['id_client'],
-                empty($aClient['company']) ? $aClient['nom'] : $aClient['company'],
-                empty($aClient['company']) ? $aClient['prenom'] : '',
-                $aClient['email'],
-                $this->dates->formatDateMysqltoShortFR($aClient['date_creation']),
-                (false === empty($aClient['date_validation'])) ? $this->dates->formatDateMysqltoShortFR($aClient['date_validation']) : ''
-            );
-        }
-        $this->exportCSV($aColumnHeaders, $aData, $sFileName);
-    }
-
-    private function exportCSV($aColumnHeaders, $aData, $sFileName)
-    {
-        PHPExcel_Settings::setCacheStorageMethod(
-            PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
-            array('memoryCacheSize' => '2048MB', 'cacheTime' => 1200)
-        );
-
-        $oDocument    = new PHPExcel();
-        $oActiveSheet = $oDocument->setActiveSheetIndex(0);
-
-        if (count($aColumnHeaders) > 0) {
-            foreach ($aColumnHeaders as $iIndex => $sColumnName) {
-                $oActiveSheet->setCellValueByColumnAndRow($iIndex, 1, $sColumnName);
-            }
-        }
-
-        foreach ($aData as $iRowIndex => $aRow) {
-            $iColIndex = 0;
-            foreach ($aRow as $sCellValue) {
-                $oActiveSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 2, $sCellValue);
-            }
-        }
-
-        header('Content-Type: text/csv');
-        header('Content-Disposition: attachment;filename=' . $sFileName . '.csv');
-        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-        header('Expires: 0');
-
-        /** @var \PHPExcel_Writer_CSV $oWriter */
-        $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
-        $oWriter->setUseBOM(true);
-        $oWriter->setDelimiter(';');
-        $oWriter->save('php://output');
-    }
-
-    public function _affect_welcome_offer()
-    {
-        $this->users->checkAccess(Zones::ZONE_LABEL_LENDERS);
-        $this->menu_admin = isset($this->lZonesHeader) && in_array(Zones::ZONE_LABEL_TRANSFERS, $this->lZonesHeader) ? 'transferts' : 'preteurs';
-
-        $this->hideDecoration();
-
-        $this->oWelcomeOffer = $this->loadData('offres_bienvenues');
-        $this->oClient       = $this->loadData('clients');
-        $this->oCompany      = $this->loadData('companies');
-
-        $this->oClient->get($this->params[0]);
-        $this->oCompany->get('id_client_owner', $this->oClient->id_client);
-        $this->oWelcomeOffer->get(1, 'status = 0 AND id_offre_bienvenue');
-    }
-
     public function _deblocage()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
-
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
@@ -778,8 +624,6 @@ class transfertsController extends bootstrap
 
     public function _succession()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
-
         if (isset($_POST['succession_check']) || isset($_POST['succession_validate'])) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
             $clientManager = $this->get('unilend.service.client_manager');
@@ -829,7 +673,7 @@ class transfertsController extends bootstrap
 
             /** @var \loans $loans */
             $loans                 = $this->loadData('loans');
-            $loansInRepayment      = $loans->getLoansForProjectsWithStatus($originalWallet->getId(), array_merge(\projects_status::$runningRepayment, [\projects_status::FUNDE]));
+            $loansInRepayment      = $loans->getLoansForProjectsWithStatus($originalWallet->getId(), [ProjectsStatus::FUNDE, ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME]);
             $originalClientBalance = $originalWallet->getAvailableBalance();
 
             if (isset($_POST['succession_check'])) {
@@ -1012,8 +856,6 @@ class transfertsController extends bootstrap
 
     public function _validate_lightbox()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
-
         $this->hideDecoration();
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
@@ -1054,8 +896,6 @@ class transfertsController extends bootstrap
 
     public function _virement_emprunteur()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
-
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \NumberFormatTest currencyFormatter */

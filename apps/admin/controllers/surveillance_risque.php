@@ -41,24 +41,26 @@ class surveillance_risqueController extends bootstrap
         $formattedEvents     = [];
 
         foreach ($events as $event) {
-            if (false === isset($formattedEvents[$event['siren']])) {
-                $formattedEvents[$event['siren']] = [
-                    'label'       => $event['name'],
-                    'count'       => 0,
-                    'activeSiren' => in_array($event['status'], $activeStatus)
-                ];
-            }
+            if (false === in_array($event['status'], [ProjectsStatus::ABANDONED, ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION])) {
+                if (false === isset($formattedEvents[$event['siren']])) {
+                    $formattedEvents[$event['siren']] = [
+                        'label'       => $event['name'],
+                        'count'       => 0,
+                        'activeSiren' => in_array($event['status'], $activeStatus)
+                    ];
+                }
 
-            if ($event['status'] >= ProjectsStatus::REMBOURSEMENT) {
-                $event['remainingDueCapital'] = $operationRepository->getRemainingDueCapitalForProjects(new \DateTime('NOW'), [$event['id_project']]);
-            }
+                if ($event['status'] >= ProjectsStatus::REMBOURSEMENT) {
+                    $event['remainingDueCapital'] = $operationRepository->getRemainingDueCapitalForProjects(new \DateTime('NOW'), [$event['id_project']]);
+                }
 
-            if ($formattedEvents[$event['siren']]['activeSiren'] || in_array($event['status'], $activeStatus)) {
-                $formattedEvents[$event['siren']]['activeSiren'] = true;
-            }
+                if ($formattedEvents[$event['siren']]['activeSiren'] || in_array($event['status'], $activeStatus)) {
+                    $formattedEvents[$event['siren']]['activeSiren'] = true;
+                }
 
-            $formattedEvents[$event['siren']]['count']++;
-            $formattedEvents[$event['siren']]['events'][] = $event;
+                $formattedEvents[$event['siren']]['count']++;
+                $formattedEvents[$event['siren']]['events'][] = $event;
+            }
         }
 
         return $formattedEvents;
