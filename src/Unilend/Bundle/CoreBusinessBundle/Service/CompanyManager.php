@@ -54,7 +54,7 @@ class CompanyManager
                 $possibleStatus = [CompanyStatus::STATUS_IN_BONIS, CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION];
         }
 
-        return $companyStatus->findBy(['label' => $possibleStatus]);
+        return $companyStatus->findBy(['label' => $possibleStatus], ['id' => 'ASC']);
     }
 
     /**

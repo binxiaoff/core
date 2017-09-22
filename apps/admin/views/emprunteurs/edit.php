@@ -165,7 +165,7 @@ use \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
                             <label for="status">Statut</label>
                             <select id="status" name="status" class="select">
                                 <?php /** @var $status CompanyStatus */ ?>
-                                <?php if (false === empty($this->companyEntity->getIdStatus()->getId()) && false === in_array($this->companyEntity->getIdStatus(), $this->possibleCompanyStatus)) : ?>
+                                <?php if (false === empty($this->companyEntity->getIdStatus()) && false === in_array($this->companyEntity->getIdStatus(), $this->possibleCompanyStatus)) : ?>
                                     <option selected disabled value="<?= $this->companyEntity->getIdStatus()->getId() ?>"><?= $this->companyManager->getCompanyStatusNameByLabel($this->companyEntity->getIdStatus()->getLabel()) ?></option>
                                 <?php endif; ?>
                                 <?php foreach ($this->possibleCompanyStatus as $status) : ?>

@@ -215,7 +215,7 @@
         </service>
 
         <service id="unilend.service.project_status_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager">
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="translator"/>
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="number_formatter"/>

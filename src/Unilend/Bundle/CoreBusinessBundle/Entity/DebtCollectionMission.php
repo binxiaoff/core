@@ -85,6 +85,13 @@ class DebtCollectionMission
     private $idClientDebtCollector;
 
     /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="archived" type="datetime", nullable=true)
+     */
+    private $archived;
+
+    /**
      * @var Users
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
@@ -120,7 +127,7 @@ class DebtCollectionMission
     /**
      * Set type
      *
-     * @param boolean $type
+     * @param int $type
      *
      * @return DebtCollectionMission
      */
@@ -134,7 +141,7 @@ class DebtCollectionMission
     /**
      * Get type
      *
-     * @return boolean
+     * @return int
      */
     public function getType()
     {
@@ -383,5 +390,24 @@ class DebtCollectionMission
     public function getIdUserArchiving()
     {
         return $this->idUserArchiving;
+    }
+    /**
+     * @return \DateTime
+     */
+    public function getArchived()
+    {
+        return $this->archived;
+    }
+
+    /**
+     * @param \DateTime|null $archived
+     *
+     * @return DebtCollectionMission
+     */
+    public function setArchived(\DateTime $archived = null)
+    {
+        $this->archived = $archived;
+
+        return $this;
     }
 }
