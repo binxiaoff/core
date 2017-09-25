@@ -14,9 +14,6 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class DebtCollectionMission
 {
-    const STATUS_ONGOING  = 0;
-    const STATUS_ARCHIVED = 1;
-
     const TYPE_AMICABLE   = 0;
     const TYPE_LITIGATION = 1;
 
