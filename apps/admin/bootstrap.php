@@ -185,7 +185,7 @@ class bootstrap extends Controller
             'zone'     => Zones::ZONE_LABEL_BORROWERS,
             'children' => [
                 [
-                    'title' => 'Dossiers',
+                    'title' => 'Projets',
                     'uri'   => 'dossiers',
                 ],
                 [
