@@ -389,6 +389,48 @@
                     <a id="btn_add_prescripteur" class="btn_link thickbox cboxElement" href="<?= $this->lurl ?>/prescripteurs/add_client/<?= $this->projects->id_project ?>" target="_blank">Créer un prescripteur</a>
                 </td>
             </tr>
+            <tr class="partner_submitter_and_agency">
+                <td colspan="2">
+                    <table>
+                        <tr>
+                            <td colspan="2"><br><h2>Coordonnées du déposant</h2></td>
+                        </tr>
+                        <tr>
+                            <th><label for="submitter_name">Prénom et nom</label></th>
+                            <td><input type="text" name="submitter_name" id="submitter_name" class="input_large"></td>
+                        </tr>
+                        <tr>
+                            <th><label for="submitter_phone">Numéro de téléphone</label></th>
+                            <td>
+                                <input type="text" name="submitter_phone" id="submitter_phone" class="input_moy">
+                                <a href="https://ssl.keyyo.com/makecall.html?ACCOUNT=<ligne keyyo>&CALLEE=<destination>&CALLEE_NAME=<nom appelé>"  class="btn-small btn_link">Appeler</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th><label for="submitter_email">Email</label></th>
+                            <td><input type="text" name="submitter_email" id="submitter_email" class="input_large"></td>
+                        </tr>
+                    </table>
+                </td>
+                <td colspan="2">
+                    <table>
+                        <tr>
+                            <td colspan="2"><br><h2>Coordonnées de l'agence</h2></td>
+                        </tr>
+                        <tr>
+                            <th><label for="agency_name">Nom de l'agence</label></th>
+                            <td><input type="text" name="agency_name" id="agency_name" class="input_large"></td>
+                        </tr>
+                        <tr>
+                            <th><label for="agency_phone">Numéro de téléphone</label></th>
+                            <td>
+                                <input type="text" name="agency_phone" id="agency_phone" class="input_moy">
+                                <a href="https://ssl.keyyo.com/makecall.html?ACCOUNT=<ligne keyyo>&CALLEE=<destination>&CALLEE_NAME=<nom appelé>" class="btn-small btn_link">Appeler</a>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
         </table>
         <div id="valid_etape2" class="valid_etape">Données sauvegardées</div>
         <div class="btnDroite">
