@@ -455,19 +455,21 @@
                 ]
             }
         /// END FAKE DATA
+
+        var level = 0
         var $partnerSelect = $('select#partner')
         var $agencySelect = $('select#partner-agency')
         var $submitterSelect = $('select#partner-submitter')
         var $partnerMessages = $('.project-partner .messages')
+
         function recursivePartnerAgencies(data) {
             var html = ''
             for (var i in data) {
+                html += '<option value="' + data[i].id + '">' + new Array(level + 1).join('&nbsp;&nbsp;') +  data[i].name + '</option>'
                 if (typeof data[i].children !== 'undefined') {
-                    html += '<optgroup label="' + data[i].name + '">'
+                    level ++
                     html += recursivePartnerAgencies(data[i].children)
-                    html += '</optgroup>'
-                } else {
-                    html += '<option value="' + data[i].id + '">' + data[i].name + '</option>'
+                    level --
                 }
             }
             return html
@@ -475,7 +477,7 @@
         $partnerSelect.change(function() {
             var $select = $(this)
             var name = $select.attr('name')
-            if ($select.val() === 0)
+            if ($select.val() == 1) // Unilend
                 return false
             $select.siblings('.select').each(function(){
                 if (!$(this).is('.hide'))

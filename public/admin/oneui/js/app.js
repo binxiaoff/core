@@ -1095,16 +1095,17 @@ var App = function() {
                 // Select 2
                 } else if (type === 'selectArray') {
                     var optionsHtml = ''
+                    var level = 0
                     function recurse(object) {
+
                         for (var i in object) {
+                            var selected = (val === object[i].text) ? 'selected' : ''
+                            var id = (typeof object[i].id !== 'undefined') ? object[i].id : object[i].text
+                            optionsHtml += '<option value="' + id + '" ' + selected + '>' + new Array(level + 1).join('&nbsp;&nbsp;') + object[i].text + '</option>'
                             if (typeof object[i].children !== 'undefined') {
-                                optionsHtml += '<optgroup label="' + object[i].text + '">'
+                                level++
                                 recurse(object[i].children)
-                                optionsHtml += '</optgroup>'
-                            } else {
-                                var selected = (val === object[i].text) ? 'selected' : ''
-                                var id = (typeof object[i].id !== 'undefined') ? object[i].id : object[i].text
-                                optionsHtml += '<option value="' + id + '" ' + selected + '>' + object[i].text + '</option>'
+                                level--
                             }
                         }
                         return optionsHtml
