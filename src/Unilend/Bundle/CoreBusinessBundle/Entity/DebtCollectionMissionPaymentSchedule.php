@@ -22,7 +22,7 @@ class DebtCollectionMissionPaymentSchedule
     private $id;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur
+     * @var EcheanciersEmprunteur
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur")
      * @ORM\JoinColumns({
@@ -32,7 +32,7 @@ class DebtCollectionMissionPaymentSchedule
     private $idPaymentSchedule;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission
+     * @var DebtCollectionMission
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission", inversedBy="debtCollectionMissionPaymentSchedules")
      * @ORM\JoinColumns({
@@ -94,7 +94,7 @@ class DebtCollectionMissionPaymentSchedule
     /**
      * Get idMission
      *
-     * @return DebtCollectionMission
+     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission
      */
     public function getIdMission()
     {

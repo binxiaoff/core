@@ -14,9 +14,6 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class DebtCollectionMission
 {
-    const STATUS_ONGOING  = 0;
-    const STATUS_ARCHIVED = 1;
-
     const TYPE_AMICABLE   = 0;
     const TYPE_LITIGATION = 1;
 
@@ -85,13 +82,6 @@ class DebtCollectionMission
     private $idClientDebtCollector;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="archived", type="datetime", nullable=true)
-     */
-    private $archived;
-
-    /**
      * @var Users
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
@@ -118,6 +108,13 @@ class DebtCollectionMission
      *
      */
     private $debtCollectionMissionPaymentSchedules;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="archived", type="datetime", nullable=true)
+     */
+    private $archived;
 
     public function __construct()
     {
@@ -391,6 +388,7 @@ class DebtCollectionMission
     {
         return $this->idUserArchiving;
     }
+
     /**
      * @return \DateTime
      */
