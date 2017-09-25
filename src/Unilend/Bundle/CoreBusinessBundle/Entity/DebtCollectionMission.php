@@ -85,13 +85,6 @@ class DebtCollectionMission
     private $idClientDebtCollector;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="archived", type="datetime", nullable=true)
-     */
-    private $archived;
-
-    /**
      * @var Users
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
@@ -118,6 +111,13 @@ class DebtCollectionMission
      *
      */
     private $debtCollectionMissionPaymentSchedules;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="archived", type="datetime", nullable=true)
+     */
+    private $archived;
 
     public function __construct()
     {
@@ -391,6 +391,7 @@ class DebtCollectionMission
     {
         return $this->idUserArchiving;
     }
+
     /**
      * @return \DateTime
      */

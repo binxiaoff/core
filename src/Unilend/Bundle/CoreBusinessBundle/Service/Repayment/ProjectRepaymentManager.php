@@ -151,9 +151,7 @@ class ProjectRepaymentManager
      */
     private function processRepayment(ProjectRepaymentTask $projectRepaymentTask)
     {
-        if (0 === count($this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail')->findBy(['idTask' => $projectRepaymentTask]))) {
-            $this->prepare($projectRepaymentTask);
-        }
+        $this->prepare($projectRepaymentTask);
 
         $this->checkPreparedRepayments($projectRepaymentTask);
 
@@ -238,6 +236,9 @@ class ProjectRepaymentManager
      */
     public function prepare(ProjectRepaymentTask $projectRepaymentTask)
     {
+        if (0 < count($this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail')->findBy(['idTask' => $projectRepaymentTask]))) {
+            return;
+        }
 
         $repaidCapital               = 0;
         $repaidInterest              = 0;
@@ -326,7 +327,7 @@ class ProjectRepaymentManager
                 }
             }
 
-            $interestNumberOfCents = abs(round(bcdiv(round(bcsub($projectRepaymentTask->getIdTask()->getInterest(), $repaidInterest, 4), 2), 0.01, 4)));
+            $interestNumberOfCents = abs(round(bcdiv(round(bcsub($projectRepaymentTask->getInterest(), $repaidInterest, 4), 2), 0.01, 4)));
             if ($interestNumberOfCents > 0) {
                 $randomRepayments = $projectRepaymentDetailRepository->findRandomlyUncompletedByTaskExecutionForInterest($projectRepaymentTask, $interestNumberOfCents);
 
