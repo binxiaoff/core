@@ -52,8 +52,9 @@ class TemplateMessageProvider
     {
         $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
             'type'   => $template,
+            'locale' => $this->defaultLanguage,
             'status' => MailTemplates::STATUS_ACTIVE,
-            'locale' => $this->defaultLanguage
+            'part'   => MailTemplates::PART_TYPE_CONTENT
         ]);
 
         if (null === $mailTemplate) {

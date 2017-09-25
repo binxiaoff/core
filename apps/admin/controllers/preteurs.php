@@ -778,7 +778,8 @@ class preteursController extends bootstrap
         $this->mailTemplate = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
             'type'   => 'completude',
             'locale' => $this->getParameter('locale'),
-            'status' => MailTemplates::STATUS_ACTIVE
+            'status' => MailTemplates::STATUS_ACTIVE,
+            'part'   => MailTemplates::PART_TYPE_CONTENT
         ]);
     }
 
@@ -826,7 +827,8 @@ class preteursController extends bootstrap
         $mailTemplate  = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
             'type'   => 'completude',
             'locale' => $this->getParameter('locale'),
-            'status' => MailTemplates::STATUS_ACTIVE
+            'status' => MailTemplates::STATUS_ACTIVE,
+            'part'   => MailTemplates::PART_TYPE_CONTENT
         ]);
 
         echo strtr($mailTemplate->getContent(), $tabVars);

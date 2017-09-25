@@ -43,17 +43,19 @@ class MailTemplateManager
         $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
             'type'   => $type,
             'locale' => $this->defaultLanguage,
-            'status' => MailTemplates::STATUS_ACTIVE
+            'status' => MailTemplates::STATUS_ACTIVE,
+            'part'   => MailTemplates::PART_TYPE_CONTENT
         ]);
 
         if (null === $mailTemplate) {
             $mailTemplate = new MailTemplates();
             $mailTemplate->setType($type);
+            $mailTemplate->setRecipientType($recipientType);
+            $mailTemplate->setPart(MailTemplates::PART_TYPE_CONTENT);
             $mailTemplate->setSenderName($sender);
             $mailTemplate->setSenderEmail($senderEmail);
             $mailTemplate->setSubject($subject);
             $mailTemplate->setContent($content);
-            $mailTemplate->setRecipientType($recipientType);
             $mailTemplate->setLocale($this->defaultLanguage);
             $mailTemplate->setStatus(MailTemplates::STATUS_ACTIVE);
 
@@ -76,11 +78,12 @@ class MailTemplateManager
             $this->archiveTemplate($mailTemplate);
             $this->addTemplate($mailTemplate->getType(), $sender, $senderEmail, $subject, $content, $recipientType);
         } else {
+            $mailTemplate->setRecipientType($recipientType);
+            $mailTemplate->setPart(MailTemplates::PART_TYPE_CONTENT);
             $mailTemplate->setSenderName($sender);
             $mailTemplate->setSenderEmail($senderEmail);
             $mailTemplate->setSubject($subject);
             $mailTemplate->setContent($content);
-            $mailTemplate->setRecipientType($recipientType);
 
             $this->entityManager->flush($mailTemplate);
         }
@@ -102,11 +105,16 @@ class MailTemplateManager
      */
     public function getActiveMailTemplates($recipientType = null)
     {
-        if (null === $recipientType) {
-            return $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findBy(['status' => MailTemplates::STATUS_ACTIVE]);
+        $criteria = [
+            'status' => MailTemplates::STATUS_ACTIVE,
+            'part'   => MailTemplates::PART_TYPE_CONTENT
+        ];
+
+        if (null !== $recipientType) {
+            $criteria['recipientType'] = $recipientType;
         }
 
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findBy(['status' => MailTemplates::STATUS_ACTIVE, 'recipientType' => $recipientType]);
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findBy($criteria, ['type' => 'ASC']);
     }
 
     /**

@@ -2232,7 +2232,8 @@ class dossiersController extends bootstrap
         $this->mailTemplate = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
             'type'   => $sTypeEmail,
             'locale' => $this->getParameter('locale'),
-            'status' => MailTemplates::STATUS_ACTIVE
+            'status' => MailTemplates::STATUS_ACTIVE,
+            'part'   => MailTemplates::PART_TYPE_CONTENT
         ]);
     }
 
@@ -2275,7 +2276,8 @@ class dossiersController extends bootstrap
         $mailTemplate  = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
             'type'   => $sTypeEmail,
             'locale' => $this->getParameter('locale'),
-            'status' => MailTemplates::STATUS_ACTIVE
+            'status' => MailTemplates::STATUS_ACTIVE,
+            'part'   => MailTemplates::PART_TYPE_CONTENT
         ]);
 
         echo strtr($mailTemplate->getContent(), $tabVars);

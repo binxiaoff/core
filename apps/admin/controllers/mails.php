@@ -34,13 +34,14 @@ class mailsController extends bootstrap
             $mailTemplate  = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
                 'type'   => $this->params[1],
                 'locale' => $this->getParameter('locale'),
-                'status' => MailTemplates::STATUS_ACTIVE
+                'status' => MailTemplates::STATUS_ACTIVE,
+                'part'   => MailTemplates::PART_TYPE_CONTENT
             ]);
 
             $mailTemplateManager->archiveTemplate($mailTemplate);
 
             $_SESSION['freeow']['title']   = 'Archivage d\'un mail';
-            $_SESSION['freeow']['message'] = 'Le mail a bien &eacute;t&eacute; archiv&eacute; !';
+            $_SESSION['freeow']['message'] = 'Le mail a bien été archivé';
 
             header('Location: ' . $this->lurl . '/mails');
             die;
@@ -80,7 +81,8 @@ class mailsController extends bootstrap
             $mailTemplate  = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
                 'type'   => $aPost['type'],
                 'locale' => $this->getParameter('locale'),
-                'status' => MailTemplates::STATUS_ACTIVE
+                'status' => MailTemplates::STATUS_ACTIVE,
+                'part'   => MailTemplates::PART_TYPE_CONTENT
             ]);
 
             if (empty($aPost['type']) || empty($aPost['sender_name']) || empty($aPost['sender_email']) || empty($aPost['subject'])) {
@@ -115,7 +117,8 @@ class mailsController extends bootstrap
             $this->mailTemplate = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
                 'type'   => $this->params[0],
                 'locale' => $this->getParameter('locale'),
-                'status' => MailTemplates::STATUS_ACTIVE
+                'status' => MailTemplates::STATUS_ACTIVE,
+                'part'   => MailTemplates::PART_TYPE_CONTENT
             ]);
 
             if (null !== $this->mailTemplate && $this->request->isMethod(Request::METHOD_POST)) {
