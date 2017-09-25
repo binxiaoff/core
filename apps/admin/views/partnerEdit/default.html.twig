@@ -18,6 +18,11 @@
     <script>
         $(function(){
             App.initHelpers(['validation', 'datatables', 'summernote', 'datepicker'])
+
+            /*
+             * Extend dataTable actions
+             * add "Reset Password" button + modal
+             */
             var $usersTable = $('#table-users')
             var $sendPasswordModal = $('#modal-send-password')
             $usersTable.DT({
@@ -26,6 +31,9 @@
                         var $tr = $(this)
                         $tr.find('td:last-child .btn-group').prepend('<a class="btn btn-xs btn-default password-btn" title="Mot de passe"><span class="fa fa-lock"></span></a>')
                     })
+                },
+                updated: function(id) {
+                    $usersTable.find('tr[data-id=' + id + '] .btn-group').prepend('<a class="btn btn-xs btn-default password-btn" title="Mot de passe"><span class="fa fa-lock"></span></a>')
                 }
             })
             $usersTable.on('click', '.password-btn', function(){
@@ -34,45 +42,51 @@
                 $sendPasswordModal.modal('show')
             })
 
+            /*
+             * Draggable tree
+             * for the organisation's hierarchy
+             */
             var $tree = $('#organisation .tree-js')
             var treeBackupHtml = $tree.html()
             $tree.before('<div class="tree-js-backup hide">' + treeBackupHtml + '</div>')
             $tree.find('.tree-js-dd').nestable()
-
-            function treeAppendItem(agencyName) {
-                $tree.find('.tree-js-outer').prepend('<li class="dd-item new" data-id="newID"><div class="dd-handle">' + agencyName + '</div></li>')
+            // Adds new item to the tree
+            function treeAppendItem(agencyName, formData) {
+                var index = $tree.find('.new-item-input').length
+                $tree.find('.tree-js-outer').prepend('<li class="dd-item new" data-id="new-' + index + '"><div class="dd-handle">' + agencyName + '</div></li>')
+                var $hiddenInput = $('<input type="hidden" name="new_item[' + index + ']" class="new-item-input">')
+                $hiddenInput.val(formData)
+                $tree.append($hiddenInput)
+                $tree.find('.tree-js-dd').trigger('change')
             }
+            // Resets the tree to initial state
             function treeReset() {
                 $tree.html(treeBackupHtml)
-                $tree.find('.new-item-input').remove()
                 $tree.find('.tree-js-dd').nestable()
             }
-
             $(document).on('change', '.tree-js-dd', function(){
                 $tree.find('.reset-btn, .submit-btn').removeClass('hide')
             })
-
             $(document).on('click', '.reset-btn', function(){
                 treeReset()
             })
-
+            // New agency data, append without submitting the form
             $(document).on('submit', '#modal-create-agency form', function(e){
                 e.preventDefault()
                 var $modal = $(this).closest('.modal')
                 var $form = $(this)
                 if (!$form.find('.has-error').length) {
                     var name = $form.find('input[name=name]').val()
-                    treeAppendItem(name)
-                    var index = $tree.find('.new-item-input').length
-                    var $hiddenInput = $('<input type="hidden" name="new_item[' + index + ']" class="new-item-input">')
-                    $hiddenInput.val($form.serialize())
-                    $tree.append($hiddenInput)
-                    $tree.find('.tree-js-dd').trigger('change')
+                    var formData = $form.serialize()
+                    // Append the item + form values from the popup
+                    treeAppendItem(name, formData)
                     $modal.modal('hide')
                 }
             })
-            $(document).on('submit', '#organisation form', function(e) {
-                $tree.find('.structure-input').val(JSON.stringify($tree.find('.tree-js-dd').nestable('serialize')))
+            // Updated structure data, append before submitting the form
+            $(document).on('submit', '#organisation form', function() {
+                var newStructure = $tree.find('.tree-js-dd').nestable('serialize')
+                $tree.find('.structure-input').val(JSON.stringify(newStructure))
             })
         })
     </script>
@@ -84,7 +98,7 @@
             <div class="modal-content">
                 <div class="block block-bordered remove-margin-b">
                     <div class="block-header">
-                        <h3 class="block-title">Envoyer le mot de pass</h3>
+                        <h3 class="block-title">Nouvelle entité</h3>
                     </div>
                     <div class="block-content">
                         <div class="row">
@@ -152,6 +166,21 @@
     </div>
 {% endblock %}
 
+{% set formErrors = {
+    settings: ['Error 1', 'Error 2'],
+    products:  ['Error 1', 'Error 2'],
+    organisation: ['Error 1', 'Error 2'],
+    instructionsSubmissions:  ['Error 1', 'Error 2'],
+    instructionsDocuments:  ['Error 1', 'Error 2']
+} %}
+{% set formSuccess = {
+    settings: ['Success message'],
+    products:  ['Success message'],
+    organisation: ['Success message'],
+    instructionsSubmissions:  ['Success message'],
+    instructionsDocuments:  ['Success message']
+} %}
+
 {% set products = [
     {label: 'Product 1', description: 'Débl. 9% / Remb. 12%', value: '1', status: 'inactive'},
     {label: 'Product 2', description: 'Débl. 9% / Remb. 12%', value: '2', status: 'active'},
@@ -207,9 +236,18 @@
             </div>
             <div class="block-content block-content-full">
                 <form action="/partnerEdit/settings/" method="post">
-                    {%  if formErrors is defined %}
-                        <div class="alert">
-                            <p>Errors</p>
+                    {%  if formErrors.settings is defined and formErrors.settings is not empty %}
+                        <div class="alert alert-error">
+                            {% for error in formErrors.settings %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    {%  if formSuccess.settings is defined %}
+                        <div class="alert alert-success">
+                            {% for success in formSuccess.settings %}
+                                <p>{{ success }}</p>
+                            {% endfor %}
                         </div>
                     {% endif %}
                     <div class="row">
@@ -242,9 +280,18 @@
             </div>
             <div class="block-content block-content-full">
                 <form action="/partnerEdit/products/" method="post">
-                    {%  if formErrors is defined %}
-                        <div class="alert">
-                            <p>Errors</p>
+                    {%  if formErrors.products is defined and formErrors.products is not empty %}
+                        <div class="alert alert-error">
+                            {% for error in formErrors.products %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    {%  if formSuccess.products is defined %}
+                        <div class="alert alert-success">
+                            {% for success in formSuccess.products %}
+                                <p>{{ success }}</p>
+                            {% endfor %}
                         </div>
                     {% endif %}
                     <div class="row push">
@@ -269,13 +316,20 @@
             </div>
             <div class="block-content block-content-full">
                 <form action="/partnerEdit/organisation/" method="post" class="tree-js">
-                    <div class="messages">
-                        {%  if formErrors is defined %}
-                            <div class="alert">
-                                <p>Errors</p>
-                            </div>
-                        {% endif %}
-                    </div>
+                    {%  if formErrors.organisation is defined and formErrors.organisation is not empty %}
+                        <div class="alert alert-error">
+                            {% for error in formErrors.organisation %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    {%  if formSuccess.organisation is defined %}
+                        <div class="alert alert-success">
+                            {% for success in formSuccess.organisation %}
+                                <p>{{ success }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                     <button class="btn btn-default push-5" type="button" data-toggle="modal" data-target="#modal-create-agency"><span class="fa fa-plus"></span> Ajouter une entité</button>
                     <div class="row push">
                         <div class="col-md-12">
@@ -302,15 +356,15 @@
                 <h3 class="block-title">Utilisateurs</h3>
             </div>
             <div class="block-content block-content-full">
-                <table id="table-users" class="table table-bordered table-striped" data-table-search="true" data-table-editor data-table-editor-url="/partnerEdit/users" data-table-editor-actions="add, modify, toggle">
+                <table id="table-users" class="table table-bordered table-striped" data-table-search="true" data-table-editor data-table-editor-url="/partnerEdit/users/" data-table-editor-actions="add, modify, toggle">
                     <thead>
-                    <tr>
-                        <th data-editor-name="name" data-editor-type="text">Prénom et nom</th>
-                        <th data-editor-name="position" data-editor-type="text">Rôle</th>
-                        <th data-editor-name="agency" data-editor-type="selectArray" data-editor-options="{{ partnerAgencies|json_encode|escape('html_attr') }}">Entité de rattachement</th>
-                        <th data-editor-name="date_added" data-editor-type="date">Date d'ajout</th>
-                        <th data-editor-name="last_connection" data-editor-type="date">Dernière connexion</th>
-                    </tr>
+                        <tr>
+                            <th data-editor-name="name" data-editor-type="text">Prénom et nom</th>
+                            <th data-editor-name="position" data-editor-type="text">Rôle</th>
+                            <th data-editor-name="agency" data-editor-type="selectArray" data-editor-options="{{ partnerAgencies|json_encode|escape('html_attr') }}">Entité de rattachement</th>
+                            <th data-editor-name="date_added" data-editor-type="date">Date d'ajout</th>
+                            <th data-editor-name="last_connection" data-editor-type="date">Dernière connexion</th>
+                        </tr>
                     </thead>
                     <tbody>
                     {% for user in users %}
@@ -331,15 +385,48 @@
                 <h3 class="block-title">Instructions</h3>
             </div>
             <div class="block-content block-content-full">
-
                 <div class="row">
                     <div class="col-md-6">
-                        <p>Description de dossier :</p>
-                        <div class="js-summernote-simple">{{ instructionsProjectSubmissions }}</div>
+                        <form action="/partnerEdit/instructionsSubmissions/" method="post">
+                            {%  if formErrors.instructionsSubmissions is defined and formErrors.instructionsSubmissions is not empty %}
+                                <div class="alert alert-error">
+                                    {% for error in formErrors.instructionsSubmissions %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {%  if formSuccess.instructionsSubmissions is defined %}
+                                <div class="alert alert-success">
+                                    {% for success in formSuccess.instructionsSubmissions %}
+                                        <p>{{ success }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <p>Description de dossier :</p>
+                            <textarea class="js-summernote-simple" name="instructions">{{ instructionsProjectSubmissions }}</textarea>
+                            <button type="submit" class="btn btn-primary">Mise à jour</button>
+                        </form>
                     </div>
                     <div class="col-md-6">
-                        <p>Pièces à fournir :</p>
-                        <div class="js-summernote-simple">{{ instructionsDocuments }}</div>
+                        <form action="/partnerEdit/instructionsDocuments/" method="post">
+                            {%  if formErrors.instructionsDocuments is defined and formErrors.instructionsDocuments is not empty %}
+                                <div class="alert alert-error">
+                                    {% for error in formErrors.instructionsDocuments %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {%  if formSuccess.instructionsDocuments is defined %}
+                                <div class="alert alert-success">
+                                    {% for success in formSuccess.instructionsDocuments %}
+                                        <p>{{ success }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <p>Pièces à fournir :</p>
+                            <textarea class="js-summernote-simple" name="instructions">{{ instructionsDocuments }}</textarea>
+                            <button type="submit" class="btn btn-primary">Mise à jour</button>
+                        </form>
                     </div>
                 </div>
             </div>

@@ -102,11 +102,13 @@ class partnerEditController extends bootstrap
 
             if ($action === 'create') {
                 $id = '4382728'; // Generate new ID
-            } else if ($action === 'modify') {
+            } else {
                 $id = $_POST['id']; // Existing ID
             }
 
-            // $responseData = $name, $position, $agency, $date_added, $last_connection, $id, $status;
+            $agencyName = 'Agency Name'; // $_POST['agency'] returns ID, in the response we need the name
+
+            $responseData = [$_POST['name'], $_POST['position'], $agencyName, $_POST['date_added'], $_POST['last_connection']];
         }
         // Delete
         if ($action === 'delete') {

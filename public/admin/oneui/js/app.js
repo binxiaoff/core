@@ -924,6 +924,7 @@ var App = function() {
         function DT(elem, options) {
             var self = this
             self.$elem = $(elem)
+            self.options = options
 
             if (self.$elem[0].DT)
                 return false
@@ -1246,16 +1247,17 @@ var App = function() {
                 setTimeout(function(){ tr.remove().draw(false) }, self.delay)
                 return false
             }
+            // Toggle row state
             if (data === 'active' || data === 'inactive') {
                 $tr.addClass('animated flash-bg').find('td:last-child').html(self.buttons(data))
                 setTimeout(function(){ $tr.removeClass('animated flash-bg') }, self.delay)
                 return false
             }
+            // Add or modify row
             if (!$.isArray(data)) {
                 console.log('response.data must be an array')
                 return false
             }
-            // Add or modify row
             if (!tr.length) {
                 // Add new row
                 data.push(self.buttons('active'))
@@ -1268,6 +1270,13 @@ var App = function() {
             }
             // Go to the page on which the row is
             self.page(tr.index(), $tr)
+            // After update callback
+            if (typeof self.options !== 'undefined') {
+
+                if (self.options.updated) {
+                    self.options.updated(id)
+                }
+            }
         }
         DT.prototype.page = function(index, $tr) {
             var self = this
