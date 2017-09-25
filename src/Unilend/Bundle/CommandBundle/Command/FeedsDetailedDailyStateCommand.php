@@ -161,6 +161,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             OperationType::BORROWER_WITHDRAW,
             OperationType::BORROWER_COMMISSION,
             OperationType::LENDER_PROVISION,
+            OperationType::LENDER_PROVISION_CANCEL,
             OperationType::LENDER_WITHDRAW,
             OperationType::LENDER_LOAN,
             OperationType::CAPITAL_REPAYMENT,
@@ -505,6 +506,8 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         foreach ($movements as $line) {
             $lenderProvisionCreditCard                  = empty($line['lender_provision_credit_card']) ? 0 : $line['lender_provision_credit_card'];
             $lenderProvisionWireTransfer                = empty($line['lender_provision_wire_transfer_in']) ? 0 : $line['lender_provision_wire_transfer_in'];
+            $lenderProvisionCancelCreditCard            = empty($line['lender_provision_cancel_credit_card']) ? 0 : $line['lender_provision_cancel_credit_card'];
+            $lenderProvisionCancelWireTransfer          = empty($line['lender_provision_cancel_wire_transfer_in']) ? 0 : $line['lender_provision_cancel_wire_transfer_in'];
             $promotionProvision                         = empty($line[OperationType::UNILEND_PROMOTIONAL_OPERATION_PROVISION]) ? 0 : $line[OperationType::UNILEND_PROMOTIONAL_OPERATION_PROVISION];
             $unilendProvision                           = empty($line[OperationType::UNILEND_PROVISION]) ? 0 : $line[OperationType::UNILEND_PROVISION];
             $borrowerProvision                          = empty($line[OperationType::BORROWER_PROVISION]) ? 0 : $line[OperationType::BORROWER_PROVISION];
@@ -546,21 +549,23 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $collectionCommissionBorrower               = empty($line[OperationType::COLLECTION_COMMISSION_BORROWER]) ? 0 : $line[OperationType::COLLECTION_COMMISSION_BORROWER];
             $collectionCommissionBorrowerRegularization = empty($line[OperationType::COLLECTION_COMMISSION_BORROWER_REGULARIZATION]) ? 0 : $line[OperationType::COLLECTION_COMMISSION_BORROWER_REGULARIZATION];
 
-            $totalStatutoryContributions  = round(bcsub($statutoryContributions, $statutoryContributionsRegularization, 4), 2);
-            $totalIncomeTax               = round(bcsub($incomeTax, $incomeTaxRegularization, 4), 2);
-            $totalCsg                     = round(bcsub($csg, $csgRegularization, 4), 2);
-            $totalSocialDeductions        = round(bcsub($socialDeductions, $socialDeductionsRegularization, 4), 2);
-            $totalAdditionalContributions = round(bcsub($additionalContributions, $additionalContributionsRegularization, 4), 2);
-            $totalSolidarityDeductions    = round(bcsub($solidarityDeductions, $solidarityDeductionsRegularization, 4), 2);
-            $totalCrds                    = round(bcsub($crds, $crdsRegularization, 4), 2);
-            $realBorrowerProvision        = round(bcsub($borrowerProvision, $borrowerProvisionCancel, 4), 2);
-            $totalPromotionProvision      = round(bcadd($unilendProvision, $promotionProvision, 4), 2);
-            $totalProjectCommission       = round(bcsub($borrowerCommissionProject, $borrowerCommissionProjectRegularization, 4), 2);
-            $totalPaymentCommission       = round(bcsub($borrowerCommissionPayment, $borrowerCommissionPaymentRegularization, 4), 2);
-            $totalTax                     = round(bcadd($totalCrds, bcadd($totalSolidarityDeductions, bcadd($totalAdditionalContributions, bcadd($totalSocialDeductions, bcadd($totalCsg, bcadd($totalStatutoryContributions, $totalIncomeTax, 4), 4), 4), 4), 4), 4), 2);
-            $totalCollectionCommission    = round(bcsub(bcadd(bcsub($collectionCommissionLender, $collectionCommissionLenderRegularization, 4), bcsub($collectionCommissionBorrower, $collectionCommissionBorrowerRegularization, 4), 4), $collectionCommissionProvision, 4), 2);
+            $totalLenderProvisionCreditCard   = round(bcsub($lenderProvisionCreditCard, $lenderProvisionCancelCreditCard, 4), 2);
+            $totalLenderProvisionWireTransfer = round(bcsub($lenderProvisionWireTransfer, $lenderProvisionCancelWireTransfer, 4), 2);
+            $totalStatutoryContributions      = round(bcsub($statutoryContributions, $statutoryContributionsRegularization, 4), 2);
+            $totalIncomeTax                   = round(bcsub($incomeTax, $incomeTaxRegularization, 4), 2);
+            $totalCsg                         = round(bcsub($csg, $csgRegularization, 4), 2);
+            $totalSocialDeductions            = round(bcsub($socialDeductions, $socialDeductionsRegularization, 4), 2);
+            $totalAdditionalContributions     = round(bcsub($additionalContributions, $additionalContributionsRegularization, 4), 2);
+            $totalSolidarityDeductions        = round(bcsub($solidarityDeductions, $solidarityDeductionsRegularization, 4), 2);
+            $totalCrds                        = round(bcsub($crds, $crdsRegularization, 4), 2);
+            $realBorrowerProvision            = round(bcsub($borrowerProvision, $borrowerProvisionCancel, 4), 2);
+            $totalPromotionProvision          = round(bcadd($unilendProvision, $promotionProvision, 4), 2);
+            $totalProjectCommission           = round(bcsub($borrowerCommissionProject, $borrowerCommissionProjectRegularization, 4), 2);
+            $totalPaymentCommission           = round(bcsub($borrowerCommissionPayment, $borrowerCommissionPaymentRegularization, 4), 2);
+            $totalTax                         = round(bcadd($totalCrds, bcadd($totalSolidarityDeductions, bcadd($totalAdditionalContributions, bcadd($totalSocialDeductions, bcadd($totalCsg, bcadd($totalStatutoryContributions, $totalIncomeTax, 4), 4), 4), 4), 4), 4), 2);
+            $totalCollectionCommission        = round(bcsub(bcadd(bcsub($collectionCommissionLender, $collectionCommissionLenderRegularization, 4), bcsub($collectionCommissionBorrower, $collectionCommissionBorrowerRegularization, 4), 4), $collectionCommissionProvision, 4), 2);
 
-            $incomingLender              = bcadd($lenderProvisionCreditCard, $lenderProvisionWireTransfer, 4);
+            $incomingLender              = bcadd($totalLenderProvisionCreditCard, $totalLenderProvisionWireTransfer, 4);
             $incomingBorrower            = $realBorrowerProvision;
             $incomingUnilend             = $totalPromotionProvision;
             $outgoingLender              = bcadd($totalTax, $lenderWithdraw, 4);
@@ -578,8 +583,8 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $fiscalDifference      = round(bcsub($repaymentAssignment, bcadd($totalPaymentCommission, bcadd($totalCapitalRepayment, bcadd($netInterest, $totalTax, 4), 4), 4), 4), 2);
 
             /* Financial Movements */
-            $activeSheet->setCellValueExplicit(self::LENDER_PROVISION_CARD_COLUMN . $row, $lenderProvisionCreditCard, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            $activeSheet->setCellValueExplicit(self::LENDER_PROVISION_WIRE_TRANSFER_COLUMN . $row, $lenderProvisionWireTransfer, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicit(self::LENDER_PROVISION_CARD_COLUMN . $row, $totalLenderProvisionCreditCard, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicit(self::LENDER_PROVISION_WIRE_TRANSFER_COLUMN . $row, $totalLenderProvisionWireTransfer, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::LENDER_PROVISION_DIRECT_DEBIT_COLUMN . $row, 0, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::PROMOTION_OFFER_PROVISION_COLUMN . $row, $promotionProvision, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::BORROWER_PROVISION_COLUMN . $row, $realBorrowerProvision, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
