@@ -389,6 +389,11 @@
                     <a id="btn_add_prescripteur" class="btn_link thickbox cboxElement" href="<?= $this->lurl ?>/prescripteurs/add_client/<?= $this->projects->id_project ?>" target="_blank">Créer un prescripteur</a>
                 </td>
             </tr>
+
+            <?php // @TODO replace phone numbers
+                $submitter_phone = '+33 6 13 08 87 90';
+                $agency_phone = '+33 6 20 08 87 90';
+            ?>
             <tr class="partner_submitter_and_agency">
                 <td colspan="2">
                     <table>
@@ -396,14 +401,20 @@
                             <td colspan="2"><br><h2>Coordonnées du déposant</h2></td>
                         </tr>
                         <tr>
-                            <th><label for="submitter_name">Prénom et nom</label></th>
-                            <td><input type="text" name="submitter_name" id="submitter_name" class="input_large"></td>
+                            <th><label for="submitter_last_name">Nom</label></th>
+                            <td><input type="text" name="submitter_last_name" id="submitter_last_name" class="input_large"></td>
+                        </tr>
+                        <tr>
+                            <th><label for="submitter_first_name">Prénom</label></th>
+                            <td><input type="text" name="submitter_first_name" id="submitter_first_name" class="input_large"></td>
                         </tr>
                         <tr>
                             <th><label for="submitter_phone">Numéro de téléphone</label></th>
                             <td>
                                 <input type="text" name="submitter_phone" id="submitter_phone" class="input_moy">
-                                <a href="https://ssl.keyyo.com/makecall.html?ACCOUNT=<ligne keyyo>&CALLEE=<destination>&CALLEE_NAME=<nom appelé>"  class="btn-small btn_link">Appeler</a>
+                                <?php // @TODO if number is set ?>
+                                <a href="tel:<?php echo preg_replace('/\s+/', '', $submitter_phone); ?>"  class="btn-small btn_link">Appeler</a>
+                                <?php // endif ?>
                             </td>
                         </tr>
                         <tr>
@@ -412,7 +423,7 @@
                         </tr>
                     </table>
                 </td>
-                <td colspan="2">
+                <td colspan="2" style="vertical-align: top">
                     <table>
                         <tr>
                             <td colspan="2"><br><h2>Coordonnées de l'agence</h2></td>
@@ -425,7 +436,9 @@
                             <th><label for="agency_phone">Numéro de téléphone</label></th>
                             <td>
                                 <input type="text" name="agency_phone" id="agency_phone" class="input_moy">
-                                <a href="https://ssl.keyyo.com/makecall.html?ACCOUNT=<ligne keyyo>&CALLEE=<destination>&CALLEE_NAME=<nom appelé>" class="btn-small btn_link">Appeler</a>
+                                <?php // @TODO if number is set ?>
+                                <a href="tel:<?php echo preg_replace('/\s+/', '', $agency_phone); ?>" class="btn-small btn_link">Appeler</a>
+                                <?php // endif ?>
                             </td>
                         </tr>
                     </table>

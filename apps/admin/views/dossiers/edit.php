@@ -45,10 +45,6 @@
         margin-top: 10px;
     }
 
-    .hide {
-        display: none;
-    }
-
     .lanote {
         color: #5591EC;
         font-size: 17px;
@@ -428,7 +424,7 @@
         })
 
         // Partner Agency & Submitter
-        /// FAKE DATA ---- >>>
+        /// @TODO this is fake data
             var selectPartnerUrl = '/dossiers/edit/'
             var selectAgencyUrl = '/dossiers/edit/'
             var selectPartnerResponse = {
@@ -480,15 +476,15 @@
             if ($select.val() == 1) // Unilend
                 return false
             $select.siblings('.select').each(function(){
-                if (!$(this).is('.hide'))
-                    $(this).addClass('hide').val('').html('')
+                if ($(this).is(':visible'))
+                    $(this).hide().val('').html('')
             })
             $.ajax({
                 url: selectPartnerUrl,
                 type: 'POST',
                 data: {name: $select.val()},
                 dataType:'json',
-                complete: function(response) {
+                complete: function(response) { /// @TODO change to success: function(response)
                     var response = selectPartnerResponse
                     if (response.success) {
                         var options = '<option value="0"></option>'
@@ -510,15 +506,15 @@
             if ($select.val() === 0)
                 return false
             if ($select.next().is('.select')) {
-                if (!$select.next().is('.hide'))
-                    $select.next().addClass('hide').val('').html('')
+                if ($select.next().is(':visible'))
+                    $select.next().hide().val('').html('')
             }
             $.ajax({
                 url: selectAgencyUrl,
                 type: 'POST',
                 data: {name: $select.val()},
                 dataType:'json',
-                complete: function(response) {
+                complete: function(response) { /// @TODO change to success: function(response)
                     var response = selectAgencyResponse
                     if (response.success) {
                         var users = response.data
@@ -526,7 +522,7 @@
                         for (var i in users) {
                             options += '<option value="' + users[i].id + '">' + users[i].name + '</option>'
                         }
-                        $submitterSelect.html(options).removeClass('hide')
+                        $submitterSelect.html(options).show()
                     } else {
                         var html = ''
                         for (var i in response.error) {
@@ -739,19 +735,19 @@
                                     <?php endforeach; ?>
                                 </select>
 
-                                <?php /*** FAKE CONDITIONALS ***/ ?>
+                                <?php // @TODO these are fake conditions ?>
                                 <?php $partner_agency = false; $partner_agency_options = ''; $partner_submitter = false; $partner_submitter_options = ''; ?>
-                                <select id="partner-agency" class="select<?php if (!$partner_agency) { echo ' hide'; } ?>" name="partner_agency">
+                                <select id="partner-agency" class="select" name="partner_agency"<?php if (!$partner_submitter) { echo ' style="display: none;"'; } ?>>
                                     <?php if ($partner_agency_options !== '') : foreach ($partner_agency_options as $option) : ?>
                                         <option><?= $option ?></option>
                                     <?php endforeach; endif; ?>
                                 </select>
-                                <select id="partner-submitter" class="select<?php if (!$partner_submitter) { echo ' hide'; } ?>" name="partner_submitter">
+                                <select id="partner-submitter" class="select" name="partner_submitter"<?php if (!$partner_submitter) { echo ' style="display: none;"'; } ?>>
                                     <?php if ($partner_submitter_options !== '') : foreach ($partner_submitter_options as $option) : ?>
                                         <option><?= $option ?></option>
                                     <?php endforeach; endif; ?>
                                 </select>
-                                <?php /*** END FAKE CONDITIONALS ***/ ?>
+                                <?php // endif ?>
 
                             </td>
                         </tr>
