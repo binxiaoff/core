@@ -59,7 +59,7 @@
                                     <?= $mailTemplate->getSenderName() ?><br>
                                     <em><?= $mailTemplate->getSenderEmail() ?></em>
                                 </td>
-                                <td><?= $mailTemplate->getUpdated()->format('d/m/Y H:i') ?></td>
+                                <td><?= $mailTemplate->getAdded()->format('d/m/Y H:i') ?></td>
                                 <td><?= $section['stats'][$mailTemplate->getType()]['24h'] ?></td>
                                 <td><?= $section['stats'][$mailTemplate->getType()]['7d'] ?></td>
                                 <td><?= $section['stats'][$mailTemplate->getType()]['30d'] ?></td>

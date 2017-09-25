@@ -770,26 +770,30 @@ class preteursController extends bootstrap
 
         $_SESSION['request_url'] = $this->url;
 
-        $this->clients       = $this->loadData('clients');
-        $this->mail_template = $this->loadData('mail_templates');
-
+        $this->clients = $this->loadData('clients');
         $this->clients->get($this->params[0], 'id_client');
-        $this->mail_template->get('completude', 'status = ' . MailTemplates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
+
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager      = $this->get('doctrine.orm.entity_manager');
+        $this->mailTemplate = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
+            'type'   => 'completude',
+            'locale' => $this->getParameter('locale'),
+            'status' => MailTemplates::STATUS_ACTIVE
+        ]);
     }
 
     public function _completude_preview_iframe()
     {
         $this->hideDecoration();
+        $this->autoFireView = false;
 
         $_SESSION['request_url'] = $this->url;
 
         $this->clients                = $this->loadData('clients');
         $this->clients_status_history = $this->loadData('clients_status_history');
-        $this->mail_template          = $this->loadData('mail_templates');
         $this->settings               = $this->loadData('settings');
 
         $this->clients->get($this->params[0], 'id_client');
-        $this->mail_template->get('completude', 'status = ' . MailTemplates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
 
         $this->settings->get('Facebook', 'type');
         $lien_fb = $this->settings->value;
@@ -817,8 +821,15 @@ class preteursController extends bootstrap
             $tabVars['[EMV DYN]' . $key . '[EMV /DYN]'] = $value;
         }
 
-        echo strtr($this->mail_template->content, $tabVars);
-        die;
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $mailTemplate  = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
+            'type'   => 'completude',
+            'locale' => $this->getParameter('locale'),
+            'status' => MailTemplates::STATUS_ACTIVE
+        ]);
+
+        echo strtr($mailTemplate->getContent(), $tabVars);
     }
 
     public function _offres_de_bienvenue()

@@ -1354,10 +1354,6 @@ class ProjectRequestController extends Controller
         /** @var \settings $settings */
         $settings = $entityManagerSimulator->getRepository('settings');
 
-        /** @var \mail_templates $mailTemplate */
-        $mailTemplate = $entityManagerSimulator->getRepository('mail_templates');
-        $mailTemplate->get('confirmation-depot-de-dossier', 'status = ' . MailTemplates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
-
         if (false === empty($this->project->id_prescripteur)) {
             /** @var \prescripteurs $advisor */
             $advisor = $entityManagerSimulator->getRepository('prescripteurs');
@@ -1380,21 +1376,20 @@ class ProjectRequestController extends Controller
             'lien_reprise_dossier' => $this->generateUrl('project_request_recovery', ['hash' => $this->project->hash], UrlGeneratorInterface::ABSOLUTE_URL),
             'lien_fb'              => $facebookLink,
             'lien_tw'              => $twitterLink,
-            'sujet'                => htmlentities($mailTemplate->subject, null, 'UTF-8'),
             'surl'                 => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
             'url'                  => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default')
         ];
 
         $sRecipient = $client->getEmail();
         $sRecipient = $this->removeEmailSuffix(trim($sRecipient));
-        $message    = $this->get('unilend.swiftmailer.message_provider')->newMessage($mailTemplate->type, $keywords);
+        $message    = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-depot-de-dossier', $keywords);
         try {
             $message->setTo($sRecipient);
             $mailer = $this->get('mailer');
             $mailer->send($message);
         } catch (\Exception $exception) {
             $this->get('logger')->warning(
-                'Could not send email : ' . $mailTemplate->type . ' - Exception: ' . $exception->getMessage(),
+                'Could not send email: confirmation-depot-de-dossier - Exception: ' . $exception->getMessage(),
                 ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
             );
         }
@@ -1412,10 +1407,6 @@ class ProjectRequestController extends Controller
             $user = $entityManagerSimulator->getRepository('users');
             $user->get($this->project->id_commercial, 'id_user');
 
-            /** @var \mail_templates $mailTemplate */
-            $mailTemplate = $entityManagerSimulator->getRepository('mail_templates');
-            $mailTemplate->get($emailType, 'status = ' . MailTemplates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
-
             $aReplacements = [
                 '[ID_PROJET]'      => $this->project->id_project,
                 '[LIEN_BO_PROJET]' => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_admin') . '/dossiers/edit/' . $this->project->id_project,
@@ -1424,14 +1415,14 @@ class ProjectRequestController extends Controller
             ];
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($mailTemplate->type, $aReplacements, false);
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($emailType, $aReplacements, false);
             try {
                 $message->setTo(trim($user->email));
                 $mailer = $this->get('mailer');
                 $mailer->send($message);
             } catch (\Exception $exception) {
                 $this->get('logger')->warning(
-                    'Could not send email : ' . $mailTemplate->type . ' - Exception: ' . $exception->getMessage(),
+                    'Could not send email: ' . $emailType . ' - Exception: ' . $exception->getMessage(),
                     ['id_mail_template' => $message->getTemplateId(), 'email address' => trim($user->email), 'class' => __CLASS__, 'function' => __FUNCTION__]
                 );
             }

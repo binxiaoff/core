@@ -20,9 +20,12 @@ class MailQueue
     const STATUS_ERROR      = -1;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates
      *
-     * @ORM\Column(name="id_mail_template", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_mail_template", referencedColumnName="id_mail_template")
+     * })
      */
     private $idMailTemplate;
 
@@ -124,7 +127,7 @@ class MailQueue
     /**
      * Set idMailTemplate
      *
-     * @param integer $idMailTemplate
+     * @param MailTemplates $idMailTemplate
      *
      * @return MailQueue
      */
@@ -138,7 +141,7 @@ class MailQueue
     /**
      * Get idMailTemplate
      *
-     * @return integer
+     * @return MailTemplates
      */
     public function getIdMailTemplate()
     {

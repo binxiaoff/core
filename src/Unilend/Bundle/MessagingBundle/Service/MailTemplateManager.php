@@ -4,35 +4,30 @@ namespace Unilend\Bundle\MessagingBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class MailTemplateManager
 {
-    /** @var EntityManagerSimulator */
-    private $entityManagerSimulator;
     /** @var MailQueueManager */
     private $mailQueueManager;
-    /** @var  EntityManager */
+    /** @var EntityManager */
     private $entityManager;
+    /** @var string */
+    private $defaultLanguage;
 
     /**
-     * MailTextManager constructor.
-     *
-     * @param EntityManager          $entityManager
-     * @param EntityManagerSimulator $entityManagerSimulator
-     * @param MailQueueManager       $mailQueueManager
-     * @param                        $defaultLanguage
+     * @param EntityManager    $entityManager
+     * @param MailQueueManager $mailQueueManager
+     * @param string           $defaultLanguage
      */
     public function __construct(
         EntityManager $entityManager,
-        EntityManagerSimulator $entityManagerSimulator,
         MailQueueManager $mailQueueManager,
         $defaultLanguage
-    ) {
-        $this->entityManager          = $entityManager;
-        $this->entityManagerSimulator = $entityManagerSimulator;
-        $this->mailQueueManager       = $mailQueueManager;
-        $this->defaultLanguage        = $defaultLanguage;
+    )
+    {
+        $this->entityManager    = $entityManager;
+        $this->mailQueueManager = $mailQueueManager;
+        $this->defaultLanguage  = $defaultLanguage;
     }
 
     /**
@@ -44,49 +39,56 @@ class MailTemplateManager
      */
     public function addTemplate($type, $sender, $senderEmail, $subject, $content)
     {
-        /** @var \mail_templates $mailTemplate */
-        $mailTemplate = $this->entityManagerSimulator->getRepository('mail_templates');
+        $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
+            'type'   => $type,
+            'locale' => $this->defaultLanguage,
+            'status' => MailTemplates::STATUS_ACTIVE
+        ]);
 
-        if (false === $mailTemplate->exist(MailTemplates::STATUS_ACTIVE, 'type = "' . $type . '" AND status')) {
-            $mailTemplate->type         = $type;
-            $mailTemplate->sender_name  = $sender;
-            $mailTemplate->sender_email = $senderEmail;
-            $mailTemplate->subject      = $subject;
-            $mailTemplate->content      = $content;
-            $mailTemplate->locale       = $this->defaultLanguage;
-            $mailTemplate->status       = MailTemplates::STATUS_ACTIVE;
-            $mailTemplate->create();
+        if (null === $mailTemplate) {
+            $mailTemplate = new MailTemplates();
+            $mailTemplate->setType($type);
+            $mailTemplate->setSenderName($sender);
+            $mailTemplate->setSenderEmail($senderEmail);
+            $mailTemplate->setSubject($subject);
+            $mailTemplate->setContent($content);
+            $mailTemplate->setLocale($this->defaultLanguage);
+            $mailTemplate->setStatus(MailTemplates::STATUS_ACTIVE);
+
+            $this->entityManager->persist($mailTemplate);
+            $this->entityManager->flush($mailTemplate);
         }
     }
 
     /**
-     * @param \mail_templates $mailTemplate
-     * @param string          $sender
-     * @param string          $senderEmail
-     * @param string          $subject
-     * @param string          $content
+     * @param MailTemplates $mailTemplate
+     * @param string        $sender
+     * @param string        $senderEmail
+     * @param string        $subject
+     * @param string        $content
      */
-    public function modifyTemplate(\mail_templates &$mailTemplate, $sender, $senderEmail, $subject, $content)
+    public function modifyTemplate(MailTemplates $mailTemplate, $sender, $senderEmail, $subject, $content)
     {
-        if ($this->mailQueueManager->existsInMailQueue($mailTemplate->id_mail_template)) {
+        if ($this->mailQueueManager->existsInMailQueue($mailTemplate->getIdMailTemplate())) {
             $this->archiveTemplate($mailTemplate);
-            $this->addTemplate($mailTemplate->type, $sender, $senderEmail, $subject, $content);
+            $this->addTemplate($mailTemplate->getType(), $sender, $senderEmail, $subject, $content);
         } else {
-            $mailTemplate->sender_name  = $sender;
-            $mailTemplate->sender_email = $senderEmail;
-            $mailTemplate->subject      = $subject;
-            $mailTemplate->content      = $content;
-            $mailTemplate->update();
+            $mailTemplate->setSenderName($sender);
+            $mailTemplate->setSenderEmail($senderEmail);
+            $mailTemplate->setSubject($subject);
+            $mailTemplate->setContent($content);
+
+            $this->entityManager->flush($mailTemplate);
         }
     }
 
     /**
-     * @param \mail_templates $mailTemplate
+     * @param MailTemplates $mailTemplate
      */
-    public function archiveTemplate(\mail_templates $mailTemplate)
+    public function archiveTemplate(MailTemplates $mailTemplate)
     {
-        $mailTemplate->status = MailTemplates::STATUS_ARCHIVED;
-        $mailTemplate->update();
+        $mailTemplate->setStatus(MailTemplates::STATUS_ARCHIVED);
+        $this->entityManager->flush($mailTemplate);
     }
 
     /**

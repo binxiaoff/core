@@ -2,9 +2,9 @@
 
 namespace Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer;
 
+use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class TemplateMessageProvider
 {
@@ -50,9 +50,13 @@ class TemplateMessageProvider
      */
     public function newMessage($template, $variables = null, $wrapVariables = true)
     {
-        /** @var \mail_templates $mailTemplate */
-        $mailTemplate = $this->entityManager->getRepository('mail_templates');
-        if (false === $mailTemplate->get($template, 'status = ' . MailTemplates::STATUS_ACTIVE . ' AND locale = "' . $this->defaultLanguage . '" AND type')) {
+        $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
+            'type'   => $template,
+            'status' => MailTemplates::STATUS_ACTIVE,
+            'locale' => $this->defaultLanguage
+        ]);
+
+        if (null === $mailTemplate) {
             throw new \InvalidArgumentException('The mail template ' . $template . ' for the language ' . $this->defaultLanguage . ' is not found.');
         }
 
@@ -60,16 +64,17 @@ class TemplateMessageProvider
             $variables = $this->wrapVariables($variables);
         }
 
-        $subject  = strtr($mailTemplate->subject, $variables);
-        $body     = strtr($mailTemplate->content, $variables);
-        $fromName = strtr($mailTemplate->sender_name, $variables);
+        $subject  = strtr($mailTemplate->getSubject(), $variables);
+        $body     = strtr($mailTemplate->getContent(), $variables);
+        $fromName = strtr($mailTemplate->getSenderName(), $variables);
 
         /** @var TemplateMessage $message */
-        $message = new $this->templateMessageClass($mailTemplate->id_mail_template);
-        $message->setVariables($variables)
-                ->setFrom($mailTemplate->sender_email, $fromName)
-                ->setSubject($subject)
-                ->setBody($body, 'text/html');
+        $message = new $this->templateMessageClass($mailTemplate->getIdMailTemplate());
+        $message
+            ->setVariables($variables)
+            ->setFrom($mailTemplate->getSenderEmail(), $fromName)
+            ->setSubject($subject)
+            ->setBody($body, 'text/html');
 
         if ($this->logger instanceof LoggerInterface) {
             $message->setLogger($this->logger);

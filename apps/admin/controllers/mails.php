@@ -6,9 +6,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class mailsController extends bootstrap
 {
-    /**
-     * @var \mail_templates
-     */
+    /** @var MailTemplates */
     public $mailTemplate;
 
     public function initialize()
@@ -31,10 +29,14 @@ class mailsController extends bootstrap
         $mailTemplateManager = $this->get('unilend.service.mail_template');
 
         if (isset($this->params[0]) && $this->params[0] == 'delete') {
-            /** @var \mail_templates $mailTemplate */
-            $mailTemplate = $this->loadData('mail_templates');
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            $mailTemplate  = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
+                'type'   => $this->params[1],
+                'locale' => $this->getParameter('locale'),
+                'status' => MailTemplates::STATUS_ACTIVE
+            ]);
 
-            $mailTemplate->get($this->params[1], 'type');
             $mailTemplateManager->archiveTemplate($mailTemplate);
 
             $_SESSION['freeow']['title']   = 'Archivage d\'un mail';
@@ -72,23 +74,29 @@ class mailsController extends bootstrap
             $aPost = $this->handlePost();
             /** @var \Unilend\Bundle\MessagingBundle\Service\MailTemplateManager $mailTemplateManager */
             $mailTemplateManager = $this->get('unilend.service.mail_template');
-            /** @var \mail_templates $mailTemplate */
-            $mailTemplate = $this->loadData('mail_templates');
+
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            $mailTemplate  = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
+                'type'   => $aPost['type'],
+                'locale' => $this->getParameter('locale'),
+                'status' => MailTemplates::STATUS_ACTIVE
+            ]);
 
             if (empty($aPost['type']) || empty($aPost['sender_name']) || empty($aPost['sender_email']) || empty($aPost['subject'])) {
                 $_SESSION['freeow']['title']   = 'Ajout d\'un mail';
-                $_SESSION['freeow']['message'] = 'Ajout impossible : tous les champs n\'ont &eacute;t&eacute; remplis';
-            } else if ($mailTemplate->exist($aPost['type'] . '" AND status = "' . MailTemplates::STATUS_ACTIVE, 'type')) {
+                $_SESSION['freeow']['message'] = 'Ajout impossible : tous les champs n\'ont été remplis';
+            } elseif (null !== $mailTemplate) {
                 $_SESSION['freeow']['title']   = 'Ajout d\'un mail';
-                $_SESSION['freeow']['message'] = 'Ajout impossible : ce mail existe d&eacute;j&agrave;';
+                $_SESSION['freeow']['message'] = 'Ajout impossible : ce mail existe déjà';
             } else {
                 $mailTemplateManager->addTemplate($aPost['type'], $aPost['sender_name'], $aPost['sender_email'], $aPost['subject'], $aPost['content']);
 
                 $_SESSION['freeow']['title']   = 'Ajout d\'un mail';
-                $_SESSION['freeow']['message'] = 'Le mail a bien &eacute;t&eacute; ajout&eacute;';
+                $_SESSION['freeow']['message'] = 'Le mail a bien été ajouté';
             }
 
-            header('Location:' . $this->lurl . '/mails');
+            header('Location: ' . $this->lurl . '/mails');
             die;
         }
     }
@@ -102,10 +110,15 @@ class mailsController extends bootstrap
         $mailTemplateManager = $this->get('unilend.service.mail_template');
 
         if (false === empty($this->params[0])) {
-            $this->mailTemplate = $this->loadData('mail_templates');
-            $this->mailTemplate->get($this->params[0], 'status = ' . MailTemplates::STATUS_ACTIVE . ' AND type');
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager      = $this->get('doctrine.orm.entity_manager');
+            $this->mailTemplate = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
+                'type'   => $this->params[0],
+                'locale' => $this->getParameter('locale'),
+                'status' => MailTemplates::STATUS_ACTIVE
+            ]);
 
-            if ($this->mailTemplate->id_mail_template && $this->request->isMethod(Request::METHOD_POST)) {
+            if (null !== $this->mailTemplate && $this->request->isMethod(Request::METHOD_POST)) {
                 $aPost = $this->handlePost();
 
                 if (empty($aPost['sender_name']) || empty($aPost['sender_email']) || empty($aPost['subject'])) {
@@ -118,7 +131,7 @@ class mailsController extends bootstrap
                     $_SESSION['freeow']['message'] = 'Le mail a bien &eacute;t&eacute; modifi&eacute;';
                 }
 
-                header('Location:' . $this->url . '/mails');
+                header('Location: ' . $this->url . '/mails');
                 die;
             }
         }

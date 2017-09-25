@@ -36,7 +36,7 @@ class MailTemplates
     /**
      * @var string
      *
-     * @ORM\Column(name="recipient_type", type="string", length=30, nullable=false)
+     * @ORM\Column(name="recipient_type", type="string", length=30, nullable=true)
      */
     private $recipientType;
 
@@ -85,7 +85,7 @@ class MailTemplates
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 

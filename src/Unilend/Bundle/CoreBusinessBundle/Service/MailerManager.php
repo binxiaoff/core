@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
@@ -9,15 +10,14 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
-use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -30,45 +30,34 @@ class MailerManager
     /** old transaction type for backwards compatibility. It can be removed one all transaction id is null in clients_gestion_mails_notif */
     const TYPE_TRANSACTION_LENDER_ANTICIPATED_REPAYMENT = 23;
 
-    /** @var \settings */
-    private $settings;
-
-    /** @var \mail_templates */
-    private $oMailTemplate;
-
+    /** @var Settings */
+    private $settingsRepository;
     /** @var LoggerInterface */
     private $oLogger;
-
     /** @var \ficelle */
     private $oFicelle;
-
     /** @var \dates */
     private $oDate;
-
     /** @var \jours_ouvres */
     private $oWorkingDay;
-    private $sSUrl;
-    private $sFUrl;
+    /** @var string */
     private $sAUrl;
-
+    /** @var string */
+    private $sSUrl;
+    /** @var string */
+    private $sFUrl;
     /** @var ContainerInterface */
     private $container;
-
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-
     /** @var  EntityManager */
     private $entityManager;
-
     /** @var TemplateMessageProvider */
     private $messageProvider;
-
     /** @var \Swift_Mailer */
     private $mailer;
-
     /** @var string */
     private $locale;
-
     /** @var TranslatorInterface */
     private $translator;
 
@@ -93,9 +82,7 @@ class MailerManager
         $this->messageProvider        = $messageProvider;
         $this->mailer                 = $mailer;
         $this->translator             = $translator;
-
-        $this->settings      = $this->entityManagerSimulator->getRepository('settings');
-        $this->oMailTemplate = $this->entityManagerSimulator->getRepository('mail_templates');
+        $this->settingsRepository     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
 
         $this->oFicelle    = Loader::loadLib('ficelle');
         $this->oDate       = Loader::loadLib('dates');
@@ -344,11 +331,9 @@ class MailerManager
             '$periode'      => $remainingDuration
         ];
 
-        $this->settings->get('Adresse notification projet funde a 100', 'type');
-        $recipient = $this->settings->value;
-
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('notification-projet-funde-a-100', $keywords, false);
+        $message   = $this->messageProvider->newMessage('notification-projet-funde-a-100', $keywords, false);
+        $recipient = $this->settingsRepository->findOneBy(['Type' => 'Adresse notification projet funde a 100'])->getValue();
         try {
             $message->setTo(explode(';', str_replace(' ', '', $recipient)));
             $this->mailer->send($message);
@@ -622,8 +607,7 @@ class MailerManager
         $oCompany->get($oProject->id_company, 'id_company');
         $oClient->get($oCompany->id_client_owner, 'id_client');
 
-        $this->settings->get('Adresse notification projet fini', 'type');
-        $sRecipient = $this->settings->value;
+        $sRecipient = $this->settingsRepository->findOneBy(['Type' => 'Adresse notification projet fini'])->getValue();
 
         $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
         // si le solde des enchere est supperieur au montant du pret on affiche le montant du pret
@@ -631,28 +615,24 @@ class MailerManager
             $iBidTotal = $oProject->amount;
         }
 
-        $iLendersNb = $loan->getNbPreteurs($oProject->id_project);
-        $this->oMailTemplate->get('notification-projet-fini', 'locale = "' . $this->locale . '" AND status = ' . MailTemplates::STATUS_ACTIVE . ' AND type');
-
         $varMail = [
             '$surl'         => $this->sSUrl,
             '$url'          => $this->sFUrl,
             '$id_projet'    => $oProject->id_project,
             '$title_projet' => $oProject->title,
-            '$nbPeteurs'    => $iLendersNb,
+            '$nbPeteurs'    => $loan->getNbPreteurs($oProject->id_project),
             '$montant_pret' => $oProject->amount,
             '$montant'      => $iBidTotal,
-            '$sujetMail'    => htmlentities($this->oMailTemplate->subject),
             '$taux_moyen'   => $this->oFicelle->formatNumber($oProject->getAverageInterestRate(), 1)
         ];
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage($this->oMailTemplate->type, $varMail, false);
+        $message = $this->messageProvider->newMessage('notification-projet-fini', $varMail, false);
         try {
             $message->setTo(explode(';', str_replace(' ', '', $sRecipient)));
             $this->mailer->send($message);
         } catch (\Exception $exception) {
             $this->oLogger->warning(
-                'Could not send email : ' . $this->oMailTemplate->type . ' - Exception: ' . $exception->getMessage(),
+                'Could not send email: notification-projet-fini - Exception: ' . $exception->getMessage(),
                 ['id_mail_template' => $message->getTemplateId(), 'email address' => explode(';', str_replace(' ', '', $sRecipient)), 'class' => __CLASS__, 'function' => __FUNCTION__]
             );
         }
@@ -688,16 +668,20 @@ class MailerManager
         }
     }
 
+    /**
+     * @return string
+     */
     private function getFacebookLink()
     {
-        $this->settings->get('Facebook', 'type');
-        return $this->settings->value;
+        return $this->settingsRepository->findOneBy(['Type' => 'Facebook'])->getValue();
     }
 
+    /**
+     * @return string
+     */
     private function getTwitterLink()
     {
-        $this->settings->get('Twitter', 'type');
-        return $this->settings->value;
+        return $this->settingsRepository->findOneBy(['Type' => 'Twitter'])->getValue();
     }
 
     /**
@@ -1870,12 +1854,10 @@ class MailerManager
         try {
             $message->setTo(trim($user->email));
 
-            /** @var \settings $settings */
-            $settings = $this->entityManagerSimulator->getRepository('settings');
-            $settings->get('alias_tracking_log', 'type');
+            $logEmail = $this->settingsRepository->findOneBy(['Type' => 'alias_tracking_log'])->getValue();
 
-            if (false === empty($settings->value)) {
-                $message->setBcc($settings->value);
+            if ($logEmail) {
+                $message->setBcc($logEmail);
             }
             $this->mailer->send($message);
         } catch (\Exception $exception) {
@@ -1953,12 +1935,8 @@ class MailerManager
     public function sendProxyAndMandateSigned(ProjectsPouvoir $proxy, ClientsMandats $mandate)
     {
         if ($proxy->getIdProject() && $proxy->getIdProject()->getIdCompany()) {
-            /** @var \settings $setting */
-            $setting = $this->entityManagerSimulator->getRepository('settings');
-            $setting->get('Adresse notification pouvoir mandat signe', 'type');
-            $destinataire = $setting->value;
-
-            $template = [
+            $destinataire = $this->settingsRepository->findOneBy(['Type' => 'Adresse notification pouvoir mandat signe'])->getValue();
+            $template     = [
                 '$surl'         => $this->sSUrl,
                 '$id_projet'    => $proxy->getIdProject()->getIdProject(),
                 '$nomProjet'    => $proxy->getIdProject()->getTitle(),
