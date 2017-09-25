@@ -90,7 +90,7 @@ class mailsController extends bootstrap
                 $_SESSION['freeow']['title']   = 'Ajout d\'un mail';
                 $_SESSION['freeow']['message'] = 'Ajout impossible : ce mail existe déjà';
             } else {
-                $mailTemplateManager->addTemplate($aPost['type'], $aPost['sender_name'], $aPost['sender_email'], $aPost['subject'], $aPost['content']);
+                $mailTemplateManager->addTemplate($aPost['type'], $aPost['sender_name'], $aPost['sender_email'], $aPost['subject'], $aPost['content'], $aPost['recipient_type']);
 
                 $_SESSION['freeow']['title']   = 'Ajout d\'un mail';
                 $_SESSION['freeow']['message'] = 'Le mail a bien été ajouté';
@@ -125,7 +125,7 @@ class mailsController extends bootstrap
                     $_SESSION['freeow']['title']   = 'Modification d\'un mail';
                     $_SESSION['freeow']['message'] = 'Modification impossible : tous les champs n\'ont &eacute;t&eacute; remplis';
                 } else {
-                    $mailTemplateManager->modifyTemplate($this->mailTemplate, $aPost['sender_name'], $aPost['sender_email'], $aPost['subject'], $aPost['content']);
+                    $mailTemplateManager->modifyTemplate($this->mailTemplate, $aPost['sender_name'], $aPost['sender_email'], $aPost['subject'], $aPost['content'], $aPost['recipient_type']);
 
                     $_SESSION['freeow']['title']   = 'Modification d\'un mail';
                     $_SESSION['freeow']['message'] = 'Le mail a bien &eacute;t&eacute; modifi&eacute;';

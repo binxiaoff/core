@@ -36,8 +36,9 @@ class MailTemplateManager
      * @param string $senderEmail
      * @param string $subject
      * @param string $content
+     * @param string $recipientType
      */
-    public function addTemplate($type, $sender, $senderEmail, $subject, $content)
+    public function addTemplate($type, $sender, $senderEmail, $subject, $content, $recipientType)
     {
         $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
             'type'   => $type,
@@ -52,6 +53,7 @@ class MailTemplateManager
             $mailTemplate->setSenderEmail($senderEmail);
             $mailTemplate->setSubject($subject);
             $mailTemplate->setContent($content);
+            $mailTemplate->setRecipientType($recipientType);
             $mailTemplate->setLocale($this->defaultLanguage);
             $mailTemplate->setStatus(MailTemplates::STATUS_ACTIVE);
 
@@ -66,17 +68,19 @@ class MailTemplateManager
      * @param string        $senderEmail
      * @param string        $subject
      * @param string        $content
+     * @param string        $recipientType
      */
-    public function modifyTemplate(MailTemplates $mailTemplate, $sender, $senderEmail, $subject, $content)
+    public function modifyTemplate(MailTemplates $mailTemplate, $sender, $senderEmail, $subject, $content, $recipientType)
     {
         if ($this->mailQueueManager->existsInMailQueue($mailTemplate->getIdMailTemplate())) {
             $this->archiveTemplate($mailTemplate);
-            $this->addTemplate($mailTemplate->getType(), $sender, $senderEmail, $subject, $content);
+            $this->addTemplate($mailTemplate->getType(), $sender, $senderEmail, $subject, $content, $recipientType);
         } else {
             $mailTemplate->setSenderName($sender);
             $mailTemplate->setSenderEmail($senderEmail);
             $mailTemplate->setSubject($subject);
             $mailTemplate->setContent($content);
+            $mailTemplate->setRecipientType($recipientType);
 
             $this->entityManager->flush($mailTemplate);
         }

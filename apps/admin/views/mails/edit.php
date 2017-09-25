@@ -12,9 +12,16 @@
             </div>
         </div>
         <div class="row">
-            <div class="form-group col-md-12">
+            <div class="form-group col-md-6">
                 <label for="subject">Sujet</label>
                 <input type="text" value="<?= $this->mailTemplate->getSubject() ?>" id="subject" name="subject" class="form-control">
+            </div>
+            <div class="form-group col-md-6">
+                <label for="recipient-type">Usage</label>
+                <select id="recipient-type" name="recipient_type" class="form-control">
+                    <option value="external"<?= \Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates::RECIPIENT_TYPE_EXTERNAL === $this->mailTemplate->getRecipientType() ? ' selected' : '' ?>>Externe</option>
+                    <option value="internal"<?= \Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates::RECIPIENT_TYPE_INTERNAL === $this->mailTemplate->getRecipientType() ? ' selected' : '' ?>>Interne</option>
+                </select>
             </div>
         </div>
         <div class="row">

@@ -19,9 +19,16 @@
             </div>
         </div>
         <div class="row">
-            <div class="form-group col-md-12">
+            <div class="form-group col-md-6">
                 <label for="subject">Sujet</label>
                 <input type="text" id="subject" name="subject" class="form-control">
+            </div>
+            <div class="form-group col-md-6">
+                <label for="recipient-type">Usage</label>
+                <select id="recipient-type" name="recipient_type" class="form-control">
+                    <option value="external">Externe</option>
+                    <option value="internal">Interne</option>
+                </select>
             </div>
         </div>
         <div class="row">
