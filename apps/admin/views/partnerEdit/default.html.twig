@@ -49,7 +49,7 @@
             var $tree = $('#organisation .tree-js')
             var treeBackupHtml = $tree.html()
             $tree.before('<div class="tree-js-backup hide">' + treeBackupHtml + '</div>')
-            $tree.find('.tree-js-dd').nestable()
+            $tree.find('.tree-js-dd').nestable({ maxDepth: 1 })
             // Adds new item to the tree
             function treeAppendItem(agencyName, formData) {
                 var index = $tree.find('.new-item-input').length
@@ -62,7 +62,7 @@
             // Resets the tree to initial state
             function treeReset() {
                 $tree.html(treeBackupHtml)
-                $tree.find('.tree-js-dd').nestable()
+                $tree.find('.tree-js-dd').nestable({ maxDepth: 1 })
             }
             $(document).on('change', '.tree-js-dd', function(){
                 $tree.find('.reset-btn, .submit-btn').removeClass('hide')
@@ -194,8 +194,6 @@
     </div>
 {% endblock %}
 
-{% set messages = false %}
-
 {% set formErrors = {
     settings: ['Error 1', 'Error 2'],
     products:  ['Error 1', 'Error 2'],
@@ -219,26 +217,15 @@
 ] %}
 
  {% set partnerAgencies = [
-     {text: 'Axa Nord', id: '10', children: [
-         {text: 'Paris', id: '101', children:[
-             {text: 'Paris Centre', id: '1011'},
-             {text: 'Paris 16ème', id: '1012', children: [
-                 {text: 'Victor Hugo', id: '10121'},
-                 {text: 'Boissière', id: '10122'}
-             ]}
-         ]},
-     ]},
-     {text: 'Axa Sud', id: '11', children: [
-         {text: 'Marseille', id: '111', children:[
-            {text: 'La Pleine', id: '1111'},
-            {text: 'Vieux Port', id: '1112'}
-         ]}
-     ]}
+     {text: 'Axa Nord', id: '10'},
+     {text: 'Axa Sud', id: '11'},
+     {text: 'Axa Ouest', id: '12'},
+     {text: 'Axa Est', id: '13'}
  ] %}
 
 {% set users = [
-    {id: 342442, status: 'inactive', name: 'Henry Gordon', position: 'Manager', agency: 'Paris Centre', date_added: '15/05/2017', last_connection: '15/08/2017'},
-    {id: 586472, status: 'active', name: 'Sara Holland', position: 'Director', agency: 'La Pleine', date_added: '13/02/2017', last_connection: '24/09/2017'}
+    {id: 342442, status: 'inactive', name: 'Henry Gordon', position: 'Manager', agency: 'Axa Nord', date_added: '15/05/2017', last_connection: '15/08/2017'},
+    {id: 586472, status: 'active', name: 'Sara Holland', position: 'Director', agency: 'Axa Sud', date_added: '13/02/2017', last_connection: '24/09/2017'}
 ] %}
 
 {% set instructionsProjectSubmissions = '<p>Je pense donc <b>je suis</b>.</p>' %}
@@ -266,14 +253,14 @@
             </div>
             <div class="block-content block-content-full">
                 <form action="/partnerEdit/settings/" method="post">
-                    {%  if messages and formErrors.settings is defined and formErrors.settings is not empty %}
+                    {%  if formErrors.settings is defined and formErrors.settings is not empty %}
                         <div class="alert alert-error">
                             {% for error in formErrors.settings %}
                                 <p>{{ error }}</p>
                             {% endfor %}
                         </div>
                     {% endif %}
-                    {%  if messages and formSuccess.settings is defined %}
+                    {%  if formSuccess.settings is defined %}
                         <div class="alert alert-success">
                             {% for success in formSuccess.settings %}
                                 <p>{{ success }}</p>
@@ -293,7 +280,7 @@
                             <div class="form-group">
                                 <p style="margin-bottom: 5px">Prospections</p>
                                 <label class="css-input switch switch-primary">
-                                    <input type="checkbox" name="prospections"><span></span>
+                                    <input type="checkbox" name="prospections" checked><span></span>
                                 </label>
                             </div>
                         </div>
@@ -310,14 +297,14 @@
             </div>
             <div class="block-content block-content-full">
                 <form action="/partnerEdit/products/" method="post">
-                    {%  if messages and formErrors.products is defined and formErrors.products is not empty %}
+                    {%  if formErrors.products is defined and formErrors.products is not empty %}
                         <div class="alert alert-error">
                             {% for error in formErrors.products %}
                                 <p>{{ error }}</p>
                             {% endfor %}
                         </div>
                     {% endif %}
-                    {%  if messages and formSuccess.products is defined %}
+                    {%  if formSuccess.products is defined %}
                         <div class="alert alert-success">
                             {% for success in formSuccess.products %}
                                 <p>{{ success }}</p>
@@ -346,27 +333,26 @@
             </div>
             <div class="block-content block-content-full">
                 <form action="/partnerEdit/organisation/" method="post" class="tree-js">
-                    {%  if messages and formErrors.organisation is defined and formErrors.organisation is not empty %}
+                    {%  if formErrors.organisation is defined and formErrors.organisation is not empty %}
                         <div class="alert alert-error">
                             {% for error in formErrors.organisation %}
                                 <p>{{ error }}</p>
                             {% endfor %}
                         </div>
                     {% endif %}
-                    {%  if messages and formSuccess.organisation is defined %}
+                    {%  if formSuccess.organisation is defined %}
                         <div class="alert alert-success">
                             {% for success in formSuccess.organisation %}
                                 <p>{{ success }}</p>
                             {% endfor %}
                         </div>
                     {% endif %}
-                    <button class="btn btn-default push-5" type="button" data-toggle="modal" data-target="#modal-create-agency"><span class="fa fa-plus"></span> Ajouter une entité</button>
                     <div class="row push">
                         <div class="col-md-12">
                             <li class="dd-item static">
                                 <div class="dd-handle">AXA Banque</div>
                             </li>
-                            <div class="dd tree-js-dd">
+                            <div class="dd tree-js-dd push-20-l">
                                 <ol class="dd-list tree-js-outer">
                                     {% include "partnerEdit/partnerAgencies.html.twig" with {'items':partnerAgencies} only %}
                                 </ol>
@@ -375,7 +361,8 @@
                     </div>
                     <div class="text-left">
                         <input type="hidden" name="structure" class="structure-input">
-                        <button class="btn btn-default reset-btn hide" type="button"><span class="fa fa-close"></span> Réinitialiser</button>
+                        <button class="btn btn-default" type="button" data-toggle="modal" data-target="#modal-create-agency">Ajouter une entité</button>
+                        <button class="btn btn-default reset-btn hide" type="button">Réinitialiser</button>
                         <button class="btn btn-primary submit-btn hide" type="submit">Mise à jour</button>
                     </div>
                 </form>
@@ -386,7 +373,7 @@
                 <h3 class="block-title">Utilisateurs</h3>
             </div>
             <div class="block-content block-content-full">
-                <table id="table-users" class="table table-bordered table-striped" data-table-search="true" data-table-editor data-table-editor-url="/partnerEdit/users/" data-table-editor-actions="add, modify, toggle">
+                <table id="table-users" class="table table-bordered table-header-bg table-striped" data-table-search="true" data-table-editor data-table-editor-url="/partnerEdit/users/" data-table-editor-actions="add, modify, toggle">
                     <thead>
                         <tr>
                             <th data-editor-name="name" data-editor-type="text">Prénom et nom</th>
@@ -418,14 +405,14 @@
                 <div class="row">
                     <div class="col-md-6">
                         <form action="/partnerEdit/instructionsSubmissions/" method="post">
-                            {%  if messages and formErrors.instructionsSubmissions is defined and formErrors.instructionsSubmissions is not empty %}
+                            {%  if formErrors.instructionsSubmissions is defined and formErrors.instructionsSubmissions is not empty %}
                                 <div class="alert alert-error">
                                     {% for error in formErrors.instructionsSubmissions %}
                                         <p>{{ error }}</p>
                                     {% endfor %}
                                 </div>
                             {% endif %}
-                            {%  if messages and formSuccess.instructionsSubmissions is defined %}
+                            {%  if formSuccess.instructionsSubmissions is defined %}
                                 <div class="alert alert-success">
                                     {% for success in formSuccess.instructionsSubmissions %}
                                         <p>{{ success }}</p>
@@ -439,14 +426,14 @@
                     </div>
                     <div class="col-md-6">
                         <form action="/partnerEdit/instructionsDocuments/" method="post">
-                            {%  if messages and formErrors.instructionsDocuments is defined and formErrors.instructionsDocuments is not empty %}
+                            {%  if formErrors.instructionsDocuments is defined and formErrors.instructionsDocuments is not empty %}
                                 <div class="alert alert-error">
                                     {% for error in formErrors.instructionsDocuments %}
                                         <p>{{ error }}</p>
                                     {% endfor %}
                                 </div>
                             {% endif %}
-                            {%  if messages and formSuccess.instructionsDocuments is defined %}
+                            {%  if formSuccess.instructionsDocuments is defined %}
                                 <div class="alert alert-success">
                                     {% for success in formSuccess.instructionsDocuments %}
                                         <p>{{ success }}</p>
@@ -466,7 +453,7 @@
                 <h3 class="block-title">Pièces à fournir</h3>
             </div>
             <div class="block-content block-content-full">
-                <table class="table table-bordered table-striped" data-table data-table-search="false" data-table-editor data-table-editor-url="/partnerEdit/documents" data-table-editor-actions="add, modify, delete">
+                <table class="table table-bordered table-header-bg table-striped" data-table data-table-search="false" data-table-editor data-table-editor-url="/partnerEdit/documents" data-table-editor-actions="add, modify, delete">
                     <thead>
                     <tr>
                         <th data-editor-name="type" data-editor-type="select" data-editor-options="CNI, Passport, Relevé bancaire, RIB">Type de pièce</th>

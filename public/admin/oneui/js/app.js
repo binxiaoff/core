@@ -1287,22 +1287,23 @@ var App = function() {
                 tr.data(data)
             }
             // Go to the page on which the row is
-            self.page(tr.index(), $tr)
+            self.page(tr.index(), id)
+
             // After update callback
             if (typeof self.options !== 'undefined') {
-
                 if (self.options.updated) {
                     self.options.updated(id)
                 }
             }
         }
-        DT.prototype.page = function(index, $tr) {
+        DT.prototype.page = function(index, id) {
             var self = this
             var position = self.dtInstance.rows()[0].indexOf(index)
             var page = Math.floor(position / self.dtInstance.page.len())
             self.dtInstance.page(page).draw(false)
+            var $tr = self.$elem.find('[data-id=' + id + ']')
             $tr.addClass('animated flash-bg')
-            setTimeout(function() {$tr.removeClass('animated flash-bg')}, 1000)
+            setTimeout(function() {$tr.removeClass('animated flash-bg')}, self.delay)
         }
         DT.prototype.events = function() {
             var self = this
