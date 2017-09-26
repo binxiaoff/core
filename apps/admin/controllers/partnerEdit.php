@@ -126,4 +126,18 @@ class partnerEditController extends bootstrap
             ]);
         }
     }
+
+    public function _send_password()
+    {
+        $this->autoFireView = false;
+        $this->hideDecoration();
+
+        // Response - JSON
+        if ($this->request->isXmlHttpRequest()) {
+            echo json_encode([
+                'success' => true,
+                'error' => ['Error 1', 'Error 2']
+            ]);
+        }
+    }
 }

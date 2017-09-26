@@ -88,6 +88,32 @@
                 var newStructure = $tree.find('.tree-js-dd').nestable('serialize')
                 $tree.find('.structure-input').val(JSON.stringify(newStructure))
             })
+            $(document).on('submit', '#modal-send-password form', function(e) {
+                e.preventDefault()
+                var $form = $(this)
+                App.blocks('#modal-send-password .block', 'state_loading')
+                $.ajax({
+                    url: $form.attr('action'),
+                    type: 'POST',
+                    data: $form.serialize(),
+                    dataType:'json',
+                    success: function(response) {
+                        if (response.success) {
+                            $form.find('.messages').html('<div class="alert alert-success"><p>Le mot de pass a bien été envoyé à l\'utilisateur.</p></div>')
+                            $form.find('.hide').removeClass('hide')
+                            $form.find('.show-inline').removeClass('show-inline').addClass('hide')
+                        } else {
+                            var html = '<div class="alert alert-error">'
+                            for (var i in response.error) {
+                                html += '<p>' + response.error[i] + '</p>'
+                            }
+                            html += '</div>'
+                            $form.find('.messages').html(html)
+                        }
+                        App.blocks('#modal-send-password .block', 'state_normal')
+                    }
+                })
+            })
         })
     </script>
 {% endblock %}
@@ -145,26 +171,30 @@
         </form>
     </div>
     <div class="modal" id="modal-send-password" tabindex="-1" role="dialog" aria-hidden="true">
-        <form class="modal-dialog" method="post" action="/partnerEdit/users/">
+        <form class="modal-dialog" method="post" action="/partnerEdit/send_password/">
             <div class="modal-content">
                 <div class="block block-bordered remove-margin-b">
                     <div class="block-header">
                         <h3 class="block-title">Envoyer le mot de pass</h3>
                     </div>
                     <div class="block-content">
-                        <p>Étes-vous sûr de vouloir renvoyer le mot de pass à cet utilisateur ?</p>
+                        <p>Étes-vous sûr de vouloir renvoyer le mot de pass a l'utilisateur ?</p>
+                        <div class="messages"></div>
                         <input type="hidden" name="id">
                         <input type="hidden" name="action" value="password">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
-                    <button class="btn btn-sm btn-primary" type="button" data-dismiss="modal">Valider</button>
+                    <button class="btn btn-sm btn-default show-inline" type="button" data-dismiss="modal">Annuler</button>
+                    <button class="btn btn-sm btn-primary show-inline" type="submit">Valider</button>
+                    <button class="btn btn-sm btn-primary hide" type="button" data-dismiss="modal">OK</button>
                 </div>
             </div>
         </form>
     </div>
 {% endblock %}
+
+{% set messages = false %}
 
 {% set formErrors = {
     settings: ['Error 1', 'Error 2'],
@@ -236,14 +266,14 @@
             </div>
             <div class="block-content block-content-full">
                 <form action="/partnerEdit/settings/" method="post">
-                    {%  if formErrors.settings is defined and formErrors.settings is not empty %}
+                    {%  if messages and formErrors.settings is defined and formErrors.settings is not empty %}
                         <div class="alert alert-error">
                             {% for error in formErrors.settings %}
                                 <p>{{ error }}</p>
                             {% endfor %}
                         </div>
                     {% endif %}
-                    {%  if formSuccess.settings is defined %}
+                    {%  if messages and formSuccess.settings is defined %}
                         <div class="alert alert-success">
                             {% for success in formSuccess.settings %}
                                 <p>{{ success }}</p>
@@ -280,14 +310,14 @@
             </div>
             <div class="block-content block-content-full">
                 <form action="/partnerEdit/products/" method="post">
-                    {%  if formErrors.products is defined and formErrors.products is not empty %}
+                    {%  if messages and formErrors.products is defined and formErrors.products is not empty %}
                         <div class="alert alert-error">
                             {% for error in formErrors.products %}
                                 <p>{{ error }}</p>
                             {% endfor %}
                         </div>
                     {% endif %}
-                    {%  if formSuccess.products is defined %}
+                    {%  if messages and formSuccess.products is defined %}
                         <div class="alert alert-success">
                             {% for success in formSuccess.products %}
                                 <p>{{ success }}</p>
@@ -316,14 +346,14 @@
             </div>
             <div class="block-content block-content-full">
                 <form action="/partnerEdit/organisation/" method="post" class="tree-js">
-                    {%  if formErrors.organisation is defined and formErrors.organisation is not empty %}
+                    {%  if messages and formErrors.organisation is defined and formErrors.organisation is not empty %}
                         <div class="alert alert-error">
                             {% for error in formErrors.organisation %}
                                 <p>{{ error }}</p>
                             {% endfor %}
                         </div>
                     {% endif %}
-                    {%  if formSuccess.organisation is defined %}
+                    {%  if messages and formSuccess.organisation is defined %}
                         <div class="alert alert-success">
                             {% for success in formSuccess.organisation %}
                                 <p>{{ success }}</p>
@@ -388,14 +418,14 @@
                 <div class="row">
                     <div class="col-md-6">
                         <form action="/partnerEdit/instructionsSubmissions/" method="post">
-                            {%  if formErrors.instructionsSubmissions is defined and formErrors.instructionsSubmissions is not empty %}
+                            {%  if messages and formErrors.instructionsSubmissions is defined and formErrors.instructionsSubmissions is not empty %}
                                 <div class="alert alert-error">
                                     {% for error in formErrors.instructionsSubmissions %}
                                         <p>{{ error }}</p>
                                     {% endfor %}
                                 </div>
                             {% endif %}
-                            {%  if formSuccess.instructionsSubmissions is defined %}
+                            {%  if messages and formSuccess.instructionsSubmissions is defined %}
                                 <div class="alert alert-success">
                                     {% for success in formSuccess.instructionsSubmissions %}
                                         <p>{{ success }}</p>
@@ -409,14 +439,14 @@
                     </div>
                     <div class="col-md-6">
                         <form action="/partnerEdit/instructionsDocuments/" method="post">
-                            {%  if formErrors.instructionsDocuments is defined and formErrors.instructionsDocuments is not empty %}
+                            {%  if messages and formErrors.instructionsDocuments is defined and formErrors.instructionsDocuments is not empty %}
                                 <div class="alert alert-error">
                                     {% for error in formErrors.instructionsDocuments %}
                                         <p>{{ error }}</p>
                                     {% endfor %}
                                 </div>
                             {% endif %}
-                            {%  if formSuccess.instructionsDocuments is defined %}
+                            {%  if messages and formSuccess.instructionsDocuments is defined %}
                                 <div class="alert alert-success">
                                     {% for success in formSuccess.instructionsDocuments %}
                                         <p>{{ success }}</p>
