@@ -335,7 +335,7 @@ PasswordCheck.prototype.templates = {
   level: '<div class="ui-passwordcheck-level"><div class="ui-passwordcheck-level-bar"></div></div>',
   levelLabel: '<div class="ui-passwordcheck-level-label">{{ label }}</div>{{ description }}',
   info: '<div class="ui-passwordcheck-info"></div>',
-  infoToggle: ' <a href="javascript:;"><span class="icon fa-question-circle"></span></a>',
+  infoToggle: ' <a href="javascript:;" tabindex="-1"><span class="icon fa-question-circle"></span></a>',
   infoMessages: '<ul class="ui-passwordcheck-messages">{{ messages }}</ul>',
   infoMessagesItem: '<li>{{ description }}{{ help }}</li>'
 }

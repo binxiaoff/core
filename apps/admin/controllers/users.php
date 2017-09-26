@@ -145,6 +145,8 @@ class usersController extends bootstrap
 
     public function _edit_password()
     {
+        $this->users->checkAccess();
+
         $template = [];
 
         if (isset($_POST['form_edit_pass_user'], $_SESSION['user']['id_user']) && $this->users->get($_SESSION['user']['id_user'])) {

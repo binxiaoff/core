@@ -27,37 +27,28 @@ class EllisphereManager
 
     /** @var int */
     private $contractId;
-
     /** @var string */
     private $userPrefix;
-
     /** @var string */
     private $userId;
-
     /** @var string */
     private $password;
-
     /** @var LoggerInterface */
     private $logger;
-
     /** @var ClientInterface */
     private $client;
-
     /** @var CallHistoryManager */
     private $callHistoryManager;
-
-    /** @var bool */
-    private $useCache = true;
-
     /** @var EntityManager */
     private $entityManager;
-
     /** @var SerializerInterface */
     private $serializer;
+    /** @var bool */
+    private $saveToCache = true;
+    /** @var bool */
+    private $readFromCache = true;
 
     /**
-     * EllisphereManager constructor.
-     *
      * @param EntityManager       $entityManager
      * @param ClientInterface     $client
      * @param CallHistoryManager  $callHistoryManager
@@ -89,6 +80,32 @@ class EllisphereManager
         $this->callHistoryManager = $callHistoryManager;
         $this->entityManager      = $entityManager;
         $this->serializer         = $serializer;
+    }
+
+    /**
+     * Should be replaced by method parameters instead of class parameters
+     * @param bool $saveToCache
+     *
+     * @return EllisphereManager
+     */
+    public function setSaveToCache($saveToCache)
+    {
+        $this->saveToCache = $saveToCache;
+
+        return $this;
+    }
+
+    /**
+     * Should be replaced by method parameters instead of class parameters
+     * @param bool $readFromCache
+     *
+     * @return EllisphereManager
+     */
+    public function setReadFromCache($readFromCache)
+    {
+        $this->readFromCache = $readFromCache;
+
+        return $this;
     }
 
     /**
@@ -143,7 +160,7 @@ class EllisphereManager
                 }
             }
 
-            $callback = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->useCache);
+            $callback = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->saveToCache);
         }
 
         $headers = ['Content-type' => 'application/xml'];
@@ -256,7 +273,7 @@ class EllisphereManager
         $storedResponse = $this->callHistoryManager->getStoredResponse($resource, $siren);
 
         if (
-            $this->useCache
+            $this->readFromCache
             && false !== $storedResponse
             && false !== simplexml_load_string($storedResponse)
         ) {
@@ -264,18 +281,6 @@ class EllisphereManager
         }
 
         return false;
-    }
-
-    /**
-     * @param bool $useCache
-     *
-     * @return $this
-     */
-    public function setUseCache($useCache)
-    {
-        $this->useCache = $useCache;
-
-        return $this;
     }
 
     /**

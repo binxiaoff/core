@@ -5,7 +5,6 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
@@ -20,11 +19,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\WireTransferOutUniversign;
 
 class UniversignController extends Controller
 {
-
-    const DOCUMENT_TYPE_PROXY             = 'pouvoir';
-    const DOCUMENT_TYPE_MANDATE           = 'mandat';
-    const DOCUMENT_TYPE_TERM_OF_USER      = 'cgv-emprunteurs';
-    const DOCUMENT_TYPE_WIRE_TRANSFER_OUT = 'virement-emprunteurs';
+    const SIGNATURE_TYPE_PROJECT = 'projet';
 
     /**
      * As the status has been removed from the URL, we need this redirection action for the old callback url.
@@ -54,98 +49,134 @@ class UniversignController extends Controller
 
     /**
      * @Route(
-     *     "/universign/{documentType}/{documentId}/{clientHash}",
+     *     "/universign/{signatureType}/{signatureId}/{clientHash}",
      *     name="universign_signature_status",
      *     requirements={
-     *         "documentType": "^(pouvoir|mandat|cgv-emprunteurs|virement-emprunteurs)$",
-     *         "documentId": "\d+",
+     *         "signatureType": "^(projet|pouvoir|mandat|cgv-emprunteurs|virement-emprunteurs)$",
+     *         "signatureId": "\d+",
      *         "clientHash": "[0-9a-f-]{32,36}"
      *     }
      * )
-     * @param int    $documentId
-     * @param string $documentType
+     * @param string $signatureType
+     * @param int    $signatureId
      * @param string $clientHash
      *
      * @return Response
      */
-    public function universignStatusAction($documentId, $documentType, $clientHash)
+    public function universignStatusAction($signatureType, $signatureId, $clientHash)
     {
-        $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
-        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $documents     = [];
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
 
-        switch ($documentType) {
-            case self::DOCUMENT_TYPE_PROXY:
-                $repository = 'UnilendCoreBusinessBundle:ProjectsPouvoir';
+        if (null === $client) {
+            return $this->redirectToRoute('home');
+        }
+
+        switch ($signatureType) {
+            case self::SIGNATURE_TYPE_PROJECT:
+                $mandate = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->findOneBy(['idProject' => $signatureId, 'status' => [ClientsMandats::STATUS_PENDING, ClientsMandats::STATUS_SIGNED]], ['added' => 'DESC']);
+                $proxy   = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->findOneBy(['idProject' => $signatureId, 'status' => [ClientsMandats::STATUS_PENDING, ClientsMandats::STATUS_SIGNED]], ['added' => 'DESC']);
+
+                if (null === $mandate || null === $proxy) {
+                    return $this->redirectToRoute('home');
+                }
+
+                $documents[] = $proxy;
+                $documents[] = $mandate;
                 break;
-            case self::DOCUMENT_TYPE_MANDATE:
-                $repository = 'UnilendCoreBusinessBundle:ClientsMandats';
+            case ProjectsPouvoir::DOCUMENT_TYPE:
+                $documents[] = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->find($signatureId);
                 break;
-            case self::DOCUMENT_TYPE_TERM_OF_USER:
-                $repository = 'UnilendCoreBusinessBundle:ProjectCgv';
+            case ClientsMandats::DOCUMENT_TYPE:
+                $documents[] = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->find($signatureId);
                 break;
-            case self::DOCUMENT_TYPE_WIRE_TRANSFER_OUT:
-                $repository = 'UnilendCoreBusinessBundle:WireTransferOutUniversign';
+            case ProjectCgv::DOCUMENT_TYPE:
+                $documents[] = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCgv')->find($signatureId);
                 break;
-            default :
+            case WireTransferOutUniversign::DOCUMENT_TYPE:
+                $documents[] = $entityManager->getRepository('UnilendCoreBusinessBundle:WireTransferOutUniversign')->find($signatureId);
+                break;
+            default:
                 return $this->redirectToRoute('home');
         }
 
-        /** @var UniversignEntityInterface|ProjectsPouvoir|ClientsMandats|ProjectCgv|WireTransferOutUniversign $universign */
-        $universign         = $entityManager->getRepository($repository)->find($documentId);
-        $client             = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
-        $clientIdUniversign = null;
-        switch (get_class($universign)) {
-            case ProjectsPouvoir::class:
-            case ProjectCgv::class:
-                if ($universign->getIdProject() instanceof Projects && $universign->getIdProject()->getIdCompany() instanceof Companies) {
-                    $clientIdUniversign = $universign->getIdProject()->getIdCompany()->getIdClientOwner();
-                }
-                break;
-            case ClientsMandats::class :
-                if ($universign->getIdClient() instanceof Clients) {
-                    $clientIdUniversign = $universign->getIdClient()->getIdClient();
-                }
-                break;
-            case WireTransferOutUniversign::class:
-                if ($universign->getIdWireTransferOut() instanceof Virements
-                    && $universign->getIdWireTransferOut()->getClient() instanceof Clients
-                ) {
-                    $clientIdUniversign = $universign->getIdWireTransferOut()->getClient()->getIdClient();
-                }
-                break;
-        }
+        foreach ($documents as $document) {
+            $documentClientId = null;
 
-        if ($universign && $client && $clientIdUniversign === $client->getIdClient() && UniversignEntityInterface::STATUS_PENDING === $universign->getStatus()) {
-            $universignManager->sign($universign);
-
-            if ($universign instanceof WireTransferOutUniversign) {
-                $pdfLink = $this->generateUrl('wire_transfer_out_request_pdf', ['wireTransferOutId' => $universign->getIdWireTransferOut()->getIdVirement(), 'clientHash' => $clientHash]);
-            } elseif ($universign instanceof ProjectCgv) {
-                $pdfLink = $universign->getUrlPath();
-            } else {
-                $pdfLink = $universign->getUrlPdf();
+            switch (get_class($document)) {
+                case ProjectsPouvoir::class:
+                case ProjectCgv::class:
+                    /** @var ProjectsPouvoir|ProjectCgv $document */
+                    if (
+                        $document->getIdProject() instanceof Projects
+                        && $document->getIdProject()->getIdCompany() instanceof Companies
+                    ) {
+                        $documentClientId = $document->getIdProject()->getIdCompany()->getIdClientOwner();
+                    }
+                    break;
+                case ClientsMandats::class:
+                    /** @var ClientsMandats $document */
+                    if ($document->getIdClient() instanceof Clients) {
+                        $documentClientId = $document->getIdClient()->getIdClient();
+                    }
+                    break;
+                case WireTransferOutUniversign::class:
+                    /** @var WireTransferOutUniversign $document */
+                    if (
+                        $document->getIdWireTransferOut() instanceof Virements
+                        && $document->getIdWireTransferOut()->getClient() instanceof Clients
+                    ) {
+                        $documentClientId = $document->getIdWireTransferOut()->getClient()->getIdClient();
+                    }
+                    break;
             }
 
-            return $this->render('pages/universign.html.twig', [
-                'pdfLink'             => $pdfLink,
-                'document'            => $this->getDocumentTypeTranslationLabel($universign),
-                'universign'          => $universign,
-                'status'              => $this->getStatusTranslationLabel($universign),
-                'borrowerAccountLink' => $this->generateUrl('borrower_account_profile')
-            ]);
+            if (null === $documentClientId || $documentClientId !== $client->getIdClient()) {
+                return $this->redirectToRoute('home');
+            }
         }
 
-        return $this->redirectToRoute('home');
+        $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
+        $template          = [
+            'documents'           => [],
+            'borrowerAccountLink' => $this->generateUrl('borrower_account_profile')
+        ];
+
+        foreach ($documents as $document) {
+            if (UniversignEntityInterface::STATUS_PENDING === $document->getStatus()) {
+                $universignManager->sign($document);
+            }
+
+            if ($document instanceof WireTransferOutUniversign) {
+                $pdfLink = $this->generateUrl(
+                    'wire_transfer_out_request_pdf',
+                    ['wireTransferOutId' => $document->getIdWireTransferOut()->getIdVirement(), 'clientHash' => $clientHash]
+                );
+            } elseif ($document instanceof ProjectCgv) {
+                $pdfLink = $document->getUrlPath();
+            } else {
+                $pdfLink = $document->getUrlPdf();
+            }
+
+            $template['documents'][] = [
+                'pdfLink'    => $pdfLink,
+                'name'       => $this->getDocumentTypeTranslationLabel($document),
+                'status'     => $this->getStatusTranslationLabel($document),
+                'universign' => $document
+            ];
+        }
+
+        return $this->render('pages/universign.html.twig', $template);
     }
 
     /**
      * @Route(
      *     "/universign/pouvoir/{proxyId}/{universignUpdate}",
-     *     name="proxy_generation_no_update_universign",
-     *     requirements={"proxyId":"\d+"},
-     *     requirements={"universignUpdate":"\w+"}
-     *     )
-     * @Route("/universign/pouvoir/{proxyId}", name="proxy_generation", requirements={"proxyId":"\d+"})
+     *     name="universign_proxy_generation_no_update",
+     *     requirements={"proxyId":"\d+", "universignUpdate":"\w+"}
+     * )
+     * @Route("/universign/pouvoir/{proxyId}", name="universign_proxy_generation", requirements={"proxyId":"\d+"})
      *
      * @param int         $proxyId
      * @param null|string $universignUpdate
@@ -158,17 +189,19 @@ class UniversignController extends Controller
         $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
         $proxy             = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->find($proxyId);
 
-        if ($proxy && UniversignEntityInterface::STATUS_PENDING === $proxy->getStatus()) {
-            if ($universignUpdate == 'NoUpdateUniversign' && false === empty($proxy->getUrlUniversign()) || $universignManager->createProxy($proxy)) {
-                return $this->redirect($proxy->getUrlUniversign());
-            }
+        if (
+            $proxy
+            && UniversignEntityInterface::STATUS_PENDING === $proxy->getStatus()
+            && ($universignUpdate == 'NoUpdateUniversign' && false === empty($proxy->getUrlUniversign()) || $universignManager->createProxy($proxy))
+        ) {
+            return $this->redirect($proxy->getUrlUniversign());
         }
 
         return $this->redirectToRoute('home');
     }
 
     /**
-     * @Route("/universign/mandat/{mandateId}", name="mandate_generation", requirements={"mandateId":"\d+"})
+     * @Route("/universign/mandat/{mandateId}", name="universign_mandate_generation", requirements={"mandateId":"\d+"})
      *
      * @param int $mandateId
      *
@@ -180,17 +213,49 @@ class UniversignController extends Controller
         $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
         $mandate           = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->find($mandateId);
 
-        if ($mandate && $mandate->getStatus() == UniversignEntityInterface::STATUS_PENDING) {
-            if (false === empty($mandate->getUrlUniversign()) || $universignManager->createMandate($mandate)) {
-                return $this->redirect($mandate->getUrlUniversign());
-            }
+        if (
+            $mandate
+            && UniversignEntityInterface::STATUS_PENDING === $mandate->getStatus()
+            && (false === empty($mandate->getUrlUniversign()) || $universignManager->createMandate($mandate))
+        ) {
+            return $this->redirect($mandate->getUrlUniversign());
         }
 
         return $this->redirectToRoute('home');
     }
 
     /**
-     * @Route("/universign/cgv_emprunteurs/{tosId}/{tosName}", name="tos_generation", requirements={"tosId":"\d+"})
+     * @Route("/universign/projet/{projectId}", name="universign_project_generation", requirements={"projectId":"\d+"})
+     *
+     * @param int $projectId
+     *
+     * @return Response
+     */
+    public function createProjectAction($projectId)
+    {
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
+        $project           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+        $mandate           = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->findOneBy(['idProject' => $projectId, 'status' => ClientsMandats::STATUS_PENDING], ['added' => 'DESC']);
+        $proxy             = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->findOneBy(['idProject' => $projectId, 'status' => ClientsMandats::STATUS_PENDING], ['added' => 'DESC']);
+
+        if (
+            $project
+            && $proxy
+            && $mandate
+            && (
+                false === empty($proxy->getUrlUniversign()) && false === empty($mandate->getUrlUniversign()) && $proxy->getUrlUniversign() === $mandate->getUrlUniversign()
+                || $universignManager->createProject($project, $proxy, $mandate)
+            )
+        ) {
+            return $this->redirect($proxy->getUrlUniversign());
+        }
+
+        return $this->redirectToRoute('home');
+    }
+
+    /**
+     * @Route("/universign/cgv_emprunteurs/{tosId}/{tosName}", name="universign_tos_generation", requirements={"tosId":"\d+"})
      *
      * @param int    $tosId
      * @param string $tosName
@@ -199,11 +264,9 @@ class UniversignController extends Controller
      */
     public function createTosAction($tosId, $tosName)
     {
-
         $entityManager     = $this->get('doctrine.orm.entity_manager');
         $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
-        /** @var ProjectCgv $tos */
-        $tos = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCgv')->find($tosId);
+        $tos               = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCgv')->find($tosId);
 
         if ($tos && $tos->getStatus() == UniversignEntityInterface::STATUS_PENDING && $tosName === $tos->getName()) {
             $tosLastUpdateDate = $tos->getLastUpdated();
@@ -223,24 +286,27 @@ class UniversignController extends Controller
      *
      * @return Response
      */
-    public function createWireTransferOutRequestPdfAction($clientHash, $wireTransferOutId)
+    public function createWireTransferOutRequestAction($clientHash, $wireTransferOutId)
     {
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
-        /** @var Virements $wireTransferOut */
+        $entityManager   = $this->get('doctrine.orm.entity_manager');
+        $client          = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
         $wireTransferOut = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->find($wireTransferOutId);
 
         if (null === $wireTransferOut || null === $client) {
             return $this->redirectToRoute('home');
         }
+
         $company        = $wireTransferOut->getProject()->getIdCompany();
         $companyManager = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner());
         if ($companyManager !== $client) {
             return $this->redirectToRoute('home');
         }
+
         $universign             = $wireTransferOut->getUniversign();
         $wireTransferOutPdfRoot = $this->getParameter('path.protected') . 'pdf/wire_transfer_out';
-        if ($universign instanceof WireTransferOutUniversign
+
+        if (
+            $universign instanceof WireTransferOutUniversign
             && UniversignEntityInterface::STATUS_SIGNED === $universign->getStatus()
             && file_exists($wireTransferOutPdfRoot . DIRECTORY_SEPARATOR . $universign->getName())
         ) {
@@ -255,6 +321,7 @@ class UniversignController extends Controller
             $entityManager->persist($universign);
             $entityManager->flush($universign);
         }
+
         if (false === file_exists($wireTransferOutPdfRoot . DIRECTORY_SEPARATOR . $universign->getName())) {
             $company            = $wireTransferOut->getProject()->getIdCompany();
             $companyManager     = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner());
@@ -288,6 +355,7 @@ class UniversignController extends Controller
             if ($universign->getUrlUniversign()) {
                 return $this->redirect($universign->getUrlUniversign());
             }
+
             $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
             if ($universignManager->createWireTransferOutRequest($universign)) {
                 return $this->redirect($universign->getUrlUniversign());

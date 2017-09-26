@@ -2,16 +2,11 @@
 
 class bootstrap extends Controller
 {
-    /**
-     * @object data\crud\companies
-     * @desc object for Companies infos
-     */
+    /** @var \clients */
+    public $clients;
+    /** @var \companies */
     public $companies;
-
-    /**
-     * @object data\crud\projects
-     * @des obecjt for Projects infos
-     */
+    /** @var \projects */
     public $projects;
 
     /**

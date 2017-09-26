@@ -114,8 +114,9 @@ abstract class Controller implements ContainerAwareInterface
         call_user_func([$this, '_' . $this->Command->getFunction()]);
 
         if (null === $this->twigEnvironment) {
-            $this->setView($this->Command->getFunction());
-
+            if (empty($this->view)) {
+                $this->setView($this->Command->getFunction());
+            }
             if ($this->autoFireHead) {
                 $this->fireHead();
             }
@@ -152,10 +153,6 @@ abstract class Controller implements ContainerAwareInterface
                     $this, '_error'
                 ], 'view not found : views/' . $this->Command->getControllerName() . '/' . $view . '.php');
             } else {
-                if ($this->is_view_template && file_exists($this->path . 'apps/' . $this->App . '/controllers/templates/' . $view . '.php')) {
-                    include $this->path . 'apps/' . $this->App . '/controllers/templates/' . $view . '.php';
-                }
-
                 include $this->path . 'apps/' . $this->App . '/views/' . $this->Command->getControllerName() . '/' . $view . '.php';
             }
         }
@@ -179,10 +176,9 @@ abstract class Controller implements ContainerAwareInterface
         }
     }
 
-    public function setView($view, $is_template = false)
+    public function setView($view)
     {
-        $this->view             = $view;
-        $this->is_view_template = $is_template;
+        $this->view = $view;
     }
 
     /**
@@ -230,6 +226,7 @@ abstract class Controller implements ContainerAwareInterface
             'debug'      => 'prod' !== $this->get('kernel')->getEnvironment()
         ]);
         $this->twigEnvironment->addExtension(new Twig_Extension_Debug());
+        $this->twigEnvironment->addExtension(new Twig_Extensions_Extension_Intl());
     }
 
     protected function loadData($object, $params = [])
@@ -305,5 +302,18 @@ abstract class Controller implements ContainerAwareInterface
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
+    }
+
+    /**
+     * @param            $success
+     * @param array|null $data
+     * @param array|null $errors
+     */
+    protected function sendAjaxResponse($success, array $data = null, array $errors = null)
+    {
+        $result = ['success' => $success, 'data' => $data, 'error' => $errors];
+        header('Content-Type: application/json');
+        echo json_encode($result);
+        die;
     }
 }

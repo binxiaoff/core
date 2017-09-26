@@ -62,6 +62,15 @@
                         </a>
                     </li>
 
+                    {% if currentSponsorshipCampaign is defined and currentSponsorshipCampaign is not empty and isValidatedClient and false == isBlacklisted %}
+                        <li role="presentation" class="user-nav-major user-nav-sponsorship {% if app.request.attributes.get('_route') == 'lender_sponsorship' %} active {% else %} complete {% endif %}">
+                            <a href="{{ path('lender_sponsorship') }}">
+                                <span class="icon fa-network-u"></span>
+                                <span class="label">{% trans %} lender-dashboard-navigation_sponsorship-link {% endtrans %}</span>
+                            </a>
+                        </li>
+                    {% endif %}
+
                     <li role="presentation" class="user-nav-minor">
                         <a href="{{ path(constant('\\Unilend\\Bundle\\FrontBundle\\Service\\RouteProvider::ROUTE_LENDER_FAQ')) }}">
                             <span class="icon fa-question-circle-o"></span>
@@ -131,6 +140,13 @@
                         <a href="{{ path('partner_statistics') }}">
                             <span class="icon fa-linegraph-u"></span>
                             <div class="label">{% trans %} mobile-navigation_partner-statistics {% endtrans %}</div>
+                        </a>
+                    </li>
+
+                    <li role="presentation" class="user-nav-major user-nav-profile{% if app.request.get('_route') == 'partner_profile' %} active{% endif %}">
+                        <a href="{{ path('partner_profile') }}">
+                            <span class="icon fa-lock-u"></span>
+                            <span class="label">{% trans %} mobile-navigation_partner-profile {% endtrans %}</span>
                         </a>
                     </li>
 

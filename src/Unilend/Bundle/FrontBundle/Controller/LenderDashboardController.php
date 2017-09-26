@@ -157,6 +157,7 @@ class LenderDashboardController extends Controller
         $yearAxisData           = $this->getYearAxis($repaymentDateRange);
 
         $depositedAmount = bcsub($operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::LENDER_PROVISION]), $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::LENDER_WITHDRAW]), 2);
+        $loansRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
 
         return $this->render(
             '/pages/lender_dashboard/lender_dashboard.html.twig',
@@ -170,7 +171,7 @@ class LenderDashboardController extends Controller
                     'irrTranslation'            => $irrTranslationType,
                     'initials'                  => $this->getUser()->getInitials(),
                     'companiesLenderInvestedIn' => $projectsRepository->countCompaniesLenderInvestedIn($wallet->getId()),
-                    'numberOfLoans'             => $loan->getLoansCount($wallet->getId())
+                    'numberOfLoans'             => $loansRepository->getDefinitelyAcceptedLoansCount($wallet)
                 ],
                 'walletData'         => [
                     'by_sector' => $lenderDisplayManager->getLenderLoansAllocationByCompanySector($wallet->getIdClient()),

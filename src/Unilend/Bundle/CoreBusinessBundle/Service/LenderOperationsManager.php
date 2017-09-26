@@ -62,8 +62,12 @@ class LenderOperationsManager
         OperationType::LENDER_PROVISION_CANCEL,
         OperationType::LENDER_TRANSFER,
         OperationType::LENDER_WITHDRAW,
-        OperationType::UNILEND_PROMOTIONAL_OPERATION,
-        OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL,
+        OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR,
+        OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_SPONSORSHIP_REWARD_SPONSOR,
+        OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSEE,
+        OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_SPONSORSHIP_REWARD_SPONSEE,
+        OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER,
+        OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_WELCOME_OFFER,
         OperationType::UNILEND_LENDER_REGULARIZATION,
         self::OP_REPAYMENT,
         self::OP_EARLY_REPAYMENT,
@@ -128,10 +132,15 @@ class LenderOperationsManager
         $previousHistoryLineIndex       = null;
 
         foreach ($walletHistory as $index => $historyLine) {
-            if ($historyLine['id'] !== $historyLine['id_repayment_task_log'] ) {
-                $type           = self::OP_REPAYMENT;
+            if (
+                in_array(self::OP_REPAYMENT, $operations)
+                && false === empty($historyLine['id_repayment_task_log'])
+                && $historyLine['id'] !== $historyLine['id_repayment_task_log']
+            ) {
+                $type = self::OP_REPAYMENT;
+
                 if (false !== strpos($historyLine['label'], '_regularization')) {
-                    $type           = self::OP_REPAYMENT_REGULARIZATION;
+                    $type = self::OP_REPAYMENT_REGULARIZATION;
                 }
                 $repaymentDetails = $operationRepository->getDetailByLoanAndRepaymentLog($historyLine['id_loan'], $wallet->getId(), $historyLine['id_repayment_task_log']);
                 $historyLine      = $this->formatRepaymentOperation($wallet, $repaymentDetails, $historyLine, $type);
@@ -147,6 +156,10 @@ class LenderOperationsManager
 
             if (OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION_REGULARIZATION === $historyLine['sub_type_label']) {
                 $historyLine['label'] = self::OP_RECOVERY_REPAYMENT_REGULARIZATION;
+            }
+
+            if (in_array($historyLine['label'], [OperationType::UNILEND_PROMOTIONAL_OPERATION, OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL])) {
+                $historyLine['label'] = $historyLine['sub_type_label'];
             }
 
             if (self::OP_REFUSED_BID === $historyLine['label']) {

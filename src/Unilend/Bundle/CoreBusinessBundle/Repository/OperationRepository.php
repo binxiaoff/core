@@ -17,6 +17,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Doctrine\DBAL\Connection;
 use Unilend\librairies\CacheKeys;
@@ -692,8 +693,15 @@ class OperationRepository extends EntityRepository
                                 "lender_provision_wire_transfer_in",
                                 NULL)
                           )
-                          WHEN "' . OperationType::BORROWER_COMMISSION . '" THEN ost.label
-                          WHEN "' . OperationType::BORROWER_COMMISSION_REGULARIZATION . '" THEN ost.label
+                        WHEN "' . OperationType::LENDER_PROVISION_CANCEL . '" THEN
+                          IF(o.id_backpayline IS NOT NULL,
+                             "lender_provision_cancel_credit_card",
+                             IF(o.id_wire_transfer_in IS NOT NULL,
+                                "lender_provision_cancel_wire_transfer_in",
+                                NULL)
+                          )
+                        WHEN "' . OperationType::BORROWER_COMMISSION . '" THEN ost.label
+                        WHEN "' . OperationType::BORROWER_COMMISSION_REGULARIZATION . '" THEN ost.label
                      ELSE ot.label END AS movement
                 FROM operation o USE INDEX (idx_operation_added)
                 INNER JOIN operation_type ot ON o.id_type = ot.id
@@ -1144,5 +1152,62 @@ class OperationRepository extends EntityRepository
             ->setCacheable(true);
 
         return (float) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param string              $subTypeLabel
+     * @param SponsorshipCampaign $sponsorshipCampaign
+     *
+     * @return mixed
+     */
+    public function getSumRewardAmountByCampaign($subTypeLabel, SponsorshipCampaign $sponsorshipCampaign, Wallet $wallet = null)
+    {
+        $queryBuilder = $this->createQueryBuilder('o');
+        $queryBuilder->select('SUM(o.amount)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'ost.id = o.idSubType')
+            ->innerJoin('UnilendCoreBusinessBundle:Sponsorship', 'ss', Join::WITH, 'ss.id = o.idSponsorship')
+            ->where('ost.label = :subTypeLabel')
+            ->andWhere('ss.idCampaign = :idCampaign')
+            ->setParameter('subTypeLabel', $subTypeLabel)
+            ->setParameter('idCampaign', $sponsorshipCampaign);
+
+        if (null !== $wallet) {
+            $queryBuilder->andWhere('o.idWalletCreditor = :idWallet')
+                ->setParameter('idWallet', $wallet);
+        }
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /***
+     * @param Wallet         $debtorWallet
+     * @param array          $operationTypes
+     * @param array|null     $operationSubTypes
+     * @param \DateTime|null $start
+     *
+     * @return mixed
+     */
+    public function sumDebitOperationsByTypeSince(Wallet $debtorWallet, $operationTypes, $operationSubTypes = null, \DateTime $start = null)
+    {
+        $qb = $this->createQueryBuilder('o');
+        $qb->select('SUM(o.amount)')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('ot.label IN (:operationTypes)')
+            ->andWhere('o.idWalletDebtor = :idWallet')
+            ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)
+            ->setParameter('idWallet', $debtorWallet->getId());
+
+        if (null !== $operationSubTypes) {
+            $qb->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
+                ->andWhere('ost.label IN (:operationSubTypes)')
+                ->setParameter('operationSubTypes', $operationSubTypes, Connection::PARAM_STR_ARRAY);
+        }
+
+        if (null !== $start) {
+            $start->setTime(0, 0, 0);
+            $qb->andWhere('o.added >= :start')->setParameter('start', $start);
+        }
+
+        return $qb->getQuery()->getSingleScalarResult();
     }
 }
