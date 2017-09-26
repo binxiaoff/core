@@ -12,7 +12,6 @@ use \Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
         <th width="10%">ID Projet</th>
         <th width="10%">Date</th>
         <th width="45%">Montant de l'opération</th>
-        <th width="5%">Solde</th>
     </tr>
     </thead>
     <tbody>
@@ -27,8 +26,8 @@ use \Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
             <?php else : ?>
                 <td>
                     <?= $this->translator->trans('borrower-operation_' . $operation['label']) ?>
-                    <?php if (OperationType::BORROWER_WITHDRAW === $operation['label']) : ?>
-                        - <?= $operation['third_party_company']['name'] ?>
+                    <?php if (OperationType::BORROWER_WITHDRAW === $operation['label'] && false === empty($operation['third_party_company'])) : ?>
+                        - <?= $operation['third_party_company'] ?>
                     <?php endif; ?>
                 </td>
             <?php endif; ?>
@@ -43,7 +42,6 @@ use \Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
                     </em>
                 <?php endif; ?>
             </td>
-            <td><?= $this->currencyFormatter->formatCurrency($operation['availableBalance'], 'EUR') ?></td>
         </tr>
         <?php $i++; ?>
     <?php endforeach; ?>

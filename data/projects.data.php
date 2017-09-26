@@ -582,7 +582,7 @@ class projects extends projects_crud
                 $result = $statement->fetchAll(PDO::FETCH_COLUMN);
                 $statement->closeCursor();
 
-                if (is_array($result)) {
+                if (is_array($result) && false == empty($result)) {
                     return (float) $result[0];
                 }
             }

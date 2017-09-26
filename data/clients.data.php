@@ -415,41 +415,6 @@ class clients extends clients_crud
         return (false !== strpos($pattern, $lenderPattern));
     }
 
-    public function getDuplicates($sLastName, $sFirstName, $sBirthdate)
-    {
-        $aCharactersToReplace = array(' ', '-', '_', '*', ',', '^', '`', ':', ';', ',', '.', '!', '&', '"', '\'', '<', '>', '(', ')', '@');
-
-        $sFirstName     = str_replace($aCharactersToReplace, '', htmlspecialchars_decode($sFirstName));
-        $sLastName      = str_replace($aCharactersToReplace, '', htmlspecialchars_decode($sLastName));
-
-        $sReplaceCharacters = '';
-        foreach ($aCharactersToReplace as $sCharacter) {
-            $sReplaceCharacters .= ',\'' . addslashes($sCharacter) . '\', \'\')';
-        }
-
-        $sql = 'SELECT *
-                FROM clients c
-                WHERE ' . str_repeat('REPLACE(', count($aCharactersToReplace)) . '`nom`' . $sReplaceCharacters . ' LIKE "%' . $sLastName. '%"
-                            AND ' . str_repeat('REPLACE(', count($aCharactersToReplace)) . '`prenom`' . $sReplaceCharacters . ' LIKE "%' . $sFirstName . '%"
-                            AND naissance = "' . $sBirthdate . '"
-                            AND status = 1
-                            AND
-                                (SELECT cs.status
-                                FROM clients_status cs
-                                    LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status)
-                                WHERE csh.id_client = c.id_client
-                                    ORDER BY csh.added DESC LIMIT 1) IN (' . \clients_status::VALIDATED . ')';
-
-        $rQuery = $this->bdd->query($sql);
-        $result = array();
-
-        while ($record = $this->bdd->fetch_array($rQuery)) {
-            $result[] = $record;
-        }
-
-        return $result;
-    }
-
     public function getClientsWithNoWelcomeOffer($iClientId = null, $sStartDate = null, $sEndDate = null)
     {
         if (null === $sStartDate) {
@@ -496,7 +461,7 @@ class clients extends clients_crud
                 WHERE
                     DATE(c.added) BETWEEN "' . $sStartDate . '" AND ' . $sEndDate . '
                     AND NOT EXISTS (SELECT obd.id_client FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
-                    AND NOT EXISTS (SELECT o.id FROM operation o WHERE o.id_type = (SELECT id FROM operation_type WHERE label = \'' . OperationType::UNILEND_PROMOTIONAL_OPERATION . '\') AND o.id_wallet_creditor = w.id)
+                    AND NOT EXISTS (SELECT o.id FROM operation o WHERE o.id_sub_type = (SELECT id FROM operation_sub_type WHERE label = \'' . \Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER . '\') AND o.id_wallet_creditor = w.id)
                     ' . $sWhereID;
 
         $resultat = $this->bdd->query($sql);

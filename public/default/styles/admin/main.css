@@ -146,7 +146,7 @@ table.form_periode td { text-align: center; vertical-align: middle; }
 /* COLORBOX */
 /************/
 
-#popup { background-color: #FFF; padding: 20px; border: 2px solid #E3E4E5; -moz-border-radius: 10px; -webkit-border-radius: 10px; border-radius: 10px; }
+#popup { background-color: #FFF; padding: 20px;  }
 
 .closeBtn { position:absolute; top: 8px; right: 8px; }
 

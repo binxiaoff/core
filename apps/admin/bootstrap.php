@@ -159,6 +159,10 @@ class bootstrap extends Controller
                     'uri'   => 'preteurs/offres_de_bienvenue'
                 ],
                 [
+                    'title' => 'Parrainage',
+                    'uri'   => 'parrainage'
+                ],
+                [
                     'title' => 'Matching ville fiscale',
                     'uri'   => 'preteurs/control_fiscal_city'
                 ],
@@ -171,10 +175,6 @@ class bootstrap extends Controller
                     'uri'   => 'preteurs/notifications'
                 ],
                 [
-                    'title' => 'Rattrapage offre de bienvenue',
-                    'uri'   => 'transferts/rattrapage_offre_bienvenue'
-                ],
-                [
                     'title' => 'Opérations atypiques',
                     'uri'   => 'client_atypical_operation'
                 ]
@@ -185,7 +185,7 @@ class bootstrap extends Controller
             'zone'     => Zones::ZONE_LABEL_BORROWERS,
             'children' => [
                 [
-                    'title' => 'Dossiers',
+                    'title' => 'Projets',
                     'uri'   => 'dossiers',
                 ],
                 [
@@ -251,10 +251,6 @@ class bootstrap extends Controller
                 [
                     'title' => 'Non attribués',
                     'uri'   => 'transferts/non_attribues'
-                ],
-                [
-                    'title' => 'Rattrapage offre de bienvenue',
-                    'uri'   => 'transferts/rattrapage_offre_bienvenue'
                 ],
                 [
                     'title' => 'Déblocage des fonds',

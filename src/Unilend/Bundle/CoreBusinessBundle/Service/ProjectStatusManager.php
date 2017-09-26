@@ -2,9 +2,10 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Doctrine\ORM\EntityManager;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class ProjectStatusManager
 {
@@ -14,7 +15,8 @@ class ProjectStatusManager
     private $translator;
 
     /**
-     * @param EntityManager $entityManager
+     * @param EntityManager       $entityManager
+     * @param TranslatorInterface $translator
      */
     public function __construct(EntityManager $entityManager, TranslatorInterface $translator)
     {
@@ -23,16 +25,16 @@ class ProjectStatusManager
     }
 
     /**
-     * @param \projects $project
+     * @param Projects $project
      *
      * @return array
      */
-    public function getPossibleStatus(\projects $project)
+    public function getPossibleStatus(Projects $project)
     {
-        /** @var \projects_status $projectStatus */
-        $projectStatus = $this->entityManager->getRepository('projects_status');
+        $projectStatus             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus');
+        $paymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
 
-        switch ($project->status) {
+        switch ($project->getStatus()) {
             case ProjectsStatus::LIQUIDATION_JUDICIAIRE:
                 $possibleStatus = [ProjectsStatus::LIQUIDATION_JUDICIAIRE, ProjectsStatus::DEFAUT];
                 break;
@@ -41,17 +43,25 @@ class ProjectStatusManager
             case ProjectsStatus::DEFAUT:
                 return [];
             default:
-                if ($project->status < ProjectsStatus::REMBOURSEMENT) {
+                if ($project->getStatus() < ProjectsStatus::REMBOURSEMENT) {
                     return [];
                 }
+
                 $possibleStatus = \projects_status::$afterRepayment;
-                if ($key = array_search(ProjectsStatus::DEFAUT, $possibleStatus)) {
+
+                $key = array_search(ProjectsStatus::DEFAUT, $possibleStatus);
+                if (false !== $key) {
+                    unset($possibleStatus[$key]);
+                }
+
+                $key = array_search(ProjectsStatus::REMBOURSEMENT, $possibleStatus);
+                if (0 < $paymentScheduleRepository->getOverdueScheduleCount($project) && false !== $key) {
                     unset($possibleStatus[$key]);
                 }
                 break;
         }
 
-        return $projectStatus->select('status IN (' . implode(',' , $possibleStatus) . ')', 'status ASC');
+        return $projectStatus->findBy(['status' => $possibleStatus], ['status' => 'ASC']);
     }
 
     /**
