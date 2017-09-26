@@ -251,88 +251,6 @@ class clients extends clients_crud
         return $this->bdd->result($result, 0, 0);
     }
 
-    public function searchPreteurs($ref = '', $nom = '', $email = '', $prenom = '', $name = '', $noValide = '', $start = '', $nb = '')
-    {
-        $where = 'WHERE 1 = 1 ';
-        $and   = '';
-        if ($ref != '') {
-            $and .= ' AND c.id_client IN(' . $ref . ')';
-        }
-        if ($email != '') {
-            $and .= ' AND c.email LIKE "' . $email . '%"';
-        }
-        if ($prenom != '') {
-            $and .= ' AND c.prenom LIKE "' . $prenom . '%"';
-        }
-        if ($name != '') {
-            $and .= ' AND co.name LIKE "' . $name . '%"';
-        }
-
-        if ($noValide == '1') {
-            $and .= ' AND c.status = 0 AND c.status_inscription_preteur = 1';
-        } // inscription non terminée
-        elseif ($noValide == '2') {
-            $and .= ' AND c.status = 0 AND c.status_inscription_preteur = 0';
-        } elseif ($noValide !== 3) {
-            $and .= ' AND YEAR(NOW()) - YEAR(c.naissance) >= 18 AND c.status_inscription_preteur = 1';
-        }
-
-        // pour le OR on rajoute la condition derriere
-        if ($nom != '') {
-            $and .= ' AND c.nom LIKE "' . $nom . '%" OR c.nom_usage LIKE "' . $nom . '%" ' . $and;
-        }
-
-        $where .= $and;
-
-        $sql = '
-                SELECT
-                  c.id_client AS id_client,
-                  c.status AS status,
-                  c.email AS email,
-                  c.telephone AS telephone,
-                  c.status_inscription_preteur AS status_inscription_preteur,
-                  CASE c.type
-                    WHEN ' . ClientEntity::TYPE_PERSON . ' OR ' . ClientEntity::TYPE_PERSON_FOREIGNER . ' THEN c.prenom
-                    ELSE
-                    (SELECT
-                       CASE co.status_client
-                       WHEN 1 THEN CONCAT(c.prenom," ",c.nom)
-                       ELSE CONCAT(co.prenom_dirigeant," ",co.nom_dirigeant)
-                       END as dirigeant
-                     FROM companies co WHERE co.id_client_owner = c.id_client)
-                  END AS prenom_ou_dirigeant,
-                  CASE c.type
-                    WHEN ' . ClientEntity::TYPE_PERSON . ' OR ' . ClientEntity::TYPE_PERSON_FOREIGNER . ' THEN c.nom
-                  ELSE (SELECT co.name FROM companies co WHERE co.id_client_owner = c.id_client)
-                  END AS nom_ou_societe,
-                  CASE c.type
-                    WHEN ' . ClientEntity::TYPE_PERSON . ' OR ' . ClientEntity::TYPE_PERSON_FOREIGNER . ' THEN REPLACE(c.nom_usage,"Nom D\'usage","")
-                    ELSE ""
-                  END AS nom_usage
-                FROM clients c
-                  INNER JOIN wallet w ON c.id_client = w.id_client AND w.id_type = (SELECT id FROM wallet_type WHERE label = "' . WalletType::LENDER . '")
-                  LEFT JOIN companies co ON co.id_client_owner = c.id_client
-            ' . $where . '
-            GROUP BY c.id_client
-            ORDER BY c.id_client DESC ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-
-        $resultat = $this->bdd->query($sql);
-        $result   = [];
-
-        $i = 0;
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[$i] = $record;
-
-            if ($record['status'] == '0' && $noValide != '') {
-                $result[$i]['novalid'] = 1;
-            } else {
-                $result[$i]['novalid'] = '0';
-            }
-            $i++;
-        }
-        return $result;
-    }
-
     public function selectPreteursByStatus($status = '', $where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
@@ -497,41 +415,6 @@ class clients extends clients_crud
         return (false !== strpos($pattern, $lenderPattern));
     }
 
-    public function getDuplicates($sLastName, $sFirstName, $sBirthdate)
-    {
-        $aCharactersToReplace = array(' ', '-', '_', '*', ',', '^', '`', ':', ';', ',', '.', '!', '&', '"', '\'', '<', '>', '(', ')', '@');
-
-        $sFirstName     = str_replace($aCharactersToReplace, '', htmlspecialchars_decode($sFirstName));
-        $sLastName      = str_replace($aCharactersToReplace, '', htmlspecialchars_decode($sLastName));
-
-        $sReplaceCharacters = '';
-        foreach ($aCharactersToReplace as $sCharacter) {
-            $sReplaceCharacters .= ',\'' . addslashes($sCharacter) . '\', \'\')';
-        }
-
-        $sql = 'SELECT *
-                FROM clients c
-                WHERE ' . str_repeat('REPLACE(', count($aCharactersToReplace)) . '`nom`' . $sReplaceCharacters . ' LIKE "%' . $sLastName. '%"
-                            AND ' . str_repeat('REPLACE(', count($aCharactersToReplace)) . '`prenom`' . $sReplaceCharacters . ' LIKE "%' . $sFirstName . '%"
-                            AND naissance = "' . $sBirthdate . '"
-                            AND status = 1
-                            AND
-                                (SELECT cs.status
-                                FROM clients_status cs
-                                    LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status)
-                                WHERE csh.id_client = c.id_client
-                                    ORDER BY csh.added DESC LIMIT 1) IN (' . \clients_status::VALIDATED . ')';
-
-        $rQuery = $this->bdd->query($sql);
-        $result = array();
-
-        while ($record = $this->bdd->fetch_array($rQuery)) {
-            $result[] = $record;
-        }
-
-        return $result;
-    }
-
     public function getClientsWithNoWelcomeOffer($iClientId = null, $sStartDate = null, $sEndDate = null)
     {
         if (null === $sStartDate) {
@@ -578,7 +461,7 @@ class clients extends clients_crud
                 WHERE
                     DATE(c.added) BETWEEN "' . $sStartDate . '" AND ' . $sEndDate . '
                     AND NOT EXISTS (SELECT obd.id_client FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
-                    AND NOT EXISTS (SELECT o.id FROM operation o WHERE o.id_type = (SELECT id FROM operation_type WHERE label = \'' . OperationType::UNILEND_PROMOTIONAL_OPERATION . '\') AND o.id_wallet_creditor = w.id)
+                    AND NOT EXISTS (SELECT o.id FROM operation o WHERE o.id_sub_type = (SELECT id FROM operation_sub_type WHERE label = \'' . \Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER . '\') AND o.id_wallet_creditor = w.id)
                     ' . $sWhereID;
 
         $resultat = $this->bdd->query($sql);
@@ -852,7 +735,8 @@ class clients extends clients_crud
             'attachmentTypeIdentity' => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::CNI_PASSPORTE,
             'attachmentTypeAddress'  => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::JUSTIFICATIF_DOMICILE,
             'attachmentTypeRib'      => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::RIB,
-            'vigilanceStatus'        => $vigilanceStatusExcluded
+            'vigilanceStatus'        => $vigilanceStatusExcluded,
+            'lenderWallet'           => WalletType::LENDER
         ];
         $type = [
             'statusValid'            => PDO::PARAM_INT,
@@ -860,38 +744,47 @@ class clients extends clients_crud
             'attachmentTypeIdentity' => PDO::PARAM_INT,
             'attachmentTypeAddress'  => PDO::PARAM_INT,
             'attachmentTypeRib'      => PDO::PARAM_INT,
-            'vigilanceStatus'        => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY
+            'vigilanceStatus'        => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'lenderWallet'           => PDO::PARAM_STR
         ];
 
         $sql = "
-        SELECT
-          c.id_client,
-          ga_identity.id AS identity_attachment_id,
-          ga_identity.validation_status identity_attachment_status,
-          ga_address.id AS address_attachment_id,
-          ga_address.validation_status address_attachment_status,
-          ga_rib.id AS rib_attachment_id,
-          ga_rib.validation_status rib_attachment_status
-        
-        FROM clients_status_history csh
-          INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeIdentity AND a.archived IS NULL) ga_identity ON ga_identity.id_client = csh.id_client
-          INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeAddress AND a.archived IS NULL) ga_address ON ga_address.id_client = csh.id_client
-          INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeRib AND a.archived IS NULL) ga_rib ON ga_rib.id_client = csh.id_client
-          INNER JOIN clients c ON c.id_client = csh.id_client
-          INNER JOIN clients_adresses ca ON ca.id_client = c.id_client AND ca.id_pays_fiscal = 1
-          INNER JOIN clients_status cs ON cs.id_client_status = csh.id_client_status
-          LEFT JOIN (SELECT * FROM client_vigilance_status_history cvsh
-                     WHERE cvsh.id = (SELECT cvsh_max.id
-                                      FROM client_vigilance_status_history cvsh_max
-                                      WHERE cvsh.id_client = cvsh_max.id_client
-                                      ORDER BY cvsh_max.added DESC, cvsh_max.id DESC LIMIT 1)) last_cvsh ON c.id_client = last_cvsh.id_client AND last_cvsh.vigilance_status IN (:vigilanceStatus)
-        WHERE csh.id_client_status_history = (SELECT csh_max.id_client_status_history
-                                              FROM clients_status_history csh_max
-                                              WHERE csh_max.id_client = csh.id_client
-                                              ORDER BY csh_max.added DESC, csh_max.id_client_status_history DESC LIMIT 1)
-          AND cs.status IN (:clientStatus)
-          AND TIMESTAMPDIFF(YEAR, naissance, CURDATE()) < 80
-          AND last_cvsh.id_client IS NULL";
+            SELECT
+              c.id_client,
+              ga_identity.id AS identity_attachment_id,
+              ga_identity.validation_status identity_attachment_status,
+              ga_address.id AS address_attachment_id,
+              ga_address.validation_status address_attachment_status,
+              ga_rib.id AS rib_attachment_id,
+              ga_rib.validation_status rib_attachment_status
+            FROM clients_status_history csh
+              INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeIdentity AND a.archived IS NULL) ga_identity ON ga_identity.id_client = csh.id_client
+              INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeAddress AND a.archived IS NULL) ga_address ON ga_address.id_client = csh.id_client
+              INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeRib AND a.archived IS NULL) ga_rib ON ga_rib.id_client = csh.id_client
+              INNER JOIN clients c ON c.id_client = csh.id_client
+              INNER JOIN clients_adresses ca ON ca.id_client = c.id_client AND ca.id_pays_fiscal = 1
+              INNER JOIN clients_status cs ON cs.id_client_status = csh.id_client_status
+              INNER JOIN wallet w ON c.id_client = w.id_client
+              INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = :lenderWallet
+              LEFT JOIN (
+                SELECT * 
+                FROM client_vigilance_status_history cvsh
+                WHERE cvsh.id = (
+                  SELECT cvsh_max.id
+                  FROM client_vigilance_status_history cvsh_max
+                  WHERE cvsh.id_client = cvsh_max.id_client
+                  ORDER BY cvsh_max.added DESC, cvsh_max.id DESC LIMIT 1
+                )
+              ) last_cvsh ON c.id_client = last_cvsh.id_client AND last_cvsh.vigilance_status IN (:vigilanceStatus)
+            WHERE csh.id_client_status_history = (
+              SELECT csh_max.id_client_status_history
+              FROM clients_status_history csh_max
+              WHERE csh_max.id_client = csh.id_client
+              ORDER BY csh_max.added DESC, csh_max.id_client_status_history DESC LIMIT 1
+            )
+              AND cs.status IN (:clientStatus)
+              AND TIMESTAMPDIFF(YEAR, naissance, CURDATE()) < 80
+              AND last_cvsh.id_client IS NULL";
 
         /** @var \Doctrine\DBAL\Statement $statement */
         $statement = $this->bdd->executeQuery($sql, $bind, $type);

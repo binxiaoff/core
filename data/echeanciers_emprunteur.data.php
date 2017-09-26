@@ -123,21 +123,6 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
         return $this->bdd->result($result, 0, 0);
     }
 
-    // retourne la somme total a rembourser pour un porjet
-    public function reste_a_payer_ra($id_project, $ordre)
-    {
-        $sql = '
-            SELECT SUM(capital) 
-            FROM echeanciers_emprunteur
-            WHERE id_project = ' . $id_project . '
-                AND status_emprunteur = 0
-                AND ordre >= ' . $ordre;
-
-        $result = $this->bdd->query($sql);
-        $sum    = (int) ($this->bdd->result($result, 0, 0));
-        return ($sum / 100);
-    }
-
     /**
      * @param \projects $project
      * @return mixed

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile;
 
 use Symfony\Component\Form\AbstractType;
@@ -10,10 +9,9 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Translation\TranslatorInterface;
 
-
 class ClientEmailType extends AbstractType
 {
-    /** @var  TranslatorInterface */
+    /** @var TranslatorInterface */
     private $translator;
 
     public function __construct(TranslatorInterface $translator)

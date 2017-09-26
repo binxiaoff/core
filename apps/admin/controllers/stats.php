@@ -24,7 +24,6 @@ class statsController extends bootstrap
 
         $this->users->checkAccess(Zones::ZONE_LABEL_STATISTICS);
 
-        $this->catchAll = true;
         $this->menu_admin = 'stats';
     }
 
@@ -770,13 +769,12 @@ class statsController extends bootstrap
                 'status'           => $status ? $status->getLabel() : '',
             ];
 
-            $projectEligibilityAssessment = $assessmentRepository->findOneBy([
-                'idProject' => $project,
-                'status'    => ProjectEligibilityAssessment::STATUS_CHECK_KO,
-            ], ['added' => 'DESC']);
+            $projectEligibilityAssessment = $assessmentRepository->findOneBy(
+                ['idProject' => $project],
+                ['added' => 'DESC', 'id' => 'DESC']
+            );
 
-            $row['common_check'] = $projectEligibilityAssessment ? $projectEligibilityAssessment->getIdRule()->getLabel() : 'OK';
-
+            $row['common_check']           = $projectEligibilityAssessment->getStatus() ? 'OK' : $projectEligibilityAssessment->getIdRule()->getLabel();
             $row['b_lend_check']           = 'Pas d\'évaluation';
             $row['ifp_product_check']      = 'Pas d\'évaluation';
             $row['prof_lib_product_check'] = 'Pas d\'évaluation';
@@ -867,7 +865,7 @@ class statsController extends bootstrap
 
         $year     = date('Y') - 1;
         $fileName = 'preteurs_crs_dac' . $year . '.xlsx';
-        $filePath = $this->getParameter('path.protected') . '/' . $fileName;
+        $filePath = $this->getParameter('path.protected') . '/queries/' . $fileName;
 
         if (file_exists($filePath)) {
            $this->download($filePath);

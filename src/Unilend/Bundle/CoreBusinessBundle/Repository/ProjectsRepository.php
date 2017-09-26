@@ -271,7 +271,7 @@ class ProjectsRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('p');
         $queryBuilder->select('COUNT(p.idProject)')
             ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'co.idCompany = p.idCompany')
-            ->where('p.status IN (:status)')
+            ->where('p.status NOT IN (:status)')
             ->andWhere('co.siren = :siren')
             ->setParameter('siren', $siren)
             ->setParameter('status', $status);
@@ -385,5 +385,38 @@ class ProjectsRepository extends EntityRepository
         $result = $this->getEntityManager()->getConnection()->executeQuery($query, ['end' => $end->format('Y-m-d H:i:s')])->fetchAll();
 
         return $result;
+    }
+
+    /**
+     * @param string   $search
+     * @param int|null $limit
+     *
+     * @return array
+     */
+    public function findByAutocomplete($search, $limit = null)
+    {
+        $search       = trim(filter_var($search, FILTER_SANITIZE_STRING));
+        $queryBuilder = $this->createQueryBuilder('p')
+            ->select('p.idProject, p.title, p.amount, p.period, co.name, co.siren, ps.label')
+            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'co.idCompany = p.idCompany')
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'ps.status = p.status')
+            ->where('p.title LIKE :searchLike')
+            ->orWhere('co.name LIKE :searchLike')
+            ->setParameter('searchLike', '%' . $search . '%')
+            ->orderBy('p.added', 'DESC');
+
+        if (filter_var($search, FILTER_VALIDATE_INT)) {
+            $queryBuilder
+                ->orWhere('p.idProject = :searchInt')
+                ->orWhere('co.siren LIKE :searchIntLike')
+                ->setParameter('searchInt', $search)
+                ->setParameter('searchIntLike', $search . '%');
+        }
+
+        if (is_int($limit)) {
+            $queryBuilder->setMaxResults($limit);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }

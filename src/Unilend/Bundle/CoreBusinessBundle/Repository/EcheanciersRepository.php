@@ -57,7 +57,7 @@ class EcheanciersRepository extends EntityRepository
     public function getMaxRepaymentAmountForLender($idLender, $timeFrame)
     {
         $qb = $this->createQueryBuilder('e');
-        $qb->select('ROUND(SUM((e.capital + e.interets) / 100), 2) AS amount')
+        $qb->select('ROUND(SUM((e.capital + e.interets)) / 100, 2) AS amount')
             ->where('e.idLender = :idLender')
             ->orderBy('amount', 'DESC')
             ->groupBy('timeFrame')
@@ -91,7 +91,7 @@ class EcheanciersRepository extends EntityRepository
      * @param Projects|int     $project
      * @param int|null         $repaymentSequence
      * @param Clients|int|null $client
-     * @param int|null         $status
+     * @param int|array|null   $status
      * @param int|null         $paymentStatus
      * @param int|null         $earlyRepaymentStatus
      * @param int|null         $start
@@ -99,7 +99,7 @@ class EcheanciersRepository extends EntityRepository
      *
      * @return Echeanciers[]
      */
-    public function findByProject($project, $repaymentSequence = null, $client = null, $status = null, $paymentStatus = null, $earlyRepaymentStatus = null, $start = null, $limit = null)
+    public function findByProject($project, $repaymentSequence = null, $client = null, $status = [], $paymentStatus = null, $earlyRepaymentStatus = null, $start = null, $limit = null)
     {
         $qb = $this->createQueryBuilder('e');
         $qb->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'e.idLoan = l.idLoan')
@@ -118,8 +118,11 @@ class EcheanciersRepository extends EntityRepository
                 ->setParameter('client', $client);
         }
 
-        if (null !== $status) {
-            $qb->andWhere('e.status = :status')
+        if (0 < count($status)) {
+            if (false === is_array($status)) {
+                $status = [$status];
+            }
+            $qb->andWhere('e.status in (:status)')
                 ->setParameter('status', $status);
         }
 
@@ -140,6 +143,7 @@ class EcheanciersRepository extends EntityRepository
         if (null !== $limit) {
             $qb->setMaxResults($limit);
         }
+
         return $qb->getQuery()->getResult();
     }
 
@@ -223,7 +227,7 @@ class EcheanciersRepository extends EntityRepository
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
                 WHERE ot.label = \'' . OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_REGULARIZATION . '\' AND id_repayment_schedule = e.id_echeancier
-              ), 0) as prelevements_obligatoires,
+              ), 0) AS prelevements_obligatoires,
               IFNULL((
                SELECT SUM(amount)
                FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
@@ -232,7 +236,7 @@ class EcheanciersRepository extends EntityRepository
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
                 WHERE ot.label = \'' . OperationType::TAX_FR_RETENUES_A_LA_SOURCE_REGULARIZATION . '\' AND id_repayment_schedule = e.id_echeancier
-              ), 0) as retenues_source,
+              ), 0) AS retenues_source,
               IFNULL((
                SELECT SUM(amount)
                FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
@@ -241,7 +245,7 @@ class EcheanciersRepository extends EntityRepository
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
                 WHERE ot.label = \'' . OperationType::TAX_FR_CSG_REGULARIZATION . '\' AND id_repayment_schedule = e.id_echeancier
-              ), 0) as csg,
+              ), 0) AS csg,
               IFNULL((
                SELECT SUM(amount)
                FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
@@ -250,7 +254,7 @@ class EcheanciersRepository extends EntityRepository
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
                 WHERE ot.label = \'' . OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_REGULARIZATION . '\' AND id_repayment_schedule = e.id_echeancier
-              ), 0) as prelevements_sociaux,
+              ), 0) AS prelevements_sociaux,
               IFNULL((
                SELECT SUM(amount)
                FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
@@ -259,7 +263,7 @@ class EcheanciersRepository extends EntityRepository
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
                 WHERE ot.label = \'' . OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_REGULARIZATION . '\' AND id_repayment_schedule = e.id_echeancier
-              ), 0) as contributions_additionnelles,
+              ), 0) AS contributions_additionnelles,
               IFNULL((
                SELECT SUM(amount)
                FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
@@ -268,7 +272,7 @@ class EcheanciersRepository extends EntityRepository
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
                 WHERE ot.label = \'' . OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_REGULARIZATION . '\' AND id_repayment_schedule = e.id_echeancier
-              ), 0) as prelevements_de_solidarite,
+              ), 0) AS prelevements_de_solidarite,
               IFNULL((
                SELECT SUM(amount)
                FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
@@ -277,7 +281,7 @@ class EcheanciersRepository extends EntityRepository
                 SELECT SUM(amount)
                 FROM operation o INNER JOIN operation_type ot ON ot.id = o.id_type
                 WHERE ot.label = \'' . OperationType::TAX_FR_CRDS_REGULARIZATION . '\' AND id_repayment_schedule = e.id_echeancier
-              ), 0) as crds,
+              ), 0) AS crds,
               e.date_echeance,
               e.date_echeance_reel,
               e.status,
@@ -332,7 +336,7 @@ class EcheanciersRepository extends EntityRepository
                  YEAR(o.added) AS year,
                  SUM(IF(ot.label = \'' . OperationType::CAPITAL_REPAYMENT_REGULARIZATION . '\', -amount, IF(ot.label = \'' . OperationType::CAPITAL_REPAYMENT . '\', amount, 0))) AS capital,
                  SUM(IF(ot.label = \'' . OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION . '\', -amount, IF(ot.label= \'' . OperationType::GROSS_INTEREST_REPAYMENT . '\', amount, 0))) AS grossInterests,
-                 SUM(IF(ot.label in (:frenchTaxRegularisation), -amount, IF(ot.label in (:frenchTax), amount, 0))) AS repaidTaxes,
+                 SUM(IF(ot.label IN (:frenchTaxRegularisation), -amount, IF(ot.label IN (:frenchTax), amount, 0))) AS repaidTaxes,
                  0 upcomingTaxes
                FROM operation o USE INDEX (idx_id_wallet_creditor_type, idx_id_wallet_debitor_type)
                  INNER JOIN operation_type ot ON ot.id = o.id_type
@@ -380,7 +384,8 @@ class EcheanciersRepository extends EntityRepository
                     AND e.status = 0
                     AND e.date_echeance >= NOW()
                     AND IF(
-                        (p.status IN (' . implode(',', [ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE, ProjectsStatus::DEFAUT]) . ')
+                        (p.status IN (' . implode(',',
+                [ProjectsStatus::PROCEDURE_SAUVEGARDE, ProjectsStatus::REDRESSEMENT_JUDICIAIRE, ProjectsStatus::LIQUIDATION_JUDICIAIRE, ProjectsStatus::DEFAUT]) . ')
                         OR (p.status >= ' . ProjectsStatus::PROBLEME . '
                         AND DATEDIFF(NOW(), (
                         SELECT psh2.added
@@ -395,15 +400,15 @@ class EcheanciersRepository extends EntityRepository
             ) AS t
             GROUP BY t.month';
 
-        $frenchTax              = OperationType::TAX_TYPES_FR;
+        $frenchTax               = OperationType::TAX_TYPES_FR;
         $frenchTaxRegularisation = OperationType::TAX_TYPES_FR_REGULARIZATION;
-        $repaymentTypes         = [
+        $repaymentTypes          = [
             OperationType::CAPITAL_REPAYMENT,
             OperationType::CAPITAL_REPAYMENT_REGULARIZATION,
             OperationType::GROSS_INTEREST_REPAYMENT,
             OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION
         ];
-        $allOperationTypes      = array_merge($frenchTax, $frenchTaxRegularisation, $repaymentTypes);
+        $allOperationTypes       = array_merge($frenchTax, $frenchTaxRegularisation, $repaymentTypes);
 
         $oQCProfile    = new QueryCacheProfile(CacheKeys::DAY, md5(__METHOD__));
         $statement     = $this->getEntityManager()->getConnection()->executeQuery(
@@ -411,7 +416,7 @@ class EcheanciersRepository extends EntityRepository
             [
                 'lender'                       => $lender,
                 'frenchTax'                    => $frenchTax,
-                'frenchTaxRegularisation'       => $frenchTaxRegularisation,
+                'frenchTaxRegularisation'      => $frenchTaxRegularisation,
                 'repaymentTypes'               => $repaymentTypes,
                 'allOperationTypes'            => $allOperationTypes,
                 'tax_type_exempted_lender'     => TaxManager::TAX_TYPE_EXEMPTED_LENDER,
@@ -422,7 +427,7 @@ class EcheanciersRepository extends EntityRepository
             [
                 'repaymentTypes'               => Connection::PARAM_INT_ARRAY,
                 'frenchTax'                    => Connection::PARAM_INT_ARRAY,
-                'frenchTaxRegularisation'       => Connection::PARAM_INT_ARRAY,
+                'frenchTaxRegularisation'      => Connection::PARAM_INT_ARRAY,
                 'allOperationTypes'            => Connection::PARAM_INT_ARRAY,
                 'tax_type_exempted_lender'     => Connection::PARAM_INT_ARRAY,
                 'tax_type_taxable_lender'      => Connection::PARAM_INT_ARRAY,
@@ -508,6 +513,87 @@ class EcheanciersRepository extends EntityRepository
             ->setParameter('paid', Echeanciers::STATUS_REPAID)
             ->setParameter('start', $start->format('Y-m-d H:i:s'))
             ->setParameter('end', $end->format('Y-m-d H:i:s'));
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Loans $loan
+     *
+     * @return int
+     */
+    public function earlyRepayAllPendingSchedules(Loans $loan)
+    {
+        $updateRepaymentSchedule = 'UPDATE echeanciers
+                    SET capital_rembourse = capital, status = :paid, date_echeance_reel = NOW(), status_email_remb = :sent, updated = NOW()
+                    WHERE id_loan = :loan AND status = :pending';
+
+        $resultRepaymentSchedule = $this->getEntityManager()->getConnection()->executeUpdate(
+            $updateRepaymentSchedule,
+            [
+                'loan'    => $loan->getIdLoan(),
+                'sent'    => Echeanciers::STATUS_REPAYMENT_EMAIL_SENT,
+                'paid'    => Echeanciers::STATUS_REPAID,
+                'pending' => Echeanciers::STATUS_PENDING,
+            ]
+        );
+
+        return $resultRepaymentSchedule;
+    }
+
+    /**
+     * @param \DateTime    $date
+     * @param Projects|int $project
+     *
+     * @return null|Echeanciers
+     */
+    public function findNextPendingScheduleAfter(\DateTime $date, $project)
+    {
+        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder->where('e.idProject = :project')
+            ->andWhere('e.status = :pending')
+            ->andWhere('e.dateEcheance >= :date')
+            ->setParameter('project', $project)
+            ->setParameter('date', $date)
+            ->setParameter('pending', Echeanciers::STATUS_PENDING)
+            ->orderBy('e.ordre', 'ASC')
+            ->setMaxResults(1);
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * @param Projects|int $project
+     * @param int          $sequence
+     *
+     * @return float
+     */
+    public function getNotRepaidCapitalByProjectAndSequence($project, $sequence)
+    {
+        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder->select('ROUND(SUM(e.capital - e.capitalRembourse) / 100, 2)')
+            ->where('e.idProject = :project')
+            ->andWhere('e.ordre = :sequence')
+            ->setParameter('project', $project)
+            ->setParameter('sequence', $sequence);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Projects|int $project
+     * @param int          $sequence
+     *
+     * @return float
+     */
+    public function getNotRepaidInterestByProjectAndSequence($project, $sequence)
+    {
+        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder->select('ROUND(SUM(e.interets - e.interetsRembourses) / 100, 2)')
+            ->where('e.idProject = :project')
+            ->andWhere('e.ordre = :sequence')
+            ->setParameter('project', $project)
+            ->setParameter('sequence', $sequence);
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }

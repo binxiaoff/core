@@ -22,7 +22,6 @@ class sfpmeiController extends bootstrap
 
         $this->users->checkAccess(Zones::ZONE_LABEL_SFPMEI);
 
-        $this->catchAll   = true;
         $this->menu_admin = 'sfpmei';
         $this->pagination = 25;
     }
@@ -45,22 +44,22 @@ class sfpmeiController extends bootstrap
                 $_SESSION['error_search'][] = 'Veuillez remplir au moins un champ';
             }
 
-            $clientId = empty($_POST['id']) ? '' : filter_var($_POST['id'], FILTER_SANITIZE_NUMBER_INT);
+            $clientId = empty($_POST['id']) ? null : filter_var($_POST['id'], FILTER_SANITIZE_NUMBER_INT);
             if (false === $clientId) {
                 $_SESSION['error_search'][] = 'L\'ID du client doit être un nombre';
             }
 
-            $email = empty($_POST['email']) ? '' : filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
+            $email = empty($_POST['email']) ? null : filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
             if (false === $email) {
                 $_SESSION['error_search'][] = 'Le format de l\'email n\'est pas valide';
             }
 
-            $lastName = empty($_POST['lastname']) ? '' : filter_var($_POST['lastname'], FILTER_SANITIZE_STRING);
+            $lastName = empty($_POST['lastname']) ? null : filter_var($_POST['lastname'], FILTER_SANITIZE_STRING);
             if (false === $lastName) {
                 $_SESSION['error_search'][] = 'Le format du nom n\'est pas valide';
             }
 
-            $companyName = empty($_POST['company']) ? '' : filter_var($_POST['company'], FILTER_SANITIZE_STRING);
+            $companyName = empty($_POST['company']) ? null : filter_var($_POST['company'], FILTER_SANITIZE_STRING);
             if (false === $companyName) {
                 $_SESSION['error_search'][] = 'Le format de la raison sociale n\'est pas valide';
             }
@@ -70,9 +69,9 @@ class sfpmeiController extends bootstrap
                 die;
             }
 
-            /** @var \clients $clients */
-            $clients       = $this->get('unilend.service.entity_manager')->getRepository('clients');
-            $this->lenders = $clients->searchPreteurs($clientId, $lastName, $email, '', $companyName, 3);
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
+            $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+            $this->lenders    = $clientRepository->findLenders($clientId, $email, $lastName, null, $companyName, null, true);
 
             if (false === empty($this->lenders) && 1 === count($this->lenders)) {
                 header('Location: ' . $this->lurl . '/sfpmei/preteur/' . $this->lenders[0]['id_client']);

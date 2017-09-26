@@ -287,11 +287,11 @@ class MailerManager
             'montant'                => $this->oFicelle->formatNumber($project->amount, 0),
             'taux_moyen'             => $this->oFicelle->formatNumber($project->getAverageInterestRate(), 1),
             'link_compte_emprunteur' => $this->sFUrl . '/projects/detail/' . $project->id_project,
-            'link_mandat'            => $this->sFUrl . '/pdf/mandat/' . $borrower->hash . '/' . $project->id_project,
-            'link_pouvoir'           => $this->sFUrl . '/pdf/pouvoir/' . $borrower->hash . '/' . $project->id_project,
+            'link_signature'         => $this->sFUrl . '/pdf/projet/' . $borrower->hash . '/' . $project->id_project,
             'projet'                 => $project->title,
             'lien_fb'                => $this->getFacebookLink(),
-            'lien_tw'                => $this->getTwitterLink()
+            'lien_tw'                => $this->getTwitterLink(),
+            'annee'                  => date('Y')
         ];
 
         /** @var TemplateMessage $message */
@@ -502,18 +502,19 @@ class MailerManager
         $bid = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($notification->id_bid);
 
         if (Clients::STATUS_ONLINE === $bid->getIdLenderAccount()->getIdClient()->getStatus()) {
+            /**
+             * Using the projects.data object is a workaround while projects has not been completely migrated on Doctrine Entity
+             * and date_fin cannot be NULL
+             */
             $project->get($bid->getProject()->getIdProject());
 
             $now          = new \DateTime();
-            $interval     = $this->formatDateDiff($now, $bid->getProject()->getDateFin());
+            $endDate      = '0000-00-00 00:00:00' === $project->date_fin ? $bid->getProject()->getDateRetrait() : $bid->getProject()->getDateFin();
+            $interval     = $this->formatDateDiff($now, $endDate);
             $bidManager   = $this->container->get('unilend.service.bid_manager');
             $projectRates = $bidManager->getProjectRateRange($project);
 
             if ($bid->getAutobid()) {
-                /**
-                 * Using the projects.data object is a workaround while projects has not been completely migrated on Doctrine Entity
-                 * and date_fin can not be NULL
-                 */
                 if ('0000-00-00 00:00:00' != $project->date_fin && $bid->getProject()->getDateFin() <= $now) {
                     $mailTemplate = 'preteur-autobid-ko-apres-fin-de-periode-projet';
                 } elseif ($bids->getProjectMaxRate($project) > $projectRates['rate_min']) {
@@ -1952,66 +1953,6 @@ class MailerManager
             $this->oLogger->warning(
                 'Could not send email: emprunteur-dernier-remboursement - Exception: ' . $exception->getMessage(),
                 ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
-        }
-    }
-
-    /**
-     * @param \clients $client
-     * @param string   $mailType
-     */
-    public function sendClientValidationEmail(\clients $client, $mailType)
-    {
-        $varMail = [
-            'surl'    => $this->sSUrl,
-            'url'     => $this->sFUrl,
-            'prenom'  => $client->prenom,
-            'projets' => $this->sFUrl . '/projets-a-financer',
-            'lien_fb' => $this->getFacebookLink(),
-            'lien_tw' => $this->getTwitterLink(),
-        ];
-
-        /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage($mailType, $varMail);
-        try {
-            $message->setTo($client->email);
-            $this->mailer->send($message);
-        } catch (\Exception $exception){
-            $this->oLogger->warning(
-                'Could not send email: ' . $mailType . ' - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
-        }
-    }
-
-    /**
-     * @param \clients           $client
-     * @param \offres_bienvenues $welcomeOffer
-     */
-    public function sendWelcomeOfferEmail(\clients $client, \offres_bienvenues $welcomeOffer)
-    {
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
-
-        $varMail = [
-            'surl'            => $this->sSUrl,
-            'url'             => $this->sFUrl,
-            'prenom_p'        => $client->prenom,
-            'projets'         => $this->sFUrl . '/projets-a-financer',
-            'offre_bienvenue' => $ficelle->formatNumber($welcomeOffer->montant / 100),
-            'lien_fb'         => $this->getFacebookLink(),
-            'lien_tw'         => $this->getTwitterLink(),
-        ];
-
-        /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('offre-de-bienvenue', $varMail);
-        try {
-            $message->setTo($client->email);
-            $this->mailer->send($message);
-        } catch (\Exception $exception){
-            $this->oLogger->warning(
-                'Could not send email: offre-de-bienvenue - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
             );
         }
     }

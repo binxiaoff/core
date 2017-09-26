@@ -5,6 +5,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Knp\Snappy\GeneratorInterface;
 use Twig_Environment;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompteurFactures;
+use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
@@ -36,8 +38,8 @@ class InvoiceManager
     }
 
     /**
-     * @param Projects     $project
-     * @param int|null     $order
+     * @param Projects $project
+     * @param int|null $order
      *
      * @return null||Factures
      * @throws \Exception
@@ -146,5 +148,67 @@ class InvoiceManager
         } else {
             return 'FACTURE-UNILEND-' . $invoice->getIdProject()->getSlug();
         }
+    }
+
+    /**
+     * @param EcheanciersEmprunteur $paymentSchedule
+     *
+     * @throws \Exception
+     */
+    public function createPaymentScheduleInvoice(EcheanciersEmprunteur $paymentSchedule)
+    {
+        $project = $paymentSchedule->getIdProject();
+        $now     = new \DateTime();
+
+        $this->entityManager->getConnection()->beginTransaction();
+        try {
+            $invoice = new Factures();
+            $invoice->setIdProject($project)
+                ->setNumFacture($this->getInvoiceNumber($project, $now))
+                ->setDate($now)
+                ->setOrdre($paymentSchedule->getOrdre())
+                ->setIdCompany($project->getIdCompany()->getIdCompany())
+                ->setTypeCommission(Factures::TYPE_COMMISSION_REPAYMENT)
+                ->setCommission($project->getCommissionRateRepayment())
+                ->setMontantHt($paymentSchedule->getCommission())
+                ->setTva($paymentSchedule->getTva())
+                ->setMontantTtc(bcadd($paymentSchedule->getCommission(), $paymentSchedule->getTva(), 2));
+
+            $this->entityManager->persist($invoice);
+            $this->entityManager->flush($invoice);
+
+            $this->entityManager->getConnection()->commit();
+        } catch (\Exception $exception) {
+            $this->entityManager->getConnection()->rollBack();
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param Projects  $project
+     * @param \DateTime $date
+     *
+     * @return int
+     */
+    private function getInvoiceNumber(Projects $project, \DateTime $date)
+    {
+        $invoiceCount = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:CompteurFactures')
+            ->findOneBy(['date' => $date], ['ordre' => 'DESC']);
+
+        $dailyCount = 0;
+        if ($invoiceCount) {
+            $dailyCount = $invoiceCount->getOrdre();
+        }
+
+        $newInvoiceCount = new CompteurFactures();
+        $newInvoiceCount->setIdProject($project)
+            ->setOrdre(++$dailyCount)
+            ->setDate($date);
+
+        $this->entityManager->persist($newInvoiceCount);
+        $this->entityManager->flush($newInvoiceCount);
+
+        return vsprintf('FR-E%s%s', ['date' => $date->format('Ymd'), 'sequence' => str_pad($newInvoiceCount->getOrdre(), 5, '0', STR_PAD_LEFT)]);
     }
 }

@@ -7,7 +7,7 @@
 
 var App = function() {
     // Helper variables - set in uiInit()
-    var $lHtml, $lBody, $lPage, $lSidebar, $lSidebarScroll, $lSideOverlay, $lSideOverlayScroll, $lHeader, $lMain, $lFooter;
+    var $lHtml, $lBody, $lPage, $lSidebar, $lSidebarScroll, $lSideOverlay, $lSideOverlayScroll, $lHeader, $lSearch, $lMain, $lFooter;
 
     /*
      ********************************************************************************************
@@ -31,6 +31,7 @@ var App = function() {
         $lSideOverlay       = jQuery('#side-overlay');
         $lSideOverlayScroll = jQuery('#side-overlay-scroll');
         $lHeader            = jQuery('#header-navbar');
+        $lSearch            = $lHeader.find('#quick-search');
         $lMain              = jQuery('#main-container');
         $lFooter            = jQuery('#page-footer');
 
@@ -141,6 +142,7 @@ var App = function() {
 
                 // If sidebar scrolling does not exist init it..
                 if ($lSidebarScroll.length && (!$lSidebarScroll.parent('.slimScrollDiv').length)) {
+
                     $lSidebarScroll.slimScroll({
                         height: $lSidebar.outerHeight(),
                         color: '#fff',
@@ -330,6 +332,84 @@ var App = function() {
         });
     };
 
+    // Header Search Autocomplete
+    var uiQuickSearch = function(){
+        $lSearch.autoComplete({
+            minChars: 2,
+            cache: 0, // Doesn't work with any other value (when using sections in suggestions)
+            menuClass: 'header-autocomplete',
+            delay: 500,
+            source: function(term, suggest){
+                $.getJSON('/ajax/quick_search/', {q: term}, function (response){ suggest(response) })
+            },
+            renderItem: function (item, search, section) {
+                var html = ''
+                if (section === 'projects') {
+                    html += '<div class="autocomplete-suggestion" data-val="' + item.title + '">' +
+                        '<p>' + item.title + ' <span class="id">' + item.id + '</span></p>' +
+                        '<div class="details">' +
+                        '<dl><dt>SIREN</dt> <dd>' + item.siren + '</dd></dl>' +
+                        '<dl><dt>Montant</dt> <dd>' + item.amount + ' €</dd></dl>' +
+                        '<dl><dt>Durée</dt> <dd>' + item.duration + ' mois</dd></dl>' +
+                        '<dl><dt>Statut</dt> <dd>' + item.status + '</dd></dl>' +
+                        '</div>'
+                }
+                if (section === 'lenders') {
+                    html += '<div class="autocomplete-suggestion" data-val="' + item.name + '">' +
+                        '<p>' + item.name + ' <span class="id">' + item.id + ' </span></p>' +
+                        '<div class="details">' +
+                        '<dl><dd>' + item.type + '</dd></dl>' +
+                        '</div>'
+                }
+                html += '</div>'
+                return html
+            },
+            onSelect: function(e, term, item){
+                var title = item.find('p').text()
+                var id = item.find('.id').text()
+                var section = item.parent().attr('class')
+
+                $lSearch.val(title.replace(id, ''))
+
+                if (~section.indexOf('projects')) {
+                    window.location.replace('/dossiers/edit/' + id.match(/\d+/))
+                } else if (~section.indexOf('lenders')) {
+                    window.location.replace('/preteurs/edit/' + id.match(/\d+/))
+                }
+                $('.autocomplete-suggestions').hide()
+            },
+            sections: true,
+            sectionMaxResults: 5,
+            sectionShowMore: function(section, term) {
+                var btnText = ''
+                var html = '<form class="show-more" method="post" action="'
+                if (section === 'projects') {
+                    btnText  = 'projets'
+                    html += '/dossiers">'
+                    html += '<input type="hidden" name="form_search_dossier" value="1">'
+                    if ($.isNumeric(term)) {
+                        html += '<input type="hidden" name="siren" value="' + term + '">'
+                    } else {
+                        html += '<input type="hidden" name="raison-sociale" value="' + term + '">'
+                    }
+                }
+                if (section === 'lenders') {
+                    btnText  = 'prêteurs'
+                    html += '/preteurs/gestion">'
+                    html += '<input type="hidden" name="form_search_preteur" value="1">'
+                    if ($.isNumeric(term)) {
+                        html += '<input type="hidden" name="id" value="' + term + '">'
+                    } else {
+                        html += '<input type="hidden" name="nom" value="' + term + '">'
+                    }
+                }
+                html += '<button type="submit" class="btn btn-default btn-sm"><span class="fa fa-search"></span> Plus de ' + btnText + '</button>'
+                html += '</form>'
+                return html
+            }
+        })
+    };
+
     // Blocks options functionality
     var uiBlocks = function() {
         // Init default icons fullscreen and content toggle buttons
@@ -488,28 +568,6 @@ var App = function() {
         }
     };
 
-    // Material inputs helper
-    var uiForms = function() {
-        jQuery('.form-material.floating > .form-control').each(function(){
-            var $input  = jQuery(this);
-            var $parent = $input.parent('.form-material');
-
-            setTimeout(function() {
-                if ($input.val() ) {
-                    $parent.addClass('open');
-                }
-            }, 150);
-
-            $input.on('change', function(){
-                if ($input.val()) {
-                    $parent.addClass('open');
-                } else {
-                    $parent.removeClass('open');
-                }
-            });
-        });
-    };
-
     // Set active color themes functionality
     var uiHandleTheme = function() {
         var $cssTheme = jQuery('#css-theme');
@@ -638,6 +696,25 @@ var App = function() {
         return false;
     };
 
+    // Collapse details of alerts
+    var uiAlertCollapse = function() {
+        $alert = jQuery('.alert')
+        $alert.each(function(){
+            if ($(this).find('ul.hide').length) {
+                $(this).addClass('alert-collapse').append('<button></button>').find('ul.hide').removeClass('hide')
+                $(this).find('button').click(function(){
+                    var $alert = $(this).closest('.alert')
+                    var $target = $alert.find('ul')
+                    if ($target.is(':visible'))
+                        $target.slideUp(150)
+                    else
+                        $target.slideDown(150)
+                })
+            }
+        })
+    };
+
+
     /*
      ********************************************************************************************
      *
@@ -697,6 +774,183 @@ var App = function() {
         });
     };
 
+    // Data Tables
+    var uiHelperDataTables = function() {
+        // DataTables Bootstrap integration
+        var $DataTable = $.fn.dataTable
+        $.extend( true, $DataTable.defaults, {
+            dom:
+            "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
+            "<'row'<'col-sm-12'tr>>" +
+            "<'row'<'col-sm-6'i><'col-sm-6'p>>",
+            renderer: 'bootstrap',
+            oLanguage: {
+                sLengthMenu: "_MENU_",
+                sProcessing:     "Traitement en cours...",
+                sSearch:         "Rechercher&nbsp;:",
+                sLengthMenu:     "Afficher _MENU_ &eacute;l&eacute;ments",
+                sInfo:           "Affichage de l'&eacute;l&eacute;ment _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                sInfoEmpty:      "Affichage de l'&eacute;l&eacute;ment 0 &agrave; 0 sur 0 &eacute;l&eacute;ment",
+                sInfoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                sInfoPostFix:    "",
+                sLoadingRecords: "Chargement en cours...",
+                sZeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                sEmptyTable:     "Aucune donn&eacute;e disponible dans le tableau",
+                oPaginate: {
+                    sFirst:      "Premier",
+                    sPrevious:   "Pr&eacute;c&eacute;dent",
+                    sNext:       "Suivant",
+                    sLast:       "Dernier"
+                },
+                oPaginate: {
+                    sPrevious: '<i class="fa fa-angle-left"></i>',
+                    sNext: '<i class="fa fa-angle-right"></i>'
+                }
+            }
+        })
+        $.extend($DataTable.ext.classes, {
+            sWrapper: "dataTables_wrapper form-inline dt-bootstrap",
+            sFilterInput: "form-control",
+            sLengthSelect: "form-control"
+        })
+        $DataTable.ext.renderer.pageButton.bootstrap = function (settings, host, idx, buttons, page, pages) {
+            var api     = new $DataTable.Api(settings)
+            var classes = settings.oClasses
+            var lang    = settings.oLanguage.oPaginate
+            var btnDisplay, btnClass
+
+            var attach = function (container, buttons) {
+                var i, ien, node, button
+                var clickHandler = function (e) {
+                    e.preventDefault()
+                    if (!jQuery(e.currentTarget).hasClass('disabled')) {
+                        api.page(e.data.action).draw(false)
+                    }
+                }
+
+                for (i = 0, ien = buttons.length; i < ien; i++) {
+                    button = buttons[i]
+
+                    if ($.isArray(button)) {
+                        attach(container, button)
+                    }
+                    else {
+                        btnDisplay = ''
+                        btnClass = ''
+
+                        switch (button) {
+                            case 'ellipsis':
+                                btnDisplay = '&hellip'
+                                btnClass = 'disabled'
+                                break
+
+                            case 'first':
+                                btnDisplay = lang.sFirst
+                                btnClass = button + (page > 0 ? '' : ' disabled')
+                                break
+
+                            case 'previous':
+                                btnDisplay = lang.sPrevious
+                                btnClass = button + (page > 0 ? '' : ' disabled')
+                                break
+
+                            case 'next':
+                                btnDisplay = lang.sNext
+                                btnClass = button + (page < pages - 1 ? '' : ' disabled')
+                                break
+
+                            case 'last':
+                                btnDisplay = lang.sLast
+                                btnClass = button + (page < pages - 1 ? '' : ' disabled')
+                                break
+
+                            default:
+                                btnDisplay = button + 1
+                                btnClass = page === button ?
+                                    'active' : ''
+                                break
+                        }
+
+                        if (btnDisplay) {
+                            node = jQuery('<li>', {
+                                'class': classes.sPageButton + ' ' + btnClass,
+                                'aria-controls': settings.sTableId,
+                                'tabindex': settings.iTabIndex,
+                                'id': idx === 0 && typeof button === 'string' ?
+                                settings.sTableId + '_' + button :
+                                    null
+                            })
+                                .append(jQuery('<a>', {
+                                        'href': '#'
+                                    })
+                                        .html(btnDisplay)
+                                )
+                                .appendTo(container)
+
+                            settings.oApi._fnBindAction(
+                                node, {action: button}, clickHandler
+                            )
+                        }
+                    }
+                }
+            }
+
+            attach(
+                jQuery(host).empty().html('<ul class="pagination"/>').children('ul'),
+                buttons
+            )
+        }
+        if ($DataTable.TableTools) {
+            // Set the classes that TableTools uses to something suitable for Bootstrap
+            $.extend(true, $DataTable.TableTools.classes, {
+                "container": "DTTT btn-group",
+                "buttons": {
+                    "normal": "btn btn-default",
+                    "disabled": "disabled"
+                },
+                "collection": {
+                    "container": "DTTT_dropdown dropdown-menu",
+                    "buttons": {
+                        "normal": "",
+                        "disabled": "disabled"
+                    }
+                },
+                "print": {
+                    "info": "DTTT_print_info"
+                },
+                "select": {
+                    "row": "active"
+                }
+            })
+
+            // Have the collection use a bootstrap compatible drop down
+            $.extend(true, $DataTable.TableTools.DEFAULTS.oTags, {
+                "collection": {
+                    "container": "ul",
+                    "button": "li",
+                    "liner": "a"
+                }
+            })
+        }
+
+        // Simple
+        $('.js-dataTable-simple').dataTable({
+            pageLength: 5,
+            lengthMenu: [[5, 10], [15, 20]],
+            searching: false,
+            dom:
+            "<'row'<'col-sm-12'tr>>" +
+            "<'row'<'col-sm-6'i><'col-sm-6'p>>"
+        })
+
+        // Advanced
+        $('.js-dataTable-advanced').dataTable({
+            columnDefs: [ { orderable: false } ],
+            pageLength: 4,
+            lengthMenu: [[5, 10], [5, 10]]
+        })
+    };
+
     // Checkable table functionality
     var uiHelperTableToolsCheckable = function() {
         // For each table
@@ -750,62 +1004,6 @@ var App = function() {
                 .closest('tr')
                 .removeClass('active');
         }
-    };
-
-    /*
-     * jQuery Appear, for more examples you can check out https://github.com/bas2k/jquery.appear
-     *
-     * App.initHelper('appear');
-     *
-     */
-    var uiHelperAppear = function(){
-        // Add a specific class on elements (when they become visible on scrolling)
-        jQuery('[data-toggle="appear"]').each(function(){
-            var $windowW    = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-            var $this       = jQuery(this);
-            var $class      = $this.data('class') ? $this.data('class') : 'animated fadeIn';
-            var $offset     = $this.data('offset') ? $this.data('offset') : 0;
-            var $timeout    = ($lHtml.hasClass('ie9') || $windowW < 992) ? 0 : ($this.data('timeout') ? $this.data('timeout') : 0);
-
-            $this.appear(function() {
-                setTimeout(function(){
-                    $this
-                        .removeClass('visibility-hidden')
-                        .addClass($class);
-                }, $timeout);
-            },{accY: $offset});
-        });
-    };
-
-    /*
-     * jQuery Appear + jQuery countTo, for more examples you can check out https://github.com/bas2k/jquery.appear and https://github.com/mhuggins/jquery-countTo
-     *
-     * App.initHelper('appear-countTo');
-     *
-     */
-    var uiHelperAppearCountTo = function(){
-        // Init counter functionality
-        jQuery('[data-toggle="countTo"]').each(function(){
-            var $this       = jQuery(this);
-            var $after      = $this.data('after');
-            var $before     = $this.data('before');
-            var $speed      = $this.data('speed') ? $this.data('speed') : 1500;
-            var $interval   = $this.data('interval') ? $this.data('interval') : 15;
-
-            $this.appear(function() {
-                $this.countTo({
-                    speed: $speed,
-                    refreshInterval: $interval,
-                    onComplete: function() {
-                        if($after) {
-                            $this.html($this.html() + $after);
-                        } else if ($before) {
-                            $this.html($before + $this.html());
-                        }
-                    }
-                });
-            });
-        });
     };
 
     /*
@@ -876,27 +1074,6 @@ var App = function() {
                 }
             });
         });
-    };
-
-    /*
-     * CKEditor init, for more examples you can check out http://ckeditor.com/
-     *
-     * App.initHelper('ckeditor');
-     *
-     */
-    var uiHelperCkeditor = function(){
-        // Disable auto init when contenteditable property is set to true
-        CKEDITOR.disableAutoInline = true;
-
-        // Init inline text editor
-        if (jQuery('#js-ckeditor-inline').length) {
-            CKEDITOR.inline('js-ckeditor-inline');
-        }
-
-        // Init full text editor
-        if (jQuery('#js-ckeditor').length) {
-            CKEDITOR.replace('js-ckeditor');
-        }
     };
 
     /*
@@ -1005,6 +1182,7 @@ var App = function() {
         jQuery('.js-masked-ssn').mask('999-99-9999');
         jQuery('.js-masked-pkey').mask('a*-999-a999');
         jQuery('.js-masked-time').mask('99:99');
+        jQuery('.js-masked-iban').mask('aa99 9999 9999 9999 9999 9999 9999');
     };
 
     /*
@@ -1057,31 +1235,25 @@ var App = function() {
         jQuery('.js-notify').on('click', function(){
             var $notify         = jQuery(this);
             var $notifyMsg      = $notify.data('notify-message');
-            var $notifyType     = $notify.data('notify-type') ? $notify.data('notify-type') : 'info';
-            var $notifyFrom     = $notify.data('notify-from') ? $notify.data('notify-from') : 'top';
-            var $notifyAlign    = $notify.data('notify-align') ? $notify.data('notify-align') : 'right';
-            var $notifyIcon     = $notify.data('notify-icon') ? $notify.data('notify-icon') : '';
-            var $notifyUrl      = $notify.data('notify-url') ? $notify.data('notify-url') : '';
 
             jQuery.notify({
-                    icon: $notifyIcon,
                     message: $notifyMsg,
-                    url: $notifyUrl
+                    url: ''
                 },
                 {
                     element: 'body',
-                    type: $notifyType,
+                    type: 'danger',
                     allow_dismiss: true,
                     newest_on_top: true,
                     showProgressbar: false,
                     placement: {
-                        from: $notifyFrom,
-                        align: $notifyAlign
+                        from: 'top',
+                        align: 'right'
                     },
-                    offset: 20,
+                    offset: 100,
                     spacing: 10,
                     z_index: 1033,
-                    delay: 5000,
+                    delay: 0,
                     timer: 1000,
                     animate: {
                         enter: 'animated fadeIn',
@@ -1176,23 +1348,6 @@ var App = function() {
     };
 
     /*
-     * Ion Range Slider, for more examples you can check out https://github.com/IonDen/ion.rangeSlider
-     *
-     * App.initHelper('rangeslider');
-     *
-     */
-    var uiHelperRangeslider = function(){
-        // Init Ion Range Slider (with .js-rangeslider class)
-        jQuery('.js-rangeslider').each(function(){
-            var $input = jQuery(this);
-
-            $input.ionRangeSlider({
-                input_values_separator: ';'
-            });
-        });
-    };
-
-    /*
      * SimpleMDE init, for more examples you can check out https://github.com/NextStepWebs/simplemde-markdown-editor
      *
      * App.initHelper('simplemde');
@@ -1207,6 +1362,58 @@ var App = function() {
         });
     };
 
+    /*
+     * Generic form validation init
+     *
+     * App.initHelper('validation');
+     * Requires '.validate' to be added to the form and class '.required' to the form field
+     *
+     */
+    var uiHelperFormValidate = function(){
+        $('form.validate').submit(function(e){
+            var $form = $(this)
+            var valid = true
+            $(this).find('.required').each(function(){
+                var $input = $(this)
+                if ($input.is('input[type=text]') || $input.is('input[type=number]') || $input.is('input[type=email]') || $input.is('textarea') || $input.is('input[type=password]')) {
+                    var attrName = $(this).attr('name');
+                    if (!$input.val() || $input.val() === '') {
+                        if (typeof attrName !== typeof undefined && attrName !== false) {
+                            $input.closest('.form-group').removeClass('has-error').addClass('has-error')
+                            valid = false
+                        }
+                    } else {
+                        $input.closest('.form-group').removeClass('has-error')
+                        valid = true
+                    }
+                }
+                if ($input.is('select')) {
+                    if ($input.val() === '' || $input.val() === '0' || $input.val() === 'Selectionner') {
+                        $input.closest('.form-group').removeClass('has-error').addClass('has-error')
+                        valid = false
+                    } else {
+                        $input.closest('.form-group').removeClass('has-error')
+                        valid = true
+                    }
+                }
+                if (!valid) {
+                    console.log('has errors')
+                    e.preventDefault()
+                    $form.addClass('has-errors')
+                } else {
+                    $form.removeClass('has-errors')
+                }
+            })
+        })
+    };
+
+    var utility = {
+        currencyToInteger: function(currency) {
+            var number = parseFloat(currency.replace(',', '.').replace('€', '').replace(/\s+/g, ''))
+            return number
+        }
+    };
+
     return {
         init: function($func) {
             switch ($func) {
@@ -1219,11 +1426,11 @@ var App = function() {
                 case 'uiNav':
                     uiNav();
                     break;
+                case 'uiNav':
+                    uiQuickSearch();
+                    break;
                 case 'uiBlocks':
                     uiBlocks();
-                    break;
-                case 'uiForms':
-                    uiForms();
                     break;
                 case 'uiHandleTheme':
                     uiHandleTheme();
@@ -1240,18 +1447,22 @@ var App = function() {
                 case 'uiLoader':
                     uiLoader('hide');
                     break;
+                case 'uiAlertCollapse':
+                    uiAlertCollapse();
+                    break;
                 default:
                     // Init all vital functions
                     uiInit();
                     uiLayout();
                     uiNav();
+                    uiQuickSearch();
                     uiBlocks();
-                    uiForms();
                     uiHandleTheme();
                     uiToggleClass();
                     uiScrollTo();
                     uiYearCopy();
                     uiLoader('hide');
+                    uiAlertCollapse();
             }
         },
         layout: function($mode) {
@@ -1272,20 +1483,14 @@ var App = function() {
                     uiHelperTableToolsSections();
                     uiHelperTableToolsCheckable();
                     break;
-                case 'appear':
-                    uiHelperAppear();
-                    break;
-                case 'appear-countTo':
-                    uiHelperAppearCountTo();
+                case 'datatables':
+                    uiHelperDataTables()
                     break;
                 case 'slimscroll':
                     uiHelperSlimscroll();
                     break;
                 case 'magnific-popup':
                     uiHelperMagnific();
-                    break;
-                case 'ckeditor':
-                    uiHelperCkeditor();
                     break;
                 case 'summernote':
                     uiHelperSummernote();
@@ -1323,11 +1528,11 @@ var App = function() {
                 case 'datetimepicker':
                     uiHelperDatetimepicker();
                     break;
-                case 'rangeslider':
-                    uiHelperRangeslider();
-                    break;
                 case 'simplemde':
                     uiHelperSimpleMDE();
+                    break;
+                case 'validation':
+                    uiHelperFormValidate();
                     break;
                 default:
                     return false;
@@ -1341,8 +1546,13 @@ var App = function() {
             } else {
                 App.initHelper($helpers);
             }
-        }
+        },
+        utility: utility
     };
+
+
+
+
 }();
 
 // Create an alias for App (you can use OneUI in your pages instead of App if you like)

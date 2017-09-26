@@ -20,12 +20,12 @@
 <script>
     $(function() {
         $('#receptions-table').DataTable({
-            order: [[0, 'asc']],
+            order: [[0, 'desc']],
             pageLength: <?= $this->nb_lignes ?>,
             bLengthChange: false,
             columnDefs: [
-                {orderable: false, targets: [0, 1, 4]},
-                {searchable: false, targets: 4}
+                {orderable: false, targets: [1, 5]},
+                {searchable: false, targets: 5}
             ],
             language: {
                 url: '<?= $this->lurl ?>/oneui/js/plugins/datatables/localisation/fr_FR.json'
@@ -64,6 +64,10 @@
             }
         })
 
+        $('#receptions-table > thead > tr > th').tooltip({
+            position: { my: 'top', at: 'bottom' }
+        })
+
         $('.inline').tooltip({disabled: true})
         $('.inline').colorbox({inline: true})
     });
@@ -77,6 +81,7 @@
                 <th>Motif</th>
                 <th>Montant</th>
                 <th>Date</th>
+                <th title="Code interbancaire (Cfonb120)">Code</th>
                 <th>&nbsp;</th>
             </tr>
         </thead>
@@ -86,9 +91,10 @@
                 <tr data-reception-id="<?= $reception->getIdReception() ?>" class="reception-line" title="<?= htmlspecialchars(nl2br($reception->getComment()), ENT_QUOTES) ?>">
                     <td><?= $reception->getIdReception() ?></td>
                     <td><?= $reception->getMotif() ?></td>
-                    <td class="text-right" data-order="<?= $reception->getMontant() ?>" data-search="<?= $reception->getMontant() ?>"><?= $this->ficelle->formatNumber($reception->getMontant() / 100) ?> €</td>
-                    <td class="text-center" data-order="<?= $reception->getAdded()->getTimestamp() ?>"><?= $reception->getAdded()->format('d/m/Y') ?></td>
-                    <td class="text-center">
+                    <td class="text-right text-nowrap" data-order="<?= $reception->getMontant() ?>" data-search="<?= $reception->getMontant() ?>"><?= $this->ficelle->formatNumber($reception->getMontant() / 100) ?> €</td>
+                    <td class="text-center text-nowrap" data-order="<?= $reception->getAdded()->getTimestamp() ?>"><?= $reception->getAdded()->format('d/m/Y') ?></td>
+                    <td class="text-center"><?= substr($reception->getLigne(), 32, 2) ?></td>
+                    <td class="text-center text-nowrap">
                         <a class="thickbox ajouter_<?= $reception->getIdReception() ?>" href="<?= $this->lurl ?>/transferts/attribution/<?= $reception->getIdReception() ?>"><img src="<?= $this->surl ?>/images/admin/check.png" alt="Attribuer l'opération"></a>
                         <a class="inline" href="#ignore-line-<?= $reception->getIdReception() ?>"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Ignorer l'opération"></a>
                         <a class="inline" href="#comment-line-<?= $reception->getIdReception() ?>"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Commenter l'opération"></a>

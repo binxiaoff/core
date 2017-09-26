@@ -137,8 +137,8 @@
             <tr>
                 <th>Nom :</th>
                 <td><?= $this->clients->nom ?></td>
-                <th></th>
-                <td></td>
+                <th>Source secondaire :</th>
+                <td><?= $this->clients->source2 ?></td>
             </tr>
             <tr>
                 <th>Email :</th>
@@ -148,7 +148,7 @@
             </tr>
             <tr>
                 <th>Adresse fiscale :</th>
-                <?php if ($this->clients->type == 1) : ?>
+                <?php if (in_array($this->clients->type, [\Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON, \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON_FOREIGNER])) : ?>
                     <td colspan="5"><?= $this->clients_adresses->adresse_fiscal ?> <?= $this->clients_adresses->cp_fiscal ?> <?= $this->clients_adresses->ville_fiscal ?></td>
                 <?php else : ?>
                     <td colspan="5"><?= $this->companies->adresse1 ?> <?= $this->companies->zip ?> <?= $this->companies->city ?></td>

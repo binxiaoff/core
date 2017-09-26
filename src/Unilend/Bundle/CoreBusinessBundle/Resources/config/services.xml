@@ -86,7 +86,8 @@
             <argument type="service" id="unilend.service_product.product_manager"/>
             <argument type="service" id="unilend.service_product_contract.contract_attribute_manager"/>
             <argument type="service" id="unilend.service.slack_manager"/>
-            <argument type="service" id="unilend.service.risk_data_monitoring_manager" />
+            <argument type="service" id="unilend.service.risk_data_monitoring_manager"/>
+            <argument type="service" id="unilend.service.sponsorship_manager"/>
             <argument>%url.universign%</argument>
             <call method="setLogger">
                 <argument type="service" id="logger" on-invalid="null"/>
@@ -131,10 +132,15 @@
         </service>
 
         <service id="unilend.service.welcome_offer_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager">
-            <argument type="service" id="unilend.service.entity_manager"/>
-            <argument type="service" id="unilend.service.email_manager"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.operation_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="number_formatter" />
+            <argument type="service" id="unilend.swiftmailer.message_provider"/>
+            <argument type="service" id="swiftmailer.mailer.default"/>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="assets.packages"/>
+            <argument>%router.request_context.scheme%</argument>
+            <argument>%url.host_default%</argument>
         </service>
 
         <service id="unilend.service.project_request_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager">
@@ -208,7 +214,7 @@
         </service>
 
         <service id="unilend.service.project_status_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager">
-            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="translator"/>
         </service>
 
@@ -324,7 +330,7 @@
         <service id="unilend.service.invoice_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\InvoiceManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="knp_snappy.pdf"/>
-            <argument type="service" id="twig" />
+            <argument type="service" id="twig"/>
             <argument>%path.protected%</argument>
         </service>
 
@@ -336,24 +342,8 @@
         </service>
 
         <service id="unilend.service.lender_operations_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager">
-            <argument type="service" id="doctrine.orm.entity_manager" />
-            <argument type="service" id="translator.default" />
-        </service>
-
-        <service id="unilend.service.project_repayment_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectRepaymentManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
-            <argument type="service" id="unilend.service.entity_manager"/>
-            <argument type="service" id="unilend.service.operation_manager"/>
-            <argument type="service" id="unilend.service.project_manager"/>
-            <argument type="service" id="unilend.service.email_manager"/>
-            <argument type="service" id="unilend.swiftmailer.message_provider"/>
-            <argument type="service" id="mailer"/>
-            <argument type="service" id="number_formatter"/>
-            <argument type="service" id="currency_formatter"/>
-            <argument type="service" id="router"/>
-            <argument type="service" id="logger"/>
-            <argument type="service" id="assets.packages"/>
-            <argument>%router.request_context.scheme%://%url.host_default%</argument>
+            <argument type="service" id="translator.default"/>
         </service>
 
         <service id="unilend.service.ifu_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\IfuManager">
@@ -366,12 +356,45 @@
             <argument type="service" id="unilend.service.ws_client.call_history_handler"/>
         </service>
 
-
         <service id="unilend.service.risk_data_monitoring_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoringManager">
-            <argument type="service" id="doctrine.orm.entity_manager" />
-            <argument type="service" id="unilend.service.ws_client.euler_manager" />
-            <argument type="service" id="monolog.logger.wsclient" />
-            <argument type="service" id="translator" />
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.ws_client.euler_manager"/>
+            <argument type="service" id="monolog.logger.wsclient"/>
+            <argument type="service" id="translator"/>
+        </service>
+
+        <service id="unilend.service.sponsorship_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.operation_manager"/>
+            <argument type="service" id="unilend.service.client_status_manager"/>
+            <argument type="service" id="number_formatter"/>
+            <argument type="service" id="unilend.swiftmailer.message_provider"/>
+            <argument type="service" id="mailer"/>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="router"/>
+            <argument type="service" id="assets.packages"/>
+            <argument>%router.request_context.scheme%</argument>
+            <argument>%url.host_default%</argument>
+        </service>
+
+        <service id="unilend.service.lender_validation_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LenderValidationManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.client_status_manager"/>
+            <argument type="service" id="unilend.service.welcome_offer_manager"/>
+            <argument type="service" id="unilend.service.sponsorship_manager"/>
+            <argument type="service" id="number_formatter"/>
+            <argument type="service" id="unilend.swiftmailer.message_provider"/>
+            <argument type="service" id="mailer"/>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="assets.packages"/>
+            <argument>%router.request_context.scheme%</argument>
+            <argument>%url.host_default%</argument>
+        </service>
+
+        <service id="unilend.service.borrower_operations_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\BorrowerOperationsManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="translator.default"/>
+            <argument type="service" id="logger"/>
         </service>
 
     </services>

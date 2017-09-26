@@ -6,13 +6,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class rootController extends bootstrap
 {
-    public function initialize()
-    {
-        parent::initialize();
-
-        $this->catchAll = true;
-    }
-
     public function _login()
     {
         $this->hideDecoration();

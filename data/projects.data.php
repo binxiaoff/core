@@ -582,7 +582,7 @@ class projects extends projects_crud
                 $result = $statement->fetchAll(PDO::FETCH_COLUMN);
                 $statement->closeCursor();
 
-                if (is_array($result)) {
+                if (is_array($result) && false == empty($result)) {
                     return (float) $result[0];
                 }
             }
@@ -643,7 +643,7 @@ class projects extends projects_crud
             FROM echeanciers e
                 LEFT JOIN wallet w ON w.id = e.id_lender
                 LEFT JOIN clients c ON w.id_client = c.id_client
-                LEFT JOIN companies com ON la.id_company_owner = com.id_company
+                LEFT JOIN companies com ON com.id_client_owner = c.id_client
             WHERE id_project = ' . $iProjectId . $sOrder;
 
         $result                 = $this->bdd->query($sql);

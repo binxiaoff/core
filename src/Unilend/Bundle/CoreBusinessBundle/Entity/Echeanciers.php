@@ -40,6 +40,8 @@ class Echeanciers
     /**
      * @var integer
      *
+     * @deprecated This column will be deleted. Use the summary of Echeanciers::$capital and Echeanciers::$interets instead
+     *
      * @ORM\Column(name="montant", type="integer", nullable=false)
      */
     private $montant;
@@ -103,6 +105,8 @@ class Echeanciers
     /**
      * @var \DateTime
      *
+     * @deprecated This column will be deleted. Use EcheanciersEmprunteur::$dateEcheanceEmprunteur instead
+     *
      * @ORM\Column(name="date_echeance_emprunteur", type="datetime", nullable=false)
      */
     private $dateEcheanceEmprunteur;
@@ -110,12 +114,15 @@ class Echeanciers
     /**
      * @var \DateTime
      *
+     * @deprecated This column will be deleted. Use EcheanciersEmprunteur::$dateEcheanceEmprunteurReel instead
+     *
      * @ORM\Column(name="date_echeance_emprunteur_reel", type="datetime", nullable=false)
      */
     private $dateEcheanceEmprunteurReel;
 
     /**
      * @var integer
+     * @deprecated This column will be deleted. Use EcheanciersEmprunteur::$status instead
      *
      * @ORM\Column(name="status_emprunteur", type="integer", nullable=false)
      */
@@ -228,6 +235,8 @@ class Echeanciers
     /**
      * Set montant
      *
+     * @deprecated This column will be deleted. Use the summary of Echeanciers::$capital and Echeanciers::$interets instead
+     *
      * @param integer $montant
      *
      * @return Echeanciers
@@ -241,6 +250,9 @@ class Echeanciers
 
     /**
      * Get montant
+     *
+     * @deprecated This column will be deleted. Use the summary of Echeanciers::$capital and Echeanciers::$interets instead
+     *
      *
      * @return integer
      */
@@ -444,6 +456,8 @@ class Echeanciers
     /**
      * Set dateEcheanceEmprunteur
      *
+     * @deprecated This column will be deleted. Use EcheanciersEmprunteur::$dateEcheanceEmprunteur instead
+     *
      * @param \DateTime $dateEcheanceEmprunteur
      *
      * @return Echeanciers
@@ -458,6 +472,8 @@ class Echeanciers
     /**
      * Get dateEcheanceEmprunteur
      *
+     * @deprecated This column will be deleted. Use EcheanciersEmprunteur::$dateEcheanceEmprunteur instead
+     *
      * @return \DateTime
      */
     public function getDateEcheanceEmprunteur()
@@ -467,6 +483,8 @@ class Echeanciers
 
     /**
      * Set dateEcheanceEmprunteurReel
+     *
+     * @deprecated This column will be deleted. Use EcheanciersEmprunteur::$dateEcheanceEmprunteurReel instead
      *
      * @param \DateTime $dateEcheanceEmprunteurReel
      *
@@ -482,6 +500,8 @@ class Echeanciers
     /**
      * Get dateEcheanceEmprunteurReel
      *
+     * @deprecated This column will be deleted. Use EcheanciersEmprunteur::$dateEcheanceEmprunteurReel instead
+     *
      * @return \DateTime
      */
     public function getDateEcheanceEmprunteurReel()
@@ -491,6 +511,8 @@ class Echeanciers
 
     /**
      * Set statusEmprunteur
+     *
+     * @deprecated This column will be deleted. Use EcheanciersEmprunteur::$status instead
      *
      * @param integer $statusEmprunteur
      *
@@ -505,6 +527,8 @@ class Echeanciers
 
     /**
      * Get statusEmprunteur
+     *
+     * @deprecated This column will be deleted. Use EcheanciersEmprunteur::$status instead
      *
      * @return integer
      */

@@ -751,7 +751,7 @@
                             <th><label for="status">Statut</label></th>
                             <td id="current_statut">
                                 <input type="hidden" name="current_status" value="<?= $this->projects->status ?>">
-                                <?php if ($this->projects->status <= \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::EN_FUNDING || 0 === count($this->lProjects_status)) : // All statuses should be handled this way, i.e. by only using buttons to transition status ?>
+                                <?php if ($this->projects->status <= \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::EN_FUNDING || 0 === count($this->possibleProjectStatus)) : // All statuses should be handled this way, i.e. by only using buttons to transition status ?>
                                     <!-- Useful for backward compatibility purpose. Should not be useful -->
                                     <input type="hidden" name="status" value="<?= $this->projects->status ?>">
                                     <?= $this->projects_status->label ?>
@@ -765,8 +765,11 @@
                                     <a href="<?= $this->lurl ?>/thickbox/popup_confirmation_send_email/<?= $this->projects->id_project ?>" class="thickbox confirmation_send_email"></a>
                                     <input type="hidden" name="check_confirmation_send_email" id="check_confirmation_send_email" value="0">
                                     <select name="status" id="status" class="select">
-                                        <?php foreach ($this->lProjects_status as $s) : ?>
-                                            <option <?= ($this->projects->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
+                                        <?php if (false === empty($this->currentProjectStatus) && false === in_array($this->currentProjectStatus, $this->possibleProjectStatus)) : ?>
+                                            <option value="<?= $this->currentProjectStatus->getStatus() ?>" selected disabled><?= $this->currentProjectStatus->getLabel() ?></option>
+                                        <?php endif; ?>
+                                        <?php foreach ($this->possibleProjectStatus as $s) : ?>
+                                            <option <?= ($this->projects->status == $s->getStatus() ? 'selected' : '') ?> value="<?= $s->getStatus() ?>"><?= $s->getLabel() ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 <?php endif; ?>
@@ -926,7 +929,7 @@
                                     case \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::COMMERCIAL_REVIEW: ?>
                                         <div style="text-align: right">
                                             <a role="button" data-memo="#postpone-project-memo" data-memo-onsubmit="/dossiers/postpone/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Reporter</a>
-                                            <a role="button" data-memo="#abandon-project-memo"  data-memo-optional data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
+                                            <a role="button" data-memo="#abandon-project-memo" data-memo-optional data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
                                             <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/1/<?= $this->projects->id_project ?>" class="btn btn-small btn-reject btn_link thickbox">Rejeter</a>
                                             <?php if (empty($this->projects->id_product)) : ?>
                                                 <br><br>Pour passer le projet à l'étude risque, vous devez sélectionner un produit.
@@ -938,7 +941,7 @@
                                     case \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::POSTPONED: ?>
                                         <div style="text-align: right">
                                             <a href="<?= $this->lurl ?>/dossiers/postpone/<?= $this->projects->id_project ?>/resume" class="btn btn-small btnDisabled btn_link">Reprendre</a>
-                                            <a role="button" data-memo="#abandon-project-memo"  data-memo-optional data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
+                                            <a role="button" data-memo="#abandon-project-memo" data-memo-optional data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
                                             <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/1/<?= $this->projects->id_project ?>" class="btn btn-small btn-reject btn_link thickbox">Rejeter</a>
                                             <?php if (empty($this->projects->id_product)) : ?>
                                                 <br><br>Pour passer le projet à l'étude risque, vous devez sélectionner un produit.
@@ -950,18 +953,19 @@
                                     case \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::ANALYSIS_REVIEW:
                                     case \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::COMITY_REVIEW: ?>
                                         <div style="text-align: right">
-                                            <a role="button" data-memo="#abandon-project-memo"  data-memo-optional data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
+                                            <a role="button" data-memo="#abandon-project-memo" data-memo-optional data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
                                         </div>
                                         <?php break;
                                     case \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::SUSPENSIVE_CONDITIONS: ?>
                                         <div style="text-align: right">
                                             <a href="<?= $this->lurl ?>/dossiers/reject_suspensive_conditions/<?= $this->projects->id_project ?>" class="btn btn-small btn-reject btn_link">Rejeter</a>
+                                            <a role="button" data-memo="#abandon-project-memo" data-memo-optional data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
                                             <a href="<?= $this->lurl ?>/dossiers/remove_suspensive_conditions/<?= $this->projects->id_project ?>" class="btn btn-small btn_link">Lever les conditions suspensives</a>
                                         </div>
                                         <?php break;
                                     case \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::PREP_FUNDING: ?>
                                         <div style="text-align: right">
-                                            <a role="button" data-memo="#abandon-project-memo"  data-memo-optional data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
+                                            <a role="button" data-memo="#abandon-project-memo" data-memo-optional data-memo-onsubmit="/dossiers/abandon/<?= $this->projects->id_project ?>" data-memo-project-id="<?= $this->projects->id_project ?>" class="btn btn-small btnDisabled btn_link">Abandonner</a>
                                             <?php if (empty($blockingPublishingError)) : ?>
                                                 <a href="<?= $this->lurl ?>/dossiers/publish/<?= $this->projects->id_project ?>" class="btn btn-small btn_link thickbox">Programmer la mise en ligne</a>
                                             <?php endif; ?>

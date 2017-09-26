@@ -12,6 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ProjectsPouvoir implements UniversignEntityInterface
 {
+    const DOCUMENT_TYPE = 'pouvoir';
+
     const STATUS_REPAYMENT_PENDING   = 0;
     const STATUS_REPAYMENT_VALIDATED = 1;
 

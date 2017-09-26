@@ -10,11 +10,7 @@ class usersController extends bootstrap
     {
         parent::initialize();
 
-        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
-
-        $this->catchAll   = true;
-        $this->menu_admin = 'admin';
-
+        $this->menu_admin        = 'admin';
         $this->users_zones       = $this->loadData('users_zones');
         $this->users_types       = $this->loadData('users_types');
         $this->users_types_zones = $this->loadData('users_types_zones');
@@ -22,6 +18,8 @@ class usersController extends bootstrap
 
     public function _default()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
+
         if (isset($_POST['form_add_users'])) {
             if (false === isset($_POST['email'])) {
                 $_SESSION['freeow']['title']   = 'Ajout d\'un utilisateur';
@@ -116,6 +114,8 @@ class usersController extends bootstrap
 
     public function _edit()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
+
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
@@ -125,6 +125,8 @@ class usersController extends bootstrap
 
     public function _edit_perso()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
+
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
@@ -133,6 +135,8 @@ class usersController extends bootstrap
 
     public function _add()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
+
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
@@ -141,27 +145,28 @@ class usersController extends bootstrap
 
     public function _edit_password()
     {
-        $_SESSION['request_url'] = $this->url;
+        $this->users->checkAccess();
 
-        if (isset($_POST['form_edit_pass_user']) && isset($_SESSION['user']['id_user']) && $this->users->get($_SESSION['user']['id_user'])) {
+        $template = [];
+
+        if (isset($_POST['form_edit_pass_user'], $_SESSION['user']['id_user']) && $this->users->get($_SESSION['user']['id_user'])) {
             /** @var \previous_passwords $previousPasswords */
             $previousPasswords = $this->loadData('previous_passwords');
 
-            $this->retour_pass = '';
-            if ($_POST['old_pass'] == '' || $_POST['new_pass'] == '' || $_POST['new_pass2'] == '') {
-                $this->retour_pass = "Tous les champs sont obligatoires";
+            if (empty($_POST['old_pass']) || empty($_POST['new_pass']) || empty($_POST['new_pass2'])) {
+                $template['error'] = "Tous les champs sont obligatoires";
             } elseif ($this->users->password != md5($_POST['old_pass']) && $this->users->password != password_verify($_POST['old_pass'], $this->users->password)) {
-                $this->retour_pass = "L'ancien mot de passe ne correspond pas";
+                $template['error'] = "L'ancien mot de passe ne correspond pas";
             } elseif (false === $this->users->checkPasswordStrength($_POST['new_pass'])) {
-                $this->retour_pass = "Le mot de passe doit contenir au moins 10 caractères, ainsi qu'au moins 1 chiffre et 1 caractère spécial";
+                $template['error'] = "Le mot de passe doit contenir au moins 10 caractères, ainsi qu'au moins 1 chiffre et 1 caractère spécial";
             } elseif ($_POST['new_pass'] != $_POST['new_pass2']) {
-                $this->retour_pass = "La confirmation du nouveau de passe doit être la même que votre nouveau mot de passe";
+                $template['error'] = "La confirmation du nouveau de passe doit être la même que votre nouveau mot de passe";
             } elseif (false === $previousPasswords->isValidPassword($_POST['new_pass'], $this->users->id_user)) {
-                $this->retour_pass = "Ce mot de passe a déja été utilisé";
+                $template['error'] = "Ce mot de passe a déja été utilisé";
             } else {
                 $oldPassword                  = $this->users->password;
                 $this->users->password        = password_hash($_POST['new_pass'], PASSWORD_DEFAULT);
-                $this->users->password_edited = date("Y-m-d H:i:s");
+                $this->users->password_edited = date('Y-m-d H:i:s');
                 $this->users->update();
 
                 $_SESSION['user']['password']        = $this->users->password;
@@ -173,21 +178,25 @@ class usersController extends bootstrap
 
                 $previousPasswords->id_user  = $this->users->id_user;
                 $previousPasswords->password = $oldPassword;
-                $previousPasswords->archived = date("Y-m-d H:i:s");
+                $previousPasswords->archived = date('Y-m-d H:i:s');
                 $previousPasswords->create();
                 $previousPasswords->deleteOldPasswords($this->users->id_user);
 
-                $_SESSION['freeow']['title']   = 'Modification de votre mot de passe';
-                $_SESSION['freeow']['message'] = 'Votre mot de passe a bien &eacute;t&eacute; modifi&eacute; !';
+                $_SESSION['notification']['title']   = 'Modification de votre mot de passe';
+                $_SESSION['notification']['message'] = 'Votre mot de passe a bien été modifié';
 
                 header('Location: ' . $this->lurl);
                 die;
             }
         }
+
+        $this->render(null, $template);
     }
 
     public function _logs()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
+
         /** @var EntityManager $entityManager */
         $entityManager   = $this->get('doctrine.orm.entity_manager');
         $this->loginLogs = $entityManager->getRepository('UnilendCoreBusinessBundle:LoginConnectionAdmin')->findBy([], ['added' => 'DESC'], 500);
@@ -195,6 +204,8 @@ class usersController extends bootstrap
 
     public function _generate_new_password()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
+
         if (isset($this->params[0]) && $this->users->get($this->params[0], 'id_user')) {
             $newPassword = $this->ficelle->generatePassword(10);
             $this->users->changePassword($newPassword, $this->users, true);

@@ -3,6 +3,8 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 
 class PrelevementsRepository extends EntityRepository
 {
@@ -60,5 +62,15 @@ class PrelevementsRepository extends EntityRepository
         }
 
         return $sums;
+    }
+
+    public function terminatePendingDirectDebits($project)
+    {
+        if ($project instanceof Projects) {
+            $project = $project->getIdProject();
+        }
+        $update = 'UPDATE prelevements SET status = :finished, updated = NOW() WHERE id_project = :project AND status = :pending';
+
+        return $this->getEntityManager()->getConnection()->executeUpdate($update, ['project' => $project, 'finished' => Prelevements::STATUS_TERMINATED, 'pending' => Prelevements::STATUS_PENDING]);
     }
 }

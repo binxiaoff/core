@@ -4,14 +4,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class mailsController extends bootstrap
 {
-
-    public function initialize()
-    {
-        parent::initialize();
-
-        $this->catchAll = true;
-    }
-
     public function _default()
     {
         $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);

@@ -13,6 +13,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class WireTransferOutUniversign implements UniversignEntityInterface
 {
+    const DOCUMENT_TYPE = 'virement-emprunteurs';
+
     /**
      * @var string
      *
