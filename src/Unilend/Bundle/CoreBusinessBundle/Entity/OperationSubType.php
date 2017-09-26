@@ -24,6 +24,13 @@ class OperationSubType
     const BORROWER_COMMISSION_FUNDS_REGULARIZATION                = 'borrower_commission_funds_regularization';
     const BORROWER_COMMISSION_REPAYMENT_REGULARIZATION            = 'borrower_commission_repayment_regularization';
 
+    const UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER                     = 'unilend_promotional_operation_welcome_offer';
+    const UNILEND_PROMOTIONAL_OPERATION_CANCEL_WELCOME_OFFER              = 'unilend_promotional_operation_cancel_welcome_offer';
+    const UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR        = 'unilend_promotional_operation_sponsorship_reward_sponsor';
+    const UNILEND_PROMOTIONAL_OPERATION_CANCEL_SPONSORSHIP_REWARD_SPONSOR = 'unilend_promotional_operation_cancel_sponsorship_reward_sponsor';
+    const UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSEE        = 'unilend_promotional_operation_sponsorship_reward_sponsee';
+    const UNILEND_PROMOTIONAL_OPERATION_CANCEL_SPONSORSHIP_REWARD_SPONSEE = 'unilend_promotional_operation_cancel_sponsorship_reward_sponsee';
+
     /**
      * @var string
      *

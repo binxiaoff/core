@@ -887,7 +887,7 @@
                             <th><label for="status">Statut</label></th>
                             <td id="current_statut">
                                 <input type="hidden" name="current_status" value="<?= $this->projects->status ?>">
-                                <?php if ($this->projects->status <= \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::EN_FUNDING || 0 === count($this->lProjects_status)) : // All statuses should be handled this way, i.e. by only using buttons to transition status ?>
+                                <?php if ($this->projects->status <= \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::EN_FUNDING || 0 === count($this->possibleProjectStatus)) : // All statuses should be handled this way, i.e. by only using buttons to transition status ?>
                                     <!-- Useful for backward compatibility purpose. Should not be useful -->
                                     <input type="hidden" name="status" value="<?= $this->projects->status ?>">
                                     <?= $this->projects_status->label ?>
@@ -901,8 +901,11 @@
                                     <a href="<?= $this->lurl ?>/thickbox/popup_confirmation_send_email/<?= $this->projects->id_project ?>" class="thickbox confirmation_send_email"></a>
                                     <input type="hidden" name="check_confirmation_send_email" id="check_confirmation_send_email" value="0">
                                     <select name="status" id="status" class="select">
-                                        <?php foreach ($this->lProjects_status as $s) : ?>
-                                            <option <?= ($this->projects->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
+                                        <?php if (false === empty($this->currentProjectStatus) && false === in_array($this->currentProjectStatus, $this->possibleProjectStatus)) : ?>
+                                            <option value="<?= $this->currentProjectStatus->getStatus() ?>" selected disabled><?= $this->currentProjectStatus->getLabel() ?></option>
+                                        <?php endif; ?>
+                                        <?php foreach ($this->possibleProjectStatus as $s) : ?>
+                                            <option <?= ($this->projects->status == $s->getStatus() ? 'selected' : '') ?> value="<?= $s->getStatus() ?>"><?= $s->getLabel() ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 <?php endif; ?>

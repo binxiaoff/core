@@ -8,7 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
  * OffresBienvenuesDetails
  *
  * @ORM\Table(name="offres_bienvenues_details", indexes={@ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_offre_bienvenue", columns={"id_offre_bienvenue"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\OffresBienvenuesDetailsRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class OffresBienvenuesDetails
 {
@@ -28,13 +29,6 @@ class OffresBienvenuesDetails
     private $idOffreBienvenue;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="motif", type="string", length=191, nullable=false)
-     */
-    private $motif;
-
-    /**
      * @var integer
      *
      * @ORM\Column(name="id_client", type="integer", nullable=false)
@@ -44,14 +38,14 @@ class OffresBienvenuesDetails
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_bid", type="integer", nullable=false)
+     * @ORM\Column(name="id_bid", type="integer", nullable=true)
      */
     private $idBid;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_bid_remb", type="integer", nullable=false)
+     * @ORM\Column(name="id_bid_remb", type="integer", nullable=true)
      */
     private $idBidRemb;
 
@@ -86,7 +80,7 @@ class OffresBienvenuesDetails
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -126,30 +120,6 @@ class OffresBienvenuesDetails
     }
 
     /**
-     * Set motif
-     *
-     * @param string $motif
-     *
-     * @return OffresBienvenuesDetails
-     */
-    public function setMotif($motif)
-    {
-        $this->motif = $motif;
-
-        return $this;
-    }
-
-    /**
-     * Get motif
-     *
-     * @return string
-     */
-    public function getMotif()
-    {
-        return $this->motif;
-    }
-
-    /**
      * Set idClient
      *
      * @param integer $idClient
@@ -180,7 +150,7 @@ class OffresBienvenuesDetails
      *
      * @return OffresBienvenuesDetails
      */
-    public function setIdBid($idBid)
+    public function setIdBid($idBid = null)
     {
         $this->idBid = $idBid;
 
@@ -190,7 +160,7 @@ class OffresBienvenuesDetails
     /**
      * Get idBid
      *
-     * @return integer
+     * @return integer|null
      */
     public function getIdBid()
     {
@@ -204,7 +174,7 @@ class OffresBienvenuesDetails
      *
      * @return OffresBienvenuesDetails
      */
-    public function setIdBidRemb($idBidRemb)
+    public function setIdBidRemb($idBidRemb = null)
     {
         $this->idBidRemb = $idBidRemb;
 
@@ -214,7 +184,7 @@ class OffresBienvenuesDetails
     /**
      * Get idBidRemb
      *
-     * @return integer
+     * @return integer|null
      */
     public function getIdBidRemb()
     {
@@ -324,7 +294,7 @@ class OffresBienvenuesDetails
      *
      * @return OffresBienvenuesDetails
      */
-    public function setUpdated($updated)
+    public function setUpdated($updated = null)
     {
         $this->updated = $updated;
 
@@ -349,5 +319,23 @@ class OffresBienvenuesDetails
     public function getIdOffreBienvenueDetail()
     {
         return $this->idOffreBienvenueDetail;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

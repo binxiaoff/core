@@ -62,8 +62,12 @@ class LenderOperationsManager
         OperationType::LENDER_PROVISION_CANCEL,
         OperationType::LENDER_TRANSFER,
         OperationType::LENDER_WITHDRAW,
-        OperationType::UNILEND_PROMOTIONAL_OPERATION,
-        OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL,
+        OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR,
+        OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_SPONSORSHIP_REWARD_SPONSOR,
+        OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSEE,
+        OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_SPONSORSHIP_REWARD_SPONSEE,
+        OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER,
+        OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_WELCOME_OFFER,
         OperationType::UNILEND_LENDER_REGULARIZATION,
         self::OP_REPAYMENT,
         self::OP_EARLY_REPAYMENT,
@@ -128,19 +132,18 @@ class LenderOperationsManager
         $previousHistoryLineIndex       = null;
 
         foreach ($walletHistory as $index => $historyLine) {
-            if (in_array(self::OP_REPAYMENT, $operations) && false === empty($historyLine['id_repayment_schedule'])) {
-                if (false == in_array($historyLine['label'], [OperationType::CAPITAL_REPAYMENT_REGULARIZATION, OperationType::CAPITAL_REPAYMENT])) {
-                    continue;
-                } else {
-                    $regularization = false;
-                    $type           = self::OP_REPAYMENT;
-                    if (OperationType::CAPITAL_REPAYMENT_REGULARIZATION == $historyLine['label']) {
-                        $regularization = true;
-                        $type           = self::OP_REPAYMENT_REGULARIZATION;
-                    }
-                    $repaymentDetails = $operationRepository->getDetailByRepaymentScheduleAndRepaymentLog($historyLine['id_repayment_schedule'], $historyLine['id_repayment_task_log'], $regularization);
-                    $historyLine      = $this->formatRepaymentOperation($wallet, $repaymentDetails, $historyLine, $type);
+            if (
+                in_array(self::OP_REPAYMENT, $operations)
+                && false === empty($historyLine['id_repayment_task_log'])
+                && $historyLine['id'] !== $historyLine['id_repayment_task_log']
+            ) {
+                $type = self::OP_REPAYMENT;
+
+                if (false !== strpos($historyLine['label'], '_regularization')) {
+                    $type = self::OP_REPAYMENT_REGULARIZATION;
                 }
+                $repaymentDetails = $operationRepository->getDetailByLoanAndRepaymentLog($historyLine['id_loan'], $wallet->getId(), $historyLine['id_repayment_task_log']);
+                $historyLine      = $this->formatRepaymentOperation($wallet, $repaymentDetails, $historyLine, $type);
             }
 
             if (OperationSubType::CAPITAL_REPAYMENT_EARLY === $historyLine['sub_type_label']) {
@@ -153,6 +156,10 @@ class LenderOperationsManager
 
             if (OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION_REGULARIZATION === $historyLine['sub_type_label']) {
                 $historyLine['label'] = self::OP_RECOVERY_REPAYMENT_REGULARIZATION;
+            }
+
+            if (in_array($historyLine['label'], [OperationType::UNILEND_PROMOTIONAL_OPERATION, OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL])) {
+                $historyLine['label'] = $historyLine['sub_type_label'];
             }
 
             if (self::OP_REFUSED_BID === $historyLine['label']) {
@@ -230,7 +237,7 @@ class LenderOperationsManager
             if ($repaymentDetail['taxes']) {
                 $taxLabel = $this->translator->trans('lender-operations_tax-and-social-deductions-label');
                 if ($wallet->getIdClient()->isNaturalPerson()) {
-                    if ($taxExemptionRepository->isLenderExemptedInYear($wallet, substr($historyLine['date'], 0, 4))) {
+                    if ($taxExemptionRepository->isLenderExemptedInYear($wallet, substr($historyLine['operationDate'], 0, 4))) {
                         $taxLabel = $this->translator->trans('lender-operations_social-deductions-label');
                     }
                 } else {
@@ -358,7 +365,7 @@ class LenderOperationsManager
             $this->addConditionalStyleToCell($activeSheet, 5, $row);
 
             if (self::OP_REPAYMENT === $operation['label']) {
-                $details = $operationRepository->findBy(['idRepaymentSchedule' => $operation['id_repayment_schedule']]);
+                $details = $operationRepository->findBy(['idRepaymentTaskLog' => $operation['id_repayment_task_log']]);
                 /** @var Operation $operationDetail */
                 foreach ($details as $operationDetail) {
                     if (in_array($operationDetail->getType()->getLabel(), OperationType::TAX_TYPES_FR)) {
@@ -384,7 +391,7 @@ class LenderOperationsManager
             }
 
             if (self::OP_REPAYMENT_REGULARIZATION === $operation['label']) {
-                $details = $operationRepository->findBy(['idRepaymentSchedule' => $operation['id_repayment_schedule']]);
+                $details = $operationRepository->findBy(['idRepaymentSchedule' => $operation['id_repayment_task_log']]);
                 /** @var Operation $operationDetail */
                 foreach ($details as $operationDetail) {
                     switch ($operationDetail->getType()->getLabel()) {

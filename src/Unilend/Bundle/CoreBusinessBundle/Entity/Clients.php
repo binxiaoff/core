@@ -32,6 +32,11 @@ class Clients
     const TITLE_MISTER    = 'M.';
     const TITLE_UNDEFINED = '';
 
+    /** Legacy welcome offer before separating them and adding types  */
+    const ORIGIN_WELCOME_OFFER      = 1;
+    const ORIGIN_WELCOME_OFFER_HOME = 2;
+    const ORIGIN_WELCOME_OFFER_LP   = 3;
+
     /**
      * @var string
      *
@@ -306,6 +311,12 @@ class Clients
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet", mappedBy="idClient")
      */
     private $wallets;
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="sponsor_code", type="string", nullable=true)
+     */
+    private $sponsorCode;
 
     /**
      * Clients constructor.
@@ -1338,5 +1349,36 @@ class Clients
     public function isNaturalPerson()
     {
         return in_array($this->type, [self::TYPE_PERSON, self::TYPE_PERSON_FOREIGNER]);
+    }
+
+    /**
+     * @return string
+     */
+    public function getSponsorCode()
+    {
+        return $this->sponsorCode;
+    }
+
+    /**
+     * @param string $sponsorCode
+     *
+     * @return Clients
+     */
+    public function setSponsorCode($sponsorCode = null)
+    {
+        $this->sponsorCode = $sponsorCode;
+
+        return $this;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setSponsorCodeValue()
+    {
+        if (is_null($this->hash)) {
+            $this->setHashValue();
+        }
+        $this->sponsorCode = substr($this->hash, 0, 6) . $this->nom;
     }
 }
