@@ -121,7 +121,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
                 LEFT JOIN projects p ON IF(o.id_project IS NULL, wbh.id_project, o.id_project) = p.id_project
             WHERE wbh.id_wallet = :idWallet
             AND wbh.added BETWEEN :startDate AND :endDate
-            GROUP BY order_by_id
+            GROUP BY id_loan, order_by_id
             ORDER BY wbh.id DESC';
 
         $qcProfile = new QueryCacheProfile(CacheKeys::LONG_TIME, md5(__METHOD__ . $wallet->getId()));
