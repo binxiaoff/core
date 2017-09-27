@@ -925,7 +925,7 @@ var App = function() {
         // Currency sorting
         $.extend($DataTable.ext.oSort, {
             'formatted-num-pre': function (a) {
-                a = (a === '-' || a === '') ? 0 : a.replace(/[^\d\-\.]/g, '')
+                a = (a === '-' || a === '') ? 0 : a.replace(',', '.').replace(/[^\d\-\.]/g, '')
                 return parseFloat(a)
             },
             'formatted-num-asc': function (a, b) {
@@ -940,13 +940,11 @@ var App = function() {
             var page_info = this.table().page.info()
             var new_row_index = this.index()
             var row_position = this.table().rows()[0].indexOf(new_row_index)
-            console.log('new index' + new_row_index)
             if(row_position >= page_info.start && row_position < page_info.end) {
                 return this
             }
             var page_to_display = Math.floor(row_position / this.table().page.len())
             this.table().page(page_to_display).draw(false)
-            console.log('page index' + page_to_display)
             return this
         })
 
@@ -1068,7 +1066,7 @@ var App = function() {
                 html += '<a class="btn btn-xs btn-default delete-btn" title="Supprimer"><i class="fa fa-times"></i></a>'
             if (~(self.actions.indexOf('toggle')) && state !== null) {
                 var btn = (state === 'inactive') ? 'activate-btn' : 'deactivate-btn'
-                var tooltip = (state === 'inactive') ? 'Activer' : 'Dèsactiver'
+                var tooltip = (state === 'inactive') ? 'Activer' : 'Désactiver'
                 var icon = (state === 'inactive') ? 'off' : 'on'
                 html += '<a class="btn btn-xs btn-default ' + btn + '" title="' + tooltip + '"><i class="fa fa-toggle-' + icon + '"></i></a>'
             }
@@ -1180,12 +1178,18 @@ var App = function() {
             var self = this
             var html = '<div class="modal fade" id="modal-editor-' + self.randomModalId + '" tabindex="-1" role="dialog" aria-hidden="true">' +
                 '<form class="modal-dialog validate" action="' + self.submitUrl + '" method="post" enctype="multipart/form-data">' +
-                '<div class="modal-content"><div class="block block-bordered remove-margin-b">' +
-                '<div class="block-header"><h3 class="block-title"></h3></div>' +
-                '<div class="block-content">' + self.form() + '</div></div>' +
-                '<div class="modal-footer">' +
-                '<button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>' +
-                '<button class="btn btn-sm btn-primary" type="submit">Valider</button></div></div></form></div>'
+                    '<div class="modal-content">' +
+                        '<div class="block block-bordered remove-margin-b">' +
+                            '<div class="block-header"><h3 class="block-title"></h3></div>' +
+                            '<div class="block-content">' + self.form() + '</div>' +
+                        '</div>' +
+                        '<div class="modal-footer">' +
+                            '<button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>' +
+                            '<button class="btn btn-sm btn-primary" type="submit">Valider</button>' +
+                        '</div>' +
+                    '</div>' +
+                '</form>' +
+            '</div>'
             return(html)
         }
         DT.prototype.getCellValues = function(id) {
@@ -1222,8 +1226,8 @@ var App = function() {
                 hiddenAction = 'activate'
             }
             if (type === 'deactivate') {
-                title = 'Dèsactiver'
-                content =  '<p>Êtes-vous sûr de vouloir dèsactiver l\'élément ?</p>'
+                title = 'Désactiver'
+                content =  '<p>Êtes-vous sûr de vouloir désactiver l\'élément ?</p>'
                 content += '<input type="hidden" name="id">'
                 content += '<input type="hidden" name="action">'
                 hiddenAction = 'deactivate'
@@ -1235,8 +1239,8 @@ var App = function() {
                 hiddenAction = 'modify'
             }
             if (type === 'delete') {
-                title = 'Sipprimer'
-                content = '<p>Êtes-vous sûr de vouloir supprimer  l\'élément ?</p>'
+                title = 'Supprimer'
+                content = '<p>Êtes-vous sûr de vouloir supprimer l\'élément ?</p>'
                 content += '<input type="hidden" name="id">'
                 content += '<input type="hidden" name="action">'
                 hiddenAction = 'delete'
