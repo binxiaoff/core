@@ -226,6 +226,7 @@ abstract class Controller implements ContainerAwareInterface
             'debug'      => 'prod' !== $this->get('kernel')->getEnvironment()
         ]);
         $this->twigEnvironment->addExtension(new Twig_Extension_Debug());
+        $this->twigEnvironment->addExtension(new Twig_Extensions_Extension_Intl());
     }
 
     protected function loadData($object, $params = [])
@@ -301,5 +302,18 @@ abstract class Controller implements ContainerAwareInterface
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
+    }
+
+    /**
+     * @param            $success
+     * @param array|null $data
+     * @param array|null $errors
+     */
+    protected function sendAjaxResponse($success, array $data = null, array $errors = null)
+    {
+        $result = ['success' => $success, 'data' => $data, 'error' => $errors];
+        header('Content-Type: application/json');
+        echo json_encode($result);
+        die;
     }
 }

@@ -372,7 +372,8 @@ class UniversignManager
 
                         foreach ($documentResult->value() as $signedDocument) {
                             if (
-                                isset($signedDocument['metaData'])
+                                isset($signedDocument['content'], $signedDocument['metaData'])
+                                && $signedDocument['content'] instanceof Value
                                 && $signedDocument['metaData'] instanceof Value
                                 && isset($signedDocument['metaData']->scalarVal()['docType'])
                                 && $signedDocument['metaData']->scalarVal()['docType'] instanceof Value
@@ -380,14 +381,10 @@ class UniversignManager
                                 && $documentType === $signedDocument['metaData']->scalarVal()['docType']->scalarVal()
                                 && $document->getId() === $signedDocument['metaData']->scalarVal()['docId']->scalarVal()
                             ) {
-                                $resultValue     = $documentResult->value()[0];
-                                $documentContent = $resultValue['content']->scalarVal();
-
-                                file_put_contents($this->getDocumentFullPath($document), $documentContent);
+                                file_put_contents($this->getDocumentFullPath($document), $signedDocument['content']->scalarVal());
                                 $document->setStatus(UniversignEntityInterface::STATUS_SIGNED);
                                 break;
                             }
-
                         }
                     }
                     break;

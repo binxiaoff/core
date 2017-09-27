@@ -696,6 +696,24 @@ var App = function() {
         return false;
     };
 
+    // Collapse details of alerts
+    var uiAlertCollapse = function() {
+        $alert = jQuery('.alert')
+        $alert.each(function(){
+            if ($(this).find('ul.hide').length) {
+                $(this).addClass('alert-collapse').append('<button></button>').find('ul.hide').removeClass('hide')
+                $(this).find('button').click(function(){
+                    var $alert = $(this).closest('.alert')
+                    var $target = $alert.find('ul')
+                    if ($target.is(':visible'))
+                        $target.slideUp(150)
+                    else
+                        $target.slideDown(150)
+                })
+            }
+        })
+    };
+
 
     /*
      ********************************************************************************************
@@ -809,50 +827,41 @@ var App = function() {
                         api.page(e.data.action).draw(false)
                     }
                 }
-
                 for (i = 0, ien = buttons.length; i < ien; i++) {
                     button = buttons[i]
-
                     if ($.isArray(button)) {
                         attach(container, button)
                     }
                     else {
                         btnDisplay = ''
                         btnClass = ''
-
                         switch (button) {
                             case 'ellipsis':
                                 btnDisplay = '&hellip'
                                 btnClass = 'disabled'
                                 break
-
                             case 'first':
                                 btnDisplay = lang.sFirst
                                 btnClass = button + (page > 0 ? '' : ' disabled')
                                 break
-
                             case 'previous':
                                 btnDisplay = lang.sPrevious
                                 btnClass = button + (page > 0 ? '' : ' disabled')
                                 break
-
                             case 'next':
                                 btnDisplay = lang.sNext
                                 btnClass = button + (page < pages - 1 ? '' : ' disabled')
                                 break
-
                             case 'last':
                                 btnDisplay = lang.sLast
                                 btnClass = button + (page < pages - 1 ? '' : ' disabled')
                                 break
-
                             default:
                                 btnDisplay = button + 1
                                 btnClass = page === button ?
                                     'active' : ''
                                 break
                         }
-
                         if (btnDisplay) {
                             node = jQuery('<li>', {
                                 'class': classes.sPageButton + ' ' + btnClass,
@@ -876,7 +885,6 @@ var App = function() {
                     }
                 }
             }
-
             attach(
                 jQuery(host).empty().html('<ul class="pagination"/>').children('ul'),
                 buttons
@@ -914,24 +922,499 @@ var App = function() {
                 }
             })
         }
-
-        // Simple
-        $('.js-dataTable-simple').dataTable({
-            pageLength: 5,
-            lengthMenu: [[5, 10], [15, 20]],
-            searching: false,
-            dom:
-            "<'row'<'col-sm-12'tr>>" +
-            "<'row'<'col-sm-6'i><'col-sm-6'p>>"
+        // Currency sorting
+        $.extend($DataTable.ext.oSort, {
+            'formatted-num-pre': function (a) {
+                a = (a === '-' || a === '') ? 0 : a.replace(',', '.').replace(/[^\d\-\.]/g, '')
+                return parseFloat(a)
+            },
+            'formatted-num-asc': function (a, b) {
+                return a - b
+            },
+            'formatted-num-desc': function (a, b) {
+                return b - a
+            }
+        })
+        // Show page of row
+        $DataTable.Api.register('row().show()', function() {
+            var page_info = this.table().page.info()
+            var new_row_index = this.index()
+            var row_position = this.table().rows()[0].indexOf(new_row_index)
+            if(row_position >= page_info.start && row_position < page_info.end) {
+                return this
+            }
+            var page_to_display = Math.floor(row_position / this.table().page.len())
+            this.table().page(page_to_display).draw(false)
+            return this
         })
 
-        // Advanced
-        $('.js-dataTable-advanced').dataTable({
-            columnDefs: [ { orderable: false } ],
-            pageLength: 4,
-            lengthMenu: [[5, 10], [5, 10]]
+        // Constructor
+        function DT(elem, options) {
+            var self = this
+            self.$elem = $(elem)
+            self.options = options
+
+            if (self.$elem[0].DT)
+                return false
+
+            // PLUGIN SETTINGS
+            // Unsortable actions column
+            var unsortableColumns = {}
+            self.actions = self.$elem.data('table-actions')
+            if (typeof self.actions !== 'undefined' && self.actions !== false) {
+                unsortableColumns = {targets: [self.$elem.find('thead td:last-child').index()], orderable: false}
+            } else {
+                self.actions = self.$elem.data('table-editor-actions')
+                if (typeof self.actions !== 'undefined' && self.actions !== false) {
+                    self.$elem.find('thead tr').append('<th data-table-actionscolumn>Actions</th>')
+                    self.$elem.find('tbody tr').each(function () {
+                        var $tr = $(this)
+                        var state = null
+                        if (~(self.actions.indexOf('toggle'))) {
+                            state = $tr.data('state')
+                            if (typeof state === 'undefined') {
+                                console.log('Missing data-state attr on each row')
+                                return false
+                            }
+                        }
+                        $tr.append('<td>' + self.buttons(state) + '</td>')
+                    })
+                    unsortableColumns = {targets: [self.$elem.find('thead td:last-child').index()], orderable: false}
+                }
+            }
+            // Sortable currency columns
+            var currencyColumns = {}
+            var $tdEuro = self.$elem.find('td:contains(€)')
+            if ($tdEuro.length) {
+                var $trEuro = $tdEuro.first().parent()
+                var indexes = []
+                $trEuro.find('td:contains(€)').each(function(){
+                    indexes.push($(this).index())
+                })
+                currencyColumns = {targets: indexes, type: 'formatted-num'}
+            }
+            // Rows per page
+            var pageLength = self.$elem.data('table-pagelength')
+            if (typeof pageLength === 'undefined')
+                pageLength = 10
+            // Dynamic control (per page)
+            var lengthChange = self.$elem.data('table-lengthchange')
+            if (typeof pageLength === 'undefined')
+                lengthChange = false
+            // Search
+            var search = self.$elem.data('table-search')
+            if (typeof search === 'undefined') {
+                search = false
+            }
+
+            // BEFORE CALLBACK
+            if (typeof options !== 'undefined') {
+                if (options.before)
+                    options.before()
+            }
+
+            // PLUGIN INIT
+            self.$elem[0].DT = self
+            self.dtInstance = self.$elem.DataTable({
+                lengthChange: lengthChange,
+                pageLength: pageLength,
+                columnDefs: [unsortableColumns, currencyColumns],
+                searching: search
+            })
+
+            // Stop here if this is not an editable datatable (Editor)
+            var editor = self.$elem.data('table-editor')
+            if (typeof editor === 'undefined' || editor === false) {
+                return false
+            }
+
+            // EDITOR
+            // Vars
+            self.submitUrl = self.$elem.data('table-editor-url')
+            self.randomModalId = Math.floor((Math.random() * 10) + 1)
+            self.delay = 900
+            // Append to wrapper
+            self.$wrapper = self.$elem.closest('.dataTables_wrapper')
+            if (~(self.actions.indexOf('add')) || ~(self.actions.indexOf('create'))) {
+                self.$wrapper.find('.col-sm-6:eq(0)').append('<a role="button" class="btn btn-default add-btn"><span class="fa fa-plus"></span> Ajouter</a>')
+            }
+            self.$wrapper.prepend('<div class="messages" />')
+            // Append Modal
+            $('body').append(self.modal())
+            self.$modal = $('#modal-editor-' + self.randomModalId)
+            // Activate event listeners
+            self.events()
+
+            // AFTER CALLBACK
+            if (typeof options !== 'undefined') {
+                if (options.after)
+                    options.after()
+            }
+            if (typeof self.actions !== 'undefined' && self.actions !== false) {
+                self.$elem.find('.btn').tooltip({
+                    container: 'body',
+                    animation: false
+                });
+            }
+        }
+        DT.prototype.buttons = function (state) {
+            var self = this
+            var html = '<div class="btn-group">'
+            if (~(self.actions.indexOf('edit')) || ~(self.actions.indexOf('modify')))
+                html += '<a class="btn btn-xs btn-default edit-btn" title="Modifier"><i class="fa fa-pencil"></i></a>'
+            if (~(self.actions.indexOf('delete')))
+                html += '<a class="btn btn-xs btn-default delete-btn" title="Supprimer"><i class="fa fa-times"></i></a>'
+            if (~(self.actions.indexOf('toggle')) && state !== null) {
+                var btn = (state === 'inactive') ? 'activate-btn' : 'deactivate-btn'
+                var tooltip = (state === 'inactive') ? 'Activer' : 'Désactiver'
+                var icon = (state === 'inactive') ? 'off' : 'on'
+                html += '<a class="btn btn-xs btn-default ' + btn + '" title="' + tooltip + '"><i class="fa fa-toggle-' + icon + '"></i></a>'
+            }
+            return html
+        }
+        DT.prototype.fields = function() {
+            var self = this
+            var fields = []
+            self.$elem.find('th').each(function(){
+                var $th = $(this)
+                var name = $th.data('editor-name')
+                var type = $th.data('editor-type')
+                var options = $th.data('editor-options')
+                var label = $th.text()
+                if (typeof name === 'undefined' || typeof type === 'undefined') {
+                    if (!$th.is('[data-table-actionscolumn]')) {
+                        console.log('Missing data-editor attributes')
+                        return false
+                    }
+                } else {
+                    fields.push({name: name, type: type, label: label, options: options})
+                }
+            })
+            return fields
+        }
+        DT.prototype.form = function(fields) {
+            var self = this
+            var fields = (typeof fields === 'undefined') ? fields = self.fields() : fields
+            var html = ''
+            for (var $i=0; $i < fields.length; $i++) {
+                var name = fields[$i].name
+                var label = fields[$i].label
+                var type = fields[$i].type
+                var val = (typeof fields[$i].val === 'undefined') ? '' : fields[$i].val
+                html += '<div class="form-group push-10"><label>' + label + '</label>'
+                // Text / Email
+                if (type === 'text' || type === 'email') {
+                    html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control required">'
+                    // Datepicker
+                } else if (type === 'date') {
+                    html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control required" data-date-format="dd/mm/yyyy">'
+                    // Numerical - currency, number of days, etc.
+                } else if (type === 'numerical') {
+                    val = (typeof fields[$i].val === 'undefined') ? '' : parseFloat(fields[$i].val.replace(/[A-Za-z$-\s+]/g, '').replace(',', '.'))
+                    html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control required">'
+                    // Radio
+                } else if (type === 'radio') {
+                    var options = fields[$i].options.split(',')
+                    html += '<br>'
+                    for (var $l=0; $l < options.length; $l++) {
+                        var option = options[$l].trim()
+                        var checked = (val === option) ? 'checked' : ''
+                        html += '<label class="css-input css-radio css-radio-sm css-radio-default push-10-r"><input type="radio"  name="' + name + '" value="' + option + '" ' + checked + ' class="required"><span></span>' + option + '</label>'
+                    }
+                    // Select
+                } else if (type === 'select') {
+                    var options = fields[$i].options.split(',')
+                    html += '<select class="form-control required" name="' + name + '">' +
+                        '<option value="0">Selectionner</option>'
+                    for (var $l = 0; $l < options.length; $l++) {
+                        var option = options[$l].trim()
+                        var selected = (val === option) ? 'selected' : ''
+                        html += '<option value="' + option + '" ' + selected + '>' + option + '</option>'
+                    }
+                    html += '</select>'
+                    // Select 2
+                } else if (type === 'selectArray') {
+                    var optionsHtml = ''
+                    var level = 0
+                    function recurse(object) {
+
+                        for (var i in object) {
+                            var selected = (val === object[i].text) ? 'selected' : ''
+                            var id = (typeof object[i].id !== 'undefined') ? object[i].id : object[i].text
+                            optionsHtml += '<option value="' + id + '" ' + selected + '>' + new Array(level + 1).join('&nbsp;&nbsp;') + object[i].text + '</option>'
+                            if (typeof object[i].children !== 'undefined') {
+                                level++
+                                recurse(object[i].children)
+                                level--
+                            }
+                        }
+                        return optionsHtml
+                    }
+                    html += '<select class="form-control required" name="' + name + '"><option value="0">Selectionner</option>'
+                    html += recurse(fields[$i].options)
+                    html += '</select>'
+                    // File
+                } else if (type === 'file') {
+                    if (val === '') {
+                        html += '<input type="file" name="' + name + '" value="" class="form-control required">'
+                    } else {
+                        html += '<div class="clearfix"><div class="pull-left">' +
+                            '<div class="file">' + val + '</div>' +
+                            '<input type="hidden" name="' + name + '" value="no_change"></div>' +
+                            '<div class="pull-left push-15-l"><a class="btn btn-xs btn-default file-edit-btn edit">Modifier</a></div></div>'
+                    }
+                } else {
+                    console.log('Unknown input type')
+                    return false
+                }
+                html += '</div>'
+            }
+            // Add hidden inputs
+            html += '<input type="hidden" name="id" value="">'
+            html += '<input type="hidden" name="action" value="">'
+            return html
+        }
+        DT.prototype.modal = function() {
+            var self = this
+            var html = '<div class="modal fade" id="modal-editor-' + self.randomModalId + '" tabindex="-1" role="dialog" aria-hidden="true">' +
+                '<form class="modal-dialog validate" action="' + self.submitUrl + '" method="post" enctype="multipart/form-data">' +
+                    '<div class="modal-content">' +
+                        '<div class="block block-bordered remove-margin-b">' +
+                            '<div class="block-header"><h3 class="block-title"></h3></div>' +
+                            '<div class="block-content">' + self.form() + '</div>' +
+                        '</div>' +
+                        '<div class="modal-footer">' +
+                            '<button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>' +
+                            '<button class="btn btn-sm btn-primary" type="submit">Valider</button>' +
+                        '</div>' +
+                    '</div>' +
+                '</form>' +
+            '</div>'
+            return(html)
+        }
+        DT.prototype.getCellValues = function(id) {
+            var self = this
+            var $row = self.$elem.find('tr[data-id=' + id + ']')
+            var fields = self.fields()
+            for (var $i=0; $i < fields.length; $i++) {
+                var val = $row.find('td:eq(' + $i + ')').text()
+                if (fields[$i].type === 'file') {
+                    val = $row.find('td:eq(' + $i + ')').html()
+                }
+                fields[$i].val = val
+            }
+            return fields
+        }
+        DT.prototype.openModal = function(type, id) {
+            var self = this
+            var title, content, hiddenAction, hiddenId
+            if (id)
+                hiddenId = id
+            else
+                hiddenId = ''
+
+            if (type === 'create') {
+                title = 'Ajouter'
+                content = self.form()
+                hiddenAction = 'create'
+            }
+            if (type === 'activate') {
+                title = 'Activer'
+                content =  '<p>Êtes-vous sûr de vouloir activer l\'élément ?</p>'
+                content += '<input type="hidden" name="id">'
+                content += '<input type="hidden" name="action">'
+                hiddenAction = 'activate'
+            }
+            if (type === 'deactivate') {
+                title = 'Désactiver'
+                content =  '<p>Êtes-vous sûr de vouloir désactiver l\'élément ?</p>'
+                content += '<input type="hidden" name="id">'
+                content += '<input type="hidden" name="action">'
+                hiddenAction = 'deactivate'
+            }
+            if (type === 'modify') {
+                title = 'Modifier'
+                var fields = self.getCellValues(id)
+                content = self.form(fields)
+                hiddenAction = 'modify'
+            }
+            if (type === 'delete') {
+                title = 'Supprimer'
+                content = '<p>Êtes-vous sûr de vouloir supprimer l\'élément ?</p>'
+                content += '<input type="hidden" name="id">'
+                content += '<input type="hidden" name="action">'
+                hiddenAction = 'delete'
+            }
+            self.$modal.find('.block').removeClass('block-opt-refresh')
+            self.$modal.find('.has-error').removeClass('has-error')
+            self.$modal.find('.block-title').html(title)
+            self.$modal.find('.block-content').html(content)
+            self.$modal.find('input[name=id]').val(hiddenId)
+            self.$modal.find('input[name=action]').val(hiddenAction)
+            self.$modal.modal('show')
+        }
+        DT.prototype.submit = function() {
+            var self = this
+            var $form = self.$modal.find('form')
+            if (!$form.find('.has-error').length) {
+                self.$modal.find('.block').addClass('block-opt-refresh')
+                $.ajax({
+                    url: $form.attr('action'),
+                    type: 'POST',
+                    data: new FormData($form[0]),
+                    dataType: 'json',
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+                        if (response.success) {
+                            self.update(response.id, response.data)
+                        } else {
+                            var errors = '<div class="alert alert-danger">'
+                            $.each(response.error, function(i, val){
+                                errors += '<p>' + val + '</p>'
+                            })
+                            errors += '</div>'
+                            self.$wrapper.find('.messages').html(errors)
+                        }
+                        self.$modal.modal('hide')
+                    }
+                })
+            }
+        }
+        DT.prototype.update = function(id, data) {
+            var self = this
+            var tr = self.dtInstance.row('[data-id=' + id + ']')
+            var $tr = self.$elem.find('[data-id=' + id + ']')
+            // Delete row
+            if (data === 'delete') {
+                $tr.addClass('animated flash-bg')
+                setTimeout(function(){ tr.remove().draw(false) }, self.delay)
+                return false
+            }
+            // Toggle row state
+            if (data === 'active' || data === 'inactive') {
+                $tr.addClass('animated flash-bg').find('td:last-child').html(self.buttons(data))
+                setTimeout(function(){ $tr.removeClass('animated flash-bg') }, self.delay)
+                return false
+            }
+            // Add or modify row
+            if (!$.isArray(data)) {
+                console.log('response.data must be an array')
+                return false
+            }
+            if (!tr.length) {
+                // Add new row
+                data.push(self.buttons('active'))
+                tr = self.dtInstance.row.add(data).draw()
+                tr.node().dataset.id = id
+            } else {
+                // Modify row
+                data.push(self.buttons($tr.data('state')))
+                tr.data(data)
+            }
+            // Go to the page on which the row is
+            self.page(tr.index(), id)
+
+            // After update callback
+            if (typeof self.options !== 'undefined') {
+                if (self.options.updated) {
+                    self.options.updated(id)
+                }
+            }
+        }
+        DT.prototype.page = function(index, id) {
+            var self = this
+            var position = self.dtInstance.rows()[0].indexOf(index)
+            var page = Math.floor(position / self.dtInstance.page.len())
+            self.dtInstance.page(page).draw(false)
+            var $tr = self.$elem.find('[data-id=' + id + ']')
+            $tr.addClass('animated flash-bg')
+            setTimeout(function() {$tr.removeClass('animated flash-bg')}, self.delay)
+        }
+        DT.prototype.events = function() {
+            var self = this
+            self.$wrapper.on('click', '.add-btn', function(){
+                self.openModal('create')
+            })
+            self.$elem.on('click', '.edit-btn', function(){
+                var id = $(this).closest('tr').data('id')
+                self.openModal('modify', id)
+            })
+            self.$elem.on('click', '.delete-btn', function(){
+                var id = $(this).closest('tr').data('id')
+                self.openModal('delete', id)
+            })
+            self.$elem.on('click', '.activate-btn', function(){
+                var id = $(this).closest('tr').data('id')
+                self.openModal('activate', id)
+            })
+            self.$elem.on('click', '.deactivate-btn', function(){
+                var id = $(this).closest('tr').data('id')
+                self.openModal('deactivate', id)
+            })
+            self.$modal.on('shown.bs.modal', function() {
+                self.$modal.find('[data-date-format]').datepicker({
+                    weekStart: 1,
+                    autoclose: true,
+                    todayHighlight: false,
+                    language: 'fr'
+                })
+            })
+            uiHelperFormValidate() // Call validation
+            self.$modal.find('form').on('submit', function (e) {
+                e.preventDefault()
+                self.submit()
+            })
+            self.$modal.on('change', 'input[type=file]', function () {
+                var $input = $(this)
+                var file = this.files[0];
+                if (file.size > 5*1024) {
+                    $input.closest('form-group').addClass('has-error').append('<p class="text-danger">Taille max 5 Mb.</p>')
+
+                } else {
+                    $input.closest('form-group').removeClass('has-error').find('.text-danger').remove()
+                }
+            })
+            self.$modal.on('click', '.file-edit-btn', function(){
+                var $btn = $(this)
+                var $parent = $(this).closest('.form-group')
+                var $link = $parent.find('.file')
+                var $input = $parent.find('input')
+                if ($btn.is('.edit')) {
+                    $btn.removeClass('edit').addClass('cancel').text('Annuler')
+                    $link.hide()
+                    $input.attr('type', 'file').attr('class', 'form-control required')
+                } else {
+                    $btn.removeClass('cancel').addClass('edit').text('Modifier')
+                    $link.show()
+                    $parent.removeClass('has-error')
+                    $input.attr('type', 'hidden').attr('class', '').val('no_change')
+                }
+            })
+        }
+        // jQuery Plugin
+        $.fn.DT = function(op) {
+            if (typeof op === 'string' && /^(before|after|updated)$/.test(op)) {
+                var args = Array.prototype.slice.call(arguments)
+                args.shift()
+                return this.each(function(i, elem) {
+                    if (elem.hasOwnProperty('DT') && typeof elem.DT[op] === 'function') {
+                        elem.DT[op].apply(elem.DT, args)
+                    }
+                })
+            } else {
+                return this.each(function(i, elem) {
+                    if (!elem.hasOwnProperty('DT')) {
+                        new DT(elem, op)
+                    }
+                })
+            }
+        }
+        $('[data-table]').each(function(){
+            $(this).DT()
         })
-    };
+    }
 
     // Checkable table functionality
     var uiHelperTableToolsCheckable = function() {
@@ -1217,31 +1700,25 @@ var App = function() {
         jQuery('.js-notify').on('click', function(){
             var $notify         = jQuery(this);
             var $notifyMsg      = $notify.data('notify-message');
-            var $notifyType     = $notify.data('notify-type') ? $notify.data('notify-type') : 'info';
-            var $notifyFrom     = $notify.data('notify-from') ? $notify.data('notify-from') : 'top';
-            var $notifyAlign    = $notify.data('notify-align') ? $notify.data('notify-align') : 'right';
-            var $notifyIcon     = $notify.data('notify-icon') ? $notify.data('notify-icon') : '';
-            var $notifyUrl      = $notify.data('notify-url') ? $notify.data('notify-url') : '';
 
             jQuery.notify({
-                    icon: $notifyIcon,
                     message: $notifyMsg,
-                    url: $notifyUrl
+                    url: ''
                 },
                 {
                     element: 'body',
-                    type: $notifyType,
+                    type: 'danger',
                     allow_dismiss: true,
                     newest_on_top: true,
                     showProgressbar: false,
                     placement: {
-                        from: $notifyFrom,
-                        align: $notifyAlign
+                        from: 'top',
+                        align: 'right'
                     },
-                    offset: 20,
+                    offset: 100,
                     spacing: 10,
                     z_index: 1033,
-                    delay: 5000,
+                    delay: 0,
                     timer: 1000,
                     animate: {
                         enter: 'animated fadeIn',
@@ -1359,6 +1836,7 @@ var App = function() {
      */
     var uiHelperFormValidate = function(){
         $('form.validate').submit(function(e){
+            var $form = $(this)
             var valid = true
             $(this).find('.required').each(function(){
                 var $input = $(this)
@@ -1386,9 +1864,19 @@ var App = function() {
                 if (!valid) {
                     console.log('has errors')
                     e.preventDefault()
+                    $form.addClass('has-errors')
+                } else {
+                    $form.removeClass('has-errors')
                 }
             })
         })
+    };
+
+    var utility = {
+        currencyToInteger: function(currency) {
+            var number = parseFloat(currency.replace(',', '.').replace('€', '').replace(/\s+/g, ''))
+            return number
+        }
     };
 
     return {
@@ -1424,6 +1912,9 @@ var App = function() {
                 case 'uiLoader':
                     uiLoader('hide');
                     break;
+                case 'uiAlertCollapse':
+                    uiAlertCollapse();
+                    break;
                 default:
                     // Init all vital functions
                     uiInit();
@@ -1436,6 +1927,7 @@ var App = function() {
                     uiScrollTo();
                     uiYearCopy();
                     uiLoader('hide');
+                    uiAlertCollapse();
             }
         },
         layout: function($mode) {
@@ -1519,7 +2011,8 @@ var App = function() {
             } else {
                 App.initHelper($helpers);
             }
-        }
+        },
+        utility: utility
     };
 
 

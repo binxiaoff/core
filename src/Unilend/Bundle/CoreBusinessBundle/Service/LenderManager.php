@@ -18,6 +18,10 @@ class LenderManager
     /** @var EntityManager */
     private $entityManager;
 
+    /**
+     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param EntityManager          $entityManager
+     */
     public function __construct
     (
         EntityManagerSimulator $entityManagerSimulator,

@@ -14,11 +14,12 @@ use Unilend\librairies\CacheKeys;
 
 class EulerHermesManager
 {
-    const RESOURCE_SEARCH_COMPANY               = 'search_company_euler';
-    const RESOURCE_EULER_GRADE                  = 'get_grade_euler';
-    const RESOURCE_TRAFFIC_LIGHT                = 'get_traffic_light_euler';
-    const RESOURCE_EULER_GRADE_MONITORING_START = 'start_euler_grade_monitoring';
-    const RESOURCE_EULER_GRADE_MONITORING_END   = 'end_euler_grade_monitoring';
+    const RESOURCE_SEARCH_COMPANY                            = 'search_company_euler';
+    const RESOURCE_EULER_GRADE                               = 'get_grade_euler';
+    const RESOURCE_TRAFFIC_LIGHT                             = 'get_traffic_light_euler';
+    const RESOURCE_EULER_GRADE_MONITORING_START              = 'start_euler_grade_monitoring';
+    const RESOURCE_EULER_GRADE_MONITORING_END                = 'end_euler_grade_monitoring';
+    const EULER_ERROR_CODE_FREE_MONITORING_ALREADY_REQUESTED = 3000;
 
     /** @var Client */
     private $client;
@@ -197,6 +198,7 @@ class EulerHermesManager
      * @param string $siren
      *
      * @return null|string
+     * @throws \Exception
      */
     private function sendRequest($resourceLabel, $uri, $apiKey, $siren)
     {
@@ -227,6 +229,9 @@ class EulerHermesManager
                 return null;
             }
         } catch (\Exception $exception) {
+            if (self::EULER_ERROR_CODE_FREE_MONITORING_ALREADY_REQUESTED === $exception->getCode()) {
+                throw $exception;
+            }
             if (isset($callable)) {
                 call_user_func($callable, isset($content) ? $content : '', 'error');
             }
@@ -245,6 +250,7 @@ class EulerHermesManager
      * @param array              $logContext
      *
      * @return array
+     * @throws \Exception
      */
     private function isValidResponse(ResponseInterface $response, WsExternalResource $resource, array $logContext)
     {
@@ -266,6 +272,16 @@ class EulerHermesManager
                 'status'   => $contentValidity ? 'valid' : 'warning',
                 'is_valid' => $contentValidity
             ];
+        } elseif (
+            self::RESOURCE_EULER_GRADE === $resource->getResourceName()
+            && 409 === $response->getStatusCode()
+        ) {
+            $responseContent = json_decode($content);
+            if (self::EULER_ERROR_CODE_FREE_MONITORING_ALREADY_REQUESTED === $responseContent->code) {
+                throw new \Exception($responseContent->message, self::EULER_ERROR_CODE_FREE_MONITORING_ALREADY_REQUESTED);
+            } else {
+                $this->logger->error('Call to ' . $resource->getResourceName() . ' Response code: ' . $response->getStatusCode() . '. Response content: ' . $content, $logContext);
+            }
         } else {
             $this->logger->error('Call to ' . $resource->getResourceName() . ' Response code: ' . $response->getStatusCode() . '. Response content: ' . $content, $logContext);
 
