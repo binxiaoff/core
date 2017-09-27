@@ -264,7 +264,7 @@ class debt_cllection_missionController extends bootstrap
 
                     $success = 'Mission créée acec succé';
                 } catch (Exception $exception) {
-                    $entityManager->rollback();
+                    $entityManager->getConnection()->rollBack();
                     $this->get('logger')->error('Error when creating new debt collection mission on project: ' . $project->getTitle(), ['method' => __METHOD__, 'id_project' => $project->getIdProject()]);
                     $error = 'La mission n\'a pas été créée';
                 }

@@ -185,23 +185,17 @@ class ProjectRequestController extends Controller
             ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))
             ->setSlugOrigine($sourceManager->getSource(SourceManager::ENTRY_SLUG));
 
-        $siret         = $sirenLength === 14 ? str_replace(' ', '', $request->request->get('siren')) : '';
+        $siret                = $sirenLength === 14 ? str_replace(' ', '', $request->request->get('siren')) : '';
+        $companyStatusInBonis = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
+            ->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
+
         $this->company = new Companies();
         $this->company->setSiren($siren)
             ->setSiret($siret)
             ->setStatusAdresseCorrespondance(1)
             ->setEmailDirigeant($email)
-            ->setEmailFacture($email);
-
-        $companyStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus');
-        $userRepository          = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
-
-        $companyManager = $this->get('unilend.service.company_manager');
-        $companyManager->addCompanyStatus(
-            $this->company,
-            $companyStatusRepository->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]),
-            $userRepository->find(Users::USER_ID_FRONT)
-        );
+            ->setEmailFacture($email)
+            ->setIdStatus($companyStatusInBonis);
 
         $entityManager->beginTransaction();
         try {
@@ -215,6 +209,13 @@ class ProjectRequestController extends Controller
             $this->company->setIdClientOwner($this->client->getIdClient());
             $entityManager->persist($this->company);
             $entityManager->flush($this->company);
+
+            $companyManager = $this->get('unilend.service.company_manager');
+            $companyManager->addCompanyStatus(
+                $this->company,
+                $companyStatusInBonis,
+                $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT)
+            );
 
             $this->get('unilend.service.wallet_creation_manager')->createWallet($this->client, WalletType::BORROWER);
 

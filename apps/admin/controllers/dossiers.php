@@ -1396,23 +1396,24 @@ class dossiersController extends bootstrap
             $clientAddressEntity->setIdClient($clientEntity);
             $entityManager->persist($clientAddressEntity);
 
-            $companyEntity->setSiren($siren);
-            $companyEntity->setIdClientOwner($clientEntity->getIdClient());
-            $companyEntity->setStatusAdresseCorrespondance(1);
+            $statusInBonis = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
+                ->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus::STATUS_IN_BONIS]);
+
+            $companyEntity->setSiren($siren)
+                ->setIdClientOwner($clientEntity->getIdClient())
+                ->setStatusAdresseCorrespondance(1)
+                ->setIdStatus($statusInBonis);
             $entityManager->persist($companyEntity);
             $entityManager->flush($companyEntity);
 
             $this->get('unilend.service.wallet_creation_manager')->createWallet($clientEntity, WalletType::BORROWER);
 
-            $companyStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus');
-            $userRepository          = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
-
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
             $companyManager = $this->get('unilend.service.company_manager');
             $companyManager->addCompanyStatus(
                 $companyEntity,
-                $companyStatusRepository->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus::STATUS_IN_BONIS]),
-                $userRepository->find($_SESSION['user']['id_user'])
+                $statusInBonis,
+                $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user'])
             );
 
             $entityManager->getConnection()->commit();
@@ -2597,24 +2598,27 @@ class dossiersController extends bootstrap
                     $clientAddress->id_client = $client->id_client;
                     $clientAddress->create();
 
+                    /** @var \Doctrine\ORM\EntityManager $entityManager */
+                    $entityManager        = $this->get('doctrine.orm.entity_manager');
+                    $companyStatusInBonis = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
+                        ->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus::STATUS_IN_BONIS]);
+
                     /** @var \companies $company */
                     $company                                = $this->loadData('companies');
                     $company->id_client_owner               = $client->id_client;
                     $company->siren                         = filter_var($_POST['siren'], FILTER_SANITIZE_NUMBER_INT);
                     $company->status_adresse_correspondance = 1;
+                    $company->id_status                     = $companyStatusInBonis->getId();
                     $company->create();
 
-                    /** @var \Doctrine\ORM\EntityManager $entityManager */
-                    $entityManager           = $this->get('doctrine.orm.entity_manager');
-                    $companyRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
-                    $companyStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus');
-                    $userRepository          = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+                    $companyRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+                    $userRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
 
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
                     $companyManager = $this->get('unilend.service.company_manager');
                     $companyManager->addCompanyStatus(
                         $companyRepository->find($company->id_company),
-                        $companyStatusRepository->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus::STATUS_IN_BONIS]),
+                        $companyStatusInBonis,
                         $userRepository->find($_SESSION['user']['id_user'])
                     );
 
@@ -3098,15 +3102,15 @@ class dossiersController extends bootstrap
                     $projectData = $this->get('unilend.service.project_manager')->getLatePaymentsInformation()['projectWithPaymentProblems'][$projectId];
                     $now         = (new \DateTime())->setTime(23, 59, 59);
 
-                    $pendingPayments = $paymentRepository->findBy(
-                        [
-                            'idProject'        => $projectId,
-                            'statusEmprunteur' => [\Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur::STATUS_PENDING, \Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]
-                        ],
-                        ['dateEcheanceEmprunteur' => 'ASC']
-                    );
-
                     if (null === $project->getCloseOutNettingDate()) {
+                        $pendingPayments = $paymentRepository->findBy(
+                            [
+                                'idProject'        => $projectId,
+                                'statusEmprunteur' => [\Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur::STATUS_PENDING, \Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]
+                            ],
+                            ['dateEcheanceEmprunteur' => 'ASC']
+                        );
+
                         foreach ($pendingPayments as $payment) {
                             if ($now < $payment->getDateEcheanceEmprunteur()) {
                                 continue;
@@ -3148,5 +3152,16 @@ class dossiersController extends bootstrap
                 }
             }
         }
+    }
+
+    private function getdebtCollectionMissionData(Projects $project)
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
+        $debtCollectionMissionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMission');
+
+        $mission = $debtCollectionMissionRepository->findBy(['idProject' => $project, 'archived' => null], ['added' => 'ASC']);
+
     }
 }

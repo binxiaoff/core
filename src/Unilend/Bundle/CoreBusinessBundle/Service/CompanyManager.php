@@ -95,7 +95,8 @@ class CompanyManager
         $this->entityManager->flush($company);
 
         if (
-            $currentStatus->getId() !== $companyStatus->getId()
+            null !== $currentStatus
+            && $currentStatus->getId() !== $companyStatus->getId()
             && in_array($companyStatus->getLabel(), [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION])
         ) {
             $this->riskDataMonitoringManger->stopMonitoringForSiren($company->getSiren());
