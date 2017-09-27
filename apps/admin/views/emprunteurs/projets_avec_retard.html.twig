@@ -14,7 +14,11 @@
             // Page helpers are initialised in app.js and can be called quickly using their name
             App.initHelpers(['validation', 'datatables']);
             {% if projectWithPaymentProblems|length > 0 %}
-                $('#late-payments-table').dataTable()
+                $('#late-payments-table').dataTable({
+                    columnDefs: [
+                        {targets: [3,4,5], type: 'formatted-num'}
+                    ]
+                })
             {% endif %}
         })
     </script>
