@@ -29,7 +29,7 @@ class oneuiController extends bootstrap
             echo json_encode([
                 'success' => true,
                 'error'   => ['Error 1', 'Error 2'],
-                'newValue' => $value.',00 €'
+                'newValue' => $value . ',00 €'
             ]);
         }
     }
@@ -59,7 +59,7 @@ class oneuiController extends bootstrap
             $email = $_POST['email']; // client7@example.com
             $position = $_POST['position']; // Director
             $date = $_POST['date']; // 12/02/1983
-            $amount = $_POST['amount'] . ',00  €'; // - Currency formatting 4 000.00 €
+            $amount = $_POST['amount'] . ',00  €'; // - Currency formatting 4 000,00 €
 
             // Response
             $responseData = [$name, $email, $position, $date, $amount];
