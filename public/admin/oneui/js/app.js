@@ -1395,7 +1395,7 @@ var App = function() {
         }
         // jQuery Plugin
         $.fn.DT = function(op) {
-            if (typeof op === 'string' && /^(before|after)$/.test(op)) {
+            if (typeof op === 'string' && /^(before|after|updated)$/.test(op)) {
                 var args = Array.prototype.slice.call(arguments)
                 args.shift()
                 return this.each(function(i, elem) {
