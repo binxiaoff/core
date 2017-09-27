@@ -1,0 +1,102 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginCSS %}
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block pluginJS %}
+    <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="block block-rounded" style="min-height: 462px;">
+                <div class="block-content block-content-full">
+                    <h2 class="h3 push-30">
+                        Retards et Recouvrements
+                    </h2>
+                    <div class="row push-30">
+                        <div class="col-md-3">
+                            <div class="font-s12 font-w600 text-uppercase">Restant à recouvrer</div>
+                            <a class="h2 font-w300 text-primary">{{ remainingAmountToCollect|localizedcurrency('EUR') }}</a>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="font-s12 font-w600 text-uppercase">Réceptions à traiter</div>
+                            <a class="h2 font-w300 text-primary">{{ pendingReceiptAmount|localizedcurrency('EUR') }}</a>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="font-s12 font-w600 text-uppercase">Projets en retard</div>
+                            <a class="h2 font-w300 text-primary">{{ nbProjectsWithLateRepayments|localizednumber }}</a>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="font-s12 font-w600 text-uppercase">Projets en recouvrement</div>
+                            <a class="h2 font-w300 text-primary">{{ nbProjectsWithDeptCollection|localizednumber }}</a>
+                        </div>
+                    </div>
+                    <hr>
+                    {% if projectWithPaymentProblems|length > 0 %}
+                        <table class="table table-bordered table-header-bg table-hover js-dataTable-simple">
+                            <thead>
+                            <tr>
+                                <th style="width: 20%">
+                                    Raison Sociale
+                                </th>
+                                <th style="width: 20%">
+                                    Projet
+                                </th>
+                                <th style="width: 15%">
+                                    Statut
+                                </th>
+                                <th style="width: 10%">
+                                    Restant à recouvrer
+                                </th>
+                                <th style="width: 10%">
+                                    Confié au recouvreur
+                                </th>
+                                <th style="width: 10%">
+                                    Réceptions à traiter
+                                </th>
+                                <th style="width: 5%">
+                                    &nbsp;&nbsp;
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for projectId, project in projectWithPaymentProblems %}
+                                <tr>
+                                    <td>
+                                        {{ project.companyName }} <br>
+                                        <span class="text-muted">SIREN: {{ project.siren }}</span>
+                                    </td>
+                                    <td>
+                                        {{ project.projectTitle }} <br>
+                                        <span class="text-muted">ID: {{ projectId }} </span>
+                                    </td>
+                                    <!-- @todo set label by project status : must define mapping between class and project status range to make it dynamic-->
+                                    <td>
+                                        <span class="label label-default">{{ project.projectStatusLabel }}</span>
+                                    </td>
+                                    <td>
+                                        {{ project.remainingAmount|localizedcurrency('EUR') }}
+                                    </td>
+                                    <td>
+                                        {{ project.entrustedToDebtCollector > 0 ? project.entrustedToDebtCollector|localizedcurrency('EUR') : 'N/A' }}
+                                    </td>
+                                    <td>
+                                        {{ project.pendingReceiptAmount > 0 ? project.pendingReceiptAmount|localizedcurrency('EUR') : 'N/A' }}
+                                    </td>
+                                    <!-- @todo use real ID from the future tables -->
+                                    <td class="text-center">
+                                        <a href="/dossiers/details_impayes/{{ projectId }}" class="btn btn-xs btn-primary" data-toggle="tooltip" data-original-title="Voir détails"><i class="fa fa-arrow-right"></i></a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

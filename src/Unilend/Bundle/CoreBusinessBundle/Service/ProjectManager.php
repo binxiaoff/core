@@ -1274,4 +1274,72 @@ class ProjectManager
         $project->interest_rate = $project->getAverageInterestRate(false);
         $project->update();
     }
+
+    /**
+     * @param Projects|null $project
+     *
+     * @return array
+     */
+    public function getLatePaymentsInformation(Projects $project = null)
+    {
+        $projectsRepository              = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $paymentRepository               = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        $debtCollectionMissionRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMission');
+
+        $projectWithPaymentProblems = $projectsRepository->getProjectsWithLateRepayments($project);
+        $totalPendingReceiptAmount  = 0;
+        $totalRemainingAmount       = 0;
+        $projectsWithDebtCollection = 0;
+        $projectData                = [];
+
+        foreach ($projectWithPaymentProblems as $lateRepayment) {
+            $project = $projectsRepository->find($lateRepayment['idProject']);
+
+            if (null !== $project->getCloseOutNettingDate()) {
+                $projectData[$project->getIdProject()]['closeOutNettingDate'] = $project->getCloseOutNettingDate()->format('d/m/Y');
+
+                $pastFullPayments       = $paymentRepository->getPendingAmountAndPaymentsCountOnProjectAtDate($project, $project->getCloseOutNettingDate());
+                $dueCapitalPayments     = $paymentRepository->getPendingCapitalAndPaymentsCountOnProjectFromDate($project, $project->getCloseOutNettingDate());
+                $remainingAmount        = bcadd($pastFullPayments['amount'], $dueCapitalPayments['amount']);
+                $remainingPaymentsCount = bcadd($pastFullPayments['paymentsCount'], $dueCapitalPayments['paymentsCount']);
+            } else {
+                $projectData[$project->getIdProject()]['closeOutNettingDate'] = null;
+
+                $pastFullPayments       = $paymentRepository->getPendingAmountAndPaymentsCountOnProjectAtDate($project, new \DateTime());
+                $remainingAmount        = $pastFullPayments['amount'];
+                $remainingPaymentsCount = $pastFullPayments['paymentsCount'];
+            }
+
+            if (null !== $lateRepayment['missionIdList']) {
+                $debtCollectionAmounts = $debtCollectionMissionRepository->getEntrustedAmount(explode(',', $lateRepayment['missionIdList']));
+                $projectsWithDebtCollection++;
+            }
+
+            $projectData[$project->getIdProject()] = [
+                'projectId'                => $project->getIdProject(),
+                'companyName'              => $project->getIdCompany()->getName(),
+                'siren'                    => $project->getIdCompany()->getSiren(),
+                'companyActivity'          => $project->getIdCompany()->getActivite(),
+                'projectTitle'             => $project->getTitle(),
+                'projectStatusLabel'       => $lateRepayment['projectStatusLabel'],
+                'projectStatus'            => $project->getStatus(),
+                'remainingAmount'          => round(bcdiv($remainingAmount, 100, 4), 2),
+                'entrustedToDebtCollector' => isset($debtCollectionAmounts) ? $debtCollectionAmounts : 0,
+                'remainingPaymentsCount'   => $remainingPaymentsCount,
+                'pendingReceiptAmount'     => $lateRepayment['pendingReceiptAmount'],
+                'pendingReceiptCount'      => $lateRepayment['pendingReceiptCount'],
+                'missionIdList'            => explode(',', $lateRepayment['missionIdList'])
+            ];
+            $totalRemainingAmount                  = bcadd($totalRemainingAmount, $remainingAmount);
+            $totalPendingReceiptAmount             = bcadd($totalPendingReceiptAmount, $lateRepayment['pendingReceiptAmount']);
+        }
+
+        return [
+            'remainingAmountToCollect'     => round(bcdiv($totalRemainingAmount, 100, 4), 2),
+            'pendingReceiptAmount'         => round(bcdiv($totalPendingReceiptAmount, 100, 4), 2),
+            'nbProjectsWithDeptCollection' => $projectsWithDebtCollection,
+            'nbProjectsWithLateRepayments' => count($projectData) - $projectsWithDebtCollection,
+            'projectWithPaymentProblems'   => $projectData
+        ];
+    }
 }

@@ -1,9 +1,9 @@
-<script>
 <?php
 
 use \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 
 ?>
+<script>
     $(function () {
         $(".listeProjets").tablesorter({headers: {4: {sorter: false}, 5: {sorter: false}}});
         $(".listeMandats").tablesorter();
@@ -44,11 +44,11 @@ use \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 
         $('.operation-tooltip').tooltip({
             show: false,
-            position:{
+            position: {
                 at: 'right center',
                 my: 'right center',
             },
-            content: function() {
+            content: function () {
                 var content = $(this).attr('title')
                 return content
             }

@@ -538,23 +538,36 @@ class ProjectsRepository extends EntityRepository
     }
 
     /**
+     * @param Projects|null $project
+     *
      * @return array
      */
-    public function getProjectsWithLateRepayments()
+    public function getProjectsWithLateRepayments(Projects $project = null)
     {
         $queryBuilder = $this->createQueryBuilder('p');
-        $queryBuilder->select('p.idProject, p.status AS projectStatus, ps.label AS projectStatusLabel, p.title AS projectTitle, co.siren, co.name AS companyName, SUM(ee.montant) / 100 AS owedAmount, \'N/A\' AS pendingReceipt, \'N/A\' AS entrustedToCollector')
+
+        $queryBuilder->select('p.idProject, ps.label AS projectStatusLabel, ROUND(SUM(IFNULL(r.montant, 0)) / 100, 2) AS pendingReceiptAmount, SUM(CASE WHEN r.idReception IS NULL THEN 0 ELSE 1 END) AS pendingReceiptCount, GROUP_CONCAT(DISTINCT dcm.id) AS missionIdList')
             ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'co.idCompany = p.idCompany')
             ->innerJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'ee.idProject = p.idProject')
             ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'p.status = ps.status')
+            ->leftJoin('UnilendCoreBusinessBundle:Receptions', 'r', Join::WITH, 'r.idProject = p.idProject')
+            ->leftJoin('UnilendCoreBusinessBundle:ProjectRepaymentTask', 'prt', Join::WITH, 'prt.idWireTransferIn = r.idReception')
+            ->leftJoin('UnilendCoreBusinessBundle:DebtCollectionMission', 'dcm', Join::WITH, 'dcm.idProject = p.idProject')
             ->where('ee.dateEcheanceEmprunteur <= NOW()')
-            ->andWhere('ee.statusEmprunteur = :pending')
-            ->setParameter('pending', EcheanciersEmprunteur::STATUS_PENDING)
-            ->andWhere('p.status >= :repaymentStatus')
-            ->setParameter('repaymentStatus', ProjectsStatus::REMBOURSEMENT)
-            ->groupBy('p.idProject');
+            ->andWhere('ee.statusEmprunteur IN (:paymentStatus)')
+            ->setParameter('paymentStatus', [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID])
+            ->andWhere('p.status IN (:projectStatus)')
+            ->andWhere('prt.id IS NULL')
+            ->setParameter('projectStatus', [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME])
+            ->andWhere('dcm.archived IS NULL');
 
-        return $queryBuilder->getQuery()->getResult();
+        if (null !== $project) {
+            $queryBuilder->andWhere('p.idProject = :projectId')
+                ->setParameter('projectId', $project->getIdProject());
+        }
+        $queryBuilder->groupBy('p.idProject');
+
+        return $queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_ARRAY);
     }
 
     public function getCountProjectsByStatus($status)

@@ -12,6 +12,9 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentManager;
 
 class DebtCollectionMissionManager
 {
+    const CLIENT_HASH_MCS      = '2f9f590e-d689-11e6-b3d7-005056a378e2';
+    const CLIENT_HASH_PROGERIS = 'f12f0f5b-1867-11e7-a89f-0050569e51ae';
+
     /**
      * @var EntityManager
      */

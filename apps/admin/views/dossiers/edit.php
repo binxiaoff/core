@@ -2,6 +2,9 @@
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 ?>
 <style type="text/css">
     table.tablesorter tbody td.grisfonceBG, .grisfonceBG {
@@ -290,7 +293,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 
             if (
                 status == <?= ProjectsStatus::PROBLEME ?>
-                || status == <?= \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::LOSS ?>
+                || status == <?= ProjectsStatus::LOSS ?>
             ) {
                 $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_update/<?= $this->projects->id_project ?>/" + status});
             }
@@ -670,7 +673,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                                 <?php endif; ?>
                             </td>
                         </tr>
-                        <?php if (isset($this->availableContracts) && in_array(\underlying_contract::CONTRACT_MINIBON, $this->availableContracts)) : ?>
+                        <?php if (isset($this->availableContracts) && in_array(UnderlyingContract::CONTRACT_MINIBON, $this->availableContracts)) : ?>
                             <tr>
                                 <th>DIRS</th>
                                 <td>
@@ -803,7 +806,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 
                             if (in_array(UnderlyingContract::CONTRACT_MINIBON, $this->availableContracts)) {
                                 $hasDebtsStatement = false;
-                                /** @var ProjectAttachment $projectAttachment */
+                                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment $projectAttachment */
                                 foreach ($this->aAttachments as $projectAttachment) {
                                     $attachment = $projectAttachment->getAttachment();
                                     if (AttachmentType::DEBTS_STATEMENT === $attachment->getType()->getId()) {

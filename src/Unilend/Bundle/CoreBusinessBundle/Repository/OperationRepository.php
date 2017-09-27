@@ -647,15 +647,18 @@ class OperationRepository extends EntityRepository
      *
      * @return float
      */
-    public function getTotalGrossDebtCollectionRepayment($project, array $clients)
+    public function getTotalGrossDebtCollectionRepayment($project, array $clients = null)
     {
         $qbRegularization = $this->createQueryBuilder('o_r');
         $qbRegularization->select('IFNULL(SUM(o_r.amount), 0)')
             ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost_r', Join::WITH, 'o_r.idSubType = ost_r.id')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w_r', Join::WITH, 'w_r.id = o_r.idWalletDebtor')
             ->where('ost_r.label IN (:regularizationTypes)')
-            ->andWhere('w.idClient IN (:clients)')
             ->andWhere('o.idProject = :project');
+
+        if (false === empty($clients)) {
+            $qbRegularization->andWhere('w.idClient IN (:clients)');
+        }
         $regularization = $qbRegularization->getDQL();
 
         $qb = $this->createQueryBuilder('o');
@@ -664,12 +667,15 @@ class OperationRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = o.idWalletCreditor')
             ->where('ost.label = :operationSubType')
-            ->andWhere('w.idClient IN (:clients)')
             ->andWhere('o.idProject = :project')
+            ->setParameter('project', $project)
             ->setParameter('operationSubType', OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION)
-            ->setParameter('regularizationTypes', OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION_REGULARIZATION)
-            ->setParameter('clients', $clients)
-            ->setParameter('project', $project);
+            ->setParameter('regularizationTypes', OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION_REGULARIZATION);
+
+        if (false === empty($clients)) {
+            $qb->andWhere('w.idClient IN (:clients)')
+                ->setParameter('clients', $clients);
+        }
 
         $result = $qb->getQuery()->getArrayResult();
 

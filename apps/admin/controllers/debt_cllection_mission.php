@@ -2,6 +2,7 @@
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
 
 class debt_cllection_missionController extends bootstrap
 {
@@ -209,5 +210,65 @@ class debt_cllection_missionController extends bootstrap
 
         header('Location: ' . $this->url);
         die;
+    }
+
+    public function _add()
+    {
+        if (false === empty($this->params[0])) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+
+            $projectId = filter_var($this->params[0], FILTER_VALIDATE_INT);
+
+            if (null !== ($project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId))) {
+                if (false === empty($_POST['debt-collector-hash'])){
+                    $debtCollector = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($_POST['debt-collector-hash']);
+                }
+                if (empty($debtCollector)) {
+                    $error = 'Le recouvreur n\'existe pas.';
+                    return;
+                }
+                if (empty($_POST['debt-collection-type'])
+                    || false === ($debtCollectionType = filter_var($_POST['debt-collection-type'], FILTER_VALIDATE_INT))
+                    || false === in_array($debtCollectionType, [DebtCollectionMission::TYPE_AMICABLE, DebtCollectionMission::TYPE_AMICABLE, ])
+                ) {
+                    $error = 'Le type de mission est incorrect';
+                    return;
+                }
+                if (empty($_POST['debt-collection-rate']) || false ===($debtCollectionRate = filter_var($_POST['debt-collection-rate'], FILTER_VALIDATE_FLOAT))) {
+                    $error = 'Le taux d\'honoraires est obligatoire';
+                    return;
+                }
+                $debtCollectionMissionRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMission');
+                $debtCollectionMissionPaymentSchedule = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMissionPaymentSchedule');
+                $user                                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+
+                $currentMissions = $debtCollectionMissionRepository->findBy(['idProject' => $project, 'archived' => null]);
+                try {
+                    $entityManager->beginTransaction();
+                    foreach ($currentMissions as $mission) {
+                        $mission->setArchived(new \DateTime())
+                            ->setIdUserArchiving($user);
+                    }
+
+                    $newMission = new DebtCollectionMission();
+                    $newMission->setIdProject($project)
+                        ->setIdClientDebtCollector($debtCollector)
+                        ->setType($debtCollectionType)
+                        ->setFeesRate($debtCollectionRate)
+                        ->setIdUserCreation($user);
+
+                    $entityManager->persist($newMission);
+                    $entityManager->flush();
+                    $entityManager->commit();
+
+                    $success = 'Mission créée acec succé';
+                } catch (Exception $exception) {
+                    $entityManager->rollback();
+                    $this->get('logger')->error('Error when creating new debt collection mission on project: ' . $project->getTitle(), ['method' => __METHOD__, 'id_project' => $project->getIdProject()]);
+                    $error = 'La mission n\'a pas été créée';
+                }
+            }
+        }
     }
 }

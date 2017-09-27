@@ -9,13 +9,13 @@ use Doctrine\ORM\Mapping as ORM;
  * DebtCollectionMission
  *
  * @ORM\Table(name="debt_collection_mission", indexes={@ORM\Index(name="idx_dc_mission_id_user_creation", columns={"id_user_creation"}), @ORM\Index(name="idx_dc_mission_id_user_archiving", columns={"id_user_archiving"}), @ORM\Index(name="idx_dc_mission_id_project", columns={"id_project"}), @ORM\Index(name="idx_dc_mission_id_client", columns={"id_client_debt_collector"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\DebtCollectionMissionRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class DebtCollectionMission
 {
-    const TYPE_AMICABLE   = 0;
     const TYPE_LITIGATION = 1;
+    const TYPE_AMICABLE   = 2;
 
     /**
      * @var integer

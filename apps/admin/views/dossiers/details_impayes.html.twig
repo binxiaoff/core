@@ -1,0 +1,61 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginCSS %}
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block pluginJS %}
+    <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="block block-rounded">
+                <div class="block-header">
+                    <div class="pull-left">
+                        <a href="/emprunteurs/projets_avec_retard" class="text-muted"><span class="fa fa-arrow-left"></span>Retards et recouvrements</a>
+                    </div>
+                    <div class="pull-right">
+                        <small>SIREN: {{ projectData.siren }}</small>
+                        <small>|</small>
+                        <small>ID Projet: {{ projectData.projectId }}</small>
+                        <span class="label label-info push-10-l">{{ projectData.projectStatusLabel }}</span>
+                    </div>
+                </div>
+                <div class="block-content block-content-full">
+                    <h2 class="h3 push-30">
+                        {{ projectData.projectTitle }} <br>
+                        <small class="font-w400">{{ projectData.companyActivity }}</small>
+                    </h2>
+                    <div class="row push-30">
+                        <div class="col-md-3">
+                            <div class="font-s12 font-w600 text-uppercase">Retard Emprunteur</div>
+                            <a class="h2 font-w300 text-primary">{{ projectData.remainingAmount|localizedcurrency('EUR') }}</a>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="font-s12 font-w600 text-uppercase">Confié au recouvreur</div>
+                            <a class="h2 font-w300 text-primary">{{ projectData.entrustedToDebtCollector|localizedcurrency('EUR') }}</a>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="font-s12 font-w600 text-uppercase">Réceptions à traiter</div>
+                            <a class="h2 font-w300 text-primary">{{ projectData.pendingReceiptCount|localizednumber }}</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="retards" class="block block-rounded">
+                {% include 'dossiers/blocs/details_impayes/retards.html.twig'%}
+            </div>
+            <div id="debt-colletion" class="block block-rounded">
+                {% include 'dossiers/blocs/details_impayes/recouvrements.html.twig' %}
+            </div>
+            <div id="fees-honoraries" class="block block-rounded">
+                {% include 'dossiers/blocs/details_impayes/frais_honoraires.html.twig' %}
+            </div>
+            <div id="receptions" class="block block-rounded">
+                {% include 'dossiers/blocs/details_impayes/receptions.html.twig' %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
