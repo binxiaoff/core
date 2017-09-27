@@ -1861,6 +1861,20 @@ var App = function() {
                         valid = true
                     }
                 }
+                if ($input.is('input[type=radio]')) {
+                    var oneChecked = false
+                    $input.closest('.form-group').find('input[name='+ $input.attr('name') +']').each(function(){
+                        if ($(this).is(':checked'))
+                            oneChecked = true
+                    })
+                    if (!oneChecked) {
+                        $input.closest('.form-group').removeClass('has-error').addClass('has-error')
+                        valid = false
+                    } else {
+                        $input.closest('.form-group').removeClass('has-error')
+                        valid = true
+                    }
+                }
                 if (!valid) {
                     console.log('has errors')
                     e.preventDefault()
