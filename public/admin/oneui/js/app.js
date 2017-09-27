@@ -827,8 +827,10 @@ var App = function() {
                         api.page(e.data.action).draw(false)
                     }
                 }
+
                 for (i = 0, ien = buttons.length; i < ien; i++) {
                     button = buttons[i]
+
                     if ($.isArray(button)) {
                         attach(container, button)
                     }
@@ -922,19 +924,29 @@ var App = function() {
                 }
             })
         }
-
+        // Currency sorting
+        $.extend($DataTable.ext.oSort, {
+            'formatted-num-pre': function (a) {
+                a = (a === '-' || a === '') ? 0 : a.replace(',', '.').replace(/[^\d\-\.]/g, '')
+                return parseFloat(a)
+            },
+            'formatted-num-asc': function (a, b) {
+                return a - b
+            },
+            'formatted-num-desc': function (a, b) {
+                return b - a
+            }
+        })
         // Show page of row
         $DataTable.Api.register('row().show()', function() {
             var page_info = this.table().page.info()
             var new_row_index = this.index()
             var row_position = this.table().rows()[0].indexOf(new_row_index)
-            console.log('new index' + new_row_index)
             if(row_position >= page_info.start && row_position < page_info.end) {
                 return this
             }
             var page_to_display = Math.floor(row_position / this.table().page.len())
             this.table().page(page_to_display).draw(false)
-            console.log('page index' + page_to_display)
             return this
         })
 
@@ -948,11 +960,11 @@ var App = function() {
                 return false
 
             // PLUGIN SETTINGS
-            // Unorderable actions column
-            var columnDefs
+            // Unsortable actions column
+            var unsortableColumns = {}
             self.actions = self.$elem.data('table-actions')
             if (typeof self.actions !== 'undefined' && self.actions !== false) {
-                columnDefs = [{targets: [self.$elem.find('thead td:last-child').index()], orderable: false}]
+                unsortableColumns = {targets: [self.$elem.find('thead td:last-child').index()], orderable: false}
             } else {
                 self.actions = self.$elem.data('table-editor-actions')
                 if (typeof self.actions !== 'undefined' && self.actions !== false) {
@@ -969,8 +981,19 @@ var App = function() {
                         }
                         $tr.append('<td>' + self.buttons(state) + '</td>')
                     })
-                    columnDefs = [{targets: [self.$elem.find('thead td:last-child').index()], orderable: false}]
+                    unsortableColumns = {targets: [self.$elem.find('thead td:last-child').index()], orderable: false}
                 }
+            }
+            // Sortable currency columns
+            var currencyColumns = {}
+            var $tdEuro = self.$elem.find('td:contains(€)')
+            if ($tdEuro.length) {
+                var $trEuro = $tdEuro.first().parent()
+                var indexes = []
+                $trEuro.find('td:contains(€)').each(function(){
+                    indexes.push($(this).index())
+                })
+                currencyColumns = {targets: indexes, type: 'formatted-num'}
             }
             // Rows per page
             var pageLength = self.$elem.data('table-pagelength')
@@ -997,7 +1020,7 @@ var App = function() {
             self.dtInstance = self.$elem.DataTable({
                 lengthChange: lengthChange,
                 pageLength: pageLength,
-                columnDefs: columnDefs,
+                columnDefs: [unsortableColumns, currencyColumns],
                 searching: search
             })
 
@@ -1045,7 +1068,7 @@ var App = function() {
                 html += '<a class="btn btn-xs btn-default delete-btn" title="Supprimer"><i class="fa fa-times"></i></a>'
             if (~(self.actions.indexOf('toggle')) && state !== null) {
                 var btn = (state === 'inactive') ? 'activate-btn' : 'deactivate-btn'
-                var tooltip = (state === 'inactive') ? 'Activer' : 'Dèsactiver'
+                var tooltip = (state === 'inactive') ? 'Activer' : 'Désactiver'
                 var icon = (state === 'inactive') ? 'off' : 'on'
                 html += '<a class="btn btn-xs btn-default ' + btn + '" title="' + tooltip + '"><i class="fa fa-toggle-' + icon + '"></i></a>'
             }
@@ -1084,14 +1107,14 @@ var App = function() {
                 // Text / Email
                 if (type === 'text' || type === 'email') {
                     html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control required">'
-                // Datepicker
+                    // Datepicker
                 } else if (type === 'date') {
                     html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control required" data-date-format="dd/mm/yyyy">'
-                // Numerical - currency, number of days, etc.
+                    // Numerical - currency, number of days, etc.
                 } else if (type === 'numerical') {
                     val = (typeof fields[$i].val === 'undefined') ? '' : parseFloat(fields[$i].val.replace(/[A-Za-z$-\s+]/g, '').replace(',', '.'))
                     html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control required">'
-                // Radio
+                    // Radio
                 } else if (type === 'radio') {
                     var options = fields[$i].options.split(',')
                     html += '<br>'
@@ -1100,7 +1123,7 @@ var App = function() {
                         var checked = (val === option) ? 'checked' : ''
                         html += '<label class="css-input css-radio css-radio-sm css-radio-default push-10-r"><input type="radio"  name="' + name + '" value="' + option + '" ' + checked + ' class="required"><span></span>' + option + '</label>'
                     }
-                // Select
+                    // Select
                 } else if (type === 'select') {
                     var options = fields[$i].options.split(',')
                     html += '<select class="form-control required" name="' + name + '">' +
@@ -1111,12 +1134,11 @@ var App = function() {
                         html += '<option value="' + option + '" ' + selected + '>' + option + '</option>'
                     }
                     html += '</select>'
-                // Select 2
+                    // Select 2
                 } else if (type === 'selectArray') {
                     var optionsHtml = ''
                     var level = 0
                     function recurse(object) {
-
                         for (var i in object) {
                             var selected = (val === object[i].text) ? 'selected' : ''
                             var id = (typeof object[i].id !== 'undefined') ? object[i].id : object[i].text
@@ -1132,7 +1154,7 @@ var App = function() {
                     html += '<select class="form-control required" name="' + name + '"><option value="0">Selectionner</option>'
                     html += recurse(fields[$i].options)
                     html += '</select>'
-                // File
+                    // File
                 } else if (type === 'file') {
                     if (val === '') {
                         html += '<input type="file" name="' + name + '" value="" class="form-control required">'
@@ -1157,12 +1179,18 @@ var App = function() {
             var self = this
             var html = '<div class="modal fade" id="modal-editor-' + self.randomModalId + '" tabindex="-1" role="dialog" aria-hidden="true">' +
                 '<form class="modal-dialog validate" action="' + self.submitUrl + '" method="post" enctype="multipart/form-data">' +
-                '<div class="modal-content"><div class="block block-bordered remove-margin-b">' +
-                '<div class="block-header"><h3 class="block-title"></h3></div>' +
-                '<div class="block-content">' + self.form() + '</div></div>' +
-                '<div class="modal-footer">' +
-                '<button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>' +
-                '<button class="btn btn-sm btn-primary" type="submit">Valider</button></div></div></form></div>'
+                    '<div class="modal-content">' +
+                        '<div class="block block-bordered remove-margin-b">' +
+                            '<div class="block-header"><h3 class="block-title"></h3></div>' +
+                            '<div class="block-content">' + self.form() + '</div>' +
+                        '</div>' +
+                        '<div class="modal-footer">' +
+                            '<button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>' +
+                            '<button class="btn btn-sm btn-primary" type="submit">Valider</button>' +
+                        '</div>' +
+                    '</div>' +
+                '</form>' +
+            '</div>'
             return(html)
         }
         DT.prototype.getCellValues = function(id) {
@@ -1199,8 +1227,8 @@ var App = function() {
                 hiddenAction = 'activate'
             }
             if (type === 'deactivate') {
-                title = 'Dèsactiver'
-                content =  '<p>Êtes-vous sûr de vouloir dèsactiver l\'élément ?</p>'
+                title = 'Désactiver'
+                content =  '<p>Êtes-vous sûr de vouloir désactiver l\'élément ?</p>'
                 content += '<input type="hidden" name="id">'
                 content += '<input type="hidden" name="action">'
                 hiddenAction = 'deactivate'
@@ -1212,8 +1240,8 @@ var App = function() {
                 hiddenAction = 'modify'
             }
             if (type === 'delete') {
-                title = 'Sipprimer'
-                content = '<p>Êtes-vous sûr de vouloir supprimer  l\'élément ?</p>'
+                title = 'Supprimer'
+                content = '<p>Êtes-vous sûr de vouloir supprimer l\'élément ?</p>'
                 content += '<input type="hidden" name="id">'
                 content += '<input type="hidden" name="action">'
                 hiddenAction = 'delete'
@@ -1368,7 +1396,7 @@ var App = function() {
         }
         // jQuery Plugin
         $.fn.DT = function(op) {
-            if (typeof op === 'string' && /^(before|after)$/.test(op)) {
+            if (typeof op === 'string' && /^(before|after|updated)$/.test(op)) {
                 var args = Array.prototype.slice.call(arguments)
                 args.shift()
                 return this.each(function(i, elem) {
@@ -1948,10 +1976,10 @@ var App = function() {
             var valid = true
             $(this).find('.required').each(function(){
                 var $input = $(this)
-                if ($input.is('input[type=text]') || $input.is('input[type=number]') || $input.is('input[type=email]') || $input.is('input[type=file]') || $input.is('textarea') || $input.is('input[type=password]')) {
+                if ($input.is('input[type=text]') || $input.is('input[type=number]') || $input.is('input[type=email]') || $input.is('textarea') || $input.is('input[type=password]')) {
                     var attrName = $(this).attr('name');
                     if (!$input.val() || $input.val() === '') {
-                        if (typeof attrName !== 'undefined' && attrName !== false) {
+                        if (typeof attrName !== typeof undefined && attrName !== false) {
                             $input.closest('.form-group').removeClass('has-error').addClass('has-error')
                             valid = false
                         }
