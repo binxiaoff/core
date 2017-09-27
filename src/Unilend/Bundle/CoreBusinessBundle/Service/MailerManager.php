@@ -333,7 +333,7 @@ class MailerManager
 
         /** @var TemplateMessage $message */
         $message   = $this->messageProvider->newMessage('notification-projet-funde-a-100', $keywords, false);
-        $recipient = $this->settingsRepository->findOneBy(['Type' => 'Adresse notification projet funde a 100'])->getValue();
+        $recipient = $this->settingsRepository->findOneBy(['type' => 'Adresse notification projet funde a 100'])->getValue();
         try {
             $message->setTo(explode(';', str_replace(' ', '', $recipient)));
             $this->mailer->send($message);
@@ -607,7 +607,7 @@ class MailerManager
         $oCompany->get($oProject->id_company, 'id_company');
         $oClient->get($oCompany->id_client_owner, 'id_client');
 
-        $sRecipient = $this->settingsRepository->findOneBy(['Type' => 'Adresse notification projet fini'])->getValue();
+        $sRecipient = $this->settingsRepository->findOneBy(['type' => 'Adresse notification projet fini'])->getValue();
 
         $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
         // si le solde des enchere est supperieur au montant du pret on affiche le montant du pret
@@ -673,7 +673,7 @@ class MailerManager
      */
     private function getFacebookLink()
     {
-        return $this->settingsRepository->findOneBy(['Type' => 'Facebook'])->getValue();
+        return $this->settingsRepository->findOneBy(['type' => 'Facebook'])->getValue();
     }
 
     /**
@@ -681,7 +681,7 @@ class MailerManager
      */
     private function getTwitterLink()
     {
-        return $this->settingsRepository->findOneBy(['Type' => 'Twitter'])->getValue();
+        return $this->settingsRepository->findOneBy(['type' => 'Twitter'])->getValue();
     }
 
     /**
@@ -1854,7 +1854,7 @@ class MailerManager
         try {
             $message->setTo(trim($user->email));
 
-            $logEmail = $this->settingsRepository->findOneBy(['Type' => 'alias_tracking_log'])->getValue();
+            $logEmail = $this->settingsRepository->findOneBy(['type' => 'alias_tracking_log'])->getValue();
 
             if ($logEmail) {
                 $message->setBcc($logEmail);
@@ -1947,7 +1947,7 @@ class MailerManager
     public function sendProxyAndMandateSigned(ProjectsPouvoir $proxy, ClientsMandats $mandate)
     {
         if ($proxy->getIdProject() && $proxy->getIdProject()->getIdCompany()) {
-            $destinataire = $this->settingsRepository->findOneBy(['Type' => 'Adresse notification pouvoir mandat signe'])->getValue();
+            $destinataire = $this->settingsRepository->findOneBy(['type' => 'Adresse notification pouvoir mandat signe'])->getValue();
             $template     = [
                 '$surl'         => $this->sSUrl,
                 '$id_projet'    => $proxy->getIdProject()->getIdProject(),
