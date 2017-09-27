@@ -134,3 +134,48 @@ table.dataTable thead .sorting:after, table.dataTable thead .sorting_asc:after, 
 .table-vertical-center tbody tr td {
     vertical-align: middle;
 }
+.dataTable > tbody > tr.even.flash-bg {
+    -webkit-animation-name: flash-bg-even;
+    animation-name: flash-bg-even;
+}
+.dataTable > tbody > tr.odd.flash-bg {
+    -webkit-animation-name: flash-bg-odd;
+    animation-name: flash-bg-odd;
+}
+.animated.flash-bg-even,
+.animated.flash-bg-odd {
+    -webkit-animation-duration: .9s;
+    animation-duration: .9s;
+}
+@-webkit-keyframes flash-bg-even {
+    0%, 50%, 100% {
+        background: #fff;
+    }
+    25%, 75% {
+        background: #fdf5cb;
+    }
+}
+@-webkit-keyframes flash-bg-odd {
+    0%, 50%, 100% {
+        background: #f9f9f9;
+    }
+    25%, 75% {
+        background: #fdf5cb;
+    }
+}
+@keyframes flash-bg-even {
+    0%, 50%, 100% {
+        background: #fff;
+    }
+    25%, 75% {
+        background: #fdf5cb;
+    }
+}
+@keyframes flash-bg-odd {
+    0%, 50%, 100% {
+        background: #f9f9f9;
+    }
+    25%, 75% {
+        background: #fdf5cb;
+    }
+}
