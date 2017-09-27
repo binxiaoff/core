@@ -13,6 +13,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ProjectBeneficialOwnerUniversign implements UniversignEntityInterface
 {
+    const DOCUMENT_TYPE = 'beneficiaires-effectifs';
+    const DOCUMENT_NAME = 'declaration-beneficiaires-effectifs';
+
     /**
      * @var string
      *
@@ -304,5 +307,15 @@ class ProjectBeneficialOwnerUniversign implements UniversignEntityInterface
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setNameValue()
+    {
+        if (null === $this->name && null !== $this->idProject) {
+            $this->name = $this->idProject->getIdProject() . self::DOCUMENT_NAME . '.pdf';
+        }
     }
 }

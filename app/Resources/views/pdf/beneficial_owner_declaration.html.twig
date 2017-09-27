@@ -1,0 +1,12 @@
+{% extends 'pdf/layout.html.twig' %}
+
+{% block content %}
+    <header>
+        <h1>Declaration de bénéficiares effectifs</h1>
+    </header>
+    <div class="row" style="page-break-after: auto;">
+        {% for owner in owners %}
+            <p>{{ owner.idClient.nom }}</p>
+        {% endfor %}
+    </div>
+{% endblock %}

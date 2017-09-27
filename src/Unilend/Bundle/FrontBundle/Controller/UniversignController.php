@@ -2,14 +2,18 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Doctrine\ORM\EntityManager;
+use Documents\Project;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BeneficialOwnerDeclaration;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectBeneficialOwnerUniversign;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
@@ -22,37 +26,11 @@ class UniversignController extends Controller
     const SIGNATURE_TYPE_PROJECT = 'projet';
 
     /**
-     * As the status has been removed from the URL, we need this redirection action for the old callback url.
-     * It can be delete in the next release after the "deblocage progressif" project.
-     *
-     * @Route(
-     *     "/universign/{status}/{documentType}/{documentId}/{clientHash}",
-     *     name="legacy_universign_signature_status",
-     *     requirements={
-     *         "status": "^(success|fail|cancel)$",
-     *         "documentType": "^(pouvoir|mandat|cgv_emprunteurs|virement_emprunteurs)$",
-     *         "documentId": "\d+",
-     *         "clientHash": "[0-9a-f-]{32,36}"
-     *     }
-     * )
-     * @param string $status
-     * @param int    $documentId
-     * @param string $documentType
-     * @param string $clientHash
-     *
-     * @return Response
-     */
-    public function legacyUniversignStatusAction($status, $documentId, $documentType, $clientHash)
-    {
-        return $this->redirectToRoute('universign_signature_status', ['documentType' => str_replace('_', '-', $documentType), 'documentId' => $documentId, 'clientHash' => $clientHash]);
-    }
-
-    /**
      * @Route(
      *     "/universign/{signatureType}/{signatureId}/{clientHash}",
      *     name="universign_signature_status",
      *     requirements={
-     *         "signatureType": "^(projet|pouvoir|mandat|cgv-emprunteurs|virement-emprunteurs)$",
+     *         "signatureType": "^(projet|pouvoir|mandat|cgv-emprunteurs|virement-emprunteurs|beneficiaires-effectifs)$",
      *         "signatureId": "\d+",
      *         "clientHash": "[0-9a-f-]{32,36}"
      *     }
@@ -75,15 +53,21 @@ class UniversignController extends Controller
 
         switch ($signatureType) {
             case self::SIGNATURE_TYPE_PROJECT:
-                $mandate = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->findOneBy(['idProject' => $signatureId, 'status' => [ClientsMandats::STATUS_PENDING, ClientsMandats::STATUS_SIGNED]], ['added' => 'DESC']);
-                $proxy   = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->findOneBy(['idProject' => $signatureId, 'status' => [ClientsMandats::STATUS_PENDING, ClientsMandats::STATUS_SIGNED]], ['added' => 'DESC']);
+                $status                     = [UniversignEntityInterface::STATUS_PENDING, UniversignEntityInterface::STATUS_SIGNED];
+                $mandate                    = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')
+                    ->findOneBy(['idProject' => $signatureId, 'status' => $status], ['added' => 'DESC']);
+                $proxy                      = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')
+                    ->findOneBy(['idProject' => $signatureId, 'status' => $status], ['added' => 'DESC']);
+                $beneficialOwnerDeclaration = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')
+                    ->findOneBy(['idProject' => $signatureId, 'status' => $status], ['added' => 'DESC']);
 
-                if (null === $mandate || null === $proxy) {
+                if (null === $mandate || null === $proxy || null === $beneficialOwnerDeclaration) {
                     return $this->redirectToRoute('home');
                 }
 
                 $documents[] = $proxy;
                 $documents[] = $mandate;
+                $documents[] = $beneficialOwnerDeclaration;
                 break;
             case ProjectsPouvoir::DOCUMENT_TYPE:
                 $documents[] = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->find($signatureId);
@@ -96,6 +80,9 @@ class UniversignController extends Controller
                 break;
             case WireTransferOutUniversign::DOCUMENT_TYPE:
                 $documents[] = $entityManager->getRepository('UnilendCoreBusinessBundle:WireTransferOutUniversign')->find($signatureId);
+                break;
+            case ProjectBeneficialOwnerUniversign::DOCUMENT_TYPE:
+                $documents[] = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->find($signatureId);
                 break;
             default:
                 return $this->redirectToRoute('home');
@@ -130,6 +117,15 @@ class UniversignController extends Controller
                         $documentClientId = $document->getIdWireTransferOut()->getClient()->getIdClient();
                     }
                     break;
+                case ProjectBeneficialOwnerUniversign::class:
+                    /** @var ProjectBeneficialOwnerUniversign $document */
+                    if (
+                        $document->getIdProject() instanceof Projects
+                        && $document->getIdProject()->getIdCompany() instanceof Companies
+                    ) {
+                        $documentClientId = $document->getIdProject()->getIdCompany()->getIdClientOwner();
+                    }
+                    break;
             }
 
             if (null === $documentClientId || $documentClientId !== $client->getIdClient()) {
@@ -153,6 +149,8 @@ class UniversignController extends Controller
                     'wire_transfer_out_request_pdf',
                     ['wireTransferOutId' => $document->getIdWireTransferOut()->getIdVirement(), 'clientHash' => $clientHash]
                 );
+            } elseif ($document instanceof ProjectBeneficialOwnerUniversign) {
+                $pdfLink = $this->generateUrl('beneficial_owner_declaration_pdf', ['idProject' => $document->getIdProject()->getIdProject(), 'clientHash' => $clientHash]);
             } elseif ($document instanceof ProjectCgv) {
                 $pdfLink = $document->getUrlPath();
             } else {
@@ -365,6 +363,80 @@ class UniversignController extends Controller
         return $this->redirectToRoute('home');
     }
 
+    /**
+     * @Route("/pdf/beneficiaires-effectifs/{idProject}-declaration-beneficiaires-effectifs.pdf",
+     *     name="beneficial_owner_declaration_pdf",
+     *     requirements={"idProject":"\d+", "clientHash": "[0-9a-f-]{32,36}"}
+     *     )
+     *
+     * @param string $clientHash
+     * @param int    $idProject
+     *
+     * @return Response
+     */
+    public function createBeneficialOwnerDeclarationAction($clientHash, $idProject)
+    {
+        /** @var EntityManager $entityManager */
+        $entityManager              = $this->get('doctrine.orm.entity_manager');
+        $client                     = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
+        $beneficialOwnerDeclaration = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findOneBy(['idProject' => $idProject], ['added' => 'DESC']);
+
+        if (
+            null === $beneficialOwnerDeclaration
+            || null === $client
+            || $beneficialOwnerDeclaration->getIdProject()->getIdCompany()->getIdClientOwner() != $client->getIdClient()
+            || UniversignEntityInterface::STATUS_ARCHIVED === $beneficialOwnerDeclaration->getStatus()
+        ){
+            return $this->redirectToRoute('home');
+        }
+
+        $beneficialOwnerDeclarationPdfRoot  = $this->getParameter('path.protected') . 'pdf/beneficial_owner';
+        $beneficialOwnerDeclarationFileName = $idProject . '-' . ProjectBeneficialOwnerUniversign::DOCUMENT_NAME . '.pdf';
+
+        if (
+            UniversignEntityInterface::STATUS_SIGNED === $beneficialOwnerDeclaration->getStatus()
+            && file_exists($beneficialOwnerDeclarationPdfRoot . DIRECTORY_SEPARATOR . $beneficialOwnerDeclarationFileName)
+        ) {
+            return new BinaryFileResponse($beneficialOwnerDeclarationPdfRoot . DIRECTORY_SEPARATOR . $beneficialOwnerDeclarationFileName);
+        }
+
+        if (false === file_exists($beneficialOwnerDeclarationPdfRoot . DIRECTORY_SEPARATOR . $beneficialOwnerDeclarationFileName)) {
+            //TODO further variables to be defined when doing the PDF.
+            $beneficialOwners   = $beneficialOwnerDeclaration->getIdDeclaration()->getBeneficialOwner();
+            $pdfContent         = $this->renderView('/pdf/beneficial_owner_declaration.html.twig', ['owners' => $beneficialOwners]);
+            $snappy             = $this->get('knp_snappy.pdf');
+            $outputFile         = $beneficialOwnerDeclarationPdfRoot . DIRECTORY_SEPARATOR . $beneficialOwnerDeclarationFileName;
+            $options            = [
+                'footer-html'   => '',
+                'header-html'   => '',
+                'margin-top'    => 20,
+                'margin-right'  => 15,
+                'margin-bottom' => 10,
+                'margin-left'   => 15
+            ];
+            $snappy->generateFromHtml($pdfContent, $outputFile, $options, true);
+        }
+
+
+        if (UniversignEntityInterface::STATUS_PENDING === $beneficialOwnerDeclaration->getStatus()) {
+            if (null !== $beneficialOwnerDeclaration->getUrlUniversign()) {
+                return $this->redirect($beneficialOwnerDeclaration->getUrlUniversign());
+            }
+
+            $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
+            if ($universignManager->createBeneficialOwnerDeclaration($beneficialOwnerDeclaration)) {
+                return $this->redirect($beneficialOwnerDeclaration->getUrlUniversign());
+            }
+        }
+
+        return $this->redirectToRoute('home');
+    }
+
+    /**
+     * @param UniversignEntityInterface $universign
+     *
+     * @return null|string
+     */
     private function getStatusTranslationLabel(UniversignEntityInterface $universign)
     {
         switch ($universign->getStatus()) {
@@ -381,10 +453,16 @@ class UniversignController extends Controller
                 $logger = $this->get('logger');
                 $logger->warning('Unknown tos status (' . $universign->status . ') - Cannot create PDF for Universign (project ' . $universign->id_project . ')',
                     ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $universign->id_project]);
+
                 return null;
         }
     }
 
+    /**
+     * @param UniversignEntityInterface $universign
+     *
+     * @return null|string
+     */
     private function getDocumentTypeTranslationLabel(UniversignEntityInterface $universign)
     {
         switch (get_class($universign)) {
@@ -396,6 +474,8 @@ class UniversignController extends Controller
                 return 'tos';
             case WireTransferOutUniversign::class:
                 return 'wire-transfer-out';
+            case ProjectBeneficialOwnerUniversign::class:
+                return ProjectBeneficialOwnerUniversign::DOCUMENT_TYPE;
             default:
                 /** @var LoggerInterface $logger */
                 $logger = $this->get('logger');
