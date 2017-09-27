@@ -1,61 +1,275 @@
 {% extends 'layout.html.twig' %}
 
-{% block pluginCSS %}
+{% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
     <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
 {% endblock %}
 
-{% block pluginJS %}
+{% block pluginsJS %}
+    <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
     <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
 {% endblock %}
 
+{% block pageScripts %}
+    <script>
+        $(function(){
+            // Page helpers are initialised in app.js and can be called quickly using their name
+            App.initHelpers(['validation', 'datepicker', 'datatables']);
+
+            // Passer en statut problème
+            $(document).on('submit', '#modal-status-problem form', function(e) {
+                e.preventDefault()
+                var $form = $(this)
+                if (!$form.find('.has-error').length) {
+                    App.blocks('#modal-status-problem .block', 'state_loading')
+                    $.ajax({
+                        url: $form.attr('action'),
+                        type: 'POST',
+                        data: $form.serialize(),
+                        dataType: 'json',
+                        success: function (response) {
+                            if (response.success) {
+                                location.reload()
+                            } else {
+                                var html = '<div class="alert alert-error">'
+                                for (var i in response.error) {
+                                    html += '<p>' + response.error[i] + '</p>'
+                                }
+                                html += '</div>'
+                                $form.find('.messages').html(html)
+                                App.blocks('#modal-status-problem .block', 'state_normal')
+                            }
+                        }
+                    })
+                }
+            })
+
+            // Missionner un recouvreur
+            $(document).on('submit', '#modal-debt-collection form', function(e) {
+                e.preventDefault()
+                var $form = $(this)
+                if (!$form.find('.has-error').length) {
+                    App.blocks('#modal-debt-collection .block', 'state_loading')
+                    $.ajax({
+                        url: $form.attr('action'),
+                        type: 'POST',
+                        data: $form.serialize(),
+                        dataType:'json',
+                        success: function(response) {
+                            if (response.success) {
+                                location.reload()
+                            } else {
+                                var html = '<div class="alert alert-error">'
+                                for (var i in response.error) {
+                                    html += '<p>' + response.error[i] + '</p>'
+                                }
+                                html += '</div>'
+                                $form.find('.messages').html(html)
+                                App.blocks('#modal-debt-collection .block', 'state_normal')
+                            }
+                        }
+                    })
+                }
+            })
+        })
+    </script>
+{% endblock %}
+
+{% block modals %}
+    <div class="modal fade in" id="modal-close-out-netting">
+        <form class="modal-dialog" action="/recouvrements/details/429892" method="post">
+            <div class="modal-content">
+                <div class="block block-themed remove-margin-b">
+                    <div class="block-header bg-primary">
+                        <h5 class="block-title">Déchoir le terme</h5>
+                    </div>
+                    <div class="block-content">
+                        <p>Cette action est irrévsersible. Voulez-vous confirmer la déchéance du terme ?</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="hidden" name="close-out-netting" value="1">
+                    <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                    <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal fade in" id="modal-status-problem">
+        <form class="modal-dialog" action="/dossiers/edit/87069" method="post">
+            <div class="modal-content">
+                <div class="block block-themed remove-margin-b">
+                    <div class="block-header bg-primary">
+                        <h5 class="block-title">Passer en statut problème</h5>
+                    </div>
+                    <div class="block-content">
+                        <div class="messages"></div>
+                        <div class="form-group">
+                            <label>Envoyer un email d'information aux prêteurs</label> <br>
+                            <label class="css-input css-radio css-radio-sm css-radio-default push-10-r">
+                                <input type="radio" name="send_email" value="1" checked> <span></span> Oui
+                            </label>
+                            <label class="css-input css-radio css-radio-sm css-radio-default push-10-r">
+                                <input type="radio" name="send_email" value="0"> <span></span> Non
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>Contenu de l'email</label>
+                            <textarea name="site_content" class="form-control required" rows="4">La dernière échéance de remboursement ne nous est pas parvenue à la date prévue. Nous contactons sans délai l'emprunteur afin qu'il régularise l'incident au plus vite.</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Envoyer un email d'information aux emprunteurs</label> <br>
+                            <label class="css-input css-radio css-radio-sm css-radio-default push-10-r">
+                                <input type="radio" name="send_email_borrower" value="1"> <span></span> Oui
+                            </label>
+                            <label class="css-input css-radio css-radio-sm css-radio-default push-10-r">
+                                <input type="radio" name="send_email_borrower" value="0" checked> <span></span> Non
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="hidden" name="project-status-change" value="problem">
+                    <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                    <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal fade in" id="modal-debt-collection">
+        <form class="modal-dialog validate" action="/recouvrements/details/429892" method="post">
+            <div class="modal-content">
+                <div class="block block-themed remove-margin-b">
+                    <div class="block-header bg-primary">
+                        <h5 class="block-title">Ajout d'une mission de recouvrement</h5>
+                    </div>
+                    <div class="block-content">
+                        <div class="messages"></div>
+                        <div class="form-group">
+                            <label>Échéances</label>
+                            <ul>
+                                <li>Janvier - 500 €</li>
+                                <li>Février - 500 €</li>
+                            </ul>
+                        </div>
+                        <div class="form-group">
+                            <label>Recouvreur</label>
+                            <select class="form-control required" name="debt-collection-agency">
+                                <option value="1">Progeris</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Type de mission</label>
+                            <select class="form-control required" name="debt-collection-type">
+                                <option value="0">Selectionner</option>
+                                <option value="1">Amiable</option>
+                                <option value="2">Contentieux</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Taux (Pourcentage)</label>
+                            <input class="form-control required" name="debt-collection-rate" type="text" placeholder="13">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="hidden" name="recover-amount" value="1500">
+                    <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                    <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal fade in" id="additional-fees">
+        <form class="modal-dialog js-validation" action="/recouvrements/details/429892" method="post">
+            <div class="modal-content">
+                <div class="block block-themed remove-margin-b">
+                    <div class="block-header bg-primary">
+                        <h5 class="block-title">Ajout de frais avancés par Unilend</h5>
+                    </div>
+                    <div class="block-content">
+                        <div class="form-group">
+                            <label>Type de frais</label>
+                            <select class="form-control required" name="fee-type">
+                                <option value="0">Selectionner</option>
+                                <option value="1">Clause pénale</option>
+                                <option value="2">Frais de visite domiciliare</option>
+                                <option value="3">Injonction de payer</option>
+                                <option value="4">Référé provision</option>
+                                <option value="5">Saisie conservatoire</option>
+                                <option value="6">Assignation au fond</option>
+                                <option value="7">Assignation en procédure collective</option>
+                                <option value="8">Procédure d'appel</option>
+                                <option value="9">Opposition sur vente de fonds de commerce</option>
+                                <option value="10">Frais de déclarations de créance</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Montant</label>
+                            <input class="form-control required" type="number" name="fee-amount">
+                        </div>
+                        <div class="form-group">
+                            <label>Date de facture</label>
+                            <input class="form-control js-datepicker required" type="text" name="fee-invoice-date" data-date-format="mm/dd/yy" placeholder="mm/dd/yy">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                    <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block pageHeader %}
+    <div class="pull-left">
+        <a href="/emprunteurs/projets_avec_retard" class="text-muted"><span class="fa fa-arrow-left"></span> Retards et recouvrements</a>
+    </div>
+    <div class="pull-right">
+        <small>SIREN : {{ projectData.siren }}</small>
+        <small>|</small>
+        <small>ID Projet : {{ projectData.projectId }}</small>
+        <span class="label label-info push-10-l">{{ projectData.projectStatusLabel }}</span>
+    </div>
+    <h1 class="h3" style="clear:both; margin: 40px 0 30px">
+        {{ projectData.projectTitle }} <br>
+        <small class="font-w400">{{ projectData.companyActivity }}</small>
+    </h1>
+{% endblock %}
+
 {% block content %}
-    <div class="row">
-        <div class="col-md-12">
-            <div class="block block-rounded">
-                <div class="block-header">
-                    <div class="pull-left">
-                        <a href="/emprunteurs/projets_avec_retard" class="text-muted"><span class="fa fa-arrow-left"></span>Retards et recouvrements</a>
+    <div class="content">
+        <div class="block block-rounded">
+            <div class="block-content block-content-full">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="font-s12 font-w600 text-uppercase">Retard Emprunteur</div>
+                        <a class="h2 font-w300 text-primary">{{ projectData.remainingAmount|localizedcurrency('EUR') }}</a>
                     </div>
-                    <div class="pull-right">
-                        <small>SIREN: {{ projectData.siren }}</small>
-                        <small>|</small>
-                        <small>ID Projet: {{ projectData.projectId }}</small>
-                        <span class="label label-info push-10-l">{{ projectData.projectStatusLabel }}</span>
+                    <div class="col-md-3">
+                        <div class="font-s12 font-w600 text-uppercase">Confié au recouvreur</div>
+                        <a class="h2 font-w300 text-primary">{{ projectData.entrustedToDebtCollector|localizedcurrency('EUR') }}</a>
                     </div>
-                </div>
-                <div class="block-content block-content-full">
-                    <h2 class="h3 push-30">
-                        {{ projectData.projectTitle }} <br>
-                        <small class="font-w400">{{ projectData.companyActivity }}</small>
-                    </h2>
-                    <div class="row push-30">
-                        <div class="col-md-3">
-                            <div class="font-s12 font-w600 text-uppercase">Retard Emprunteur</div>
-                            <a class="h2 font-w300 text-primary">{{ projectData.remainingAmount|localizedcurrency('EUR') }}</a>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="font-s12 font-w600 text-uppercase">Confié au recouvreur</div>
-                            <a class="h2 font-w300 text-primary">{{ projectData.entrustedToDebtCollector|localizedcurrency('EUR') }}</a>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="font-s12 font-w600 text-uppercase">Réceptions à traiter</div>
-                            <a class="h2 font-w300 text-primary">{{ projectData.pendingReceiptCount|localizednumber }}</a>
-                        </div>
+                    <div class="col-md-3">
+                        <div class="font-s12 font-w600 text-uppercase">Réceptions à traiter</div>
+                        <a class="h2 font-w300 text-primary">{{ projectData.pendingReceiptCount|localizednumber }}</a>
                     </div>
                 </div>
             </div>
-            <div id="retards" class="block block-rounded">
-                {% include 'dossiers/blocs/details_impayes/retards.html.twig'%}
-            </div>
-            <div id="debt-colletion" class="block block-rounded">
-                {% include 'dossiers/blocs/details_impayes/recouvrements.html.twig' %}
-            </div>
-            <div id="fees-honoraries" class="block block-rounded">
-                {% include 'dossiers/blocs/details_impayes/frais_honoraires.html.twig' %}
-            </div>
-            <div id="receptions" class="block block-rounded">
-                {% include 'dossiers/blocs/details_impayes/receptions.html.twig' %}
-            </div>
+        </div>
+        <div id="retards" class="block block-rounded">
+            {% include 'dossiers/blocs/details_impayes/retards.html.twig'%}
+        </div>
+        <div id="debt-colletion" class="block block-rounded">
+            {% include 'dossiers/blocs/details_impayes/recouvrements.html.twig' %}
+        </div>
+        <div id="fees" class="block block-rounded">
+            {% include 'dossiers/blocs/details_impayes/frais.html.twig' %}
+        </div>
+        <div id="receptions" class="block block-rounded">
+            {% include 'dossiers/blocs/details_impayes/receptions.html.twig' %}
         </div>
     </div>
 {% endblock %}
