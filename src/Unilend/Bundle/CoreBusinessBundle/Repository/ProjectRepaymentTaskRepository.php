@@ -3,7 +3,6 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
 
 class ProjectRepaymentTaskRepository extends EntityRepository

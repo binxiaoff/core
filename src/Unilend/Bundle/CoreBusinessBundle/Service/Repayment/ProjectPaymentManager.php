@@ -3,10 +3,12 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
 use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionFeeDetail;
 use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager;
@@ -48,7 +50,7 @@ class ProjectPaymentManager
     }
 
     /**
-     * @param Receptions                 $reception
+     * @param Receptions                 $wireTransferIn
      * @param Users                      $user
      * @param DebtCollectionMission|null $debtCollectionMission
      * @param float|null                 $debtCollectionFeeRate
@@ -57,44 +59,142 @@ class ProjectPaymentManager
      * @return bool
      * @throws \Exception
      */
-    public function pay(Receptions $reception, Users $user, DebtCollectionMission $debtCollectionMission = null, $debtCollectionFeeRate = null, $projectCharges = null)
+    public function pay(Receptions $wireTransferIn, Users $user, DebtCollectionMission $debtCollectionMission = null, $debtCollectionFeeRate = null, $projectCharges = null)
     {
-        $repaymentScheduleRepository      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-        $projectRepaymentDetailRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail');
-        $walletRepository                 = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $paymentScheduleRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $walletRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
 
-        $project                          = $reception->getIdProject();
-        $amount                           = round(bcdiv($reception->getMontant(), 100, 4), 2);
+        $project                          = $wireTransferIn->getIdProject();
+        $amount                           = round(bcdiv($wireTransferIn->getMontant(), 100, 4), 2);
         $isDebtCollectionFeeDueToBorrower = $this->debtCollectionManager->isDebtCollectionFeeDueToBorrower($project);
 
-        $borrowerWallet  = null;
-        $collectorWallet = null;
-        if ($debtCollectionMission && $debtCollectionFeeRate && $isDebtCollectionFeeDueToBorrower) {
-            $borrowerWallet  = $walletRepository->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
-            $collectorWallet = $walletRepository->getWalletByType($debtCollectionMission->getIdClientDebtCollector(), WalletType::DEBT_COLLECTOR);
+        $debtCollectorWallet = null;
+        if ($debtCollectionMission) {
+            $debtCollectorWallet = $walletRepository->getWalletByType($debtCollectionMission->getIdClientDebtCollector(), WalletType::DEBT_COLLECTOR);
+            if (null === $debtCollectorWallet) {
+                throw new \Exception('The wallet for the debt collector (id client : ' . $debtCollectionMission->getIdClientDebtCollector()->getIdClient() . ')is not defined.');
+            }
+        }
+        $borrowerWallet = $walletRepository->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+
+        $vatTax = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+        if (null === $vatTax) {
+            throw new \Exception('The VAT rate is not defined.');
+        }
+        $vatTaxRate = round(bcdiv($vatTax->getRate(), 100, 5), 4);
+
+        //Treat the project's charges only if the debt collection fee is due to the borrower.
+        //Because otherwise, the Unilend takes the charges, and the charges have already been paid before (the charges are created in this case with "paid" status).
+        if ($projectCharges && $isDebtCollectionFeeDueToBorrower) {
+            $totalAppliedCharges       = 0;
+            $debtCollectionFeeOnCharge = 0;
+            foreach ($projectCharges as $projectCharge) {
+                $totalAppliedCharges = round(bcadd($totalAppliedCharges, $projectCharge->getAmountInclVat(), 4), 2);
+                $projectCharge->setIdWireTransferIn($wireTransferIn);
+
+                $this->entityManager->flush($projectCharge);
+            }
+
+            if ($debtCollectionMission && $debtCollectionFeeRate && $totalAppliedCharges) {
+                $debtCollectionFeeOnChargeTaxExcl = round(bcmul($totalAppliedCharges, $debtCollectionFeeRate, 4), 2);
+                $debtCollectionFeeOnChargeVat     = round(bcmul($debtCollectionFeeOnChargeTaxExcl, $vatTaxRate, 4), 2);
+                $debtCollectionFeeOnCharge        = round(bcadd($debtCollectionFeeOnChargeTaxExcl, $debtCollectionFeeOnChargeVat, 4), 2);
+
+                $debtCollectionFeeDetail = new DebtCollectionFeeDetail();
+                $debtCollectionFeeDetail->setIdWalletDebtor($borrowerWallet)
+                    ->setIdWalletCreditor($debtCollectorWallet)
+                    ->setAmountTaxIncl($debtCollectionFeeOnCharge)
+                    ->setVat($debtCollectionFeeOnChargeVat)
+                    ->setIdType(DebtCollectionFeeDetail::TYPE_PROJECT_CHARGE)
+                    ->setStatus(DebtCollectionFeeDetail::STATUS_PENDING)
+                    ->setIdWireTransferIn($wireTransferIn)
+                    ->setIdDebtCollectionMission($debtCollectionMission);
+
+                $this->entityManager->persist($debtCollectionFeeDetail);
+                $this->entityManager->flush($debtCollectionFeeDetail);
+            }
+
+            $amount = round(bcsub($amount, $totalAppliedCharges, 4), 2);
+            $amount = round(bcsub($amount, $debtCollectionFeeOnCharge, 4), 2);
         }
 
-        $debtCollectionFeeOnRepaymentAmount = 0;
-        $debtCollectionFeeOnCommission      = 0;
-        $debtCollectionFeeOnCharge          = 0;
+        if ($debtCollectionMission && $debtCollectionFeeRate) {
+            $overdueAmounts              = $paymentScheduleRepository->getTotalOverdueAmounts($project);
+            $totalMonthlyRepaymentAmount = round(bcadd($overdueAmounts['commission'], bcadd($overdueAmounts['capital'], $overdueAmounts['interest'], 4), 4), 2);
+            $totalOverDueCommission      = $overdueAmounts['commission'];
 
-        if ($projectCharges) {
+            $notRepaidCommissionProportion        = bcdiv($totalOverDueCommission, $totalMonthlyRepaymentAmount, 10);
+            $predictCommission                    = round(bcmul($amount, $notRepaidCommissionProportion, 4), 2);
+            $debtCollectionFeeOnCommissionTaxExcl = round(bcmul($predictCommission, $debtCollectionFeeRate, 4), 2);
+            $debtCollectionFeeOnCommissionVat     = round(bcmul($debtCollectionFeeOnCommissionTaxExcl, $vatTaxRate, 4), 2);
+            $debtCollectionFeeOnCommission        = round(bcadd($debtCollectionFeeOnCommissionTaxExcl, $debtCollectionFeeOnCommissionVat, 4), 2);
+
+            $debtCollectionFeeDetail = new DebtCollectionFeeDetail();
+
             if ($isDebtCollectionFeeDueToBorrower) {
-                $totalAppliedCharges = 0;
-                foreach ($projectCharges as $projectCharge) {
-                    $totalAppliedCharges = round(bcadd($totalAppliedCharges, $projectCharge->getAmountInclVat(), 4), 2);
-                    $projectCharge->setStatus(ProjectCharge::STATUS_PAID)
-                        ->setIdWireTransferIn($reception);
+                $debtCollectionFeeDetail->setIdWalletDebtor($borrowerWallet);
+            } else {
+                $unilendWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);
+                $unilendWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
+                $debtCollectionFeeDetail->setIdWalletDebtor($unilendWallet);
+            }
 
-                    $this->entityManager->flush($projectCharge);
+            $debtCollectionFeeDetail->setIdWalletCreditor($debtCollectorWallet)
+                ->setAmountTaxIncl($debtCollectionFeeOnCommission)
+                ->setVat($debtCollectionFeeOnCommissionVat)
+                ->setIdType(DebtCollectionFeeDetail::TYPE_REPAYMENT_COMMISSION)
+                ->setStatus(DebtCollectionFeeDetail::STATUS_PENDING)
+                ->setIdWireTransferIn($wireTransferIn)
+                ->setIdDebtCollectionMission($debtCollectionMission);
+
+            $this->entityManager->persist($debtCollectionFeeDetail);
+            $this->entityManager->flush($debtCollectionFeeDetail);
+
+            $debtCollectionFeeOnRepayment = 0;
+
+            $loans = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project]);
+
+            foreach ($loans as $loan) {
+                $notRepaidAmount                = $repaymentScheduleRepository->getTotalOverdueAmount($loan);
+                $notRepaidProportion            = bcdiv($notRepaidAmount, $totalMonthlyRepaymentAmount, 10);
+                $predictRepaymentAmount         = round(bcmul($amount, $notRepaidProportion, 4), 2);
+                $debtCollectionFeeOnLoanTaxExcl = round(bcmul($predictRepaymentAmount, $debtCollectionFeeRate, 4), 2);
+                $debtCollectionFeeOnLoanVat     = round(bcmul($debtCollectionFeeOnLoanTaxExcl, $vatTaxRate, 4), 2);
+                $debtCollectionFeeOnLoan        = round(bcadd($debtCollectionFeeOnLoanTaxExcl, $debtCollectionFeeOnLoanVat, 4), 2);
+                $debtCollectionFeeOnRepayment   = round(bcadd($debtCollectionFeeOnRepayment, $debtCollectionFeeOnLoan, 4), 2);
+
+                $debtCollectionFeeDetail = new DebtCollectionFeeDetail();
+
+                if ($isDebtCollectionFeeDueToBorrower) {
+                    $debtCollectionFeeDetail->setIdWalletDebtor($borrowerWallet);
+                } else {
+                    $debtCollectionFeeDetail->setIdWalletDebtor($loan->getIdLender());
                 }
 
-                $debtCollectionFeeOnCharge = round(bcmul($totalAppliedCharges, $debtCollectionFeeRate, 4), 2);
-                $amount                    = round(bcsub($amount, bcadd($totalAppliedCharges, $debtCollectionFeeOnCharge, 4), 4), 2);
+                $debtCollectionFeeDetail->setIdWalletCreditor($debtCollectorWallet)
+                    ->setIdLoan($loan)
+                    ->setAmountTaxIncl($debtCollectionFeeOnLoan)
+                    ->setVat($debtCollectionFeeOnLoanVat)
+                    ->setIdType(DebtCollectionFeeDetail::TYPE_LOAN)
+                    ->setStatus(DebtCollectionFeeDetail::STATUS_PENDING)
+                    ->setIdWireTransferIn($wireTransferIn)
+                    ->setIdDebtCollectionMission($debtCollectionMission);
+
+                $this->entityManager->persist($debtCollectionFeeDetail);
+                $this->entityManager->flush($debtCollectionFeeDetail);
+            }
+
+            if ($isDebtCollectionFeeDueToBorrower) {
+                $amount = round(bcsub($amount, $debtCollectionFeeOnCommission, 4), 2);
+                $amount = round(bcsub($amount, $debtCollectionFeeOnRepayment, 4), 2);
             }
         }
 
-        $unpaidPaymentSchedules = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findUnFinishedSchedules($project);
+        $unpaidPaymentSchedules = $paymentScheduleRepository->findBy([
+            'idProject'        => $project,
+            'statusEmprunteur' => [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]
+        ]);
 
         $this->entityManager->getConnection()->beginTransaction();
         try {
@@ -130,32 +230,10 @@ class ProjectPaymentManager
                     $interestToPay = round(bcsub($netRepaymentAmount, $capitalToPay, 4), 2);
                 }
 
-                $repaymentSchedule = $repaymentScheduleRepository->findOneBy([
-                    'idProject' => $project,
-                    'ordre'     => $paymentSchedule->getOrdre()
-                ]);
-
-                $projectRepaymentTask = $this->projectRepaymentTaskManager->planRepaymentTask($repaymentSchedule, $capitalToPay, $interestToPay, $commissionToPay, $reception, $user,
-                    $debtCollectionMission, $debtCollectionFeeRate, $projectCharges);
-                $this->projectRepaymentTaskManager->prepare($projectRepaymentTask);
-
-                if ($debtCollectionMission && $debtCollectionFeeRate && $this->debtCollectionManager->isDebtCollectionFeeDueToBorrower($projectRepaymentTask->getIdProject())) {
-                    $debtCollectionFeeOnRepaymentAmount = $projectRepaymentDetailRepository->getTotalDebtCollectionFeeToPayByTask($projectRepaymentTask);
-                    $debtCollectionFeeOnCommission      = round(bcmul($commissionToPay, $debtCollectionFeeRate, 4), 2);
-                }
-
-                $paidAmount = round(bcadd(bcadd($capitalToPay, $interestToPay, 4), $commissionToPay, 4), 2);
-                $amount     = round(bcsub($amount, $paidAmount, 4), 2);
-
-                if (1 === bccomp($amount, 0, 2)) {
-                    //todo: sub the fee on the repayment or on the amount
-                }
-
-                $this->projectRepaymentTaskManager->checkPlannedTaskAmount($paymentSchedule->getIdProject(), $repaymentSchedule->getOrdre());
-
                 $paymentSchedule->setPaidCapital($paymentSchedule->getPaidCapital() + bcmul($capitalToPay, 100))
                     ->setPaidInterest($paymentSchedule->getPaidInterest() + bcmul($interestToPay, 100))
-                    ->setPaidCommissionVatIncl($paymentSchedule->getPaidCommissionVatIncl() + bcmul($commissionToPay, 100));
+                    ->setPaidCommissionVatIncl($paymentSchedule->getPaidCommissionVatIncl() + bcmul($commissionToPay,
+                            100));
                 if (
                     $paymentSchedule->getCapital() == $paymentSchedule->getPaidCapital()
                     && $paymentSchedule->getInterets() == $paymentSchedule->getPaidInterest()
@@ -168,12 +246,16 @@ class ProjectPaymentManager
                 }
 
                 $this->entityManager->flush($paymentSchedule);
-            }
 
-            $debtCollectionFeeToPayByBorrower = round(bcadd($debtCollectionFeeOnRepaymentAmount, bcadd($debtCollectionFeeOnCharge, $debtCollectionFeeOnCommission, 4), 4), 2);
-            if (1 === bccomp($debtCollectionFeeToPayByBorrower, 0, 2)) {
+                $repaymentSchedule = $repaymentScheduleRepository->findOneBy([
+                    'idProject' => $project,
+                    'ordre'     => $paymentSchedule->getOrdre()
+                ]);
 
-                $this->operationManager->payCollectionCommissionByBorrower($borrowerWallet, $collectorWallet, $debtCollectionFeeToPayByBorrower, [$project, $reception]);
+                $this->projectRepaymentTaskManager->planRepaymentTask($repaymentSchedule, $capitalToPay, $interestToPay, $commissionToPay, $wireTransferIn, $user, $debtCollectionMission);
+
+                $paidAmount = round(bcadd(bcadd($capitalToPay, $interestToPay, 4), $commissionToPay, 4), 2);
+                $amount     = round(bcsub($amount, $paidAmount, 4), 2);
             }
 
             $this->entityManager->getConnection()->commit();
@@ -186,18 +268,18 @@ class ProjectPaymentManager
     }
 
     /**
-     * @param Receptions $reception
+     * @param Receptions $wireTransferIn
      * @param Users      $user
      *
      * @throws \Exception
      */
-    public function rejectPayment(Receptions $reception, Users $user)
+    public function rejectPayment(Receptions $wireTransferIn, Users $user)
     {
         $paymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
-        $project                   = $reception->getIdProject();
+        $project                   = $wireTransferIn->getIdProject();
 
         $projectRepaymentTasksToCancel = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
-            ->findBy(['idProject' => $project, 'idWireTransferIn' => $reception->getIdReceptionRejected()]);
+            ->findBy(['idProject' => $project, 'idWireTransferIn' => $wireTransferIn->getIdReceptionRejected()]);
 
         $this->entityManager->getConnection()->beginTransaction();
         try {

@@ -38,13 +38,6 @@ class ProjectRepaymentDetail
     private $interest;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="debt_collection_fee", type="decimal", precision=10, scale=2, nullable=true)
-     */
-    private $debtCollectionFee;
-
-    /**
      * If the repayment schedule will be completed after the repayment
      *
      * @var boolean
@@ -178,30 +171,6 @@ class ProjectRepaymentDetail
     public function getInterest()
     {
         return $this->interest;
-    }
-
-    /**
-     * Set debtCollectionFee
-     *
-     * @param string $debtCollectionFee
-     *
-     * @return ProjectRepaymentDetail
-     */
-    public function setDebtCollectionFee($debtCollectionFee)
-    {
-        $this->debtCollectionFee = $debtCollectionFee;
-
-        return $this;
-    }
-
-    /**
-     * Get debtCollectionFee
-     *
-     * @return string
-     */
-    public function getDebtCollectionFee()
-    {
-        return $this->debtCollectionFee;
     }
 
     /**

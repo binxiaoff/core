@@ -566,18 +566,31 @@ class EcheanciersRepository extends EntityRepository
      * @param Projects|int $project
      * @param int          $sequence
      *
-     * @return float
+     * @return array
      */
-    public function getNotRepaidCapitalByProjectAndSequence($project, $sequence)
+    public function getNotRepaidAmountByProjectAndSequence($project, $sequence)
     {
         $queryBuilder = $this->createQueryBuilder('e');
-        $queryBuilder->select('ROUND(SUM(e.capital - e.capitalRembourse) / 100, 2)')
+        $queryBuilder->select('ROUND(SUM(e.capital - e.capitalRembourse) / 100, 2) as capital, ROUND(SUM(e.interets - e.interetsRembourses) / 100, 2) as interest')
             ->where('e.idProject = :project')
             ->andWhere('e.ordre = :sequence')
             ->setParameter('project', $project)
             ->setParameter('sequence', $sequence);
 
-        return $queryBuilder->getQuery()->getSingleScalarResult();
+        return $queryBuilder->getQuery()->getSingleResult();
+    }
+
+    /**
+     * @param Projects|int $project
+     * @param int          $sequence
+     *
+     * @return float
+     */
+    public function getNotRepaidCapitalByProjectAndSequence($project, $sequence)
+    {
+        $amount = $this->getNotRepaidAmountByProjectAndSequence($project, $sequence);
+
+        return $amount['capital'];
     }
 
     /**
@@ -588,12 +601,26 @@ class EcheanciersRepository extends EntityRepository
      */
     public function getNotRepaidInterestByProjectAndSequence($project, $sequence)
     {
+        $amount = $this->getNotRepaidAmountByProjectAndSequence($project, $sequence);
+
+        return $amount['interest'];
+    }
+
+    /**
+     * @param Loans|int $loan
+     *
+     * @return float
+     */
+    public function getTotalOverdueAmount($loan)
+    {
         $queryBuilder = $this->createQueryBuilder('e');
-        $queryBuilder->select('ROUND(SUM(e.interets - e.interetsRembourses) / 100, 2)')
-            ->where('e.idProject = :project')
-            ->andWhere('e.ordre = :sequence')
-            ->setParameter('project', $project)
-            ->setParameter('sequence', $sequence);
+        $queryBuilder->select('ROUND(SUM(e.capital + e.interets - e.capitalRembourse - e.interetsRembourses) / 100, 2)')
+            ->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'e.idLoan = l.idLoan')
+            ->innerJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'ee.idProject = l.idProject AND ee.ordre = e.ordre')
+            ->where('e.idLoan = :loan')
+            ->setParameter('loan', $loan)
+            ->andWhere('ee.dateEcheanceEmprunteur < :today')
+            ->setParameter('today', (new \DateTime())->format('Y-m-d'));
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }

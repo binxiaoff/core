@@ -10,22 +10,22 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
-use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager;
 
 class DebtCollectionMissionManager
 {
-    const DEBT_COLLECTION_CONDITION_CHANGEMENT_DATE = '2016-04-19';
+    const DEBT_COLLECTION_CONDITION_CHANGE_DATE = '2016-04-19';
 
-    /**
-     * @var EntityManager
-     */
+    /** @var EntityManager */
     private $entityManager;
-    private $projectRepaymentManager;
 
-    public function __construct(EntityManager $entityManager, ProjectRepaymentManager $projectRepaymentManager)
+    /** @var ProjectRepaymentTaskManager */
+    private $projectRepaymentTaskManager;
+
+    public function __construct(EntityManager $entityManager, ProjectRepaymentTaskManager $projectRepaymentTaskManager)
     {
-        $this->entityManager           = $entityManager;
-        $this->projectRepaymentManager = $projectRepaymentManager;
+        $this->entityManager               = $entityManager;
+        $this->projectRepaymentTaskManager = $projectRepaymentTaskManager;
     }
 
     public function getCreditorsDetails(DebtCollectionMission $debtCollectionMission)
@@ -118,7 +118,7 @@ class DebtCollectionMissionManager
     private function getLoanDetails(DebtCollectionMission $debtCollectionMission)
     {
         $projectRepaymentTaskRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask');
-        $missionPaymentSchedules          = $debtCollectionMission->getDebtCollectionMissionPaymentSchedules();
+        $missionPaymentSchedules        = $debtCollectionMission->getDebtCollectionMissionPaymentSchedules();
 
         foreach ($missionPaymentSchedules as $missionPaymentSchedule) {
             $repaymentTasks = $projectRepaymentTaskRepository->findBy([
@@ -133,7 +133,7 @@ class DebtCollectionMissionManager
             ]);
 
             foreach ($repaymentTasks as $projectRepaymentTask) {
-                $this->projectRepaymentManager->prepare($projectRepaymentTask);
+                $this->projectRepaymentTaskManager->prepare($projectRepaymentTask);
             }
         }
 
@@ -227,7 +227,7 @@ class DebtCollectionMissionManager
             ->findStatusFirstOccurrence($project, ProjectsStatus::EN_FUNDING);
         $putOnlineDate = $statusHistory->getAdded();
         $putOnlineDate->setTime(0, 0, 0);
-        $dateOfChange = new \DateTime(self::DEBT_COLLECTION_CONDITION_CHANGEMENT_DATE);
+        $dateOfChange = new \DateTime(self::DEBT_COLLECTION_CONDITION_CHANGE_DATE);
         $dateOfChange->setTime(0, 0, 0);
 
         if ($putOnlineDate >= $dateOfChange) {

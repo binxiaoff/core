@@ -194,7 +194,7 @@ EOF
         $statusHistory   = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->findStatusFirstOccurrence($projectId, ProjectsStatus::REMBOURSEMENT);
         $fundReleaseDate = $statusHistory->getAdded();
         $fundReleaseDate->setTime(0, 0, 0);
-        $dateOfChange = new \DateTime(DebtCollectionMissionManager::DEBT_COLLECTION_CONDITION_CHANGEMENT_DATE);
+        $dateOfChange = new \DateTime(DebtCollectionMissionManager::DEBT_COLLECTION_CONDITION_CHANGE_DATE);
         $dateOfChange->setTime(0, 0, 0);
 
         $entityManager->getConnection()->beginTransaction();
@@ -208,7 +208,7 @@ EOF
                 if ($commission <= 0) {
                     throw new \Exception('Invalid commission');
                 }
-                $operationManager->payCollectionCommissionByBorrower($borrower, $collector, $commission, $project);
+                $operationManager->payDebtCollectionFee($borrower, $collector, $commission, $project);
 
                 $amountToRepay = round(bcsub($projectRepaymentTask, $commission, 4), 2);
                 $projectRepaymentTask->setCapital($amountToRepay);
@@ -225,7 +225,7 @@ EOF
                     }
                     $operationManager->repaymentCollection($lender, $project, $amount, $projectRepaymentTaskLog);
                     if ($fundReleaseDate < $dateOfChange && false === empty($aRow[2])) {
-                        $operationManager->payCollectionCommissionByLender($lender, $collector, $commissionLender, [$project, $projectRepaymentTaskLog]);
+                        $operationManager->payDebtCollectionFee($lender, $collector, $commissionLender, [$project, $projectRepaymentTaskLog]);
                     }
                 }
                 $repaidAmount = round(bcadd($repaidAmount, $amount, 4), 2);

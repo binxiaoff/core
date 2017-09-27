@@ -168,20 +168,6 @@ class ProjectRepaymentTask
     private $idProject;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="debt_collection_fee_rate", type="decimal", precision=4, scale=4, nullable=true)
-     */
-    private $debtCollectionFeeRate;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="vat_rate", type="decimal", precision=4, scale=4, nullable=true)
-     */
-    private $vatRate;
-
-    /**
      * @var ProjectRepaymentTaskLog[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog", mappedBy="idTask")
@@ -597,54 +583,6 @@ class ProjectRepaymentTask
     public function getTaskLogs()
     {
         return $this->taskLogs;
-    }
-
-    /**
-     * Set debtCollectionFeeRate
-     *
-     * @param string $debtCollectionFeeRate
-     *
-     * @return ProjectRepaymentTask
-     */
-    public function setDebtCollectionFeeRate($debtCollectionFeeRate)
-    {
-        $this->debtCollectionFeeRate = $debtCollectionFeeRate;
-
-        return $this;
-    }
-
-    /**
-     * Get debtCollectionFeeRate
-     *
-     * @return string
-     */
-    public function getDebtCollectionFeeRate()
-    {
-        return $this->debtCollectionFeeRate;
-    }
-
-    /**
-     * Set vatRate
-     *
-     * @param string $vatRate
-     *
-     * @return ProjectRepaymentTask
-     */
-    public function setVatRate($vatRate)
-    {
-        $this->vatRate = $vatRate;
-
-        return $this;
-    }
-
-    /**
-     * Get vatRate
-     *
-     * @return string
-     */
-    public function getVatRate()
-    {
-        return $this->vatRate;
     }
 
     /**
