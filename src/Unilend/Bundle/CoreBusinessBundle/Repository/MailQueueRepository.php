@@ -1,10 +1,10 @@
 <?php
+
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
-use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue;
-use Unilend\librairies\CacheKeys;
 
 class MailQueueRepository extends EntityRepository
 {
@@ -31,52 +31,85 @@ class MailQueueRepository extends EntityRepository
     }
 
     /**
-     * @param string $type
+     * @param int $templateId
      *
-     * @return mixed
+     * @return bool
      */
-    public function getSendFrequencyForMailTemplate($type)
+    public function existsTemplateInMailQueue($templateId)
     {
-        $typesQuery = 'SELECT id_mail_template FROM mail_templates WHERE type = :type';
-        $types      = $this->getEntityManager()->getConnection()->executeQuery($typesQuery, ['type' => $type])->fetchAll()[0];
+        $queryBuilder = $this->createQueryBuilder('mq');
+        $queryBuilder
+            ->select('COUNT(mq.idQueue)')
+            ->innerJoin('UnilendCoreBusinessBundle:MailTemplates', 'mt', Join::WITH, 'mq.idMailTemplate = mt.idMailTemplate')
+            ->where('mt.idMailTemplate = :templateId')
+            ->orWhere('mt.idHeader = :templateId')
+            ->orWhere('mt.idFooter = :templateId')
+            ->setParameter('templateId', $templateId);
 
-        $query = 'SELECT
-                  SUM(periods.24h) AS "24h",
-                  SUM(periods.7d)  AS "7d",
-                  SUM(periods.30d) AS "30d" 
-                FROM (
-                       SELECT
-                         COUNT(id_queue) AS "24h",
-                         NULL            AS "7d",
-                         NULL            AS "30d"
-                       FROM mail_queue
-                       WHERE id_mail_template IN (' . implode(',', $types) . ') AND sent_at >= (DATE_SUB(NOW(), INTERVAL 1 DAY))
-                
-                       UNION ALL
-                       SELECT
-                         NULL,
-                         COUNT(id_queue),
-                         NULL
-                       FROM mail_queue
-                       WHERE id_mail_template IN (' . implode(',', $types) . ') AND sent_at >= (DATE_SUB(NOW(), INTERVAL 7 DAY))
-                
-                       UNION ALL
-                
-                       SELECT
-                         NULL,
-                         NULL,
-                         COUNT(id_queue)
-                       FROM mail_queue
-                       WHERE id_mail_template IN (' . implode(',', $types) . ') AND sent_at >= (DATE_SUB(NOW(), INTERVAL 30 DAY))) AS periods';
+        return $queryBuilder->getQuery()->getSingleScalarResult() > 0;
+    }
 
+    /**
+     * @param int|null       $clientId
+     * @param string|null    $sender
+     * @param string|null    $recipient
+     * @param string|null    $subject
+     * @param \DateTime|null $startDate
+     * @param \DateTime|null $endDate
+     *
+     * @return array
+     */
+    public function searchSentEmails($clientId = null, $sender = null, $recipient = null, $subject = null, \DateTime $startDate = null, \DateTime $endDate = null)
+    {
+        $queryBuilder = $this->createQueryBuilder('mq');
+        $queryBuilder
+            ->select('
+                mq.*,
+                mt.sender_name,
+                mt.sender_email,
+                mt.subject'
+            )
+            ->innerJoin('UnilendCoreBusinessBundle:MailTemplates', 'mt', Join::WITH, 'mq.idMailTemplate = mt.idMailTemplate')
+            ->where('mq.status = :sent')
+            ->setParameter('sent', MailQueue::STATUS_SENT)
+            ->orderBy('mq.sentAt', 'DESC');
 
-        $statement = $this->getEntityManager()->getConnection()->executeCacheQuery(
-            $query, [], [],
-            new QueryCacheProfile(CacheKeys::LONG_TIME * 6, md5(__METHOD__ . $type))
-        );
-        $result    = $statement->fetchAll(\PDO::FETCH_ASSOC);
-        $statement->closeCursor();
+        if (false === is_null($clientId)) {
+            $queryBuilder
+                ->andWhere('mq.idClient = :clientId')
+                ->setParameter('clientId', $clientId);
+        }
 
-        return $result[0];
+        if (false === is_null($sender)) {
+            $queryBuilder
+                ->andWhere('mt.senderName LIKE :sender')
+                ->setParameter('sender', '%' . $sender . '%');
+        }
+
+        if (false === is_null($recipient)) {
+            $queryBuilder
+                ->andWhere('mq.recipient LIKE :recipient')
+                ->setParameter('recipient', '%' . $recipient . '%');
+        }
+
+        if (false === is_null($subject)) {
+            $queryBuilder
+                ->andWhere('mt.subject LIKE :subject')
+                ->setParameter('subject', '%' . $subject . '%');
+        }
+
+        if (false === is_null($startDate)) {
+            $queryBuilder
+                ->andWhere('mq.sentAt >= :startDate')
+                ->setParameter('startDate', $startDate->format('Y-m-d 00:00:00'));
+        }
+
+        if (false === is_null($endDate)) {
+            $queryBuilder
+                ->andWhere('mq.sentAt <= :endDate')
+                ->setParameter('endDate', $endDate->format('Y-m-d 23:59:59'));
+        }
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }
