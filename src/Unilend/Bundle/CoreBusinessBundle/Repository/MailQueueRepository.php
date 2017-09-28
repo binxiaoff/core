@@ -40,10 +40,7 @@ class MailQueueRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('mq');
         $queryBuilder
             ->select('COUNT(mq.idQueue)')
-            ->innerJoin('UnilendCoreBusinessBundle:MailTemplates', 'mt', Join::WITH, 'mq.idMailTemplate = mt.idMailTemplate')
-            ->where('mt.idMailTemplate = :templateId')
-            ->orWhere('mt.idHeader = :templateId')
-            ->orWhere('mt.idFooter = :templateId')
+            ->where('mq.idMailTemplate = :templateId')
             ->setParameter('templateId', $templateId);
 
         return $queryBuilder->getQuery()->getSingleScalarResult() > 0;
