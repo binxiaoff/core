@@ -172,7 +172,7 @@ class ProjectRequestController extends Controller
             $entityManager->persist($company);
             $entityManager->flush($company);
 
-            $this->get('unilend.service.wallet_creation_manager')->createWallet($client, WalletType::PARTNER);
+            $this->get('unilend.service.wallet_creation_manager')->createWallet($client, WalletType::BORROWER);
 
             $entityManager->commit();
         } catch (\Exception $exception) {

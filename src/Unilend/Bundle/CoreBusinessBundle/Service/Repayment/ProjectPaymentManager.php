@@ -7,11 +7,15 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class ProjectPaymentManager
 {
     /** @var EntityManager */
     private $entityManager;
+
+    /** @var EntityManagerSimulator */
+    private $entityManagerSimulator;
 
     /** @var ProjectRepaymentTaskManager */
     private $projectRepaymentTaskManager;
@@ -20,14 +24,17 @@ class ProjectPaymentManager
      * ProjectRepaymentManager constructor.
      *
      * @param EntityManager               $entityManager
+     * @param EntityManagerSimulator      $entityManagerSimulator
      * @param ProjectRepaymentTaskManager $projectRepaymentTaskManager
      */
     public function __construct(
         EntityManager $entityManager,
+        EntityManagerSimulator $entityManagerSimulator,
         ProjectRepaymentTaskManager $projectRepaymentTaskManager
     )
     {
         $this->entityManager               = $entityManager;
+        $this->entityManagerSimulator      = $entityManagerSimulator;
         $this->projectRepaymentTaskManager = $projectRepaymentTaskManager;
     }
 
@@ -41,6 +48,8 @@ class ProjectPaymentManager
     public function pay(Receptions $reception, $user)
     {
         $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        /** @var \echeanciers $repaymentScheduleData */
+        $repaymentScheduleData = $this->entityManagerSimulator->getRepository('echeanciers');
 
         $project = $reception->getIdProject();
 
@@ -96,6 +105,10 @@ class ProjectPaymentManager
                 ) {
                     $paymentSchedule->setStatusEmprunteur(EcheanciersEmprunteur::STATUS_PAID)
                         ->setDateEcheanceEmprunteurReel(new \DateTime());
+
+                    // todo: this call can be deleted once all migrations have been done on the usage of these 2 columns.
+                    $repaymentScheduleData->updateStatusEmprunteur($project->getIdProject(), $paymentSchedule->getOrdre());
+
                 } else {
                     $paymentSchedule->setStatusEmprunteur(EcheanciersEmprunteur::STATUS_PARTIALLY_PAID);
                 }
@@ -131,7 +144,10 @@ class ProjectPaymentManager
     public function rejectPayment(Receptions $reception, Users $user)
     {
         $paymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
-        $project                   = $reception->getIdProject();
+        /** @var \echeanciers $repaymentScheduleData */
+        $repaymentScheduleData = $this->entityManagerSimulator->getRepository('echeanciers');
+
+        $project = $reception->getIdProject();
 
         $projectRepaymentTasksToCancel = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
             ->findBy(['idProject' => $project, 'idWireTransferIn' => $reception->getIdReceptionRejected()]);
@@ -162,6 +178,9 @@ class ProjectPaymentManager
                     ->setDateEcheanceEmprunteurReel(null);
 
                 $this->entityManager->flush($paymentSchedule);
+
+                // todo: this call can be deleted once all migrations have been done on the usage of these 2 columns.
+                $repaymentScheduleData->updateStatusEmprunteur($project->getIdProject(), $paymentSchedule->getOrdre(), 'cancel');
 
                 $this->projectRepaymentTaskManager->cancelRepaymentTask($task, $user);
             }
