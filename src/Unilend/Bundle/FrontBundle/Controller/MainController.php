@@ -89,19 +89,20 @@ class MainController extends Controller
         $client                = null;
 
         $template = [
-            'showWelcomeOffer' => $welcomeOfferManager->displayOfferOnHome(),
-            'featureLender'    => $testimonialService->getFeaturedTestimonialLender(),
-            'showPagination'   => false,
-            'showSortable'     => false,
-            'sortType'         => strtolower(\projects::SORT_FIELD_END),
-            'sortDirection'    => strtolower(\projects::SORT_DIRECTION_DESC)
+            'showWelcomeOffer'   => $welcomeOfferManager->displayOfferOnHome(),
+            'amountWelcomeOffer' => $welcomeOfferManager->getWelcomeOfferAmount(OffresBienvenues::TYPE_HOME),
+            'featureLender'      => $testimonialService->getFeaturedTestimonialLender(),
+            'showPagination'     => false,
+            'showSortable'       => false,
+            'sortType'           => strtolower(\projects::SORT_FIELD_END),
+            'sortDirection'      => strtolower(\projects::SORT_DIRECTION_DESC)
         ];
 
         if (
             $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')
             && $authorizationChecker->isGranted('ROLE_LENDER')
         ) {
-            $client               = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
+            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
         }
 
         $template['projects'] = $projectDisplayManager->getProjectsList([], [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC], null, 3, $client);

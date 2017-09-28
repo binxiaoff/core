@@ -61,7 +61,7 @@ class InvoiceManager
         ]);
 
         if (null === $invoice) {
-            throw new \Exception('The requested invoice does not exist in database');
+            throw new \Exception('The requested invoice does not exist in database. Project : ' . $project->getIdProject() . ' order : ' . $order);
         }
 
         return $invoice;
