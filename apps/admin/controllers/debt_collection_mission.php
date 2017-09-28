@@ -3,7 +3,7 @@
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
-class debt_cllection_missionController extends bootstrap
+class debt_collection_missionController extends bootstrap
 {
     public function initialize()
     {

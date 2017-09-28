@@ -44,6 +44,7 @@
 
         <service id="unilend.service_repayment.project_payment_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectPaymentManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service_repayment.project_repayment_task_manager"/>
             <argument type="service" id="unilend.service.debt_collection_mission_manager"/>
             <argument type="service" id="unilend.service.operation_manager"/>
