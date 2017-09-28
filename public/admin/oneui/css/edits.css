@@ -116,7 +116,7 @@
     box-shadow: 0 0 5px #d3d3d3;
 }
 .img-responsive-vertical {
-    max-width: none;
+    max-width: 120px;
     max-height: 60px;
     width: auto;
 }
