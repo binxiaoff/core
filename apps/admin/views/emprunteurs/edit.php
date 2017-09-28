@@ -154,43 +154,27 @@ use \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
             </tr>
         </table>
     </form>
-    <br/><br/>
 
-    <div class="company">
-        <h2>Société</h2>
-        <table class="tablesorter">
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Raison sociale</th>
-                <th>Statut</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tr>
-                <td><?= $this->companyEntity->getIdCompany() ?></td>
-                <td><?= $this->companyEntity->getName() ?></td>
-                <td><?= (null !== $this->companyEntity->getIdStatus()) ? $this->companyManager->getCompanyStatusNameByLabel($this->companyEntity->getIdStatus()->getLabel()) : '' ?></td>
-                <td>
-                    <div class="form-group">
-                        <form class="form-inline">
-                            <label for="status">Statut</label>
-                            <select id="status" name="status" class="select">
-                                <?php /** @var $status CompanyStatus */ ?>
-                                <?php if (false === empty($this->companyEntity->getIdStatus()) && false === in_array($this->companyEntity->getIdStatus(), $this->possibleCompanyStatus)) : ?>
-                                    <option selected disabled value="<?= $this->companyEntity->getIdStatus()->getId() ?>"><?= $this->companyManager->getCompanyStatusNameByLabel($this->companyEntity->getIdStatus()->getLabel()) ?></option>
-                                <?php endif; ?>
-                                <?php foreach ($this->possibleCompanyStatus as $status) : ?>
-                                    <option <?= $this->companyEntity->getIdStatus()->getId() == $status->getId() ? 'selected' : '' ?> value="<?= $status->getId() ?>"><?= $this->companyManager->getCompanyStatusNameByLabel($status->getLabel()) ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-        </table>
-    </div>
-    <br><br>
+    <h1>Société : <?= $this->companyEntity->getName() ?></h1>
+    <table class="formColor" style="width: 775px; margin:auto;">
+        <tr>
+            <th style="width: 133px">ID</th>
+            <td style="width: 250px"><?= $this->companyEntity->getIdCompany() ?></td>
+            <th style="width: 105px">Statut</th>
+            <td>
+                <select id="status" name="status" class="select" style="width: 250px;">
+                    <?php /** @var $status CompanyStatus */ ?>
+                    <?php if (false === empty($this->companyEntity->getIdStatus()) && false === in_array($this->companyEntity->getIdStatus(), $this->possibleCompanyStatus)) : ?>
+                        <option selected disabled value="<?= $this->companyEntity->getIdStatus()->getId() ?>"><?= $this->companyManager->getCompanyStatusNameByLabel($this->companyEntity->getIdStatus()->getLabel()) ?></option>
+                    <?php endif; ?>
+                    <?php foreach ($this->possibleCompanyStatus as $status) : ?>
+                        <option <?= $this->companyEntity->getIdStatus()->getId() == $status->getId() ? 'selected' : '' ?> value="<?= $status->getId() ?>"><?= $this->companyManager->getCompanyStatusNameByLabel($status->getLabel()) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </td>
+        </tr>
+    </table>
+    <br/><br/>
 
     <?php $this->fireView('../bank_account/blocks/validated_bank_account'); ?>
     <?php $this->fireView('../bank_account/blocks/other_bank_account'); ?>
