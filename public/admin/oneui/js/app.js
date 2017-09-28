@@ -1080,6 +1080,7 @@ var App = function() {
                 var name = $th.data('editor-name')
                 var type = $th.data('editor-type')
                 var options = $th.data('editor-options')
+                var required = ($th.data('editor-optional') === undefined) ? true : false
                 var label = $th.text()
                 if (typeof name === 'undefined' || typeof type === 'undefined') {
                     if (!$th.is('[data-table-actionscolumn]')) {
@@ -1087,7 +1088,7 @@ var App = function() {
                         return false
                     }
                 } else {
-                    fields.push({name: name, type: type, label: label, options: options})
+                    fields.push({name: name, type: type, label: label, options: options, required: required})
                 }
             })
             return fields
@@ -1100,18 +1101,20 @@ var App = function() {
                 var name = fields[$i].name
                 var label = fields[$i].label
                 var type = fields[$i].type
+                var required = (fields[$i].required === true) ? ' required' : ''
+                var requiredLabel = (fields[$i].required === true) ? '' : ' <span class="optional">(facultatif)</span>'
                 var val = (typeof fields[$i].val === 'undefined') ? '' : fields[$i].val
-                html += '<div class="form-group push-10"><label>' + label + '</label>'
+                html += '<div class="form-group push-10"><label>' + label + '</label>' + requiredLabel
                 // Text / Email
                 if (type === 'text' || type === 'email') {
-                    html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control required">'
+                    html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control' + required + '">'
                     // Datepicker
                 } else if (type === 'date') {
-                    html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control required" data-date-format="dd/mm/yyyy">'
+                    html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control' + required + '" data-date-format="dd/mm/yyyy">'
                     // Numerical - currency, number of days, etc.
                 } else if (type === 'numerical') {
                     val = (typeof fields[$i].val === 'undefined') ? '' : parseFloat(fields[$i].val.replace(/[A-Za-z$-\s+]/g, '').replace(',', '.'))
-                    html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control required">'
+                    html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control' + required + '">'
                     // Radio
                 } else if (type === 'radio') {
                     var options = fields[$i].options.split(',')
@@ -1119,12 +1122,12 @@ var App = function() {
                     for (var $l=0; $l < options.length; $l++) {
                         var option = options[$l].trim()
                         var checked = (val === option) ? 'checked' : ''
-                        html += '<label class="css-input css-radio css-radio-sm css-radio-default push-10-r"><input type="radio"  name="' + name + '" value="' + option + '" ' + checked + ' class="required"><span></span>' + option + '</label>'
+                        html += '<label class="css-input css-radio css-radio-sm css-radio-default push-10-r"><input type="radio"  name="' + name + '" value="' + option + '" ' + checked + ' class="' + required + '"><span></span>' + option + '</label>'
                     }
                     // Select
                 } else if (type === 'select') {
                     var options = fields[$i].options.split(',')
-                    html += '<select class="form-control required" name="' + name + '">' +
+                    html += '<select class="form-control' + required + '" name="' + name + '">' +
                         '<option value="0">Selectionner</option>'
                     for (var $l = 0; $l < options.length; $l++) {
                         var option = options[$l].trim()
@@ -1137,7 +1140,6 @@ var App = function() {
                     var optionsHtml = ''
                     var level = 0
                     function recurse(object) {
-
                         for (var i in object) {
                             var selected = (val === object[i].text) ? 'selected' : ''
                             var id = (typeof object[i].id !== 'undefined') ? object[i].id : object[i].text
@@ -1150,13 +1152,13 @@ var App = function() {
                         }
                         return optionsHtml
                     }
-                    html += '<select class="form-control required" name="' + name + '"><option value="0">Selectionner</option>'
+                    html += '<select class="form-control' + required + '" name="' + name + '"><option value="0">Selectionner</option>'
                     html += recurse(fields[$i].options)
                     html += '</select>'
                     // File
                 } else if (type === 'file') {
                     if (val === '') {
-                        html += '<input type="file" name="' + name + '" value="" class="form-control required">'
+                        html += '<input type="file" name="' + name + '" value="" class="form-control' + required + '">'
                     } else {
                         html += '<div class="clearfix"><div class="pull-left">' +
                             '<div class="file">' + val + '</div>' +
