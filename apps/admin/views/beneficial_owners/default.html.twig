@@ -1,0 +1,125 @@
+{% extends 'layout.html.twig' %}
+
+{% set beneficial_owners = [
+{
+state: 'active',
+id: 12392,
+last_name: 'Dupont',
+first_name: 'Alain',
+percentage: '30%',
+birthdate: '14/12/1980',
+birthplace: 'Paris',
+country: 'France',
+id_card_passport: '<a href="/path/to/passport/passport.jpg">passport.jpg</a>',
+type: 'Actionnaire',
+status: 'Validé',
+validation_type: 'Front office'
+}
+] %}
+
+{% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block pluginsJS %}
+    <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
+    <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+
+{% endblock %}
+
+{% block pageScripts %}
+    <script src="{{ adminUrl }}/oneui/js/pages/sponsorship.js"></script>
+{% endblock %}
+
+{% block modals %}
+    <div class="modal" id="modal-beneficial-default" tabindex="-1" role="dialog" aria-hidden="true">
+        <form class="modal-dialog validate" action="{{ app.adminUrl }}/beneficial_owners" method="post">
+            <div class="modal-content">
+                <div class="block block-themed block-transparent remove-margin-b">
+                    <div class="block-header bg-primary-light">
+                        <h3 class="block-title"></h3>
+                    </div>
+                    <div class="block-content">
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                    <button class="btn btn-sm btn-primary" type="submit">Modifier</button>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block pageHeader %}
+    <h1 class="page-heading push">
+        Bénéficiaires Effectifs
+    </h1>
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <div id="" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title"></h3>
+            </div>
+            <div class="block-content block-content-full">
+                {% if formErrors.default is defined and formErrors.default is not empty %}
+                    <div class="alert">
+                        {% for error in formErrors.default %}
+                            {% if error is iterable %}
+                                <ul class="hide">
+                                    {% for technicalError in error %}
+                                        <li>{{ technicalError }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p>{{ error }}</p>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% if formSuccess.default is defined and formSuccess.default is not empty %}
+                    <div class="alert alert-success">
+                        <p>{{ formSuccess.default }}</p>
+                    </div>
+                {% endif %}
+
+                <table class="table table-striped table-hover table-bordered table-header-bg" data-table data-table-editor data-table-editor-url="/beneficial_owners/list/" data-table-editor-actions="add, modify, toggle">
+                    <thead>
+                        <tr>
+                            <th data-editor-name="last_name" data-editor-type="text">Nom</th>
+                            <th data-editor-name="first_name" data-editor-type="text">Prénom</th>
+                            <th data-editor-name="percentage" data-editor-type="numerical">% détenu</th>
+                            <th data-editor-name="birthdate" data-editor-type="date">Date de naissance</th>
+                            <th data-editor-name="birthplace" data-editor-type="text">Ville de naissance</th>
+                            <th data-editor-name="country" data-editor-type="text">Pays de résidence</th>
+                            <th data-editor-name="id_card_passport" data-editor-type="file">Pièce d'identité</th>
+                            <th data-editor-name="type" data-editor-type="select" data-editor-options="Actionnaire, Gérant">Type de bénéficiaire</th>
+                            <th data-editor-name="status" data-editor-type="text" data-editor-type="radio" data-editor-options="Validé, À valider, Archivé">Statut</th>
+                            <th data-editor-name="validation_type" data-editor-type="select" data-editor-options="Front office, Universign">Méthode de validation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for owner in beneficial_owners %}
+                        <tr data-id="{{ owner.id }}" data-state="{{ owner.status }}">
+                            <td>{{ owner.last_name }}</td>
+                            <td>{{ owner.first_name }}</td>
+                            <td>{{ owner.percentage }}</td>
+                            <td>{{ owner.birthdate }}</td>
+                            <td>{{ owner.birthplace }}</td>
+                            <td>{{ owner.country }}</td>
+                            <td>{{ owner.id_card_passport }}</td>
+                            <td>{{ owner.type }}</td>
+                            <td>{{ owner.status }}</td>
+                            <td>{{ owner.validation_type }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
