@@ -41,7 +41,7 @@ class DebtCollectionMissionManager
     {
         $charges = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCharge')->findBy([
             'idProject' => $debtCollectionMission->getIdProject(),
-            'status'    => ProjectCharge::STATUS_PENDING
+            'status'    => ProjectCharge::STATUS_PAID_BY_UNILEND
         ]);
 
         $totalCharges = 0;
