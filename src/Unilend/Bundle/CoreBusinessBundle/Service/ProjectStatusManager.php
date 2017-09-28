@@ -88,7 +88,7 @@ class ProjectStatusManager
     {
         $projectStatus              = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus');
         $paymentScheduleRepository  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
-        $unpaidPaymentScheduleCount = $paymentScheduleRepository->getUnpaidPaymentScheduleCount($project->id_project);
+        $unpaidPaymentScheduleCount = $paymentScheduleRepository->getUnpaidPaymentScheduleCount($project->getIdProject());
 
         switch ($project->getStatus()) {
             case ProjectsStatus::PROBLEME:

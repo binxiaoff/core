@@ -16,7 +16,7 @@
                 Confié au recouvreur
             </th>
             <th style="width: 20%">
-                Restant à recouvrer
+                Retard emprunteur
             </th>
         </tr>
         </thead>
@@ -38,35 +38,31 @@
                     {{ payment.entrustedToDebtCollector }}
                 </td>
                 <td>
-                    {{ payment.remainingToCollect > 0 ? payment.remainingToCollect|localizedcurrency('EUR') : 'N/A' }}
+                    {{ payment.remainingAmount > 0 ? payment.remainingAmount|localizedcurrency('EUR') : 'N/A' }}
                 </td>
             </tr>
             {% set totalPaymentsAmount = totalPaymentsAmount + payment.amount %}
         {% endfor %}
+        {% if latePaymentsData|length > 1 %}
+            <tr>
+                <th colspan="2" style="width: 40%;">
+                    Total:
+                </th>
+                <th style="width: 20%;">
+                    {{ totalPaymentsAmount|localizedcurrency('EUR') }}
+                </th>
+                <th style="width: 20%;">
+                    &nbsp;
+                </th>
+                <th style="width: 20%;">
+                    {{ projectData.remainingAmount > 0 ? projectData.remainingAmount|localizedcurrency('EUR') : 'N/A' }}
+                </th>
+            </tr>
+        {% endif %}
         </tbody>
     </table>
-    {% if latePaymentsData|length > 1 %}
-        <table class="table table-bordered font-w600" style="border-top: 0;">
-            <thead>
-            <tr>
-                <td colspan="2" style="width: 40%;">
-                    Total:
-                </td>
-                <td style="width: 20%;">
-                    {{ totalPaymentsAmount|localizedcurrency('EUR') }}
-                </td>
-                <td style="width: 20%;">
-
-                </td>
-                <td style="width: 20%;">
-                    {{ projectData.remainingAmount > 0 ? projectData.remainingAmount|localizedcurrency('EUR') : 'N/A' }}
-                </td>
-            </tr>
-            </thead>
-        </table>
-    {% endif %}
     <div class="text-right">
-        {% if projectData.closeOutNettingDate is not null %}
+        {% if isClosedOutLoan %}
             <button type="button" class="btn btn-default push-10-r" data-toggle="modal" data-target="#modal-cancel-term">Déchoir le terme</button>
         {% endif %}
 

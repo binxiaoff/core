@@ -3,11 +3,18 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
+use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMissionPaymentSchedule;
+use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentManager;
 
 class DebtCollectionMissionManager
@@ -15,19 +22,243 @@ class DebtCollectionMissionManager
     const CLIENT_HASH_MCS      = '2f9f590e-d689-11e6-b3d7-005056a378e2';
     const CLIENT_HASH_PROGERIS = 'f12f0f5b-1867-11e7-a89f-0050569e51ae';
 
+    const DEBT_COLLECTION_MISSION_FOLDER = 'debt_collection_missions';
+    const FILE_EXTENSION                 = '.xlsx';
+
     /**
      * @var EntityManager
      */
     private $entityManager;
+
+    /**
+     * @var ProjectRepaymentManager
+     */
     private $projectRepaymentManager;
 
-    public function __construct(EntityManager $entityManager, ProjectRepaymentManager $projectRepaymentManager)
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
+     * @var string
+     */
+    private $protectedPath;
+
+    /** @var Filesystem */
+    private $fileSystem;
+
+    /**
+     * DebtCollectionMissionManager constructor.
+     *
+     * @param EntityManager           $entityManager
+     * @param ProjectRepaymentManager $projectRepaymentManager
+     * @param LoggerInterface         $logger
+     * @param Filesystem              $filesystem
+     * @param                         $protectedPath
+     */
+    public function __construct(EntityManager $entityManager, ProjectRepaymentManager $projectRepaymentManager, LoggerInterface $logger, Filesystem $filesystem, $protectedPath)
     {
         $this->entityManager           = $entityManager;
         $this->projectRepaymentManager = $projectRepaymentManager;
+        $this->logger                  = $logger;
+        $this->fileSystem              = $filesystem;
+        $this->protectedPath           = $protectedPath;
     }
 
-    public function getCreditorsDetails(DebtCollectionMission $debtCollectionMission)
+    /**
+     * @param DebtCollectionMission $debtCollectionMission
+     */
+    public function generateExcelFile(DebtCollectionMission $debtCollectionMission)
+    {
+        if ($debtCollectionMission) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMissionPaymentSchedule[] $missionPaymentSchedules */
+            $missionPaymentSchedules = $debtCollectionMission->getDebtCollectionMissionPaymentSchedules();
+
+            $excel       = new \PHPExcel();
+            $activeSheet = $excel->setActiveSheetIndex(0);
+
+            $titles            = [
+                'Identifiant du prêt',
+                'Nom',
+                'Prénom',
+                'Email',
+                'Type',
+                'Raison social',
+                'Date de naissance',
+                'Téléphone',
+                'Mobile',
+                'Adresse',
+                'Code postal',
+                'Ville',
+                'Montant du prêt'
+            ];
+            $titleColumn       = 'A';
+            $titleRow          = 2;
+            $commissionColumns = [];
+            $feeColumn         = [];
+            $chargeColumn      = null;
+            $totalColumn       = null;
+            foreach ($titles as $title) {
+                $activeSheet->setCellValue($titleColumn . $titleRow, $title);
+                $titleColumn++;
+            }
+
+            $paymentScheduleTitleCellLeft = $titleColumn;
+            $titleColumn++;
+            $titleColumn++;
+            $paymentScheduleTitleCellRight = $titleColumn;
+            foreach ($missionPaymentSchedules as $missionPaymentSchedule) {
+                $activeSheet->setCellValue($paymentScheduleTitleCellLeft . '1', 'Échéance ' . $missionPaymentSchedule->getIdPaymentSchedule()->getOrdre());
+                $activeSheet->getStyle($paymentScheduleTitleCellLeft . '1')->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+                $activeSheet->mergeCells($paymentScheduleTitleCellLeft . '1:' . $paymentScheduleTitleCellRight . '1');
+                $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Capital');
+                $paymentScheduleTitleCellLeft++;
+                $paymentScheduleTitleCellRight++;
+
+                $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Intérêts');
+                $paymentScheduleTitleCellLeft++;
+                $paymentScheduleTitleCellRight++;
+
+                $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Commission');
+                $paymentScheduleTitleCellLeft++;
+                $paymentScheduleTitleCellRight++;
+            }
+
+            $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Frais');
+
+            $paymentScheduleTitleCellLeft++;
+            $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Honoraires');
+
+            $paymentScheduleTitleCellLeft++;
+            $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Tva');
+
+            $paymentScheduleTitleCellLeft++;
+            $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Total');
+
+            $creditorDetails = $this->getCreditorsDetails($debtCollectionMission);
+
+            $dataRow = $titleRow;
+            foreach ($creditorDetails['loans'] as $loanId => $loanDetails) {
+                $dataRow++;
+                $dataColumn = 0;
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanId);
+
+                $dataColumn++;
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['name']);
+
+                $dataColumn++;
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['first_name']);
+
+                $dataColumn++;
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['email']);
+
+                $dataColumn++;
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow,
+                    in_array($loanDetails['type'], [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 'Physique' : 'Morale');
+
+                $dataColumn++;
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['company_name']);
+
+                $dataColumn++;
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['birthday']->format('d/m/Y'));
+
+                $dataColumn++;
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['telephone']);
+
+                $dataColumn++;
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['mobile']);
+
+                $dataColumn++;
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['address']);
+
+                $dataColumn++;
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['postal_code']);
+
+                $dataColumn++;
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['city']);
+
+                $dataColumn++;
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['amount'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+
+                foreach ($missionPaymentSchedules as $missionPaymentSchedule) {
+                    $sequence = $missionPaymentSchedule->getIdPaymentSchedule()->getOrdre();
+
+                    $dataColumn++;
+                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['schedule'][$sequence]['remaining_capital'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+
+                    $dataColumn++;
+                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['schedule'][$sequence]['remaining_interest'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+
+                    $dataColumn++; // commission
+                    if (empty($commissionColumns['schedule'][$sequence])) {
+                        $commissionColumns['schedule'][$sequence] = $dataColumn;
+                    }
+                }
+
+                $dataColumn++;
+                if (empty($chargeColumn)) {
+                    $chargeColumn = $dataColumn;
+                }
+
+                $dataColumn++;
+                if (empty($feeColumn['fee_tax_excl'])) {
+                    $feeColumn['fee_tax_excl'] = $dataColumn;
+                }
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['fee_tax_excl'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+
+                $dataColumn++;
+                if (empty($feeColumn['fee_vat'])) {
+                    $feeColumn['fee_vat'] = $dataColumn;
+                }
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['fee_vat'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+
+                $dataColumn++;
+                if (empty($totalColumn)) {
+                    $totalColumn = $dataColumn;
+                }
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['total'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            }
+
+            $commissionDetails = $creditorDetails['commission'];
+            $dataRow++;
+            $activeSheet->setCellValueByColumnAndRow(0, $dataRow, 'Commission unilend');
+            foreach ($commissionColumns['schedule'] as $sequence => $column) {
+                $activeSheet->setCellValueExplicitByColumnAndRow($column, $dataRow, $commissionDetails['schedule'][$sequence], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            }
+            $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_tax_excl'], $dataRow, $commissionDetails['fee_tax_excl'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_vat'], $dataRow, $commissionDetails['fee_vat'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow($totalColumn, $dataRow, $commissionDetails['total'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+
+            $chargeDetails = $creditorDetails['charge'];
+            $dataRow++;
+            $activeSheet->setCellValueByColumnAndRow(0, $dataRow, 'Frais');
+            $activeSheet->setCellValueExplicitByColumnAndRow($chargeColumn, $dataRow, $chargeDetails['charge'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_tax_excl'], $dataRow, $chargeDetails['fee_tax_excl'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_vat'], $dataRow, $chargeDetails['fee_vat'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow($totalColumn, $dataRow, $chargeDetails['total'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+
+            $fileName     = 'recouvrement_' . $debtCollectionMission->getId() . '_' . (new \DateTime())->format('Y-m-d');
+            $absolutePath = implode(DIRECTORY_SEPARATOR, [$this->protectedPath, self::DEBT_COLLECTION_MISSION_FOLDER, trim($debtCollectionMission->getIdClientDebtCollector()->getNom()), $debtCollectionMission->getIdProject()]);
+
+            if (false === is_dir($absolutePath)) {
+                $this->fileSystem->mkdir($absolutePath);
+            }
+
+            if ($this->fileSystem->exists($absolutePath . DIRECTORY_SEPARATOR . $fileName . self::FILE_EXTENSION)) {
+                $fileName = 'recouvrement_' . $debtCollectionMission->getId() . '_' . (new \DateTime())->format('Y-m-d') . '_' . uniqid() . self::FILE_EXTENSION;
+            }
+
+            /** @var \PHPExcel_Writer_Excel2007 $writer */
+            $writer = \PHPExcel_IOFactory::createWriter($excel, 'Excel2007');
+            $writer->save($absolutePath . DIRECTORY_SEPARATOR . $fileName);
+
+            $debtCollectionMission->setAttachment(str_replace($this->protectedPath, '', $absolutePath));
+            $this->entityManager->flush();
+        }
+    }
+
+    private function getCreditorsDetails(DebtCollectionMission $debtCollectionMission)
     {
         return [
             'loans'      => $this->getLoanDetails($debtCollectionMission),
@@ -141,10 +372,10 @@ class DebtCollectionMissionManager
         $repaymentScheduleRepository      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
         $projectRepaymentDetailRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail');
 
-        $loanDetails             = [];
-        $project                 = $debtCollectionMission->getIdProject();
-        $loans                   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project, 'status' => Loans::STATUS_ACCEPTED]);
-        $vatTax                  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+        $loanDetails = [];
+        $project     = $debtCollectionMission->getIdProject();
+        $loans       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project, 'status' => Loans::STATUS_ACCEPTED]);
+        $vatTax      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
 
         if (null === $vatTax) {
             throw new \Exception('The VAT rate is not defined.');
@@ -212,5 +443,101 @@ class DebtCollectionMissionManager
         }
 
         return $loanDetails;
+    }
+
+    /**
+     * Archives current project's debt collection missions if any and creates a new one with whole late payments schedule
+     *
+     * @param Projects $project
+     * @param Clients  $debtCollector
+     * @param int      $type
+     * @param float    $feesRate
+     * @param Users    $user
+     *
+     * @return bool|DebtCollectionMission The created debt collection mission in case of success, FALSE otherwise
+     */
+    public function newMission(Projects $project, Clients $debtCollector, $type, $feesRate, Users $user)
+    {
+        $debtCollectionMissionRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMission');
+        /** @var DebtCollectionMission[] $currentMissions */
+        $currentMissions = $debtCollectionMissionRepository->findBy(['idProject' => $project, 'archived' => null]);
+
+        try {
+            $this->entityManager->getConnection()->beginTransaction();
+            foreach ($currentMissions as $mission) {
+                $mission->setArchived(new \DateTime())
+                    ->setIdUserArchiving($user);
+            }
+
+            $newMission = new DebtCollectionMission();
+            $newMission->setIdProject($project)
+                ->setIdClientDebtCollector($debtCollector)
+                ->setType($type)
+                ->setFeesRate($feesRate)
+                ->setIdUserCreation($user);
+            $this->entityManager->persist($newMission);
+            $this->entityManager->flush($newMission);
+
+            $paymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+
+            /** @var EcheanciersEmprunteur[] $pendingPayments */
+            $pendingPayments     = $paymentRepository->findBy(
+                [
+                    'idProject'        => $project,
+                    'statusEmprunteur' => [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]
+                ],
+                ['dateEcheanceEmprunteur' => 'ASC']
+            );
+            $now                 = (new \DateTime())->setTime(23, 59, 59);
+            $closeOutNettingDate = $project->getCloseOutNettingDate();
+
+            if (null === $closeOutNettingDate) {
+                foreach ($pendingPayments as $key => $payment) {
+                    if ($now > $payment->getDateEcheanceEmprunteur()) {
+                        $paymentScheduleMission = new DebtCollectionMissionPaymentSchedule();
+                        $paymentScheduleMission->setIdMission($newMission)
+                            ->setIdPaymentSchedule($payment)
+                            ->setCapital(round(bcdiv($payment->getCapital() - $payment->getPaidCapital(), 100, 4), 2))
+                            ->setInterest(round(bcdiv($payment->getInterets() - $payment->getPaidInterest(), 100, 4), 2))
+                            ->setCommissionVatIncl(round(bcdiv($payment->getCommission() + $payment->getTva() - $payment->getPaidCommissionVatIncl(), 100, 4), 2));
+                        $this->entityManager->persist($paymentScheduleMission);
+                        $this->entityManager->flush($paymentScheduleMission);
+                    }
+                }
+            } else {
+                $closeOutNettingDate->setTime(0, 0, 0);
+                foreach ($pendingPayments as $key => $payment) {
+                    if ($project->getCloseOutNettingDate() > $payment->getDateEcheanceEmprunteur()) {
+                        $paymentScheduleMission = new DebtCollectionMissionPaymentSchedule();
+                        $paymentScheduleMission->setIdMission($newMission)
+                            ->setIdPaymentSchedule($payment)
+                            ->setCapital(round(bcdiv($payment->getCapital() - $payment->getPaidCapital(), 100, 4), 2))
+                            ->setInterest(round(bcdiv($payment->getInterets() - $payment->getPaidInterest(), 100, 4), 2))
+                            ->setCommissionVatIncl(round(bcdiv($payment->getCommission() + $payment->getTva() - $payment->getPaidCommissionVatIncl(), 100, 4), 2));
+                        $this->entityManager->persist($paymentScheduleMission);
+                        $this->entityManager->flush($paymentScheduleMission);
+                    } else {
+                        $paymentScheduleMission = new DebtCollectionMissionPaymentSchedule();
+                        $paymentScheduleMission->setIdMission($newMission)
+                            ->setIdPaymentSchedule($payment)
+                            ->setCapital(round(bcdiv($payment->getCapital() - $payment->getPaidCapital(), 100, 4), 2))
+                            ->setInterest(0)
+                            ->setCommissionVatIncl(0);
+                        $this->entityManager->persist($paymentScheduleMission);
+                        $this->entityManager->flush($paymentScheduleMission);
+                    }
+                }
+            }
+
+            $this->entityManager->flush();
+            $this->entityManager->getConnection()->commit();
+
+            return $newMission;
+        } catch (\Exception $exception) {
+            $this->entityManager->getConnection()->rollBack();
+            $this->logger->error('Error when creating new debt collection mission on project: ' . $project->getTitle() . ' Error : ' . $exception->getMessage(), ['method' => __METHOD__, 'id_project' => $project->getIdProject()]);
+
+            return false;
+        }
     }
 }

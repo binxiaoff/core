@@ -1282,9 +1282,10 @@ class ProjectManager
      */
     public function getLatePaymentsInformation(Projects $project = null)
     {
-        $projectsRepository              = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $paymentRepository               = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
-        $debtCollectionMissionRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMission');
+        $projectsRepository                             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $paymentRepository                              = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        $receptionsRepository                           = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+        $debtCollectionMissionPaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMissionPaymentSchedule');
 
         $projectWithPaymentProblems = $projectsRepository->getProjectsWithLateRepayments($project);
         $totalPendingReceiptAmount  = 0;
@@ -1310,11 +1311,9 @@ class ProjectManager
                 $remainingPaymentsCount = $pastFullPayments['paymentsCount'];
             }
 
-            if (null !== $lateRepayment['missionIdList']) {
-                $debtCollectionAmounts = $debtCollectionMissionRepository->getEntrustedAmount(explode(',', $lateRepayment['missionIdList']));
-                $projectsWithDebtCollection++;
-            }
+            $debtCollectionAmounts = $debtCollectionMissionPaymentScheduleRepository->getEntrustedAmount(explode(',', $lateRepayment['missionIdList']));
 
+            $pendingReceipt                        = $receptionsRepository->getPendingReceipt($project);
             $projectData[$project->getIdProject()] = [
                 'projectId'                => $project->getIdProject(),
                 'companyName'              => $project->getIdCompany()->getName(),
@@ -1326,17 +1325,20 @@ class ProjectManager
                 'remainingAmount'          => round(bcdiv($remainingAmount, 100, 4), 2),
                 'entrustedToDebtCollector' => isset($debtCollectionAmounts) ? $debtCollectionAmounts : 0,
                 'remainingPaymentsCount'   => $remainingPaymentsCount,
-                'pendingReceiptAmount'     => $lateRepayment['pendingReceiptAmount'],
-                'pendingReceiptCount'      => $lateRepayment['pendingReceiptCount'],
+                'pendingReceiptAmount'     => round(bcdiv(array_sum(array_column($pendingReceipt, 'amount')), 100, 4), 2),
+                'pendingReceiptCount'      => count($pendingReceipt),
                 'missionIdList'            => explode(',', $lateRepayment['missionIdList'])
             ];
             $totalRemainingAmount                  = bcadd($totalRemainingAmount, $remainingAmount);
-            $totalPendingReceiptAmount             = bcadd($totalPendingReceiptAmount, $lateRepayment['pendingReceiptAmount']);
+            $totalPendingReceiptAmount             = bcadd($totalPendingReceiptAmount, $projectData[$project->getIdProject()]['pendingReceiptAmount']);
+            if (null !== $lateRepayment['missionIdList']) {
+                $projectsWithDebtCollection++;
+            }
         }
 
         return [
             'remainingAmountToCollect'     => round(bcdiv($totalRemainingAmount, 100, 4), 2),
-            'pendingReceiptAmount'         => round(bcdiv($totalPendingReceiptAmount, 100, 4), 2),
+            'pendingReceiptAmount'         => $totalPendingReceiptAmount,
             'nbProjectsWithDeptCollection' => $projectsWithDebtCollection,
             'nbProjectsWithLateRepayments' => count($projectData) - $projectsWithDebtCollection,
             'projectWithPaymentProblems'   => $projectData

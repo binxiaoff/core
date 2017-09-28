@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * DebtCollectionMissionPaymentSchedule
  *
  * @ORM\Table(name="debt_collection_mission_payment_schedule", indexes={@ORM\Index(name="idx_dc_mission_payment_schedule_id_mission", columns={"id_mission"}), @ORM\Index(name="idx_dc_mission_payment_schedule_id_payment", columns={"id_payment_schedule"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\DebtCollectionMissionPaymentScheduleRepository")
  */
 class DebtCollectionMissionPaymentSchedule
 {
@@ -41,7 +41,26 @@ class DebtCollectionMissionPaymentSchedule
      */
     private $idMission;
 
+    /**
+     * @var float
+     *
+     * @ORM\Column(name="capital", type="decimal", precision=11, scale=2, nullable=false)
+     */
+    private $capital;
 
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="interest", type="decimal", precision=11, scale=2, nullable=false)
+     */
+    private $interest;
+
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="commission_vat_incl", type="decimal", precision=11, scale=2, nullable=false)
+     */
+    private $commissionVatIncl;
 
     /**
      * Get id
@@ -99,5 +118,77 @@ class DebtCollectionMissionPaymentSchedule
     public function getIdMission()
     {
         return $this->idMission;
+    }
+
+    /**
+     * get entrusted capital
+     *
+     * @return float
+     */
+    public function getCapital()
+    {
+        return $this->capital;
+    }
+
+    /**
+     * set entrusted capital amount
+     *
+     * @param float $capital
+     *
+     * @return DebtCollectionMissionPaymentSchedule
+     */
+    public function setCapital($capital)
+    {
+        $this->capital = $capital;
+
+        return $this;
+    }
+
+    /**
+     * get entrusted interest amount
+     *
+     * @return float
+     */
+    public function getInterest()
+    {
+        return $this->interest;
+    }
+
+    /**
+     * set entrusted interests amount
+     *
+     * @param float $interest
+     *
+     * @return DebtCollectionMissionPaymentSchedule
+     */
+    public function setInterest($interest)
+    {
+        $this->interest = $interest;
+
+        return $this;
+    }
+
+    /**
+     * get entrusted commission VAT included amount
+     *
+     * @return float
+     */
+    public function getCommissionVatIncl()
+    {
+        return $this->commissionVatIncl;
+    }
+
+    /**
+     * set entrusted commission VAT included amount
+     *
+     * @param float $commissionVatIncl
+     *
+     * @return DebtCollectionMissionPaymentSchedule
+     */
+    public function setCommissionVatIncl($commissionVatIncl)
+    {
+        $this->commissionVatIncl = $commissionVatIncl;
+
+        return $this;
     }
 }

@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  * DebtCollectionMission
  *
  * @ORM\Table(name="debt_collection_mission", indexes={@ORM\Index(name="idx_dc_mission_id_user_creation", columns={"id_user_creation"}), @ORM\Index(name="idx_dc_mission_id_user_archiving", columns={"id_user_archiving"}), @ORM\Index(name="idx_dc_mission_id_project", columns={"id_project"}), @ORM\Index(name="idx_dc_mission_id_client", columns={"id_client_debt_collector"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\DebtCollectionMissionRepository")
+ * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  */
 class DebtCollectionMission
@@ -25,7 +25,7 @@ class DebtCollectionMission
     private $type;
 
     /**
-     * @var string
+     * @var float
      *
      * @ORM\Column(name="fees_rate", type="decimal", precision=4, scale=2, nullable=true)
      */
@@ -148,7 +148,7 @@ class DebtCollectionMission
     /**
      * Set feesRate
      *
-     * @param string $feesRate
+     * @param float $feesRate
      *
      * @return DebtCollectionMission
      */
