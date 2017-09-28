@@ -112,6 +112,14 @@
 .text-darker {
     color: #353847;
 }
+.box-shadow {
+    box-shadow: 0 0 5px #d3d3d3;
+}
+.img-responsive-vertical {
+    max-width: none;
+    max-height: 60px;
+    width: auto;
+}
 
 /* Forms */
 .form-inline > .form-group > button[type=submit] {
