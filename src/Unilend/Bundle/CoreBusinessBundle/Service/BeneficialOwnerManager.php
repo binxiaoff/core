@@ -3,13 +3,17 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
+use Knp\Snappy\GeneratorInterface;
+use Symfony\Component\Routing\RouterInterface;
+use Twig_Environment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BeneficialOwnerDeclaration;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyBeneficialOwner;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectBeneficialOwnerUniversign;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
+use Unilend\Bundle\FrontBundle\Service\UniversignManager;
 
 class BeneficialOwnerManager
 {
@@ -26,12 +30,152 @@ class BeneficialOwnerManager
 
     /** @var EntityManager */
     private $entityManager;
+    /** @var GeneratorInterface $snappy */
+    private $snappy;
+    /** @var Twig_Environment */
+    private $twig;
+    /** @var string */
+    private $protectedPath;
+    /** @var RouterInterface */
+    private $router;
+    /** @var UniversignManager */
+    private $universignManager;
 
-
-    public function __construct(EntityManager $entityManager)
+    /**
+     * @param EntityManager      $entityManager
+     * @param GeneratorInterface $snappy
+     * @param Twig_Environment   $twig
+     * @param RouterInterface    $router
+     * @param UniversignManager  $universignManager
+     * @param                    $protectedPath
+     */
+    public function __construct(
+        EntityManager $entityManager,
+        GeneratorInterface $snappy,
+        Twig_Environment $twig,
+        RouterInterface $router,
+        UniversignManager $universignManager,
+        $protectedPath
+    )
     {
-        $this->entityManager = $entityManager;
+        $this->entityManager     = $entityManager;
+        $this->snappy            = $snappy;
+        $this->twig              = $twig;
+        $this->router            = $router;
+        $this->universignManager = $universignManager;
+        $this->protectedPath     = $protectedPath;
     }
+
+    /**
+     * @return string
+     */
+    public function getBeneficialOwnerDeclarationPdfRoot()
+    {
+        return $this->protectedPath . 'pdf/beneficial_owner';
+    }
+
+    /**
+     * @param ProjectBeneficialOwnerUniversign $universignDeclaration
+     *
+     * @return string
+     */
+    public function getBeneficialOwnerDeclarationFileName(ProjectBeneficialOwnerUniversign $universignDeclaration)
+    {
+        $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($universignDeclaration->getIdProject()->getIdCompany()->getIdClientOwner());
+
+        return $client->getHash(). '-' . ProjectBeneficialOwnerUniversign::DOCUMENT_NAME . '-' . $universignDeclaration->getIdProject()->getIdProject() . '.pdf';
+    }
+
+    /**
+     * @param Projects|\projects $project
+     * @param Clients|\clients   $client
+     *
+     * @return array
+     */
+    public function createProjectBeneficialOwnerDeclaration($project, $client)
+    {
+        if ($project instanceof \projects) {
+            $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+        }
+
+        if ($client instanceof \clients) {
+            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        }
+
+        $beneficialOwnerDeclaration = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findOneBy(['idProject' => $project], ['added' => 'DESC']);
+
+        if (
+            null === $beneficialOwnerDeclaration
+            || null === $client
+            || $beneficialOwnerDeclaration->getIdProject()->getIdCompany()->getIdClientOwner() != $client->getIdClient()
+            || UniversignEntityInterface::STATUS_ARCHIVED === $beneficialOwnerDeclaration->getStatus()
+        ){
+            return [
+                'action' => 'redirect',
+                'url'    => $this->router->generate('home')
+            ];
+        }
+
+        $beneficialOwnerDeclarationPdfRoot  = $this->getBeneficialOwnerDeclarationPdfRoot();
+        $beneficialOwnerDeclarationFileName = $this->getBeneficialOwnerDeclarationFileName($beneficialOwnerDeclaration);
+
+        if (
+            UniversignEntityInterface::STATUS_SIGNED === $beneficialOwnerDeclaration->getStatus()
+            && file_exists($beneficialOwnerDeclarationPdfRoot . DIRECTORY_SEPARATOR . $beneficialOwnerDeclarationFileName)
+        ) {
+            return [
+                'action' => 'read',
+                'path'   => $beneficialOwnerDeclarationPdfRoot . DIRECTORY_SEPARATOR . $beneficialOwnerDeclarationFileName,
+                'name'   => $beneficialOwnerDeclarationFileName
+            ];
+        }
+
+        if (false === file_exists($beneficialOwnerDeclarationPdfRoot . DIRECTORY_SEPARATOR . $beneficialOwnerDeclarationFileName)) {
+            $this->generatePdfFile($beneficialOwnerDeclaration);
+        }
+
+        if (UniversignEntityInterface::STATUS_PENDING === $beneficialOwnerDeclaration->getStatus()) {
+            if (null !== $beneficialOwnerDeclaration->getUrlUniversign()) {
+                return [
+                    'action' => 'sign',
+                    'url'    => $beneficialOwnerDeclaration->getUrlUniversign()
+                ];
+            }
+
+            if ($this->universignManager->createBeneficialOwnerDeclaration($beneficialOwnerDeclaration)) {
+                return [
+                    'action' => 'sign',
+                    'url'    => $beneficialOwnerDeclaration->getUrlUniversign()
+                ];
+            }
+        }
+
+        return [
+            'action' => 'redirect',
+            'url'    => $this->router->generate('home')
+        ];
+    }
+
+    /**
+     * @param ProjectBeneficialOwnerUniversign $universignDeclaration
+     */
+    public function generatePdfFile(ProjectBeneficialOwnerUniversign $universignDeclaration)
+    {
+        //TODO further variables to be defined when doing the PDF.
+        $beneficialOwners   = $universignDeclaration->getIdDeclaration()->getBeneficialOwner();
+        $pdfContent         = $this->twig->render('/pdf/beneficial_owner_declaration.html.twig', ['owners' => $beneficialOwners]);
+        $outputFile         = $this->getBeneficialOwnerDeclarationPdfRoot() . DIRECTORY_SEPARATOR . $this->getBeneficialOwnerDeclarationFileName($universignDeclaration);
+        $options            = [
+            'footer-html'   => '',
+            'header-html'   => '',
+            'margin-top'    => 20,
+            'margin-right'  => 15,
+            'margin-bottom' => 10,
+            'margin-left'   => 15
+        ];
+        $this->snappy->generateFromHtml($pdfContent, $outputFile, $options, true);
+    }
+
 
 
     public function getDeclarationForCompany(Companies $company)

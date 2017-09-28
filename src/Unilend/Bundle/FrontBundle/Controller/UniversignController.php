@@ -3,10 +3,10 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Doctrine\ORM\EntityManager;
-use Documents\Project;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BeneficialOwnerDeclaration;
@@ -231,19 +231,28 @@ class UniversignController extends Controller
      */
     public function createProjectAction($projectId)
     {
-        $entityManager     = $this->get('doctrine.orm.entity_manager');
-        $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
-        $project           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
-        $mandate           = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->findOneBy(['idProject' => $projectId, 'status' => ClientsMandats::STATUS_PENDING], ['added' => 'DESC']);
-        $proxy             = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->findOneBy(['idProject' => $projectId, 'status' => ClientsMandats::STATUS_PENDING], ['added' => 'DESC']);
+        $entityManager              = $this->get('doctrine.orm.entity_manager');
+        $universignManager          = $this->get('unilend.frontbundle.service.universign_manager');
+        $project                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+        $mandate                    = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')
+            ->findOneBy(['idProject' => $projectId, 'status' => UniversignEntityInterface::STATUS_PENDING], ['added' => 'DESC']);
+        $proxy                      = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')
+            ->findOneBy(['idProject' => $projectId, 'status' => UniversignEntityInterface::STATUS_PENDING], ['added' => 'DESC']);
+        $beneficialOwnerDeclaration = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')
+            ->findOneBy(['idProject' => $projectId, 'status' => UniversignEntityInterface::STATUS_PENDING], ['added' => 'DESC']);
 
         if (
             $project
             && $proxy
             && $mandate
+            && $beneficialOwnerDeclaration
             && (
-                false === empty($proxy->getUrlUniversign()) && false === empty($mandate->getUrlUniversign()) && $proxy->getUrlUniversign() === $mandate->getUrlUniversign()
-                || $universignManager->createProject($project, $proxy, $mandate)
+                false === empty($proxy->getUrlUniversign())
+                && false === empty($mandate->getUrlUniversign())
+                && false === empty($beneficialOwnerDeclaration->getUrlUniversign())
+                && $proxy->getUrlUniversign() === $mandate->getUrlUniversign()
+                && $proxy->getUrlUniversign() === $beneficialOwnerDeclaration->getUrlUniversign()
+                || $universignManager->createProject($project, $proxy, $mandate, $beneficialOwnerDeclaration)
             )
         ) {
             return $this->redirect($proxy->getUrlUniversign());
@@ -364,7 +373,7 @@ class UniversignController extends Controller
     }
 
     /**
-     * @Route("/pdf/beneficiaires-effectifs/{idProject}-declaration-beneficiaires-effectifs.pdf",
+     * @Route("/pdf/beneficiaires-effectifs/{clientHash}/{idProject}",
      *     name="beneficial_owner_declaration_pdf",
      *     requirements={"idProject":"\d+", "clientHash": "[0-9a-f-]{32,36}"}
      *     )
@@ -377,56 +386,23 @@ class UniversignController extends Controller
     public function createBeneficialOwnerDeclarationAction($clientHash, $idProject)
     {
         /** @var EntityManager $entityManager */
-        $entityManager              = $this->get('doctrine.orm.entity_manager');
-        $client                     = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
-        $beneficialOwnerDeclaration = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findOneBy(['idProject' => $idProject], ['added' => 'DESC']);
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
+        $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($idProject);
 
-        if (
-            null === $beneficialOwnerDeclaration
-            || null === $client
-            || $beneficialOwnerDeclaration->getIdProject()->getIdCompany()->getIdClientOwner() != $client->getIdClient()
-            || UniversignEntityInterface::STATUS_ARCHIVED === $beneficialOwnerDeclaration->getStatus()
-        ){
-            return $this->redirectToRoute('home');
+        $beneficialOwnerManager = $this->get('unilend.service.beneficial_owner_manager');
+        $return                 = $beneficialOwnerManager->createProjectBeneficialOwnerDeclaration($project, $client);
+
+        if ('read' === $return['action']) {
+            return new BinaryFileResponse($return['path']);
         }
 
-        $beneficialOwnerDeclarationPdfRoot  = $this->getParameter('path.protected') . 'pdf/beneficial_owner';
-        $beneficialOwnerDeclarationFileName = $idProject . '-' . ProjectBeneficialOwnerUniversign::DOCUMENT_NAME . '.pdf';
-
-        if (
-            UniversignEntityInterface::STATUS_SIGNED === $beneficialOwnerDeclaration->getStatus()
-            && file_exists($beneficialOwnerDeclarationPdfRoot . DIRECTORY_SEPARATOR . $beneficialOwnerDeclarationFileName)
-        ) {
-            return new BinaryFileResponse($beneficialOwnerDeclarationPdfRoot . DIRECTORY_SEPARATOR . $beneficialOwnerDeclarationFileName);
+        if ('redirect' === $return['action']) {
+            return $this->redirect($return['url']);
         }
 
-        if (false === file_exists($beneficialOwnerDeclarationPdfRoot . DIRECTORY_SEPARATOR . $beneficialOwnerDeclarationFileName)) {
-            //TODO further variables to be defined when doing the PDF.
-            $beneficialOwners   = $beneficialOwnerDeclaration->getIdDeclaration()->getBeneficialOwner();
-            $pdfContent         = $this->renderView('/pdf/beneficial_owner_declaration.html.twig', ['owners' => $beneficialOwners]);
-            $snappy             = $this->get('knp_snappy.pdf');
-            $outputFile         = $beneficialOwnerDeclarationPdfRoot . DIRECTORY_SEPARATOR . $beneficialOwnerDeclarationFileName;
-            $options            = [
-                'footer-html'   => '',
-                'header-html'   => '',
-                'margin-top'    => 20,
-                'margin-right'  => 15,
-                'margin-bottom' => 10,
-                'margin-left'   => 15
-            ];
-            $snappy->generateFromHtml($pdfContent, $outputFile, $options, true);
-        }
-
-
-        if (UniversignEntityInterface::STATUS_PENDING === $beneficialOwnerDeclaration->getStatus()) {
-            if (null !== $beneficialOwnerDeclaration->getUrlUniversign()) {
-                return $this->redirect($beneficialOwnerDeclaration->getUrlUniversign());
-            }
-
-            $universignManager = $this->get('unilend.frontbundle.service.universign_manager');
-            if ($universignManager->createBeneficialOwnerDeclaration($beneficialOwnerDeclaration)) {
-                return $this->redirect($beneficialOwnerDeclaration->getUrlUniversign());
-            }
+        if ('sign' === $return['action']) {
+            return $this->redirect($return['url']);
         }
 
         return $this->redirectToRoute('home');

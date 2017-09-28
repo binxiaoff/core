@@ -149,18 +149,22 @@ class pdfController extends bootstrap
             && $this->projects->get($this->params[1], 'id_company = ' . $this->companies->id_company . ' AND id_project')
             && $this->projects->status != ProjectsStatus::PRET_REFUSE
         ) {
-            $proxy   = $this->commonProxy();
-            $mandate = $this->commonMandate();
+            $proxy                      = $this->commonProxy();
+            $mandate                    = $this->commonMandate();
+            $beneficialOwnerDeclaration = $this->get('unilend.service.beneficial_owner_manager')->createProjectBeneficialOwnerDeclaration($this->projects, $this->pdfClient);
 
-            if ('read' === $proxy['action'] && 'read' === $mandate['action']) {
+            if ('read' === $proxy['action'] && 'read' === $mandate['action'] && 'read' === $beneficialOwnerDeclaration['action']) {
                 /** @var \Symfony\Component\Routing\RouterInterface $router */
                 $router = $this->get('router');
                 header('Location: ' . $router->generate('universign_signature_status', ['signatureType' => \Unilend\Bundle\FrontBundle\Controller\UniversignController::SIGNATURE_TYPE_PROJECT, 'signatureId' => $this->projects->id_project, 'clientHash' => $this->pdfClient->hash]));
                 exit;
-            } elseif ('redirect' === $proxy['action'] && 'redirect' === $mandate['action'] && $proxy['url'] === $mandate['url']) {
+            } elseif (
+                'redirect' === $proxy['action'] && 'redirect' === $mandate['action'] && 'redirect' === $beneficialOwnerDeclaration['action']
+                && $proxy['url'] === $mandate['url'] && $proxy['url'] === $beneficialOwnerDeclaration['url']
+            ) {
                 header('Location: ' . $proxy['url']);
                 exit;
-            } elseif ('sign' === $proxy['action'] || 'sign' === $mandate['action']) {
+            } elseif ('sign' === $proxy['action'] || 'sign' === $mandate['action'] || 'sign' === $beneficialOwnerDeclaration['action']) {
                 /** @var \Symfony\Component\Routing\RouterInterface $router */
                 $router = $this->get('router');
                 header('Location: ' . $router->generate('universign_project_generation', ['projectId' => $this->projects->id_project]));
