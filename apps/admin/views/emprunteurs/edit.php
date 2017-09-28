@@ -154,18 +154,13 @@ use \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
             </tr>
         </table>
     </form>
-    <br/>
 
-    <h1>Société</h1>
+    <h1>Société : <?= $this->companyEntity->getName() ?></h1>
     <table class="formColor" style="width: 775px; margin:auto;">
         <tr>
             <th style="width: 133px">ID</th>
-            <td><?= $this->companyEntity->getIdCompany() ?></td>
-            <th>Raison sociale</th>
-            <td style="width: 285px"><?= $this->companyEntity->getName() ?></td>
-        </tr>
-        <tr>
-            <th>Statut</th>
+            <td style="width: 250px"><?= $this->companyEntity->getIdCompany() ?></td>
+            <th style="width: 105px">Statut</th>
             <td>
                 <select id="status" name="status" class="select" style="width: 250px;">
                     <?php /** @var $status CompanyStatus */ ?>
