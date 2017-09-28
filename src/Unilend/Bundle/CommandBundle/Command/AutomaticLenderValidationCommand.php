@@ -70,8 +70,8 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
                 throw new \Exception('Lender has no pending bank account to validate and could not be validated - Client: ' . $client->id_client);
             }
 
-            $attachment = $bankAccount->getAttachment();
-            if (null === $attachment) {
+            $bankAccountAttachment = $bankAccount->getAttachment();
+            if (null === $bankAccountAttachment) {
                 throw new \Exception('Lender has no attachment for his bank account and could not be validated - Client: ' . $client->id_client);
             }
 

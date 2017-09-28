@@ -78,10 +78,19 @@ class RiskDataMonitoringManager
      */
     public function getEulerHermesGradeWithMonitoring($siren, $countryCode)
     {
-        if ($this->isSirenMonitored($siren, CompanyRating::TYPE_EULER_HERMES_GRADE)) {
+        $eulerHermesGrade = null;
+        $sirenIsMonitored = $this->isSirenMonitored($siren, CompanyRating::TYPE_EULER_HERMES_GRADE);
+
+        if ($sirenIsMonitored) {
             $eulerHermesGrade = $this->eulerHermesManager->getGrade($siren, $countryCode, false);
         } else {
-            $eulerHermesGrade = $this->eulerHermesManager->getGrade($siren, $countryCode, true);
+            try {
+                $eulerHermesGrade = $this->eulerHermesManager->getGrade($siren, $countryCode, true);
+            } catch (\Exception $exception) {
+                if (EulerHermesManager::EULER_ERROR_CODE_FREE_MONITORING_ALREADY_REQUESTED === $exception->getCode()) {
+                    $eulerHermesGrade = $this->eulerHermesManager->getGrade($siren, $countryCode, false);
+                }
+            }
             if (null !== $eulerHermesGrade) {
                 $this->startMonitoringPeriod($siren, CompanyRating::TYPE_EULER_HERMES_GRADE);
             }

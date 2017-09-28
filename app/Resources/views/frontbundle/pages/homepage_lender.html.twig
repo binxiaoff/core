@@ -75,7 +75,7 @@
                     </div><!-- /.btn-toolbar -->
                     {% if showWelcomeOffer == true %}
                         <div class="stamp" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
-                            {% trans %} site-general_unilend-advantages-welcome-offer-description {% endtrans %}
+                            {% trans with { '%amount%' : amountWelcomeOffer|localizednumber }%} site-general_unilend-advantages-welcome-offer-description {% endtrans %}
                         </div><!-- /.stamp -->
                     {% endif %}
                 </div>
