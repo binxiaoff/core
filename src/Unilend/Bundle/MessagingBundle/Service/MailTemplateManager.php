@@ -128,7 +128,7 @@ class MailTemplateManager
         $mailTemplatesUsage  = [];
 
         foreach ($mailTemplates as $mailTemplate) {
-            $mailTemplatesUsage[$mailTemplate->getType()] = $mailQueueRepository->getSendFrequencyForMailTemplate($mailTemplate->getType());
+            $mailTemplatesUsage[$mailTemplate->getType()] = $mailQueueRepository->getMailTemplateSendFrequency($mailTemplate->getType());
         }
 
         return $mailTemplatesUsage;

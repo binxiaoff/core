@@ -60,9 +60,9 @@
                                     <em><?= $mailTemplate->getSenderEmail() ?></em>
                                 </td>
                                 <td><?= $mailTemplate->getAdded()->format('d/m/Y H:i') ?></td>
-                                <td><?= $section['stats'][$mailTemplate->getType()]['24h'] ?></td>
-                                <td><?= $section['stats'][$mailTemplate->getType()]['7d'] ?></td>
-                                <td><?= $section['stats'][$mailTemplate->getType()]['30d'] ?></td>
+                                <td><?= $section['stats'][$mailTemplate->getType()]['day'] ?></td>
+                                <td><?= $section['stats'][$mailTemplate->getType()]['week'] ?></td>
+                                <td><?= $section['stats'][$mailTemplate->getType()]['month'] ?></td>
                                 <td align="center">
                                     <a href="<?= $this->lurl ?>/mails/edit/<?= $mailTemplate->getType() ?>" title="Modifier <?= $mailTemplate->getType() ?>">
                                         <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $mailTemplate->getType() ?>"/>
