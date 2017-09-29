@@ -44,17 +44,17 @@
                 <ul>
                     <li>
                         <div class="col-long">Nom</div>
-                        <div class="col-small"><?= $this->clients->nom ?></div>
+                        <div class="col-small"><?= $this->pdfClient->nom ?></div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>
                         <div class="col-long">Prénom</div>
-                        <div class="col-small"><?= $this->clients->prenom ?></div>
+                        <div class="col-small"><?= $this->pdfClient->prenom ?></div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>
                         <div class="col-long">Fonction</div>
-                        <div class="col-small"><?= $this->clients->fonction ?></div>
+                        <div class="col-small"><?= $this->pdfClient->fonction ?></div>
                     </li>
                 </ul>
             </div>
