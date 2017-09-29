@@ -4,6 +4,8 @@ namespace Unilend\Bundle\MessagingBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Translations;
+use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
 class MailTemplateManager
 {
@@ -11,47 +13,70 @@ class MailTemplateManager
     private $mailQueueManager;
     /** @var EntityManager */
     private $entityManager;
+    /** @var TranslationManager */
+    private $translationManager;
     /** @var string */
     private $defaultLanguage;
 
     /**
-     * @param EntityManager    $entityManager
-     * @param MailQueueManager $mailQueueManager
-     * @param string           $defaultLanguage
+     * @param EntityManager      $entityManager
+     * @param MailQueueManager   $mailQueueManager
+     * @param TranslationManager $translationManager
+     * @param string             $defaultLanguage
      */
     public function __construct(
         EntityManager $entityManager,
         MailQueueManager $mailQueueManager,
+        TranslationManager $translationManager,
         $defaultLanguage
     )
     {
-        $this->entityManager    = $entityManager;
-        $this->mailQueueManager = $mailQueueManager;
-        $this->defaultLanguage  = $defaultLanguage;
+        $this->entityManager      = $entityManager;
+        $this->mailQueueManager   = $mailQueueManager;
+        $this->translationManager = $translationManager;
+        $this->defaultLanguage    = $defaultLanguage;
     }
 
     /**
-     * @param string $type
-     * @param string $sender
-     * @param string $senderEmail
-     * @param string $subject
-     * @param string $content
-     * @param string $recipientType
+     * @param string             $type
+     * @param string|null        $sender
+     * @param string|null        $senderEmail
+     * @param string|null        $subject
+     * @param string|null        $title
+     * @param string|null        $content
+     * @param MailTemplates|null $header
+     * @param MailTemplates|null $footer
+     * @param string|null        $recipientType
+     * @param string|null        $part
      */
-    public function addTemplate($type, $sender, $senderEmail, $subject, $content, $recipientType)
+    public function addTemplate(
+        $type,
+        $sender = null,
+        $senderEmail = null,
+        $subject = null,
+        $title = null,
+        $content = null,
+        MailTemplates $header = null,
+        MailTemplates $footer = null,
+        $recipientType = null,
+        $part = MailTemplates::PART_TYPE_CONTENT
+    )
     {
+        $part         = null === $part ? MailTemplates::PART_TYPE_CONTENT : $part;
         $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
             'type'   => $type,
             'locale' => $this->defaultLanguage,
             'status' => MailTemplates::STATUS_ACTIVE,
-            'part'   => MailTemplates::PART_TYPE_CONTENT
+            'part'   => $part
         ]);
 
         if (null === $mailTemplate) {
             $mailTemplate = new MailTemplates();
             $mailTemplate->setType($type);
+            $mailTemplate->setPart($part);
+            $mailTemplate->setIdHeader($header);
+            $mailTemplate->setIdFooter($footer);
             $mailTemplate->setRecipientType($recipientType);
-            $mailTemplate->setPart(MailTemplates::PART_TYPE_CONTENT);
             $mailTemplate->setSenderName($sender);
             $mailTemplate->setSenderEmail($senderEmail);
             $mailTemplate->setSubject($subject);
@@ -61,31 +86,53 @@ class MailTemplateManager
 
             $this->entityManager->persist($mailTemplate);
             $this->entityManager->flush($mailTemplate);
+
+            if (null !== $title) {
+                $this->setTitle($mailTemplate, $title);
+            }
         }
     }
 
     /**
-     * @param MailTemplates $mailTemplate
-     * @param string        $sender
-     * @param string        $senderEmail
-     * @param string        $subject
-     * @param string        $content
-     * @param string        $recipientType
+     * @param MailTemplates      $mailTemplate
+     * @param string|null        $sender
+     * @param string|null        $senderEmail
+     * @param string|null        $subject
+     * @param string|null        $title
+     * @param string|null        $content
+     * @param MailTemplates|null $header
+     * @param MailTemplates|null $footer
+     * @param string|null        $recipientType
      */
-    public function modifyTemplate(MailTemplates $mailTemplate, $sender, $senderEmail, $subject, $content, $recipientType)
+    public function modifyTemplate(
+        MailTemplates $mailTemplate,
+        $sender = null,
+        $senderEmail = null,
+        $subject = null,
+        $title = null,
+        $content = null,
+        MailTemplates $header = null,
+        MailTemplates $footer = null,
+        $recipientType = null
+    )
     {
         if ($this->mailQueueManager->existsInMailQueue($mailTemplate->getIdMailTemplate())) {
             $this->archiveTemplate($mailTemplate);
-            $this->addTemplate($mailTemplate->getType(), $sender, $senderEmail, $subject, $content, $recipientType);
+            $this->addTemplate($mailTemplate->getType(), $sender, $senderEmail, $subject, $title, $content, $header, $footer, $recipientType, $mailTemplate->getPart());
         } else {
+            $mailTemplate->setIdHeader($header);
+            $mailTemplate->setIdFooter($footer);
             $mailTemplate->setRecipientType($recipientType);
-            $mailTemplate->setPart(MailTemplates::PART_TYPE_CONTENT);
             $mailTemplate->setSenderName($sender);
             $mailTemplate->setSenderEmail($senderEmail);
             $mailTemplate->setSubject($subject);
             $mailTemplate->setContent($content);
 
             $this->entityManager->flush($mailTemplate);
+
+            if (null !== $title) {
+                $this->setTitle($mailTemplate, $title);
+            }
         }
     }
 
@@ -99,15 +146,27 @@ class MailTemplateManager
     }
 
     /**
-     * @param string|null $recipientType
-     *
-     * @return array
+     * @param MailTemplates $mailTemplate
+     * @param string        $title
      */
-    public function getActiveMailTemplates($recipientType = null)
+    private function setTitle(MailTemplates $mailTemplate, $title)
+    {
+        $this->translationManager->deleteTranslation(Translations::SECTION_MAIL_TITLE, $mailTemplate->getType());
+        $this->translationManager->addTranslation(Translations::SECTION_MAIL_TITLE, $mailTemplate->getType(), $title);
+        $this->translationManager->flush();
+    }
+
+    /**
+     * @param string|null $recipientType
+     * @param string      $part
+     *
+     * @return MailTemplates[]
+     */
+    public function getActiveMailTemplates($recipientType = null, $part = MailTemplates::PART_TYPE_CONTENT)
     {
         $criteria = [
             'status' => MailTemplates::STATUS_ACTIVE,
-            'part'   => MailTemplates::PART_TYPE_CONTENT
+            'part'   => $part
         ];
 
         if (null !== $recipientType) {

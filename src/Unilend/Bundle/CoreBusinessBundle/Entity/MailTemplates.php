@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * MailTemplates
  *
- * @ORM\Table(name="mail_templates", indexes={@ORM\Index(name="type", columns={"type", "locale", "status", "part"})})
+ * @ORM\Table(name="mail_templates", indexes={@ORM\Index(name="type", columns={"type", "locale", "status", "part"}), @ORM\Index(name="fk_mail_templates_header", columns={"id_header"}), @ORM\Index(name="fk_mail_templates_footer", columns={"id_footer"})})
  * @ORM\HasLifecycleCallbacks
  * @ORM\Entity
  */
@@ -40,6 +40,13 @@ class MailTemplates
     /**
      * @var string
      *
+     * @ORM\Column(name="part", type="string", length=30, nullable=false)
+     */
+    private $part;
+
+    /**
+     * @var string
+     *
      * @ORM\Column(name="recipient_type", type="string", length=30, nullable=true)
      */
     private $recipientType;
@@ -47,28 +54,21 @@ class MailTemplates
     /**
      * @var string
      *
-     * @ORM\Column(name="part", type="string", length=30, nullable=true)
-     */
-    private $part;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="sender_name", type="string", length=191, nullable=false)
+     * @ORM\Column(name="sender_name", type="string", length=191, nullable=true)
      */
     private $senderName;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="sender_email", type="string", length=191, nullable=false)
+     * @ORM\Column(name="sender_email", type="string", length=191, nullable=true)
      */
     private $senderEmail;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="subject", type="string", length=191, nullable=false)
+     * @ORM\Column(name="subject", type="string", length=191, nullable=true)
      */
     private $subject;
 
@@ -78,6 +78,26 @@ class MailTemplates
      * @ORM\Column(name="content", type="text", nullable=true)
      */
     private $content;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_header", referencedColumnName="id_mail_template")
+     * })
+     */
+    private $idHeader;
+
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_footer", referencedColumnName="id_mail_template")
+     * })
+     */
+    private $idFooter;
 
     /**
      * @var integer
@@ -160,30 +180,6 @@ class MailTemplates
     }
 
     /**
-     * Set recipientType
-     *
-     * @param string $recipientType
-     *
-     * @return MailTemplates
-     */
-    public function setRecipientType($recipientType)
-    {
-        $this->recipientType = $recipientType;
-
-        return $this;
-    }
-
-    /**
-     * Get recipientType
-     *
-     * @return string
-     */
-    public function getRecipientType()
-    {
-        return $this->recipientType;
-    }
-
-    /**
      * Set part
      *
      * @param string $part
@@ -205,6 +201,30 @@ class MailTemplates
     public function getPart()
     {
         return $this->part;
+    }
+
+    /**
+     * Set recipientType
+     *
+     * @param string $recipientType
+     *
+     * @return MailTemplates
+     */
+    public function setRecipientType($recipientType)
+    {
+        $this->recipientType = $recipientType;
+
+        return $this;
+    }
+
+    /**
+     * Get recipientType
+     *
+     * @return string
+     */
+    public function getRecipientType()
+    {
+        return $this->recipientType;
     }
 
     /**
@@ -301,6 +321,54 @@ class MailTemplates
     public function getContent()
     {
         return $this->content;
+    }
+
+    /**
+     * Set idHeader
+     *
+     * @param MailTemplates $idHeader
+     *
+     * @return MailTemplates
+     */
+    public function setIdHeader($idHeader)
+    {
+        $this->idHeader = $idHeader;
+
+        return $this;
+    }
+
+    /**
+     * Get idHeader
+     *
+     * @return MailTemplates
+     */
+    public function getIdHeader()
+    {
+        return $this->idHeader;
+    }
+
+    /**
+     * Set idFooter
+     *
+     * @param MailTemplates $idFooter
+     *
+     * @return MailTemplates
+     */
+    public function setIdFooter($idFooter)
+    {
+        $this->idFooter = $idFooter;
+
+        return $this;
+    }
+
+    /**
+     * Get idFooter
+     *
+     * @return MailTemplates
+     */
+    public function getIdFooter()
+    {
+        return $this->idFooter;
     }
 
     /**

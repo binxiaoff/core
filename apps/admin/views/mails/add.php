@@ -24,6 +24,30 @@
                 <input type="text" id="subject" name="subject" class="form-control">
             </div>
             <div class="form-group col-md-6">
+                <label for="title">Titre</label>
+                <input type="text" id="title" name="title" class="form-control">
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-md-4">
+                <label for="header-select">Header</label>
+                <select id="header-select" name="header" class="form-control">
+                    <option value=""></option>
+                    <?php foreach ($this->headers as $header) : ?>
+                        <option value="<?= $header->getIdMailTemplate() ?>"><?= $header->getType() ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="form-group col-md-4">
+                <label for="footer-select">Footer</label>
+                <select id="footer-select" name="footer" class="form-control">
+                    <option value=""></option>
+                    <?php foreach ($this->footers as $footer) : ?>
+                        <option value="<?= $footer->getIdMailTemplate() ?>"><?= $footer->getType() ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="form-group col-md-4">
                 <label for="recipient-type">Usage</label>
                 <select id="recipient-type" name="recipient_type" class="form-control">
                     <option value="external">Externe</option>
@@ -34,7 +58,7 @@
         <div class="row">
             <div class="form-group col-md-12">
                 <label for="content">Contenu</label>
-                <textarea id="content" name="content" class="form-control input-sm" rows="20" style="font-family: Courier New, monospace; width: 100%;"></textarea>
+                <textarea id="content" name="content" class="form-control input-sm" rows="20" spellcheck="false" style="font-family: Courier New, monospace; width: 100%;"></textarea>
             </div>
         </div>
         <div class="row">

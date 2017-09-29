@@ -15,11 +15,18 @@
 <script src="<?= $this->url ?>/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
 <script>
     $(function() {
-        $('.js-datatable').dataTable({
+        $('.js-datatable-content').dataTable({
             info: false,
             paging: false,
             searching: false,
             columnDefs: [{targets: 7, orderable: false}]
+        })
+
+        $('.js-datatable-header-footer').dataTable({
+            info: false,
+            paging: false,
+            searching: false,
+            columnDefs: [{targets: 2, orderable: false}]
         })
     })
 </script>
@@ -37,7 +44,7 @@
             <div class="col-md-12">
                 <h2><?= $section['title'] ?></h2>
                 <?php if (count($section['emails']) > 0) : ?>
-                    <table class="table table-bordered table-striped js-datatable">
+                    <table class="table table-bordered table-striped js-datatable-content">
                         <thead>
                         <tr>
                             <th>Type</th>
@@ -81,4 +88,64 @@
             </div>
         </div>
     <?php endforeach; ?>
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Headers</h2>
+            <?php if (count($this->headers) > 0) : ?>
+                <table class="table table-bordered table-striped js-datatable-header-footer">
+                    <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Mise à jour</th>
+                        <th>&nbsp;</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($this->headers as $mailTemplate) : ?>
+                        <tr>
+                            <td><?= $mailTemplate->getType() ?></td>
+                            <td><?= $mailTemplate->getAdded()->format('d/m/Y H:i') ?></td>
+                            <td align="center">
+                                <a href="<?= $this->lurl ?>/mails/edit/<?= $mailTemplate->getType() ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates::PART_TYPE_HEADER ?>" title="Modifier <?= $mailTemplate->getType() ?>">
+                                    <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $mailTemplate->getType() ?>"/>
+                                </a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php else : ?>
+                <p>Aucun header</p>
+            <?php endif; ?>
+        </div>
+        <div class="col-md-6">
+            <h2>Footers</h2>
+            <?php if (count($this->footers) > 0) : ?>
+                <table class="table table-bordered table-striped js-datatable-header-footer">
+                    <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Mise à jour</th>
+                        <th>&nbsp;</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($this->footers as $mailTemplate) : ?>
+                        <tr>
+                            <td><?= $mailTemplate->getType() ?></td>
+                            <td><?= $mailTemplate->getUpdated() ? $mailTemplate->getUpdated()->format('d/m/Y H:i') : $mailTemplate->getAdded()->format('d/m/Y H:i') ?></td>
+                            <td align="center">
+                                <a href="<?= $this->lurl ?>/mails/edit/<?= $mailTemplate->getType() ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates::PART_TYPE_FOOTER ?>" title="Modifier <?= $mailTemplate->getType() ?>">
+                                    <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $mailTemplate->getType() ?>"/>
+                                </a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php else : ?>
+                <p>Aucun header</p>
+            <?php endif; ?>
+        </div>
+    </div>
 </div>

@@ -1,8 +1,12 @@
 <?php
 
 use Symfony\Component\HttpFoundation\Request;
+use Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue;
 use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Translations;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\MessagingBundle\Service\MailQueueManager;
+use Unilend\Bundle\MessagingBundle\Service\MailTemplateManager;
 
 class mailsController extends bootstrap
 {
@@ -25,13 +29,14 @@ class mailsController extends bootstrap
         $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
         $this->menu_admin = 'edition';
 
-        /** @var \Unilend\Bundle\MessagingBundle\Service\MailTemplateManager $mailTemplateManager */
+        /** @var MailTemplateManager $mailTemplateManager */
         $mailTemplateManager = $this->get('unilend.service.mail_template');
 
         if (isset($this->params[0]) && $this->params[0] == 'delete') {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            $mailTemplate  = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
+            $mailTemplateRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
+            $mailTemplate           = $mailTemplateRepository->findOneBy([
                 'type'   => $this->params[1],
                 'locale' => $this->getParameter('locale'),
                 'status' => MailTemplates::STATUS_ACTIVE,
@@ -64,6 +69,9 @@ class mailsController extends bootstrap
                 'stats'  => $internalEmailUsage
             ]
         ];
+
+        $this->headers = $mailTemplateManager->getActiveMailTemplates(null, MailTemplates::PART_TYPE_HEADER);
+        $this->footers = $mailTemplateManager->getActiveMailTemplates(null, MailTemplates::PART_TYPE_FOOTER);
     }
 
     public function _add()
@@ -73,12 +81,13 @@ class mailsController extends bootstrap
 
         if ($this->request->isMethod(Request::METHOD_POST)) {
             $aPost = $this->handlePost();
-            /** @var \Unilend\Bundle\MessagingBundle\Service\MailTemplateManager $mailTemplateManager */
+            /** @var MailTemplateManager $mailTemplateManager */
             $mailTemplateManager = $this->get('unilend.service.mail_template');
 
             /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
-            $mailTemplate  = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
+            $entityManager          = $this->get('doctrine.orm.entity_manager');
+            $mailTemplateRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
+            $mailTemplate           = $mailTemplateRepository->findOneBy([
                 'type'   => $aPost['type'],
                 'locale' => $this->getParameter('locale'),
                 'status' => MailTemplates::STATUS_ACTIVE,
@@ -92,7 +101,17 @@ class mailsController extends bootstrap
                 $_SESSION['freeow']['title']   = 'Ajout d\'un mail';
                 $_SESSION['freeow']['message'] = 'Ajout impossible : ce mail existe déjà';
             } else {
-                $mailTemplateManager->addTemplate($aPost['type'], $aPost['sender_name'], $aPost['sender_email'], $aPost['subject'], $aPost['content'], $aPost['recipient_type']);
+                $mailTemplateManager->addTemplate(
+                    empty($aPost['type']) ? null : $aPost['type'],
+                    empty($aPost['sender_name']) ? null : $aPost['sender_name'],
+                    empty($aPost['sender_email']) ? null : $aPost['sender_email'],
+                    empty($aPost['subject']) ? null : $aPost['subject'],
+                    empty($aPost['title']) ? null : $aPost['title'],
+                    empty($aPost['content']) ? null : $aPost['content'],
+                    empty($aPost['header']) ? null : $mailTemplateRepository->find($aPost['header']),
+                    empty($aPost['footer']) ? null : $mailTemplateRepository->find($aPost['footer']),
+                    empty($aPost['recipient_type']) ? null : $aPost['recipient_type']
+                );
 
                 $_SESSION['freeow']['title']   = 'Ajout d\'un mail';
                 $_SESSION['freeow']['message'] = 'Le mail a bien été ajouté';
@@ -101,6 +120,11 @@ class mailsController extends bootstrap
             header('Location: ' . $this->lurl . '/mails');
             die;
         }
+
+        /** @var MailTemplateManager $mailTemplateManager */
+        $mailTemplateManager = $this->get('unilend.service.mail_template');
+        $this->headers       = $mailTemplateManager->getActiveMailTemplates(null, MailTemplates::PART_TYPE_HEADER);
+        $this->footers       = $mailTemplateManager->getActiveMailTemplates(null, MailTemplates::PART_TYPE_FOOTER);
     }
 
     public function _edit()
@@ -108,35 +132,59 @@ class mailsController extends bootstrap
         $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
         $this->menu_admin = 'edition';
 
-        /** @var \Unilend\Bundle\MessagingBundle\Service\MailTemplateManager $mailTemplateManager */
+        /** @var MailTemplateManager $mailTemplateManager */
         $mailTemplateManager = $this->get('unilend.service.mail_template');
 
         if (false === empty($this->params[0])) {
+            $part = isset($this->params[1]) ? $this->params[1] : MailTemplates::PART_TYPE_CONTENT;
+
             /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager      = $this->get('doctrine.orm.entity_manager');
-            $this->mailTemplate = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
+            $entityManager          = $this->get('doctrine.orm.entity_manager');
+            $mailTemplateRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
+            $this->mailTemplate     = $mailTemplateRepository->findOneBy([
                 'type'   => $this->params[0],
                 'locale' => $this->getParameter('locale'),
                 'status' => MailTemplates::STATUS_ACTIVE,
-                'part'   => MailTemplates::PART_TYPE_CONTENT
+                'part'   => $part
             ]);
 
             if (null !== $this->mailTemplate && $this->request->isMethod(Request::METHOD_POST)) {
                 $aPost = $this->handlePost();
 
-                if (empty($aPost['sender_name']) || empty($aPost['sender_email']) || empty($aPost['subject'])) {
+                if (MailTemplates::PART_TYPE_CONTENT === $part && (empty($aPost['sender_name']) || empty($aPost['sender_email']) || empty($aPost['subject']))) {
                     $_SESSION['freeow']['title']   = 'Modification d\'un mail';
-                    $_SESSION['freeow']['message'] = 'Modification impossible : tous les champs n\'ont &eacute;t&eacute; remplis';
+                    $_SESSION['freeow']['message'] = 'Modification impossible : tous les champs n\'ont été remplis';
                 } else {
-                    $mailTemplateManager->modifyTemplate($this->mailTemplate, $aPost['sender_name'], $aPost['sender_email'], $aPost['subject'], $aPost['content'], $aPost['recipient_type']);
+                    $mailTemplateManager->modifyTemplate(
+                        $this->mailTemplate,
+                        empty($aPost['sender_name']) ? null : $aPost['sender_name'],
+                        empty($aPost['sender_email']) ? null : $aPost['sender_email'],
+                        empty($aPost['subject']) ? null : $aPost['subject'],
+                        empty($aPost['title']) ? null : $aPost['title'],
+                        empty($aPost['content']) ? null : $aPost['content'],
+                        empty($aPost['header']) ? null : $mailTemplateRepository->find($aPost['header']),
+                        empty($aPost['footer']) ? null : $mailTemplateRepository->find($aPost['footer']),
+                        empty($aPost['recipient_type']) ? null : $aPost['recipient_type']
+                    );
 
                     $_SESSION['freeow']['title']   = 'Modification d\'un mail';
-                    $_SESSION['freeow']['message'] = 'Le mail a bien &eacute;t&eacute; modifi&eacute;';
+                    $_SESSION['freeow']['message'] = 'Le mail a bien été modifié';
                 }
 
                 header('Location: ' . $this->url . '/mails');
                 die;
             }
+
+            /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
+            $translator      = $this->get('translator');
+            $titleLabel      = Translations::SECTION_MAIL_TITLE . '_' . $this->mailTemplate->getType();
+            $this->mailTitle = $translator->trans($titleLabel);
+            $this->mailTitle = $this->mailTitle === $titleLabel ? '' : $this->mailTitle;
+
+            /** @var MailTemplateManager $mailTemplateManager */
+            $mailTemplateManager = $this->get('unilend.service.mail_template');
+            $this->headers       = $mailTemplateManager->getActiveMailTemplates(null, MailTemplates::PART_TYPE_HEADER);
+            $this->footers       = $mailTemplateManager->getActiveMailTemplates(null, MailTemplates::PART_TYPE_FOOTER);
         }
     }
 
@@ -145,7 +193,7 @@ class mailsController extends bootstrap
         $this->users->checkAccess(Zones::ZONE_LABEL_CONFIGURATION);
         $this->menu_admin = 'configuration';
 
-        /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $mailQueueManager */
+        /** @var MailQueueManager $mailQueueManager */
         $mailQueueManager = $this->get('unilend.service.mail_queue');
 
         if (isset($_POST['form_send_search'])) {
@@ -178,10 +226,9 @@ class mailsController extends bootstrap
         $_SESSION['request_url'] = $this->lurl;
 
         if (false === empty($this->params[0])) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue $mailQueue */
             $mailQueue = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:MailQueue')->find($this->params[0]);
-            if ($mailQueue instanceof \Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue) {
-                /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $oEmail */
+            if ($mailQueue instanceof MailQueue) {
+                /** @var MailQueueManager $oEmail */
                 $oMailQueueManager = $this->get('unilend.service.mail_queue');
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $oEmail */
                 $oEmail = $oMailQueueManager->getMessage($mailQueue);
@@ -203,14 +250,16 @@ class mailsController extends bootstrap
 
     private function handlePost()
     {
+        $fields = [];
+
         foreach ($_POST as $field => $value) {
-            $aPost[$field] = $value;
+            $fields[$field] = $value;
         }
 
-        $aPost['type']    = isset($aPost['type']) ? $this->bdd->generateSlug(trim($_POST['type'])) : '';
-        $aPost['subject'] = str_replace('"', '\'', $_POST['subject']);
-        $aPost['content'] = str_replace('"', '\'', $_POST['content']);
+        $fields['type']    = isset($fields['type']) ? $this->bdd->generateSlug(trim($_POST['type'])) : '';
+        $fields['subject'] = isset($fields['subject']) ? str_replace('"', '\'', $fields['subject']) : null;
+        $fields['content'] = isset($fields['content']) ? str_replace('"', '\'', $fields['content']) : null;
 
-        return $aPost;
+        return $fields;
     }
 }
