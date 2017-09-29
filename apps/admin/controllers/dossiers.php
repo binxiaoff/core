@@ -18,7 +18,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
 use \Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 
 class dossiersController extends bootstrap
 {
@@ -234,6 +233,7 @@ class dossiersController extends bootstrap
             $this->aAllAnnualAccounts   = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
 
             $this->possibleProjectStatus = $projectStatusManager->getPossibleStatus($this->projectEntity);
+        var_dump($this->possibleProjectStatus);die;
             if ($this->projectEntity->getStatus()) {
                 $this->currentProjectStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $this->projectEntity->getStatus()]);
             }
