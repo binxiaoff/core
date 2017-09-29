@@ -620,7 +620,7 @@ class EcheanciersRepository extends EntityRepository
             ->where('e.idLoan = :loan')
             ->setParameter('loan', $loan)
             ->andWhere('ee.dateEcheanceEmprunteur < :today')
-            ->setParameter('today', (new \DateTime())->format('Y-m-d'));
+            ->setParameter('today', (new \DateTime())->format('Y-m-d 00:00:00'));
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }

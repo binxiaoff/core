@@ -43,7 +43,7 @@ class DebtCollectionFeeDetail
     /**
      * @var string
      *
-     * @ORM\Column(name="vat", type="decimal", precision=4, scale=4, nullable=false)
+     * @ORM\Column(name="vat", type="decimal", precision=10, scale=2, nullable=false)
      */
     private $vat;
 
@@ -64,9 +64,9 @@ class DebtCollectionFeeDetail
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updatd", type="datetime", nullable=true)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
-    private $updatd;
+    private $updated;
 
     /**
      * @var integer
@@ -248,27 +248,27 @@ class DebtCollectionFeeDetail
     }
 
     /**
-     * Set updatd
+     * Set updated
      *
-     * @param \DateTime $updatd
+     * @param \DateTime $updated
      *
      * @return DebtCollectionFeeDetail
      */
-    public function setUpdatd($updatd)
+    public function setUpdated($updated)
     {
-        $this->updatd = $updatd;
+        $this->updated = $updated;
 
         return $this;
     }
 
     /**
-     * Get updatd
+     * Get updated
      *
      * @return \DateTime
      */
-    public function getUpdatd()
+    public function getUpdated()
     {
-        return $this->updatd;
+        return $this->updated;
     }
 
     /**

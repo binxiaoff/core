@@ -16,6 +16,7 @@ class BorrowerOperationsManager
     const OP_MONTHLY_PAYMENT                = 'monthly-payment';
     const OP_RECOVERY_PAYMENT               = 'recovery-payment';
     const OP_MONTHLY_PAYMENT_REGULARIZATION = 'monthly-payment-regularization';
+    const OP_PROJECT_CHARGE_REPAYMENT       = 'project-charge-repayment';
     const OP_LENDER_MONTHLY_REPAYMENT       = 'lender-monthly-repayment';
     const OP_LENDER_EARLY_REPAYMENT         = 'lender-early-repayment';
     const OP_LENDER_RECOVERY_REPAYMENT      = 'lender-recovery-repayment';

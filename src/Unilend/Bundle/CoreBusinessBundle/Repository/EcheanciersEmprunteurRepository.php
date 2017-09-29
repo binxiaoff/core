@@ -125,7 +125,7 @@ class EcheanciersEmprunteurRepository extends EntityRepository
             ->where('ee.idProject = :project')
             ->andWhere('ee.dateEcheanceEmprunteur < :today')
             ->setParameter('project', $project)
-            ->setParameter('today', (new \DateTime())->format('Y-m-d'));
+            ->setParameter('today', (new \DateTime())->format('Y-m-d 00:00:00'));
 
         return $queryBuilder->getQuery()->getSingleResult();
     }
