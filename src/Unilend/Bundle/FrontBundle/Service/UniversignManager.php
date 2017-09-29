@@ -10,6 +10,7 @@ use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectBeneficialOwnerUniversign;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
@@ -107,6 +108,10 @@ class UniversignManager
                     /** @var WireTransferOutUniversign $document */
                     $this->signWireTransferOut($document);
                     break;
+                case ProjectBeneficialOwnerUniversign::class:
+                    /** @var ProjectBeneficialOwnerUniversign $document */
+                    $this->signBeneficialOwnerDeclaration($document);
+                    break;
             }
         }
     }
@@ -177,13 +182,14 @@ class UniversignManager
     }
 
     /**
-     * @param Projects        $project
-     * @param ProjectsPouvoir $proxy
-     * @param ClientsMandats  $mandate
+     * @param Projects                         $project
+     * @param ProjectsPouvoir                  $proxy
+     * @param ClientsMandats                   $mandate
+     * @param ProjectBeneficialOwnerUniversign $beneficialOwnerUniversign
      *
      * @return bool
      */
-    public function createProject(Projects $project, ProjectsPouvoir $proxy, ClientsMandats $mandate)
+    public function createProject(Projects $project, ProjectsPouvoir $proxy, ClientsMandats $mandate, ProjectBeneficialOwnerUniversign $beneficialOwnerUniversign)
     {
         $bankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($project->getIdCompany()->getIdClientOwner());
         if (null === $bankAccount) {
@@ -192,7 +198,7 @@ class UniversignManager
             return false;
         }
 
-        $resultValue = $this->createSignature(UniversignController::SIGNATURE_TYPE_PROJECT, $project->getIdProject(), [$proxy, $mandate]);
+        $resultValue = $this->createSignature(UniversignController::SIGNATURE_TYPE_PROJECT, $project->getIdProject(), [$proxy, $mandate, $beneficialOwnerUniversign]);
 
         if ($resultValue instanceof Value) {
             $proxy
@@ -206,6 +212,11 @@ class UniversignManager
                 ->setStatus(UniversignEntityInterface::STATUS_PENDING)
                 ->setBic($bankAccount->getBic())
                 ->setIban($bankAccount->getIban());
+
+            $beneficialOwnerUniversign
+                ->setIdUniversign($resultValue['id']->scalarVal())
+                ->setUrlUniversign($resultValue['url']->scalarVal())
+                ->setStatus(ProjectsPouvoir::STATUS_PENDING);
 
             $this->entityManager->flush();
 
@@ -348,6 +359,35 @@ class UniversignManager
     }
 
     /**
+     * @param ProjectBeneficialOwnerUniversign $beneficialOwnerDeclaration
+     *
+     * @return bool
+     */
+    public function createBeneficialOwnerDeclaration(ProjectBeneficialOwnerUniversign $beneficialOwnerDeclaration)
+    {
+        $resultValue = $this->createSignature(ProjectBeneficialOwnerUniversign::DOCUMENT_TYPE, $beneficialOwnerDeclaration->getId(), [$beneficialOwnerDeclaration]);
+
+        if ($resultValue instanceof Value) {
+            $beneficialOwnerDeclaration
+                ->setIdUniversign($resultValue['id']->scalarVal())
+                ->setUrlUniversign($resultValue['url']->scalarVal());
+            $this->entityManager->flush($beneficialOwnerDeclaration);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param ProjectBeneficialOwnerUniversign $beneficialOwnerDeclaration
+     */
+    private function signBeneficialOwnerDeclaration(ProjectBeneficialOwnerUniversign $beneficialOwnerDeclaration)
+    {
+
+    }
+
+    /**
      * @param UniversignEntityInterface $document
      */
     private function updateSignature(UniversignEntityInterface $document)
@@ -426,6 +466,9 @@ class UniversignManager
             case WireTransferOutUniversign::class:
                 $documentFullPath = $this->rootDir . '/../protected/pdf/wire_transfer_out/' . $documentName;
                 break;
+            case ProjectBeneficialOwnerUniversign::class:
+                $documentFullPath = $this->rootDir . '/../protected/pdf/beneficial_owner/' . $documentName; //TODO harmonize with pdf method
+                break;
             default:
                 $this->logger->error('Unknown Universign document type : ' . get_class($document) . '  id : ' . $documentId, ['class' => __CLASS__, 'function' => __FUNCTION__]);
                 throw new \Exception('Unknown Universign document type : ' . get_class($document) . '  id : ' . $documentId);
@@ -479,6 +522,11 @@ class UniversignManager
             case WireTransferOutUniversign::class:
                 /** @var WireTransferOutUniversign $document */
                 $clientId = $document->getIdWireTransferOut()->getProject()->getIdCompany()->getIdClientOwner();
+                $client   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
+                break;
+            case ProjectBeneficialOwnerUniversign::class:
+                /** @var ProjectBeneficialOwnerUniversign $document */
+                $clientId = $document->getIdProject()->getIdCompany()->getIdClientOwner();
                 $client   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
                 break;
             default:
@@ -571,6 +619,7 @@ class UniversignManager
             case ClientsMandats::class:
             case ProjectsPouvoir::class:
             case WireTransferOutUniversign::class:
+            case ProjectBeneficialOwnerUniversign::class:
                 break;
             default:
                 $this->logger->error('Unknown Universign document type : ' . get_class($document) . '  id : ' . $documentId, ['class' => __CLASS__, 'function' => __FUNCTION__]);
