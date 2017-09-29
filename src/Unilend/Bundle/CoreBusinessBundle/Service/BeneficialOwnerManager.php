@@ -4,29 +4,25 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Knp\Snappy\GeneratorInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\RouterInterface;
 use Twig_Environment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BeneficialOwner;
+use Unilend\Bundle\CoreBusinessBundle\Entity\BeneficialOwnerType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyBeneficialOwnerDeclaration;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectBeneficialOwnerUniversign;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
+use Unilend\Bundle\CoreBusinessBundle\Repository\BeneficialOwnerRepository;
 use Unilend\Bundle\FrontBundle\Service\UniversignManager;
 
 class BeneficialOwnerManager
 {
     const EXCEPTION_CODE_BENEFICIAL_OWNER_MANAGER = 3;
-
-    const BENEFICIAL_OWNER_ATTACHMENT_TYPES = [
-        AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_1,
-        AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_2,
-        AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_3,
-        AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1,
-        AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2,
-        AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3
-    ];
+    const MAX_NUMBER_BENEFICIAL_OWNERS            = 4;
 
     /** @var EntityManager */
     private $entityManager;
@@ -40,6 +36,8 @@ class BeneficialOwnerManager
     private $router;
     /** @var UniversignManager */
     private $universignManager;
+    /** @var AttachmentManager */
+    private $attachmentManager;
 
     /**
      * @param EntityManager      $entityManager
@@ -47,6 +45,7 @@ class BeneficialOwnerManager
      * @param Twig_Environment   $twig
      * @param RouterInterface    $router
      * @param UniversignManager  $universignManager
+     * @param AttachmentManager  $attachmentManager
      * @param                    $protectedPath
      */
     public function __construct(
@@ -55,14 +54,15 @@ class BeneficialOwnerManager
         Twig_Environment $twig,
         RouterInterface $router,
         UniversignManager $universignManager,
+        AttachmentManager $attachmentManager,
         $protectedPath
-    )
-    {
+    ) {
         $this->entityManager     = $entityManager;
         $this->snappy            = $snappy;
         $this->twig              = $twig;
         $this->router            = $router;
         $this->universignManager = $universignManager;
+        $this->attachmentManager = $attachmentManager;
         $this->protectedPath     = $protectedPath;
     }
 
@@ -176,46 +176,62 @@ class BeneficialOwnerManager
         $this->snappy->generateFromHtml($pdfContent, $outputFile, $options, true);
     }
 
+    /**
+     * @param CompanyBeneficialOwnerDeclaration $declaration
+     * @param string                            $lastName
+     * @param string                            $firstName
+     * @param \DateTime                         $birthday
+     * @param string                            $birthPlace
+     * @param int                               $idBirthCountry
+     * @param int                               $countryOfResidence
+     * @param UploadedFile                      $passport
+     * @param BeneficialOwnerType|null          $type
+     * @param string|null                       $percentage
+     *
+     * @return BeneficialOwner
+     */
+    public function createBeneficialOwner(
+        CompanyBeneficialOwnerDeclaration $declaration,
+        $lastName,
+        $firstName,
+        \DateTime $birthday,
+        $birthPlace,
+        $idBirthCountry,
+        $countryOfResidence,
+        UploadedFile $passport,
+        BeneficialOwnerType $type = null,
+        $percentage = null
+    ) {
+        $owner = new Clients();
+        $owner->setPrenom($firstName)
+            ->setNom($lastName)
+            ->setNaissance($birthday)
+            ->setVilleNaissance($birthPlace)
+            ->setIdPaysNaissance($idBirthCountry);
 
+        $this->entityManager->persist($owner);
 
-    public function getDeclarationForCompany(Companies $company)
-    {
+        $ownerAddress = new ClientsAdresses();
+        $ownerAddress->setIdPaysFiscal($countryOfResidence)
+            ->setIdClient($owner);
 
+        $this->entityManager->persist($ownerAddress);
 
+        $beneficialOwner = new BeneficialOwner();
+        $beneficialOwner->setIdClient($owner)
+            ->setIdDeclaration($declaration)
+            ->setPercentageDetained($percentage)
+            ->setIdType($type);
 
-    }
+        $this->entityManager->persist($beneficialOwner);
 
-    public function getDeclarationForProject(Projects $project)
-    {
-
-    }
-
-
-    public function saveBeneficialOwner(Clients $client, ClientsAdresses $address, Companies $company, $percentage, $type)
-    {
-
-    }
-
-    public function checkBeneficialOwner(Clients $beneficialOwner, ClientsAdresses $address)
-    {
-        if (null === $beneficialOwner->getNom() || null === $beneficialOwner->getPrenom()) {
-            throw new \Exception('Beneficial owner must have a first and last name', self::EXCEPTION_CODE_BENEFICIAL_OWNER_MANAGER);
+        $attachmentType    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::CNI_PASSPORTE);
+        if ($attachmentType) {
+            $this->attachmentManager->upload($owner, $attachmentType, $passport);
         }
 
-        if (
-            null === $beneficialOwner->getNaissance()
-            || null === $beneficialOwner->getIdPaysNaissance()
-            || null === $this->entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2')->find($beneficialOwner->getIdPaysNaissance())
-        ) {
-            throw new \Exception('Beneficial owner must have a birthdate and a valid birth country', self::EXCEPTION_CODE_BENEFICIAL_OWNER_MANAGER);
-        }
+        $this->entityManager->flush([$declaration, $owner, $ownerAddress, $beneficialOwner]);
 
-        if (null === $address->getIdPaysFiscal() || null === $this->entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2')->find($address->getIdPaysFiscal())) {
-            throw new \Exception('Beneficial owner must have a valid country of residence', self::EXCEPTION_CODE_BENEFICIAL_OWNER_MANAGER);
-        }
-
-        $beneficialOwner->getAttachments(); //TODO check attachment types
-
-        return true;
+        return $beneficialOwner;
     }
 }

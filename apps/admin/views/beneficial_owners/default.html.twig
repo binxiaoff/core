@@ -1,21 +1,21 @@
 {% extends 'layout.html.twig' %}
 
-{% set beneficial_owners = [
-{
-state: 'active',
-id: 12392,
-last_name: 'Dupont',
-first_name: 'Alain',
-percentage: '30%',
-birthdate: '14/12/1980',
-birthplace: 'Paris',
-country: 'France',
-id_card_passport: '<a href="/path/to/passport/passport.jpg">passport.jpg</a>',
-type: 'Actionnaire',
-status: 'Validé',
-validation_type: 'Front office'
-}
-] %}
+{#{% set beneficial_owners = [#}
+{#{#}
+{#state: 'active',#}
+{#id: 12392,#}
+{#last_name: 'Dupont',#}
+{#first_name: 'Alain',#}
+{#percentage: '30%',#}
+{#birthdate: '14/12/1980',#}
+{#birthplace: 'Paris',#}
+{#country: 'France',#}
+{#id_card_passport: '<a href="/path/to/passport/passport.jpg">passport.jpg</a>',#}
+{#type: 'Actionnaire',#}
+{#status: 'Validé',#}
+{#validation_type: 'Front office'#}
+{#}#}
+{#] %}#}
 
 {% block pluginsCSS %}
     <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
@@ -34,7 +34,7 @@ validation_type: 'Front office'
 
 {% block modals %}
     <div class="modal" id="modal-beneficial-default" tabindex="-1" role="dialog" aria-hidden="true">
-        <form class="modal-dialog validate" action="{{ app.adminUrl }}/beneficial_owners" method="post">
+        <form class="modal-dialog validate" action="{{ app.adminUrl }}/beneficial_owners/edit" method="post">
             <div class="modal-content">
                 <div class="block block-themed block-transparent remove-margin-b">
                     <div class="block-header bg-primary-light">
@@ -87,7 +87,13 @@ validation_type: 'Front office'
                     </div>
                 {% endif %}
 
-                <table class="table table-striped table-hover table-bordered table-header-bg" data-table data-table-editor data-table-editor-url="/beneficial_owners/list/" data-table-editor-actions="add, modify, toggle">
+                <!-- @TODO dimitar :
+                                    - Une colonne caché avec l'ID de la declaration (id_declaration) - est globale pour toute la table
+                                    - Un champs avec l'id_company (qui se trouve aussi dans l'URL) - également globale pour toute la table
+                                    - status, validation_type ne sont pas des champs éditables
+                                    - Type de bénéficiaire/Pays vont être un array ou json (selon ta préference) avec des id => Nom en français. il faudra retourner les Ids
+                !-->
+                <table class="table table-striped table-hover table-bordered table-header-bg" data-table data-table-editor data-table-editor-url="/beneficial_owners/edit/" data-table-editor-actions="add, modify, toggle">
                     <thead>
                         <tr>
                             <th data-editor-name="last_name" data-editor-type="text">Nom</th>
@@ -95,9 +101,10 @@ validation_type: 'Front office'
                             <th data-editor-name="percentage" data-editor-type="numerical">% détenu</th>
                             <th data-editor-name="birthdate" data-editor-type="date">Date de naissance</th>
                             <th data-editor-name="birthplace" data-editor-type="text">Ville de naissance</th>
+                            <th data-editor-name="birth_country" data-editor-type="text">Pays de naissance</th>
                             <th data-editor-name="country" data-editor-type="text">Pays de résidence</th>
                             <th data-editor-name="id_card_passport" data-editor-type="file">Pièce d'identité</th>
-                            <th data-editor-name="type" data-editor-type="select" data-editor-options="Actionnaire, Gérant">Type de bénéficiaire</th>
+                            <th data-editor-name="type" data-editor-type="select" data-editor-options="Actionnaire, Gérant" data-editor-optional>Type de bénéficiaire</th>
                             <th data-editor-name="status" data-editor-type="text" data-editor-type="radio" data-editor-options="Validé, À valider, Archivé">Statut</th>
                             <th data-editor-name="validation_type" data-editor-type="select" data-editor-options="Front office, Universign">Méthode de validation</th>
                         </tr>
@@ -107,9 +114,10 @@ validation_type: 'Front office'
                         <tr data-id="{{ owner.id }}" data-state="{{ owner.status }}">
                             <td>{{ owner.last_name }}</td>
                             <td>{{ owner.first_name }}</td>
-                            <td>{{ owner.percentage }}</td>
+                            <td>{{ owner.percentage|localizednumber }}</td>
                             <td>{{ owner.birthdate }}</td>
                             <td>{{ owner.birthplace }}</td>
+                            <td>{{ owner.birth_country }}</td>
                             <td>{{ owner.country }}</td>
                             <td>{{ owner.id_card_passport }}</td>
                             <td>{{ owner.type }}</td>
