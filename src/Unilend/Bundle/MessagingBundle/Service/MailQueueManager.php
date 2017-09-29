@@ -83,7 +83,7 @@ class MailQueueManager
         }
 
         $mailQueue = new MailQueue();
-        $mailQueue->setIdMailTemplate($mailTemplate);
+        $mailQueue->setIdMailTemplate($mailTemplate->getIdMailTemplate());
         $mailQueue->setSerializedVariables(json_encode($message->getVariables()));
         $mailQueue->setAttachments(json_encode($attachments));
         $mailQueue->setRecipient($recipients);

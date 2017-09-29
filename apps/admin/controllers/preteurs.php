@@ -1114,7 +1114,7 @@ class preteursController extends bootstrap
             $this->sDisplayDateTimeStart = $oDateTimeStart->format('d/m/Y');
             $this->sDisplayDateTimeEnd   = $oDateTimeEnd->format('d/m/Y');
             $this->aEmailsSentToClient   = $oMailQueueManager->searchSentEmails($this->clients->id_client, null, null, null, $oDateTimeStart, $oDateTimeEnd);
-            $this->clientStatusMessage = $this->getMessageAboutClientStatus();
+            $this->clientStatusMessage   = $this->getMessageAboutClientStatus();
         }
     }
 

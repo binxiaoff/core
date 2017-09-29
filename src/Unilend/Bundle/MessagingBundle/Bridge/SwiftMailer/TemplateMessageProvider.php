@@ -74,6 +74,7 @@ class TemplateMessageProvider
         $message
             ->setVariables($variables)
             ->setFrom($mailTemplate->getSenderEmail(), $fromName)
+            ->setReplyTo($mailTemplate->getSenderEmail(), $fromName)
             ->setSubject($subject)
             ->setBody($body, 'text/html');
 
