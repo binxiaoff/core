@@ -1661,30 +1661,17 @@ class MailerManager
                         $loanId              = null;
                         $repaymentScheduleId = null;
 
-                        if ($aMailNotification['id_wallet_balance_history']) {
-                            $walletBalanceHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->find($aMailNotification['id_wallet_balance_history']);
-                            /** @var Operation $operation */
-                            $operation = $walletBalanceHistory->getIdOperation();
+                        $walletBalanceHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->find($aMailNotification['id_wallet_balance_history']);
+                        /** @var Operation $operation */
+                        $operation = $walletBalanceHistory->getIdOperation();
 
-                            if ($operation) {
-                                if ($operation->getSubType() && OperationSubType::CAPITAL_REPAYMENT_EARLY === $operation->getSubType()->getLabel()) {
-                                    $isEarlyRepayment = true;
-                                }
-                                $amount              = $operation->getAmount();
-                                $loanId              = $operation->getLoan()->getIdLoan();
-                                $repaymentScheduleId = $operation->getRepaymentSchedule()->getIdEcheancier();
-                            }
-                        } else {
-                            /** @var \transactions $transaction */
-                            $transaction = $this->entityManagerSimulator->getRepository('transactions');
-                            /** old transaction for backwards compatibility. It can be removed one all transaction id is null in clients_gestion_mails_notif */
-                            $transaction->get($aMailNotification['id_transaction']);
-                            if (self::TYPE_TRANSACTION_LENDER_ANTICIPATED_REPAYMENT == $transaction->type_transaction) {
+                        if ($operation) {
+                            if ($operation->getSubType() && OperationSubType::CAPITAL_REPAYMENT_EARLY === $operation->getSubType()->getLabel()) {
                                 $isEarlyRepayment = true;
                             }
-                            $amount              = round(bcdiv($transaction->montant, 100, 3), 2);
-                            $loanId              = $transaction->id_loan_remb;
-                            $repaymentScheduleId = $transaction->id_echeancier;
+                            $amount              = $operation->getAmount();
+                            $loanId              = $operation->getLoan()->getIdLoan();
+                            $repaymentScheduleId = $operation->getRepaymentSchedule()->getIdEcheancier();
                         }
 
                         if ($isEarlyRepayment) {

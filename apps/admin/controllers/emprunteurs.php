@@ -67,7 +67,11 @@ class emprunteursController extends bootstrap
             $walletType             = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::BORROWER]);
             $borrowerWallet         = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')
                 ->findOneBy(['idClient' => $client->getIdClient(), 'idType' => $walletType]);
-            $this->availableBalance = $borrowerWallet->getAvailableBalance();
+            if ($borrowerWallet) {
+                $this->availableBalance = $borrowerWallet->getAvailableBalance();
+            } else {
+                $this->availableBalance = 0;
+            }
             $this->lprojects        = $this->projects->select('id_company = "' . $this->companies->id_company . '"');
 
             if ($this->clients->telephone != '') {
