@@ -82,10 +82,10 @@
                     <table class="formColor">
                         <tr>
                             <th><label for="datepik_1">Debut :</label></th>
-                            <td><input type="text" name="debut" id="datepik_1" class="input_dp" value="<?= $this->sDisplayDateTimeStart ?>"/></td>
+                            <td><input type="text" name="debut" id="datepik_1" class="input_dp" value="<?= $this->sDisplayDateTimeStart ?>"></td>
                             <th><label for="datepik_2">Fin :</label></th>
-                            <td><input type="text" name="fin" id="datepik_2" class="input_dp" value="<?= $this->sDisplayDateTimeEnd ?>"/></td>
-                            <td><input type="submit" value="Filtrer par date" name="send_dates" class="btn-primary"/></td>
+                            <td><input type="text" name="fin" id="datepik_2" class="input_dp" value="<?= $this->sDisplayDateTimeEnd ?>"></td>
+                            <td><input type="submit" value="Filtrer par date" name="send_dates" class="btn-primary"></td>
                         </tr>
                     </table>
                 </fieldset>
@@ -103,12 +103,12 @@
             <tbody>
                 <?php foreach ($this->aEmailsSentToClient as $aEmail) : ?>
                     <tr>
-                        <td><?= $this->dates->formatDate($aEmail['sent_at'], 'd/m/Y H:i') ?></td>
-                        <td><?= $aEmail['sender_name'] ?></td>
+                        <td><?= $aEmail['sentAt']->format('d/m/Y H:i') ?></td>
+                        <td><?= $aEmail['senderName'] ?></td>
                         <td><?= $aEmail['subject'] ?></td>
                         <td style="text-align: center">
-                            <a href="<?= $this->lurl ?>/preteurs/email_history_preview/<?= $aEmail['id_queue'] ?>" class="thickbox">
-                                <img src="<?= $this->surl ?>/images/admin/mail.png" alt="previsualiser" height="13px" width="20px" />
+                            <a href="<?= $this->lurl ?>/preteurs/email_history_preview/<?= $aEmail['idQueue'] ?>" class="thickbox">
+                                <img src="<?= $this->surl ?>/images/admin/mail.png" alt="previsualiser" height="13px" width="20px">
                             </a>
                         </td>
                     </tr>

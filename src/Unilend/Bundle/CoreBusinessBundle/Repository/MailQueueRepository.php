@@ -18,7 +18,9 @@ class MailQueueRepository extends EntityRepository
         $qb = $this->createQueryBuilder('mq');
         $qb->where('mq.status = :pending')
            ->setParameter('pending', MailQueue::STATUS_PENDING)
-           ->andWhere('mq.toSendAt <= :now')
+           ->andWhere(
+               $qb->expr()->orX('mq.toSendAt <= :now', $qb->expr()->isNull('mq.toSendAt'))
+           )
            ->setParameter('now', new \DateTime())
            ->orderBy('mq.idQueue', 'ASC')
            ->groupBy('mq.recipient');
@@ -61,14 +63,16 @@ class MailQueueRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('mq');
         $queryBuilder
             ->select('
-                mq.*,
-                mt.sender_name,
-                mt.sender_email,
+                mq.idQueue,
+                mq.sentAt,
+                mq.recipient,
+                mt.senderName,
+                mt.senderEmail,
                 mt.subject'
             )
             ->innerJoin('UnilendCoreBusinessBundle:MailTemplates', 'mt', Join::WITH, 'mq.idMailTemplate = mt.idMailTemplate')
-            ->where('mq.status = :sent')
-            ->setParameter('sent', MailQueue::STATUS_SENT)
+            ->where('mq.status = :sentStatus')
+            ->setParameter('sentStatus', MailQueue::STATUS_SENT)
             ->orderBy('mq.sentAt', 'DESC');
 
         if (false === is_null($clientId)) {

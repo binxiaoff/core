@@ -8,7 +8,6 @@ use Doctrine\ORM\Mapping as ORM;
  * MailQueue
  *
  * @ORM\Table(name="mail_queue", indexes={@ORM\Index(name="status", columns={"status"}), @ORM\Index(name="recipient", columns={"recipient", "id_mail_template"}), @ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_message_mailjet", columns={"id_message_mailjet"})})
- * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\MailQueueRepository")
  */
@@ -20,9 +19,12 @@ class MailQueue
     const STATUS_ERROR      = -1;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates
      *
-     * @ORM\Column(name="id_mail_template", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_mail_template", referencedColumnName="id_mail_template")
+     * })
      */
     private $idMailTemplate;
 
@@ -124,7 +126,7 @@ class MailQueue
     /**
      * Set idMailTemplate
      *
-     * @param integer $idMailTemplate
+     * @param MailTemplates $idMailTemplate
      *
      * @return MailQueue
      */
@@ -138,7 +140,7 @@ class MailQueue
     /**
      * Get idMailTemplate
      *
-     * @return integer
+     * @return MailTemplates
      */
     public function getIdMailTemplate()
     {
