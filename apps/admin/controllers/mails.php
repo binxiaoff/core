@@ -188,6 +188,47 @@ class mailsController extends bootstrap
         }
     }
 
+    public function _preview()
+    {
+        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        $title    = $this->request->request->get('title', '');
+        $content  = $this->request->request->get('content', '');
+        $header   = $this->request->request->filter('header', null, FILTER_VALIDATE_INT);
+        $footer   = $this->request->request->filter('footer', null, FILTER_VALIDATE_INT);
+        $keywords = $this->request->request->filter('keywords', [], FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+
+        if ($header || $footer) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager          = $this->get('doctrine.orm.entity_manager');
+            $mailTemplateRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
+
+            if ($header && $header = $mailTemplateRepository->find($header)) {
+                $content = $header->getContent() . $content;
+            }
+
+            if ($footer && $footer = $mailTemplateRepository->find($footer)) {
+                $content .= $footer->getContent();
+            }
+        }
+
+        $keywords['title'] = $title;
+        foreach ($keywords as $keyword => $value) {
+            $content = str_replace('[EMV DYN]' . $keyword . '[EMV /DYN]', $value, $content);
+        }
+
+        header('Content-Type: application/json');
+
+        echo json_encode([
+            'success' => true,
+            'data'   => [
+                'content' => $content
+            ]
+        ]);
+    }
+
     public function _emailhistory()
     {
         $this->users->checkAccess(Zones::ZONE_LABEL_CONFIGURATION);

@@ -54,17 +54,27 @@
         $('#preview-keywords-form').on('submit', function (event) {
             event.preventDefault()
 
-            var content = $('#content').val()
+            var $form = $(this)
 
-            $.each($keywords.find('input[name^=keywords]'), function (index, input) {
-                content = content.replace(new RegExp('\\[EMV DYN\\]' + $(input).data('keyword') + '\\[EMV /DYN\\]', 'g'), $(input).val())
+            $form.find('[name=title]').val($('#title').val())
+            $form.find('[name=content]').val($('#content').val())
+            $form.find('[name=header]').val($('#header-select').val())
+            $form.find('[name=footer]').val($('#footer-select').val())
+
+            $.ajax({
+                url: $form.prop('action'),
+                method: $form.prop('method').toUpperCase(),
+                data: $form.serialize(),
+                success: function (response) {
+                    if (response.success && response.data && response.data.content) {
+                        var $iframe = $('<iframe></iframe>')
+                            .attr('src', 'data:text/html;charset=utf-8,' + encodeURI(response.data.content))
+                            .height($('#cboxLoadedContent').height() - 45)
+
+                        $iframeContainer.empty().append($iframe)
+                    }
+                }
             })
-
-            var $iframe = $('<iframe></iframe>')
-                .attr('src', 'data:text/html;charset=utf-8,' + encodeURI(content))
-                .height($('#cboxLoadedContent').height() - 45)
-
-            $iframeContainer.empty().append($iframe)
         })
     })
 </script>
@@ -72,10 +82,13 @@
     <div id="preview-content">
         <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"></a>
         <div class="row" style="margin: 40px 15px 0 15px;">
-            <form id="preview-keywords-form" class="col-md-3">
+            <form id="preview-keywords-form" method="post" action="<?= $this->lurl ?>/mails/preview" class="col-md-3">
                 <div id="preview-keywords"></div>
                 <div class="form-group">
+                    <input type="hidden" name="title">
                     <input type="hidden" name="content">
+                    <input type="hidden" name="header">
+                    <input type="hidden" name="footer">
                     <button type="submit" class="form-control btn-default pull-right">Prévisualiser</button>
                 </div>
             </form>
