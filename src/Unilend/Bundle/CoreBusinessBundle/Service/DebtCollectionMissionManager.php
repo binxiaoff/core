@@ -6,22 +6,26 @@ use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
-use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager;
 
 class DebtCollectionMissionManager
 {
-    /**
-     * @var EntityManager
-     */
-    private $entityManager;
-    private $projectRepaymentManager;
+    const DEBT_COLLECTION_CONDITION_CHANGE_DATE = '2016-04-19';
 
-    public function __construct(EntityManager $entityManager, ProjectRepaymentManager $projectRepaymentManager)
+    /** @var EntityManager */
+    private $entityManager;
+
+    /** @var ProjectRepaymentTaskManager */
+    private $projectRepaymentTaskManager;
+
+    public function __construct(EntityManager $entityManager, ProjectRepaymentTaskManager $projectRepaymentTaskManager)
     {
-        $this->entityManager           = $entityManager;
-        $this->projectRepaymentManager = $projectRepaymentManager;
+        $this->entityManager               = $entityManager;
+        $this->projectRepaymentTaskManager = $projectRepaymentTaskManager;
     }
 
     public function getCreditorsDetails(DebtCollectionMission $debtCollectionMission)
@@ -37,7 +41,7 @@ class DebtCollectionMissionManager
     {
         $charges = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCharge')->findBy([
             'idProject' => $debtCollectionMission->getIdProject(),
-            'status'    => ProjectCharge::STATUS_PENDING
+            'status'    => ProjectCharge::STATUS_PAID_BY_UNILEND
         ]);
 
         $totalCharges = 0;
@@ -129,7 +133,7 @@ class DebtCollectionMissionManager
             ]);
 
             foreach ($repaymentTasks as $projectRepaymentTask) {
-                $this->projectRepaymentManager->prepare($projectRepaymentTask);
+                $this->projectRepaymentTaskManager->prepare($projectRepaymentTask);
             }
         }
 
@@ -138,10 +142,10 @@ class DebtCollectionMissionManager
         $repaymentScheduleRepository      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
         $projectRepaymentDetailRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail');
 
-        $loanDetails             = [];
-        $project                 = $debtCollectionMission->getIdProject();
-        $loans                   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project, 'status' => Loans::STATUS_ACCEPTED]);
-        $vatTax                  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+        $loanDetails = [];
+        $project     = $debtCollectionMission->getIdProject();
+        $loans       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project, 'status' => Loans::STATUS_ACCEPTED]);
+        $vatTax      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
 
         if (null === $vatTax) {
             throw new \Exception('The VAT rate is not defined.');
@@ -209,5 +213,27 @@ class DebtCollectionMissionManager
         }
 
         return $loanDetails;
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @return bool
+     */
+    public function isDebtCollectionFeeDueToBorrower(Projects $project)
+    {
+        $statusHistory = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+            ->findStatusFirstOccurrence($project, ProjectsStatus::EN_FUNDING);
+        $putOnlineDate = $statusHistory->getAdded();
+        $putOnlineDate->setTime(0, 0, 0);
+        $dateOfChange = new \DateTime(self::DEBT_COLLECTION_CONDITION_CHANGE_DATE);
+        $dateOfChange->setTime(0, 0, 0);
+
+        if ($putOnlineDate >= $dateOfChange) {
+            return true;
+        }
+
+        return false;
     }
 }

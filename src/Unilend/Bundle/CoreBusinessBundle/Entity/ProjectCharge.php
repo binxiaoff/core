@@ -14,8 +14,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ProjectCharge
 {
-    const STATUS_PENDING = 0;
-    const STATUS_PAID    = 1;
+    const STATUS_PAID_BY_UNILEND    = 0;
+    const STATUS_REPAID_BY_BORROWER = 1;
 
     /**
      * @var int
@@ -87,6 +87,16 @@ class ProjectCharge
      * })
      */
     private $idProject;
+
+    /**
+     * @var Receptions
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Receptions")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_wire_transfer_in", referencedColumnName="id_reception")
+     * })
+     */
+    private $idWireTransferIn;
 
     /**
      * @return int
@@ -272,5 +282,29 @@ class ProjectCharge
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * Set idWireTransferIn
+     *
+     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions $idWireTransferIn
+     *
+     * @return ProjectCharge
+     */
+    public function setIdWireTransferIn(Receptions $idWireTransferIn = null)
+    {
+        $this->idWireTransferIn = $idWireTransferIn;
+
+        return $this;
+    }
+
+    /**
+     * Get idWireTransferIn
+     *
+     * @return Receptions
+     */
+    public function getIdWireTransferIn()
+    {
+        return $this->idWireTransferIn;
     }
 }

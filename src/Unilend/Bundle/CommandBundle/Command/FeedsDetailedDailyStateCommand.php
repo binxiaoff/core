@@ -56,10 +56,11 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
     const PAYMENT_ASSIGNMENT_COLUMN             = 'AH';
     const FISCAL_DIFFERENCE_COLUMN              = 'AI';
     const DEBT_COLLECTOR_COMMISSION_COLUMN      = 'AJ';
-    const WIRE_TRANSFER_OUT_COLUMN              = 'AK';
-    const UNILEND_WIRE_TRANSFER_OUT_COLUMN      = 'AL';
-    const TAX_WITHDRAW_COLUMN                   = 'AM';
-    const DIRECT_DEBIT_COLUMN                   = 'AN';
+    const BORROWER_CHARGE_REPAYMENT_COLUMN      = 'AK';
+    const WIRE_TRANSFER_OUT_COLUMN              = 'AL';
+    const UNILEND_WIRE_TRANSFER_OUT_COLUMN      = 'AM';
+    const TAX_WITHDRAW_COLUMN                   = 'AN';
+    const DIRECT_DEBIT_COLUMN                   = 'AO';
     const LAST_COLUMN                           = self::DIRECT_DEBIT_COLUMN;
 
     /**
@@ -160,6 +161,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             OperationType::BORROWER_PROVISION_CANCEL,
             OperationType::BORROWER_WITHDRAW,
             OperationType::BORROWER_COMMISSION,
+            OperationType::BORROWER_PROJECT_CHARGE_REPAYMENT,
             OperationType::LENDER_PROVISION,
             OperationType::LENDER_PROVISION_CANCEL,
             OperationType::LENDER_WITHDRAW,
@@ -347,7 +349,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $activeSheet->setCellValue(self::LENDER_WITHDRAW_COLUMN . $mainSectionRow, 'Remboursement aux prêteurs');
         $activeSheet->setCellValue(self::TOTAL_FINANCIAL_MOVEMENTS_COLUMN . $mainSectionRow, '');
         $activeSheet->mergeCells(self::THEORETICAL_BALANCE_COLUMN . $mainSectionRow . ':' . self::TAX_BALANCE_COLUMN . $mainSectionRow)->setCellValue(self::THEORETICAL_BALANCE_COLUMN . $mainSectionRow, 'Soldes');
-        $activeSheet->mergeCells(self::PROMOTION_OFFER_DISTRIBUTION_COLUMN . $mainSectionRow . ':' . self::FISCAL_DIFFERENCE_COLUMN . $mainSectionRow)->setCellValue(self::PROMOTION_OFFER_DISTRIBUTION_COLUMN . $mainSectionRow, 'Mouvements internes');
+        $activeSheet->mergeCells(self::PROMOTION_OFFER_DISTRIBUTION_COLUMN . $mainSectionRow . ':' . self::BORROWER_CHARGE_REPAYMENT_COLUMN . $mainSectionRow)->setCellValue(self::PROMOTION_OFFER_DISTRIBUTION_COLUMN . $mainSectionRow, 'Mouvements internes');
         $activeSheet->mergeCells(self::WIRE_TRANSFER_OUT_COLUMN . $mainSectionRow . ':' . self::TAX_WITHDRAW_COLUMN . $mainSectionRow)->setCellValue(self::WIRE_TRANSFER_OUT_COLUMN . $mainSectionRow, 'Virements');
         $activeSheet->setCellValue(self::DIRECT_DEBIT_COLUMN . $mainSectionRow, 'Prélèvements');
         $activeSheet->setCellValue(self::LENDER_PROVISION_CARD_COLUMN . $secondarySectionRow, 'Carte bancaire');
@@ -385,6 +387,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $activeSheet->setCellValue(self::PAYMENT_ASSIGNMENT_COLUMN . $secondarySectionRow, 'Affectation Ech. Empr.');
         $activeSheet->setCellValue(self::FISCAL_DIFFERENCE_COLUMN . $secondarySectionRow, 'Ecart fiscal');
         $activeSheet->setCellValue(self::DEBT_COLLECTOR_COMMISSION_COLUMN . $secondarySectionRow, 'Commission Recouvreur');
+        $activeSheet->setCellValue(self::BORROWER_CHARGE_REPAYMENT_COLUMN . $secondarySectionRow, 'Frais remboursés à Unilend');
         $activeSheet->setCellValue(self::WIRE_TRANSFER_OUT_COLUMN . $secondarySectionRow, 'Fichier virements');
         $activeSheet->setCellValue(self::UNILEND_WIRE_TRANSFER_OUT_COLUMN . $secondarySectionRow, 'Dont SFF PME');
         $activeSheet->setCellValue(self::TAX_WITHDRAW_COLUMN . $secondarySectionRow, 'Administration Fiscale');
@@ -548,6 +551,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $collectionCommissionLenderRegularization   = empty($line[OperationType::COLLECTION_COMMISSION_LENDER_REGULARIZATION]) ? 0 : $line[OperationType::COLLECTION_COMMISSION_LENDER_REGULARIZATION];
             $collectionCommissionBorrower               = empty($line[OperationType::COLLECTION_COMMISSION_BORROWER]) ? 0 : $line[OperationType::COLLECTION_COMMISSION_BORROWER];
             $collectionCommissionBorrowerRegularization = empty($line[OperationType::COLLECTION_COMMISSION_BORROWER_REGULARIZATION]) ? 0 : $line[OperationType::COLLECTION_COMMISSION_BORROWER_REGULARIZATION];
+            $borrowerChargeRepayment                    = empty($line[OperationType::BORROWER_PROJECT_CHARGE_REPAYMENT]) ? 0 : $line[OperationType::BORROWER_PROJECT_CHARGE_REPAYMENT];
 
             $totalLenderProvisionCreditCard   = round(bcsub($lenderProvisionCreditCard, $lenderProvisionCancelCreditCard, 4), 2);
             $totalLenderProvisionWireTransfer = round(bcsub($lenderProvisionWireTransfer, $lenderProvisionCancelWireTransfer, 4), 2);
@@ -611,6 +615,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $activeSheet->setCellValueExplicit(self::PAYMENT_ASSIGNMENT_COLUMN . $row, $repaymentAssignment, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::FISCAL_DIFFERENCE_COLUMN . $row, $fiscalDifference, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::DEBT_COLLECTOR_COMMISSION_COLUMN . $row, $totalCollectionCommission, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicit(self::BORROWER_CHARGE_REPAYMENT_COLUMN . $row, $borrowerChargeRepayment, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
             $row++;
         }

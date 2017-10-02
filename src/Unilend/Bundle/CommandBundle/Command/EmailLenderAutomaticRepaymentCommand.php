@@ -85,6 +85,6 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
         }
         $entityManager->flush();
 
-        $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail')->deleteFinishedDetails(new \DateTime('3 months ago'));
+        $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail')->deleteFinished(new \DateTime('3 months ago'));
     }
 }
