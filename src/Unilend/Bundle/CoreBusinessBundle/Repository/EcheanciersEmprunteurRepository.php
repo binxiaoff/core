@@ -175,45 +175,41 @@ class EcheanciersEmprunteurRepository extends EntityRepository
     }
 
     /**
-     * @param Projects  $project
-     * @param \DateTime $endDate
+     * @param int|Projects $project
+     * @param \DateTime    $endDate
      *
      * @return array
      */
-    public function getPendingAmountAndPaymentsCountOnProjectAtDate(Projects $project, \DateTime $endDate)
+    public function getPendingAmountAndPaymentsCountOnProjectAtDate($project, \DateTime $endDate)
     {
         $queryBuilder = $this->createQueryBuilder('ee')
-            ->select('SUM(ee.capital - ee.paidCapital + ee.interets - ee.paidInterest + ee.commission + ee.tva - ee.paidCommissionVatIncl) AS amount,
+            ->select('ROUND(SUM(ee.capital - ee.paidCapital + ee.interets - ee.paidInterest + ee.commission + ee.tva - ee.paidCommissionVatIncl) / 100, 2) AS amount,
             SUM(ROUND((ee.capital - ee.paidCapital + ee.interets - ee.paidInterest + ee.commission - ee.paidCommissionVatIncl) / (ee.capital + ee.interets + ee.commission), 1)) AS paymentsCount')
             ->where('ee.idProject = :projectId')
             ->setParameter('projectId', $project)
-            ->andWhere('ee.statusEmprunteur IN (:paymentStatus)')
-            ->setParameter('paymentStatus', [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID], Connection::PARAM_INT_ARRAY)
             ->andWhere('ee.dateEcheanceEmprunteur <= :endDate')
-            ->setParameter('endDate', $endDate->setTime('23', '59', '59')->format('Y-m-d H:i:s'))
+            ->setParameter('endDate', $endDate->format('Y-m-d 23:59:59'))
             ->groupBy('ee.idProject');
 
-        return $queryBuilder->getQuery()->getOneOrNullResult();
+        return $queryBuilder->getQuery()->getSingleResult();
     }
 
     /**
-     * @param Projects  $project
-     * @param \DateTime $startDate
+     * @param int|Projects $project
+     * @param \DateTime    $startDate
      *
      * @return array
      */
-    public function getPendingCapitalAndPaymentsCountOnProjectFromDate(Projects $project, \DateTime $startDate)
+    public function getPendingCapitalAndPaymentsCountOnProjectFromDate($project, \DateTime $startDate)
     {
         $queryBuilder = $this->createQueryBuilder('ee')
-            ->select('SUM(ee.capital - ee.paidCapital) AS amount, SUM(ROUND((ee.capital - ee.paidCapital) / ee.capital, 2)) AS paymentsCount')
+            ->select('ROUND(SUM(ee.capital - ee.paidCapital) / 100, 2) AS amount, SUM(ROUND((ee.capital - ee.paidCapital) / ee.capital, 1)) AS paymentsCount')
             ->where('ee.idProject = :projectId')
             ->setParameter('projectId', $project)
-            ->andWhere('ee.statusEmprunteur IN (:paymentStatus)')
-            ->setParameter('paymentStatus', [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID], Connection::PARAM_INT_ARRAY)
             ->andWhere('ee.dateEcheanceEmprunteur > :startDate')
-            ->setParameter('startDate', $startDate->setTime('00', '00', '00')->format('Y-m-d H:i:s'))
+            ->setParameter('startDate', $startDate->format('Y-m-d 00:00:00'))
             ->groupBy('ee.idProject');
 
-        return $queryBuilder->getQuery()->getOneOrNullResult();
+        return $queryBuilder->getQuery()->getSingleResult();
     }
 }

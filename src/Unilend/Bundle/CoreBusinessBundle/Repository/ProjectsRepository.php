@@ -9,7 +9,6 @@ use Doctrine\ORM\Query\Expr\Join;
 use PDO;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
 use Unilend\librairies\CacheKeys;
 use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
@@ -538,31 +537,23 @@ class ProjectsRepository extends EntityRepository
     }
 
     /**
-     * @param Projects|null $project
+     * Get all projects having a late payment schedule
      *
      * @return array
      */
-    public function getProjectsWithLateRepayments(Projects $project = null)
+    public function getProjectsWithLateRepayments()
     {
         $queryBuilder = $this->createQueryBuilder('p');
 
-        $queryBuilder->select('p.idProject, ps.label AS projectStatusLabel, GROUP_CONCAT(DISTINCT dcm.id) AS missionIdList')
-            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'co.idCompany = p.idCompany')
+        $queryBuilder->select('p.idProject, ps.label AS projectStatusLabel')
             ->innerJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'ee.idProject = p.idProject')
             ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'p.status = ps.status')
-            ->leftJoin('UnilendCoreBusinessBundle:DebtCollectionMission', 'dcm', Join::WITH, 'dcm.idProject = p.idProject')
             ->where('ee.dateEcheanceEmprunteur <= NOW()')
             ->andWhere('ee.statusEmprunteur IN (:paymentStatus)')
             ->setParameter('paymentStatus', [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID])
             ->andWhere('p.status IN (:projectStatus)')
             ->setParameter('projectStatus', [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME])
-            ->andWhere('dcm.archived IS NULL');
-
-        if (null !== $project) {
-            $queryBuilder->andWhere('p.idProject = :projectId')
-                ->setParameter('projectId', $project->getIdProject());
-        }
-        $queryBuilder->groupBy('p.idProject');
+            ->groupBy('p.idProject');
 
         return $queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_ARRAY);
     }

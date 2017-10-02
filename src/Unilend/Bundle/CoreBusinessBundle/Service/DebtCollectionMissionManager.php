@@ -459,22 +459,28 @@ class DebtCollectionMissionManager
     public function newMission(Projects $project, Clients $debtCollector, $type, $feesRate, Users $user)
     {
         $debtCollectionMissionRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMission');
-        /** @var DebtCollectionMission[] $currentMissions */
-        $currentMissions = $debtCollectionMissionRepository->findBy(['idProject' => $project, 'archived' => null]);
+        /** @var DebtCollectionMission $currentMission */
+        $currentMission  = $debtCollectionMissionRepository->findOneBy(['idProject' => $project, 'idClientDebtCollector' => $debtCollector, 'archived' => null]);
+        $totalCapital    = 0;
+        $totalInterest   = 0;
+        $totalCommission = 0;
 
         try {
             $this->entityManager->getConnection()->beginTransaction();
-            foreach ($currentMissions as $mission) {
-                $mission->setArchived(new \DateTime())
-                    ->setIdUserArchiving($user);
-            }
+
+            $currentMission->setArchived(new \DateTime())
+                ->setIdUserArchiving($user);
+            $this->entityManager->flush($currentMission);
 
             $newMission = new DebtCollectionMission();
             $newMission->setIdProject($project)
                 ->setIdClientDebtCollector($debtCollector)
                 ->setType($type)
                 ->setFeesRate($feesRate)
-                ->setIdUserCreation($user);
+                ->setIdUserCreation($user)
+                ->setCapital(0)
+                ->setInterest(0)
+                ->setCommissionVatIncl(0);
             $this->entityManager->persist($newMission);
             $this->entityManager->flush($newMission);
 
@@ -502,40 +508,39 @@ class DebtCollectionMissionManager
                             ->setCommissionVatIncl(round(bcdiv($payment->getCommission() + $payment->getTva() - $payment->getPaidCommissionVatIncl(), 100, 4), 2));
                         $this->entityManager->persist($paymentScheduleMission);
                         $this->entityManager->flush($paymentScheduleMission);
+
+                        $totalCapital    = round(bcadd($totalCapital, $paymentScheduleMission->getCapital(), 4), 2);
+                        $totalInterest   = round(bcadd($totalInterest, $paymentScheduleMission->getInterest(), 4), 2);
+                        $totalCommission = round(bcadd($totalCommission, $paymentScheduleMission->getCommissionVatIncl(), 4), 2);
                     }
                 }
             } else {
+                /** @todo Use information from new table that holds close out netting information */
                 $closeOutNettingDate->setTime(0, 0, 0);
+
                 foreach ($pendingPayments as $key => $payment) {
                     if ($project->getCloseOutNettingDate() > $payment->getDateEcheanceEmprunteur()) {
-                        $paymentScheduleMission = new DebtCollectionMissionPaymentSchedule();
-                        $paymentScheduleMission->setIdMission($newMission)
-                            ->setIdPaymentSchedule($payment)
-                            ->setCapital(round(bcdiv($payment->getCapital() - $payment->getPaidCapital(), 100, 4), 2))
-                            ->setInterest(round(bcdiv($payment->getInterets() - $payment->getPaidInterest(), 100, 4), 2))
-                            ->setCommissionVatIncl(round(bcdiv($payment->getCommission() + $payment->getTva() - $payment->getPaidCommissionVatIncl(), 100, 4), 2));
-                        $this->entityManager->persist($paymentScheduleMission);
-                        $this->entityManager->flush($paymentScheduleMission);
+                        $totalCapital    = bcadd($totalCapital, bcsub($payment->getCapital(), $payment->getPaidCapital(), 4), 4);
+                        $totalInterest   = bcadd($totalCapital, bcsub($payment->getInterets(), $payment->getPaidInterest(), 4), 4);
+                        $totalCommission = bcadd($totalCapital, bcsub(bcadd($payment->getCommission(), $payment->getTva(), 4), $payment->getPaidCommissionVatIncl(), 4), 4);
                     } else {
-                        $paymentScheduleMission = new DebtCollectionMissionPaymentSchedule();
-                        $paymentScheduleMission->setIdMission($newMission)
-                            ->setIdPaymentSchedule($payment)
-                            ->setCapital(round(bcdiv($payment->getCapital() - $payment->getPaidCapital(), 100, 4), 2))
-                            ->setInterest(0)
-                            ->setCommissionVatIncl(0);
-                        $this->entityManager->persist($paymentScheduleMission);
-                        $this->entityManager->flush($paymentScheduleMission);
+                        $totalCapital = bcadd($totalCapital, bcsub($payment->getCapital(), $payment->getPaidCapital(), 4), 4);
                     }
                 }
-            }
 
-            $this->entityManager->flush();
+            }
+            $newMission->setCapital($totalCapital)
+                ->setInterest($totalInterest)
+                ->setCommissionVatIncl($totalCommission);
+            $this->entityManager->flush($newMission);
+
             $this->entityManager->getConnection()->commit();
 
             return $newMission;
         } catch (\Exception $exception) {
             $this->entityManager->getConnection()->rollBack();
-            $this->logger->error('Error when creating new debt collection mission on project: ' . $project->getTitle() . ' Error : ' . $exception->getMessage(), ['method' => __METHOD__, 'id_project' => $project->getIdProject()]);
+            $this->logger->error('Error when creating new debt collection mission on project: ' . $project->getTitle() . ' Error: ' . $exception->getMessage() . ' In file: ' . $exception->getFile() . ' At line: ' . $exception->getLine(),
+                ['method' => __METHOD__, 'id_project' => $project->getIdProject(), 'debt_collector' => $debtCollector->getIdClient()]);
 
             return false;
         }

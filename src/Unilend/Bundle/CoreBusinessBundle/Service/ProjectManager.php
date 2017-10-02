@@ -3,26 +3,26 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
+use PhpXmlRpc\Client as soapClient;
+use PhpXmlRpc\Request as soapRequest;
+use PhpXmlRpc\Value as documentId;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager;
-use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use PhpXmlRpc\Client as soapClient;
-use PhpXmlRpc\Request as soapRequest;
-use PhpXmlRpc\Value as documentId;
+use Unilend\core\Loader;
 
 class ProjectManager
 {
@@ -1276,72 +1276,28 @@ class ProjectManager
     }
 
     /**
-     * @param Projects|null $project
+     * @todo This is a temporary method to be removed once the new table of closed out loans is created
+     * Calculate the remaining amount and payments count on a project depending on close out netting date if any
      *
-     * @return array
+     * @param Projects $project
+     *
+     * @return array [amount, paymentsCount]
      */
-    public function getLatePaymentsInformation(Projects $project = null)
+    public function getPendingAmountAndPaymentsCountOnProject(Projects $project)
     {
-        $projectsRepository                             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $paymentRepository                              = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
-        $receptionsRepository                           = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
-        $debtCollectionMissionPaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMissionPaymentSchedule');
+        $paymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
 
-        $projectWithPaymentProblems = $projectsRepository->getProjectsWithLateRepayments($project);
-        $totalPendingReceiptAmount  = 0;
-        $totalRemainingAmount       = 0;
-        $projectsWithDebtCollection = 0;
-        $projectData                = [];
-
-        foreach ($projectWithPaymentProblems as $lateRepayment) {
-            $project = $projectsRepository->find($lateRepayment['idProject']);
-
-            if (null !== $project->getCloseOutNettingDate()) {
-                $projectData[$project->getIdProject()]['closeOutNettingDate'] = $project->getCloseOutNettingDate()->format('d/m/Y');
-
-                $pastFullPayments       = $paymentRepository->getPendingAmountAndPaymentsCountOnProjectAtDate($project, $project->getCloseOutNettingDate());
-                $dueCapitalPayments     = $paymentRepository->getPendingCapitalAndPaymentsCountOnProjectFromDate($project, $project->getCloseOutNettingDate());
-                $remainingAmount        = bcadd($pastFullPayments['amount'], $dueCapitalPayments['amount']);
-                $remainingPaymentsCount = bcadd($pastFullPayments['paymentsCount'], $dueCapitalPayments['paymentsCount']);
-            } else {
-                $projectData[$project->getIdProject()]['closeOutNettingDate'] = null;
-
-                $pastFullPayments       = $paymentRepository->getPendingAmountAndPaymentsCountOnProjectAtDate($project, new \DateTime());
-                $remainingAmount        = $pastFullPayments['amount'];
-                $remainingPaymentsCount = $pastFullPayments['paymentsCount'];
-            }
-
-            $debtCollectionAmounts = $debtCollectionMissionPaymentScheduleRepository->getEntrustedAmount(explode(',', $lateRepayment['missionIdList']));
-
-            $pendingReceipt                        = $receptionsRepository->getPendingReceipt($project);
-            $projectData[$project->getIdProject()] = [
-                'projectId'                => $project->getIdProject(),
-                'companyName'              => $project->getIdCompany()->getName(),
-                'siren'                    => $project->getIdCompany()->getSiren(),
-                'companyActivity'          => $project->getIdCompany()->getActivite(),
-                'projectTitle'             => $project->getTitle(),
-                'projectStatusLabel'       => $lateRepayment['projectStatusLabel'],
-                'projectStatus'            => $project->getStatus(),
-                'remainingAmount'          => round(bcdiv($remainingAmount, 100, 4), 2),
-                'entrustedToDebtCollector' => isset($debtCollectionAmounts) ? $debtCollectionAmounts : 0,
-                'remainingPaymentsCount'   => $remainingPaymentsCount,
-                'pendingReceiptAmount'     => round(bcdiv(array_sum(array_column($pendingReceipt, 'amount')), 100, 4), 2),
-                'pendingReceiptCount'      => count($pendingReceipt),
-                'missionIdList'            => explode(',', $lateRepayment['missionIdList'])
-            ];
-            $totalRemainingAmount                  = bcadd($totalRemainingAmount, $remainingAmount);
-            $totalPendingReceiptAmount             = bcadd($totalPendingReceiptAmount, $projectData[$project->getIdProject()]['pendingReceiptAmount']);
-            if (null !== $lateRepayment['missionIdList']) {
-                $projectsWithDebtCollection++;
-            }
+        if (null !== $project->getCloseOutNettingDate()) {
+            $pastFullPayments       = $paymentRepository->getPendingAmountAndPaymentsCountOnProjectAtDate($project, $project->getCloseOutNettingDate());
+            $dueCapitalPayments     = $paymentRepository->getPendingCapitalAndPaymentsCountOnProjectFromDate($project, $project->getCloseOutNettingDate());
+            $remainingAmount        = round(bcadd($pastFullPayments['amount'], $dueCapitalPayments['amount'], 4), 2);
+            $remainingPaymentsCount = round(bcadd($pastFullPayments['paymentsCount'], $dueCapitalPayments['paymentsCount'], 2), 1);
+        } else {
+            $pastFullPayments       = $paymentRepository->getPendingAmountAndPaymentsCountOnProjectAtDate($project, new \DateTime());
+            $remainingAmount        = $pastFullPayments['amount'];
+            $remainingPaymentsCount = $pastFullPayments['paymentsCount'];
         }
 
-        return [
-            'remainingAmountToCollect'     => round(bcdiv($totalRemainingAmount, 100, 4), 2),
-            'pendingReceiptAmount'         => $totalPendingReceiptAmount,
-            'nbProjectsWithDeptCollection' => $projectsWithDebtCollection,
-            'nbProjectsWithLateRepayments' => count($projectData) - $projectsWithDebtCollection,
-            'projectWithPaymentProblems'   => $projectData
-        ];
+        return ['amount' => $remainingAmount, 'paymentsCount' => $remainingPaymentsCount];
     }
 }

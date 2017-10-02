@@ -185,17 +185,14 @@ class ProjectRequestController extends Controller
             ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))
             ->setSlugOrigine($sourceManager->getSource(SourceManager::ENTRY_SLUG));
 
-        $siret                = $sirenLength === 14 ? str_replace(' ', '', $request->request->get('siren')) : '';
-        $companyStatusInBonis = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
-            ->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
+        $siret = $sirenLength === 14 ? str_replace(' ', '', $request->request->get('siren')) : '';
 
         $this->company = new Companies();
         $this->company->setSiren($siren)
             ->setSiret($siret)
             ->setStatusAdresseCorrespondance(1)
             ->setEmailDirigeant($email)
-            ->setEmailFacture($email)
-            ->setIdStatus($companyStatusInBonis);
+            ->setEmailFacture($email);
 
         $entityManager->beginTransaction();
         try {
@@ -210,7 +207,9 @@ class ProjectRequestController extends Controller
             $entityManager->persist($this->company);
             $entityManager->flush($this->company);
 
-            $companyManager = $this->get('unilend.service.company_manager');
+            $companyManager       = $this->get('unilend.service.company_manager');
+            $companyStatusInBonis = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
+                ->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
             $companyManager->addCompanyStatus(
                 $this->company,
                 $companyStatusInBonis,

@@ -10,6 +10,9 @@
                         Date
                     </th>
                     <th style="width: 25%">
+                        ID
+                    </th>
+                    <th style="width: 25%">
                         Montant
                     </th>
                     <th style="width: 25%">
@@ -18,16 +21,19 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for receipt in pendingReceiptData %}
+                {% for idWireTransfer, receipt in pendingReceiptData %}
                     <tr>
                         <td>
-                            {{ receipt.date }}
+                            {{ receipt.date|localizeddate('short', 'none') }}
+                        </td>
+                        <td>
+                            {{ idWireTransfer }}
                         </td>
                         <td>
                             {{ receipt.amount|localizedcurrency('EUR') }}
                         </td>
                         <td class="text-center">
-                            <button type="submit" class="btn btn-xs btn-primary" data-input-target="reception-id" data-input-target-value="{{ receipt.idReception }}" data-toggle="tooltip" data-original-title="Planifier le remboursement">
+                            <button type="submit" class="btn btn-xs btn-primary" data-input-target="reception-id" data-input-target-value="{{ idWireTransfer }}" data-toggle="tooltip" data-original-title="Planifier le remboursement">
                                 <i class="fa fa-arrow-right"></i></button>
                         </td>
                     </tr>

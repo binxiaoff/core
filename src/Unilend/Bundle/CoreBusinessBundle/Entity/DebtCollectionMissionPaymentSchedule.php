@@ -42,21 +42,21 @@ class DebtCollectionMissionPaymentSchedule
     private $idMission;
 
     /**
-     * @var float
+     * @var string
      *
      * @ORM\Column(name="capital", type="decimal", precision=11, scale=2, nullable=false)
      */
     private $capital;
 
     /**
-     * @var integer
+     * @var string
      *
      * @ORM\Column(name="interest", type="decimal", precision=11, scale=2, nullable=false)
      */
     private $interest;
 
     /**
-     * @var integer
+     * @var string
      *
      * @ORM\Column(name="commission_vat_incl", type="decimal", precision=11, scale=2, nullable=false)
      */
@@ -123,7 +123,7 @@ class DebtCollectionMissionPaymentSchedule
     /**
      * get entrusted capital
      *
-     * @return float
+     * @return string
      */
     public function getCapital()
     {
@@ -133,7 +133,7 @@ class DebtCollectionMissionPaymentSchedule
     /**
      * set entrusted capital amount
      *
-     * @param float $capital
+     * @param string $capital
      *
      * @return DebtCollectionMissionPaymentSchedule
      */
@@ -147,7 +147,7 @@ class DebtCollectionMissionPaymentSchedule
     /**
      * get entrusted interest amount
      *
-     * @return float
+     * @return string
      */
     public function getInterest()
     {
@@ -157,7 +157,7 @@ class DebtCollectionMissionPaymentSchedule
     /**
      * set entrusted interests amount
      *
-     * @param float $interest
+     * @param string $interest
      *
      * @return DebtCollectionMissionPaymentSchedule
      */
@@ -171,7 +171,7 @@ class DebtCollectionMissionPaymentSchedule
     /**
      * get entrusted commission VAT included amount
      *
-     * @return float
+     * @return string
      */
     public function getCommissionVatIncl()
     {
@@ -181,7 +181,7 @@ class DebtCollectionMissionPaymentSchedule
     /**
      * set entrusted commission VAT included amount
      *
-     * @param float $commissionVatIncl
+     * @param string $commissionVatIncl
      *
      * @return DebtCollectionMissionPaymentSchedule
      */

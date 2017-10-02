@@ -26,7 +26,7 @@
         {% for payment in latePaymentsData %}
             <tr>
                 <td>
-                    {{ payment.date }}
+                    {{ payment.date|localizeddate('short', 'none') }}
                 </td>
                 <td>
                     {{ payment.label }}
@@ -55,14 +55,14 @@
                     &nbsp;
                 </th>
                 <th style="width: 20%;">
-                    {{ projectData.remainingAmount > 0 ? projectData.remainingAmount|localizedcurrency('EUR') : 'N/A' }}
+                    {{ projectData.totalRemainingAmount > 0 ? projectData.totalRemainingAmount|localizedcurrency('EUR') : 'N/A' }}
                 </th>
             </tr>
         {% endif %}
         </tbody>
     </table>
     <div class="text-right">
-        {% if isClosedOutLoan %}
+        {% if projectData.isClosedOutLoan %}
             <button type="button" class="btn btn-default push-10-r" data-toggle="modal" data-target="#modal-cancel-term">Déchoir le terme</button>
         {% endif %}
 
@@ -70,8 +70,8 @@
             <button type="button" class="btn btn-primary push-10-r" data-toggle="modal" data-target="#modal-status-problem">Passer en statut problème</button>
         {% endif %}
 
-        {% if projectData.remainingAmount > 0 %}
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-debt-collection">Missionner un recouvreur ({{ projectData.remainingAmount|localizedcurrency('EUR') }})</button>
+        {% if projectData.totalRemainingAmount > 0 and 0 >= pendingReceiptData|length %}
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-debt-collection">Missionner un recouvreur ({{ projectData.totalRemainingAmount|localizedcurrency('EUR') }})</button>
         {% endif %}
     </div>
 </div>
