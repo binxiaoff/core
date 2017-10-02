@@ -1091,87 +1091,142 @@
                     <h2 class="content-heading">Editor</h2>
                     <div class="block block-bordered">
                         <div class="block-content block-content-full">
-                            <table class="table table-bordered table-striped" data-table data-table-search="true" data-table-editor data-table-editor-url="/oneui/editor_table/" data-table-editor-actions="add, modify, delete, toggle">
+                            {% set locations = [
+                                {text: 'Nord', id: 10, children: [
+                                    {text: 'Paris', id: 101, children: [
+                                        {text: 'Victor Hugo', id: 1011}
+                                    ]},
+                                    {text: 'Nantes', id: 102}
+                                ]},
+                                {text: 'Sud', id: 11, children: [
+                                    {text: 'Marseille', id: 111}
+                                ]}
+                            ] %}
+                            <table class="table table-bordered table-striped" data-table data-table-search="true" data-table-editor data-table-editor-url="/oneui/editor_table/" data-table-editor-actions="add, modify, delete, toggle" data-table-editor-hidden="id_company:99282, env:production">
                                 <thead>
-                                <tr>
-                                    <th data-editor-name="name" data-editor-type="text">Name</th>
-                                    <th data-editor-name="email" data-editor-type="email" data-editor-optional>Email</th>
-                                    <th data-editor-name="position" data-editor-type="radio" data-editor-options="Manager, Director, Developer" data-editor-optional>Status</th>
-                                    <th data-editor-name="date" data-editor-type="date">Date</th>
-                                    <th data-editor-name="amount" data-editor-type="numerical">Amount</th>
-                                </tr>
+                                    <tr>
+                                        <th data-editor-name="name" data-editor-type="text" data-editor-disabled>Name</th>
+                                        <th data-editor-name="email" data-editor-type="email" data-editor-optional>Email</th>
+                                        <th data-editor-name="position" data-editor-type="select" data-editor-options="Manager:1, Director:2, Developer:3" data-editor-optional>Position</th>
+                                        <th data-editor-name="gender" data-editor-type="radio" data-editor-options="Male:1, Female:2, Why do you wanna know:3">Gender</th>
+                                        <th data-editor-name="skills" data-editor-type="checkbox" data-editor-options="PHP:1, Javascript:2, UI/UX:3, Mysql:4">Skills</th>
+                                        <th data-editor-name="location" data-editor-type="multilevel" data-editor-options="{{ locations|json_encode|escape('html_attr') }}">Location</th>
+                                        <th data-editor-name="date" data-editor-type="date">Date</th>
+                                        <th data-editor-name="file" data-editor-type="file">File</th>
+                                        <th data-editor-name="amount" data-editor-type="numerical">Amount</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
-                                <tr data-id="342342" data-state="active">
-                                    <td>Kimberley Harton</td>
-                                    <td>client1@example.com</td>
-                                    <td>Manager</td>
-                                    <td>24/02/1980</td>
-                                    <td>1 000,00 €</td>
-                                </tr>
-                                <tr data-id="342343" data-state="inactive">
-                                    <td>George Stone</td>
-                                    <td>client2@example.com</td>
-                                    <td>Manager</td>
-                                    <td>12/03/2001</td>
-                                    <td>2 000,00 €</td>
-                                </tr>
-                                <tr data-id="34242" data-state="inactive">
-                                    <td>Henry Gordon</td>
-                                    <td>client3@example.com</td>
-                                    <td>Director</td>
-                                    <td>15/08/1960</td>
-                                    <td>50 000,00 €</td>
-                                </tr>
-                                <tr data-id="22342" data-state="active">
-                                    <td>Rebecca Reid</td>
-                                    <td>client4@example.com</td>
-                                    <td>Director</td>
-                                    <td>06/12/1980</td>
-                                    <td>5 000,00 €</td>
-                                </tr>
-                                <tr data-id="2334" data-state="active">
-                                    <td>Laura Bell</td>
-                                    <td>client5@example.com</td>
-                                    <td>Developer</td>
-                                    <td>06/01/1987</td>
-                                    <td>1 000,00 €</td>
-                                </tr>
-                                <tr data-id="23432" data-state="active">
-                                    <td>Sara Holland</td>
-                                    <td>client6@example.com</td>
-                                    <td>Developer</td>
-                                    <td>01/10/1962</td>
-                                    <td>1 000,00 €</td>
-                                </tr>
-                                <tr data-id="234323" data-state="active">
-                                    <td>Adam Hall</td>
-                                    <td>client7@example.com</td>
-                                    <td>Developer</td>
-                                    <td>12/02/1983</td>
-                                    <td>4 000,00 €</td>
-                                </tr>
-                                <tr data-id="234233" data-state="active">
-                                    <td>Lisa Gordon</td>
-                                    <td>client8@example.com</td>
-                                    <td>Developer</td>
-                                    <td>05/12/1972</td>
-                                    <td>2 500,00 €</td>
-                                </tr>
-                                <tr data-id="235633" data-state="active">
-                                    <td>Ashley Welch</td>
-                                    <td>client9@example.com</td>
-                                    <td>Manager</td>
-                                    <td>01/05/1987</td>
-                                    <td>6 000,00 €</td>
-                                </tr>
-                                <tr data-id="236633" data-state="inactive">
-                                    <td>Denise Watson</td>
-                                    <td>client10@example.com</td>
-                                    <td>Director</td>
-                                    <td>02/11/1955</td>
-                                    <td>2 000,00 €</td>
-                                </tr>
+                                    <tr data-id="342342" data-state="active">
+                                        <td>Kimberley Harton</td>
+                                        <td>client1@example.com</td>
+                                        <td>Manager</td>
+                                        <td>Female</td>
+                                        <td>PHP, Javascript</td>
+                                        <td>Nord</td>
+                                        <td>24/02/1980</td>
+                                        <td><a href="/path/to-file/passport.jpg">passport.jpg</a></td>
+                                        <td>1 000,00 €</td>
+                                    </tr>
+                                    <tr data-id="342343" data-state="inactive">
+                                        <td>George Stone</td>
+                                        <td>client2@example.com</td>
+                                        <td>Manager</td>
+                                        <td>Male</td>
+                                        <td>Mysql, PHP</td>
+                                        <td>Paris</td>
+                                        <td>12/03/2001</td>
+                                        <td><a href="/path/to-file/passport.jpg">passport.jpg</a></td>
+                                        <td>2 000,00 €</td>
+                                    </tr>
+                                    <tr data-id="34242" data-state="inactive">
+                                        <td>Henry Gordon</td>
+                                        <td>client3@example.com</td>
+                                        <td>Director</td>
+                                        <td>Male</td>
+                                        <td>Javascript</td>
+                                        <td>Victor Hugo</td>
+                                        <td>15/08/1960</td>
+                                        <td><a href="/path/to-file/passport.jpg">passport.jpg</a></td>
+                                        <td>50 000,00 €</td>
+                                    </tr>
+                                    <tr data-id="22342" data-state="active">
+                                        <td>Rebecca Reid</td>
+                                        <td>client4@example.com</td>
+                                        <td>Director</td>
+                                        <td>Female</td>
+                                        <td>PHP</td>
+                                        <td>Nantes</td>
+                                        <td>06/12/1980</td>
+                                        <td><a href="/path/to-file/passport.jpg">passport.jpg</a></td>
+                                        <td>5 000,00 €</td>
+                                    </tr>
+                                    <tr data-id="2334" data-state="active">
+                                        <td>Laura Bell</td>
+                                        <td>client5@example.com</td>
+                                        <td>Developer</td>
+                                        <td>Female</td>
+                                        <td>PHP</td>
+                                        <td>Marseille</td>
+                                        <td>06/01/1987</td>
+                                        <td><a href="/path/to-file/passport.jpg">passport.jpg</a></td>
+                                        <td>1 000,00 €</td>
+                                    </tr>
+                                    <tr data-id="23432" data-state="active">
+                                        <td>Sara Holland</td>
+                                        <td>client6@example.com</td>
+                                        <td>Developer</td>
+                                        <td>Female</td>
+                                        <td>PHP</td>
+                                        <td>Paris</td>
+                                        <td>01/10/1962</td>
+                                        <td><a href="/path/to-file/passport.jpg">passport.jpg</a></td>
+                                        <td>1 000,00 €</td>
+                                    </tr>
+                                    <tr data-id="234323" data-state="active">
+                                        <td>Adam Hall</td>
+                                        <td>client7@example.com</td>
+                                        <td>Developer</td>
+                                        <td>Male</td>
+                                        <td>PHP</td>
+                                        <td>Paris</td>
+                                        <td>12/02/1983</td>
+                                        <td><a href="/path/to-file/passport.jpg">passport.jpg</a></td>
+                                        <td>4 000,00 €</td>
+                                    </tr>
+                                    <tr data-id="234233" data-state="active">
+                                        <td>Lisa Gordon</td>
+                                        <td>client8@example.com</td>
+                                        <td>Developer</td>
+                                        <td>Female</td>
+                                        <td>Mysql</td>
+                                        <td>Paris</td>
+                                        <td>05/12/1972</td>
+                                        <td><a href="/path/to-file/passport.jpg">passport.jpg</a></td>
+                                        <td>2 500,00 €</td>
+                                    </tr>
+                                    <tr data-id="235633" data-state="active">
+                                        <td>Ashley Welch</td>
+                                        <td>client9@example.com</td>
+                                        <td>Manager</td>
+                                        <td>Why do you wanna know</td>
+                                        <td>Javascript</td>
+                                        <td>Nord</td>
+                                        <td>01/05/1987</td>
+                                        <td><a href="/path/to-file/passport.jpg">passport.jpg</a></td>
+                                        <td>6 000,00 €</td>
+                                    </tr>
+                                    <tr data-id="236633" data-state="inactive">
+                                        <td>Denise Watson</td>
+                                        <td>client10@example.com</td>
+                                        <td>Director</td>
+                                        <td>Female</td>
+                                        <td>Mysql</td>
+                                        <td>Marseille</td>
+                                        <td>02/11/1955</td>
+                                        <td><a href="/path/to-file/passport.jpg">passport.jpg</a></td>
+                                        <td>2 000,00 €</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>

@@ -53,16 +53,29 @@ class oneuiController extends bootstrap
             } elseif ($action === 'modify') {
                 $id = $_POST['id']; // Existing ID
             }
-
             // Data
             $name = $_POST['name']; // Andrew Williams
             $email = $_POST['email']; // client7@example.com
             $position = $_POST['position']; // Director
+            $gender = $_POST['gender']; // Male, Female
+            $skills = $_POST['skills']; // PHP, Javascript, CSS
+            $location = $_POST['location']; // Paris
             $date = $_POST['date']; // 12/02/1983
+            if (isset($_FILES['file'])) {
+                // Newly uploaded file
+                $file = $_FILES['file'];
+                $url = '/upload/dir/newFile.jpg';
+                $uploadedFile = '<a href="' . $url . '">' . $file['name'] . '</a>';
+            } else {
+                // No change to file (already exists)
+                $url = '/upload/dir/existingFile.jpg';
+                $filename = 'Existing file';
+                $uploadedFile = '<a href="' . $url . '">' . $filename . '</a>';
+            }
             $amount = $_POST['amount'] . ',00  €'; // - Currency formatting 4 000,00 €
 
             // Response
-            $responseData = [$name, $email, $position, $date, $amount];
+            $responseData = [$name, $email, $position, $gender, $skills, $location, $date, $uploadedFile, $amount];
         }
         // Toggle
         if ($action === 'activate' || $action === 'deactivate') {
