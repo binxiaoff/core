@@ -38,17 +38,19 @@ class beneficial_ownersController extends bootstrap
             //TODO error message and/or redirect
         }
 
-        $companyBeneficialOwnerDeclarationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration');
-        $currentDeclaration                          = $companyBeneficialOwnerDeclarationRepository->findCurrentBeneficialOwnerDeclaration($company);
-        $currentOwners                               = $this->formatOwnerList($currentDeclaration->getBeneficialOwner());
-
+        $currentOwners = [];
         $countryList = $this->get('unilend.service.location_manager')->getCountries();
         $ownerTypes  = $this->getBeneficialOwnerTypes();
 
+        $companyBeneficialOwnerDeclarationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration');
+        $currentDeclaration                          = $companyBeneficialOwnerDeclarationRepository->findCurrentBeneficialOwnerDeclaration($company);
+        if (null !== $currentDeclaration) {
+            $currentOwners = $this->formatOwnerList($currentDeclaration->getBeneficialOwner());
+        }
         $this->render(null, [
             'beneficial_owners' => $currentOwners,
-            'countries'         => json_encode($countryList),
-            'types'             => json_encode($ownerTypes)
+            'countries'         => array_flip($countryList),
+            'types'             => array_flip($ownerTypes)
         ]);
     }
 

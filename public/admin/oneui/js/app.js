@@ -1040,8 +1040,6 @@ var App = function() {
                 self.$wrapper.find('.col-sm-6:eq(0)').append('<a role="button" class="btn btn-default add-btn"><span class="fa fa-plus"></span> Ajouter</a>')
             }
             self.$wrapper.prepend('<div class="messages" />')
-            // Cache fields
-            self.cachedFields = self.fields()
             // Append Modal
             $('body').append(self.modal())
             self.$modal = $('#modal-editor-' + self.randomModalId)
@@ -1109,7 +1107,7 @@ var App = function() {
         }
         DT.prototype.form = function(fields) {
             var self = this
-            var fields = (typeof fields === 'undefined') ? self.cachedFields : fields
+            var fields = (typeof fields === 'undefined') ? self.fields() : fields
             var html = ''
             for (var $i=0; $i < fields.length; $i++) {
                 var field         = fields[$i]
@@ -1237,7 +1235,7 @@ var App = function() {
         DT.prototype.getCellValues = function(id) {
             var self = this
             var $row = self.$elem.find('tr[data-id=' + id + ']')
-            var fields = self.cachedFields
+            var fields = self.fields()
             for (var $i=0; $i < fields.length; $i++) {
                 var value = $row.find('td:eq(' + $i + ')').text()
                 if (fields[$i].type === 'file') {
@@ -1326,7 +1324,7 @@ var App = function() {
         }
         DT.prototype.update = function(id, data) {
             var self = this
-            var fields = self.cachedFields
+            var fields = self.fields()
             var tr = self.dtInstance.row('[data-id=' + id + ']')
             var $tr = self.$elem.find('[data-id=' + id + ']')
             // Delete row
@@ -1453,8 +1451,8 @@ var App = function() {
 
                 // MODAL OPEN CALLBACK
                 if (typeof self.options !== 'undefined') {
-                    if (options.modal)
-                        options.modal()
+                    if (self.options.modal)
+                        self.options.modal(self.$modal)
                 }
             })
             uiHelperFormValidate() // Call validation
