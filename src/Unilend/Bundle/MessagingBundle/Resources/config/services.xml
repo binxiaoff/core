@@ -10,7 +10,6 @@
         <service id="mailjet" alias="swiftmailer.mailer.transport.mailjet" />
 
         <service id="unilend.service.mail_queue" class="Unilend\Bundle\MessagingBundle\Service\MailQueueManager">
-            <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
             <argument type="service" id="logger" />

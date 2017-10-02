@@ -1031,6 +1031,7 @@ var App = function() {
             // EDITOR
             // Vars
             self.submitUrl = self.$elem.data('table-editor-url')
+            self.extraHiddenFields = self.$elem.data('table-editor-hidden')
             self.randomModalId = Math.floor((Math.random() * 10) + 1)
             self.delay = 900
             // Append to wrapper
@@ -1039,6 +1040,8 @@ var App = function() {
                 self.$wrapper.find('.col-sm-6:eq(0)').append('<a role="button" class="btn btn-default add-btn"><span class="fa fa-plus"></span> Ajouter</a>')
             }
             self.$wrapper.prepend('<div class="messages" />')
+            // Cache fields
+            self.cachedFields = self.fields()
             // Append Modal
             $('body').append(self.modal())
             self.$modal = $('#modal-editor-' + self.randomModalId)
@@ -1080,6 +1083,8 @@ var App = function() {
                 var name = $th.data('editor-name')
                 var type = $th.data('editor-type')
                 var options = $th.data('editor-options')
+                var required = (typeof $th.data('editor-optional') === 'undefined') ? true : false
+                var disabled = (typeof $th.data('editor-disabled') === 'undefined') ? false : true
                 var label = $th.text()
                 if (typeof name === 'undefined' || typeof type === 'undefined') {
                     if (!$th.is('[data-table-actionscolumn]')) {
@@ -1087,82 +1092,112 @@ var App = function() {
                         return false
                     }
                 } else {
-                    fields.push({name: name, type: type, label: label, options: options})
+                    if (typeof options !== 'undefined' && type !== 'multilevel') {
+                        var parsedOptions = []
+                        options = options.split(',')
+                        for (var $i = 0; $i < options.length; $i++) {
+                            var option = options[$i].trim().split(':')
+                            option.text = option[0]
+                            option.id = option[1]
+                            parsedOptions.push(option)
+                        }
+                        options = parsedOptions
+                    }
+                    fields.push({name: name, type: type, label: label, options: options, required: required, disabled: disabled})
                 }
             })
             return fields
         }
         DT.prototype.form = function(fields) {
             var self = this
-            var fields = (typeof fields === 'undefined') ? fields = self.fields() : fields
+            var fields = (typeof fields === 'undefined') ? self.cachedFields : fields
             var html = ''
             for (var $i=0; $i < fields.length; $i++) {
-                var name = fields[$i].name
-                var label = fields[$i].label
-                var type = fields[$i].type
-                var val = (typeof fields[$i].val === 'undefined') ? '' : fields[$i].val
-                html += '<div class="form-group push-10"><label>' + label + '</label>'
+                var field         = fields[$i]
+                var name          = field.name
+                var label         = field.label
+                var type          = field.type
+                var required      = (field.required === true) ? ' required' : ''
+                var requiredLabel = (field.required === true) ? '' : ' <span class="optional">(facultatif)</span>'
+                var disabled      = (field.disabled === true) ? ' disabled' : ''
+                var value         = (typeof field.value === 'undefined') ? '' : field.value
+                var options       = field.options
+
+                html += '<div class="form-group push-10"><label>' + label + '</label>' + requiredLabel
                 // Text / Email
                 if (type === 'text' || type === 'email') {
-                    html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control required">'
-                    // Datepicker
+                    html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '"' + disabled + '>'
+                // Datepicker
                 } else if (type === 'date') {
-                    html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control required" data-date-format="dd/mm/yyyy">'
-                    // Numerical - currency, number of days, etc.
+                    html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '"' + disabled + ' data-date-format="dd/mm/yyyy">'
+                // Numerical - currency, number of days, etc.
                 } else if (type === 'numerical') {
-                    val = (typeof fields[$i].val === 'undefined') ? '' : parseFloat(fields[$i].val.replace(/[A-Za-z$-\s+]/g, '').replace(',', '.'))
-                    html += '<input type="text" name="' + name + '" value="' + val + '" class="form-control required">'
-                    // Radio
-                } else if (type === 'radio') {
-                    var options = fields[$i].options.split(',')
-                    html += '<br>'
-                    for (var $l=0; $l < options.length; $l++) {
-                        var option = options[$l].trim()
-                        var checked = (val === option) ? 'checked' : ''
-                        html += '<label class="css-input css-radio css-radio-sm css-radio-default push-10-r"><input type="radio"  name="' + name + '" value="' + option + '" ' + checked + ' class="required"><span></span>' + option + '</label>'
-                    }
-                    // Select
-                } else if (type === 'select') {
-                    var options = fields[$i].options.split(',')
-                    html += '<select class="form-control required" name="' + name + '">' +
-                        '<option value="0">Selectionner</option>'
+                    value = (typeof value === 'undefined') ? '' : parseFloat(value.replace(',', '.').replace(/[^\d\-\.]/g, ''))
+                    html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '"' + disabled + '>'
+                // Radio
+                } else if (type === 'radio' || type === 'select' || type == 'checkbox') {
+                    if (type === 'select')
+                        html += '<select class="form-control' + required + '" name="' + name + '"' + disabled + '><option value="0">Selectionner</option>'
+                    else
+                        html += '<br>'
                     for (var $l = 0; $l < options.length; $l++) {
-                        var option = options[$l].trim()
-                        var selected = (val === option) ? 'selected' : ''
-                        html += '<option value="' + option + '" ' + selected + '>' + option + '</option>'
+                        var option = options[$l]
+                        var choice
+                        if (type === 'radio') {
+                            choice = (value === option.text) ? 'checked' : ''
+                            html += '<label class="css-input css-radio css-radio-sm css-radio-default push-10-r">' +
+                                '<input type="radio"  name="' + name + '" value="' + option.id + '" ' + choice + ' class="' + required + '"' + disabled + '>' +
+                                '<span></span> ' + option.text +
+                                '</label>'
+                        } else if (type === 'select') {
+                            choice = (value === option.text) ? 'selected' : ''
+                            html += '<option value="' + option.id + '" ' + choice + '>' + option.text + '</option>'
+                        } else if (type === 'checkbox') {
+                            choice = (~(value.indexOf(option.text))) ? 'checked' : ''
+                            html += '<label class="css-input css-checkbox css-checkbox-sm css-checkbox-default push-10-r">' +
+                                '<input type="checkbox"  name="' + name + '[]" value="' + option.id + '" ' + choice + ' class="' + required + '"' + disabled + '>' +
+                                '<span></span> ' + option.text +
+                                '</label>'
+                        }
                     }
-                    html += '</select>'
-                    // Select 2
-                } else if (type === 'selectArray') {
+                    if (type === 'select') {
+                        html += '</select>'
+                    }
+                } else if (type === 'multilevel') {
                     var optionsHtml = ''
                     var level = 0
-                    function recurse(object) {
-
+                    var selectedLevel = 0
+                    function recurseHtml(object) {
                         for (var i in object) {
-                            var selected = (val === object[i].text) ? 'selected' : ''
-                            var id = (typeof object[i].id !== 'undefined') ? object[i].id : object[i].text
-                            optionsHtml += '<option value="' + id + '" ' + selected + '>' + new Array(level + 1).join('&nbsp;&nbsp;') + object[i].text + '</option>'
-                            if (typeof object[i].children !== 'undefined') {
+                            var o = object[i]
+                            var selected = (value === o.text) ? 'selected' : ''
+                            var spaces = (selected === 'selected') ? '' : new Array(level + 1).join('&nbsp;&nbsp;')
+                            var id = (typeof o.id !== 'undefined') ? o.id : o.text
+                            optionsHtml += '<option value="' + id + '" ' + selected + ' data-level="' + level + '">' + spaces + o.text + '</option>'
+                            if (selected === 'selected')
+                                selectedLevel = level
+                            if (typeof o.children !== 'undefined') {
                                 level++
-                                recurse(object[i].children)
+                                recurseHtml(o.children)
                                 level--
                             }
                         }
                         return optionsHtml
                     }
-                    html += '<select class="form-control required" name="' + name + '"><option value="0">Selectionner</option>'
-                    html += recurse(fields[$i].options)
+                    html += '<select class="form-control' + required + ' select-multilevel" name="' + name + '"' + disabled + '><option value="0">Selectionner</option>'
+                    html += recurseHtml(options)
                     html += '</select>'
-                    // File
+                // File
                 } else if (type === 'file') {
-                    if (val === '') {
-                        html += '<input type="file" name="' + name + '" value="" class="form-control required">'
+                    if (value === '') {
+                        html += '<input type="file" name="' + name + '" value="" class="form-control' + required + '"' + disabled + '>'
                     } else {
                         html += '<div class="clearfix"><div class="pull-left">' +
-                            '<div class="file">' + val + '</div>' +
+                            '<div class="file">' + value + '</div>' +
                             '<input type="hidden" name="' + name + '" value="no_change"></div>' +
                             '<div class="pull-left push-15-l"><a class="btn btn-xs btn-default file-edit-btn edit">Modifier</a></div></div>'
                     }
+                // Unknown type
                 } else {
                     console.log('Unknown input type')
                     return false
@@ -1172,6 +1207,15 @@ var App = function() {
             // Add hidden inputs
             html += '<input type="hidden" name="id" value="">'
             html += '<input type="hidden" name="action" value="">'
+            if (typeof self.extraHiddenFields !== 'undefined') {
+                var extraHiddenFields = self.extraHiddenFields.split(',')
+                for ($i in extraHiddenFields) {
+                    var hiddenField = extraHiddenFields[$i].split(':')
+                    var hiddenFieldName = hiddenField[0].trim()
+                    var hiddenFieldValue = hiddenField[1].trim()
+                    html += '<input type="hidden" name="' + hiddenFieldName + '" value="' + hiddenFieldValue + '">'
+                }
+            }
             return html
         }
         DT.prototype.modal = function() {
@@ -1195,13 +1239,13 @@ var App = function() {
         DT.prototype.getCellValues = function(id) {
             var self = this
             var $row = self.$elem.find('tr[data-id=' + id + ']')
-            var fields = self.fields()
+            var fields = self.cachedFields
             for (var $i=0; $i < fields.length; $i++) {
-                var val = $row.find('td:eq(' + $i + ')').text()
+                var value = $row.find('td:eq(' + $i + ')').text()
                 if (fields[$i].type === 'file') {
-                    val = $row.find('td:eq(' + $i + ')').html()
+                    value = $row.find('td:eq(' + $i + ')').html()
                 }
-                fields[$i].val = val
+                fields[$i].value = value
             }
             return fields
         }
@@ -1284,6 +1328,7 @@ var App = function() {
         }
         DT.prototype.update = function(id, data) {
             var self = this
+            var fields = self.cachedFields
             var tr = self.dtInstance.row('[data-id=' + id + ']')
             var $tr = self.$elem.find('[data-id=' + id + ']')
             // Delete row
@@ -1303,6 +1348,53 @@ var App = function() {
                 console.log('response.data must be an array')
                 return false
             }
+            // Check we have the same number of fields
+            if (data.length !== fields.length) {
+                console.log('response.data has missing or extra fields')
+                return false
+            }
+            // Replace data values with labels
+            for (var $i = 0; $i < fields.length; $i++) {
+                var field = fields[$i]
+                var options = field.options
+                var labels = []
+                if (typeof options !== 'undefined') {
+                    if (field.type !== 'multilevel') {
+                        for (var $l=0; $l < options.length; $l++) {
+                            var option = options[$l]
+                            if (field.type === 'checkbox') {
+                                if (~(data[$i].indexOf(option.id)) || ~(data[$i].indexOf(parseInt(option.id)))) {
+                                    labels.push(option.text)
+                                }
+                            } else {
+                                if (option.id === data[$i].id || option.id === data[$i])
+                                    labels = option.text
+                            }
+                        }
+                        if (field.type === 'checkbox') {
+                            labels = labels.join(', ')
+                        }
+                        data[$i] = labels
+                    } else {
+                        function recurseId(options, value) {
+                            for (var i in options) {
+                                var o = options[i]
+                                var id = o.id.toString()
+                                if (id.trim() === value.trim()) {
+                                    data[$i] = o.text
+                                    break
+                                } else {
+                                    if (typeof o.children !== 'undefined') {
+                                        recurseId(o.children, value)
+                                    }
+                                }
+                            }
+                        }
+                        recurseId(options, data[$i])
+                    }
+                }
+            }
+            // Update
             if (!tr.length) {
                 // Add new row
                 data.push(self.buttons('active'))
@@ -1365,6 +1457,24 @@ var App = function() {
             self.$modal.find('form').on('submit', function (e) {
                 e.preventDefault()
                 self.submit()
+            })
+            function recalculateSpaces($select) {
+                $select.children().each(function(){
+                    var $option = $(this)
+                    var level = $option.data('level')
+                    if (typeof level !== 'undefined') {
+                        var text = $option.text().trim()
+                        $option.html(new Array(level + 1).join('&nbsp;&nbsp;') + text)
+                    }
+                })
+            }
+            self.$modal.on('mousedown', '.select-multilevel', function(){
+                recalculateSpaces($(this))
+            })
+            self.$modal.on('change', '.select-multilevel', function(){
+                var $selectedOption = $(this).find('option:selected')
+                recalculateSpaces($(this))
+                $selectedOption.text($selectedOption.text().trim())
             })
             self.$modal.on('change', 'input[type=file]', function () {
                 var $input = $(this)
