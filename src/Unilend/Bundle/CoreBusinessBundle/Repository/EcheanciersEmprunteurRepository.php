@@ -139,24 +139,6 @@ class EcheanciersEmprunteurRepository extends EntityRepository
     }
 
     /**
-     * @param int $projectId
-     *
-     * @return mixed
-     */
-    public function getUnpaidPaymentScheduleCount($projectId)
-    {
-        $queryBuilder = $this->createQueryBuilder('ee')
-            ->select('COUNT(ee.idEcheancierEmprunteur)')
-            ->where('ee.idProject = :projectId')
-            ->setParameter('projectId', $projectId)
-            ->andWhere('ee.statusEmprunteur = :pending')
-            ->setParameter('pending', EcheanciersEmprunteur::STATUS_PENDING)
-            ->andWhere('ee.dateEcheanceEmprunteur <= NOW()');
-
-        return $queryBuilder->getQuery()->getSingleScalarResult();
-    }
-
-    /**
      * @param int|Projects $projectId
      *
      * @return null|EcheanciersEmprunteur
