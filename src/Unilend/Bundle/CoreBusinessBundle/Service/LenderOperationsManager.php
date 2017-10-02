@@ -314,13 +314,6 @@ class LenderOperationsManager
      */
     public function getOperationsExcelFile(Wallet $wallet, $start, $end, $idProject, $operationTypes)
     {
-        ini_set('memory_limit', '2G');
-
-        \PHPExcel_Settings::setCacheStorageMethod(
-            \PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
-            ['memoryCacheSize' => '2048MB']
-        );
-
         $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $lenderOperations    = $this->getLenderOperations($wallet, $start, $end, $idProject, $operationTypes);
         $taxColumns          = [];
