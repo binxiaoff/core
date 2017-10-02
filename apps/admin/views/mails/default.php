@@ -1,12 +1,12 @@
 <style>
     @font-face {
         font-family: 'FontAwesome';
-        src: url('https://admin.local.unilend.fr/oneui/fonts/fontawesome-webfont.eot');
-        src: url('https://admin.local.unilend.fr/oneui/fonts/fontawesome-webfont.eot?#iefix&v=4.7.0') format('embedded-opentype'),
-        url('https://admin.local.unilend.fr/oneui/fonts/fontawesome-webfont.woff2') format('woff2'),
-        url('https://admin.local.unilend.fr/oneui/fonts/fontawesome-webfont.woff') format('woff'),
-        url('https://admin.local.unilend.fr/oneui/fonts/fontawesome-webfont.ttf') format('truetype'),
-        url('https://admin.local.unilend.fr/oneui/fonts/fontawesome-webfont.svg#fontawesomeregular') format('svg');
+        src: url('<?= $this->url ?>/oneui/fonts/fontawesome-webfont.eot');
+        src: url('<?= $this->url ?>/oneui/fonts/fontawesome-webfont.eot?#iefix&v=4.7.0') format('embedded-opentype'),
+        url('<?= $this->url ?>/oneui/fonts/fontawesome-webfont.woff2') format('woff2'),
+        url('<?= $this->url ?>/oneui/fonts/fontawesome-webfont.woff') format('woff'),
+        url('<?= $this->url ?>/oneui/fonts/fontawesome-webfont.ttf') format('truetype'),
+        url('<?= $this->url ?>/oneui/fonts/fontawesome-webfont.svg#fontawesomeregular') format('svg');
         font-weight: normal;
         font-style: normal;
     }
