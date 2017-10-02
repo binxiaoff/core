@@ -165,11 +165,11 @@ class CompanyStatusHistory
     }
 
     /**
-     * @param \DateTime $changedOn
+     * @param null|\DateTime $changedOn
      *
      * @return CompanyStatusHistory
      */
-    public function setChangedOn(\DateTime $changedOn)
+    public function setChangedOn(\DateTime $changedOn = null)
     {
         $this->changedOn = $changedOn;
 
@@ -185,11 +185,11 @@ class CompanyStatusHistory
     }
 
     /**
-     * @param string $receiver
+     * @param null|string $receiver
      *
      * @return CompanyStatusHistory
      */
-    public function setReceiver($receiver)
+    public function setReceiver($receiver = null)
     {
         $this->receiver = $receiver;
 
@@ -205,11 +205,11 @@ class CompanyStatusHistory
     }
 
     /**
-     * @param string $mailContent
+     * @param null|string $mailContent
      *
      * @return CompanyStatusHistory
      */
-    public function setMailContent($mailContent)
+    public function setMailContent($mailContent = null)
     {
         $this->mailContent = $mailContent;
 
@@ -225,11 +225,11 @@ class CompanyStatusHistory
     }
 
     /**
-     * @param string $siteContent
+     * @param null|string $siteContent
      *
      * @return CompanyStatusHistory
      */
-    public function setSiteContent($siteContent)
+    public function setSiteContent($siteContent = null)
     {
         $this->siteContent = $siteContent;
 

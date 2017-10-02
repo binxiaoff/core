@@ -15,12 +15,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager;
 
 class DevDebtCollectionCreationCommand extends ContainerAwareCommand
 {
-    const CLIENT_HASH_MCS      = '2f9f590e-d689-11e6-b3d7-005056a378e2';
-    const CLIENT_HASH_PROGERIS = 'f12f0f5b-1867-11e7-a89f-0050569e51ae';
-
     /**
      * @see Command
      */
@@ -259,10 +257,10 @@ EOF
         $collectorName    = $input->getOption('collector');
         switch (strtoupper($collectorName)) {
             case 'MCS':
-                $clientHash = self::CLIENT_HASH_MCS;
+                $clientHash = DebtCollectionMissionManager::CLIENT_HASH_MCS;
                 break;
             case 'PROGERIS':
-                $clientHash = self::CLIENT_HASH_PROGERIS;
+                $clientHash = DebtCollectionMissionManager::CLIENT_HASH_PROGERIS;
                 break;
             default:
                 $output->writeln('Debt collector : ' . $collectorName . 'is not supported');

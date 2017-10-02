@@ -14,8 +14,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class DebtCollectionMission
 {
-    const TYPE_AMICABLE   = 0;
     const TYPE_LITIGATION = 1;
+    const TYPE_AMICABLE   = 2;
 
     /**
      * @var integer
@@ -27,7 +27,7 @@ class DebtCollectionMission
     /**
      * @var string
      *
-     * @ORM\Column(name="fees_rate", type="decimal", precision=4, scale=2, nullable=true)
+     * @ORM\Column(name="fees_rate", type="decimal", precision=4, scale=4, nullable=false)
      */
     private $feesRate;
 
@@ -115,6 +115,27 @@ class DebtCollectionMission
      * @ORM\Column(name="archived", type="datetime", nullable=true)
      */
     private $archived;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="capital", type="decimal", precision=11, scale=2, nullable=false)
+     */
+    private $capital;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="interest", type="decimal", precision=11, scale=2, nullable=false)
+     */
+    private $interest;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="commission_vat_incl", type="decimal", precision=11, scale=2, nullable=false)
+     */
+    private $commissionVatIncl;
 
     public function __construct()
     {
@@ -405,6 +426,78 @@ class DebtCollectionMission
     public function setArchived(\DateTime $archived = null)
     {
         $this->archived = $archived;
+
+        return $this;
+    }
+
+    /**
+     * get entrusted capital
+     *
+     * @return string
+     */
+    public function getCapital()
+    {
+        return $this->capital;
+    }
+
+    /**
+     * set entrusted capital amount
+     *
+     * @param string $capital
+     *
+     * @return DebtCollectionMission
+     */
+    public function setCapital($capital)
+    {
+        $this->capital = $capital;
+
+        return $this;
+    }
+
+    /**
+     * get entrusted interest amount
+     *
+     * @return string
+     */
+    public function getInterest()
+    {
+        return $this->interest;
+    }
+
+    /**
+     * set entrusted interests amount
+     *
+     * @param string $interest
+     *
+     * @return DebtCollectionMission
+     */
+    public function setInterest($interest)
+    {
+        $this->interest = $interest;
+
+        return $this;
+    }
+
+    /**
+     * get entrusted commission VAT included amount
+     *
+     * @return string
+     */
+    public function getCommissionVatIncl()
+    {
+        return $this->commissionVatIncl;
+    }
+
+    /**
+     * set entrusted commission VAT included amount
+     *
+     * @param string $commissionVatIncl
+     *
+     * @return DebtCollectionMission
+     */
+    public function setCommissionVatIncl($commissionVatIncl)
+    {
+        $this->commissionVatIncl = $commissionVatIncl;
 
         return $this;
     }

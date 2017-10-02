@@ -287,4 +287,78 @@ class emprunteursController extends bootstrap
         header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $company->getIdClientOwner());
         die;
     }
+
+    public function _projets_avec_retard()
+    {
+        /** @var \users $user */
+        $user = $this->loadData('users');
+        $user->get($_SESSION['user']['id_user']);
+
+        if (\users_types::TYPE_RISK == $user->id_user_type
+            || $user->id_user == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_ALAIN_ELKAIM
+            || isset($this->params[0]) && 'risk' == $this->params[0] && in_array($user->id_user_type, [\users_types::TYPE_ADMIN, \users_types::TYPE_IT])
+        ) {
+            $projectData = $this->getLatePaymentsInformation();
+            $this->render(null, $projectData);
+        } else {
+            header('Location: ' . $this->lurl . '/emprunteurs/gestion/');
+            die;
+        }
+    }
+
+    /**
+     * @return array
+     */
+    private function getLatePaymentsInformation()
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+        $projectManager = $this->get('unilend.service.project_manager');
+
+        $projectsRepository                             = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $receptionsRepository                           = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+        $debtCollectionMissionPaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMissionPaymentSchedule');
+
+        $totalPendingReceiptAmount  = 0;
+        $totalRemainingAmount       = 0;
+        $projectsWithDebtCollection = 0;
+        $projectData                = [];
+
+        foreach ($projectsRepository->getProjectsWithLateRepayments() as $lateRepayment) {
+            $project              = $projectsRepository->find($lateRepayment['idProject']);
+            $overDuePaymentInfo   = $projectManager->getPendingAmountAndPaymentsCountOnProject($project);
+            $debtCollectionAmount = $debtCollectionMissionPaymentScheduleRepository->getEntrustedAmount($project);
+
+            if ($debtCollectionAmount) {
+                $projectsWithDebtCollection++;
+            }
+
+            $pendingReceipt                        = $receptionsRepository->getPendingReceipt($project);
+            $projectData[$project->getIdProject()] = [
+                'projectId'                => $project->getIdProject(),
+                'companyName'              => $project->getIdCompany()->getName(),
+                'siren'                    => $project->getIdCompany()->getSiren(),
+                'companyActivity'          => $project->getIdCompany()->getActivite(),
+                'projectTitle'             => $project->getTitle(),
+                'projectStatusLabel'       => $lateRepayment['projectStatusLabel'],
+                'projectStatus'            => $project->getStatus(),
+                'remainingAmount'          => $overDuePaymentInfo['amount'],
+                'entrustedToDebtCollector' => $debtCollectionAmount,
+                'remainingPaymentsCount'   => $overDuePaymentInfo['paymentsCount'],
+                'pendingReceiptAmount'     => round(bcdiv(array_sum(array_column($pendingReceipt, 'amount')), 100, 4), 2),
+                'pendingReceiptCount'      => count($pendingReceipt),
+            ];
+            $totalRemainingAmount                  = bcadd($totalRemainingAmount, $overDuePaymentInfo['amount'], 4);
+            $totalPendingReceiptAmount             = bcadd($totalPendingReceiptAmount, $projectData[$project->getIdProject()]['pendingReceiptAmount'], 2);
+        }
+
+        return [
+            'remainingAmountToCollect'     => round($totalRemainingAmount, 2),
+            'pendingReceiptAmount'         => $totalPendingReceiptAmount,
+            'nbProjectsWithDeptCollection' => $projectsWithDebtCollection,
+            'nbProjectsWithLateRepayments' => count($projectData) - $projectsWithDebtCollection,
+            'projectWithPaymentProblems'   => $projectData
+        ];
+    }
 }

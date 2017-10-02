@@ -1,0 +1,77 @@
+<div class="block-content block-content-full">
+    <h3 class="h4 push-20">Retards</h3>
+    <table class="table table-bordered table-hover table-header-bg">
+        <thead>
+        <tr>
+            <th style="width: 20%">
+                Date
+            </th>
+            <th style="width: 20%">
+                Retards
+            </th>
+            <th style="width: 20%">
+                Montant
+            </th>
+            <th style="width: 20%">
+                Confié au recouvreur
+            </th>
+            <th style="width: 20%">
+                Retard emprunteur
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        {% set totalPaymentsAmount = 0 %}
+
+        {% for payment in latePaymentsData %}
+            <tr>
+                <td>
+                    {{ payment.date|localizeddate('short', 'none') }}
+                </td>
+                <td>
+                    {{ payment.label }}
+                </td>
+                <td>
+                    {{ payment.amount|localizedcurrency('EUR') }}
+                </td>
+                <td>
+                    {{ payment.entrustedToDebtCollector }}
+                </td>
+                <td>
+                    {{ payment.remainingAmount > 0 ? payment.remainingAmount|localizedcurrency('EUR') : 'N/A' }}
+                </td>
+            </tr>
+            {% set totalPaymentsAmount = totalPaymentsAmount + payment.amount %}
+        {% endfor %}
+        {% if latePaymentsData|length > 1 %}
+            <tr>
+                <th colspan="2" style="width: 40%;">
+                    Total:
+                </th>
+                <th style="width: 20%;">
+                    {{ totalPaymentsAmount|localizedcurrency('EUR') }}
+                </th>
+                <th style="width: 20%;">
+                    &nbsp;
+                </th>
+                <th style="width: 20%;">
+                    {{ projectData.totalRemainingAmount > 0 ? projectData.totalRemainingAmount|localizedcurrency('EUR') : 'N/A' }}
+                </th>
+            </tr>
+        {% endif %}
+        </tbody>
+    </table>
+    <div class="text-right">
+        {% if projectData.isClosedOutLoan %}
+            <button type="button" class="btn btn-default push-10-r" data-toggle="modal" data-target="#modal-cancel-term">Déchoir le terme</button>
+        {% endif %}
+
+        {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::REMBOURSEMENT') == projectData.projectStatus %}
+            <button type="button" class="btn btn-primary push-10-r" data-toggle="modal" data-target="#modal-status-problem">Passer en statut problème</button>
+        {% endif %}
+
+        {% if projectData.totalRemainingAmount > 0 and 0 >= pendingReceiptData|length %}
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-debt-collection">Missionner un recouvreur ({{ projectData.totalRemainingAmount|localizedcurrency('EUR') }})</button>
+        {% endif %}
+    </div>
+</div>

@@ -3,26 +3,26 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
+use PhpXmlRpc\Client as soapClient;
+use PhpXmlRpc\Request as soapRequest;
+use PhpXmlRpc\Value as documentId;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager;
-use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use PhpXmlRpc\Client as soapClient;
-use PhpXmlRpc\Request as soapRequest;
-use PhpXmlRpc\Value as documentId;
+use Unilend\core\Loader;
 
 class ProjectManager
 {
@@ -1273,5 +1273,31 @@ class ProjectManager
     {
         $project->interest_rate = $project->getAverageInterestRate(false);
         $project->update();
+    }
+
+    /**
+     * @todo This is a temporary method to be removed once the new table of closed out loans is created
+     * Calculate the remaining amount and payments count on a project depending on close out netting date if any
+     *
+     * @param Projects $project
+     *
+     * @return array [amount, paymentsCount]
+     */
+    public function getPendingAmountAndPaymentsCountOnProject(Projects $project)
+    {
+        $paymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+
+        if (null !== $project->getCloseOutNettingDate()) {
+            $pastFullPayments       = $paymentRepository->getPendingAmountAndPaymentsCountOnProjectAtDate($project, $project->getCloseOutNettingDate());
+            $dueCapitalPayments     = $paymentRepository->getPendingCapitalAndPaymentsCountOnProjectFromDate($project, $project->getCloseOutNettingDate());
+            $remainingAmount        = round(bcadd($pastFullPayments['amount'], $dueCapitalPayments['amount'], 4), 2);
+            $remainingPaymentsCount = round(bcadd($pastFullPayments['paymentsCount'], $dueCapitalPayments['paymentsCount'], 2), 1);
+        } else {
+            $pastFullPayments       = $paymentRepository->getPendingAmountAndPaymentsCountOnProjectAtDate($project, new \DateTime());
+            $remainingAmount        = $pastFullPayments['amount'];
+            $remainingPaymentsCount = $pastFullPayments['paymentsCount'];
+        }
+
+        return ['amount' => $remainingAmount, 'paymentsCount' => $remainingPaymentsCount];
     }
 }

@@ -7,8 +7,8 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\ORM\Query\Expr\Join;
 use PDO;
+use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
 use Unilend\librairies\CacheKeys;
 use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
@@ -534,5 +534,37 @@ class ProjectsRepository extends EntityRepository
             ->setParameter('projectStatus', [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME, ProjectsStatus::LOSS]);
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * Get all projects having a late payment schedule
+     *
+     * @return array
+     */
+    public function getProjectsWithLateRepayments()
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+
+        $queryBuilder->select('p.idProject, ps.label AS projectStatusLabel')
+            ->innerJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'ee.idProject = p.idProject')
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'p.status = ps.status')
+            ->where('ee.dateEcheanceEmprunteur <= NOW()')
+            ->andWhere('ee.statusEmprunteur IN (:paymentStatus)')
+            ->setParameter('paymentStatus', [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID])
+            ->andWhere('p.status IN (:projectStatus)')
+            ->setParameter('projectStatus', [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME])
+            ->groupBy('p.idProject');
+
+        return $queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_ARRAY);
+    }
+
+    public function getCountProjectsByStatus($status)
+    {
+        $queryBuilder = $this->createQueryBuilder('p')
+            ->select('COUNT(p.idProject)')
+            ->where('p.status = :status')
+            ->setParameter('status', $status);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }

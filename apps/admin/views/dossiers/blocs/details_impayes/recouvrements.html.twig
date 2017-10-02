@@ -1,0 +1,65 @@
+<div class="block-content block-content-full">
+    <h3 class="h4 push-20">Missions de revouvrement</h3>
+    {% if debtCollectionMissionsData|length > 0 %}
+        <table class="table table-bordered table-hover table-header-bg">
+            <thead>
+            <tr>
+                <th style="width: 10%">
+                    Date
+                </th>
+                <th style="width: 10%">
+                    ID
+                </th>
+                <th style="width: 40%">
+                    Composition
+                </th>
+                <th style="width: 10%">
+                    Type
+                </th>
+                <th style="width: 20%">
+                    Taux
+                </th>
+                <th style="width: 10%">
+                    Action
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for mission in debtCollectionMissionsData %}
+                <tr>
+                    <td>
+                        {{ mission.date|localizeddate('short', 'none') }}
+                    </td>
+                    <td>
+                        {{ mission.id }}
+                    </td>
+                    <td>
+                        {% if mission.entrustedPayments|length > 0 %}
+                            {% for payment in mission.entrustedPayments %}
+                                {{ payment.label }} (Capital: {{ payment.componentDetail.capital|localizedcurrency('EUR') }} - Intérêts: {{ payment.componentDetail.interest|localizedcurrency('EUR') }} - Comission TTC: {{ payment.componentDetail.commission|localizedcurrency('EUR') }})
+                                <br>
+                            {% endfor %}
+                        {% else %}
+                            Capital: {{ mission.component.capital|localizedcurrency('EUR') }} - Intérêts: {{ mission.component.interest|localizedcurrency('EUR') }} - Comission TTC: {{ mission.component.commission|localizedcurrency('EUR') }}
+                            <br>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ mission.type }}
+                    </td>
+                    <td>
+                        {{ mission.rate|localizednumber }} %
+                    </td>
+                    <td class="text-center">
+                        <a href="/debt_collection_mission/downloadCreditorDetailsFile/{{ mission.id }}" class="btn btn-xs btn-default push-10-r" data-toggle="tooltip" data-original-title="Télécharger XLS"><i class="fa fa-download"></i></a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert">
+            <p>Aucune mission en cours sur ce projet.</p>
+        </div>
+    {% endif %}
+</div>

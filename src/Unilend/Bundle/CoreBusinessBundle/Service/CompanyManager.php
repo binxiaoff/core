@@ -68,51 +68,50 @@ class CompanyManager
 
     /**
      * @param Companies      $company
-     * @param CompanyStatus  $companyStatus
+     * @param CompanyStatus  $newStatus
      * @param Users          $user
      * @param null|\DateTime $changedOn
      * @param null|string    $receiver
      * @param null|string    $siteContent
      * @param null|string    $mailContent
      */
-    public function addCompanyStatus(Companies $company, CompanyStatus $companyStatus, Users $user, \DateTime $changedOn = null, $receiver = null, $siteContent = null, $mailContent = null)
+    public function addCompanyStatus(Companies $company, CompanyStatus $newStatus, Users $user, \DateTime $changedOn = null, $receiver = null, $siteContent = null, $mailContent = null)
     {
         $currentStatus = $company->getIdStatus();
 
-        $companyStatusHistory = new CompanyStatusHistory();
-        $companyStatusHistory->setIdCompany($company)
-            ->setIdStatus($companyStatus)
-            ->setIdUser($user)
-            ->setChangedOn($changedOn)
-            ->setReceiver($receiver)
-            ->setMailContent($mailContent)
-            ->setSiteContent($siteContent);
+        if ($currentStatus !== $newStatus) {
+            $company->setIdStatus($newStatus);
+            $this->entityManager->flush($company);
 
-        $this->entityManager->persist($companyStatusHistory);
-        $this->entityManager->flush($companyStatusHistory);
+            $companyStatusHistory = new CompanyStatusHistory();
+            $companyStatusHistory->setIdCompany($company)
+                ->setIdStatus($newStatus)
+                ->setIdUser($user)
+                ->setChangedOn($changedOn)
+                ->setReceiver($receiver)
+                ->setMailContent($mailContent)
+                ->setSiteContent($siteContent);
 
-        $company->setIdStatus($companyStatus);
-        $this->entityManager->flush($company);
+            $this->entityManager->persist($companyStatusHistory);
+            $this->entityManager->flush($companyStatusHistory);
 
-        if (
-            $currentStatus->getId() !== $companyStatus->getId()
-            && in_array($companyStatus->getLabel(), [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION])
-        ) {
-            $this->riskDataMonitoringManger->stopMonitoringForSiren($company->getSiren());
-            $companyProjects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findFundedButNotRepaidProjectsByCompany($company);
+            if (in_array($newStatus->getLabel(), [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION])) {
+                $this->riskDataMonitoringManger->stopMonitoringForSiren($company->getSiren());
+                $companyProjects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findFundedButNotRepaidProjectsByCompany($company);
 
-            foreach ($companyProjects as $project) {
-                if (ProjectsStatus::PROBLEME !== $project->getStatus()) {
-                    $this->projectManager->addProjectStatus($user->getIdUser(), ProjectsStatus::PROBLEME, $project);
-                }
+                foreach ($companyProjects as $project) {
+                    if (ProjectsStatus::PROBLEME !== $project->getStatus()) {
+                        $this->projectManager->addProjectStatus($user->getIdUser(), ProjectsStatus::PROBLEME, $project);
+                    }
 
-                $directDebitEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements');
-                /** @var Prelevements[] $upcomingDirectDebits */
-                $upcomingDirectDebits = $directDebitEntity->findUpcomingDirectDebitsByProject($project);
+                    $directDebitEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements');
+                    /** @var Prelevements[] $upcomingDirectDebits */
+                    $upcomingDirectDebits = $directDebitEntity->findUpcomingDirectDebitsByProject($project);
 
-                foreach ($upcomingDirectDebits as $directDebit) {
-                    $directDebit->setStatus(Prelevements::STATUS_TEMPORARILY_BLOCKED);
-                    $this->entityManager->flush($directDebit);
+                    foreach ($upcomingDirectDebits as $directDebit) {
+                        $directDebit->setStatus(Prelevements::STATUS_TEMPORARILY_BLOCKED);
+                        $this->entityManager->flush($directDebit);
+                    }
                 }
             }
         }
