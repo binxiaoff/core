@@ -1308,6 +1308,7 @@ var App = function() {
                     processData: false,
                     success: function(response) {
                         if (response.success) {
+                            self.$wrapper.find('.messages').html('')
                             self.update(response.id, response.data)
                         } else {
                             var errors = '<div class="alert alert-danger">'
