@@ -1084,7 +1084,6 @@ var App = function() {
                 var type = $th.data('editor-type')
                 var options = $th.data('editor-options')
                 var required = (typeof $th.data('editor-optional') === 'undefined') ? true : false
-                var disabled = (typeof $th.data('editor-disabled') === 'undefined') ? false : true
                 var label = $th.text()
                 if (typeof name === 'undefined' || typeof type === 'undefined') {
                     if (!$th.is('[data-table-actionscolumn]')) {
@@ -1103,7 +1102,7 @@ var App = function() {
                         }
                         options = parsedOptions
                     }
-                    fields.push({name: name, type: type, label: label, options: options, required: required, disabled: disabled})
+                    fields.push({name: name, type: type, label: label, options: options, required: required})
                 }
             })
             return fields
@@ -1119,25 +1118,24 @@ var App = function() {
                 var type          = field.type
                 var required      = (field.required === true) ? ' required' : ''
                 var requiredLabel = (field.required === true) ? '' : ' <span class="optional">(facultatif)</span>'
-                var disabled      = (field.disabled === true) ? ' disabled' : ''
                 var value         = (typeof field.value === 'undefined') ? '' : field.value
                 var options       = field.options
 
                 html += '<div class="form-group push-10"><label>' + label + '</label>' + requiredLabel
                 // Text / Email
                 if (type === 'text' || type === 'email') {
-                    html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '"' + disabled + '>'
+                    html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '">'
                 // Datepicker
                 } else if (type === 'date') {
-                    html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '"' + disabled + ' data-date-format="dd/mm/yyyy">'
+                    html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '" data-date-format="dd/mm/yyyy">'
                 // Numerical - currency, number of days, etc.
                 } else if (type === 'numerical') {
-                    value = (typeof value === 'undefined') ? '' : parseFloat(value.replace(',', '.').replace(/[^\d\-\.]/g, ''))
-                    html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '"' + disabled + '>'
+                    value = (value === '') ? '' : parseFloat(value.replace(',', '.').replace(/[^\d\-\.]/g, ''))
+                    html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '">'
                 // Radio
                 } else if (type === 'radio' || type === 'select' || type == 'checkbox') {
                     if (type === 'select')
-                        html += '<select class="form-control' + required + '" name="' + name + '"' + disabled + '><option value="0">Selectionner</option>'
+                        html += '<select class="form-control' + required + '" name="' + name + '"><option value="0">Selectionner</option>'
                     else
                         html += '<br>'
                     for (var $l = 0; $l < options.length; $l++) {
@@ -1146,7 +1144,7 @@ var App = function() {
                         if (type === 'radio') {
                             choice = (value === option.text) ? 'checked' : ''
                             html += '<label class="css-input css-radio css-radio-sm css-radio-default push-10-r">' +
-                                '<input type="radio"  name="' + name + '" value="' + option.id + '" ' + choice + ' class="' + required + '"' + disabled + '>' +
+                                '<input type="radio"  name="' + name + '" value="' + option.id + '" ' + choice + ' class="' + required + '">' +
                                 '<span></span> ' + option.text +
                                 '</label>'
                         } else if (type === 'select') {
@@ -1155,7 +1153,7 @@ var App = function() {
                         } else if (type === 'checkbox') {
                             choice = (~(value.indexOf(option.text))) ? 'checked' : ''
                             html += '<label class="css-input css-checkbox css-checkbox-sm css-checkbox-default push-10-r">' +
-                                '<input type="checkbox"  name="' + name + '[]" value="' + option.id + '" ' + choice + ' class="' + required + '"' + disabled + '>' +
+                                '<input type="checkbox"  name="' + name + '[]" value="' + option.id + '" ' + choice + ' class="' + required + '">' +
                                 '<span></span> ' + option.text +
                                 '</label>'
                         }
@@ -1184,13 +1182,13 @@ var App = function() {
                         }
                         return optionsHtml
                     }
-                    html += '<select class="form-control' + required + ' select-multilevel" name="' + name + '"' + disabled + '><option value="0">Selectionner</option>'
+                    html += '<select class="form-control' + required + ' select-multilevel" name="' + name + '"><option value="0">Selectionner</option>'
                     html += recurseHtml(options)
                     html += '</select>'
                 // File
                 } else if (type === 'file') {
                     if (value === '') {
-                        html += '<input type="file" name="' + name + '" value="" class="form-control' + required + '"' + disabled + '>'
+                        html += '<input type="file" name="' + name + '" value="" class="form-control' + required + '">'
                     } else {
                         html += '<div class="clearfix"><div class="pull-left">' +
                             '<div class="file">' + value + '</div>' +
@@ -1452,6 +1450,12 @@ var App = function() {
                     todayHighlight: false,
                     language: 'fr'
                 })
+
+                // MODAL OPEN CALLBACK
+                if (typeof self.options !== 'undefined') {
+                    if (options.modal)
+                        options.modal()
+                }
             })
             uiHelperFormValidate() // Call validation
             self.$modal.find('form').on('submit', function (e) {
@@ -1505,7 +1509,7 @@ var App = function() {
         }
         // jQuery Plugin
         $.fn.DT = function(op) {
-            if (typeof op === 'string' && /^(before|after|updated)$/.test(op)) {
+            if (typeof op === 'string' && /^(before|after|updated|modal)$/.test(op)) {
                 var args = Array.prototype.slice.call(arguments)
                 args.shift()
                 return this.each(function(i, elem) {
