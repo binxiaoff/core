@@ -128,37 +128,37 @@ class MailQueueRepository extends EntityRepository
     {
         $query = '
             SELECT
-                SUM(periods.day)   AS day,
-                SUM(periods.week)  AS week,
-                SUM(periods.month) AS month 
+              SUM(periods.day)   AS day,
+              SUM(periods.week)  AS week,
+              SUM(periods.month) AS month 
             FROM (
-                SELECT
-                    COUNT(mq.id_queue) AS day,
-                    NULL               AS week,
-                    NULL               AS month
-                FROM mail_queue mq
-                INNER JOIN mail_templates mt ON mq.id_mail_template = mt.id_mail_template
-                WHERE type = :type AND sent_at >= (DATE_SUB(NOW(), INTERVAL 1 DAY))
+              SELECT
+                COUNT(mq.id_queue) AS day,
+                NULL               AS week,
+                NULL               AS month
+              FROM mail_queue mq
+              INNER JOIN mail_templates mt ON mq.id_mail_template = mt.id_mail_template
+              WHERE type = :type AND sent_at >= DATE_SUB(NOW(), INTERVAL 1 DAY)
                 
-                UNION ALL
+              UNION ALL
 
-                SELECT
-                    NULL               AS day,
-                    COUNT(mq.id_queue) AS week,
-                    NULL               AS month
-                FROM mail_queue mq
-                INNER JOIN mail_templates mt ON mq.id_mail_template = mt.id_mail_template
-                WHERE type = :type AND sent_at >= (DATE_SUB(NOW(), INTERVAL 1 WEEK))
+              SELECT
+                NULL               AS day,
+                COUNT(mq.id_queue) AS week,
+                NULL               AS month
+              FROM mail_queue mq
+              INNER JOIN mail_templates mt ON mq.id_mail_template = mt.id_mail_template
+              WHERE type = :type AND sent_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK)
                 
-                UNION ALL
+              UNION ALL
                 
-                SELECT
-                    NULL               AS day,
-                    NULL               AS week,
-                    COUNT(mq.id_queue) AS month
-                FROM mail_queue mq
-                INNER JOIN mail_templates mt ON mq.id_mail_template = mt.id_mail_template
-                WHERE type = :type AND sent_at >= (DATE_SUB(NOW(), INTERVAL 1 MONTH))
+              SELECT
+                NULL               AS day,
+                NULL               AS week,
+                COUNT(mq.id_queue) AS month
+              FROM mail_queue mq
+              INNER JOIN mail_templates mt ON mq.id_mail_template = mt.id_mail_template
+              WHERE type = :type AND sent_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
             ) periods';
 
 

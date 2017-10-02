@@ -48,6 +48,8 @@ class MailTemplateManager
      * @param MailTemplates|null $footer
      * @param string|null        $recipientType
      * @param string|null        $part
+     *
+     * @return MailTemplates|null
      */
     public function addTemplate(
         $type,
@@ -70,27 +72,31 @@ class MailTemplateManager
             'part'   => $part
         ]);
 
-        if (null === $mailTemplate) {
-            $mailTemplate = new MailTemplates();
-            $mailTemplate->setType($type);
-            $mailTemplate->setPart($part);
-            $mailTemplate->setIdHeader($header);
-            $mailTemplate->setIdFooter($footer);
-            $mailTemplate->setRecipientType($recipientType);
-            $mailTemplate->setSenderName($sender);
-            $mailTemplate->setSenderEmail($senderEmail);
-            $mailTemplate->setSubject($subject);
-            $mailTemplate->setContent($content);
-            $mailTemplate->setLocale($this->defaultLanguage);
-            $mailTemplate->setStatus(MailTemplates::STATUS_ACTIVE);
-
-            $this->entityManager->persist($mailTemplate);
-            $this->entityManager->flush($mailTemplate);
-
-            if (null !== $title) {
-                $this->setTitle($mailTemplate, $title);
-            }
+        if ($mailTemplate) {
+            return null;
         }
+
+        $mailTemplate = new MailTemplates();
+        $mailTemplate->setType($type);
+        $mailTemplate->setPart($part);
+        $mailTemplate->setIdHeader($header);
+        $mailTemplate->setIdFooter($footer);
+        $mailTemplate->setRecipientType($recipientType);
+        $mailTemplate->setSenderName($sender);
+        $mailTemplate->setSenderEmail($senderEmail);
+        $mailTemplate->setSubject($subject);
+        $mailTemplate->setContent($content);
+        $mailTemplate->setLocale($this->defaultLanguage);
+        $mailTemplate->setStatus(MailTemplates::STATUS_ACTIVE);
+
+        $this->entityManager->persist($mailTemplate);
+        $this->entityManager->flush($mailTemplate);
+
+        if (null !== $title) {
+            $this->setTitle($mailTemplate, $title);
+        }
+
+        return $mailTemplate;
     }
 
     /**
@@ -118,7 +124,27 @@ class MailTemplateManager
     {
         if ($this->mailQueueManager->existsInMailQueue($mailTemplate->getIdMailTemplate())) {
             $this->archiveTemplate($mailTemplate);
-            $this->addTemplate($mailTemplate->getType(), $sender, $senderEmail, $subject, $title, $content, $header, $footer, $recipientType, $mailTemplate->getPart());
+            $newTemplate = $this->addTemplate($mailTemplate->getType(), $sender, $senderEmail, $subject, $title, $content, $header, $footer, $recipientType, $mailTemplate->getPart());
+
+            if (MailTemplates::PART_TYPE_HEADER === $mailTemplate->getPart()) {
+                $mailTemplateRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
+                $templatesWithHeader    = $mailTemplateRepository->findBy(['idHeader' => $mailTemplate]);
+
+                foreach ($templatesWithHeader as $template) {
+                    $template->setIdHeader($newTemplate);
+                }
+            }
+
+            if (MailTemplates::PART_TYPE_FOOTER === $mailTemplate->getPart()) {
+                $mailTemplateRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
+                $templatesWithFooter    = $mailTemplateRepository->findBy(['idFooter' => $mailTemplate]);
+
+                foreach ($templatesWithFooter as $template) {
+                    $template->setIdFooter($newTemplate);
+                }
+            }
+
+            $this->entityManager->flush();
         } else {
             $mailTemplate->setIdHeader($header);
             $mailTemplate->setIdFooter($footer);
