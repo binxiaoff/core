@@ -46,7 +46,7 @@ class ExternalDataManager
     private $companyBalanceSheetManager;
     /** @var CompanyRatingHistory */
     private $companyRatingHistory;
-    /** @var  RiskDataMonitoringManager */
+    /** @var RiskDataMonitoringManager */
     private $riskDataMonitoringManager;
 
     /**
@@ -318,10 +318,10 @@ class ExternalDataManager
             && $this->companyRatingHistory->getIdCompany()->getSiren() === $siren
             && false === $this->hasRating(CompanyRating::TYPE_INFOGREFFE_RETURN_CODE)
             && is_array($indebtedness)
-            && isset($privileges['code'])
-            && in_array($privileges['code'], [InfogreffeManager::RETURN_CODE_UNKNOWN_SIREN, InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS, InfogreffeManager::RETURN_CODE_NO_DEBTOR])
+            && isset($indebtedness['code'])
+            && in_array($indebtedness['code'], [InfogreffeManager::RETURN_CODE_UNKNOWN_SIREN, InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS, InfogreffeManager::RETURN_CODE_NO_DEBTOR])
         ) {
-            $this->setRating(CompanyRating::TYPE_INFOGREFFE_RETURN_CODE, $privileges['code']);
+            $this->setRating(CompanyRating::TYPE_INFOGREFFE_RETURN_CODE, $indebtedness['code']);
         }
 
         return $indebtedness;

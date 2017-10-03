@@ -21,11 +21,12 @@ class InfolegaleManager
     const RESOURCE_COMPANY_SCORE          = 'get_score_infolegale';
     const RESOURCE_SEARCH_COMPANY         = 'search_company_infolegale';
     const RESOURCE_COMPANY_IDENTITY       = 'get_identity_infolegale';
-    const RESOURCE_LEGAL_NOTICE           = 'get_legal_notice_infolegale';
+    const RESOURCE_ANNOUNCEMENTS_LIST     = 'get_announcements_list_infolegale';
+    const RESOURCE_ANNOUNCEMENTS_DETAILS  = 'get_announcements_details_infolegale';
     const RESOURCE_EXECUTIVES             = 'get_executives_infolegale';
     const RESOURCE_MANDATES               = 'get_mandates_infolegale';
     const RESOURCE_HOMONYMS               = 'get_homonyms_infolegale';
-    const RESOURCE_ANNOUNCEMENTS_DIRECTOR = 'get_announcements__director_infolegale';
+    const RESOURCE_ANNOUNCEMENTS_DIRECTOR = 'get_announcements_director_infolegale';
 
     /** @var Client */
     private $client;
@@ -138,9 +139,19 @@ class InfolegaleManager
      *
      * @return null|\SimpleXMLElement
      */
-    public function getListAnnonceLegale($siren)
+    public function getAnnouncementsList($siren)
     {
-        return $this->sendRequest(self::RESOURCE_LEGAL_NOTICE, ['siren' => $siren]);
+        return $this->sendRequest(self::RESOURCE_ANNOUNCEMENTS_LIST, ['siren' => $siren]);
+    }
+
+    /**
+     * @param int[] $announcementsId
+     *
+     * @return null|\SimpleXMLElement
+     */
+    public function getAnnouncementsDetails(array $announcementsId)
+    {
+        return $this->sendRequest(self::RESOURCE_ANNOUNCEMENTS_DETAILS, ['adsId' => $announcementsId]);
     }
 
     /**
@@ -163,7 +174,7 @@ class InfolegaleManager
      */
     public function getMandates($executiveId)
     {
-        if (null !== $result = $this->sendRequest(self::RESOURCE_MANDATES, ['execId' => $executiveId])) {
+        if (null !== ($result = $this->sendRequest(self::RESOURCE_MANDATES, ['execId' => $executiveId]))) {
             return $this->serializer->deserialize($result->asXML(), MandateCollection::class, 'xml');
         }
         return null;
@@ -176,7 +187,7 @@ class InfolegaleManager
      */
     public function getHomonyms($executiveId)
     {
-        if (null !== $result = $this->sendRequest(self::RESOURCE_HOMONYMS, ['execId' => $executiveId])) {
+        if (null !== ($result = $this->sendRequest(self::RESOURCE_HOMONYMS, ['execId' => $executiveId]))) {
             return $this->serializer->deserialize($result->asXML(), HomonymCollection::class, 'xml');
         }
         return null;
@@ -189,7 +200,7 @@ class InfolegaleManager
      */
     public function getDirectorAnnouncements($executiveId)
     {
-        if (null !== $result = $this->sendRequest(self::RESOURCE_ANNOUNCEMENTS_DIRECTOR, ['execId' => $executiveId])) {
+        if (null !== ($result = $this->sendRequest(self::RESOURCE_ANNOUNCEMENTS_DIRECTOR, ['execId' => $executiveId]))) {
             return $this->serializer->deserialize($result->asXML(), DirectorAnnouncementCollection::class, 'xml');
         }
         return null;
