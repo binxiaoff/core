@@ -1360,11 +1360,11 @@ var App = function() {
                         for (var $l=0; $l < options.length; $l++) {
                             var option = options[$l]
                             if (field.type === 'checkbox') {
-                                if (~(data[$i].indexOf(option.id)) || ~(data[$i].indexOf(parseInt(option.id)))) {
+                                if (~(data[$i].toString().indexOf(option.id)) || ~(data[$i].toString().indexOf(parseInt(option.id)))) {
                                     labels.push(option.text)
                                 }
                             } else {
-                                if (option.id === data[$i].id || option.id === data[$i])
+                                if (option.id === data[$i].id.toString() || option.id === data[$i].toString())
                                     labels = option.text
                             }
                         }
@@ -1387,7 +1387,7 @@ var App = function() {
                                 }
                             }
                         }
-                        recurseId(options, data[$i])
+                        recurseId(options, data[$i].toString())
                     }
                 }
             }
