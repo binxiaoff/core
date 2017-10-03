@@ -7,19 +7,25 @@
                 <th style="width: 10%">
                     Date
                 </th>
-                <th style="width: 10%">
+                <th style="width: 5%">
                     ID
                 </th>
-                <th style="width: 40%">
+                <th style="width: 5%">
+                    Statut
+                </th>
+                <th style="width: 7.5%">
+                    Recouvreur
+                </th>
+                <th style="width: 55%">
                     Composition
                 </th>
-                <th style="width: 10%">
+                <th style="width: 7.5%">
                     Type
                 </th>
-                <th style="width: 20%">
+                <th style="width: 7.5%">
                     Taux
                 </th>
-                <th style="width: 10%">
+                <th style="width: 2.5%">
                     Action
                 </th>
             </tr>
@@ -32,6 +38,10 @@
                     </td>
                     <td>
                         {{ mission.id }}
+                    </td>
+                        {{ mission.status }}
+                    <td>
+                        {{ mission.debtCollectorName }}
                     </td>
                     <td>
                         {% if mission.entrustedPayments|length > 0 %}

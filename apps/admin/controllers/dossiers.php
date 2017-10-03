@@ -3161,9 +3161,10 @@ class dossiersController extends bootstrap
                             'remainingAmount'          => $projectData['totalRemainingAmount']
                         ];
                         /** @var DebtCollectionMission $mission */
-                        foreach ($project->getDebtCollectionMissions() as $mission) {
+                        foreach ($project->getDebtCollectionMissions(true) as $mission) {
                             $debtCollectionMissionData[] = [
                                 'id'                => $mission->getId(),
+                                'status'            => empty($mission->getArchived()) ? 'En cours' : 'Archivée',
                                 'debtCollectorName' => trim($mission->getIdClientDebtCollector()->getNom()),
                                 'date'              => $mission->getAdded(),
                                 'entrustedPayments' => [],
@@ -3173,6 +3174,7 @@ class dossiersController extends bootstrap
                             ];
                         }
                     }
+                    krsort($debtCollectionMissionData);
 
                     $templateData = [
                         'projectData'                => $projectData,
@@ -3244,14 +3246,11 @@ class dossiersController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager                    = $this->get('doctrine.orm.entity_manager');
-        $debtCollectionMissionRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMission');
         $missionPaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMissionPaymentSchedule');
 
         $debtCollectionData = [];
-        /** @var DebtCollectionMission[] $missions */
-        $missions = $debtCollectionMissionRepository->findBy(['idProject' => $project, 'archived' => null], ['added' => 'ASC']);
 
-        foreach ($project->getDebtCollectionMissions() as $mission) {
+        foreach ($project->getDebtCollectionMissions(true) as $mission) {
             $entrustedPayments = [];
             foreach ($missionPaymentScheduleRepository->findBy(['idMission' => $mission->getId()]) as $missionPaymentSchedule) {
                 /** @var EcheanciersEmprunteur $paymentSchedule */
@@ -3276,6 +3275,7 @@ class dossiersController extends bootstrap
             }
             $debtCollectionData[] = [
                 'id'                => $mission->getId(),
+                'status'            => empty($mission->getArchived()) ? 'En cours' : 'Archivée',
                 'debtCollectorName' => trim($mission->getIdClientDebtCollector()->getNom()),
                 'date'              => $mission->getAdded(),
                 'entrustedPayments' => $entrustedPayments,
