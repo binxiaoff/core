@@ -3,9 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionFeeDetail;
 use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
-use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
@@ -13,29 +11,18 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionFeeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\OperationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectChargeManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class ProjectCloseOutNettingPaymentManager
 {
     /** @var EntityManager */
     private $entityManager;
 
-    /** @var EntityManagerSimulator */
-    private $entityManagerSimulator;
-
     /** @var ProjectRepaymentTaskManager */
     private $projectRepaymentTaskManager;
 
     /** @var DebtCollectionMissionManager */
     private $debtCollectionMissionManager;
-
-    /** @var OperationManager */
-    private $operationManager;
-
-    /** @var ProjectPaymentManager */
-    private $projectPaymentManager;
 
     /** @var DebtCollectionFeeManager */
     private $debtCollectionFeeManager;
@@ -47,31 +34,22 @@ class ProjectCloseOutNettingPaymentManager
      * ProjectRepaymentManager constructor.
      *
      * @param EntityManager                $entityManager
-     * @param EntityManagerSimulator       $entityManagerSimulator
      * @param ProjectRepaymentTaskManager  $projectRepaymentTaskManager
      * @param DebtCollectionMissionManager $debtCollectionMissionManager
-     * @param OperationManager             $operationManager
-     * @param ProjectPaymentManager        $projectPaymentManager
      * @param DebtCollectionFeeManager     $debtCollectionFeeManager
      * @param ProjectChargeManager         $projectChargeManager
      */
     public function __construct(
         EntityManager $entityManager,
-        EntityManagerSimulator $entityManagerSimulator,
         ProjectRepaymentTaskManager $projectRepaymentTaskManager,
         DebtCollectionMissionManager $debtCollectionMissionManager,
-        OperationManager $operationManager,
-        ProjectPaymentManager $projectPaymentManager,
         DebtCollectionFeeManager $debtCollectionFeeManager,
         ProjectChargeManager $projectChargeManager
     )
     {
         $this->entityManager                = $entityManager;
-        $this->entityManagerSimulator       = $entityManagerSimulator;
         $this->projectRepaymentTaskManager  = $projectRepaymentTaskManager;
         $this->debtCollectionMissionManager = $debtCollectionMissionManager;
-        $this->operationManager             = $operationManager;
-        $this->projectPaymentManager        = $projectPaymentManager;
         $this->debtCollectionFeeManager     = $debtCollectionFeeManager;
         $this->projectChargeManager         = $projectChargeManager;
     }

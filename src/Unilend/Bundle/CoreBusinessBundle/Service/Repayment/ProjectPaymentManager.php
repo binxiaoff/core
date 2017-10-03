@@ -12,7 +12,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionFeeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\OperationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectChargeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
@@ -30,9 +29,6 @@ class ProjectPaymentManager
     /** @var DebtCollectionMissionManager */
     private $debtCollectionMissionManager;
 
-    /** @var OperationManager */
-    private $operationManager;
-
     /** @var DebtCollectionFeeManager */
     private $debtCollectionFeeManager;
 
@@ -47,7 +43,6 @@ class ProjectPaymentManager
      * @param ProjectRepaymentTaskManager  $projectRepaymentTaskManager
      * @param DebtCollectionMissionManager $debtCollectionMissionManager
      * @param DebtCollectionFeeManager     $debtCollectionFeeManager
-     * @param OperationManager             $operationManager
      * @param ProjectChargeManager         $projectChargeManager
      */
     public function __construct(
@@ -56,7 +51,6 @@ class ProjectPaymentManager
         ProjectRepaymentTaskManager $projectRepaymentTaskManager,
         DebtCollectionMissionManager $debtCollectionMissionManager,
         DebtCollectionFeeManager $debtCollectionFeeManager,
-        OperationManager $operationManager,
         ProjectChargeManager $projectChargeManager
     )
     {
@@ -65,7 +59,6 @@ class ProjectPaymentManager
         $this->projectRepaymentTaskManager  = $projectRepaymentTaskManager;
         $this->debtCollectionMissionManager = $debtCollectionMissionManager;
         $this->debtCollectionFeeManager     = $debtCollectionFeeManager;
-        $this->operationManager             = $operationManager;
         $this->projectChargeManager         = $projectChargeManager;
     }
 
