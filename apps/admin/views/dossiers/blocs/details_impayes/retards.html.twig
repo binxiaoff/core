@@ -70,7 +70,7 @@
             <button type="button" class="btn btn-primary push-10-r" data-toggle="modal" data-target="#modal-status-problem">Passer en statut problème</button>
         {% endif %}
 
-        {% if projectData.totalRemainingAmount > 0 and 0 >= pendingReceiptData|length %}
+        {% if projectData.totalRemainingAmount > 0 and 0 >= pendingReceiptData|length and constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::PROBLEME') == projectData.projectStatus %}
             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-debt-collection">Missionner un recouvreur ({{ projectData.totalRemainingAmount|localizedcurrency('EUR') }})</button>
         {% endif %}
     </div>
