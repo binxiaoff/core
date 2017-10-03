@@ -32,17 +32,9 @@
                             cache: 0,
                             delay: 500,
                             source: function (term, suggest) {
-                                // $.getJSON('/ajax/quick_search/', {q: term}, function (response) {
-                                // suggest(response)
-                                // })
-                                term = term.toLowerCase();
-                                var choices = [{firstName: 'Client 1', lastName: 'Name', id: 323123}, {firstName: 'Client 2', lastName: 'Name', id: 1212323}, {firstName: 'Client 3', lastName: 'Name', id: 13232}]
-                                var matches = [];
-                                for (var i in choices) {
-                                    if (~choices[i].id.toString().indexOf(term) || ~choices[i].firstName.toLowerCase().indexOf(term) || ~choices[i].lastName.toLowerCase().indexOf(term))
-                                        matches.push(choices[i])
-                                }
-                                suggest(matches);
+                                $.getJSON('/beneficial_owners/search_client/', {q: term}, function (response) {
+                                    suggest(response)
+                                })
                             },
                             renderItem: function (item, search, section) {
                                 var html = '<div class="autocomplete-suggestion" data-id="' + item.id + '" data-first-name="' + item.firstName + '" data-last-name="' + item.lastName + '">' +
@@ -70,7 +62,7 @@
 
 {% block pageHeader %}
     <h1 class="page-heading push">
-        Bénéficiaires Effectifs
+        {{ company.name }} - Bénéficiaires Effectifs
     </h1>
 {% endblock %}
 
@@ -81,49 +73,28 @@
                 <h3 class="block-title">Liste des bénéficiaires effectifs</h3>
             </div>
             <div class="block-content block-content-full">
-                {% if formErrors.default is defined and formErrors.default is not empty %}
-                    <div class="alert">
-                        {% for error in formErrors.default %}
-                            {% if error is iterable %}
-                                <ul class="hide">
-                                    {% for technicalError in error %}
-                                        <li>{{ technicalError }}</li>
-                                    {% endfor %}
-                                </ul>
-                            {% else %}
-                                <p>{{ error }}</p>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                {% endif %}
-                {% if formSuccess.default is defined and formSuccess.default is not empty %}
-                    <div class="alert alert-success">
-                        <p>{{ formSuccess.default }}</p>
-                    </div>
-                {% endif %}
-
-                <table class="table table-striped table-hover table-bordered table-header-bg" data-table-editor data-table-editor-url="/beneficial_owners/edit/" data-table-editor-actions="add, modify, toggle" data-table-editor-hidden="id_declaration:17283, id_company:84137">
+                <table class="table table-striped table-hover table-bordered table-header-bg" data-table-editor data-table-editor-url="/beneficial_owners/edit/" data-table-editor-actions="add, modify, toggle" data-table-editor-hidden="id_declaration:{{ declaration.id }}, id_company:{{ company.idCompany }}">
                     <thead>
-                        <tr>
-                            <th data-editor-name="last_name" data-editor-type="text">Nom</th>
-                            <th data-editor-name="first_name" data-editor-type="text">Prénom</th>
-                            <th data-editor-name="percentage" data-editor-type="numerical">% détenu</th>
-                            <th data-editor-name="birthdate" data-editor-type="date">Date de naissance</th>
-                            <th data-editor-name="birthplace" data-editor-type="text">Ville de naissance</th>
-                            <th data-editor-name="birth_country"  data-editor-type="select" data-editor-options="{% for country, id in countries %}{{ country|trim }}:{{ id|trim }}{% if loop.index < countries|length %}, {% endif %}{% endfor %}">Pays de naissance</th>
-                            <th data-editor-name="country" data-editor-type="select" data-editor-options="{% for country, id in countries %}{{ country|trim }}:{{ id|trim }}{% if loop.index < countries|length %}, {% endif %}{% endfor %}">Pays de résidence</th>
-                            <th data-editor-name="id_card_passport" data-editor-type="file">Pièce d'identité</th>
-                            <th data-editor-name="type" data-editor-type="select" data-editor-options="{% for type, id in types %}{{ type|trim }}:{{ id|trim }}{% if loop.index < types|length %}, {% endif %}{% endfor %}" data-editor-optional>Type de bénéficiaire</th>
-                            <th data-editor-name="status" data-editor-type="text">Statut</th>
-                            <th data-editor-name="validation_type" data-editor-type="text">Méthode de validation</th>
-                        </tr>
+                    <tr>
+                        <th data-editor-name="last_name" data-editor-type="text">Nom</th>
+                        <th data-editor-name="first_name" data-editor-type="text">Prénom</th>
+                        <th data-editor-name="percentage" data-editor-type="numerical" data-editor-optional>% détenu</th>
+                        <th data-editor-name="birthdate" data-editor-type="date">Date de naissance</th>
+                        <th data-editor-name="birthplace" data-editor-type="text">Ville de naissance</th>
+                        <th data-editor-name="birth_country" data-editor-type="select" data-editor-options="{% for id, country in countries %}{{ country|trim }}:{{ id|trim }}{% if loop.index < countries|length %}, {% endif %}{% endfor %}">Pays de naissance</th>
+                        <th data-editor-name="country" data-editor-type="select" data-editor-options="{% for id, country in countries %}{{ country|trim }}:{{ id|trim }}{% if loop.index < countries|length %}, {% endif %}{% endfor %}">Pays de résidence</th>
+                        <th data-editor-name="id_card_passport" data-editor-type="file">Pièce d'identité</th>
+                        <th data-editor-name="type" data-editor-type="select" data-editor-options="{% for id, type in types %}{{ type|trim }}:{{ id|trim }}{% if loop.index < types|length %}, {% endif %}{% endfor %}" data-editor-optional>Type de bénéficiaire</th>
+                        <th data-editor-name="status" data-editor-type="text">Statut</th>
+                        <th data-editor-name="validation_type" data-editor-type="text">Méthode de validation</th>
+                    </tr>
                     </thead>
                     <tbody>
                     {% for owner in beneficial_owners %}
                         <tr data-id="{{ owner.id }}" data-state="{{ owner.status }}">
                             <td>{{ owner.last_name }}</td>
                             <td>{{ owner.first_name }}</td>
-                            <td>{{ owner.percentage|localizednumber }}</td>
+                            <td>{% if owner.percentage is not empty %}{{ owner.percentage|localizednumber }}{% endif %}</td>
                             <td>{{ owner.birthdate }}</td>
                             <td>{{ owner.birthplace }}</td>
                             <td>{{ owner.birth_country }}</td>
@@ -143,48 +114,44 @@
                 <h3 class="block-title">Déclarations</h3>
             </div>
             <div class="block-content block-content-full">
-                <a id="declaration-preview-btn" class="btn btn-primary">Voir la déclaration actuelle</a>
+                <a id="declaration-preview-btn" class="btn btn-primary" href="declaration/{{ company.idCompany }}" target="_blank">Prévisualiser la déclaration en cours</a>
                 <hr>
-                <label class="push-10">Déclarations précédentes</label>
-                {% if formErrors.declarations is defined and formErrors.declarations is not empty %}
-                    <div class="alert">
-                        {% for error in formErrors.declarations %}
-                            {% if error is iterable %}
-                                <ul class="hide">
-                                    {% for technicalError in error %}
-                                        <li>{{ technicalError }}</li>
-                                    {% endfor %}
-                                </ul>
-                            {% else %}
-                                <p>{{ error }}</p>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                {% endif %}
-                {% if formSuccess.declarations is defined and formSuccess.declarations is not empty %}
-                    <div class="alert alert-success">
-                        <p>{{ formSuccess.declarations }}</p>
-                    </div>
-                {% endif %}
+                <label class="push-10">Déclarations par projet</label>
 
-                <table class="table table-hover table-bordered table-header-bg">
-                    <thead>
-                    <tr>
-                        <th style="width: 120px">Date d'ajout</th>
-                        <th style="width: 120px">ID déclaration</th>
-                        <th>Fichier</th>
-                        <th style="width: 120px">Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
+                {% if universignDeclarations is defined and universignDeclarations is not empty %}
+                    <table class="table table-hover table-bordered table-header-bg">
+                        <thead>
                         <tr>
-                            <td>24/07/2017</td>
-                            <td>21382931</td>
-                            <td><a href="/path/to/declaration/">Declaration.pdf</a></td>
-                            <td class="text-center"><a href="/path/to/declaration/" class="btn btn-default btn-xs" data-toggle="tooltip" title="Télécharger la déclaration"><span class="fa fa-download"></span></a></td>
+                            <th style="width: 10%">ID projet</th>
+                            <th style="width: 10%">Date d'ajout de la declaration</th>
+                            <th style="width: 10%">Status de la declaration</th>
+                            <th style="width: 10%">Status du document universign</th>
+                            <th>Fichier</th>
+                            <th style="width: 10%">Actions</th>
                         </tr>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                        {% for declaration in universignDeclarations %}
+                            <tr>
+                                <td><a href="/dossiers/{{ declaration.idProject.idProject }}">{{ declaration.idProject.idProject }}</a></td>
+                                <td>{{ declaration.idDeclaration.added|date('d/m/Y') }}</td>
+                                <td>{{ "beneficial-owner_declaration-status-#{ declaration.idDeclaration.status }"|trans }}</td>
+                                <td>{{ "universign_status-label-#{ declaration.idDeclaration.status }"|trans }}</td>
+                                <td><a href="/protected/beneficial_owner/{{ declaration.name }}">{{ declaration.name }}</a></td>
+                                <td class="text-center">
+                                    {% if declaration.name is not empty %}
+                                    <a href="/protected/beneficial_owner/{{ declaration.name }}" class="btn btn-default btn-xs" data-toggle="tooltip" title="Télécharger la déclaration"><span class="fa fa-download"></span></a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>Il n'y pas encore de documents à signer/signés</p>
+                {% endif %}
+                <p class="content-mini content-mini-full bg-info">
+                    Une declaration peut avoir été utilisé dans plusieurs projets. Elle peut etre archivé, tout en ne pas invalidant le document signé par universign, qui etait valable au moment du deblocage des fonds. </p>
             </div>
         </div>
     </div>

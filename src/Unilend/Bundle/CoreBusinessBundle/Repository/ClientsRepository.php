@@ -727,4 +727,20 @@ class ClientsRepository extends EntityRepository
             ->executeQuery($query, $parameters)
             ->fetchAll(\PDO::FETCH_ASSOC);
     }
+
+    /**
+     * @param string $name
+     *
+     * @return array
+     */
+    public function findClientByNameLike($name)
+    {
+        $queryBuilder = $this->createQueryBuilder('c');
+        $queryBuilder->where('c.nom LIKE :name')
+            ->andWhere('c.type NOT IN (:lenderTypes)')
+            ->setParameter('name', '%' . $name . '%')
+            ->setParameter('lenderTypes', [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER, Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER]);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
 }

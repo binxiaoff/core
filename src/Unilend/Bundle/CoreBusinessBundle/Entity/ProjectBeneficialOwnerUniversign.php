@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * ProjectBeneficialOwnerUniversign
  *
  * @ORM\Table(name="project_beneficial_owner_universign", indexes={@ORM\Index(name="idx_project_beneficial_owner_universign_id_declaration", columns={"id_declaration"}), @ORM\Index(name="idx_project_beneficial_owner_universign_id_project", columns={"id_project"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectBeneficialOwnerRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class ProjectBeneficialOwnerUniversign implements UniversignEntityInterface

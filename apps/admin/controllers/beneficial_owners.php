@@ -23,11 +23,13 @@ class beneficial_ownersController extends bootstrap
     public function _default()
     {
         if (false === isset($this->params[0])) {
-            //TODO error message and/or redirect
+            header('Location: ' . $this->lurl);
+            die;
         }
 
         if (false == filter_var($this->params[0], FILTER_VALIDATE_INT)) {
-            //TODO error message and/or redirect
+            header('Location: ' . $this->lurl);
+            die;
         }
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
@@ -35,31 +37,40 @@ class beneficial_ownersController extends bootstrap
         $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->params[0]);
 
         if (null === $company) {
-            //TODO error message and/or redirect
+            header('Location: ' . $this->lurl);
+            die;
         }
 
         $currentOwners = [];
-        $countryList = $this->get('unilend.service.location_manager')->getCountries();
-        $ownerTypes  = $this->getBeneficialOwnerTypes();
+        $countryList   = $this->get('unilend.service.location_manager')->getCountries();
+        $ownerTypes    = $this->getBeneficialOwnerTypes();
 
         $companyBeneficialOwnerDeclarationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration');
         $currentDeclaration                          = $companyBeneficialOwnerDeclarationRepository->findCurrentBeneficialOwnerDeclaration($company);
         if (null !== $currentDeclaration) {
             $currentOwners = $this->formatOwnerList($currentDeclaration->getBeneficialOwner());
         }
+
         $this->render(null, [
-            'beneficial_owners' => $currentOwners,
-            'countries'         => array_flip($countryList),
-            'types'             => array_flip($ownerTypes)
+            'beneficial_owners'      => $currentOwners,
+            'countries'              => $countryList,
+            'types'                  => $ownerTypes,
+            'declaration'            => $currentDeclaration,
+            'company'                => $company,
+            'universignDeclarations' => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findAllDeclarationsForCompany($company)
         ]);
     }
 
+    /**
+     * @param BeneficialOwner[] $owners
+     *
+     * @return array
+     */
     private function formatOwnerList($owners)
     {
         $ownerList = [];
-
         foreach ($owners as $owner) {
-            $ownerList[$owner->getId()] = $this->formatOwnerData($owner);
+            $ownerList[$owner->getId()] = $this->formatOwnerData($owner, true);
         }
 
         return $ownerList;
@@ -72,7 +83,7 @@ class beneficial_ownersController extends bootstrap
         $this->hideDecoration();
 
         if ($this->request->isXmlHttpRequest()) {
-            $action       = $this->request->request->get('action');
+            $action       = $this->request->request->filter('action', FILTER_SANITIZE_STRING);
             $state        = '';
             $responseData = [];
 
@@ -87,7 +98,7 @@ class beneficial_ownersController extends bootstrap
                     $return = $this->deactivateBeneficialOwner($this->request);
                     break;
                 default:
-                    throw new \Exception('Action not supported'); //TODO better that
+                    throw new \Exception('Action not supported');
             }
 
             if ($return['owner'] instanceof BeneficialOwner) {
@@ -99,7 +110,7 @@ class beneficial_ownersController extends bootstrap
                 'error'   => $return['errors'],
                 'id'      => $return['id'],
                 'state'   => $state, // State must be separate from the data in the response
-                'data'    => $responseData // Values must be in the same order as in the request
+                'data'    => array_values($responseData) // Values must be in the same order as in the request
             ]);
         }
     }
@@ -113,15 +124,18 @@ class beneficial_ownersController extends bootstrap
     private function createBeneficialOwner(Request $request)
     {
         $entityManager = $this->get('doctrine.orm.entity_manager');
+        $translator    = $this->get('translator');
+        $ownerType     = null;
         $errors        = [];
 
+        $idClient           = $request->request->getInt('id');
         $lastName           = $request->request->filter('last_name', FILTER_SANITIZE_STRING);
         $firstName          = $request->request->filter('first_name', FILTER_SANITIZE_STRING);
         $birthDate          = $request->request->filter('birthdate', FILTER_SANITIZE_STRING);
         $birthPlace         = $request->request->filter('birthplace', FILTER_SANITIZE_STRING);
         $idBirthCountry     = $request->request->getInt('birth_country');
         $countryOfResidence = $request->request->getInt('country');
-        $ownerType          = $request->request->filter('type', FILTER_SANITIZE_STRING);
+        $type               = 0 === $request->request->getInt('type') ? null : $request->request->getInt('type');
         $percentage         = $request->request->getDigits('percentage');
         $idDeclaration      = $request->request->getInt('id_declaration');
         $idCompany          = $request->request->getInt('id_company');
@@ -165,35 +179,38 @@ class beneficial_ownersController extends bootstrap
 
         $checkBirthplace = $this->validateLocations($idBirthCountry, $birthPlace);
         if (false === $checkBirthplace['success']) {
-            $errors[] = $checkBirthplace['error'] . '(Pays de naissance)';
+            $errors[] = $checkBirthplace['error'] . ' (Naissance)';
         }
 
         $countryOfResidence = $request->request->getInt('country');
         if (empty($countryOfResidence)) {
             $checkCountry = $this->validateLocations($countryOfResidence);
             if (false === $checkCountry['success']) {
-                $errors[] = $checkCountry['error'] . ' (Pays de résidence)';
+                $errors[] = $checkCountry['error'] . ' (Résidence)';
             }
         }
 
-        if (false === empty($ownerType) && false === in_array($ownerType, $this->getBeneficialOwnerTypes())) {
+        if (false === empty($type) && null === $ownerType = $entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwnerType')->find($type)) {
             $errors[] = 'Le type de bénéficiaire effectiv n\'est pas valide.';
         }
 
-        $minPercentage = 100 / BeneficialOwnerManager::MAX_NUMBER_BENEFICIAL_OWNERS;
+        $minPercentage = 100 / BeneficialOwnerManager::MAX_NUMBER_BENEFICIAL_OWNERS_TYPE_SHAREHOLDER;
         if (false === empty($percentage) && $percentage < $minPercentage || $percentage > 100) {
             $errors[] = 'Le pourcentage des parts detenues n\'est pas correct. Il ne doit pas être inférieur à ' .  $minPercentage . '% ou supérieur à 100%';
         }
 
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager $beneficialOwnerManager */
+        $beneficialOwnerManager = $this->get('unilend.service.beneficial_owner_manager');
         /** @var CompanyBeneficialOwnerDeclaration $declaration */
         $declaration = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->find($idDeclaration);
 
-        if (null !== $declaration) {
+        if (null !== $declaration && null !== $ownerType) {
             /** @var BeneficialOwnerRepository $beneficialOwnerRepository */
             $beneficialOwnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwner');
-            $numberOwners              = $beneficialOwnerRepository->getCountBeneficialOwnersForDeclaration($declaration);
-            if ($numberOwners > BeneficialOwnerManager::MAX_NUMBER_BENEFICIAL_OWNERS) {
-                $errors[] = 'Le nombre de bénéficiaires effectifs ne peut pas être supérieur à ' . BeneficialOwnerManager::MAX_NUMBER_BENEFICIAL_OWNERS;
+            $numberBeneficialOwners    = $beneficialOwnerRepository->getCountBeneficialOwnersForDeclarationByType($declaration, $ownerType->getLabel());
+            $maxNumber                 = $beneficialOwnerManager->getMaxNumbersAccordingToType($ownerType->getLabel());
+            if ($numberBeneficialOwners > $maxNumber) {
+                $errors[] = 'Le nombre de bénéficiaires effectifs de type ' . $translator->trans('beneficial-owner_type-label-' . $ownerType->getLabel()) . ' ne peut pas être supérieur à ' . $maxNumber;
             }
 
             $sumPercentage = $beneficialOwnerRepository->getSumPercentage($declaration);
@@ -223,14 +240,45 @@ class beneficial_ownersController extends bootstrap
             $entityManager->persist($declaration);
         }
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager $beneficialOwnerManager */
-        $beneficialOwnerManager = $this->get('unilend.service.beneficial_owner_manager');
-        $beneficialOwner        = $beneficialOwnerManager->createBeneficialOwner($declaration, $lastName, $firstName, $birthday, $birthPlace, $idBirthCountry, $countryOfResidence, $request->files->get('id_card_passport'), $ownerType, $percentage);
+        if (false === empty($idClient)) {
+            $owner = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClient);
+            if (null === $owner) {
+                $errors[] = 'Le client avec ID ' . $idClient . ' n\'existe pas.';
+            }
+
+            if (false === empty($owner->getNaissance()) && $owner->getNaissance() != $birthday) {
+                $errors[] = 'La date de naissance du client enregistrée en base et la date de naissance saisie ne correspondent pas';
+            }
+
+            if (false === empty($owner->getVilleNaissance()) && $owner->getVilleNaissance() !== $birthPlace) {
+                $errors[] = 'Le lieu de naissance du client enregistré en base et le lieu de naissance saisi ne correspondent pas';
+            }
+
+            if (false === empty($owner->getIdPaysNaissance()) && $owner->getIdPaysNaissance() !== $idBirthCountry) {
+                $errors[] = 'Le pays de naissance du client enregistré en base et le pays de naissance saisi ne correspondent pas';
+            }
+
+            if (false === empty($errors)) {
+                return [
+                    'owner'  => null,
+                    'errors' => $errors,
+                    'id'     => null
+                ];
+            }
+        }
+
+        try {
+            $beneficialOwner = $beneficialOwnerManager->createBeneficialOwner($declaration, $lastName, $firstName, $birthday, $birthPlace, $idBirthCountry, $countryOfResidence, $request->files->get('id_card_passport'), $ownerType, $percentage, $idClient);
+        } catch (\Exception $exception) {
+            $beneficialOwner = null;
+            $errors[]        = 'Une erreur c\'est produit.';
+            $this->get('logger')->warning($exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
+        }
 
         return [
             'owner'  => $beneficialOwner,
-            'errors' => [],
-            'id'     => $beneficialOwner->getId()
+            'errors' => $errors,
+            'id'     => null !== $beneficialOwner ? $beneficialOwner->getId() : null
         ];
     }
 
@@ -309,8 +357,8 @@ class beneficial_ownersController extends bootstrap
             }
         }
 
-        $ownerType = $request->request->filter('type', FILTER_SANITIZE_STRING);
-        if (false === empty($ownerType) && false === in_array($ownerType, $this->getBeneficialOwnerTypes())) {
+        $type = 0 === $request->request->getInt('type') ? null : $request->request->getInt('type');
+        if (false === empty($type) && null === $ownerType = $entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwnerType')->find($type)) {
             $errors[] = 'Le type de bénéficiaire effectiv n\'est pas valide.';
         }
 
@@ -331,7 +379,7 @@ class beneficial_ownersController extends bootstrap
             $attachmentManager = $this->get('unilend.service.attachment_manager');
             $attachmentType    = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::CNI_PASSPORTE);
             if ($attachmentType) {
-                $attachment = $attachmentManager->upload($owner->getIdClient(), $attachmentType, $request->files->get('id_card_passport'));
+                $attachmentManager->upload($owner->getIdClient(), $attachmentType, $request->files->get('id_card_passport'));
             }
         }
 
@@ -341,15 +389,16 @@ class beneficial_ownersController extends bootstrap
             ->setIdPaysNaissance($birthCountry)
             ->setVilleNaissance($birthPlace);
 
-        $ownerTypeEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwnerType')->find($ownerType);
-        $percentage      = empty($percentage) ? null : $percentage;
-        $owner->setIdType($ownerTypeEntity)
-            ->setPercentageDetained($percentage);
-
         $clientAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $owner->getIdClient()]);
         $clientAddress->setIdPaysFiscal($countryOfResidence);
 
-        $entityManager->flush([$owner, $clientAddress]);
+        $entityManager->flush([$owner->getIdClient(), $clientAddress]);
+
+        if ($percentage != $owner->getPercentageDetained() || (null !== $owner->getIdType() && $type != $owner->getIdType()->getId())) {
+            /** @var BeneficialOwnerManager $beneficialOwnerManager */
+            $beneficialOwnerManager = $this->get('unilend.service.beneficial_owner_manager');
+            $beneficialOwnerManager->modifyBeneficialOwner($owner, $type, $percentage);
+        }
 
         return [
             'owner'  => $owner,
@@ -369,6 +418,7 @@ class beneficial_ownersController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $errors        = [];
 
+        $idCompany         = $request->request->getInt('id_company');
         $idBeneficialOwner = $request->request->getInt('id');
         /** @var BeneficialOwner $owner */
         $owner = $entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwner')->find($idBeneficialOwner);
@@ -377,9 +427,9 @@ class beneficial_ownersController extends bootstrap
             $errors[] = 'Une erreur c\'est produit';
             $this->get('logger')->warning('Beneficial owner does not exist (idBeneficialOwner  = ' . $idBeneficialOwner, ['class' => __CLASS__, 'function' => __FUNCTION__]);
             return [
-                'owner'  => $owner,
+                'owner'  => null,
                 'errors' => [],
-                'id'     => $owner->getId()
+                'id'     => null
             ];
         }
 
@@ -400,12 +450,18 @@ class beneficial_ownersController extends bootstrap
             $entityManager->flush($ownerToArchive);
         }
 
-        header('Location: ' . $this->lurl . '/beneficial_owners');
+        header('Location: ' . $this->lurl . '/beneficial_owners/' . $idCompany);
         die;
     }
 
 
-    private function formatOwnerData(BeneficialOwner $owner)
+    /**
+     * @param BeneficialOwner $owner
+     * @param bool            $formatForView
+     *
+     * @return array
+     */
+    private function formatOwnerData(BeneficialOwner $owner, $formatForView = false)
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
@@ -413,23 +469,32 @@ class beneficial_ownersController extends bootstrap
         $translator = $this->get('translator');
 
         $clientAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $owner->getIdClient()]);
-        $country       = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2')->find($clientAddress->getIdPaysFiscal());
-        $passportType  = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->findOneBy(['label' => AttachmentType::CNI_PASSPORTE]);
+        $passportType  = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::CNI_PASSPORTE);
         $passport      = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($owner->getIdClient(), $passportType);
 
         $responseData = [
-            'id'               => $owner->getId(),
             'last_name'        => $owner->getIdClient()->getNom(),
             'first_name'       => $owner->getIdClient()->getPrenom(),
-            'percentage'       => null === $owner->getPercentageDetained() ? 0 : $owner->getPercentageDetained(),
+            'percentage'       => $owner->getPercentageDetained(),
             'birthdate'        => $owner->getIdClient()->getNaissance()->format('d/m/Y'),
             'birthplace'       => $owner->getIdClient()->getVilleNaissance(),
-            'country'          => $country->getFr(),
-            'id_card_passport' => null !== $passport ? '<a href="' . $this->url . 'attachment/download/id' . $passport->getId() . '/file/' .  urlencode($passport->getPath()) . '">' . $passport->getOriginalName() . '</a>' : 'No file', //TODO delete the exception once data ok in DB
-            'type'             => $owner->getIdType()->getId(),
+            'birth_country'    => $owner->getIdClient()->getIdPaysNaissance(),
+            'country'          => $clientAddress->getIdPaysFiscal(),
+            'id_card_passport' => '<a href="' . $this->url . '/attachment/download/id/' . $passport->getId() . '/file/' . urlencode($passport->getPath()) . '" target="_blank">' . $passport->getOriginalName() . '</a>',
+            'type'             => null === $owner->getIdType() ? null : $owner->getIdType()->getId(),
             'status'           => $translator->trans('beneficial-owner_declaration-status-' . $owner->getIdDeclaration()->getStatus()),
-            'validation_type'  => ''
+            'validation_type'  => CompanyBeneficialOwnerDeclaration::STATUS_VALIDATED === $owner->getIdDeclaration()->getStatus() ? BeneficialOwnerManager::VALIDATION_TYPE_UNIVERSIGN : ''
         ];
+
+        if ($formatForView) {
+            $birthCountry       = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2')->find($owner->getIdClient()->getIdPaysNaissance());
+            $country            = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2')->find($clientAddress->getIdPaysFiscal());
+
+            $responseData['id']            = $owner->getId();
+            $responseData['birth_country'] = $birthCountry->getFr();
+            $responseData['country']       = $country->getFr();
+            $responseData['type']          = $owner->getIdType() ? $translator->trans('beneficial-owner_type-label-' . $owner->getIdType()->getLabel()) : '';
+        }
 
         return $responseData;
     }
@@ -481,7 +546,7 @@ class beneficial_ownersController extends bootstrap
         if (PaysV2::COUNTRY_FRANCE === $country->getIdPays() && null !== $birthPlace) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LocationManager $locationManager */
             $locationManager = $this->get('unilend.service.location_manager');
-            $city            = $locationManager->checkFrenchCity($birthPlace);
+            $city            = $locationManager->getCities($birthPlace, true);
             if (empty($city)) {
                 return [
                     'success' => false,
@@ -510,5 +575,70 @@ class beneficial_ownersController extends bootstrap
         }
 
         return $types;
+    }
+
+    public function _search_client()
+    {
+        $this->autoFireView = false;
+        $this->hideDecoration();
+
+        $clients = [];
+
+        if ($search = filter_input(INPUT_GET, 'q', FILTER_SANITIZE_STRING)) {
+            /** @var EntityManager $entityManager */
+            $entityManager      = $this->get('doctrine.orm.entity_manager');
+            $clientsRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+
+            if (filter_var($search, FILTER_VALIDATE_INT)) {
+                $result = $clientsRepository->findBy(['idClient' => $search]);
+            } else {
+                $result = $clientsRepository->findClientByNameLike($search);
+            }
+
+            foreach ($result as $client) {
+                $clients[] = [
+                    'firstName' => $client->getPrenom(),
+                    'lastName' => $client->getNom(),
+                    'id' => $client->getIdClient()
+                ];
+            }
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode($clients);
+    }
+
+    public function _declaration()
+    {
+        if (false === isset($this->params[0])) {
+            header('Location: ' . $this->lurl);
+            die;
+        }
+
+        if (false == filter_var($this->params[0], FILTER_VALIDATE_INT)) {
+            header('Location: ' . $this->lurl);
+            die;
+        }
+
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->params[0]);
+
+        if (null === $company) {
+            header('Location: ' . $this->lurl);
+            die;
+        }
+
+        $declaration = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentBeneficialOwnerDeclaration($company);
+        if (null === $declaration) {
+            header('Location: ' . $this->lurl . '/beneficial_owners/' . $company->getIdCompany());
+            die;
+        }
+
+        $fileName = 'Declaration_beneficiaires_effectifs_' . $company->getIdCompany();
+        header('Content-type: application/pdf');
+        header('Content-disposition: attachment; filename="' . $fileName . '".pdf');
+
+        echo $this->get('unilend.service.beneficial_owner_manager')->generateCompanyPdfFile($declaration);
     }
 }
