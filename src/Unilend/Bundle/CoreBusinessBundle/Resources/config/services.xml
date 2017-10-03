@@ -134,7 +134,7 @@
         <service id="unilend.service.welcome_offer_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager">
             <argument type="service" id="unilend.service.operation_manager"/>
             <argument type="service" id="doctrine.orm.entity_manager"/>
-            <argument type="service" id="number_formatter" />
+            <argument type="service" id="number_formatter"/>
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
             <argument type="service" id="swiftmailer.mailer.default"/>
             <argument type="service" id="logger"/>
@@ -402,5 +402,14 @@
             <argument type="service" id="unilend.service_repayment.project_repayment_task_manager"/>
         </service>
 
+        <service id="unilend.service.debt_collection_fee_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionFeeManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.debt_collection_mission_manager"/>
+        </service>
+
+        <service id="unilend.service.project_charge_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectChargeManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.debt_collection_mission_manager"/>
+        </service>
     </services>
 </container>

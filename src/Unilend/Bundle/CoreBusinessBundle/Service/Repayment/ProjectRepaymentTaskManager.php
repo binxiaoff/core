@@ -168,6 +168,45 @@ class ProjectRepaymentTaskManager
         return $projectRepaymentTask;
     }
 
+    public function planCloseOutNettingRepaymentTask(
+        $capitalToRepay,
+        $interestToRepay,
+        $commissionToPay,
+        \DateTime $repayOn,
+        Receptions $reception,
+        Users $user,
+        DebtCollectionMission $debtCollectionMission = null
+    )
+    {
+        $project = $reception->getIdProject();
+
+        if (
+            0 === bccomp($capitalToRepay, 0, 2)
+            && 0 === bccomp($interestToRepay, 0, 2)
+            && 0 === bccomp($commissionToPay, 0, 2)
+        ) {
+            throw new \Exception('The close out netting repayment amount of project (id: ' . $project->getIdProject() . ') is 0. Please check the data consistency.');
+        }
+
+        $projectRepaymentTask = new ProjectRepaymentTask();
+        $projectRepaymentTask->setIdProject($project)
+            ->setSequence(null)
+            ->setCapital($capitalToRepay)
+            ->setInterest($interestToRepay)
+            ->setCommissionUnilend($commissionToPay)
+            ->setType(ProjectRepaymentTask::TYPE_CLOSE_OUT_NETTING)
+            ->setStatus(projectRepaymentTask::STATUS_PENDING)
+            ->setRepayAt($repayOn)
+            ->setIdUserCreation($user)
+            ->setIdDebtCollectionMission($debtCollectionMission)
+            ->setIdWireTransferIn($reception);
+
+        $this->entityManager->persist($projectRepaymentTask);
+        $this->entityManager->flush($projectRepaymentTask);
+
+        $this->checkPlannedTaskAmount($project);
+    }
+
     /**
      * @param Projects $project
      */
@@ -289,17 +328,17 @@ class ProjectRepaymentTaskManager
 
                 return false;
             }
+        }
 
-            try {
-                $this->checkPlannedTaskAmount($projectRepaymentTask->getIdProject(), $projectRepaymentTask->getSequence());
-            } catch (\Exception $exception) {
-                $this->logger->warning(
-                    $exception->getMessage(),
-                    ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
-                );
+        try {
+            $this->checkPlannedTaskAmount($projectRepaymentTask->getIdProject(), $projectRepaymentTask->getSequence());
+        } catch (\Exception $exception) {
+            $this->logger->warning(
+                $exception->getMessage(),
+                ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
 
-                return false;
-            }
+            return false;
         }
 
         if (in_array($projectRepaymentTask->getType(), [ProjectRepaymentTask::TYPE_REGULAR, ProjectRepaymentTask::TYPE_LATE])) {
@@ -476,12 +515,25 @@ class ProjectRepaymentTaskManager
      *
      * @throws \Exception
      */
-    private function checkPlannedTaskAmount(Projects $project, $sequence)
+    private function checkPlannedTaskAmount(Projects $project, $sequence = null)
+    {
+        if (null === $project->getCloseOutNettingDate() && null != $sequence) {
+            $this->checkPlannedRegularRepaymentTaskAmount($project, $sequence);
+        } else {
+            $this->checkPlannedCloseOutNettingRepaymentTaskAmount($project);
+        }
+    }
+
+    private function checkPlannedRegularRepaymentTaskAmount(Projects $project, $sequence)
     {
         $repaymentTasks = $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
             ->findBy([
                 'idProject' => $project,
+                'type'      => [
+                    ProjectRepaymentTask::TYPE_REGULAR,
+                    ProjectRepaymentTask::TYPE_LATE,
+                ],
                 'sequence'  => $sequence,
                 'status'    => [
                     ProjectRepaymentTask::STATUS_ERROR,
@@ -520,6 +572,52 @@ class ProjectRepaymentTaskManager
         if (1 === $compareCommission) {
             throw new \Exception('The total commission (' . $plannedCommission . ') of all the repayment tasks for project (id: ' . $project->getIdProject() . ') sequence ' . $sequence . ' is more then the monthly commission (' . $monthlyCommission . '). Please check the data consistency.');
         }
+    }
+
+    private function checkPlannedCloseOutNettingRepaymentTaskAmount(Projects $project)
+    {
+        $repaymentTasks = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
+            ->findBy([
+                'idProject' => $project,
+                'type'      => [
+                    ProjectRepaymentTask::TYPE_CLOSE_OUT_NETTING,
+                ],
+                'status'    => [
+                    ProjectRepaymentTask::STATUS_ERROR,
+                    ProjectRepaymentTask::STATUS_PENDING,
+                    ProjectRepaymentTask::STATUS_READY,
+                    ProjectRepaymentTask::STATUS_IN_PROGRESS,
+                    ProjectRepaymentTask::STATUS_REPAID
+                ]
+            ]);
+
+        $plannedCapital    = 0;
+        $plannedInterest   = 0;
+        $plannedCommission = 0;
+        foreach ($repaymentTasks as $task) {
+            $plannedCapital    = round(bcadd($plannedCapital, $task->getCapital(), 4), 2);
+            $plannedInterest   = round(bcadd($plannedInterest, $task->getInterest(), 4), 2);
+            $plannedCommission = round(bcadd($plannedCommission, $task->getCommissionUnilend(), 4), 2);
+        }
+
+        $closeOutNettingPayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $project]);
+
+        $compareCapital = bccomp($plannedCapital, $closeOutNettingPayment->getCapital(), 2);
+        if (1 === $compareCapital) {
+            throw new \Exception('The total capital (' . $plannedCapital . ') of all the close out netting repayment tasks for project (id: ' . $project->getIdProject() . ') is more then the monthly capital (' . $closeOutNettingPayment->getCapital() . '). Please check the data consistency.');
+        }
+
+        $compareInterest = bccomp($plannedInterest, $closeOutNettingPayment->getInterest(), 2);
+        if (1 === $compareInterest) {
+            throw new \Exception('The total interest (' . $plannedInterest . ') of all the close out netting repayment tasks for project (id: ' . $project->getIdProject() . ') is more then the monthly interest (' . $closeOutNettingPayment->getInterest() . '). Please check the data consistency.');
+        }
+
+        $compareCommission = bccomp($plannedCommission, $closeOutNettingPayment->getCommissionTaxIncl(), 2);
+        if (1 === $compareCommission) {
+            throw new \Exception('The total commission (' . $plannedCommission . ') of all the close out netting repayment tasks for project (id: ' . $project->getIdProject() . ') is more then the monthly commission (' . $closeOutNettingPayment->getCommissionTaxIncl() . '). Please check the data consistency.');
+        }
+
     }
 
     /**
