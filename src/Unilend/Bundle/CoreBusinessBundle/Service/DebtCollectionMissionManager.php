@@ -352,7 +352,8 @@ class DebtCollectionMissionManager
             'Code postal',
             'Ville',
             'Montant du prêt',
-            'Montant remboursé',
+            'Capital remboursé',
+            'Intétêt remboursé',
             'Commission',
             'Frais',
             'Honoraires',
@@ -412,6 +413,12 @@ class DebtCollectionMissionManager
 
             $dataColumn++;
             $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['amount'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['repaid_capital'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['repaid_interest'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
             $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn, $dataRow, $loanDetails['fee_tax_excl'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
