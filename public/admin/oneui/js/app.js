@@ -1355,16 +1355,21 @@ var App = function() {
                 var field = fields[$i]
                 var options = field.options
                 var labels = []
+                var dataItem = data[$i]
+                if ($.type(dataItem) === 'null')
+                    dataItem = ''
+                if ($.type(dataItem) !== 'string')
+                    dataItem = dataItem.toString()
                 if (typeof options !== 'undefined') {
                     if (field.type !== 'multilevel') {
                         for (var $l=0; $l < options.length; $l++) {
                             var option = options[$l]
                             if (field.type === 'checkbox') {
-                                if (~(data[$i].toString().indexOf(option.id)) || ~(data[$i].toString().indexOf(parseInt(option.id)))) {
+                                if (~dataItem.indexOf(option.id)) {
                                     labels.push(option.text)
                                 }
                             } else {
-                                if (option.id === data[$i].id.toString() || option.id === data[$i].toString())
+                                if (dataItem === option.id)
                                     labels = option.text
                             }
                         }
@@ -1376,7 +1381,7 @@ var App = function() {
                         function recurseId(options, value) {
                             for (var i in options) {
                                 var o = options[i]
-                                var id = o.id.toString()
+                                var id = o.id
                                 if (id.trim() === value.trim()) {
                                     data[$i] = o.text
                                     break
@@ -1387,7 +1392,7 @@ var App = function() {
                                 }
                             }
                         }
-                        recurseId(options, data[$i].toString())
+                        recurseId(options, dataItem)
                     }
                 }
             }
