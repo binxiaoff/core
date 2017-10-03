@@ -2,13 +2,14 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use JMS\Serializer\Serializer;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
+use Unilend\Bundle\WSClientBundle\Entity\Infolegale\AnnouncementCollection;
+use Unilend\Bundle\WSClientBundle\Entity\Infolegale\AnnouncementDetailsCollection;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\DirectorAnnouncementCollection;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\ExecutiveCollection;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\HomonymCollection;
@@ -137,21 +138,27 @@ class InfolegaleManager
     /**
      * @param string $siren
      *
-     * @return null|\SimpleXMLElement
+     * @return AnnouncementCollection|null
      */
-    public function getAnnouncementsList($siren)
+    public function getAnnouncements($siren)
     {
-        return $this->sendRequest(self::RESOURCE_ANNOUNCEMENTS_LIST, ['siren' => $siren]);
+        if (null !== ($result = $this->sendRequest(self::RESOURCE_ANNOUNCEMENTS_LIST, ['siren' => $siren]))) {
+            return $this->serializer->deserialize($result->asXML(), AnnouncementCollection::class, 'xml');
+        }
+        return null;
     }
 
     /**
      * @param int[] $announcementsId
      *
-     * @return null|\SimpleXMLElement
+     * @return AnnouncementDetailsCollection|null
      */
     public function getAnnouncementsDetails(array $announcementsId)
     {
-        return $this->sendRequest(self::RESOURCE_ANNOUNCEMENTS_DETAILS, ['adsId' => $announcementsId]);
+        if (null !== ($result = $this->sendRequest(self::RESOURCE_ANNOUNCEMENTS_DETAILS, ['adsId' => $announcementsId]))) {
+            return $this->serializer->deserialize($result->asXML(), AnnouncementDetailsCollection::class, 'xml');
+        }
+        return null;
     }
 
     /**

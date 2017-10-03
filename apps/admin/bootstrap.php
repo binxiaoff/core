@@ -543,8 +543,6 @@ class bootstrap extends Controller
     /**
      * @param string $template
      * @param array  $context
-     *
-     * @return string
      */
     public function render($template = null, array $context = [])
     {

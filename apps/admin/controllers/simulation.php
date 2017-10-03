@@ -291,7 +291,7 @@ class simulationController extends bootstrap
                 [
                     'label'  => 'getListAnnonceLegale',
                     'name'   => 'get_announcements_list_infolegale',
-                    'method' => 'getAnnouncementsList',
+                    'method' => 'getAnnouncements',
                     'fields' => [
                         [
                             'name'      => 'parameter[siren]',
@@ -363,7 +363,6 @@ class simulationController extends bootstrap
 
         $this->menu_admin = 'emprunteurs';
         $this->users->checkAccess(Zones::ZONE_LABEL_SIMULATOR);
-        $this->menu_admin = 'emprunteurs';
     }
 
     public function _default()
