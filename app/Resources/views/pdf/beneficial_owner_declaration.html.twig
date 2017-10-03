@@ -5,8 +5,14 @@
         <h1>Declaration de bénéficiares effectifs</h1>
     </header>
     <div class="row" style="page-break-after: auto;">
+        Je certifie qu'à la date de signature du présent document, la liste détaillée ci-dessous comprend :
+        <ul>
+            <li>Tous les gérants ou mandataires sociaux de l'entreprise</li>
+            et
+            <li>Toute personne détenant directement ou indirectement au moins 25% du capital de l'entreprise.</li>
+        </ul>
         {% for owner in owners %}
-            <p>{{ owner.idClient.nom }}</p>
+            <p>{{ owner.idClient.nom }}, {{ owner.idClient.prenom }}, née le {{ owner.idClient.naissance|date('m/d/Y') }} à {{ owner.idClient.villeNaissance }}, {{ owner.idClient.idPaysNaissance|countryLabel }}</p>
         {% endfor %}
     </div>
 {% endblock %}
