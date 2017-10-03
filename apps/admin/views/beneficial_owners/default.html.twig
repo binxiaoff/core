@@ -22,10 +22,11 @@
                         autoclose: true
                     })
                     $modal.find('.block-content').prepend('<div class="form-group">' +
-                            '<label>Client ID</label>' +
+                            '<label>Client ID</label><small class="text-muted"> <em class="push-5-l">Commencez par rechercher le client dans la base existante.</em></small>' +
                             '<input type="text" class="form-control" id="search-client-autocomplete">' +
-                            '</div>')
-                    $modal.find('#search-client-autocomplete').autoComplete({
+                            '</div><hr>')
+                    var $autocomplete = $modal.find('#search-client-autocomplete')
+                    $autocomplete.autoComplete({
                         minChars: 2,
                         cache: 0,
                         delay: 500,
@@ -37,7 +38,7 @@
                             var choices = [{firstName: 'Client 1', lastName: 'Name', id: 323123}, {firstName: 'Client 2', lastName: 'Name', id: 1212323}, {firstName: 'Client 3', lastName: 'Name', id: 13232}]
                             var matches = [];
                             for (var i in choices) {
-                                if (~choices[i].id.toString().indexOf(term))
+                                if (~choices[i].id.toString().indexOf(term) || ~choices[i].firstName.toLowerCase().indexOf(term) || ~choices[i].lastName.toLowerCase().indexOf(term))
                                     matches.push(choices[i])
                             }
                             suggest(matches);
@@ -52,7 +53,8 @@
                             $modal.find('[name=last_name]').val(item.data('last-name'))
                             $modal.find('[name=first_name]').val(item.data('first-name'))
                             $modal.find('[name=id]').val(item.data('id'))
-                            $('.autocomplete-suggestions').hide()
+                            $modal.find('.autocomplete-suggestions').hide()
+                            $autocomplete.val(item.data('id'))
                         },
                     })
                 }
