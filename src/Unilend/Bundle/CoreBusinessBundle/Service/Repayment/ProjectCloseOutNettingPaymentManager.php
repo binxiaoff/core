@@ -203,47 +203,33 @@ class ProjectCloseOutNettingPaymentManager
      */
     public function rejectPayment(Receptions $wireTransferIn, Users $user)
     {
-        $paymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
-        /** @var \echeanciers $repaymentScheduleData */
-        $repaymentScheduleData = $this->entityManagerSimulator->getRepository('echeanciers');
+        $closeOutNettingPaymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment');
 
         $project = $wireTransferIn->getIdProject();
 
-        $projectRepaymentTasksToCancel = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
-            ->findBy(['idProject' => $project, 'idWireTransferIn' => $wireTransferIn->getIdReceptionRejected()]);
+        $projectRepaymentTaskToCancel = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
+            ->findOneBy(['idProject' => $project, 'idWireTransferIn' => $wireTransferIn->getIdReceptionRejected()]);
 
         $this->entityManager->getConnection()->beginTransaction();
         try {
-            foreach ($projectRepaymentTasksToCancel as $task) {
-                $paymentSchedule = $paymentScheduleRepository->findOneBy(['idProject' => $project, 'ordre' => $task->getSequence()]);
+            $closeOutNettingPayment = $closeOutNettingPaymentRepository->findOneBy(['idProject' => $project]);
 
-                $paidCapital    = $paymentSchedule->getPaidCapital() - bcmul($task->getCapital(), 100);
-                $paidInterest   = $paymentSchedule->getPaidInterest() - bcmul($task->getInterest(), 100);
-                $paidCommission = $paymentSchedule->getPaidCommissionVatIncl() - bcmul($task->getCommissionUnilend(), 100);
+            $paidCapital    = round(bcsub($closeOutNettingPayment->getPaidCapital(), $projectRepaymentTaskToCancel->getCapital()), 2);
+            $paidInterest   = round(bcsub($closeOutNettingPayment->getPaidInterest(), $projectRepaymentTaskToCancel->getInterest()), 2);
+            $paidCommission = round(bcsub($closeOutNettingPayment->getPaidCommissionTaxIncl(), $projectRepaymentTaskToCancel->getCommissionUnilend()), 2);
 
-                if (
-                    0 === bccomp($paidCapital, 0, 2)
-                    && 0 === bccomp($paidInterest, 0, 2)
-                    && 0 === bccomp($paidCommission, 0, 2)
-                ) {
-                    $status = EcheanciersEmprunteur::STATUS_PENDING;
-                } else {
-                    $status = EcheanciersEmprunteur::STATUS_PARTIALLY_PAID;
-                }
+            $closeOutNettingPayment->setPaidCapital($paidCapital)
+                ->setPaidInterest($paidInterest)
+                ->setPaidCommissionTaxIncl($paidCommission);
 
-                $paymentSchedule->setPaidCapital($paidCapital)
-                    ->setPaidInterest($paidInterest)
-                    ->setPaidCommissionVatIncl($paidCommission)
-                    ->setStatusEmprunteur($status)
-                    ->setDateEcheanceEmprunteurReel(null);
+            $this->entityManager->flush($closeOutNettingPayment);
 
-                $this->entityManager->flush($paymentSchedule);
+            $this->projectRepaymentTaskManager->cancelRepaymentTask($projectRepaymentTaskToCancel, $user);
 
-                // todo: this call can be deleted once all migrations have been done on the usage of these 2 columns.
-                $repaymentScheduleData->updateStatusEmprunteur($project->getIdProject(), $paymentSchedule->getOrdre(), 'cancel');
+            $this->projectChargeManager->cancelProjectCharge($wireTransferIn);
 
-                $this->projectRepaymentTaskManager->cancelRepaymentTask($task, $user);
-            }
+            $this->debtCollectionFeeManager->cancelFee($wireTransferIn);
+
             $this->entityManager->getConnection()->commit();
         } catch (\Exception $exception) {
             $this->entityManager->getConnection()->rollBack();

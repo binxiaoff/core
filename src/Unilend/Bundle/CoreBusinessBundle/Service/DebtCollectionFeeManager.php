@@ -185,4 +185,12 @@ class DebtCollectionFeeManager
 
         return $debtCollectionFeeOnRepayment;
     }
+
+    /**
+     * @param Receptions $wireTransferIn
+     */
+    public function cancelFee(Receptions $wireTransferIn)
+    {
+        $this->entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionFeeDetail')->deleteFeesByWireTransferIn($wireTransferIn);
+    }
 }

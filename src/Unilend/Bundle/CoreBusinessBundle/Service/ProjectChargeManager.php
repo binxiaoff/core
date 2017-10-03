@@ -51,4 +51,13 @@ class ProjectChargeManager
 
         return $totalAppliedCharges;
     }
+
+    public function cancelProjectCharge(Receptions $wireTransferIn)
+    {
+        $appliedProjectCharges = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCharge')->findBy(['idWireTransferIn' => $wireTransferIn]);
+        foreach ($appliedProjectCharges as $projectCharge) {
+            $projectCharge->setIdWireTransferIn(null);
+            $this->entityManager->flush($projectCharge);
+        }
+    }
 }

@@ -276,6 +276,11 @@ class ProjectPaymentManager
 
                 $this->projectRepaymentTaskManager->cancelRepaymentTask($task, $user);
             }
+
+            $this->projectChargeManager->cancelProjectCharge($wireTransferIn);
+
+            $this->debtCollectionFeeManager->cancelFee($wireTransferIn);
+
             $this->entityManager->getConnection()->commit();
         } catch (\Exception $exception) {
             $this->entityManager->getConnection()->rollBack();
