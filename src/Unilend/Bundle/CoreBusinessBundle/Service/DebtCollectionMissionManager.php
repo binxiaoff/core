@@ -239,22 +239,23 @@ class DebtCollectionMissionManager
             $activeSheet->setCellValueExplicitByColumnAndRow($totalColumn, $dataRow, $chargeDetails['total'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
             $fileName     = 'recouvrement_' . $debtCollectionMission->getId() . '_' . (new \DateTime())->format('Y-m-d');
-            $absolutePath = implode(DIRECTORY_SEPARATOR, [$this->protectedPath, self::DEBT_COLLECTION_MISSION_FOLDER, trim($debtCollectionMission->getIdClientDebtCollector()->getNom()), $debtCollectionMission->getIdProject()->getIdProject()]);
+            $absolutePath = implode(DIRECTORY_SEPARATOR, [$this->protectedPath, self::DEBT_COLLECTION_MISSION_FOLDER, trim($debtCollectionMission->getIdClientDebtCollector()->getIdClient()), $debtCollectionMission->getIdProject()->getIdProject()]);
 
             if (false === is_dir($absolutePath)) {
                 $this->fileSystem->mkdir($absolutePath);
             }
 
             if ($this->fileSystem->exists($absolutePath . DIRECTORY_SEPARATOR . $fileName . self::FILE_EXTENSION)) {
-                $fileName = 'recouvrement_' . $debtCollectionMission->getId() . '_' . (new \DateTime())->format('Y-m-d') . '_' . uniqid() . self::FILE_EXTENSION;
+                $fileName = 'recouvrement_' . $debtCollectionMission->getId() . '_' . (new \DateTime())->format('Y-m-d') . '_' . uniqid();
             }
+            $absoluteFileName = $absolutePath . DIRECTORY_SEPARATOR . $fileName . self::FILE_EXTENSION;
 
             /** @var \PHPExcel_Writer_Excel2007 $writer */
             $writer = \PHPExcel_IOFactory::createWriter($excel, 'Excel2007');
-            $writer->save($absolutePath . DIRECTORY_SEPARATOR . $fileName);
+            $writer->save($absoluteFileName);
 
-            $debtCollectionMission->setAttachment(str_replace($this->protectedPath, '', $absolutePath));
-            $this->entityManager->flush();
+            $debtCollectionMission->setAttachment(str_replace($this->protectedPath, '', $absoluteFileName));
+            $this->entityManager->flush($debtCollectionMission);
         }
     }
 

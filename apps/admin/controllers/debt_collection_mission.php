@@ -2,6 +2,7 @@
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
+use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager;
 
 class debt_collection_missionController extends bootstrap
 {
@@ -16,7 +17,7 @@ class debt_collection_missionController extends bootstrap
 
     public function _downloadCreditorDetailsFile()
     {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager $debtCollectionMissionManager */
+        /** @var DebtCollectionMissionManager $debtCollectionMissionManager */
         $debtCollectionMissionManager = $this->get('unilend.service.debt_collection_mission_manager');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
@@ -26,19 +27,23 @@ class debt_collection_missionController extends bootstrap
                 $missionId = filter_var($this->params[0], FILTER_VALIDATE_INT);
                 if (null !== ($debtCollectionMission = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMission')->find($missionId))) {
                     try {
-                        if (false === file_exists($this->getParameter('path.protected') . $debtCollectionMission->getAttachment())) {
+                        if (is_dir($this->getParameter('path.protected') . $debtCollectionMission->getAttachment())
+                            || false === file_exists($this->getParameter('path.protected') . $debtCollectionMission->getAttachment())) {
                             $debtCollectionMissionManager->generateExcelFile($debtCollectionMission);
                         }
                         header('Content-Type: application/force-download; charset=utf-8');
-                        header('Content-Disposition: attachment;filename=' . $this->getParameter('path.protected') . $debtCollectionMission->getAttachment());
+                        header('Content-Disposition: attachment;filename=' . basename($debtCollectionMission->getAttachment()));
                         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
                         header('Expires: 0');
+                        readfile($this->getParameter('path.protected') . $debtCollectionMission->getAttachment());
                         die;
                     } catch (\Exception $exception) {
                         $this->get('logger')->warning(
                             'Could not download the Excel file for debt collection mission: ' . $debtCollectionMission->getId() . ' Error: ' . $exception->getMessage(),
                             ['method' => __METHOD__, ['id_mission' => $debtCollectionMission->getId(), 'id_project' => $debtCollectionMission->getIdProject()->getIdProject()]]
                         );
+                        header('Location: ' . $this->url . 'details_impayes/' . $debtCollectionMission->getIdProject()->getIdProject());
+                        die;
                     }
                 }
             }
