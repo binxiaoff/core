@@ -239,7 +239,7 @@ class DebtCollectionMissionManager
             $activeSheet->setCellValueExplicitByColumnAndRow($totalColumn, $dataRow, $chargeDetails['total'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
             $fileName     = 'recouvrement_' . $debtCollectionMission->getId() . '_' . (new \DateTime())->format('Y-m-d');
-            $absolutePath = implode(DIRECTORY_SEPARATOR, [$this->protectedPath, self::DEBT_COLLECTION_MISSION_FOLDER, trim($debtCollectionMission->getIdClientDebtCollector()->getNom()), $debtCollectionMission->getIdProject()]);
+            $absolutePath = implode(DIRECTORY_SEPARATOR, [$this->protectedPath, self::DEBT_COLLECTION_MISSION_FOLDER, trim($debtCollectionMission->getIdClientDebtCollector()->getNom()), $debtCollectionMission->getIdProject()->getIdProject()]);
 
             if (false === is_dir($absolutePath)) {
                 $this->fileSystem->mkdir($absolutePath);
@@ -468,9 +468,11 @@ class DebtCollectionMissionManager
         try {
             $this->entityManager->getConnection()->beginTransaction();
 
-            $currentMission->setArchived(new \DateTime())
-                ->setIdUserArchiving($user);
-            $this->entityManager->flush($currentMission);
+            if ($currentMission) {
+                $currentMission->setArchived(new \DateTime())
+                    ->setIdUserArchiving($user);
+                $this->entityManager->flush($currentMission);
+            }
 
             $newMission = new DebtCollectionMission();
             $newMission->setIdProject($project)
