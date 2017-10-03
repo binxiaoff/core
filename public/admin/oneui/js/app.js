@@ -837,7 +837,7 @@ var App = function() {
                         btnClass = ''
                         switch (button) {
                             case 'ellipsis':
-                                btnDisplay = '&hellip'
+                                btnDisplay = '...'
                                 btnClass = 'disabled'
                                 break
                             case 'first':
