@@ -33,16 +33,10 @@
             <tbody>
             {% for mission in debtCollectionMissionsData %}
                 <tr>
-                    <td>
-                        {{ mission.date|localizeddate('short', 'none') }}
-                    </td>
-                    <td>
-                        {{ mission.id }}
-                    </td>
-                        {{ mission.status }}
-                    <td>
-                        {{ mission.debtCollectorName }}
-                    </td>
+                    <td>{{ mission.date|localizeddate('short', 'none') }}</td>
+                    <td>{{ mission.id }}</td>
+                    <td>{{ mission.status }}</td>
+                    <td>{{ mission.debtCollectorName }}</td>
                     <td>
                         {% if mission.entrustedPayments|length > 0 %}
                             {% for payment in mission.entrustedPayments %}
@@ -54,12 +48,8 @@
                             <br>
                         {% endif %}
                     </td>
-                    <td>
-                        {{ mission.type }}
-                    </td>
-                    <td>
-                        {{ mission.rate|localizednumber }} %
-                    </td>
+                    <td>{{ mission.type }}</td>
+                    <td>{{ mission.rate|localizednumber }}&nbsp;%</td>
                     <td class="text-center">
                         <a href="/debt_collection_mission/downloadCreditorDetailsFile/{{ mission.id }}" class="btn btn-xs btn-default push-10-r" data-toggle="tooltip" data-original-title="Télécharger XLS"><i class="fa fa-download"></i></a>
                     </td>
