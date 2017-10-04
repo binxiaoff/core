@@ -238,7 +238,7 @@ class DebtCollectionMissionManager
             $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_vat'], $dataRow, $chargeDetails['fee_vat'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicitByColumnAndRow($totalColumn, $dataRow, $chargeDetails['total'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
-            $fileName     = 'recouvrement_' . $debtCollectionMission->getId() . '_' . (new \DateTime())->format('Y-m-d');
+            $fileName     = 'recouvrement_' . $debtCollectionMission->getId() . '_' . $debtCollectionMission->getAdded()->format('Y-m-d');
             $absolutePath = implode(DIRECTORY_SEPARATOR, [$this->protectedPath, self::DEBT_COLLECTION_MISSION_FOLDER, trim($debtCollectionMission->getIdClientDebtCollector()->getIdClient()), $debtCollectionMission->getIdProject()->getIdProject()]);
 
             if (false === is_dir($absolutePath)) {
@@ -246,7 +246,7 @@ class DebtCollectionMissionManager
             }
 
             if ($this->fileSystem->exists($absolutePath . DIRECTORY_SEPARATOR . $fileName . self::FILE_EXTENSION)) {
-                $fileName = 'recouvrement_' . $debtCollectionMission->getId() . '_' . (new \DateTime())->format('Y-m-d') . '_' . uniqid();
+                $fileName = 'recouvrement_' . $debtCollectionMission->getId() . '_' . $debtCollectionMission->getAdded()->format('Y-m-d') . '_' . uniqid();
             }
             $absoluteFileName = $absolutePath . DIRECTORY_SEPARATOR . $fileName . self::FILE_EXTENSION;
 
