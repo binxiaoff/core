@@ -408,6 +408,8 @@
             <argument type="service" id="twig"/>
             <argument type="service" id="router"/>
             <argument type="service" id="unilend.frontbundle.service.universign_manager"/>
+            <argument type="service" id="unilend.service.attachment_manager"/>
+            <argument type="service" id="logger"/>
             <argument>%path.protected%</argument>
         </service>
 

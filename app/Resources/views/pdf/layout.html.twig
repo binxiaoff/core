@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ app.request.locale }}" class="no-js">
+<html lang="{{ app.request.locale|default('fr_FR') }}" class="no-js">
 <head>
     {% block cssFiles %}
         <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Cabin:400,700,400" media="all">

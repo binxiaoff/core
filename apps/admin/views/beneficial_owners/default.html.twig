@@ -1,0 +1,173 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block pluginsJS %}
+    <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
+    <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+{% endblock %}
+
+{% block pageScripts %}
+    <script>
+        $(function() {
+            App.initHelpers(['validation', 'datepicker', 'datatables']);
+            $('#beneficial-owners table').DT({
+                modal: function($modal) {
+                    $modal.find('[name=status], [name=validation_type]').attr('type', 'hidden').siblings().hide()
+                    $modal.find('[name=birthdate]').datepicker('remove').datepicker({
+                        startView: 'decade',
+                        autoclose: true
+                    })
+                    if ($modal.find('[name=action]').val() === 'create') {
+                        $modal.find('.block-content').prepend('<div class="form-group">' +
+                                '<label>Client ID</label><small class="text-muted"> <em class="push-5-l">Commencez par rechercher le client dans la base existante.</em></small>' +
+                                '<input type="text" class="form-control" id="search-client-autocomplete">' +
+                                '</div><hr>')
+                        var $autocomplete = $modal.find('#search-client-autocomplete')
+                        $autocomplete.autoComplete({
+                            minChars: 2,
+                            cache: 0,
+                            delay: 500,
+                            source: function (term, suggest) {
+                                $.getJSON('/beneficial_owners/search_client/', {q: term}, function (response) {
+                                    suggest(response)
+                                })
+                            },
+                            renderItem: function (item, search, section) {
+                                var html = '<div class="autocomplete-suggestion" data-id="' + item.id + '" data-first-name="' + item.firstName + '" data-last-name="' + item.lastName + '">' +
+                                        '<p>' + item.firstName + ' ' + item.lastName + ' <span class="id">' + item.id + ' </span></p>' +
+                                        '</div>'
+                                return html
+                            },
+                            onSelect: function(e, term, item){
+                                $modal.find('[name=last_name]').val(item.data('last-name'))
+                                $modal.find('[name=first_name]').val(item.data('first-name'))
+                                $modal.find('[name=id]').val(item.data('id'))
+                                $modal.find('.autocomplete-suggestions').hide()
+                                $autocomplete.val(item.data('id'))
+                            },
+                        })
+                    }
+                    if ($modal.find('[name=action]').val() === 'deactivate') {
+                        var $form = $modal.find('form')
+                        $form.submit(function(e){
+                            e.preventDefault()
+                            $.ajax({
+                                url: $form.attr('action'),
+                                type: 'POST',
+                                data: $form.serialize(),
+                                dataType: 'json',
+                                success: function () {
+                                    location.reload()
+                                }
+                            })
+                        })
+                    }
+                }
+            })
+        })
+    </script>
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block pageHeader %}
+    <h1 class="page-heading push">
+        <a href="/emprunteurs/edit/{{ company.idClientOwner }}">{{ company.name }} </a> - Bénéficiaires Effectifs
+    </h1>
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <div id="beneficial-owners" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Liste des bénéficiaires effectifs</h3>
+            </div>
+            <div class="block-content block-content-full">
+                <table class="table table-striped table-hover table-bordered table-header-bg" data-table-editor data-table-editor-url="/beneficial_owners/edit/" data-table-editor-actions="add, modify, toggle" data-table-editor-hidden="id_declaration:{{ declaration.id }}, id_company:{{ company.idCompany }}">
+                    <thead>
+                    <tr>
+                        <th data-editor-name="last_name" data-editor-type="text">Nom</th>
+                        <th data-editor-name="first_name" data-editor-type="text">Prénom</th>
+                        <th data-editor-name="percentage" data-editor-type="numerical" data-editor-optional>% détenu</th>
+                        <th data-editor-name="birthdate" data-editor-type="date">Date de naissance</th>
+                        <th data-editor-name="birthplace" data-editor-type="text">Ville de naissance</th>
+                        <th data-editor-name="birth_country" data-editor-type="select" data-editor-options="{% for id, country in countries %}{{ country|trim }}:{{ id|trim }}{% if loop.index < countries|length %}, {% endif %}{% endfor %}">Pays de naissance</th>
+                        <th data-editor-name="country" data-editor-type="select" data-editor-options="{% for id, country in countries %}{{ country|trim }}:{{ id|trim }}{% if loop.index < countries|length %}, {% endif %}{% endfor %}">Pays de résidence</th>
+                        <th data-editor-name="id_card_passport" data-editor-type="file">Pièce d'identité</th>
+                        <th data-editor-name="type" data-editor-type="select" data-editor-options="{% for id, type in types %}{{ type|trim }}:{{ id|trim }}{% if loop.index < types|length %}, {% endif %}{% endfor %}" data-editor-optional>Type de bénéficiaire</th>
+                        <th data-editor-name="status" data-editor-type="text">Statut</th>
+                        <th data-editor-name="validation_type" data-editor-type="text">Méthode de validation</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for owner in beneficial_owners %}
+                        <tr data-id="{{ owner.id }}" data-state="{{ owner.status }}">
+                            <td>{{ owner.last_name }}</td>
+                            <td>{{ owner.first_name }}</td>
+                            <td>{% if owner.percentage is not empty %}{{ owner.percentage|localizednumber }}{% endif %}</td>
+                            <td>{{ owner.birthdate }}</td>
+                            <td>{{ owner.birthplace }}</td>
+                            <td>{{ owner.birth_country }}</td>
+                            <td>{{ owner.country }}</td>
+                            <td>{{ owner.id_card_passport }}</td>
+                            <td>{{ owner.type }}</td>
+                            <td>{{ owner.status }}</td>
+                            <td>{{ owner.validation_type }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div id="declarations" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Déclarations</h3>
+            </div>
+            <div class="block-content block-content-full">
+                <a id="declaration-preview-btn" class="btn btn-primary" href="declaration/{{ company.idCompany }}" target="_blank">Prévisualiser la déclaration en cours</a>
+                <hr>
+                <label class="push-10">Déclarations par projet</label>
+
+                {% if universignDeclarations is defined and universignDeclarations is not empty %}
+                    <table class="table table-hover table-bordered table-header-bg">
+                        <thead>
+                        <tr>
+                            <th style="width: 10%">ID projet</th>
+                            <th style="width: 10%">Date d'ajout de la declaration</th>
+                            <th style="width: 10%">Status de la declaration</th>
+                            <th style="width: 10%">Status du document universign</th>
+                            <th>Fichier</th>
+                            <th style="width: 10%">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for declaration in universignDeclarations %}
+                            <tr>
+                                <td><a href="/dossiers/{{ declaration.idProject.idProject }}">{{ declaration.idProject.idProject }}</a></td>
+                                <td>{{ declaration.idDeclaration.added|date('d/m/Y') }}</td>
+                                <td>{{ "beneficial-owner_declaration-status-#{ declaration.idDeclaration.status }"|trans }}</td>
+                                <td>{{ "universign_status-label-#{ declaration.idDeclaration.status }"|trans }}</td>
+                                <td><a href="/protected/beneficial_owner/{{ declaration.name }}">{{ declaration.name }}</a></td>
+                                <td class="text-center">
+                                    {% if declaration.name is not empty %}
+                                    <a href="/protected/beneficial_owner/{{ declaration.name }}" class="btn btn-default btn-xs" data-toggle="tooltip" title="Télécharger la déclaration"><span class="fa fa-download"></span></a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>Il n'y pas encore de documents à signer/signés</p>
+                {% endif %}
+                <p class="content-mini content-mini-full bg-info">
+                    Une declaration peut avoir été utilisé dans plusieurs projets. Elle peut être archivée, tout en ne pas invalidant le document signé par universign, qui était valable au moment du transfer des fonds. </p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -151,4 +151,20 @@ class protectedController extends bootstrap
         $this->autoFireFooter = true;
         $this->autoFireView   = true;
     }
+
+    public function _beneficial_owner()
+    {
+        if (file_exists($this->path . 'protected/pdf/beneficial_owner/' . $this->params[0])) {
+            $url = ($this->path . 'protected/pdf/beneficial_owner/' . $this->params[0]);
+
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/octet-stream');
+            header('Content-Disposition: attachment; filename="' . basename($url) . '";');
+            @readfile($url);
+            die();
+        } else {
+            header('location: ' . $this->url . '/protected/document_not_found');
+            die;
+        }
+    }
 }

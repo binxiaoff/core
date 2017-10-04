@@ -1,4 +1,6 @@
-<?php use Unilend\Bundle\CoreBusinessBundle\Entity\Virements; ?>
+<?php use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements; ?>
+<?php ?>
 <style type="text/css">
     table.tablesorter tbody td.grisfonceBG, .grisfonceBG {
         background: #d2d2d2!important;
@@ -906,13 +908,13 @@
                                     </select>
                                 </td>
                             </tr>
-                            <?php if (empty($this->proxy) || $this->proxy['status'] != \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED) : ?>
+                            <?php if (empty($this->proxy) || $this->proxy['status'] != UniversignEntityInterface::STATUS_SIGNED) : ?>
                                 <tr>
                                     <th>Pouvoir</th>
                                     <td><a href="<?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
                                 </tr>
                             <?php endif ?>
-                            <?php if (empty($this->mandate) || $this->mandate['status'] != \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED) : ?>
+                            <?php if (empty($this->mandate) || $this->mandate['status'] != UniversignEntityInterface::STATUS_SIGNED) : ?>
                                 <tr>
                                     <th>Mandat</th>
                                     <?php if ($this->validBankAccount) : ?>
@@ -922,6 +924,21 @@
                                     <?php endif ?>
                                 </tr>
                             <?php endif ?>
+                            <?php if (false === isset($this->beneficialOwnerDeclaration)) : ?>
+                                <tr>
+                                    <th>Déclaration de <br>bénéficiaires effectifs</th>
+                                    <td>
+                                        <a role="button" class="btn btn-default" href="/beneficial_owners/<?= $this->companies->id_company ?>">Déclarer les bénéficiaires effectifs</a>
+                                    </td>
+                                </tr>
+                            <?php else : ?>
+                                <?php if (empty($this->beneficialOwnerDeclaration) || $this->beneficialOwnerDeclaration['status'] != UniversignEntityInterface::STATUS_SIGNED) : ?>
+                                    <tr>
+                                        <th>Déclaration de <br> bénéficiaires effectifs</th>
+                                        <td><a href="<?= $this->furl ?>/pdf/beneficiaires-effectifs/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/beneficiaires-effectifs/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
+                                    </tr>
+                                <?php endif; ?>
+                            <?php endif; ?>
                         <?php endif; ?>
                         <tr>
                             <td colspan="2">

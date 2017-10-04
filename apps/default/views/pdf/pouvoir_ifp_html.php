@@ -67,7 +67,7 @@
                             Nom
                         </div>
                         <div class="col-small">
-                            <?= $this->clients->nom ?>
+                            <?= $this->pdfClient->nom ?>
                         </div>
                         <div class="cl">&nbsp;</div>
                     </li>
@@ -76,7 +76,7 @@
                             Prénom
                         </div>
                         <div class="col-small">
-                            <?= $this->clients->prenom ?>
+                            <?= $this->pdfClient->prenom ?>
                         </div>
                         <div class="cl">&nbsp;</div>
                     </li>
@@ -85,7 +85,7 @@
                             Fonction
                         </div>
                         <div class="col-small">
-                            <?= $this->clients->fonction ?>
+                            <?= $this->pdfClient->fonction ?>
                         </div>
                     </li>
                 </ul>

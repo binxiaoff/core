@@ -198,7 +198,7 @@ class CompanyBeneficialOwnerDeclaration
     }
 
     /**
-     * @return ArrayCollection|BeneficialOwner[]
+     * @return BeneficialOwner[]
      */
     public function getBeneficialOwner()
     {

@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="beneficial_owner", indexes={@ORM\Index(name="idx_beneficial_owner_id_client", columns={"id_client"}), @ORM\Index(name="idx_beneficial_owner_id_declaration", columns={"id_declaration"})})
  * @ORM\HasLifecycleCallbacks
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\BeneficialOwnerRepository")
  */
 class BeneficialOwner
 {
