@@ -25,7 +25,7 @@ class beneficial_ownersController extends bootstrap
     public function _default()
     {
         if (false === isset($this->params[0])) {
-            header('Location: ' . $this->lurl);
+            header('Location: ' . $this->lurl . '/emprunteurs/gestion');
             die;
         }
 
@@ -175,6 +175,7 @@ class beneficial_ownersController extends bootstrap
         }
 
         $birthday = \DateTime::createFromFormat('d/m/Y', $birthDate);
+        $birthday->setTime(0, 0, 0);
         if (false == $this->checkDate($birthDate) || false === $birthday || false === $this->isAtLeastEighteenYearsOld($birthday)) {
             $errors[] = 'La date de naissance n\'est pas valide';
         }
@@ -640,10 +641,7 @@ class beneficial_ownersController extends bootstrap
             die;
         }
 
-        $fileName = 'Declaration_beneficiaires_effectifs_' . $company->getIdCompany();
         header('Content-type: application/pdf');
-        header('Content-disposition: attachment; filename="' . $fileName . '".pdf');
-
         echo $this->get('unilend.service.beneficial_owner_manager')->generateCompanyPdfFile($declaration);
     }
 }

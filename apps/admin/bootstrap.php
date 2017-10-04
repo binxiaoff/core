@@ -192,9 +192,6 @@ class bootstrap extends Controller
                     'title' => 'Emprunteurs',
                     'uri'   => 'emprunteurs/gestion'
                 ],
-                [   'title' => 'Bénéficiaires Effectifs',
-                    'uri'   =>  'beneficial_owners'
-                ],
                 [
                     'title' => 'Prescripteurs',
                     'uri'   => 'prescripteurs/gestion'
