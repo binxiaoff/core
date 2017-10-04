@@ -51,6 +51,21 @@
                             },
                         })
                     }
+                    if ($modal.find('[name=action]').val() === 'deactivate') {
+                        var $form = $modal.find('form')
+                        $form.submit(function(e){
+                            e.preventDefault()
+                            $.ajax({
+                                url: $form.attr('action'),
+                                type: 'POST',
+                                data: $form.serialize(),
+                                dataType: 'json',
+                                success: function () {
+                                    location.reload()
+                                }
+                            })
+                        })
+                    }
                 }
             })
         })
