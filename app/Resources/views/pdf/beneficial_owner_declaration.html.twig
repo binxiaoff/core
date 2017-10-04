@@ -28,20 +28,19 @@
 {% endblock %}
 
 {% block content %}
-    <h1>Declaration de bénéficiares effectifs</h1>
-    <p>Je certifie qu'à la date de signature du présent document, la liste détaillée ci-dessous comprend :</p>
-    <ul>
-        <li>Tous les gérants ou mandataires sociaux de l'entreprise</li>
-        <li>Toute personne détenant directement ou indirectement au moins 25% du capital de l'entreprise.</li>
-    </ul>
+    {% if disclaimer is defined %}
+        <p style="background: #fdf5cb; margin-bottom: 20px; padding: 20px;">{{ disclaimer }}</p>
+    {% endif %}
+    <h1>{% trans %}beneficial-owner_pdf-declaration-title{% endtrans %}</h1>
+    {% trans %}beneficial-owner_pdf-declaration-text{% endtrans %}
     <table class="table">
         <tbody>
         <tr>
             <td class="th">
-                <span class="label">Nom, Prénom</span>
+                <span class="label">{% trans %}beneficial-owner_pdf-declaration-name-column-header{% endtrans %}</span>
             </td>
             <td class="th">
-                <span class="label">Date et lieu de naissance</span>
+                <span class="label">{% trans %}beneficial-owner_pdf-declaration-birthday-column-header{% endtrans %}</span>
             </td>
         </tr>
         {% for owner in owners %}
@@ -52,7 +51,7 @@
             {% endif %}
             <tr class="{{ backgroundClass }}">
                 <td><span class="text-uppercase">{{ owner.idClient.nom }}</span> {{ owner.idClient.prenom }}</td>
-                <td>{% trans with {'%date%': owner.idClient.naissance|date('d/m/Y'), '%city%': owner.idClient.villeNaissance, '%country%': owner.idClient.idPaysNaissance|countryLabel} %} beneficial-owner_pdf-owner-birthplace {% endtrans %}</td>
+                <td>{% trans with {'%birthday%': owner.idClient.naissance|date('d/m/Y'), '%birthplace%': owner.idClient.villeNaissance, '%country%': owner.idClient.idPaysNaissance|countryLabel} %} beneficial-owner_pdf-declaration-birthday-text {% endtrans %}</td>
             </tr>
         {% endfor %}
     </tbody>
@@ -63,5 +62,5 @@
     <div class="spacer"></div>
     <div class="spacer"></div>
     <div class="spacer"></div>
-    <p>Date et signature :</p>
+    <p>{% trans %}beneficial-owner_pdf-declaration-signature-text{% endtrans %}</p>
 {% endblock %}

@@ -118,11 +118,11 @@ class BeneficialOwnerManager
      *
      * @return string
      */
-    public function getBeneficialOwnerDeclarationFileName(ProjectBeneficialOwnerUniversign $universignDeclaration)
+    public function getBeneficialOwnerDeclarationFileName(ProjectBeneficialOwnerUniversign $projectDeclaration)
     {
-        $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($universignDeclaration->getIdProject()->getIdCompany()->getIdClientOwner());
+        $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($projectDeclaration->getIdProject()->getIdCompany()->getIdClientOwner());
 
-        return $client->getHash() . '-' . ProjectBeneficialOwnerUniversign::DOCUMENT_NAME . '-' . $universignDeclaration->getIdProject()->getIdProject() . '.pdf';
+        return $client->getHash() . '-' . ProjectBeneficialOwnerUniversign::DOCUMENT_NAME . '-' . $projectDeclaration->getIdProject()->getIdProject() . '.pdf';
     }
 
     /**
@@ -203,7 +203,6 @@ class BeneficialOwnerManager
      */
     public function generateProjectPdfFile(ProjectBeneficialOwnerUniversign $projectDeclaration)
     {
-        //TODO further variables to be defined when doing the PDF.
         $beneficialOwners   = $projectDeclaration->getIdDeclaration()->getBeneficialOwner();
         $pdfContent         = $this->twig->render('/pdf/beneficial_owner_declaration.html.twig', ['owners' => $beneficialOwners]);
         $outputFile         = $this->getBeneficialOwnerDeclarationPdfRoot() . DIRECTORY_SEPARATOR . $this->getBeneficialOwnerDeclarationFileName($projectDeclaration);
@@ -221,11 +220,12 @@ class BeneficialOwnerManager
 
     public function generateCompanyPdfFile(CompanyBeneficialOwnerDeclaration $declaration)
     {
-        //TODO further variables to be defined when doing the PDF.
-        $beneficialOwners   = $declaration->getBeneficialOwner();
-        $pdfContent         = $this->twig->render('/pdf/beneficial_owner_declaration.html.twig', ['owners' => $beneficialOwners]);
-
-        $options            = [
+        $beneficialOwners = $declaration->getBeneficialOwner();
+        $pdfContent       = $this->twig->render('/pdf/beneficial_owner_declaration.html.twig', [
+            'owners'     => $beneficialOwners,
+            'disclaimer' => 'Ce document a pour but le contrôle de contenu et n\'est en aucun cas representativ concernant la mise en forme du document final.'
+        ]);
+        $options          = [
             'footer-html'   => '',
             'header-html'   => '',
             'margin-top'    => 20,
