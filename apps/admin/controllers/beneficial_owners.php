@@ -6,6 +6,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BeneficialOwner;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyBeneficialOwnerDeclaration;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\CoreBusinessBundle\Repository\BeneficialOwnerRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager;
 
@@ -15,9 +16,10 @@ class beneficial_ownersController extends bootstrap
     {
         parent::initialize();
 
-        $this->users->checkAccess();
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
 
-        $this->menu_admin = 'oneui';
+        $this->catchAll   = true;
+        $this->menu_admin = 'emprunteurs';
     }
 
     public function _default()

@@ -1,4 +1,4 @@
-<?php use \Unilend\Bundle\CoreBusinessBundle\Entity\OperationType; ?>
+<?php ?>
 <script>
     $(function () {
         $(".listeProjets").tablesorter({headers: {4: {sorter: false}, 5: {sorter: false}}});
@@ -128,6 +128,12 @@
             </tr>
         </table>
     </form>
+    <br/><br/>
+
+    <?php if (false === in_array($this->companies->legal_form_code, \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager::BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES)) : ?>
+        <h2>Bénéficiaires effectifs</h2>
+        <a role="button" class="btn btn-default" href="/beneficial_owners/<?= $this->companies->id_company ?>">Consulter les Bénéficiaires effectifs</a>
+    <?php endif; ?>
     <br/><br/>
 
     <?php $this->fireView('../bank_account/blocks/validated_bank_account'); ?>

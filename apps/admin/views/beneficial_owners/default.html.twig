@@ -62,7 +62,7 @@
 
 {% block pageHeader %}
     <h1 class="page-heading push">
-        {{ company.name }} - Bénéficiaires Effectifs
+        <a href="/emprunteurs/edit/{{ company.idClientOwner }}">{{ company.name }} </a> - Bénéficiaires Effectifs
     </h1>
 {% endblock %}
 
@@ -151,7 +151,7 @@
                     <p>Il n'y pas encore de documents à signer/signés</p>
                 {% endif %}
                 <p class="content-mini content-mini-full bg-info">
-                    Une declaration peut avoir été utilisé dans plusieurs projets. Elle peut etre archivé, tout en ne pas invalidant le document signé par universign, qui etait valable au moment du deblocage des fonds. </p>
+                    Une declaration peut avoir été utilisé dans plusieurs projets. Elle peut être archivée, tout en ne pas invalidant le document signé par universign, qui était valable au moment du transfer des fonds. </p>
             </div>
         </div>
     </div>

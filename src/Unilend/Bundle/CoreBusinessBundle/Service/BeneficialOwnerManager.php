@@ -13,6 +13,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\BeneficialOwner;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BeneficialOwnerType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyBeneficialOwnerDeclaration;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectBeneficialOwnerUniversign;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
@@ -25,6 +26,8 @@ class BeneficialOwnerManager
     const MAX_NUMBER_BENEFICIAL_OWNERS_TYPE_SHAREHOLDER   = 4;
     const MAX_NUMBER_BENEFICIAL_OWNERS_TYPE_OWNER         = 1;
     const MAX_NUMBER_BENEFICIAL_OWNERS_TYPE_LEGAL_MANAGER = 1;
+
+    const BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES = [1100, 1200, 1300, 1500, 1600, 1700, 1900];
 
     const VALIDATION_TYPE_UNIVERSIGN   = 'Universign';
 
@@ -449,5 +452,15 @@ class BeneficialOwnerManager
             default:
                 throw new \Exception('BeneficialOwnerType' . $type . ' does not exist');
         }
+    }
+
+    /**
+     * @param Companies $company
+     *
+     * @return bool
+     */
+    public function companyNeedsBeneficialOwnerDeclaration(Companies $company)
+    {
+        return false === in_array($company->getLegalFormCode(), self::BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES);
     }
 }
