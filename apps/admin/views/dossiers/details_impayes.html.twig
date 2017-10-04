@@ -47,11 +47,13 @@
                                 }
                                 html += '</div>'
                                 $form.find('.messages').html(html)
+                                App.blocks('#modal-status-problem .block', 'state_normal')
                             }
                         },
                         error: function (jqXHR, exception) {
                             console.log(jqXHR.status + ' : ' + exception)
                             $form.find('.messages').html('Une erreur est survenue.')
+                            App.blocks('#modal-status-problem .block', 'state_normal')
                         }
                     })
                 }
@@ -192,7 +194,7 @@
         </form>
     </div>
     <div class="modal fade in" id="modal-additional-fees">
-        <form class="modal-dialog validate" action="/" method="post">
+        <form class="modal-dialog validate" action="/debt_collection_mission/addCharge/{{ projectData.projectId }}" method="post">
             <div class="modal-content">
                 <div class="block block-themed remove-margin-b">
                     <div class="block-header bg-primary">
@@ -203,16 +205,9 @@
                             <label>Type de frais</label>
                             <select class="form-control required" name="fee-type">
                                 <option value="0">Selectionner</option>
-                                <option value="1">Clause pénale</option>
-                                <option value="2">Frais de visite domiciliare</option>
-                                <option value="3">Injonction de payer</option>
-                                <option value="4">Référé provision</option>
-                                <option value="5">Saisie conservatoire</option>
-                                <option value="6">Assignation au fond</option>
-                                <option value="7">Assignation en procédure collective</option>
-                                <option value="8">Procédure d'appel</option>
-                                <option value="9">Opposition sur vente de fonds de commerce</option>
-                                <option value="10">Frais de déclarations de créance</option>
+                                {% for chargeType in projectChargeTypes %}
+                                    <option value="{{ chargeType.id }}">{{ ('project-charge-type_' ~ chargeType.label|replace('_', '-')) | trans }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="form-group">

@@ -1,25 +1,25 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
+use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectNotification;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
+use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectNotification;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
-use \Psr\Log\LoggerInterface;
-use \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
-use \Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 
 class dossiersController extends bootstrap
 {
@@ -3182,6 +3182,8 @@ class dossiersController extends bootstrap
                         'debtCollector'              => $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => \Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager::CLIENT_HASH_PROGERIS]),
                         'debtCollectionMissionsData' => $debtCollectionMissionData,
                         'pendingReceiptData'         => $this->getPendingReceiptData($project),
+                        'projectCharges'             => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCharge')->findBy(['idProject' => $project]),
+                        'projectChargeTypes'         => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectChargeType')->findAll(),
                         'siteContentMessage'         => trim($translator->trans('projet_info-passage-statut-probleme')),
                         'mailContentMessage'         => trim($translator->trans('projet_mail-info-passage-statut-probleme'))
                     ];

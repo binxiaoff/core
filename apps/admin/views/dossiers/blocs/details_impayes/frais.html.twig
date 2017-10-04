@@ -1,54 +1,60 @@
 <div class="block-content block-content-full">
     <h3 class="h4 push-20">Frais</h3>
-    <table class="table table-bordered table-hover table-header-bg">
-        <thead>
-        <tr>
-            <th style="width: 25%">
-                Date
-            </th>
-            <th style="width: 25%">
-                Type
-            </th>
-            <th style="width: 25%">
-                Mode de réglement
-            </th>
-            <th style="width: 25%">
-                Régularisé par réception
-            </th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>
-                14/08/2017
-            </td>
-            <td>
-                Frais visite
-            </td>
-            <td>
-                Avancé par Unilend
-            </td>
-            <td>
-                200 € - 14/07/2017
-            </td>
-        </tr>
-        <tr>
-            <td>
-                14/04/2017
-            </td>
-            <td>
-                Frais visite
-            </td>
-            <td>
-                Avancé par Unilend
-            </td>
-            <td>
-                Non régularisé
-            </td>
-        </tr>
-        </tbody>
-    </table>
-    <div class="text-right">
-        <a role="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-additional-fees">Ajouter des frais</a>
-    </div>
+    {% if projectCharges|length > 0 %}
+        <table class="table table-bordered table-hover table-header-bg">
+            <thead>
+            <tr>
+                <th style="width: 20%">
+                    Date
+                </th>
+                <th style="width: 20%">
+                    ID
+                </th>
+                <th style="width: 20%">
+                    Type
+                </th>
+                <th style="width: 20%">
+                    Montant TTC
+                </th>
+                <th style="width: 20%">
+                    Régularisé par réception
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for projectCharge in projectCharges %}
+                <tr>
+                    <td>
+                        {{ projectCharge.invoiceDate|localizeddate('short', 'none') }}
+                    </td>
+                    <td>
+                        {{ projectCharge.id }}
+                    </td>
+                    <td>
+                        {{ ('project-charge-type_' ~ projectCharge.idType.label|replace('_', '-')) | trans }}
+                    </td>
+                    <td>
+                        {{ projectCharge.amountInclVat|localizedcurrency('EUR') }}
+                    </td>
+                    <td>
+                        {% if projectCharge.repaymentDate %}
+                            {{ projectCharge.repaymentDate|localizeddate('short', 'none') }}
+                        {% else %}
+                            Non régularisé
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert">
+            <p>Aucun frais saisi sur ce projet.</p>
+        </div>
+    {% endif %}
+    {% if debtCollectionMissionsData|length > 0 %}
+        <div class="text-right">
+            <a role="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-additional-fees">Ajouter des frais</a>
+        </div>
+    {% endif %}
 </div>
