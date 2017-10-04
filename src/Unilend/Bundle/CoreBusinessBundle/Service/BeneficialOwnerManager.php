@@ -6,7 +6,6 @@ use Doctrine\ORM\EntityManager;
 use Knp\Snappy\GeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Twig_Environment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -19,14 +18,9 @@ class BeneficialOwnerManager
 {
     const EXCEPTION_CODE_BENEFICIAL_OWNER_MANAGER = 3;
 
-    const BENEFICIAL_OWNER_ATTACHMENT_TYPES = [
-        AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_1,
-        AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_2,
-        AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_3,
-        AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1,
-        AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2,
-        AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3
-    ];
+    const BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES = [1100, 1200, 1300, 1500, 1600, 1700, 1900];
+
+    const VALIDATION_TYPE_UNIVERSIGN   = 'Universign';
 
     /** @var EntityManager */
     private $entityManager;
@@ -215,7 +209,19 @@ class BeneficialOwnerManager
         }
 
         $beneficialOwner->getAttachments(); //TODO check attachment types
+    }
 
-        return true;
+    /**
+     * @param \projects|Projects $project
+     *
+     * @return bool
+     */
+    public function projectNeedsBeneficialOwnerDeclaration($project)
+    {
+        if ($project instanceof \projects) {
+            $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+        }
+
+        return false === in_array($project->getIdCompany()->getLegalFormCode(), self::BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES);
     }
 }

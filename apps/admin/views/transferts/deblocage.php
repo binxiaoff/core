@@ -17,6 +17,7 @@
                 <th>Kbis</th>
                 <th>Pouvoir</th>
                 <th>Mandat</th>
+                <th>Bénéficiaires <br>Effectifs</th>
                 <th>Déblocage</th>
             </tr>
         </thead>
@@ -49,7 +50,18 @@
                     </td>
                     <td>
                         <?php if (false === empty($aProject['mandat'])) : ?>
-                            <a href="<?= $this->lurl ?>/protected/mandats/<?= $aProject['mandat'] ?>"><img src="<?= $this->surl ?>/images/admin/modif.png" alt="MANDAT"/></a></td>
+                            <a href="<?= $this->lurl ?>/protected/mandats/<?= $aProject['mandat'] ?>"><img src="<?= $this->surl ?>/images/admin/modif.png" alt="MANDAT"/></a>
+                        <?php endif; ?>
+                    </td>
+                    <td>
+                        <?php if (false === empty($aProject['beneficial_owner_declaration'])) : ?>
+                            <?php if ($aProject['beneficial_owner_declaration']) : ?>
+                                <a href="<?= $this->lurl ?>/protected/beneficiaires_effectifs/<?= $aProject['beneficial_owner_declaration'] ?>">
+                                    <img src="<?= $this->surl ?>/images/admin/modif.png" alt="BENEFCIAIRES EFFECTIFS"/>
+                                </a>
+                            <?php else: ?>
+                                <p>Non demandé pour se type d'entrerpise</p>
+                            <?endif; ?>
                         <?php endif; ?>
                     </td>
                     <td>
@@ -59,6 +71,7 @@
                                 && $aProject['status_remb'] == \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir::STATUS_REPAYMENT_PENDING
                                 && $aProject['status_mandat'] == \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED
                                 && $aProject['authority_status'] == \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED
+                                && $aProject['beneficial_owner_declaration_status'] == \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED
                             ) : ?>
                                 <input type="submit" name="validateProxy" class="btn-primary" value="Débloquer les fonds" />
                                 <input type="hidden" name="id_project" value="<?= $aProject['id_project'] ?>"/>
