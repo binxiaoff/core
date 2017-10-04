@@ -1,18 +1,67 @@
 {% extends 'pdf/layout.html.twig' %}
 
+{% block cssFiles %}
+    {{ parent() }}
+    <style>
+        .table tr td.th {
+            display: table-cell;
+            background-color: #eceaed;
+            color: #9f9d9f;
+            font-size: 10px!important;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .table tr td {
+            padding: .75em 15px!important;
+        }
+        .table tr td.th {
+            padding-top: 1em!important;
+            padding-bottom: 1em!important;
+        }
+        .text-uppercase {
+            text-transform: uppercase;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
-    <header>
-        <h1>Declaration de bénéficiares effectifs</h1>
-    </header>
-    <div class="row" style="page-break-after: auto;">
-        Je certifie qu'à la date de signature du présent document, la liste détaillée ci-dessous comprend :
-        <ul>
-            <li>Tous les gérants ou mandataires sociaux de l'entreprise</li>
-            et
-            <li>Toute personne détenant directement ou indirectement au moins 25% du capital de l'entreprise.</li>
-        </ul>
+    <h1>Declaration de bénéficiares effectifs</h1>
+    <p>Je certifie qu'à la date de signature du présent document, la liste détaillée ci-dessous comprend :</p>
+    <ul>
+        <li>Tous les gérants ou mandataires sociaux de l'entreprise</li>
+        <li>Toute personne détenant directement ou indirectement au moins 25% du capital de l'entreprise.</li>
+    </ul>
+    <table class="table">
+        <tbody>
+        <tr>
+            <td class="th">
+                <span class="label">Nom, Prénom</span>
+            </td>
+            <td class="th">
+                <span class="label">Date et lieu de naissance</span>
+            </td>
+        </tr>
         {% for owner in owners %}
-            <p>{{ owner.idClient.nom }}, {{ owner.idClient.prenom }}, née le {{ owner.idClient.naissance|date('m/d/Y') }} à {{ owner.idClient.villeNaissance }}, {{ owner.idClient.idPaysNaissance|countryLabel }}</p>
+            {% if (loop.index is odd) %}
+                {% set backgroundClass = 'bg-bg3' %}
+            {% else %}
+                {% set backgroundClass = '' %}
+            {% endif %}
+            <tr class="{{ backgroundClass }}">
+                <td><span class="text-uppercase">{{ owner.idClient.nom }}</span> {{ owner.idClient.prenom }}</td>
+                <td>{% trans with {'%date%': owner.idClient.naissance|date('d/m/Y'), '%city%': owner.idClient.villeNaissance, '%country%': owner.idClient.idPaysNaissance|countryLabel} %} beneficial-owner_pdf-owner-birthplace {% endtrans %}</td>
+            </tr>
         {% endfor %}
-    </div>
+    </tbody>
+    </table>
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+    <p>Date et signature :</p>
 {% endblock %}
