@@ -452,8 +452,11 @@ class beneficial_ownersController extends bootstrap
             $entityManager->flush($ownerToArchive);
         }
 
-        header('Location: ' . $this->lurl . '/beneficial_owners/' . $idCompany);
-        die;
+        return [
+            'owner'  => null,
+            'errors' => [],
+            'id'     => null
+        ];
     }
 
 
