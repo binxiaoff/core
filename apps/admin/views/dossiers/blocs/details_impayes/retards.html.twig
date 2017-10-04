@@ -63,7 +63,7 @@
     </table>
     <div class="text-right">
         {% if projectData.isClosedOutLoan %}
-            <button type="button" class="btn btn-default push-10-r" data-toggle="modal" data-target="#modal-cancel-term">Déchoir le terme</button>
+            <button type="button" class="btn btn-default push-10-r" data-toggle="modal" data-target="#modal-close-out-netting">Déchoir le terme</button>
         {% endif %}
 
         {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::REMBOURSEMENT') == projectData.projectStatus %}

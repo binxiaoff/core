@@ -829,6 +829,28 @@ use \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
                                 </tr>
                             <?php endif; ?>
                         <?php endif; ?>
+                        <?php // @@TODO check form action and the IF statement below ?>
+                        <?php if ($this->projects->status == ProjectsStatus::PROBLEME) : ?>
+                            <script>
+                                $(function(){
+                                    var popupHtml = '<form id="close_out_netting_popup" method="post" action="<?= $this->lurl ?>/dossiers/details_impayes/<?= $this->projects->id_project ?>">' +
+                                        '<p style="margin-top: 20px">Merci de confirmer la déchéance du terme en cliquant sur "Valider".</p>' +
+                                        '<div>' +
+                                        '<input type="hidden" name="close-out-netting" value="1">' +
+                                        '<button type="button" class="btn-default" onclick="parent.$.fn.colorbox.close();">Annuler</button>' +
+                                        '<button type="submit" class="btn-primary" style="margin-left: 10px">Valider</button>' +
+                                        '</div>' +
+                                        '</form>'
+                                    $("#close_out_netting_link").colorbox({html:popupHtml});
+                                })
+                            </script>
+                            <tr>
+                                <th><label for="close_out_netting_link">Déchéance du terme</label></th>
+                                <td>
+                                    <a id="close_out_netting_link" class="btn_link" style="font-size: 10px; padding: 2px 5px;">Déchoir le terme</a>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
                         <?php if ($this->projects->status >= ProjectsStatus::A_FUNDER) : ?>
                             <tr>
                                 <th><label for="date_publication">Date de publication&nbsp;*</label></th>
