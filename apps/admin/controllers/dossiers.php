@@ -216,10 +216,12 @@ class dossiersController extends bootstrap
 
                 $this->validBankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->clients->id_client);
 
-                $companyBeneficialOwnerDeclaration = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findBy(['idCompany' => $this->projects->id_company]);
-                if (false === empty($companyBeneficialOwnerDeclaration)) {
-                    $beneficialOwnerDeclaration       = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findBy(['idProject' => $this->projects->id_project], ['id' => 'DESC']);
-                    $this->beneficialOwnerDeclaration = empty($beneficialOwnerDeclaration) ? [] : $beneficialOwnerDeclaration[0];
+                if (false === in_array($this->companies->legal_form_code, \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager::BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES)) {
+                    $companyBeneficialOwnerDeclaration = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findBy(['idCompany' => $this->projects->id_company]);
+                    if (false === empty($companyBeneficialOwnerDeclaration)) {
+                        $beneficialOwnerDeclaration       = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findBy(['idProject' => $this->projects->id_project], ['id' => 'DESC']);
+                        $this->beneficialOwnerDeclaration = empty($beneficialOwnerDeclaration) ? [] : $beneficialOwnerDeclaration[0];
+                    }
                 }
             }
 
