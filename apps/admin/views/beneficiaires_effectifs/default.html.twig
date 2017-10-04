@@ -32,7 +32,7 @@
                             cache: 0,
                             delay: 500,
                             source: function (term, suggest) {
-                                $.getJSON('/beneficial_owners/search_client/', {q: term}, function (response) {
+                                $.getJSON('/beneficiaires_effectifs/search_client/', {q: term}, function (response) {
                                     suggest(response)
                                 })
                             },
@@ -88,7 +88,7 @@
                 <h3 class="block-title">Liste des bénéficiaires effectifs</h3>
             </div>
             <div class="block-content block-content-full">
-                <table class="table table-striped table-hover table-bordered table-header-bg" data-table-editor data-table-editor-url="/beneficial_owners/edit/" data-table-editor-actions="add, modify, toggle" data-table-editor-hidden="id_declaration:{{ declaration.id }}, id_company:{{ company.idCompany }}">
+                <table class="table table-striped table-hover table-bordered table-header-bg" data-table-editor data-table-editor-url="/beneficiaires_effectifs/edit/" data-table-editor-actions="add, modify, toggle" data-table-editor-hidden="id_declaration:{{ declaration.id }}, id_company:{{ company.idCompany }}">
                     <thead>
                     <tr>
                         <th data-editor-name="last_name" data-editor-type="text">Nom</th>
@@ -151,7 +151,7 @@
                                 <td><a href="/dossiers/{{ declaration.idProject.idProject }}">{{ declaration.idProject.idProject }}</a></td>
                                 <td>{{ declaration.idDeclaration.added|date('d/m/Y') }}</td>
                                 <td>{{ "beneficial-owner_declaration-status-#{ declaration.idDeclaration.status }"|trans }}</td>
-                                <td>{{ "universign_status-label-#{ declaration.idDeclaration.status }"|trans }}</td>
+                                <td>{{ "universign_status-label-#{ declaration.status }"|trans }}</td>
                                 <td><a href="/protected/beneficial_owner/{{ declaration.name }}">{{ declaration.name }}</a></td>
                                 <td class="text-center">
                                     {% if declaration.name is not empty %}

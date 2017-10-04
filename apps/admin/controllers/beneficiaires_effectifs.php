@@ -10,7 +10,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\CoreBusinessBundle\Repository\BeneficialOwnerRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager;
 
-class beneficial_ownersController extends bootstrap
+class beneficiaires_effectifsController extends bootstrap
 {
     public function initialize()
     {
@@ -637,7 +637,7 @@ class beneficial_ownersController extends bootstrap
 
         $declaration = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentBeneficialOwnerDeclaration($company);
         if (null === $declaration) {
-            header('Location: ' . $this->lurl . '/beneficial_owners/' . $company->getIdCompany());
+            header('Location: ' . $this->lurl . '/beneficiaires_effectifs/' . $company->getIdCompany());
             die;
         }
 

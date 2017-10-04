@@ -449,7 +449,7 @@ class UniversignController extends Controller
             case WireTransferOutUniversign::class:
                 return 'wire-transfer-out';
             case ProjectBeneficialOwnerUniversign::class:
-                return ProjectBeneficialOwnerUniversign::DOCUMENT_TYPE;
+                return 'beneficial-owner';
             default:
                 /** @var LoggerInterface $logger */
                 $logger = $this->get('logger');

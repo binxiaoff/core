@@ -12,6 +12,7 @@ use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyBeneficialOwnerDeclaration;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectBeneficialOwnerUniversign;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
@@ -366,7 +367,6 @@ class UniversignManager
     public function createBeneficialOwnerDeclaration(ProjectBeneficialOwnerUniversign $beneficialOwnerDeclaration)
     {
         $resultValue = $this->createSignature(ProjectBeneficialOwnerUniversign::DOCUMENT_TYPE, $beneficialOwnerDeclaration->getId(), [$beneficialOwnerDeclaration]);
-        var_dump($resultValue);
 
         if ($resultValue instanceof Value) {
             $beneficialOwnerDeclaration
@@ -381,11 +381,13 @@ class UniversignManager
     }
 
     /**
-     * @param ProjectBeneficialOwnerUniversign $beneficialOwnerDeclaration
+     * @param ProjectBeneficialOwnerUniversign $projectDeclaration
      */
-    private function signBeneficialOwnerDeclaration(ProjectBeneficialOwnerUniversign $beneficialOwnerDeclaration)
+    private function signBeneficialOwnerDeclaration(ProjectBeneficialOwnerUniversign $projectDeclaration)
     {
+        $projectDeclaration->getIdDeclaration()->setStatus(CompanyBeneficialOwnerDeclaration::STATUS_VALIDATED);
 
+        $this->entityManager->flush($projectDeclaration->getIdDeclaration());
     }
 
     /**
@@ -468,7 +470,7 @@ class UniversignManager
                 $documentFullPath = $this->rootDir . '/../protected/pdf/wire_transfer_out/' . $documentName;
                 break;
             case ProjectBeneficialOwnerUniversign::class:
-                $documentFullPath = $this->rootDir . '/../protected/pdf/beneficial_owner/' . $documentName; //TODO harmonize with pdf method
+                $documentFullPath = $this->rootDir . '/../protected/pdf/beneficial_owner/' . $documentName;
                 break;
             default:
                 $this->logger->error('Unknown Universign document type : ' . get_class($document) . '  id : ' . $documentId, ['class' => __CLASS__, 'function' => __FUNCTION__]);

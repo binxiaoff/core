@@ -95,6 +95,8 @@ class BeneficialOwnerManager
             ->setIdProject($project)
             ->setStatus(UniversignEntityInterface::STATUS_PENDING);
 
+        $universign->setName($this->getBeneficialOwnerDeclarationFileName($universign));
+
         $this->entityManager->persist($universign);
 
         $this->entityManager->flush($universign);

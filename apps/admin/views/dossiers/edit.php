@@ -1,5 +1,7 @@
 <?php use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements; ?>
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+
+?>
 <?php ?>
 <style type="text/css">
     table.tablesorter tbody td.grisfonceBG, .grisfonceBG {
@@ -928,7 +930,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements; ?>
                                 <tr>
                                     <th>Déclaration de <br>bénéficiaires effectifs</th>
                                     <td>
-                                        <a role="button" class="btn btn-default" href="/beneficial_owners/<?= $this->companies->id_company ?>">Déclarer les bénéficiaires effectifs</a>
+                                        <a role="button" class="btn btn-default" href="/beneficiaires_effectifs/<?= $this->companies->id_company ?>">Déclarer les bénéficiaires effectifs</a>
                                     </td>
                                 </tr>
                             <?php else : ?>
