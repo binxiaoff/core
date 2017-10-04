@@ -73,7 +73,7 @@ class AnnouncementDetails
      */
     public function getPublishedDate()
     {
-        return $this->publishedDate;
+        return $this->publishedDate->setTime(0, 0, 0);
     }
 
     /**

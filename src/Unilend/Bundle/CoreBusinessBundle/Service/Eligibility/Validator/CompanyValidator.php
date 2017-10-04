@@ -19,6 +19,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Xerfi;
 use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyBalanceSheet;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerHermesCompanyRating;
+use Unilend\Bundle\WSClientBundle\Entity\Infolegale\AnnouncementDetails;
+use Unilend\Bundle\WSClientBundle\Entity\Infolegale\ContentiousParticipant;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\DirectorAnnouncement;
 
 class CompanyValidator
@@ -44,6 +46,7 @@ class CompanyValidator
         'TC-RISK-014' => 'checkCurrentExecutivesHistory',
         'TC-RISK-015' => 'checkEulerHermesGrade',
         'TC-RISK-018' => 'checkPreviousExecutivesHistory',
+        'TC-RISK-019' => 'checkCompanyPejorativeEvents',
     ];
 
     /**
@@ -139,6 +142,11 @@ class CompanyValidator
         $infolegaleScoreCheck = $this->checkRule('TC-RISK-013', $siren, $project);
         if (false === empty($infolegaleScoreCheck)) {
             return $infolegaleScoreCheck;
+        }
+
+        $companyPejorativeEventsCheck = $this->checkRule('TC-RISK-019', $siren, $project);
+        if (false === empty($companyPejorativeEventsCheck)) {
+            return $companyPejorativeEventsCheck;
         }
 
         $currentExecutivesHistory = $this->checkRule('TC-RISK-014', $siren, $project);
@@ -498,7 +506,7 @@ class CompanyValidator
         $this->externalDataManager->refreshExecutiveChanges($siren);
         $activeExecutives = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->getActiveExecutives($siren);
         foreach ($activeExecutives as $executiveId) {
-            if ($this->hasIncidentAnnouncements($executiveId['idExecutive'], 5, 1)) {
+            if ($this->hasExecutiveIncidentAnnouncements($executiveId['idExecutive'], 5, 1)) {
                 return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_INCIDENT];
             }
         }
@@ -514,9 +522,9 @@ class CompanyValidator
     private function checkPreviousExecutivesHistory($siren)
     {
         $this->externalDataManager->refreshExecutiveChanges($siren);
-        $previousExecutives = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->getPreviousExecutivesLeftAfter($siren, new \DateTime('4 years ago'));
+        $previousExecutives = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->getPreviousExecutivesLeftAfter($siren, new \DateTime('3 years ago'));
         foreach ($previousExecutives as $executiveId) {
-            if ($this->hasIncidentAnnouncements($executiveId['idExecutive'], 4, 0)) {
+            if ($this->hasExecutiveIncidentAnnouncements($executiveId['idExecutive'], 3, 0)) {
                 return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT];
             }
         }
@@ -531,7 +539,7 @@ class CompanyValidator
      *
      * @return bool
      */
-    private function hasIncidentAnnouncements($executiveId, $yearsSince, $extended)
+    private function hasExecutiveIncidentAnnouncements($executiveId, $yearsSince, $extended)
     {
         $now             = new \DateTime();
         $executivePeriod = [];
@@ -548,14 +556,14 @@ class CompanyValidator
         foreach ($incidentAnnouncements as $announcement) {
             if (
                 false === isset($executivePeriod[$announcement->getSiren()])
-                || false === in_array($announcement->getEventCode(), DirectorAnnouncement::INFOLEGALE_PEJORATIVE_EVENT_CODE)
+                || false === in_array($announcement->getEventCode(), DirectorAnnouncement::PEJORATIVE_EVENT_CODE)
             ) {
                 continue;
             }
 
             $eventCodes = explode(',', $announcement->getEventCode());
             foreach ($eventCodes as $eventCode) {
-                if (false === in_array(trim($eventCode), DirectorAnnouncement::INFOLEGALE_PEJORATIVE_EVENT_CODE)) {
+                if (false === in_array(trim($eventCode), DirectorAnnouncement::PEJORATIVE_EVENT_CODE)) {
                     continue 2;
                 }
             }
@@ -645,6 +653,41 @@ class CompanyValidator
     }
 
     /**
+     * @param string $siren
+     *
+     * @return array
+     */
+    private function checkCompanyPejorativeEvents($siren)
+    {
+        $requestedEvents = 0;
+        $announcements   = $this->externalDataManager->getAnnouncements($siren, 1);
+
+        foreach ($announcements as $announcement) {
+            foreach ($announcement->getAnnouncementEvents() as $event) {
+                if (in_array($event->getCode(), AnnouncementDetails::PEJORATIVE_EVENT_CODE)) {
+                    if ($announcement->getContentiousParticipants()) {
+                        foreach ($announcement->getContentiousParticipants() as $participant) {
+                            if (
+                                $siren === $participant->getSiren()
+                                && (
+                                    ContentiousParticipant::TYPE_TARGET === $participant->getType()
+                                    || ContentiousParticipant::TYPE_COMPLAINANT === $participant->getType() && 3 === ++$requestedEvents
+                                )
+                            ) {
+                                return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_COMPANY_INCIDENT];
+                            }
+                        }
+                    } else {
+                        return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_COMPANY_INCIDENT];
+                    }
+                }
+            }
+        }
+
+        return [];
+    }
+
+    /**
      * @param string        $siren
      * @param Projects|null $project
      *
@@ -657,7 +700,7 @@ class CompanyValidator
             return $altaresScoreCheck;
         }
 
-        $infolegaleScoreCheck = $this->checkRule('TC-RISK-013', $siren, $project);
+        $infolegaleScoreCheck = $this->checkRule('TC-RISK-014', $siren, $project);
         if (false === empty($infolegaleScoreCheck)) {
             return $infolegaleScoreCheck;
         }

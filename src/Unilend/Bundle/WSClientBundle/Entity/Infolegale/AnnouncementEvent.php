@@ -51,6 +51,6 @@ class AnnouncementEvent
      */
     public function getResolutionDate()
     {
-        return $this->resolutionDate;
+        return $this->resolutionDate->setTime(0, 0, 0);
     }
 }

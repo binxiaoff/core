@@ -6,6 +6,9 @@ use JMS\Serializer\Annotation as JMS;
 
 class ContentiousParticipant
 {
+    const TYPE_COMPLAINANT = 'DM';
+    const TYPE_TARGET      = 'DF';
+
     /**
      * @var string
      *
