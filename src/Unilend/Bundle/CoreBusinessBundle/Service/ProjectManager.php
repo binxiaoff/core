@@ -1285,15 +1285,17 @@ class ProjectManager
      */
     public function getPendingAmountAndPaymentsCountOnProject(Projects $project)
     {
-        $paymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        $paymentRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        $closeOutNettingDate = $project->getCloseOutNettingDate();
 
-        if (null !== $project->getCloseOutNettingDate()) {
-            $pastFullPayments       = $paymentRepository->getPendingAmountAndPaymentsCountOnProjectAtDate($project, $project->getCloseOutNettingDate());
+        if (null !== $closeOutNettingDate) {
+            $dayBefore              = $closeOutNettingDate->sub((new \DateInterval('P1D')));
+            $pastFullPayments       = $paymentRepository->getPendingAmountAndPaymentsCountOnProjectAtDate($project, $dayBefore);
             $dueCapitalPayments     = $paymentRepository->getPendingCapitalAndPaymentsCountOnProjectFromDate($project, $project->getCloseOutNettingDate());
             $remainingAmount        = round(bcadd($pastFullPayments['amount'], $dueCapitalPayments['amount'], 4), 2);
             $remainingPaymentsCount = round(bcadd($pastFullPayments['paymentsCount'], $dueCapitalPayments['paymentsCount'], 2), 1);
         } else {
-            $pastFullPayments       = $paymentRepository->getPendingAmountAndPaymentsCountOnProjectAtDate($project, new \DateTime());
+            $pastFullPayments       = $paymentRepository->getPendingAmountAndPaymentsCountOnProjectAtDate($project, new \DateTime('yesterday'));
             $remainingAmount        = $pastFullPayments['amount'];
             $remainingPaymentsCount = $pastFullPayments['paymentsCount'];
         }

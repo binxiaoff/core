@@ -497,12 +497,12 @@ class DebtCollectionMissionManager
                 ],
                 ['dateEcheanceEmprunteur' => 'ASC']
             );
-            $now                 = (new \DateTime())->setTime(23, 59, 59);
+            $yesterday           = (new \DateTime('yesterday 23:59:59'));
             $closeOutNettingDate = $project->getCloseOutNettingDate();
 
             if (null === $closeOutNettingDate) {
                 foreach ($pendingPayments as $key => $payment) {
-                    if ($now > $payment->getDateEcheanceEmprunteur()) {
+                    if ($payment->getDateEcheanceEmprunteur() <= $yesterday) {
                         $paymentScheduleMission = new DebtCollectionMissionPaymentSchedule();
                         $paymentScheduleMission->setIdMission($newMission)
                             ->setIdPaymentSchedule($payment)
@@ -519,10 +519,11 @@ class DebtCollectionMissionManager
                 }
             } else {
                 /** @todo Use information from new table that holds close out netting information */
-                $closeOutNettingDate->setTime(0, 0, 0);
+                $dayBefore = $closeOutNettingDate->sub((new \DateInterval('P1D')));
+                $dayBefore->setTime(23, 59, 59);
 
                 foreach ($pendingPayments as $key => $payment) {
-                    if ($project->getCloseOutNettingDate() > $payment->getDateEcheanceEmprunteur()) {
+                    if ($payment->getDateEcheanceEmprunteur() <= $dayBefore) {
                         $totalCapital    = bcadd($totalCapital, bcsub($payment->getCapital(), $payment->getPaidCapital(), 4), 4);
                         $totalInterest   = bcadd($totalCapital, bcsub($payment->getInterets(), $payment->getPaidInterest(), 4), 4);
                         $totalCommission = bcadd($totalCapital, bcsub(bcadd($payment->getCommission(), $payment->getTva(), 4), $payment->getPaidCommissionVatIncl(), 4), 4);

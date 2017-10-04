@@ -155,6 +155,7 @@ class ReceptionsRepository extends EntityRepository
 
     /**
      * @param Projects $project
+     *
      * @return array
      */
     public function getPendingReceipt(Projects $project)
