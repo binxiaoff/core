@@ -105,7 +105,9 @@ class ProjectPaymentManager
 
         if ($debtCollectionMission && $debtCollectionFeeRate) {
             $feeOnProjectCharge = $this->debtCollectionFeeManager->applyFeeOnProjectCharge($totalAppliedCharge, $wireTransferIn, $debtCollectionMission, $debtCollectionFeeRate);
-            $amount             = round(bcsub($amount, $feeOnProjectCharge, 4), 2);
+            if ($isDebtCollectionFeeDueToBorrower) {
+                $amount = round(bcsub($amount, $feeOnProjectCharge, 4), 2);
+            }
 
             $overdueAmounts              = $paymentScheduleRepository->getTotalOverdueAmounts($project);
             $totalUnpaidAmount           = round(bcadd($overdueAmounts['commission'], bcadd($overdueAmounts['capital'], $overdueAmounts['interest'], 4), 4), 2);

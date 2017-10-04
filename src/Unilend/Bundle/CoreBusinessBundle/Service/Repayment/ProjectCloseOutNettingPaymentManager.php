@@ -100,8 +100,9 @@ class ProjectCloseOutNettingPaymentManager
 
         if ($debtCollectionMission && $debtCollectionFeeRate) {
             $feeOnProjectCharge = $this->debtCollectionFeeManager->applyFeeOnProjectCharge($totalAppliedCharge, $wireTransferIn, $debtCollectionMission, $debtCollectionFeeRate);
-            $amount             = round(bcsub($amount, $feeOnProjectCharge, 4), 2);
-
+            if ($isDebtCollectionFeeDueToBorrower) {
+                $amount = round(bcsub($amount, $feeOnProjectCharge, 4), 2);
+            }
             $notPaidCommissionProportion = bcdiv($unpaidCommission, $totalUnpaidAmount, 10);
             $predictCommission           = round(bcmul($amount, $notPaidCommissionProportion, 4), 2);
 

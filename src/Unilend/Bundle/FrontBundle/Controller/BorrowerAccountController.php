@@ -178,7 +178,8 @@ class BorrowerAccountController extends Controller
             BorrowerOperationsManager::OP_LENDER_MONTHLY_REPAYMENT,
             BorrowerOperationsManager::OP_LENDER_EARLY_REPAYMENT,
             BorrowerOperationsManager::OP_RECOVERY_PAYMENT,
-            BorrowerOperationsManager::OP_LENDER_RECOVERY_REPAYMENT
+            BorrowerOperationsManager::OP_LENDER_RECOVERY_REPAYMENT,
+            OperationType::BORROWER_PROJECT_CHARGE_REPAYMENT
         ];
 
         if ($request->isXmlHttpRequest()) {

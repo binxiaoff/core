@@ -15,13 +15,18 @@ class DebtCollectionFeeManager
 {
     /** @var EntityManager */
     private $entityManager;
+
     /** @var DebtCollectionMissionManager */
     private $debtCollectionMissionManager;
 
-    public function __construct(EntityManager $entityManager, DebtCollectionMissionManager $debtCollectionMissionManager)
+    /** @var OperationManager */
+    private $operationManager;
+
+    public function __construct(EntityManager $entityManager, DebtCollectionMissionManager $debtCollectionMissionManager, OperationManager $operationManager)
     {
         $this->entityManager                = $entityManager;
         $this->debtCollectionMissionManager = $debtCollectionMissionManager;
+        $this->operationManager             = $operationManager;
     }
 
     /**
@@ -40,7 +45,7 @@ class DebtCollectionFeeManager
         $debtCollectionFee                = 0;
 
         //Treat the project's charges only if the debt collection fee is due to the borrower.
-        //Because otherwise, the Unilend takes the charges, and the charges have already been paid before (the charges are created in this case with "paid" status).
+        //Because otherwise, Unilend takes the charges, and the charges have already been paid before (the charges are created in this case with "paid" status).
         if ($projectCharge && $isDebtCollectionFeeDueToBorrower) {
             $walletRepository    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
             $borrowerWallet      = $walletRepository->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
@@ -192,5 +197,36 @@ class DebtCollectionFeeManager
     public function cancelFee(Receptions $wireTransferIn)
     {
         $this->entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionFeeDetail')->deleteFeesByWireTransferIn($wireTransferIn);
+    }
+
+    /**
+     * @param Receptions $wireTransferIn
+     */
+    public function processDebtCollectionFee(Receptions $wireTransferIn)
+    {
+        $project                           = $wireTransferIn->getIdProject();
+        $debtCollectionFeeDetailRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionFeeDetail');
+
+        $borrowerWallet            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+        $borrowerDebtCollectionFee = $debtCollectionFeeDetailRepository->getTotalDebtCollectionFeeByReception($wireTransferIn, $borrowerWallet, DebtCollectionFeeDetail::STATUS_PENDING);
+
+        if (1 === bccomp($borrowerDebtCollectionFee, 0, 2)) {
+            $debtCollectorWallet = $debtCollectionFeeDetailRepository->findOneBy(['idWireTransferIn' => $wireTransferIn])->getIdWalletCreditor();
+            $this->operationManager->payDebtCollectionFee($borrowerWallet, $debtCollectorWallet, $borrowerDebtCollectionFee, [$project, $wireTransferIn]);
+            $debtCollectionFeeDetailRepository->setDebtCollectionFeeStatusByReception($wireTransferIn, $borrowerWallet, DebtCollectionFeeDetail::STATUS_TREATED);
+        }
+
+        $debtCollectionFeeDetails = $debtCollectionFeeDetailRepository->findBy(['idWireTransferIn' => $wireTransferIn, 'status' => DebtCollectionFeeDetail::STATUS_PENDING]);
+
+        foreach ($debtCollectionFeeDetails as $debtCollectionFeeDetail) {
+            $this->operationManager->payDebtCollectionFee(
+                $debtCollectionFeeDetail->getIdWalletDebtor(),
+                $debtCollectionFeeDetail->getIdWalletCreditor(),
+                $debtCollectionFeeDetail->getAmountTaxIncl(),
+                [$project, $wireTransferIn]
+            );
+            $debtCollectionFeeDetail->setStatus(DebtCollectionFeeDetail::STATUS_TREATED);
+            $this->entityManager->flush($debtCollectionFeeDetail);
+        }
     }
 }

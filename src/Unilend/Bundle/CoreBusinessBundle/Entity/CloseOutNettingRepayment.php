@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * CloseOutNettingRepayment
  *
  * @ORM\Table(name="close_out_netting_repayment", indexes={@ORM\Index(name="idx_close_out_netting_repayment_id_loan", columns={"id_loan"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\CloseOutNettingRepaymentRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class CloseOutNettingRepayment
