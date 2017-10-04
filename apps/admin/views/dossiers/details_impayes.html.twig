@@ -15,13 +15,23 @@
         $(function () {
             // Page helpers are initialised in app.js and can be called quickly using their name
             App.initHelpers(['validation', 'datepicker', 'datatables']);
-
-            // Passer en statut problème
-            $(document).on('submit', '#modal-status-problem form', function (e) {
+            // Popup form submit
+            $(document).on('submit', '#modal-status-problem form, #modal-debt-collection form, #modal-additional-fees form', function (e) {
                 e.preventDefault()
                 var $form = $(this)
+                var $modal = $form.closest('.modal')
+                var block = $form.find('.block')[0]
+                // Don't allow negative values for amount
+                if ($modal.is('#modal-additional-fees')) {
+                    var $amount = $form.find('[name=fee-amount]')
+                    if (parseFloat($amount.val()) < 0) {
+                        $amount.parent().addClass('has-error')
+                        $amount.parent().find('label').append('<small class="amount-error text-muted push-10-l"><em>Le montant ne peut pas être négatif</em></small>')
+                    }
+                }
+                // Ajax if no errors
                 if (!$form.find('.has-error').length) {
-                    App.blocks('#modal-status-problem .block', 'state_loading')
+                    App.blocks(block, 'state_loading')
                     $.ajax({
                         url: $form.attr('action'),
                         type: 'POST',
@@ -37,47 +47,34 @@
                                 }
                                 html += '</div>'
                                 $form.find('.messages').html(html)
-                                App.blocks('#modal-status-problem .block', 'state_normal')
                             }
                         },
-                        error: function() {
-                            $form.find('.messages').html('<div class="alert alert-error"><p>Une erreur est survenue.</p></div>')
-                            App.blocks('#modal-status-problem .block', 'state_normal')
+                        error: function (jqXHR, exception) {
+                            console.log(jqXHR.status + ' : ' + exception)
+                            $form.find('.messages').html('Une erreur est survenue.')
                         }
                     })
                 }
             })
-
-            // Missionner un recouvreur
-            $(document).on('submit', '#modal-debt-collection form', function (e) {
-                e.preventDefault()
-                var $form = $(this)
-                if (!$form.find('.has-error').length) {
-                    App.blocks('#modal-debt-collection .block', 'state_loading')
-                    $.ajax({
-                        url: $form.attr('action'),
-                        type: 'POST',
-                        data: $form.serialize(),
-                        dataType: 'json',
-                        success: function (response) {
-                            if (response.success) {
-                                location.reload()
-                            } else {
-                                var html = '<div class="alert alert-error">'
-                                for (var i in response.error) {
-                                    html += '<p>' + response.error[i] + '</p>'
-                                }
-                                html += '</div>'
-                                $form.find('.messages').html(html)
-                                App.blocks('#modal-debt-collection .block', 'state_normal')
-                            }
-                        },
-                        error: function () {
-                            $form.find('.messages').html('<div class="alert alert-error"><p>Une erreur est survenue.</p></div>')
-                            App.blocks('#modal-debt-collection .block', 'state_normal')
-                        }
-                    })
-                }
+            // Reset popup on hide
+            $(document).on('hidden.bs.modal', '#modal-status-problem, #modal-debt-collection, #modal-additional-fees', function (e) {
+                var $modal = $(this)
+                // Reset values
+                $modal.find('.form-control').each(function(){
+                    if ($(this).is('select') && $(this).val() == 0) {
+                        // do nothing
+                    } else {
+                        $(this).val('')
+                    }
+                })
+                // Reset errors
+                $modal.find('.form-group').each(function(){
+                    if ($(this).is('.has-error')) {
+                        $(this).removeClass('has-error')
+                    }
+                })
+                $modal.find('.messages').html('')
+                $modal.find('.amount-error').remove()
             })
         })
     </script>
@@ -85,7 +82,7 @@
 
 {% block modals %}
     <div class="modal fade in" id="modal-close-out-netting">
-        <form class="modal-dialog" action="/dossiers/details_impayes/{{ projectData.projectId }}" method="post">
+        <form class="modal-dialog validate" action="/dossiers/details_impayes/{{ projectData.projectId }}" method="post">
             <div class="modal-content">
                 <div class="block block-themed remove-margin-b">
                     <div class="block-header bg-primary">
@@ -104,7 +101,7 @@
         </form>
     </div>
     <div class="modal fade in" id="modal-status-problem">
-        <form class="modal-dialog" action="/dossiers/setProblematicStatus/{{ projectData.projectId }}" method="post">
+        <form class="modal-dialog validate" action="/dossiers/setProblematicStatus/{{ projectData.projectId }}" method="post">
             <div class="modal-content">
                 <div class="block block-themed remove-margin-b">
                     <div class="block-header bg-primary">
@@ -194,8 +191,8 @@
             </div>
         </form>
     </div>
-    <div class="modal fade in" id="additional-fees">
-        <form class="modal-dialog js-validation" action="/recouvrements/details/429892" method="post">
+    <div class="modal fade in" id="modal-additional-fees">
+        <form class="modal-dialog validate" action="/" method="post">
             <div class="modal-content">
                 <div class="block block-themed remove-margin-b">
                     <div class="block-header bg-primary">
