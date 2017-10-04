@@ -3,6 +3,9 @@
 namespace Unilend\Bundle\FrontBundle\Service;
 
 use Doctrine\ORM\EntityManager;
+use PhpXmlRpc\Client;
+use PhpXmlRpc\Request;
+use PhpXmlRpc\Value;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Routing\RouterInterface;
@@ -14,15 +17,12 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectBeneficialOwnerUniversign;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WireTransferOutUniversign;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager;
 use Unilend\Bundle\FrontBundle\Controller\UniversignController;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
-use PhpXmlRpc\Client;
-use PhpXmlRpc\Request;
-use PhpXmlRpc\Value;
 
 class UniversignManager
 {
@@ -366,6 +366,7 @@ class UniversignManager
     public function createBeneficialOwnerDeclaration(ProjectBeneficialOwnerUniversign $beneficialOwnerDeclaration)
     {
         $resultValue = $this->createSignature(ProjectBeneficialOwnerUniversign::DOCUMENT_TYPE, $beneficialOwnerDeclaration->getId(), [$beneficialOwnerDeclaration]);
+        var_dump($resultValue);
 
         if ($resultValue instanceof Value) {
             $beneficialOwnerDeclaration

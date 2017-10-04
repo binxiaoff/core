@@ -78,6 +78,32 @@ class BeneficialOwnerManager
     }
 
     /**
+     * @param CompanyBeneficialOwnerDeclaration $declaration
+     * @param Projects                          $project
+     *
+     * @return ProjectBeneficialOwnerUniversign
+     * @throws \Exception
+     */
+    public function addProjectBeneficialOwnerDeclaration(CompanyBeneficialOwnerDeclaration $declaration, Projects $project)
+    {
+        if ($declaration->getIdCompany() !== $project->getIdCompany()) {
+            throw new \Exception('Project Company and declaration company must be the same entity');
+        }
+
+        $universign = new ProjectBeneficialOwnerUniversign();
+        $universign->setIdDeclaration($declaration)
+            ->setIdProject($project)
+            ->setStatus(UniversignEntityInterface::STATUS_PENDING);
+
+        $this->entityManager->persist($universign);
+
+        $this->entityManager->flush($universign);
+
+        return $universign;
+    }
+
+
+    /**
      * @return string
      */
     public function getBeneficialOwnerDeclarationPdfRoot()
@@ -94,7 +120,7 @@ class BeneficialOwnerManager
     {
         $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($universignDeclaration->getIdProject()->getIdCompany()->getIdClientOwner());
 
-        return $client->getHash(). '-' . ProjectBeneficialOwnerUniversign::DOCUMENT_NAME . '-' . $universignDeclaration->getIdProject()->getIdProject() . '.pdf';
+        return $client->getHash() . '-' . ProjectBeneficialOwnerUniversign::DOCUMENT_NAME . '-' . $universignDeclaration->getIdProject()->getIdProject() . '.pdf';
     }
 
     /**
@@ -113,25 +139,28 @@ class BeneficialOwnerManager
             $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
         }
 
-        $beneficialOwnerDeclaration = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findOneBy(['idProject' => $project], ['added' => 'DESC']);
-
         if (
-            null === $beneficialOwnerDeclaration
+            null === $project
             || null === $client
-            || $beneficialOwnerDeclaration->getIdProject()->getIdCompany()->getIdClientOwner() != $client->getIdClient()
-            || UniversignEntityInterface::STATUS_ARCHIVED === $beneficialOwnerDeclaration->getStatus()
-        ){
+            || $project->getIdCompany()->getIdClientOwner() != $client->getIdClient()
+        ) {
             return [
                 'action' => 'redirect',
                 'url'    => $this->router->generate('home')
             ];
         }
 
+        $projectDeclaration = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findOneBy(['idProject' => $project], ['added' => 'DESC']);
+        if (null === $projectDeclaration) {
+            $companyDeclaration = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentBeneficialOwnerDeclaration($project->getIdCompany());
+            $projectDeclaration = $this->addProjectBeneficialOwnerDeclaration($companyDeclaration, $project);
+        }
+
         $beneficialOwnerDeclarationPdfRoot  = $this->getBeneficialOwnerDeclarationPdfRoot();
-        $beneficialOwnerDeclarationFileName = $this->getBeneficialOwnerDeclarationFileName($beneficialOwnerDeclaration);
+        $beneficialOwnerDeclarationFileName = $this->getBeneficialOwnerDeclarationFileName($projectDeclaration);
 
         if (
-            UniversignEntityInterface::STATUS_SIGNED === $beneficialOwnerDeclaration->getStatus()
+            UniversignEntityInterface::STATUS_SIGNED === $projectDeclaration->getStatus()
             && file_exists($beneficialOwnerDeclarationPdfRoot . DIRECTORY_SEPARATOR . $beneficialOwnerDeclarationFileName)
         ) {
             return [
@@ -142,21 +171,21 @@ class BeneficialOwnerManager
         }
 
         if (false === file_exists($beneficialOwnerDeclarationPdfRoot . DIRECTORY_SEPARATOR . $beneficialOwnerDeclarationFileName)) {
-            $this->generateProjectPdfFile($beneficialOwnerDeclaration);
+            $this->generateProjectPdfFile($projectDeclaration);
         }
 
-        if (UniversignEntityInterface::STATUS_PENDING === $beneficialOwnerDeclaration->getStatus()) {
-            if (null !== $beneficialOwnerDeclaration->getUrlUniversign()) {
+        if (UniversignEntityInterface::STATUS_PENDING === $projectDeclaration->getStatus()) {
+            if (null !== $projectDeclaration->getUrlUniversign()) {
                 return [
                     'action' => 'sign',
-                    'url'    => $beneficialOwnerDeclaration->getUrlUniversign()
+                    'url'    => $projectDeclaration->getUrlUniversign()
                 ];
             }
 
-            if ($this->universignManager->createBeneficialOwnerDeclaration($beneficialOwnerDeclaration)) {
+            if ($this->universignManager->createBeneficialOwnerDeclaration($projectDeclaration)) {
                 return [
                     'action' => 'sign',
-                    'url'    => $beneficialOwnerDeclaration->getUrlUniversign()
+                    'url'    => $projectDeclaration->getUrlUniversign()
                 ];
             }
         }
@@ -170,12 +199,12 @@ class BeneficialOwnerManager
     /**
      * @param ProjectBeneficialOwnerUniversign $universignDeclaration
      */
-    public function generateProjectPdfFile(ProjectBeneficialOwnerUniversign $universignDeclaration)
+    public function generateProjectPdfFile(ProjectBeneficialOwnerUniversign $projectDeclaration)
     {
         //TODO further variables to be defined when doing the PDF.
-        $beneficialOwners   = $universignDeclaration->getIdDeclaration()->getBeneficialOwner();
+        $beneficialOwners   = $projectDeclaration->getIdDeclaration()->getBeneficialOwner();
         $pdfContent         = $this->twig->render('/pdf/beneficial_owner_declaration.html.twig', ['owners' => $beneficialOwners]);
-        $outputFile         = $this->getBeneficialOwnerDeclarationPdfRoot() . DIRECTORY_SEPARATOR . $this->getBeneficialOwnerDeclarationFileName($universignDeclaration);
+        $outputFile         = $this->getBeneficialOwnerDeclarationPdfRoot() . DIRECTORY_SEPARATOR . $this->getBeneficialOwnerDeclarationFileName($projectDeclaration);
         $options            = [
             'footer-html'   => '',
             'header-html'   => '',
@@ -358,10 +387,10 @@ class BeneficialOwnerManager
 
         $this->entityManager->flush($owner);
 
-        $universignDeclarations = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findBy(['idDeclaration' => $owner->getIdDeclaration()]);
+        $projectDeclarations = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findBy(['idDeclaration' => $owner->getIdDeclaration()]);
 
-        if (false === empty($universignDeclarations)) {
-            foreach ($universignDeclarations as $universign) {
+        if (false === empty($projectDeclarations)) {
+            foreach ($projectDeclarations as $universign) {
                 if (UniversignEntityInterface::STATUS_PENDING !== $universign->getStatus()) {
                     throw new \Exception('CompanyBeneficialOwnerDeclaration is pending, but ProjectBeneficialOwnerUniversign status is not pending. Id project : ' . $universign->getIdProject()->getIdProject(), ' idDeclaration : ' . $universign->getIdDeclaration()->getId());
                 }
