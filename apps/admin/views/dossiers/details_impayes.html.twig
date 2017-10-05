@@ -23,10 +23,18 @@
                 var block = $form.find('.block')[0]
                 // Don't allow negative values for amount
                 if ($modal.is('#modal-additional-fees')) {
-                    var $amount = $form.find('[name=fee-amount]')
-                    if (parseFloat($amount.val()) < 0) {
-                        $amount.parent().addClass('has-error')
-                        $amount.parent().find('label').append('<small class="amount-error text-muted push-10-l"><em>Le montant ne peut pas être négatif</em></small>')
+                    var errorToDisplay = '<small class="amount-error text-muted push-10-l"><em>Le montant est incorrect</em></small>'
+                    var $amountVatFree = $form.find('[name=fee-amount-vat-free]')
+                    var $amountVat     = $form.find('[name=fee-amount-vat]')
+                    if (parseFloat($amountVatFree.val().replace(',', '.')) <= 0 || isNaN($amountVatFree.val().replace(',', '.'))) {
+                        $amountVatFree.parent().addClass('has-error')
+                        $amountVatFree.parent().find('label').append(errorToDisplay)
+                        return
+                    }
+                    if (parseFloat($amountVat.val().replace(',', '.')) <= 0 || isNaN($amountVatFree.val().replace(',', '.'))) {
+                        $amountVat.parent().addClass('has-error')
+                        $amountVat.parent().find('label').append(errorToDisplay)
+                        return
                     }
                 }
                 // Ajax if no errors
@@ -42,18 +50,18 @@
                                 location.reload()
                             } else {
                                 var html = '<div class="alert alert-error">'
-                                for (var i in response.error) {
-                                    html += '<p>' + response.error[i] + '</p>'
-                                }
+                                $.each(response.error, function(i, message){
+                                    html += '<p>' + message + '</p>'
+                                })
                                 html += '</div>'
                                 $form.find('.messages').html(html)
-                                App.blocks('#modal-status-problem .block', 'state_normal')
+                                App.blocks(block, 'state_normal')
                             }
                         },
                         error: function (jqXHR, exception) {
                             console.log(jqXHR.status + ' : ' + exception)
                             $form.find('.messages').html('Une erreur est survenue.')
-                            App.blocks('#modal-status-problem .block', 'state_normal')
+                            App.blocks(block, 'state_normal')
                         }
                     })
                 }
@@ -86,6 +94,7 @@
     <div class="modal fade in" id="modal-close-out-netting">
         <form class="modal-dialog validate" action="/dossiers/details_impayes/{{ projectData.projectId }}" method="post">
             <div class="modal-content">
+                <div class="messages"></div>
                 <div class="block block-themed remove-margin-b">
                     <div class="block-header bg-primary">
                         <h5 class="block-title">Déchoir le terme</h5>
@@ -201,6 +210,7 @@
                         <h5 class="block-title">Ajout de frais avancés par Unilend</h5>
                     </div>
                     <div class="block-content">
+                        <div class="messages"></div>
                         <div class="form-group">
                             <label>Type de frais</label>
                             <select class="form-control required" name="fee-type">
@@ -210,13 +220,23 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label>Montant</label>
-                            <input class="form-control required" type="number" name="fee-amount">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Montant HT</label>
+                                    <input class="form-control required" type="text" name="fee-amount-vat-free">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Montant TVA</label>
+                                    <input class="form-control required" type="text" name="fee-amount-vat">
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Date de facture</label>
-                            <input class="form-control js-datepicker required" type="text" name="fee-invoice-date" data-date-format="mm/dd/yy" placeholder="mm/dd/yy">
+                            <input class="form-control js-datepicker required" type="text" name="fee-invoice-date" data-date-format="dd/mm/yy" placeholder="jj/mm/aa">
                         </div>
                     </div>
                 </div>

@@ -137,11 +137,17 @@ class debt_collection_missionController extends bootstrap
             ) {
                 $errors[] = 'Le type de frais est incorrect';
             }
-            if (empty($_POST['fee-amount'])
-                || false === ($chargeAmountVatIncl = filter_var(str_replace(',', '.',$_POST['fee-amount']), FILTER_VALIDATE_FLOAT))
-                || $chargeAmountVatIncl < 0
+            if (empty($_POST['fee-amount-vat-free'])
+                || false === ($chargeAmountVatFree = filter_var(str_replace(',', '.',$_POST['fee-amount-vat-free']), FILTER_VALIDATE_FLOAT))
+                || $chargeAmountVatFree < 0
             ) {
-                $errors[] = 'Le montant saisi est incorrect';
+                $errors[] = 'Le montant HT saisi est incorrect';
+            }
+            if (empty($_POST['fee-amount-vat'])
+                || false === ($chargeAmountVat = filter_var(str_replace(',', '.',$_POST['fee-amount-vat']), FILTER_VALIDATE_FLOAT))
+                || $chargeAmountVat < 0
+            ) {
+                $errors[] = 'Le montant TVA saisi est incorrect';
             }
             if (empty($_POST['fee-invoice-date'])
                 || false === ($chargeInvoiceDate = \DateTime::createFromFormat('d/m/Y', $_POST['fee-invoice-date']))
@@ -150,12 +156,14 @@ class debt_collection_missionController extends bootstrap
             }
 
             if (empty($errors)) {
+                $chargeAmountVatIncl = round(bcadd($chargeAmountVatFree, $chargeAmountVat, 4), 2);
+
                 $newCharge = new ProjectCharge();
                 $newCharge->setIdProject($project)
                     ->setIdType($projectChargeType)
                     ->setStatus(ProjectCharge::STATUS_PENDING)
                     ->setAmountInclVat($chargeAmountVatIncl)
-                    ->setAmountVat(0) // @todo confirm if this is really useful and if so, how to calculate it (which charge type)
+                    ->setAmountVat(round($chargeAmountVat, 2))
                     ->setInvoiceDate($chargeInvoiceDate);
 
                 $entityManager->persist($newCharge);
