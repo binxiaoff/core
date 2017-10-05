@@ -554,15 +554,13 @@ class ajaxController extends bootstrap
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
 
-            $this->mail_template->get('confirmation-depot-de-dossier', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
-
             $oSettings->get('Facebook', 'type');
             $lien_fb = $oSettings->value;
 
             $oSettings->get('Twitter', 'type');
             $lien_tw = $oSettings->value;
 
-            $varMail = array(
+            $varMail = [
                 'prenom'               => $this->clients->prenom,
                 'raison_sociale'       => $this->companies->name,
                 'lien_reprise_dossier' => $this->surl . '/depot_de_dossier/reprise/' . $this->projects->hash,
@@ -570,7 +568,7 @@ class ajaxController extends bootstrap
                 'lien_tw'              => $lien_tw,
                 'surl'                 => $this->surl,
                 'url'                  => $this->url,
-            );
+            ];
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-depot-de-dossier', $varMail);

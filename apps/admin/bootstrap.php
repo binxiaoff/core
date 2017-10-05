@@ -361,8 +361,6 @@ class bootstrap extends Controller
     protected $users_zones;
     /** @var \users_history */
     protected $users_history;
-    /** @var \mail_templates */
-    protected $mail_template;
     /** @var \projects */
     protected $projects;
     /** @var \clients */
@@ -409,17 +407,16 @@ class bootstrap extends Controller
         $this->upload  = $this->loadLib('upload');
         $this->photos  = $this->loadLib('photos', array($this->spath, $this->surl));
 
-        $this->ln               = $this->loadData('translations');
-        $this->settings         = $this->loadData('settings');
-        $this->tree_elements    = $this->loadData('tree_elements');
-        $this->blocs            = $this->loadData('blocs');
-        $this->blocs_elements   = $this->loadData('blocs_elements');
-        $this->elements         = $this->loadData('elements');
-        $this->tree             = $this->loadData('tree', array('url' => $this->lurl, 'front' => $this->furl, 'surl' => $this->surl, 'tree_elements' => $this->tree_elements, 'blocs_elements' => $this->blocs_elements, 'upload' => $this->upload, 'spath' => $this->spath, 'path' => $this->path));
-        $this->users            = $this->loadData('users', array('lurl' => $this->lurl));
-        $this->users_zones      = $this->loadData('users_zones');
-        $this->users_history    = $this->loadData('users_history');
-        $this->mail_template    = $this->loadData('mail_templates');
+        $this->ln             = $this->loadData('translations');
+        $this->settings       = $this->loadData('settings');
+        $this->tree_elements  = $this->loadData('tree_elements');
+        $this->blocs          = $this->loadData('blocs');
+        $this->blocs_elements = $this->loadData('blocs_elements');
+        $this->elements       = $this->loadData('elements');
+        $this->tree           = $this->loadData('tree', ['url' => $this->lurl, 'front' => $this->furl, 'surl' => $this->surl, 'tree_elements' => $this->tree_elements, 'blocs_elements' => $this->blocs_elements, 'upload' => $this->upload, 'spath' => $this->spath, 'path' => $this->path]);
+        $this->users          = $this->loadData('users', ['lurl' => $this->lurl]);
+        $this->users_zones    = $this->loadData('users_zones');
+        $this->users_history  = $this->loadData('users_history');
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');

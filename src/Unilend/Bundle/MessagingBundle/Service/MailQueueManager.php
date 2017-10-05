@@ -83,7 +83,7 @@ class MailQueueManager
         }
 
         $mailQueue = new MailQueue();
-        $mailQueue->setIdMailTemplate($mailTemplate->getIdMailTemplate());
+        $mailQueue->setIdMailTemplate($mailTemplate);
         $mailQueue->setSerializedVariables(json_encode($message->getVariables()));
         $mailQueue->setAttachments(json_encode($attachments));
         $mailQueue->setRecipient($recipients);
@@ -108,7 +108,6 @@ class MailQueueManager
      */
     public function getMessage(MailQueue $email)
     {
-
         /** @var TemplateMessage $message */
         $message = $this->templateMessage->newMessage($email->getIdMailTemplate()->getType(), json_decode($email->getSerializedVariables(), true), false);
         $message

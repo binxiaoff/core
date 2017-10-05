@@ -31,7 +31,6 @@ class bootstrap extends Controller
         $this->elements                = $this->loadData('elements');
         $this->blocs_templates         = $this->loadData('blocs_templates');
         $this->blocs                   = $this->loadData('blocs');
-        $this->mail_template           = $this->loadData('mail_templates');
         $this->ln                      = $this->loadData('translations');
         $this->clients                 = $this->loadData('clients');
         $this->clients_adresses        = $this->loadData('clients_adresses');
