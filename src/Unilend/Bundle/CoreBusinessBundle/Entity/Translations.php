@@ -12,6 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Translations
 {
+    const SECTION_MAIL_TITLE = 'mail-title';
+
     /**
      * @var string
      *

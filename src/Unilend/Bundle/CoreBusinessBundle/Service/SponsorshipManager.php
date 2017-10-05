@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Sponsorship;
@@ -374,7 +375,7 @@ class SponsorshipManager
     {
         $currentCampaign = $this->getCurrentSponsorshipCampaign();
         $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')
-            ->findOneBy(['status' => \mail_templates::STATUS_ACTIVE, 'type' => 'parrainage-invitation-filleul']);
+            ->findOneBy(['status' => MailTemplates::STATUS_ACTIVE, 'type' => 'parrainage-invitation-filleul']);
 
         $keyWords = [
             'staticUrl'          => $this->staticUrl,

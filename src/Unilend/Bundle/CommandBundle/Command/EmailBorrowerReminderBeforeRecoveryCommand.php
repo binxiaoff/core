@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -45,12 +46,8 @@ class EmailBorrowerReminderBeforeRecoveryCommand extends ContainerAwareCommand
             $borrowerRepaymentSchedule = $entityManger->getRepository('echeanciers_emprunteur');
             /** @var \loans $loans */
             $loans = $entityManger->getRepository('loans');
-            /** @var \mail_templates $mailTemplate */
-            $mailTemplate = $entityManger->getRepository('mail_templates');
             /** @var \settings $settings */
             $settings = $entityManger->getRepository('settings');
-
-            $mailTemplate->get('emprunteur-projet-statut-probleme-j-x-avant-prochaine-echeance', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getContainer()->getParameter('locale') . '" AND type');
 
             $settings->get('Virement - BIC', 'type');
             $bic = $settings->value;
@@ -84,7 +81,6 @@ class EmailBorrowerReminderBeforeRecoveryCommand extends ContainerAwareCommand
                 'lien_tw'          => $twitterLink,
                 'annee'            => date('Y')
             );
-            $logger = $this->getContainer()->get('monolog.logger.console');
 
             foreach ($projects as $aProject) {
                 $project->get($aProject['id_project']);
@@ -93,7 +89,6 @@ class EmailBorrowerReminderBeforeRecoveryCommand extends ContainerAwareCommand
 
                 $nextRepayment = $borrowerRepaymentSchedule->select('id_project = ' . $project->id_project . ' AND date_echeance_emprunteur > DATE(NOW())', 'date_echeance_emprunteur ASC', 0, 1);
                 $replacements  = $commonReplacements + array(
-                        'sujet'                              => htmlentities($mailTemplate->subject, null, 'UTF-8'),
                         'entreprise'                         => htmlentities($company->name, null, 'UTF-8'),
                         'civilite_e'                         => $client->civilite,
                         'prenom_e'                           => htmlentities($client->prenom, null, 'UTF-8'),
@@ -101,17 +96,18 @@ class EmailBorrowerReminderBeforeRecoveryCommand extends ContainerAwareCommand
                         'mensualite_e'                       => $ficelle->formatNumber(($nextRepayment[0]['montant'] + $nextRepayment[0]['commission'] + $nextRepayment[0]['tva']) / 100),
                         'num_dossier'                        => $project->id_project,
                         'nb_preteurs'                        => $loans->getNbPreteurs($project->id_project),
-                        'CRD'                                => $ficelle->formatNumber(bcmul($lenderRepaymentSchedule->getOwedCapital(array('id_project' => $project->id_project)), 100)),
+                        'CRD'                                => $ficelle->formatNumber($lenderRepaymentSchedule->getOwedCapital(['id_project' => $project->id_project])),
                         'date_prochaine_echeance_emprunteur' => \DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance_emprunteur'])->format('d/m/Y') // @todo Intl
                     );
-                $message       = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage($mailTemplate->type, $replacements);
+                $message       = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-projet-statut-probleme-j-x-avant-prochaine-echeance', $replacements);
                 try {
                     $message->setTo(trim($client->email));
                     $mailer = $this->getContainer()->get('mailer');
                     $mailer->send($message);
                 } catch (\Exception $exception) {
+                    $logger = $this->getContainer()->get('monolog.logger.console');
                     $logger->warning(
-                        'Could not send email: ' . $mailTemplate->type . ' - Exception: ' . $exception->getMessage(),
+                        'Could not send email: emprunteur-projet-statut-probleme-j-x-avant-prochaine-echeance - Exception: ' . $exception->getMessage(),
                         ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
                     );
                 }
