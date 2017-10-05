@@ -3182,6 +3182,8 @@ class dossiersController extends bootstrap
                         'debtCollector'              => $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => \Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager::CLIENT_HASH_PROGERIS]),
                         'debtCollectionMissionsData' => $debtCollectionMissionData,
                         'pendingReceiptData'         => $this->getPendingReceiptData($project),
+                        'projectCharges'             => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCharge')->findBy(['idProject' => $project]),
+                        'projectChargeTypes'         => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectChargeType')->findAll(),
                         'siteContentMessage'         => trim($translator->trans('projet_info-passage-statut-probleme')),
                         'mailContentMessage'         => trim($translator->trans('projet_mail-info-passage-statut-probleme'))
                     ];
