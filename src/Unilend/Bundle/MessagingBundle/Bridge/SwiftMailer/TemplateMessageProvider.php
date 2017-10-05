@@ -73,7 +73,7 @@ class TemplateMessageProvider
         $footer = $mailTemplate->getIdFooter();
 
         if ($header) {
-            $body = $header->getContent() . $body;
+            $body               = $header->getContent() . $body;
             $variables['title'] = $this->translator->trans(Translations::SECTION_MAIL_TITLE . '_' . $mailTemplate->getType());
         }
 

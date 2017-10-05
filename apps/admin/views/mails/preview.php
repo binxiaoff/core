@@ -16,6 +16,10 @@
             var form = ''
             var keywords = {}
             var defaultKeywords = {
+                staticUrl: '<?= $this->surl ?>',
+                facebookLink: '<?= $this->facebookUrl ?>',
+                twitterLink: '<?= $this->twitterUrl ?>',
+                year: '<?= date('Y') ?>',
                 annee: '<?= date('Y') ?>',
                 url: '<?= $this->furl ?>',
                 surl: '<?= $this->surl ?>',
