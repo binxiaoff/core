@@ -36,17 +36,17 @@
                                                 <h3 class="h3">{% trans %} lender-subscription_step-3-account-validation-title {% endtrans %}</h3>
                                                 {% trans %} lender-subscription_step-3-validation-explanation {% endtrans %}
                                                 <h3 class="h3">{% trans %} lender-subscription_step-3-money-transfer-title {% endtrans %}</h3>
-                                                    {% if app.session.flashBag.has('moneyTransferError') %}
-                                                        <div id="form-preter-deposit-notifications">
-                                                            <div class="message-error">
-                                                                {% for message in app.session.flashBag.get('moneyTransferError') %}
-                                                                    <p>{{ message|raw }}</p>
-                                                                {%  endfor %}
-                                                            </div>
+                                                {% if app.session.flashBag.has('moneyTransferError') %}
+                                                    <div id="form-preter-deposit-notifications">
+                                                        <div class="message-error">
+                                                            {% for message in app.session.flashBag.get('moneyTransferError') %}
+                                                                <p>{{ message|raw }}</p>
+                                                            {%  endfor %}
                                                         </div>
-                                                    {% endif %}
+                                                    </div>
+                                                {% endif %}
                                                 <div class="row row-multi-col-computer">
-                                                    <div class="form-field col-lg-7 col-md-7">
+                                                    <div class="form-field margin-10-b col-sm-5 col-md-10 col-lg-6">
                                                         <label for="form-preter-amount">{% trans %} lender-subscription_step-3-money-transfer-amount-field-label {% endtrans %}</label>
                                                         <div class="input-group set-right">
                                                             <input type="text" name="amount" value=""
@@ -60,47 +60,47 @@
                                                             <div class="btn-group">
                                                                 <span>€</span>
                                                             </div>
-                                                        </div><!-- /.input-group -->
-                                                    </div><!-- /.form-field -->
-                                                    <div class="form-field col-lg-5 col-md-5">
-                                                        <label class="field-help">{% trans %} lender-subscription_step-3-money-transfer-accepted-cards {% endtrans %}</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-field accepted-cards col-sm-8 col-md-12 col-lg-6">
+                                                        <label>{% trans %} lender-subscription_step-3-money-transfer-accepted-cards {% endtrans %}</label>
                                                         <img src="{{ siteurlmedia('cards/cb.png') }}" alt="{{'lender-subscription_step-3-card-image-placeholder'|trans }}"/>
                                                         <img src="{{ siteurlmedia('cards/visa.png') }}" alt="{{'lender-subscription_step-3-visa-image-placeholder'|trans  }} "/>
                                                         <img src="{{ siteurlmedia('cards/mastercard.png') }}" alt="{{'lender-subscription_step-3-mastercard-image-placeholder'|trans  }}"/>
                                                     </div>
                                                 </div>
+
                                                 <p>
                                                     <button class="btn-primary" data-spinnerbutton>
                                                         <span class="icon fa-lock"></span> {% trans %} lender-subscription_step-3-money-transfer-sumbit-button {% endtrans %}
                                                     </button>
                                                 </p>
                                             </fieldset>
-                                            <fieldset class="panel">
-                                                <div class="unilend-iban-info">
-                                                    <dl class="list-2col">
-                                                        <dt>{% trans %} lender-subscription_step-3-money-transfer-bank-account-details {% endtrans %}</dt>
-                                                        <dd>{{ lenderBankMotif }}</dd>
-                                                        <dt>{% trans %} lender-subscription_step-3-money-transfer-bank-account-BIC-label {% endtrans %}</dt>
-                                                        <dd>{{ setting('Virement - BIC') }}</dd>
-                                                        <dt>{% trans %} lender-subscription_step-3-money-transfer-bank-account-IBAN-label {% endtrans %}</dt>
-                                                        <dd>{{ setting('Virement - IBAN') }}</dd>
-                                                        <dt>{% trans %} lender-subscription_step-3-money-transfer-bank-account-owner-label {% endtrans %}</dt>
-                                                        <dd>{{ setting('Virement - titulaire du compte') }}</dd>
-                                                        <dt>{% trans %} lender-subscription_step-3-money-transfer-bank-account-domiciliation-label {% endtrans %}</dt>
-                                                        <dd>{{ setting('Virement - domiciliation') }}</dd>
-                                                    </dl>
-                                                </div><!-- /.unilend-iban-info -->
+                                            <fieldset class="panel unilend-iban-info">
+                                                <dl class="list-2col">
+                                                    <dt>{% trans %} lender-subscription_step-3-money-transfer-bank-account-details {% endtrans %}</dt>
+                                                    <dd>{{ lenderBankMotif }}</dd>
+                                                    <dt>{% trans %} lender-subscription_step-3-money-transfer-bank-account-BIC-label {% endtrans %}</dt>
+                                                    <dd>{{ setting('Virement - BIC') }}</dd>
+                                                    <dt>{% trans %} lender-subscription_step-3-money-transfer-bank-account-IBAN-label {% endtrans %}</dt>
+                                                    <dd>{{ setting('Virement - IBAN') }}</dd>
+                                                    <dt>{% trans %} lender-subscription_step-3-money-transfer-bank-account-owner-label {% endtrans %}</dt>
+                                                    <dd>{{ setting('Virement - titulaire du compte') }}</dd>
+                                                    <dt>{% trans %} lender-subscription_step-3-money-transfer-bank-account-domiciliation-label {% endtrans %}</dt>
+                                                    <dd>{{ setting('Virement - domiciliation') }}</dd>
+                                                </dl>
                                                 <p>{% trans %} lender-subscription_step-3-money-transfer-help-message {% endtrans %}</p>
                                             </fieldset>
                                             {% endif %}
 
                                             <div class="row btn-controls tab-footer">
-                                                <div class="col-lg-1 col-md-1">&nbsp;</div>
-                                                <div class="col-lg-11 col-md-11">
+                                                <div class="col-sm-4 col-md-6 col-lg-6">
                                                     <a href="{{ path('projects_list') }}" class="btn-default">{% trans %} lender-subscription_step-3-button-to-project-list-label {% endtrans %}</a>
+                                                </div>
+                                                <div class="col-sm-4 col-md-6 col-lg-6">
                                                     <a href="{{ path('lender_profile') }}" class="btn-primary">{% trans %} lender-subscription_step-3-button-to-lender-dashboard-label {% endtrans %}</a>
                                                 </div>
-                                            </div><!-- /.btn-controls.tab-footer -->
+                                            </div>
                                         </div>
                                     </div><!-- /.row -->
                                 </div><!-- /.tab-pane -->
