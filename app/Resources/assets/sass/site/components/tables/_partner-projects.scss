@@ -42,6 +42,12 @@
         padding: 0;
     }
 }
+.details-memo-text p {
+    margin: 5px 0;
+    &:first-child {
+        margin-top: 0;
+    }
+}
 
 // UI States
 .ui-details-open [data-action="memos"] {
