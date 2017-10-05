@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
@@ -150,9 +151,7 @@ class WalletRepository extends EntityRepository
         $qb->andWhere('(' . $subQuery->getDQL() . ') < e.dateEcheance')
             ->setParameter(':now', $now)
             ->setParameter(':status', [
-                \projects_status::PROBLEME,
-                \projects_status::PROBLEME_J_X,
-                \projects_status::RECOUVREMENT
+                ProjectsStatus::PROBLEME
             ], Connection::PARAM_INT_ARRAY)
             ->groupBy('w.id');
 

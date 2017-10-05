@@ -73,4 +73,24 @@ class PrelevementsRepository extends EntityRepository
 
         return $this->getEntityManager()->getConnection()->executeUpdate($update, ['project' => $project, 'finished' => Prelevements::STATUS_TERMINATED, 'pending' => Prelevements::STATUS_PENDING]);
     }
+
+    /**
+     * @param int|Projects $projectId
+     * @return array
+     */
+    public function findUpcomingDirectDebitsByProject($projectId)
+    {
+        if ($projectId instanceof Projects) {
+            $projectId = $projectId->getIdProject();
+        }
+        $queryBuilder = $this->createQueryBuilder('p')
+            ->where('p.idProject = :projectId')
+            ->setParameter('projectId', $projectId)
+            ->andWhere('p.status = :pending')
+            ->setParameter('pending', Prelevements::STATUS_PENDING)
+            ->andWhere('p.typePrelevement = 1')
+            ->andWhere('p.dateExecutionDemandePrelevement > NOW()');
+
+        return $queryBuilder->getQuery()->getResult();
+    }
 }

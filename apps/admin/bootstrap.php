@@ -205,6 +205,10 @@ class bootstrap extends Controller
                     'uri'   => 'dossiers/remboursements'
                 ],
                 [
+                    'title' => 'Projets avec retard',
+                    'uri'   => 'emprunteurs/projets_avec_retard'
+                ],
+                [
                     'title' => 'Erreurs remboursements',
                     'uri'   => 'dossiers/no_remb'
                 ],
