@@ -8,18 +8,19 @@ use Symfony\Component\Asset\Packages;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
@@ -248,35 +249,59 @@ class MailerManager
     }
 
     /**
-     * @param \projects $project
+     * @param \projects|Projects $project
+     *
+     * @return bool
      */
-    public function sendFundedAndFinishedToBorrower(\projects $project)
+    public function sendFundedAndFinishedToBorrower($project)
     {
-        /** @var \companies $company */
-        $company = $this->entityManagerSimulator->getRepository('companies');
+        if ($project instanceof \projects) {
+            $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+        }
+
         /** @var \clients $borrower */
         $borrower = $this->entityManagerSimulator->getRepository('clients');
         /** @var \echeanciers_emprunteur $borrowerPaymentSchedule */
         $borrowerPaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
 
-        $company->get($project->id_company, 'id_company');
-        $borrower->get($company->id_client_owner, 'id_client');
+        $borrower->get($project->getIdCompany()->getIdClientOwner(), 'id_client');
 
-        $borrowerPaymentSchedule->get($project->id_project, 'ordre = 1 AND id_project');
+        $borrowerPaymentSchedule->get($project->getIdProject(), 'ordre = 1 AND id_project');
         $monthlyPayment = $borrowerPaymentSchedule->montant + $borrowerPaymentSchedule->commission + $borrowerPaymentSchedule->tva;
         $monthlyPayment = $monthlyPayment / 100;
+
+        $mandate                    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')
+            ->findOneBy(['idProject' => $project, 'status' => UniversignEntityInterface::STATUS_SIGNED], ['added' => 'DESC']);
+        $proxy                      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')
+            ->findOneBy(['idProject' => $project, 'status' => UniversignEntityInterface::STATUS_SIGNED], ['added' => 'DESC']);
+        $beneficialOwnerDeclaration = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')
+            ->findOneBy(['idProject' => $project, 'status' => UniversignEntityInterface::STATUS_SIGNED], ['added' => 'DESC']);
+
+        $documents = '';
+        if (null === $mandate) {
+            $documents .= $this->translator->trans('universign_mandate-description-for-email');
+        }
+
+        if (null === $beneficialOwnerDeclaration) {
+            $documents .= $this->translator->trans('universign_beneficial-owner-description-for-email');
+        }
+
+        if (null === $proxy) {
+            $documents .= $this->translator->trans('universign_proxy-description-for-email');
+        }
 
         $varMail = [
             'surl'                   => $this->sSUrl,
             'url'                    => $this->sFUrl,
             'prenom_e'               => $borrower->prenom,
-            'nom_e'                  => $company->name,
+            'nom_e'                  => $project->getIdCompany()->getName(),
             'mensualite'             => $this->oFicelle->formatNumber($monthlyPayment),
-            'montant'                => $this->oFicelle->formatNumber($project->amount, 0),
-            'taux_moyen'             => $this->oFicelle->formatNumber($project->getAverageInterestRate(), 1),
-            'link_compte_emprunteur' => $this->sFUrl . '/projects/detail/' . $project->id_project,
-            'link_signature'         => $this->sFUrl . '/pdf/projet/' . $borrower->hash . '/' . $project->id_project,
-            'projet'                 => $project->title,
+            'montant'                => $this->oFicelle->formatNumber($project->getAmount(), 0),
+            'taux_moyen'             => $this->oFicelle->formatNumber($project->getInterestRate(), 1),
+            'link_compte_emprunteur' => $this->sFUrl . '/projects/detail/' . $project->getIdProject(),
+            'link_signature'         => $this->sFUrl . '/pdf/projet/' . $borrower->hash . '/' . $project->getIdProject(),
+            'document_list'          => $documents,
+            'projet'                 => $project->getTitle(),
             'lien_fb'                => $this->getFacebookLink(),
             'lien_tw'                => $this->getTwitterLink(),
             'annee'                  => date('Y')
@@ -297,10 +322,12 @@ class MailerManager
 
         if ($isSent > 0) {
             $this->oLogger->info(
-                'Email emprunteur-dossier-funde-et-termine sent (project ' . $project->id_project . ')',
-                array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project)
+                'Email emprunteur-dossier-funde-et-termine sent (project ' . $project->getIdProject() . ')',
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->getIdProject()]
             );
         }
+
+        return $isSent > 0;
     }
 
     public function sendFundedToStaff(\projects $project)

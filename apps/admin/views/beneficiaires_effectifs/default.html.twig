@@ -132,7 +132,26 @@
                 <a id="declaration-preview-btn" class="btn btn-primary" href="declaration/{{ company.idCompany }}" target="_blank">Prévisualiser la déclaration en cours</a>
                 <hr>
                 <label class="push-10">Déclarations par projet</label>
-
+                {% if emailStatusErrors is defined and emailStatusErrors is not empty %}
+                    <div class="alert">
+                        {% for error in emailStatusErrors %}
+                            {% if error is iterable %}
+                                <ul class="hide">
+                                    {% for technicalError in error %}
+                                        <li>{{ technicalError }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p>{{ error }}</p>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% if emailStatusSuccess is defined and emailStatusSuccess is not empty %}
+                    <div class="alert alert-success">
+                        <p>{{ emailStatusSuccess }}</p>
+                    </div>
+                {% endif %}
                 {% if universignDeclarations is defined and universignDeclarations is not empty %}
                     <table class="table table-hover table-bordered table-header-bg">
                         <thead>
@@ -148,7 +167,7 @@
                         <tbody>
                         {% for declaration in universignDeclarations %}
                             <tr>
-                                <td><a href="/dossiers/{{ declaration.idProject.idProject }}">{{ declaration.idProject.idProject }}</a></td>
+                                <td><a href="/dossiers/edit/{{ declaration.idProject.idProject }}">{{ declaration.idProject.idProject }}</a></td>
                                 <td>{{ declaration.idDeclaration.added|date('d/m/Y') }}</td>
                                 <td>{{ "beneficial-owner_declaration-status-#{ declaration.idDeclaration.status }"|trans }}</td>
                                 <td>{{ "universign_status-label-#{ declaration.status }"|trans }}</td>
@@ -156,6 +175,9 @@
                                 <td class="text-center">
                                     {% if declaration.name is not empty %}
                                     <a href="/protected/beneficial_owner/{{ declaration.name }}" class="btn btn-default btn-xs" data-toggle="tooltip" title="Télécharger la déclaration"><span class="fa fa-download"></span></a>
+                                    {% endif %}
+                                    {% if declaration.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\UniversignEntityInterface::STATUS_PENDING') %}
+                                        <a href="send_email/{{ declaration.idDeclaration.idCompany.idCompany }}/{{ declaration.idProject.idProject }}" class="btn btn-default btn-xs" data-toggle="tooltip" title="Renvoyer les documents à signer"><span class="fa fa-envelope"></span></a>
                                     {% endif %}
                                 </td>
                             </tr>

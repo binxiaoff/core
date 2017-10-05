@@ -513,7 +513,7 @@ class dossiersController extends bootstrap
                         $publicationDate->format('Y-m-d H:i:s') !== $this->projects->date_publication
                         && ($publicationDate <= $publicationLimitationDate || $endOfPublicationDate <= $endOfPublicationLimitationDate)
                     ) {
-                        $_SESSION['public_dates_error'] = 'La date de publication du dossier doit être au minimum dans 5 minutes et la date de retrait dans plus d\'une heure';
+                        $_SESSION['publish_error'] = 'La date de publication du dossier doit être au minimum dans 5 minutes et la date de retrait dans plus d\'une heure';
 
                         header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                         die;
@@ -739,11 +739,12 @@ class dossiersController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\PartnerRepository $partnerRepository */
             $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
 
-            $this->eligibleProducts = $productManager->findEligibleProducts($this->projects, true);
-            $this->selectedProduct  = $product;
-            $this->isProductUsable  = empty($product->id_product) ? false : in_array($this->selectedProduct, $this->eligibleProducts);
-            $this->partnerList      = $partnerRepository->getPartnersSortedByName(Partner::STATUS_VALIDATED);
-            $this->partnerProduct   = $this->loadData('partner_product');
+            $this->eligibleProducts   = $productManager->findEligibleProducts($this->projects, true);
+            $this->selectedProduct    = $product;
+            $this->isProductUsable    = empty($product->id_product) ? false : in_array($this->selectedProduct, $this->eligibleProducts);
+            $this->partnerList        = $partnerRepository->getPartnersSortedByName(Partner::STATUS_VALIDATED);
+            $this->partnerProduct     = $this->loadData('partner_product');
+            $this->hasBeneficialOwner = null !== $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentBeneficialOwnerDeclaration($this->projects->id_company);
 
             if (false === empty($this->projects->id_product)) {
                 $this->partnerProduct->get($this->projects->id_product, 'id_partner = ' . $this->projects->id_partner . ' AND id_product');
@@ -2644,6 +2645,13 @@ class dossiersController extends bootstrap
             return;
         }
 
+        if (null === $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentBeneficialOwnerDeclaration($this->projects->id_company)) {
+            $_SESSION['publish_error'] = 'Il n\'y a pas de bénéficiaires effectifs déclarés';
+
+            header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+            die;
+        }
+
         if (
             isset($_POST['date_publication'], $_POST['date_publication_heure'], $_POST['date_publication_minute'])
             && isset($_POST['date_retrait'], $_POST['date_retrait_heure'], $_POST['date_retrait_minute'])
@@ -2656,7 +2664,7 @@ class dossiersController extends bootstrap
             $endOfPublicationLimitationDate = new \DateTime('NOW + 1 hour');
 
             if ($publicationDate <= $publicationLimitationDate || $endOfPublicationDate <= $endOfPublicationLimitationDate) {
-                $_SESSION['public_dates_error'] = 'La date de publication du dossier doit être au minimum dans 5 minutes et la date de retrait dans plus d\'une heure';
+                $_SESSION['publish_error'] = 'La date de publication du dossier doit être au minimum dans 5 minutes et la date de retrait dans plus d\'une heure';
 
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;

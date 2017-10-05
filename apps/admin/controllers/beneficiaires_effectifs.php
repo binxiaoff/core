@@ -53,13 +53,21 @@ class beneficiaires_effectifsController extends bootstrap
             $currentOwners = $this->formatOwnerList($currentDeclaration->getBeneficialOwner());
         }
 
+        if (isset($_SESSION['email_status']['errors']) || isset($_SESSION['email_status']['success'])) {
+            $emailStatusErrors  = $_SESSION['email_status']['errors'];
+            $emailStatusSuccess = $_SESSION['email_status']['success'];
+            unset($_SESSION['email_status']);
+        }
+
         $this->render(null, [
             'beneficial_owners'      => $currentOwners,
             'countries'              => $countryList,
             'types'                  => $ownerTypes,
             'declaration'            => $currentDeclaration,
             'company'                => $company,
-            'universignDeclarations' => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findAllDeclarationsForCompany($company)
+            'universignDeclarations' => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findAllDeclarationsForCompany($company),
+            'emailStatusErrors'      => empty($emailStatusErrors) ? null : $emailStatusErrors,
+            'emailStatusSuccess'     => empty($emailStatusSuccess) ? null : $emailStatusSuccess,
         ]);
     }
 
@@ -89,7 +97,7 @@ class beneficiaires_effectifsController extends bootstrap
             $state        = '';
             $responseData = [];
 
-            switch($action) {
+            switch ($action) {
                 case 'create' :
                     $return = $this->createBeneficialOwner($this->request);
                     break;
@@ -199,7 +207,7 @@ class beneficiaires_effectifsController extends bootstrap
 
         $minPercentage = 100 / BeneficialOwnerManager::MAX_NUMBER_BENEFICIAL_OWNERS_TYPE_SHAREHOLDER;
         if (false === empty($percentage) && $percentage < $minPercentage || $percentage > 100) {
-            $errors[] = 'Le pourcentage des parts detenues n\'est pas correct. Il ne doit pas être inférieur à ' .  $minPercentage . '% ou supérieur à 100%';
+            $errors[] = 'Le pourcentage des parts detenues n\'est pas correct. Il ne doit pas être inférieur à ' . $minPercentage . '% ou supérieur à 100%';
         }
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager $beneficialOwnerManager */
@@ -231,15 +239,14 @@ class beneficiaires_effectifsController extends bootstrap
         }
 
         if (null === $declaration) {
-            $company   = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($idCompany);
+            $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($idCompany);
 
             if (null === $company) {
                 throw new \Exception('Entreprise ' . $idCompany . ' does not exist');
             }
 
             $declaration = new CompanyBeneficialOwnerDeclaration();
-            $declaration->setIdCompany($company)
-                ->setStatus(CompanyBeneficialOwnerDeclaration::STATUS_PENDING);
+            $declaration->setIdCompany($company)->setStatus(CompanyBeneficialOwnerDeclaration::STATUS_PENDING);
             $entityManager->persist($declaration);
         }
 
@@ -300,9 +307,9 @@ class beneficiaires_effectifsController extends bootstrap
         $owner = $entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwner')->find($request->request->getInt('id'));
         if (null === $owner) {
             return [
-                'owner'    => $owner,
-                'errors'   => ['Le bénéficiaire effectif n\'existe pas'],
-                'id' => $request->request->getInt('id')
+                'owner'  => $owner,
+                'errors' => ['Le bénéficiaire effectif n\'existe pas'],
+                'id'     => $request->request->getInt('id')
             ];
         }
 
@@ -386,11 +393,7 @@ class beneficiaires_effectifsController extends bootstrap
             }
         }
 
-        $owner->getIdClient()->setNom($lastName)
-            ->setPrenom($firstName)
-            ->setNaissance($birthday)
-            ->setIdPaysNaissance($birthCountry)
-            ->setVilleNaissance($birthPlace);
+        $owner->getIdClient()->setNom($lastName)->setPrenom($firstName)->setNaissance($birthday)->setIdPaysNaissance($birthCountry)->setVilleNaissance($birthPlace);
 
         $clientAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $owner->getIdClient()]);
         $clientAddress->setIdPaysFiscal($countryOfResidence);
@@ -429,6 +432,7 @@ class beneficiaires_effectifsController extends bootstrap
         if (null === $owner) {
             $errors[] = 'Une erreur c\'est produit';
             $this->get('logger')->warning('Beneficial owner does not exist (idBeneficialOwner  = ' . $idBeneficialOwner, ['class' => __CLASS__, 'function' => __FUNCTION__]);
+
             return [
                 'owner'  => null,
                 'errors' => [],
@@ -493,8 +497,8 @@ class beneficiaires_effectifsController extends bootstrap
         ];
 
         if ($formatForView) {
-            $birthCountry       = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2')->find($owner->getIdClient()->getIdPaysNaissance());
-            $country            = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2')->find($clientAddress->getIdPaysFiscal());
+            $birthCountry = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2')->find($owner->getIdClient()->getIdPaysNaissance());
+            $country      = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2')->find($clientAddress->getIdPaysFiscal());
 
             $responseData['id']            = $owner->getId();
             $responseData['birth_country'] = $birthCountry->getFr();
@@ -508,11 +512,12 @@ class beneficiaires_effectifsController extends bootstrap
 
     /**
      * @param \DateTime $birthDay
+     *
      * @return bool
      */
     private function isAtLeastEighteenYearsOld(\DateTime $birthDay)
     {
-        $now = new \DateTime('NOW');
+        $now      = new \DateTime('NOW');
         $dateDiff = $birthDay->diff($now);
 
         return $dateDiff->y >= 18;
@@ -592,8 +597,8 @@ class beneficiaires_effectifsController extends bootstrap
 
         if ($search = filter_input(INPUT_GET, 'q', FILTER_SANITIZE_STRING)) {
             /** @var EntityManager $entityManager */
-            $entityManager      = $this->get('doctrine.orm.entity_manager');
-            $clientsRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+            $entityManager     = $this->get('doctrine.orm.entity_manager');
+            $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
 
             if (filter_var($search, FILTER_VALIDATE_INT)) {
                 $result = $clientsRepository->findBy(['idClient' => $search]);
@@ -604,8 +609,8 @@ class beneficiaires_effectifsController extends bootstrap
             foreach ($result as $client) {
                 $clients[] = [
                     'firstName' => $client->getPrenom(),
-                    'lastName' => $client->getNom(),
-                    'id' => $client->getIdClient()
+                    'lastName'  => $client->getNom(),
+                    'id'        => $client->getIdClient()
                 ];
             }
         }
@@ -643,5 +648,54 @@ class beneficiaires_effectifsController extends bootstrap
 
         header('Content-type: application/pdf');
         echo $this->get('unilend.service.beneficial_owner_manager')->generateCompanyPdfFile($declaration);
+    }
+
+    public function _send_email()
+    {
+        if (false === isset($this->params[0])) {
+            header('Location: ' . $this->lurl);
+            die;
+        }
+        if (false == filter_var($this->params[0], FILTER_VALIDATE_INT)) {
+            header('Location: ' . $this->lurl);
+            die;
+        }
+
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->params[0]);
+
+        if (null === $company) {
+            header('Location: ' . $this->lurl);
+            die;
+        }
+        if (false === isset($this->params[1])) {
+            header('Location: ' . $this->lurl . '/beneficiaires_effectifs/' . $company->getIdCompany());
+            die;
+        }
+        if (false == filter_var($this->params[1], FILTER_VALIDATE_INT)) {
+            header('Location: ' . $this->lurl . '/beneficiaires_effectifs/' . $company->getIdCompany());
+            die;
+        }
+        $project  = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[1]);
+        if (null === $project) {
+            header('Location: ' . $this->lurl . '/beneficiaires_effectifs/' . $company->getIdCompany());
+            die;
+        }
+
+        if ($this->get('unilend.service.email_manager')->sendFundedAndFinishedToBorrower($project)) {
+            $_SESSION['email_status'] = [
+                'success' => 'L\'email avec les documents à signer a été envoyé avec succès.',
+                'errors'  => ''
+            ];
+        } else {
+            $_SESSION['email_status'] = [
+                'success' => '',
+                'errors'  => 'Une erreur s\'est produit.'
+            ];
+        }
+
+        header('Location: ' . $this->lurl . '/beneficiaires_effectifs/' . $company->getIdCompany());
+        die;
     }
 }
