@@ -16,6 +16,7 @@ class OperationType
     const BORROWER_PROVISION_CANCEL                    = 'borrower_provision_cancel';
     const BORROWER_COMMISSION                          = 'borrower_commission';
     const BORROWER_WITHDRAW                            = 'borrower_withdraw';
+    const BORROWER_PROJECT_CHARGE_REPAYMENT            = 'borrower_project_charge_repayment';
     const CAPITAL_REPAYMENT                            = 'capital_repayment';
     const GROSS_INTEREST_REPAYMENT                     = 'gross_interest_repayment';
     const LENDER_LOAN                                  = 'lender_loan';
@@ -46,6 +47,7 @@ class OperationType
     const COLLECTION_COMMISSION_PROVISION = 'collection_commission_provision';
     const COLLECTION_COMMISSION_BORROWER  = 'collection_commission_borrower';
     const COLLECTION_COMMISSION_LENDER    = 'collection_commission_lender';
+    const COLLECTION_COMMISSION_UNILEND   = 'collection_commission_unilend';
     const DEBT_COLLECTOR_WITHDRAW         = 'debt_collector_withdraw';
 
     // General regularization

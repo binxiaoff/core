@@ -1,24 +1,24 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
+use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
-use Psr\Log\LoggerInterface;
 
 class dossiersController extends bootstrap
 {

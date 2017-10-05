@@ -14,9 +14,6 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Projects
 {
-    //todo: move to the debt collection entity
-    const DEBT_COLLECTION_CONDITION_CHANGEMENT_DATE = '2016-04-19';
-
     const AUTO_REPAYMENT_ON  = 0;
     const AUTO_REPAYMENT_OFF = 1;
 
