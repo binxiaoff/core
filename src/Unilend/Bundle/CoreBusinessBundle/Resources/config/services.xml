@@ -399,7 +399,7 @@
 
         <service id="unilend.service.debt_collection_mission_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
-            <argument type="service" id="unilend.service_repayment.project_repayment_manager"/>
+            <argument type="service" id="unilend.service_repayment.project_repayment_task_manager"/>
         </service>
 
         <service id="unilend.service.beneficial_owner_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager">

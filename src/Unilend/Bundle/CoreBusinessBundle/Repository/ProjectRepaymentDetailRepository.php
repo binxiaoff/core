@@ -106,7 +106,7 @@ class ProjectRepaymentDetailRepository extends EntityRepository
      *
      * @return int
      */
-    public function deleteFinishedDetails(\DateTime $dateTime)
+    public function deleteFinished(\DateTime $dateTime)
     {
         $delete = 'DELETE FROM project_repayment_detail WHERE status = :finished AND updated < :someTime';
 

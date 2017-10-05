@@ -3,17 +3,17 @@
     <form action="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->clients->id_client ?>" method="post">
         <table class="formMail">
             <tr>
-                <th>From : "<?= $this->mail_template->sender_name ?>" <?= $this->mail_template->sender_email ?></th>
+                <th>From : "<?= $this->mailTemplate->getSenderName() ?>" <?= $this->mailTemplate->getSenderEmail() ?></th>
             </tr>
             <tr>
                 <th>Destinataire : <?= $this->clients->email ?></th>
             </tr>
             <tr>
-                <th>Sujet : <?= $this->mail_template->subject ?></th>
+                <th>Sujet : <?= $this->mailTemplate->getSubject() ?></th>
             </tr>
             <tr>
                 <td>
-                    <iframe src="<?= $this->lurl ?>/preteurs/completude_preview_iframe/<?= $this->params[0] ?>" width="760px" height="400px"></iframe>
+                    <iframe src="<?= $this->lurl ?>/preteurs/completude_preview_iframe/<?= $this->clients->id_client ?>" width="760px" height="400px"></iframe>
                 </td>
             </tr>
             <tr>

@@ -3,8 +3,8 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 
 class ProjectRepaymentTaskRepository extends EntityRepository
 {
@@ -27,5 +27,20 @@ class ProjectRepaymentTaskRepository extends EntityRepository
             ->orderBy('prt.repayAt', 'ASC');
 
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @param Receptions|int $wireTransferIn
+     *
+     * @return float
+     */
+    public function getTotalCommissionByWireTransferIn($wireTransferIn)
+    {
+        $queryBuilder = $this->createQueryBuilder('prt');
+        $queryBuilder->select('SUM(prt.commissionUnilend)')
+            ->where('prt.idWireTransferIn = :wireTransferIn')
+            ->setParameter('wireTransferIn', $wireTransferIn);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }

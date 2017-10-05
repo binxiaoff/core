@@ -56,23 +56,6 @@ class EcheanciersEmprunteurRepository extends EntityRepository
     }
 
     /**
-     * @param Projects|int $project
-     *
-     * @return EcheanciersEmprunteur[]
-     */
-    public function findUnFinishedSchedules($project)
-    {
-        $queryBuilder = $this->createQueryBuilder('ee');
-        $queryBuilder->where('ee.idProject = :project')
-            ->andWhere('ee.statusEmprunteur in (:unfinished)')
-            ->orderBy('ee.ordre', 'ASC')
-            ->setParameter('project', $project)
-            ->setParameter('unfinished', [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]);
-
-        return $queryBuilder->getQuery()->getResult();
-    }
-
-    /**
      * @param int|Projects $project
      * @param int          $sequence
      *
@@ -129,5 +112,21 @@ class EcheanciersEmprunteurRepository extends EntityRepository
             ->setMaxResults($limit);
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    public function getTotalOverdueAmounts($project)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee');
+        $queryBuilder->select(
+            'ROUND(SUM(ee.capital - ee.paidCapital)/100, 2) as capital,
+            ROUND(SUM(ee.interets - ee.paidInterest)/100, 2) as interest,
+            ROUND(SUM(ee.commission + ee.tva - ee.paidCommissionVatIncl)/100, 2) as commission'
+        )
+            ->where('ee.idProject = :project')
+            ->andWhere('ee.dateEcheanceEmprunteur < :today')
+            ->setParameter('project', $project)
+            ->setParameter('today', (new \DateTime())->format('Y-m-d 00:00:00'));
+
+        return $queryBuilder->getQuery()->getSingleResult();
     }
 }
