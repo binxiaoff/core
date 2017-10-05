@@ -2,12 +2,15 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Box\Spout\Common\Type;
+use Box\Spout\Writer\AbstractWriter;
+use Box\Spout\Writer\Style\Border;
+use Box\Spout\Writer\Style\BorderBuilder;
+use Box\Spout\Writer\Style\Color;
+use Box\Spout\Writer\Style\StyleBuilder;
+use Box\Spout\Writer\WriterFactory;
+use Box\Spout\Writer\XLSX\Writer;
 use Doctrine\ORM\EntityManager;
-use PHPExcel_Shared_Date;
-use PHPExcel_Style_Border;
-use PHPExcel_Style_Color;
-use PHPExcel_Style_Conditional;
-use PHPExcel_Style_NumberFormat;
 use Symfony\Component\Translation\Translator;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
@@ -309,63 +312,81 @@ class LenderOperationsManager
      * @param \DateTime $end
      * @param int       $idProject
      * @param array     $operationTypes
+     * @param string    $fileName
      *
-     * @return \PHPExcel
+     * @return AbstractWriter
      */
-    public function getOperationsExcelFile(Wallet $wallet, $start, $end, $idProject, $operationTypes)
+    public function getOperationsExcelFile(Wallet $wallet, $start, $end, $idProject, $operationTypes, $fileName)
     {
         $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $lenderOperations    = $this->getLenderOperations($wallet, $start, $end, $idProject, $operationTypes);
         $taxColumns          = [];
-        $hasLoanRow          = false;
+        $hasLoans            = false;
 
-        $style = [
-            'borders' => [
-                'allborders' => [
-                    'style' => PHPExcel_Style_Border::BORDER_THIN,
-                    'color' => ['argb' => PHPExcel_Style_Color::COLOR_BLACK]
-                ]
-            ]
+        $border = (new BorderBuilder())
+            ->setBorderBottom(Color::BLACK, Border::WIDTH_THIN, Border::STYLE_SOLID)
+            ->setBorderLeft(Color::BLACK, Border::WIDTH_THIN, Border::STYLE_SOLID)
+            ->setBorderRight(Color::BLACK, Border::WIDTH_THIN, Border::STYLE_SOLID)
+            ->setBorderTop(Color::BLACK, Border::WIDTH_THIN, Border::STYLE_SOLID)
+            ->build();
+
+        $defaultStyle = (new StyleBuilder())
+            ->setFontName('Arial')
+            ->setFontSize(11)
+            ->setBorder($border)
+            ->build();
+
+        /** @var Writer $writer */
+        $writer = WriterFactory::create(Type::XLSX);
+        $writer->setShouldUseInlineStrings(false);
+        $writer->openToBrowser($fileName);
+
+        $header = [
+            $this->translator->trans('lender-operations_operations-csv-operation-column'),
+            $this->translator->trans('lender-operations_operations-csv-contract-column'),
+            $this->translator->trans('lender-operations_operations-csv-project-id-column'),
+            $this->translator->trans('lender-operations_operations-csv-project-label-column'),
+            $this->translator->trans('lender-operations_operations-csv-operation-date-column'),
+            $this->translator->trans('lender-operations_operations-csv-operation-amount-column'),
+            $this->translator->trans('lender-operations_operations-csv-repaid-capital-amount-column'),
+            $this->translator->trans('lender-operations_operations-csv-perceived-interests-amount-column'),
+            $this->translator->trans('lender-operations_operations-csv-recovery-commission-amount-column')
         ];
-
-        /** @var \PHPExcel $document */
-        $document    = new \PHPExcel();
-        $activeSheet = $document->setActiveSheetIndex(0);
-        $row         = 1;
-
-        $activeSheet->setCellValueByColumnAndRow(0, $row, $this->translator->trans('lender-operations_operations-csv-operation-column'));
-        $activeSheet->setCellValueByColumnAndRow(1, $row, $this->translator->trans('lender-operations_operations-csv-contract-column'));
-        $activeSheet->setCellValueByColumnAndRow(2, $row, $this->translator->trans('lender-operations_operations-csv-project-id-column'));
-        $activeSheet->setCellValueByColumnAndRow(3, $row, $this->translator->trans('lender-operations_operations-csv-project-label-column'));
-        $activeSheet->setCellValueByColumnAndRow(4, $row, $this->translator->trans('lender-operations_operations-csv-operation-date-column'));
-        $activeSheet->setCellValueByColumnAndRow(5, $row, $this->translator->trans('lender-operations_operations-csv-operation-amount-column'));
-        $activeSheet->setCellValueByColumnAndRow(6, $row, $this->translator->trans('lender-operations_operations-csv-repaid-capital-amount-column'));
-        $activeSheet->setCellValueByColumnAndRow(7, $row, $this->translator->trans('lender-operations_operations-csv-perceived-interests-amount-column'));
-        $activeSheet->setCellValueByColumnAndRow(8, $row, $this->translator->trans('lender-operations_operations-csv-recovery-commission-amount-column'));
 
         $column = 9;
         foreach (OperationType::TAX_TYPES_FR as $label) {
-            $activeSheet->setCellValueByColumnAndRow($column, $row, $this->translator->trans('lender-operations_operations-csv-' . $label));
-            $taxColumns[$label] = $column;
-            $column++;
+            $header[]           = $this->translator->trans('lender-operations_operations-csv-' . $label);
+            $taxColumns[$label] = $column++;
         }
         $balanceColumn = $column;
-        $activeSheet->setCellValueByColumnAndRow($balanceColumn, $row, $this->translator->trans('lender-operations_operations-csv-account-balance-column'));
-        $row++;
+        $header[] = $this->translator->trans('lender-operations_operations-csv-account-balance-column');
 
         foreach ($lenderOperations as $operation) {
-            $activeSheet->setCellValueByColumnAndRow(0, $row, $this->translator->trans('lender-operations_operation-label-' . $operation['label']));
-            $activeSheet->setCellValueByColumnAndRow(1, $row, $operation['id_loan']);
-            $activeSheet->setCellValueByColumnAndRow(2, $row, $operation['id_project']);
-            $activeSheet->setCellValueByColumnAndRow(3, $row, $operation['title']);
-            $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, PHPExcel_Shared_Date::PHPToExcel(strtotime($operation['operationDate'])), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            $activeSheet->getCellByColumnAndRow(4, $row)->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_DATE_DDMMYYYY);
-            $activeSheet->setCellValueExplicitByColumnAndRow(5, $row, $operation['amount'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            $activeSheet->getCellByColumnAndRow(5, $row)->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-            $this->addConditionalStyleToCell($activeSheet, 5, $row);
+            if (OperationType::LENDER_LOAN === $operation['label']) {
+                $header[] = '';
+                $hasLoans = true;
+                break;
+            }
+        }
+
+        $writer->addRowWithStyle($header, $defaultStyle);
+
+        foreach ($lenderOperations as $operation) {
+            $row = [
+                $this->translator->trans('lender-operations_operation-label-' . $operation['label']),
+                $operation['id_loan'],
+                $operation['id_project'],
+                $operation['title'],
+                \DateTime::createFromFormat('Y-m-d H:i:s', $operation['operationDate'])->format('d/m/Y'),
+                (float) $operation['amount']
+            ];
+            $row = $row + array_fill(count($row), count($header) - count($row), '');
 
             if (self::OP_REPAYMENT === $operation['label']) {
-                $details = $operationRepository->findBy(['idRepaymentTaskLog' => $operation['id_repayment_task_log']]);
+                $details = $operationRepository->findBy([
+                    'idRepaymentTaskLog'  => $operation['id_repayment_task_log'],
+                    'idRepaymentSchedule' => $operation['id_repayment_schedule']
+                ]);
                 /** @var Operation $operationDetail */
                 foreach ($details as $operationDetail) {
                     if (in_array($operationDetail->getType()->getLabel(), OperationType::TAX_TYPES_FR)) {
@@ -385,13 +406,15 @@ class LenderOperationsManager
                                 break;
                         }
                     }
-                    $activeSheet->setCellValueExplicitByColumnAndRow($column, $row, $operationDetail->getAmount(), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    $activeSheet->getCellByColumnAndRow($column, $row)->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                    $row[$column] = (float) $operationDetail->getAmount();
                 }
             }
 
             if (self::OP_REPAYMENT_REGULARIZATION === $operation['label']) {
-                $details = $operationRepository->findBy(['idRepaymentSchedule' => $operation['id_repayment_task_log']]);
+                $details = $operationRepository->findBy([
+                    'idRepaymentTaskLog'  => $operation['id_repayment_task_log'],
+                    'idRepaymentSchedule' => $operation['id_repayment_schedule']
+                ]);
                 /** @var Operation $operationDetail */
                 foreach ($details as $operationDetail) {
                     switch ($operationDetail->getType()->getLabel()) {
@@ -428,71 +451,34 @@ class LenderOperationsManager
                         default:
                             break;
                     }
-                    $activeSheet->setCellValueExplicitByColumnAndRow($column, $row, $operationDetail->getAmount(), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    $activeSheet->getCellByColumnAndRow($column, $row)->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                    $row[$column] = (float) $operationDetail->getAmount();
                 }
             }
 
-            if (OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION === $operation['sub_type_label']) {
-                $activeSheet->setCellValueExplicitByColumnAndRow(6, $row, $operation['amount'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $activeSheet->getCellByColumnAndRow(6, $row)->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            if (
+                OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION === $operation['sub_type_label']
+                || self::OP_EARLY_REPAYMENT === $operation['label']
+            ) {
+                $row[6] = (float) $operation['amount'];
             }
 
             if (OperationType::COLLECTION_COMMISSION_LENDER === $operation['label']) {
-                $activeSheet->setCellValueExplicitByColumnAndRow(8, $row, $operation['amount'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $activeSheet->getCellByColumnAndRow(8, $row)->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                $row[8] = (float) $operation['amount'];
             }
 
-            if (self::OP_EARLY_REPAYMENT === $operation['label']) {
-                $activeSheet->setCellValueExplicitByColumnAndRow(6, $row, $operation['amount'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $activeSheet->getCellByColumnAndRow(6, $row)->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-            }
-
-            $activeSheet->setCellValueExplicitByColumnAndRow($balanceColumn, $row, $operation['available_balance'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            $activeSheet->getCellByColumnAndRow($balanceColumn, $row)->getStyle()->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $row[$balanceColumn] = (float) $operation['available_balance'];
 
             if (OperationType::LENDER_LOAN === $operation['label']) {
-                $asteriskColumn = $balanceColumn + 1;
-                $activeSheet->setCellValueByColumnAndRow($asteriskColumn, $row, '*');
-                $hasLoanRow = true;
+                $row[$balanceColumn + 1] = '*';
             }
 
-            $row++;
+            $writer->addRowWithStyle($row, $defaultStyle);
         }
 
-        if ($hasLoanRow) {
-            $activeSheet->setCellValueByColumnAndRow(0, $row, $this->translator->trans('lender-operations_csv-export-asterisk-accepted-offer-specific-mention'));
+        if ($hasLoans) {
+            $writer->addRow([$this->translator->trans('lender-operations_csv-export-asterisk-accepted-offer-specific-mention')]);
         }
 
-        $maxCoordinates = $activeSheet->getHighestRowAndColumn();
-        $activeSheet->getStyle('A1:' . $maxCoordinates['column'] . $maxCoordinates['row'])->applyFromArray($style);
-        $activeSheet->getStyle('A1:' . $maxCoordinates['column'] . '1')->getFont()->setBold(true);
-
-        return $document;
-    }
-
-    /**
-     * @param \PHPExcel_Worksheet $activeSheet
-     * @param int                 $column
-     * @param int                 $row
-     */
-    private function addConditionalStyleToCell(\PHPExcel_Worksheet $activeSheet, $column, $row)
-    {
-        $negativeValue = new PHPExcel_Style_Conditional();
-        $negativeValue->setConditionType(PHPExcel_Style_Conditional::CONDITION_CELLIS);
-        $negativeValue->setOperatorType(PHPExcel_Style_Conditional::OPERATOR_LESSTHAN);
-        $negativeValue->addCondition(0);
-        $negativeValue->getStyle()->getFont()->getColor()->setARGB(PHPExcel_Style_Color::COLOR_RED);
-
-        $positiveValue = new PHPExcel_Style_Conditional();
-        $positiveValue->setConditionType(PHPExcel_Style_Conditional::CONDITION_CELLIS);
-        $positiveValue->setOperatorType(PHPExcel_Style_Conditional::OPERATOR_GREATERTHANOREQUAL);
-        $positiveValue->addCondition('0');
-        $positiveValue->getStyle()->getFont()->getColor()->setARGB(PHPExcel_Style_Color::COLOR_DARKGREEN);
-
-        $conditionalStyles = $activeSheet->getCellByColumnAndRow($column, $row)->getStyle()->getConditionalStyles();
-        array_push($conditionalStyles, $negativeValue);
-        array_push($conditionalStyles, $positiveValue);
-        $activeSheet->getCellByColumnAndRow($column, $row)->getStyle()->setConditionalStyles($conditionalStyles);
+        return $writer;
     }
 }
