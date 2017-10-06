@@ -4,7 +4,6 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
@@ -193,5 +192,20 @@ class EcheanciersEmprunteurRepository extends EntityRepository
             ->groupBy('ee.idProject');
 
         return $queryBuilder->getQuery()->getSingleResult();
+    }
+
+    /**
+     * @param int|Projects $project
+     *
+     * @return mixed
+     */
+    public function getTotalAmountToRepayOnProject($project)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee')
+            ->select('ROUND(SUM(ee.capital + ee.interets + ee.commission + ee.tva) / 100, 2) AS totalAmountToRepay')
+            ->where('ee.idProject = :project')
+            ->setParameter('project', $project);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }

@@ -3149,14 +3149,10 @@ class dossiersController extends bootstrap
                         $latePaymentData           = $this->getLatePaymentsData($project);
                         $debtCollectionMissionData = $this->getDebtCollectionMissionData($project);
                     } else {
-                        /** @var EcheanciersEmprunteur $lastPayment */
-                        $lastPayment     = $paymentRepository->findOneBy(['idProject' => $project->getIdProject()], ['ordre' => 'DESC']);
-                        $remainingAmount = $paymentRepository->getPendingAmountAndPaymentsCountOnProjectAtDate($project, $lastPayment->getDateEcheanceEmprunteur());
-
                         $latePaymentData[] = [
                             'date'                     => $project->getCloseOutNettingDate(),
                             'label'                    => 'Prêt déchu',
-                            'amount'                   => empty($remainingAmount['amount']) ? 0 : $remainingAmount['amount'],
+                            'amount'                   => $paymentRepository->getTotalAmountToRepayOnProject($project),
                             'entrustedToDebtCollector' => (0 == $projectData['entrustedToDebtCollector']) ? 'Non' : ($projectData['entrustedToDebtCollector'] < $projectData['totalRemainingAmount'] ? 'Partiellement' : 'Oui'),
                             'remainingAmount'          => $projectData['totalRemainingAmount']
                         ];

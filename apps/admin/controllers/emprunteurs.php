@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use \Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
@@ -316,9 +316,8 @@ class emprunteursController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
         $projectManager = $this->get('unilend.service.project_manager');
 
-        $projectsRepository                             = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $receptionsRepository                           = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
-        $debtCollectionMissionPaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMissionPaymentSchedule');
+        $projectsRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $receptionsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
 
         $totalPendingReceiptAmount  = 0;
         $totalRemainingAmount       = 0;
@@ -328,9 +327,15 @@ class emprunteursController extends bootstrap
         foreach ($projectsRepository->getProjectsWithLateRepayments() as $lateRepayment) {
             $project              = $projectsRepository->find($lateRepayment['idProject']);
             $overDuePaymentInfo   = $projectManager->getPendingAmountAndPaymentsCountOnProject($project);
-            $debtCollectionAmount = $debtCollectionMissionPaymentScheduleRepository->getEntrustedAmount($project);
+            $debtCollectionAmount = 0;
 
-            if ($debtCollectionAmount) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission $mission */
+            foreach ($project->getDebtCollectionMissions() as $mission) {
+                $entrustedAmount      = bcadd(bcadd($mission->getCapital(), $mission->getInterest(), 4), $mission->getCommissionVatIncl(), 4);
+                $debtCollectionAmount = bcadd($debtCollectionAmount, $entrustedAmount, 4);
+            }
+
+            if ($project->getDebtCollectionMissions()->count() > 0) {
                 $projectsWithDebtCollection++;
             }
 
@@ -344,7 +349,7 @@ class emprunteursController extends bootstrap
                 'projectStatusLabel'       => $lateRepayment['projectStatusLabel'],
                 'projectStatus'            => $project->getStatus(),
                 'remainingAmount'          => $overDuePaymentInfo['amount'],
-                'entrustedToDebtCollector' => $debtCollectionAmount,
+                'entrustedToDebtCollector' => round($debtCollectionAmount, 2),
                 'remainingPaymentsCount'   => $overDuePaymentInfo['paymentsCount'],
                 'pendingReceiptAmount'     => round(bcdiv(array_sum(array_column($pendingReceipt, 'amount')), 100, 4), 2),
                 'pendingReceiptCount'      => count($pendingReceipt),
