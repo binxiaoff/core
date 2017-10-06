@@ -8,6 +8,7 @@ use Symfony\Component\Asset\Packages;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
+use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
@@ -371,7 +372,7 @@ class ProjectStatusManager
                 'annee'                => (new \DateTime())->format('Y')
             ];
         $mailTemplate          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')
-            ->findOneBy(['type' => $mailType, 'status' => \mail_templates::STATUS_ACTIVE]);
+            ->findOneBy(['type' => $mailType, 'status' => MailTemplates::STATUS_ACTIVE]);
         $replacements['sujet'] = $mailTemplate->getSubject();
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
@@ -527,7 +528,6 @@ class ProjectStatusManager
 
         $sFacebookURL         = $settingsRepository->findOneBy(['type' => 'Facebook'])->getValue();
         $sTwitterURL          = $settingsRepository->findOneBy(['type' => 'Twitter'])->getValue();
-        $debtCollector        = $settingsRepository->findOneBy(['type' => 'Cabinet de recouvrement'])->getValue();
         $firstRepaymentStatus = $projectsStatusHistoryRepository->findOneBy(
             ['idProject' => $project->getIdProject(), 'idProjectStatus' => $projectsStatusRepository->findOneBy(['status' => ProjectsStatus::REMBOURSEMENT])->getIdProjectStatus()],
             ['added' => 'ASC', 'idProjectStatusHistory' => 'ASC']
@@ -600,7 +600,7 @@ class ProjectStatusManager
 
                     $mailType               = ($wallet->getIdClient()->isNaturalPerson()) ? $mailTypePerson : $mailTypeLegalEntity;
                     $mailTemplate           = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')
-                        ->findOneBy(['type' => $mailType, 'status' => \mail_templates::STATUS_ACTIVE]);
+                        ->findOneBy(['type' => $mailType, 'status' => MailTemplates::STATUS_ACTIVE]);
                     $aReplacements['sujet'] = $mailTemplate->getSubject();
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */

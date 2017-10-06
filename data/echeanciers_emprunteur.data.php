@@ -73,32 +73,6 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
         $this->bdd->query($sql);
     }
 
-    // retourne le montant restant à payer pour le projet
-    public function get_restant_du($id_project, $date_debut)
-    {
-        $sql = '
-            SELECT SUM(montant) AS montant
-            FROM echeanciers_emprunteur
-            WHERE id_project = ' . $id_project . '
-                AND status_emprunteur = 0
-                AND DATE(date_echeance_emprunteur) > "' . $date_debut . '"';
-        $result  = $this->bdd->query($sql);
-        return $this->bdd->result($result, 0, 0);
-    }
-
-    // retourne le montant restant à payer pour le projet
-    public function get_capital_restant_du($id_project, $date_debut)
-    {
-        $sql = '
-            SELECT SUM(capital) AS montant
-            FROM echeanciers_emprunteur
-            WHERE id_project = ' . $id_project . '
-                AND status_emprunteur = 0
-                AND DATE(date_echeance_emprunteur) > "' . $date_debut . '"';
-        $result  = $this->bdd->query($sql);
-        return $this->bdd->result($result, 0, 0);
-    }
-
     /**
      * @param \projects $project
      * @return mixed

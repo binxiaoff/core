@@ -431,5 +431,10 @@
             <argument type="service" id="unilend.service.debt_collection_mission_manager"/>
             <argument type="service" id="unilend.service.operation_manager"/>
         </service>
+
+        <service id="unilend.service.project_close_out_netting_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.project_status_manager"/>
+        </service>
     </services>
 </container>

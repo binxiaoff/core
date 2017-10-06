@@ -122,7 +122,7 @@ class ProjectPaymentManager
             $loans = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project]);
 
             foreach ($loans as $loan) {
-                $notRepaidAmount        = $repaymentScheduleRepository->getTotalOverdueAmount($loan);
+                $notRepaidAmount        = $repaymentScheduleRepository->getTotalOverdueAmountByLoan($loan);
                 $notRepaidProportion    = bcdiv($notRepaidAmount, $totalUnpaidAmount, 10);
                 $predictRepaymentAmount = round(bcmul($amount, $notRepaidProportion, 4), 2);
 

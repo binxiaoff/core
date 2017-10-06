@@ -14,9 +14,12 @@ use Doctrine\ORM\Mapping as ORM;
 class CloseOutNettingPayment
 {
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
      */
     private $idProject;
 
@@ -58,16 +61,16 @@ class CloseOutNettingPayment
     /**
      * @var string
      *
-     * @ORM\Column(name="vat_amount", type="decimal", precision=10, scale=2, nullable=false)
-     */
-    private $vatAmount;
-
-    /**
-     * @var string
-     *
      * @ORM\Column(name="paid_commission_tax_incl", type="decimal", precision=10, scale=0, nullable=false)
      */
     private $paidCommissionTaxIncl;
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(name="notified", type="boolean", nullable=false)
+     */
+    private $notified;
 
     /**
      * @var \DateTime
@@ -95,11 +98,11 @@ class CloseOutNettingPayment
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param Projects $idProject
      *
      * @return CloseOutNettingPayment
      */
-    public function setIdProject($idProject)
+    public function setIdProject(Projects $idProject)
     {
         $this->idProject = $idProject;
 
@@ -109,7 +112,7 @@ class CloseOutNettingPayment
     /**
      * Get idProject
      *
-     * @return integer
+     * @return Projects
      */
     public function getIdProject()
     {
@@ -237,30 +240,6 @@ class CloseOutNettingPayment
     }
 
     /**
-     * Set vatAmount
-     *
-     * @param string $vatAmount
-     *
-     * @return CloseOutNettingPayment
-     */
-    public function setVatAmount($vatAmount)
-    {
-        $this->vatAmount = $vatAmount;
-
-        return $this;
-    }
-
-    /**
-     * Get vatAmount
-     *
-     * @return string
-     */
-    public function getVatAmount()
-    {
-        return $this->vatAmount;
-    }
-
-    /**
      * Set paidCommissionTaxIncl
      *
      * @param string $paidCommissionTaxIncl
@@ -358,5 +337,28 @@ class CloseOutNettingPayment
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * Get notified
+     *
+     * @return mixed
+     */
+    public function getNotified()
+    {
+        return $this->notified;
+    }
+
+    /**
+     * Set notified
+     *
+     * @param mixed $notified
+     *
+     * @return CloseOutNettingPayment
+     */
+    public function setNotified($notified)
+    {
+        $this->notified = $notified;
+        return $this;
     }
 }

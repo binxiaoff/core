@@ -53,7 +53,7 @@ class DebtCollectionMissionManager
      * DebtCollectionMissionManager constructor.
      *
      * @param EntityManager               $entityManager
-     * @param ProjectRepaymentTaskManager $projectRepaymentManager
+     * @param ProjectRepaymentTaskManager $projectRepaymentTaskManager
      * @param LoggerInterface             $logger
      * @param Filesystem                  $filesystem
      * @param string                      $protectedPath

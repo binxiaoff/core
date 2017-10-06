@@ -538,7 +538,7 @@ class EcheanciersRepository extends EntityRepository
     public function earlyRepayAllPendingSchedules(Loans $loan)
     {
         $updateRepaymentSchedule = 'UPDATE echeanciers
-                    SET capital_rembourse = capital, status = :paid, date_echeance_reel = NOW(), status_email_remb = :sent, updated = NOW()
+                    SET capital_rembourse = capital, status = :paid, date_echeance_reel = NOW(), updated = NOW()
                     WHERE id_loan = :loan AND status = :pending';
 
         $resultRepaymentSchedule = $this->getEntityManager()->getConnection()->executeUpdate(
@@ -624,17 +624,64 @@ class EcheanciersRepository extends EntityRepository
      *
      * @return float
      */
-    public function getTotalOverdueAmount($loan)
+    public function getRemainingCapitalByLoan($loan)
     {
         $queryBuilder = $this->createQueryBuilder('e');
-        $queryBuilder->select('ROUND(SUM(e.capital + e.interets - e.capitalRembourse - e.interetsRembourses) / 100, 2)')
+        $queryBuilder->select('ROUND(SUM(e.capital  - e.capitalRembourse) / 100, 2)')
+            ->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'e.idLoan = l.idLoan')
+            ->where('e.idLoan = :loan')
+            ->setParameter('loan', $loan);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Loans|int      $loan
+     * @param \DateTime|null $date
+     *
+     * @return array
+     */
+    public function getOverdueAmountsByLoan($loan, \DateTime $date = null)
+    {
+        if ($date === null) {
+            $date = new \DateTime();
+        }
+
+        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder->select('ROUND(SUM(e.capital  - e.capitalRembourse) / 100, 2) AS capital, ROUND(SUM(e.interets  - e.interetsRembourses) / 100, 2) AS interest')
             ->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'e.idLoan = l.idLoan')
             ->innerJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'ee.idProject = l.idProject AND ee.ordre = e.ordre')
             ->where('e.idLoan = :loan')
             ->setParameter('loan', $loan)
             ->andWhere('ee.dateEcheanceEmprunteur < :today')
-            ->setParameter('today', (new \DateTime())->format('Y-m-d 00:00:00'));
+            ->setParameter('today', $date->format('Y-m-d 00:00:00'));
 
-        return $queryBuilder->getQuery()->getSingleScalarResult();
+        return $queryBuilder->getQuery()->getSingleResult();
+    }
+
+    /**
+     * @param Loans|int      $loan
+     * @param \DateTime|null $date
+     *
+     * @return float
+     */
+    public function getOverdueInterestByLoan($loan, \DateTime $date = null)
+    {
+        $amount = $this->getOverdueAmountsByLoan($loan, $date);
+
+        return $amount['interest'];
+    }
+
+    /**
+     * @param Loans|int      $loan
+     * @param \DateTime|null $date
+     *
+     * @return float
+     */
+    public function getTotalOverdueAmountByLoan($loan, \DateTime $date = null)
+    {
+        $amount = $this->getOverdueAmountsByLoan($loan, $date);
+
+        return round(bcadd($amount['capital'], $amount['interest'], 4), 2);
     }
 }

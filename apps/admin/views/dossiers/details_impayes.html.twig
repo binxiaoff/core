@@ -92,7 +92,7 @@
 
 {% block modals %}
     <div class="modal fade in" id="modal-close-out-netting">
-        <form class="modal-dialog validate" action="/dossiers/details_impayes/{{ projectData.projectId }}" method="post">
+        <form class="modal-dialog validate" action="/dossiers/dechoir_terme" method="post">
             <div class="modal-content">
                 <div class="messages"></div>
                 <div class="block block-themed remove-margin-b">
@@ -104,7 +104,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <input type="hidden" name="close-out-netting" value="1">
+                    <input type="hidden" name="id_project" value="{{ projectData.projectId }}">
                     <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
                     <button class="btn btn-sm btn-primary" type="submit">Valider</button>
                 </div>
