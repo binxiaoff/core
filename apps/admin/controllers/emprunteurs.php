@@ -66,15 +66,15 @@ class emprunteursController extends bootstrap
             $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
             $this->companies->get($this->clients->id_client, 'id_client_owner');
-            $walletType             = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::BORROWER]);
-            $borrowerWallet         = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')
+            $walletType     = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::BORROWER]);
+            $borrowerWallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')
                 ->findOneBy(['idClient' => $client->getIdClient(), 'idType' => $walletType]);
             if ($borrowerWallet) {
                 $this->availableBalance = $borrowerWallet->getAvailableBalance();
             } else {
                 $this->availableBalance = 0;
             }
-            $this->lprojects        = $this->projects->select('id_company = "' . $this->companies->id_company . '"');
+            $this->lprojects = $this->projects->select('id_company = "' . $this->companies->id_company . '"');
 
             if ($this->clients->telephone != '') {
                 $this->clients->telephone = trim(chunk_split($this->clients->telephone, 2, ' '));
@@ -326,7 +326,7 @@ class emprunteursController extends bootstrap
 
         foreach ($projectsRepository->getProjectsWithLateRepayments() as $lateRepayment) {
             $project              = $projectsRepository->find($lateRepayment['idProject']);
-            $overDuePaymentInfo   = $projectManager->getPendingAmountAndPaymentsCountOnProject($project);
+            $remainingAmount      = $projectManager->getRemainingAmount($project);
             $debtCollectionAmount = 0;
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission $mission */
@@ -348,13 +348,12 @@ class emprunteursController extends bootstrap
                 'projectTitle'             => $project->getTitle(),
                 'projectStatusLabel'       => $lateRepayment['projectStatusLabel'],
                 'projectStatus'            => $project->getStatus(),
-                'remainingAmount'          => $overDuePaymentInfo['amount'],
+                'remainingAmount'          => $remainingAmount,
                 'entrustedToDebtCollector' => round($debtCollectionAmount, 2),
-                'remainingPaymentsCount'   => $overDuePaymentInfo['paymentsCount'],
                 'pendingReceiptAmount'     => round(bcdiv(array_sum(array_column($pendingReceipt, 'amount')), 100, 4), 2),
                 'pendingReceiptCount'      => count($pendingReceipt),
             ];
-            $totalRemainingAmount                  = bcadd($totalRemainingAmount, $overDuePaymentInfo['amount'], 4);
+            $totalRemainingAmount                  = bcadd($totalRemainingAmount, $remainingAmount, 4);
             $totalPendingReceiptAmount             = bcadd($totalPendingReceiptAmount, $projectData[$project->getIdProject()]['pendingReceiptAmount'], 2);
         }
 

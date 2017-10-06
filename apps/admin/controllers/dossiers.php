@@ -3151,7 +3151,6 @@ class dossiersController extends bootstrap
         ) {
             if (false === empty($this->params[0])) {
                 $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-                $paymentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
 
                 $missionPaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMissionPaymentSchedule');
                 $projectId                        = filter_var($this->params[0], FILTER_VALIDATE_INT);
@@ -3160,7 +3159,6 @@ class dossiersController extends bootstrap
                 if (null !== ($project = $projectRepository->find($projectId))) {
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
                     $projectManager     = $this->get('unilend.service.project_manager');
-                    $overDuePaymentInfo = $projectManager->getPendingAmountAndPaymentsCountOnProject($project);
                     $projectStatus      = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $project->getStatus()]);
                     $projectData        = [
                         'projectId'                => $project->getIdProject(),
@@ -3169,13 +3167,13 @@ class dossiersController extends bootstrap
                         'projectStatusLabel'       => $projectStatus->getLabel(),
                         'projectStatus'            => $project->getStatus(),
                         'projectTitle'             => $project->getTitle(),
-                        'totalRemainingAmount'     => $overDuePaymentInfo['amount'],
+                        'totalRemainingAmount'     => $projectManager->getRemainingAmount($project),
                         'entrustedToDebtCollector' => $missionPaymentScheduleRepository->getEntrustedAmount($project),
                         'isClosedOutLoan'          => (null === $project->getCloseOutNettingDate())
                     ];
-                    $debtCollectionMissionData = [];
+
                     if (null === $project->getCloseOutNettingDate()) {
-                        $latePaymentData           = $this->getLatePaymentsData($project);
+                        $latePaymentData = $this->getLatePaymentsData($project);
                     } else {
                         $closeOutNettingPayment = $entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $project]);
                         $totalAmount            = round(bcadd($closeOutNettingPayment->getCommissionTaxIncl(), bcadd($closeOutNettingPayment->getCapital(), $closeOutNettingPayment->getInterest(), 4),
@@ -3186,7 +3184,7 @@ class dossiersController extends bootstrap
                         $latePaymentData[] = [
                             'date'                     => $project->getCloseOutNettingDate(),
                             'label'                    => 'Prêt déchu',
-                            'amount'                   => round(bcsub($totalAmount, $paidAmount, 4), 2),
+                            'amount'                   => $totalAmount,
                             'entrustedToDebtCollector' => (0 == $projectData['entrustedToDebtCollector']) ? 'Non' : ($projectData['entrustedToDebtCollector'] < $projectData['totalRemainingAmount'] ? 'Partiellement' : 'Oui'),
                             'remainingAmount'          => round(bcsub($totalAmount, $paidAmount, 4), 2)
                         ];

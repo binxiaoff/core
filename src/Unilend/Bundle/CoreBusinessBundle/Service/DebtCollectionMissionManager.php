@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -240,7 +241,12 @@ class DebtCollectionMissionManager
             $activeSheet->setCellValueExplicitByColumnAndRow($totalColumn, $dataRow, $chargeDetails['total'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
             $fileName     = 'recouvrement_' . $debtCollectionMission->getId() . '_' . $debtCollectionMission->getAdded()->format('Y-m-d');
-            $absolutePath = implode(DIRECTORY_SEPARATOR, [$this->protectedPath, self::DEBT_COLLECTION_MISSION_FOLDER, trim($debtCollectionMission->getIdClientDebtCollector()->getIdClient()), $debtCollectionMission->getIdProject()->getIdProject()]);
+            $absolutePath = implode(DIRECTORY_SEPARATOR, [
+                $this->protectedPath,
+                self::DEBT_COLLECTION_MISSION_FOLDER,
+                trim($debtCollectionMission->getIdClientDebtCollector()->getIdClient()),
+                $debtCollectionMission->getIdProject()->getIdProject()
+            ]);
 
             if (false === is_dir($absolutePath)) {
                 $this->fileSystem->mkdir($absolutePath);
@@ -464,50 +470,43 @@ class DebtCollectionMissionManager
             $this->entityManager->persist($newMission);
             $this->entityManager->flush($newMission);
 
-            $paymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
-
-            /** @var EcheanciersEmprunteur[] $pendingPayments */
-            $pendingPayments     = $paymentRepository->findBy(
-                [
-                    'idProject'        => $project,
-                    'statusEmprunteur' => [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]
-                ],
-                ['dateEcheanceEmprunteur' => 'ASC']
-            );
-            $yesterday           = (new \DateTime('yesterday 23:59:59'));
             $closeOutNettingDate = $project->getCloseOutNettingDate();
 
             if (null === $closeOutNettingDate) {
+                /** @var EcheanciersEmprunteur[] $pendingPayments */
+                $pendingPayments                  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findBy(
+                    [
+                        'idProject'        => $project,
+                        'statusEmprunteur' => [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]
+                    ],
+                    ['dateEcheanceEmprunteur' => 'ASC']
+                );
+                $paymentScheduleMissionCollection = new ArrayCollection();
                 foreach ($pendingPayments as $key => $payment) {
-                    if ($payment->getDateEcheanceEmprunteur() <= $yesterday) {
+                    if ($payment->getDateEcheanceEmprunteur() < (new \DateTime())->setTime(0, 0, 0)) {
                         $paymentScheduleMission = new DebtCollectionMissionPaymentSchedule();
                         $paymentScheduleMission->setIdMission($newMission)
                             ->setIdPaymentSchedule($payment)
                             ->setCapital(round(bcdiv($payment->getCapital() - $payment->getPaidCapital(), 100, 4), 2))
                             ->setInterest(round(bcdiv($payment->getInterets() - $payment->getPaidInterest(), 100, 4), 2))
                             ->setCommissionVatIncl(round(bcdiv($payment->getCommission() + $payment->getTva() - $payment->getPaidCommissionVatIncl(), 100, 4), 2));
+
                         $this->entityManager->persist($paymentScheduleMission);
                         $this->entityManager->flush($paymentScheduleMission);
 
                         $totalCapital    = round(bcadd($totalCapital, $paymentScheduleMission->getCapital(), 4), 2);
                         $totalInterest   = round(bcadd($totalInterest, $paymentScheduleMission->getInterest(), 4), 2);
                         $totalCommission = round(bcadd($totalCommission, $paymentScheduleMission->getCommissionVatIncl(), 4), 2);
-                    }
-                }
-            } else {
-                /** @todo Use information from new table that holds close out netting information */
-                $dayBefore = $closeOutNettingDate->sub((new \DateInterval('P1D')));
-                $dayBefore->setTime(23, 59, 59);
 
-                foreach ($pendingPayments as $key => $payment) {
-                    if ($payment->getDateEcheanceEmprunteur() <= $dayBefore) {
-                        $totalCapital    = bcadd($totalCapital, bcsub($payment->getCapital(), $payment->getPaidCapital(), 4), 4);
-                        $totalInterest   = bcadd($totalCapital, bcsub($payment->getInterets(), $payment->getPaidInterest(), 4), 4);
-                        $totalCommission = bcadd($totalCapital, bcsub(bcadd($payment->getCommission(), $payment->getTva(), 4), $payment->getPaidCommissionVatIncl(), 4), 4);
-                    } else {
-                        $totalCapital = bcadd($totalCapital, bcsub($payment->getCapital(), $payment->getPaidCapital(), 4), 4);
+                        $paymentScheduleMissionCollection->add($paymentScheduleMission);
                     }
                 }
+                $newMission->setDebtCollectionMissionPaymentSchedules($paymentScheduleMissionCollection);
+            } else {
+                $closeOutNettingPayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $project]);
+                $totalCapital           = round(bcsub($closeOutNettingPayment->getCapital(), $closeOutNettingPayment->getPaidCapital(), 4), 2);
+                $totalInterest          = round(bcsub($closeOutNettingPayment->getInterest(), $closeOutNettingPayment->getPaidInterest(), 4), 2);
+                $totalCommission        = round(bcsub($closeOutNettingPayment->getCommissionTaxIncl(), $closeOutNettingPayment->getPaidCommissionTaxIncl(), 4), 2);
 
             }
             $newMission->setCapital($totalCapital)
