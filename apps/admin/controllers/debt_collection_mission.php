@@ -59,11 +59,14 @@ class debt_collection_missionController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        if (false === empty($this->params[0] && $this->isUserTypeRisk()) ) {
+        if (false === empty($this->params[0] && $this->isUserTypeRisk())) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
-            $projectId     = filter_var($this->params[0], FILTER_VALIDATE_INT);
-            $errors        = [];
+            $entityManager      = $this->get('doctrine.orm.entity_manager');
+            $projectId          = filter_var($this->params[0], FILTER_VALIDATE_INT);
+            $debtCollector      = null;
+            $debtCollectionType = null;
+            $feesRate           = -1;
+            $errors             = [];
 
             if (null === ($project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId))) {
                 $errors[] = 'Le projet n\'existe pas.';
@@ -71,7 +74,7 @@ class debt_collection_missionController extends bootstrap
             if (false === empty($_POST['debt-collector-hash'])) {
                 $debtCollector = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $_POST['debt-collector-hash']]);
             }
-            if (empty($debtCollector)) {
+            if (null === $debtCollector) {
                 $errors[] = 'Le recouvreur n\'existe pas.';
             }
             if (empty($_POST['debt-collection-type'])
@@ -81,7 +84,7 @@ class debt_collection_missionController extends bootstrap
                 $errors[] = 'Le type de mission est incorrect: valeures possibles (1, 2). Fournit: ' . $debtCollectionType;
             }
             if (empty($_POST['debt-collection-rate'])
-                || false === ($feesRate = filter_var(str_replace(',', '.',$_POST['debt-collection-rate']), FILTER_VALIDATE_FLOAT))
+                || false === ($feesRate = filter_var(str_replace(',', '.', $_POST['debt-collection-rate']), FILTER_VALIDATE_FLOAT))
                 || $feesRate < 0
             ) {
                 $errors[] = 'Le taux d\'honoraires est incorrect.';
@@ -122,11 +125,16 @@ class debt_collection_missionController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        if (false === empty($this->params[0] && $this->isUserTypeRisk()) ) {
+        if (false === empty($this->params[0] && $this->isUserTypeRisk())) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
-            $projectId     = filter_var($this->params[0], FILTER_VALIDATE_INT);
-            $errors        = [];
+            $entityManager       = $this->get('doctrine.orm.entity_manager');
+            $projectId           = filter_var($this->params[0], FILTER_VALIDATE_INT);
+            $projectChargeType   = null;
+            $chargeAmountVatFree = -1;
+            $chargeAmountVat     = -1;
+            $chargeInvoiceDate   = null;
+
+            $errors = [];
 
             if (null === ($project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId))) {
                 $errors[] = 'Le projet n\'existe pas.';
@@ -138,13 +146,13 @@ class debt_collection_missionController extends bootstrap
                 $errors[] = 'Le type de frais est incorrect';
             }
             if (empty($_POST['fee-amount-vat-free'])
-                || false === ($chargeAmountVatFree = filter_var(str_replace(',', '.',$_POST['fee-amount-vat-free']), FILTER_VALIDATE_FLOAT))
+                || false === ($chargeAmountVatFree = filter_var(str_replace(',', '.', $_POST['fee-amount-vat-free']), FILTER_VALIDATE_FLOAT))
                 || $chargeAmountVatFree < 0
             ) {
                 $errors[] = 'Le montant HT saisi est incorrect';
             }
             if (empty($_POST['fee-amount-vat'])
-                || false === ($chargeAmountVat = filter_var(str_replace(',', '.',$_POST['fee-amount-vat']), FILTER_VALIDATE_FLOAT))
+                || false === ($chargeAmountVat = filter_var(str_replace(',', '.', $_POST['fee-amount-vat']), FILTER_VALIDATE_FLOAT))
                 || $chargeAmountVat < 0
             ) {
                 $errors[] = 'Le montant TVA saisi est incorrect';

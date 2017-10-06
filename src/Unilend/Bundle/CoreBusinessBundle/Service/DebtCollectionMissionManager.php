@@ -516,6 +516,7 @@ class DebtCollectionMissionManager
             $this->entityManager->flush($newMission);
 
             $this->entityManager->getConnection()->commit();
+            $this->entityManager->refresh($newMission);
 
             return $newMission;
         } catch (\Exception $exception) {

@@ -102,10 +102,10 @@
                                 {{ project.remainingAmount|localizedcurrency('EUR') }}
                             </td>
                             <td>
-                                {{ project.entrustedToDebtCollector > 0 ? project.entrustedToDebtCollector|localizedcurrency('EUR') : 'N/A' }}
+                                {{ project.entrustedToDebtCollector > 0 ? project.entrustedToDebtCollector|localizedcurrency('EUR') : '0 €' }}
                             </td>
                             <td>
-                                {{ project.pendingReceiptAmount > 0 ? project.pendingReceiptAmount|localizedcurrency('EUR') : 'N/A' }}
+                                {{ project.pendingReceiptAmount > 0 ? project.pendingReceiptAmount|localizedcurrency('EUR') : '0 €' }}
                             </td>
                             <!-- @todo use real ID from the future tables -->
                             <td class="text-center">
