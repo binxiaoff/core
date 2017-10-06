@@ -152,7 +152,7 @@ class BeneficialOwnerManager
             ];
         }
 
-        $projectDeclaration = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findOneBy(['idProject' => $project], ['added' => 'DESC']);
+        $projectDeclaration = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findOneBy(['idProject' => $project, 'status' => [UniversignEntityInterface::STATUS_PENDING, UniversignEntityInterface::STATUS_SIGNED]], ['added' => 'DESC']);
         if (null === $projectDeclaration) {
             $companyDeclaration = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentBeneficialOwnerDeclaration($project->getIdCompany());
             $projectDeclaration = $this->addProjectBeneficialOwnerDeclaration($companyDeclaration, $project);
@@ -336,6 +336,10 @@ class BeneficialOwnerManager
             $this->attachmentManager->upload($owner, $attachmentType, $passport);
         }
 
+        if (CompanyBeneficialOwnerDeclaration::STATUS_PENDING === $declaration->getStatus()) {
+            $this->modifyPendingCompanyDeclaration($declaration);
+        }
+
         return $beneficialOwner;
     }
 
@@ -389,18 +393,31 @@ class BeneficialOwnerManager
 
         $this->entityManager->flush($owner);
 
-        $projectDeclarations = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findBy(['idDeclaration' => $owner->getIdDeclaration()]);
+        $this->modifyPendingCompanyDeclaration($owner->getIdDeclaration());
+    }
+
+    /**
+     * @param CompanyBeneficialOwnerDeclaration $declaration
+     *
+     * @throws \Exception
+     */
+    public function modifyPendingCompanyDeclaration(CompanyBeneficialOwnerDeclaration $declaration)
+    {
+        $projectDeclarations = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findBy(['idDeclaration' => $declaration]);
 
         if (false === empty($projectDeclarations)) {
             foreach ($projectDeclarations as $universign) {
-                if (UniversignEntityInterface::STATUS_PENDING !== $universign->getStatus()) {
-                    throw new \Exception('CompanyBeneficialOwnerDeclaration is pending, but ProjectBeneficialOwnerUniversign status is not pending. Id project : ' . $universign->getIdProject()->getIdProject(), ' idDeclaration : ' . $universign->getIdDeclaration()->getId());
-                }
-
                 $universign->setStatus(UniversignEntityInterface::STATUS_CANCELED);
                 $this->entityManager->flush($universign);
 
-                $this->createProjectBeneficialOwnerDeclaration($universign->getIdProject(), $this->getProjectOwner($universign->getIdProject()));
+                $beneficialOwnerDeclarationPdfRoot  = $this->getBeneficialOwnerDeclarationPdfRoot();
+                $beneficialOwnerDeclarationFileName = $this->getBeneficialOwnerDeclarationFileName($universign);
+
+                if (file_exists($beneficialOwnerDeclarationPdfRoot . DIRECTORY_SEPARATOR . $beneficialOwnerDeclarationFileName)) {
+                    unlink($beneficialOwnerDeclarationPdfRoot . DIRECTORY_SEPARATOR . $beneficialOwnerDeclarationFileName);
+                }
+
+                $this->addProjectBeneficialOwnerDeclaration($universign->getIdDeclaration(), $universign->getIdProject());
             }
         }
     }

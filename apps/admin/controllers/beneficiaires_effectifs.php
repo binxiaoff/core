@@ -424,7 +424,6 @@ class beneficiaires_effectifsController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $errors        = [];
 
-        $idCompany         = $request->request->getInt('id_company');
         $idBeneficialOwner = $request->request->getInt('id');
         /** @var BeneficialOwner $owner */
         $owner = $entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwner')->find($idBeneficialOwner);
@@ -441,8 +440,12 @@ class beneficiaires_effectifsController extends bootstrap
         }
 
         if (CompanyBeneficialOwnerDeclaration::STATUS_PENDING === $owner->getIdDeclaration()->getStatus()) {
+            $declaration = $owner->getIdDeclaration();
+
             $entityManager->remove($owner);
             $entityManager->flush($owner);
+
+            $this->get('unilend.service.beneficial_owner_manager')->modifyPendingCompanyDeclaration($declaration);
         }
 
         if (CompanyBeneficialOwnerDeclaration::STATUS_VALIDATED === $owner->getIdDeclaration()->getStatus()) {

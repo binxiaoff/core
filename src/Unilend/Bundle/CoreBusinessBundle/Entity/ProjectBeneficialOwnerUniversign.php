@@ -308,14 +308,4 @@ class ProjectBeneficialOwnerUniversign implements UniversignEntityInterface
     {
         $this->updated = new \DateTime();
     }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setNameValue()
-    {
-        if (null === $this->name && null !== $this->idProject) {
-            $this->name = $this->idProject->getIdProject() . self::DOCUMENT_NAME . '.pdf';
-        }
-    }
 }
