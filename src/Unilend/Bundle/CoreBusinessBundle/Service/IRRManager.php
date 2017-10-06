@@ -214,4 +214,20 @@ class IRRManager
 
         $this->entityManager->flush();
     }
+
+    /**
+     * @param string $cohortStartDate
+     * @param string $cohortEndDate
+     *
+     * @return string
+     */
+    public function getOptimisticUnilendIRRByCohort($cohortStartDate, $cohortEndDate)
+    {
+        set_time_limit(1000);
+
+        $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+        $valuesIRR = $unilendStatsRepository->getOptimisticIRRValuesByCohort($cohortStartDate, $cohortEndDate);
+
+        return $this->calculateIRR($valuesIRR);
+    }
 }

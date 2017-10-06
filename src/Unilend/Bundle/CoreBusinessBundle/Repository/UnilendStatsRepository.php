@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
 
 class UnilendStatsRepository extends EntityRepository
@@ -400,5 +401,114 @@ class UnilendStatsRepository extends EntityRepository
             ->setParameter('date', $date->format('y-m-d'));
 
         return $qb->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * @param string $cohortStartDate
+     * @param string $cohortEndDate
+     *
+     * @return array
+     */
+    public function getOptimisticIRRValuesByCohort($cohortStartDate, $cohortEndDate)
+    {
+        $query = 'SELECT
+                    -ROUND((o_withdraw.amount + o_comission.amount) * 100) AS amount,
+                    o_withdraw.added                                       AS date
+                  FROM operation o_withdraw
+                    INNER JOIN operation_type ot_withdraw ON o_withdraw.id_type = ot_withdraw.id AND ot_withdraw.label = "' . OperationType::BORROWER_WITHDRAW . '"
+                    INNER JOIN operation o_comission ON o_withdraw.id_wallet_debtor = o_comission.id_wallet_debtor AND DATE(o_withdraw.added) = DATE(o_comission.added)
+                    INNER JOIN operation_type ot_comission ON o_comission.id_type = ot_comission.id AND ot_comission.label = "' . OperationType::BORROWER_COMMISSION . '"
+                     AND (
+                            SELECT psh.added
+                            FROM projects_status_history psh
+                              INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
+                            WHERE psh.id_project = o_withdraw.id_project
+                            ORDER BY psh.id_project_status ASC
+                            LIMIT 1
+                            ) BETWEEN :startDate AND :endDate
+                    GROUP BY o_withdraw.id
+
+                    UNION ALL
+                    
+                  SELECT
+                    ee.capital + ee.interets AS amount,
+                    (
+                      SELECT CASE WHEN e.status = 1 THEN e.date_echeance_reel ELSE e.date_echeance END
+                       FROM echeanciers e
+                       WHERE e.ordre = ee.ordre
+                         AND ee.id_project = e.id_project
+                     LIMIT 1)                AS date
+                    FROM echeanciers_emprunteur ee
+                    WHERE
+                      (
+                      SELECT psh.added
+                       FROM projects_status_history psh 
+                       INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = 80
+                       WHERE psh.id_project = ee.id_project
+                       ORDER BY psh.id_project_status ASC
+                       LIMIT 1
+                       ) BETWEEN :startDate AND :endDate';
+
+        $values = $this->getEntityManager()->getConnection()->executeQuery($query, ['startDate' => $cohortStartDate, 'endDate' => $cohortEndDate])->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $values;
+    }
+
+    public function getOptimisticIRRValuesForCohortUntilDateLimit($cohortStartDate, $cohortEndDate, $dateLimit)
+    {
+        $query = 'SELECT
+                    -ROUND((o_withdraw.amount + o_comission.amount) * 100) AS amount,
+                    o_withdraw.added                                       AS date
+                  FROM operation o_withdraw
+                    INNER JOIN operation_type ot_withdraw ON o_withdraw.id_type = ot_withdraw.id AND ot_withdraw.label = "' . OperationType::BORROWER_WITHDRAW . '"
+                    INNER JOIN operation o_comission ON o_withdraw.id_wallet_debtor = o_comission.id_wallet_debtor AND DATE(o_withdraw.added) = DATE(o_comission.added)
+                    INNER JOIN operation_type ot_comission ON o_comission.id_type = ot_comission.id AND ot_comission.label = "' . OperationType::BORROWER_COMMISSION . '"
+                     AND (
+                            SELECT psh.added
+                            FROM projects_status_history psh
+                              INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
+                            WHERE psh.id_project = o_withdraw.id_project
+                            ORDER BY psh.id_project_status ASC
+                            LIMIT 1
+                            ) BETWEEN :startDate AND :endDate
+                    WHERE (SELECT added
+                           FROM projects_status_history psh
+                             INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                           WHERE ps.status = :repayment
+                             AND psh.id_project = o_withdraw.id_project
+                           ORDER BY added ASC
+                           LIMIT 1) <= :end
+                    GROUP BY o_withdraw.id
+                    
+                    UNION ALL
+                    
+                    SELECT
+                      ee.capital + ee.interets AS amount,
+                      (SELECT CASE WHEN e.status = 1
+                        THEN e.date_echeance_reel
+                              ELSE e.date_echeance END
+                       FROM echeanciers e
+                       WHERE e.ordre = ee.ordre
+                             AND ee.id_project = e.id_project
+                       LIMIT 1)                AS date
+                    FROM echeanciers_emprunteur ee
+                    WHERE
+                      (SELECT psh.added
+                       FROM projects_status_history psh INNER JOIN projects_status ps
+                           ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
+            WHERE psh.id_project = ee.id_project
+                       ORDER BY psh.id_project_status ASC
+                       LIMIT 1) BETWEEN :startDate AND :endDate
+                      AND (SELECT added
+                           FROM projects_status_history psh
+                             INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                           WHERE ps.status = :repayment
+                                 AND psh.id_project = ee.id_project
+                           ORDER BY added ASC
+                           LIMIT 1) <= :end';
+
+        $values = $this->getEntityManager()->getConnection()->executeQuery($query, ['startDate' => $cohortStartDate, 'endDate' => $cohortEndDate, 'end' => $dateLimit])->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $values;
     }
 }

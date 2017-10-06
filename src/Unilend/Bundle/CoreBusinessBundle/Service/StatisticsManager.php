@@ -2,8 +2,8 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Psr\Cache\CacheItemPoolInterface;
 use Doctrine\ORM\EntityManager;
+use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
@@ -197,7 +197,7 @@ class StatisticsManager
 
     private function calculateRegulatoryData()
     {
-        $years = array_merge(['2013-2014'], range(2015, date('Y')));
+        $years = $this->getYearsRange();
 
         /** @var \loans $loans */
         $loans = $this->entityManagerSimulator->getRepository('loans');
@@ -339,6 +339,74 @@ class StatisticsManager
         $incidenceRate['projectsCIP'] = bcmul(bcdiv(count($problematicProjectsCip), count($allProjectsCip), 4), 100, 2);
 
         return $incidenceRate;
+    }
+
+    /**
+     * @param \DateTime $date
+     *
+     * @return array
+     */
+    public function calculatePerformanceIndicators(\DateTime $date)
+    {
+        $projectRepository         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $paymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+
+        $years                          = $this->getYearsRange();
+        $regulatoryData                 = $this->getStatisticsAtDate($date)['regulatoryData'];
+        $weightedAverageInterestRate    = $this->formatCohortQueryResult($projectRepository->getWeightedAverageInterestRateByCohortUntil(), $years);
+        $notWeightedAverageInterestRate = $this->formatCohortQueryResult($projectRepository->getNonWeightedAverageInterestRateByCohortUntil(), $years);
+        $weightedAveragePeriod          = $this->formatCohortQueryResult($projectRepository->getWeightedAveragePeriodByCohortUntil(), $years);
+        $notWeightedAveragePeriod       = $this->formatCohortQueryResult($projectRepository->getNonWeightedAverageInterestRateByCohortUntil(), $years);
+        $totalInterest                  = $this->formatCohortQueryResult($paymentScheduleRepository->getTotalInterestToBePaidByCohortUntil(), $years);
+
+        $data = [];
+        foreach ($years as $year) {
+            if ($year == '2013-2014') {
+                $cohortStartDate = '2013-01-01 00:00:00';
+                $cohortEndDate   = '2014-12-31 23:59:59';
+            } else {
+                $cohortStartDate = $year . '-01-01 00:00:00';
+                $cohortEndDate   = $year . '-12-31 23:59:59';
+            }
+
+            try {
+                $data['optimisticUnilendIRR'][$year] = $this->IRRManager->getOptimisticUnilendIRRByCohort($cohortStartDate, $cohortEndDate);
+            } catch (\Exception $exception){
+                $data['optimisticUnilendIRR'][$year] = 'NA';
+            }
+
+
+            $data['borrowedCapital'][$year]       = $regulatoryData['borrowed-capital'][$year];
+            $data['numberOfProjects'][$year]      = $regulatoryData['projects'][$year];
+            $data['averageBorrowedAmount'][$year] = round(bcdiv($regulatoryData['borrowed-capital'][$year], $regulatoryData['projects'][$year], 4));
+            $data['averageInterestRate'][$year]   = [
+                'volume' => $weightedAverageInterestRate[$year],
+                'number' => $notWeightedAverageInterestRate[$year]
+            ];
+            $data['averagePeriod']                = [
+                'volume' => $weightedAveragePeriod[$year],
+                'number' => $notWeightedAveragePeriod[$year]
+            ];
+            $data['repaidCapital'][$year]         = $regulatoryData['repaid-capital'][$year];
+            $data['repaidCapitalRatio'][$year]    = round(bcdiv($data['repaidCapital'][$year], $data['borrowedCapital'][$year], 4), 2);
+            $data['repaidInterest'][$year]        = $regulatoryData['repaid-interest'][$year];
+            $data['repaidInterestRatio'][$year]   = round(bcdiv($data['repaidInterest'][$year], $totalInterest[$year], 4), 2);
+            $data['realisticUnilendIRR'][$year]   = $regulatoryData['IRR'][$year];
+            $data['annualCostOfRisk'][$year]      = 'NA' === $data['optimisticUnilendIRR'][$year] ? 'NA' : bcsub($data['optimisticUnilendIRR'][$year], $data['realisticUnilendIRR'][$year], 4);
+        }
+
+
+
+
+        return $data;
+    }
+
+    /**
+     * @return array
+     */
+    private function getYearsRange()
+    {
+        return array_merge(['2013-2014'], range(2015, date('Y')));
     }
 
 }

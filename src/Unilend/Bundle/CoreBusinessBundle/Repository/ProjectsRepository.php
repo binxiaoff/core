@@ -2,18 +2,18 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
-use Doctrine\ORM\EntityRepository;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
+use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use PDO;
-use Unilend\librairies\CacheKeys;
 use Doctrine\ORM\Query\ResultSetMappingBuilder;
+use PDO;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\librairies\CacheKeys;
 
 class ProjectsRepository extends EntityRepository
 {
@@ -418,5 +418,173 @@ class ProjectsRepository extends EntityRepository
         }
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param \DateTime|null $date
+     *
+     * @return array
+     */
+    public function getNonWeightedAverageInterestRateByCohortUntil(\DateTime $date = null)
+    {
+        $query = 'SELECT
+                      AVG(l.rate) AS amount, ( ' . $this->getCohortQuery() . ' ) AS cohort
+                    FROM projects p
+                      INNER JOIN loans l ON p.id_project = l.id_project
+                    WHERE p.status >= :repayment';
+
+        $bind = ['repayment' => ProjectsStatus::REMBOURSEMENT];
+
+        if (null !== $date) {
+            $date->setTime(23, 59, 59);
+            $bind  = array_merge($bind, ['end' => $date->format('Y-m-d H:i:s')]);
+            $query .= 'AND (SELECT added
+                               FROM projects_status_history psh
+                                 INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                               WHERE ps.status = 80
+                                 AND psh.id_project = l.id_project
+                               ORDER BY added ASC
+                               LIMIT 1) <= :end';
+        }
+
+        $query .= ' GROUP BY cohort';
+
+        $statement = $this->getEntityManager()->getConnection()->executeQuery($query, $bind);
+        $result    = $statement->fetchAll();
+        $statement->closeCursor();
+
+        return $result;
+    }
+
+    /**
+     * @param \DateTime|null $date
+     *
+     * @return array
+     */
+    public function getWeightedAverageInterestRateByCohortUntil(\DateTime $date = null)
+    {
+        $baseQuery = 'SELECT
+                        loans.rate,
+                        loans.amount,
+                        loans.id_project
+                      FROM projects p
+                        INNER JOIN loans ON p.id_project = loans.id_project
+                      WHERE p.status >= :repayment';
+        $bind      = ['repayment' => ProjectsStatus::REMBOURSEMENT];
+
+        if (null !== $date) {
+            $date->setTime(23, 59, 59);
+            $bind      = array_merge($bind, ['end' => $date->format('Y-m-d H:i:s')]);
+            $baseQuery .= ' AND (
+                                SELECT added
+                                FROM projects_status_history psh
+                                  INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                                WHERE ps.status = 80
+                                  AND psh.id_project = loans.id_project
+                                ORDER BY added ASC
+                                LIMIT 1) <=:end ';
+        }
+
+        $query = 'SELECT SUM(amount * rate) / SUM(amount) AS amount, ( ' . $this->getCohortQuery() . ' ) AS cohort
+                    FROM ( ' . $baseQuery . ') AS p
+                    GROUP BY cohort';
+
+        $statement = $this->getEntityManager()->getConnection()->executeQuery($query, $bind);
+        $result    = $statement->fetchAll();
+        $statement->closeCursor();
+
+        return $result;
+    }
+
+
+    /**
+     * @param \DateTime|null $date
+     *
+     * @return array
+     */
+    public function getNonWeightedAveragePeriodByCohortUntil(\DateTime $date = null)
+    {
+        $query = 'SELECT
+                      AVG(p.period) AS amount, ( ' . $this->getCohortQuery() . ' ) AS cohort
+                    FROM projects p
+                    WHERE p.status >= :repayment';
+
+        $bind = ['repayment' => ProjectsStatus::REMBOURSEMENT];
+
+        if (null !== $date) {
+            $date->setTime(23, 59, 59);
+            $bind  = array_merge($bind, ['end' => $date->format('Y-m-d H:i:s')]);
+            $query .= 'AND (SELECT added
+                               FROM projects_status_history psh
+                                 INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                               WHERE ps.status = 80
+                                 AND psh.id_project = p.id_project
+                               ORDER BY added ASC
+                               LIMIT 1) <= :end';
+        }
+
+        $query .= ' GROUP BY cohort';
+
+        $statement = $this->getEntityManager()->getConnection()->executeQuery($query, $bind);
+        $result    = $statement->fetchAll();
+        $statement->closeCursor();
+
+        return $result;
+    }
+
+    /**
+     * @param \DateTime|null $date
+     *
+     * @return array
+     */
+    public function getWeightedAveragePeriodByCohortUntil(\DateTime $date = null)
+    {
+        $baseQuery = 'SELECT
+                        p.period,
+                        p.amount,
+                        p.id_project
+                      FROM projects p
+                      WHERE p.status >= :repayment';
+        $bind      = ['repayment' => ProjectsStatus::REMBOURSEMENT];
+
+        if (null !== $date) {
+            $date->setTime(23, 59, 59);
+            $bind      = array_merge($bind, ['end' => $date->format('Y-m-d H:i:s')]);
+            $baseQuery .= ' AND (
+                                SELECT added
+                                FROM projects_status_history psh
+                                  INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                                WHERE ps.status = 80
+                                  AND psh.id_project = p.id_project
+                                ORDER BY added ASC
+                                LIMIT 1) <=:end ';
+        }
+
+        $query = 'SELECT SUM(amount * period) / SUM(amount) AS amount, ( ' . $this->getCohortQuery() . ' ) AS cohort
+                    FROM ( ' . $baseQuery . ') AS p
+                    GROUP BY cohort';
+
+        $statement = $this->getEntityManager()->getConnection()->executeQuery($query, $bind);
+        $result    = $statement->fetchAll();
+        $statement->closeCursor();
+
+        return $result;
+    }
+
+    /**
+     * @return string
+     */
+    private function getCohortQuery()
+    {
+        return 'SELECT
+                  CASE LEFT(MIN(psh.added), 4)
+                  WHEN 2013 THEN "2013-2014"
+                  WHEN 2014 THEN "2013-2014"
+                  ELSE LEFT(psh.added, 4)
+                  END AS date_range
+                FROM projects_status_history psh
+                  INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                WHERE ps.status = ' . ProjectsStatus::REMBOURSEMENT . ' AND p.id_project = psh.id_project
+                GROUP BY psh.id_project';
     }
 }
