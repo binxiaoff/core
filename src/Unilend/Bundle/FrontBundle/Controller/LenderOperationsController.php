@@ -333,7 +333,7 @@ class LenderOperationsController extends Controller
         $projectsInDept     = $project->getProjectsInDebt();
         $filters            = $request->request->get('filter', []);
         $year               = isset($filters['date']) && false !== filter_var($filters['date'], FILTER_VALIDATE_INT) ? $filters['date'] : null;
-        $status             = isset($filters['status']) && in_array($filters['status'], array_keys(self::LOAN_STATUS_FILTER)) ? [self::LOAN_STATUS_FILTER[$filters['status']]] : null;
+        $status             = isset($filters['status']) && in_array($filters['status'], array_keys(self::LOAN_STATUS_FILTER)) ? self::LOAN_STATUS_FILTER[$filters['status']] : null;
         $loanStatus         = array_fill_keys(array_keys(self::LOAN_STATUS_FILTER), 0);
         $lenderLoans        = $loan->getSumLoansByProject($wallet->getId(), 'debut ASC, p.title ASC', $year, $status);
         $lenderProjectLoans = [];
