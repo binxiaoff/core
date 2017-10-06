@@ -1,7 +1,9 @@
 <?php
+
 namespace Unilend\core;
 
 use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
+use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -11,15 +13,15 @@ use Symfony\Component\Yaml\Yaml;
 class Loader
 {
     /**
-     * @param       $object
-     * @param array $params
-     * @param null  $db
+     * @param string          $object
+     * @param array           $params
+     * @param Connection|null $db
      *
      * @internal You cannot call this method directly.
      *
-     * @return mixed|bool
+     * @return object|bool
      */
-    public static function loadData($object, array $params = array(), $db = null)
+    public static function loadData($object, array $params = [], Connection $db = null)
     {
         if (null === $db) {
             $params = Yaml::parse(file_get_contents(__DIR__ . '/../app/config/parameters.yml'));
@@ -42,26 +44,34 @@ class Loader
                 ]
             );
         }
+
         $path = realpath(dirname(__FILE__) . '/..') . '/';
 
-        if (false === file_exists($path . 'data/crud/' . $object . '.crud.php') && false === self::generateCRUD($object, $db, $path)
-            || false === file_exists($path . 'data/' . $object . '.data.php') && false === self::generateDATA($object, $db, $path)
+        if (
+            false === file_exists($path . 'data/crud/' . $object . '.crud.php') && false === self::generateCRUD($object, $db, $path)
+            || false === file_exists($path . 'data/' . $object . '.data.php')
         ) {
             return false;
         }
 
         $object = '\\' . $object;
-
         return new $object($db, $params);
     }
 
-    private static function generateCRUD($table, $db, $path)
+    /**
+     * @param string     $table
+     * @param Connection $db
+     * @param string     $path
+     *
+     * @return bool
+     */
+    private static function generateCRUD($table, Connection $db, $path)
     {
         $result = $db->query('DESC ' . $table);
 
         if ($result) {
             $nb_cle = 0;
-            while ($record = $db->fetch_array($result)) {
+            while ($record = $db->fetch_assoc($result)) {
                 if ($record['Key'] == 'PRI') {
                     $nb_cle++;
                 }
@@ -77,7 +87,7 @@ class Loader
             $updatefields   = '';
             $clist          = '';
             $cvalues        = '';
-            $id             = array();
+            $id             = [];
             while ($record = $db->fetch_assoc($result)) {
                 $declaration    .= "    public \$" . $record['Field'] . ";\r\n";
                 $initialisation .= "        \$this->" . $record['Field'] . " = '';\r\n";
@@ -177,41 +187,13 @@ class Loader
         return false;
     }
 
-    private static function generateDATA($table, $db, $path)
-    {
-        $result = $db->query('DESC ' . $table);
-
-        if ($result) {
-            $id = array();
-            while ($record = $db->fetch_assoc($result)) {
-                if ($record['Key'] == 'PRI') {
-                    $id[] = $record['Field'];
-                }
-            }
-
-            if (count($id) == 1) {
-                $dao = file_get_contents($path . 'core/data.sample.php');
-            } else {
-                $dao = file_get_contents($path . 'core/data2.sample.php');
-            }
-
-            $dao = str_replace('--table--', $table, $dao);
-            $dao = str_replace('--classe--', $table, $dao);
-            $dao = str_replace('--id--', $id[0], $dao);
-
-            touch($path . 'data/' . $table . '.data.php');
-            chmod($path . 'data/' . $table . '.data.php', 0766);
-            $c = fopen($path . 'data/' . $table . '.data.php', 'r+');
-
-            fputs($c, $dao);
-            fclose($c);
-
-            return true;
-        }
-        return false;
-    }
-
-    public static function loadLib($sLibrary, array $aParams = array(), $bInstancing = true)
+    /**
+     * @param string $sLibrary
+     * @param array  $aParams
+     *
+     * @return object|bool
+     */
+    public static function loadLib($sLibrary, array $aParams = [])
     {
         $sProjectPath = realpath(dirname(__FILE__) . '/..') . '/';
         $sClassPath   = '';
@@ -224,9 +206,9 @@ class Loader
 
         if (false === file_exists($sProjectPath . 'librairies/' . $sClassPath . $sLibrary . '.class.php')) {
             return false;
-        } elseif ($bInstancing) {
-            $sClassName = '\\' . $sLibrary;
-            return new $sClassName($aParams);
         }
+
+        $sClassName = '\\' . $sLibrary;
+        return new $sClassName($aParams);
     }
 }
