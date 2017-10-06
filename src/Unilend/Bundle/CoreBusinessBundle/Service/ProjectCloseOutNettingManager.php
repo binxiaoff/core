@@ -37,12 +37,16 @@ class ProjectCloseOutNettingManager
             'status'    => [ProjectRepaymentTask::STATUS_PENDING, ProjectRepaymentTask::STATUS_READY, ProjectRepaymentTask::STATUS_IN_PROGRESS, ProjectRepaymentTask::STATUS_ERROR]
         ]);
 
-        if ($projectRepaymentTask) {
-            throw new \Exception('There are pending repayment tasks to treat for the project (id: ' . $project->getIdProject() . '). You cannot decline the repayment schedules');
+        if ($project->getCloseOutNettingDate()) {
+            throw new \Exception('The project (id: ' . $project->getIdProject() . ') has already been declined.');
         }
 
         if ($project->getStatus() < ProjectsStatus::PROBLEME) {
-            throw new \Exception('The project (id: ' . $project->getIdProject() . ') has status ' . $project->getStatus() . '. You cannot decline the repayment schedules');
+            throw new \Exception('The project (id: ' . $project->getIdProject() . ') has status ' . $project->getStatus() . '. You cannot decline the repayment schedules.');
+        }
+
+        if ($projectRepaymentTask) {
+            throw new \Exception('There are pending repayment tasks to treat for the project (id: ' . $project->getIdProject() . '). You cannot decline the repayment schedules.');
         }
 
         $this->entityManager->getConnection()->beginTransaction();
@@ -57,6 +61,21 @@ class ProjectCloseOutNettingManager
             $this->entityManager->getConnection()->rollBack();
             throw $exception;
         }
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @return bool
+     */
+    public function canBeDeclined(Projects $project)
+    {
+        $projectRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
+            'idProject' => $project,
+            'status'    => [ProjectRepaymentTask::STATUS_PENDING, ProjectRepaymentTask::STATUS_READY, ProjectRepaymentTask::STATUS_IN_PROGRESS, ProjectRepaymentTask::STATUS_ERROR]
+        ]);
+
+        return null === $project->getCloseOutNettingDate() && $project->getStatus() < ProjectsStatus::PROBLEME && null === $projectRepaymentTask;
     }
 
     /**

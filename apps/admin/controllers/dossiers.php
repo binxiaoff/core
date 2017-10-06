@@ -158,6 +158,8 @@ class dossiersController extends bootstrap
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
+        $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->projectEntity   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
@@ -208,6 +210,8 @@ class dossiersController extends bootstrap
 
             $this->rejectionReasonMessage = $projectStatusManager->getRejectionReasonTranslation($this->projects_status_history->content);
             $this->bHasAdvisor            = false;
+
+            $this->canBeDeclined = $projectCloseOutNettingManager->canBeDeclined($this->projectEntity);
 
             if ($this->projects->status == ProjectsStatus::FUNDE) {
                 $proxy       = $this->projects_pouvoir->select('id_project = ' . $this->projects->id_project);
@@ -3159,6 +3163,8 @@ class dossiersController extends bootstrap
                 if (null !== ($project = $projectRepository->find($projectId))) {
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
                     $projectManager     = $this->get('unilend.service.project_manager');
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
+                    $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
                     $projectStatus      = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $project->getStatus()]);
                     $projectData        = [
                         'projectId'                => $project->getIdProject(),
@@ -3169,7 +3175,7 @@ class dossiersController extends bootstrap
                         'projectTitle'             => $project->getTitle(),
                         'totalRemainingAmount'     => $projectManager->getRemainingAmount($project),
                         'entrustedToDebtCollector' => $missionPaymentScheduleRepository->getEntrustedAmount($project),
-                        'isClosedOutLoan'          => (null === $project->getCloseOutNettingDate())
+                        'canBeDeclined'            => $projectCloseOutNettingManager->canBeDeclined($project)
                     ];
 
                     if (null === $project->getCloseOutNettingDate()) {
@@ -3302,7 +3308,7 @@ class dossiersController extends bootstrap
             }
         }
 
-        header('Location: ' . $this->url . 'details_impayes/' . $projectId);
+        header('Location: ' . $this->request->server->get('HTTP_REFERER'));
         die;
     }
 }

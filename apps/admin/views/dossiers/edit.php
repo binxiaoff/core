@@ -829,14 +829,13 @@ use \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
                                 </tr>
                             <?php endif; ?>
                         <?php endif; ?>
-                        <?php // @@TODO check form action and the IF statement below ?>
-                        <?php if ($this->projects->status == ProjectsStatus::PROBLEME) : ?>
+                        <?php if ($this->canBeDeclined) : ?>
                             <script>
                                 $(function(){
-                                    var popupHtml = '<form id="close_out_netting_popup" method="post" action="<?= $this->lurl ?>/dossiers/details_impayes/<?= $this->projects->id_project ?>">' +
+                                    var popupHtml = '<form id="close_out_netting_popup" method="post" action="<?= $this->lurl ?>/dossiers/dechoir_terme">' +
                                         '<p style="margin-top: 20px">Merci de confirmer la déchéance du terme en cliquant sur "Valider".</p>' +
                                         '<div>' +
-                                        '<input type="hidden" name="close-out-netting" value="1">' +
+                                        '<input type="hidden" name="id_project" value="<?= $this->projects->id_project ?>">' +
                                         '<button type="button" class="btn-default" onclick="parent.$.fn.colorbox.close();">Annuler</button>' +
                                         '<button type="submit" class="btn-primary" style="margin-left: 10px">Valider</button>' +
                                         '</div>' +
