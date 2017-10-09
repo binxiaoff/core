@@ -12,8 +12,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMissionPaymentSchedul
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
@@ -357,6 +357,7 @@ class DebtCollectionMissionManager
         $missionPaymentSchedules        = $debtCollectionMission->getDebtCollectionMissionPaymentSchedules();
 
         foreach ($missionPaymentSchedules as $missionPaymentSchedule) {
+            /** @var ProjectRepaymentTask[] $repaymentTasks */
             $repaymentTasks = $projectRepaymentTaskRepository->findBy([
                 'idProject' => $debtCollectionMission->getIdProject(),
                 'sequence'  => $missionPaymentSchedule->getIdPaymentSchedule()->getOrdre(),

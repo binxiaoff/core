@@ -350,6 +350,7 @@ class ProjectStatusManager
         $aFundingDate         = $projectStatusHistory->select('id_project = ' . $project->getIdProject() . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . ProjectsStatus::REMBOURSEMENT . ')', 'added ASC, id_project_status_history ASC', 0, 1);
         $iFundingTime         = strtotime($aFundingDate[0]['added']);
 
+        $paymentScheduleAmount = $paymentSchedule->getCapital() + $paymentSchedule->getInterets() + $paymentSchedule->getCommission() + $paymentSchedule->getTva();
         $replacements          = $replacements + [
                 'url'                  => $this->assetsPackages->getUrl(''),
                 'surl'                 => $this->frontUrl,
@@ -358,7 +359,7 @@ class ProjectStatusManager
                 'prenom_e'             => $clientOwner->getPrenom(),
                 'entreprise'           => $company->getName(),
                 'montant_emprunt'      => $this->numberFormatter->format($project->getAmount()),
-                'mensualite_e'         => $this->numberFormatter->format(round(bcdiv(bcadd(bcadd($paymentSchedule->getMontant(), $paymentSchedule->getCommission()), $paymentSchedule->getTva()), 100, 4), 2), 2),
+                'mensualite_e'         => $this->numberFormatter->format(round(bcdiv($paymentScheduleAmount, 100, 4), 2), 2),
                 'num_dossier'          => $project->getIdProject(),
                 'nb_preteurs'          => $loans->getNbPreteurs($project->getIdProject()),
                 'date_financement'     => htmlentities(strftime('%B %G', $iFundingTime), null, 'UTF-8'),
@@ -372,9 +373,6 @@ class ProjectStatusManager
                 'lien_tw'              => $twitterURL,
                 'annee'                => (new \DateTime())->format('Y')
             ];
-        $mailTemplate          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')
-            ->findOneBy(['type' => $mailType, 'status' => \mail_templates::STATUS_ACTIVE]);
-        $replacements['sujet'] = $mailTemplate->getSubject();
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->messageProvider->newMessage($mailType, $replacements);
@@ -529,7 +527,6 @@ class ProjectStatusManager
 
         $sFacebookURL         = $settingsRepository->findOneBy(['type' => 'Facebook'])->getValue();
         $sTwitterURL          = $settingsRepository->findOneBy(['type' => 'Twitter'])->getValue();
-        $debtCollector        = $settingsRepository->findOneBy(['type' => 'Cabinet de recouvrement'])->getValue();
         $firstRepaymentStatus = $projectsStatusHistoryRepository->findOneBy(
             ['idProject' => $project->getIdProject(), 'idProjectStatus' => $projectsStatusRepository->findOneBy(['status' => ProjectsStatus::REMBOURSEMENT])->getIdProjectStatus()],
             ['added' => 'ASC', 'idProjectStatusHistory' => 'ASC']
@@ -539,7 +536,6 @@ class ProjectStatusManager
             'surl'                 => $this->frontUrl,
             'lien_fb'              => $sFacebookURL,
             'lien_tw'              => $sTwitterURL,
-            /*'societe_recouvrement' => $debtCollector,*/ // @todo à mettre dans un autre mail ou à inclure si seulement y a un recouvrement en cours
             'annee_projet'         => $firstRepaymentStatus->getAdded()->format('Y')
         ];
         $commonReplacements   += $replacements;
@@ -601,9 +597,6 @@ class ProjectStatusManager
                         ];
 
                     $mailType               = ($wallet->getIdClient()->isNaturalPerson()) ? $mailTypePerson : $mailTypeLegalEntity;
-                    $mailTemplate           = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')
-                        ->findOneBy(['type' => $mailType, 'status' => \mail_templates::STATUS_ACTIVE]);
-                    $aReplacements['sujet'] = $mailTemplate->getSubject();
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                     $message = $this->messageProvider->newMessage($mailType, $aReplacements);
