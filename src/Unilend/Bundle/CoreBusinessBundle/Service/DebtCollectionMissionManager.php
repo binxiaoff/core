@@ -13,8 +13,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMissionPaymentSchedul
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
@@ -23,13 +23,13 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskMana
 
 class DebtCollectionMissionManager
 {
+    const DEBT_COLLECTION_CONDITION_CHANGE_DATE = '2016-04-19';
+
     const CLIENT_HASH_MCS      = '2f9f590e-d689-11e6-b3d7-005056a378e2';
     const CLIENT_HASH_PROGERIS = 'f12f0f5b-1867-11e7-a89f-0050569e51ae';
 
     const DEBT_COLLECTION_MISSION_FOLDER = 'debt_collection_missions';
     const FILE_EXTENSION                 = '.xlsx';
-
-    const DEBT_COLLECTION_CONDITION_CHANGE_DATE = '2016-04-19';
 
     /** @var EntityManager */
     private $entityManager;
@@ -53,11 +53,11 @@ class DebtCollectionMissionManager
     /**
      * DebtCollectionMissionManager constructor.
      *
-     * @param EntityManager               $entityManager
+     * @param EntityManager           $entityManager
      * @param ProjectRepaymentTaskManager $projectRepaymentTaskManager
-     * @param LoggerInterface             $logger
-     * @param Filesystem                  $filesystem
-     * @param string                      $protectedPath
+     * @param LoggerInterface         $logger
+     * @param Filesystem              $filesystem
+     * @param   string                      $protectedPath
      */
     public function __construct(EntityManager $entityManager, ProjectRepaymentTaskManager $projectRepaymentTaskManager, LoggerInterface $logger, Filesystem $filesystem, $protectedPath)
     {

@@ -53,9 +53,8 @@ class Connection extends BaseConnection
     {
         if ($statement instanceof Statement) {
             return $statement->fetch(\PDO::FETCH_BOTH);
-        } else {
-            return array();
         }
+        return [];
     }
 
     /**
@@ -69,9 +68,8 @@ class Connection extends BaseConnection
     {
         if ($statement instanceof Statement) {
             return $statement->fetch(\PDO::FETCH_ASSOC);
-        } else {
-            return array();
         }
+        return [];
     }
 
     /**
@@ -87,9 +85,8 @@ class Connection extends BaseConnection
     {
         if ($statement instanceof Statement) {
             return $statement->rowCount();
-        } else {
-            return 0;
         }
+        return 0;
     }
 
     /**
@@ -140,7 +137,6 @@ class Connection extends BaseConnection
         if ($statement instanceof Statement) {
             return $statement->fetchColumn($column);
         }
-
         return null;
     }
 
@@ -162,39 +158,6 @@ class Connection extends BaseConnection
 
         $sql = 'UPDATE ' . $table . ' SET slug = "' . $slug . '" WHERE ' . $idName .' = '. $idValue;
         $this->query($sql);
-    }
-
-    public function controlSlugMulti($table, $slug, $id_value, $list_field_value, $id_langue)
-    {
-        $list = '';
-        foreach ($list_field_value as $champ => $valeur) {
-            $list .= ' ' . $champ . ' != "' . $valeur . '" ';
-            if (next($list_field_value)) {
-                $list .= ' OR ';
-            }
-        }
-
-        $sql = 'SELECT * FROM ' . $table . ' WHERE slug = "' . $slug . '" AND (' . $list . ') ';
-
-        $res = $this->query($sql);
-
-        if ($this->num_rows($res) >= 1) {
-            $slug = $slug . '-' . $id_value;
-
-            if ($id_langue != '') {
-                $slug .= '-' . $id_langue;
-            }
-
-            $list2 = '';
-            foreach ($list_field_value as $champ => $valeur) {
-                $list2 .= ' AND ' . $champ . ' = "' . $valeur . '" ';
-            }
-
-            $sql = 'UPDATE ' . $table . ' SET slug = "' . $slug . '" WHERE 1=1 ' . $list2 . ' ';
-            $this->query($sql);
-
-            $this->controlSlugMulti($table, $slug, $id_value, $list_field_value, $id_langue);
-        }
     }
 
     public function controlSlugMultiLn($table, $slug, $id_value, $list_field_value, $id_langue)
@@ -257,57 +220,6 @@ class Connection extends BaseConnection
         }
 
         return $selecteur;
-    }
-
-    public function getEnum($nom_table, $nom_enum)
-    {
-        $sql       = 'SHOW COLUMNS FROM ' . $nom_table . ' LIKE "' . $nom_enum . '" ';
-        $resultat  = $this->query($sql);
-        $data      = $this->fetch_assoc($resultat);
-        $new_enum2 = preg_replace('!^enum\((.+)\)$!', '$1', $data['Type']);
-        $new_enum1 = str_replace("'", "", $new_enum2);
-        $new_enum  = explode(',', $new_enum1);
-
-        return $new_enum;
-    }
-
-    public function majEnum($nom_table, $nom_enum, $valeur)
-    {
-        $sql       = 'SHOW COLUMNS FROM ' . $nom_table . ' LIKE "' . $nom_enum . '" ';
-        $resultat  = $this->query($sql);
-        $data      = $this->fetch_assoc($resultat);
-        $new_enum2 = preg_replace('!^enum\((.+)\)$!', '$1', $data['Type']) . ",'" . $valeur . "'";
-        $new_enum1 = str_replace("'", "", $new_enum2);
-        $new_enum  = explode(',', $new_enum1);
-        $enum_tab  = array();
-        foreach ($new_enum as $enum) {
-            if ($enum != '') {
-                $enum_tab[] = $enum;
-            }
-        }
-        $new_enum = implode('\',\'', $enum_tab);
-        $sql      = 'ALTER TABLE `' . $nom_table . '` CHANGE `' . $nom_enum . '` `' . $nom_enum . '` ENUM(\'' . $new_enum . '\') NULL DEFAULT NULL';
-
-        $this->query($sql);
-    }
-
-    public function deleteEnum($nom_table, $nom_enum, $valeur)
-    {
-        $sql       = 'SHOW COLUMNS FROM ' . $nom_table . ' LIKE "' . $nom_enum . '" ';
-        $resultat  = $this->query($sql);
-        $data      = $this->fetch_assoc($resultat);
-        $new_enum2 = preg_replace('!^enum\((.+)\)$!', '$1', $data['Type']) . ",'" . $valeur . "'";
-        $new_enum1 = str_replace("'", "", $new_enum2);
-        $new_enum  = explode(',', $new_enum1);
-        $enum_tab  = array();
-        foreach ($new_enum as $enum) {
-            if ($enum != $valeur) {
-                $enum_tab[] = $enum;
-            }
-        }
-        $new_enum = implode('\',\'', $enum_tab);
-        $sql      = 'ALTER TABLE `' . $nom_table . '` CHANGE `' . $nom_enum . '` `' . $nom_enum . '` ENUM(\'' . $new_enum . '\') NULL DEFAULT NULL';
-        $this->query($sql);
     }
 
     /**

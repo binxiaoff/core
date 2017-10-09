@@ -1,7 +1,5 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-
 class projects_status extends projects_status_crud
 {
     const IMPOSSIBLE_AUTO_EVALUATION = 1;
@@ -29,18 +27,6 @@ class projects_status extends projects_status_crud
     const REMBOURSE                  = 90;
     const REMBOURSEMENT_ANTICIPE     = 95;
     const PROBLEME                   = 100;
-
-    /**
-     * List of project status after repayment
-     * @var array
-     */
-    public static $afterRepayment = [
-        ProjectsStatus::REMBOURSEMENT,
-        ProjectsStatus::REMBOURSE,
-        ProjectsStatus::REMBOURSEMENT_ANTICIPE,
-        ProjectsStatus::PROBLEME,
-        ProjectsStatus::LOSS
-    ];
 
     public function __construct($bdd, $params = '')
     {

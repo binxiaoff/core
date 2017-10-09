@@ -305,11 +305,7 @@ Dictionary.prototype.localizedDate = function (date) {
 
   var year = parseInt(date[0])
   var month = parseInt(date[1])
-  var day = parseInt('01')
-
-  console.log(month)
-
-  console.log(day)
+  var day = parseInt(date[2])
 
   if (month === 1) { month = 'janv.' }
   if (month === 2) { month = 'févr.' }
@@ -328,8 +324,7 @@ Dictionary.prototype.localizedDate = function (date) {
     day = '1er'
   }
 
-  date = 'Le ' + day + ' ' + month + ' ' + year
-
+  date = day + ' ' + month + ' ' + year
   return date
 }
 

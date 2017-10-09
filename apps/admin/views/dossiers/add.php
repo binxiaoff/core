@@ -44,12 +44,6 @@
             $('#recherche_client').hide();
         });
     });
-
-    function valid_create(id_project) {
-        $.post(add_url + '/ajax/valid_create', {id_project: id_project}).done(function (data) {
-            $(location).attr('href', add_url + '/dossiers/edit/' + id_project);
-        });
-    }
 </script>
 <div id="contenu">
     <h1>Création Dossier</h1>

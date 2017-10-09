@@ -8,7 +8,6 @@ use Symfony\Component\Asset\Packages;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
-use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
@@ -165,6 +164,8 @@ class ProjectStatusManager
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-ellisphere-treasury-tax-privileges');
             case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_INCIDENT:
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-current-manager-incident');
+            case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_COMPANY_INCIDENT:
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-company-incident');
             case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT:
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-previous-manager-incident');
             case ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity':
@@ -349,6 +350,7 @@ class ProjectStatusManager
         $aFundingDate         = $projectStatusHistory->select('id_project = ' . $project->getIdProject() . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . ProjectsStatus::REMBOURSEMENT . ')', 'added ASC, id_project_status_history ASC', 0, 1);
         $iFundingTime         = strtotime($aFundingDate[0]['added']);
 
+        $paymentScheduleAmount = $paymentSchedule->getCapital() + $paymentSchedule->getInterets() + $paymentSchedule->getCommission() + $paymentSchedule->getTva();
         $replacements          = $replacements + [
                 'url'                  => $this->assetsPackages->getUrl(''),
                 'surl'                 => $this->frontUrl,
@@ -357,7 +359,7 @@ class ProjectStatusManager
                 'prenom_e'             => $clientOwner->getPrenom(),
                 'entreprise'           => $company->getName(),
                 'montant_emprunt'      => $this->numberFormatter->format($project->getAmount()),
-                'mensualite_e'         => $this->numberFormatter->format(round(bcdiv(bcadd(bcadd($paymentSchedule->getMontant(), $paymentSchedule->getCommission()), $paymentSchedule->getTva()), 100, 4), 2), 2),
+                'mensualite_e'         => $this->numberFormatter->format(round(bcdiv($paymentScheduleAmount, 100, 4), 2), 2),
                 'num_dossier'          => $project->getIdProject(),
                 'nb_preteurs'          => $loans->getNbPreteurs($project->getIdProject()),
                 'date_financement'     => htmlentities(strftime('%B %G', $iFundingTime), null, 'UTF-8'),
@@ -371,9 +373,6 @@ class ProjectStatusManager
                 'lien_tw'              => $twitterURL,
                 'annee'                => (new \DateTime())->format('Y')
             ];
-        $mailTemplate          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')
-            ->findOneBy(['type' => $mailType, 'status' => MailTemplates::STATUS_ACTIVE]);
-        $replacements['sujet'] = $mailTemplate->getSubject();
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->messageProvider->newMessage($mailType, $replacements);
@@ -537,7 +536,6 @@ class ProjectStatusManager
             'surl'                 => $this->frontUrl,
             'lien_fb'              => $sFacebookURL,
             'lien_tw'              => $sTwitterURL,
-            /*'societe_recouvrement' => $debtCollector,*/ // @todo à mettre dans un autre mail ou à inclure si seulement y a un recouvrement en cours
             'annee_projet'         => $firstRepaymentStatus->getAdded()->format('Y')
         ];
         $commonReplacements   += $replacements;
@@ -599,9 +597,6 @@ class ProjectStatusManager
                         ];
 
                     $mailType               = ($wallet->getIdClient()->isNaturalPerson()) ? $mailTypePerson : $mailTypeLegalEntity;
-                    $mailTemplate           = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')
-                        ->findOneBy(['type' => $mailType, 'status' => MailTemplates::STATUS_ACTIVE]);
-                    $aReplacements['sujet'] = $mailTemplate->getSubject();
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                     $message = $this->messageProvider->newMessage($mailType, $aReplacements);

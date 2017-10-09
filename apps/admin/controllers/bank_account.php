@@ -6,11 +6,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class bank_accountController extends bootstrap
 {
     public function _extraction_rib_lightbox()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
         $this->hideDecoration();
 
         $this->isImage = false;
@@ -59,7 +61,9 @@ class bank_accountController extends bootstrap
 
     public function _validate_rib_lightbox()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
         $this->hideDecoration();
+
         if (false === empty($this->params[0])) {
             $entityManager     = $this->get('doctrine.orm.entity_manager');
             $bankAccountId     = filter_var($this->params[0], FILTER_VALIDATE_INT);
@@ -69,7 +73,7 @@ class bank_accountController extends bootstrap
 
     public function _validate_rib()
     {
-        $this->hideDecoration();
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
         $this->autoFireView = false;
 
         if ($this->request->isMethod('POST') && $this->request->request->get('id_bank_account')) {

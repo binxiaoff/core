@@ -1,11 +1,12 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsNotes;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
 class ajaxController extends bootstrap
@@ -16,6 +17,7 @@ class ajaxController extends bootstrap
 
         $_SESSION['request_url'] = $this->url;
 
+        // Should not be usefull but we keep it as a second security if someone forgets to check access in a new method
         $this->users->checkAccess();
 
         $this->hideDecoration();
@@ -24,15 +26,14 @@ class ajaxController extends bootstrap
     /* Fonction AJAX delete image ELEMENT */
     public function _deleteImageElement()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
         $this->autoFireView = false;
 
         if (isset($this->params[0]) && $this->params[0] != '') {
             $this->tree_elements->get($this->params[0], 'id');
 
-            // On supprime le fichier sur le serveur
             @unlink($this->spath . 'images/' . $this->tree_elements->value);
 
-            // On supprime le fichier de la base
             $this->tree_elements->value      = '';
             $this->tree_elements->complement = '';
             $this->tree_elements->update();
@@ -44,35 +45,14 @@ class ajaxController extends bootstrap
     /* Fonction AJAX delete fichier ELEMENT */
     public function _deleteFichierElement()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
         $this->autoFireView = false;
 
         if (isset($this->params[0]) && $this->params[0] != '') {
             $this->tree_elements->get($this->params[0], 'id');
 
-            // On supprime le fichier sur le serveur
             @unlink($this->spath . 'fichiers/' . $this->tree_elements->value);
 
-            // On supprime le fichier de la base
-            $this->tree_elements->value      = '';
-            $this->tree_elements->complement = '';
-            $this->tree_elements->update();
-
-            echo '<td>&nbsp;</td>';
-        }
-    }
-
-    /* Fonction AJAX delete fichier protected ELEMENT */
-    public function _deleteFichierProtectedElement()
-    {
-        $this->autoFireView = false;
-
-        if (isset($this->params[0]) && $this->params[0] != '') {
-            $this->tree_elements->get($this->params[0], 'id');
-
-            // On supprime le fichier sur le serveur
-            @unlink($this->path . 'protected/templates/' . $this->tree_elements->value);
-
-            // On supprime le fichier de la base
             $this->tree_elements->value      = '';
             $this->tree_elements->complement = '';
             $this->tree_elements->update();
@@ -84,6 +64,7 @@ class ajaxController extends bootstrap
     /* Fonction AJAX delete image ELEMENT BLOC */
     public function _deleteImageElementBloc()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
         $this->autoFireView = false;
 
         if (isset($this->params[0]) && $this->params[0] != '') {
@@ -104,6 +85,7 @@ class ajaxController extends bootstrap
     /* Fonction AJAX delete fichier ELEMENT BLOC */
     public function _deleteFichierElementBloc()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
         $this->autoFireView = false;
 
         if (isset($this->params[0]) && $this->params[0] != '') {
@@ -121,29 +103,10 @@ class ajaxController extends bootstrap
         }
     }
 
-    /* Fonction AJAX delete fichier protected ELEMENT BLOC */
-    public function _deleteFichierProtectedElementBloc()
-    {
-        $this->autoFireView = false;
-
-        if (isset($this->params[0]) && $this->params[0] != '') {
-            $this->blocs_elements->get($this->params[0], 'id');
-
-            // On supprime le fichier sur le serveur
-            @unlink($this->path . 'protected/templates/' . $this->blocs_elements->value);
-
-            // On supprime le fichier de la base
-            $this->blocs_elements->value      = '';
-            $this->blocs_elements->complement = '';
-            $this->blocs_elements->update();
-
-            echo '<td>&nbsp;</td>';
-        }
-    }
-
     /* Fonction AJAX delete image TREE */
     public function _deleteImageTree()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
         $this->autoFireView = false;
 
         if (isset($this->params[0]) && $this->params[0] != '') {
@@ -158,26 +121,11 @@ class ajaxController extends bootstrap
         }
     }
 
-    /* Fonction AJAX delete video TREE */
-    public function _deleteVideoTree()
-    {
-        $this->autoFireView = false;
-
-        if (isset($this->params[0]) && $this->params[0] != '') {
-            $this->tree->get(array('id_tree' => $this->params[0], 'id_langue' => $this->params[1]));
-
-            // On supprime le fichier sur le serveur
-            @unlink($this->spath . 'videos/' . $this->tree->video);
-
-            // On supprime le fichier de la base
-            $this->tree->video = '';
-            $this->tree->update(array('id_tree' => $this->params[0], 'id_langue' => $this->params[1]));
-        }
-    }
-
     /* Fonction AJAX chargement des noms de la section de traduction */
     public function _loadNomTexte()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
+
         /** @var TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
 
@@ -189,6 +137,8 @@ class ajaxController extends bootstrap
     /* Fonction AJAX chargement des traductions de la section de traduction */
     public function _loadTradTexte()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
+
         /** @var TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
         if (isset($this->params[0]) && $this->params[0] != '') {
@@ -203,6 +153,7 @@ class ajaxController extends bootstrap
     /* Activer un utilisateur sur une zone */
     public function _activeUserZone()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_ADMINISTRATION);
         $this->autoFireView = false;
 
         if (isset($this->params[0]) && $this->params[0] != '') {
@@ -223,7 +174,9 @@ class ajaxController extends bootstrap
 
     public function _valid_etapes()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
         $this->autoFireView = false;
+
         /** @var \Symfony\Component\Translation\Translator translator */
         $this->translator = $this->get('translator');
 
@@ -482,118 +435,14 @@ class ajaxController extends bootstrap
         return $companyRatingHistoryId;
     }
 
-    public function _create_client()
-    {
-        $this->autoFireView = false;
-
-        $this->projects         = $this->loadData('projects');
-        $this->companies        = $this->loadData('companies');
-        $this->clients          = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
-
-        if (isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
-            // On verifie que ce soit bien un mail
-            if ($_POST['email'] != '') {
-                // si client existe deja
-                if ($this->clients->get($_POST['id_client'], 'id_client')) {
-                    if ($this->clients->counter('email = "' . $_POST['email'] . '" AND id_client <> ' . $this->clients->id_client) > 0) {
-                        $this->clients->email = $_POST['email'] . '-' . $_POST['id_project'];
-                    } else {
-                        $this->clients->email = $_POST['email'];
-
-                        $this->companies->get($this->projects->id_company, 'id_company');
-                        $this->companies->email_facture = $this->clients->email;
-
-                        $this->companies->update();
-                        $this->clients->update();
-                    }
-
-                } // Si il existe pas on le créer
-                else {
-                    // On créer le client
-                    $this->clients->id_langue = 'fr';
-
-                    // Si le mail existe deja on enregistre pas le mail
-                    if ($this->clients->counter('email = "' . $_POST['email'] . '"') > 0) {
-                        $this->clients->email = $_POST['email'] . '-' . $_POST['id_project'];
-                    } else {
-                        $this->clients->email = $_POST['email'];
-                    }
-                    $this->clients->id_client = $this->clients->create();
-
-                    $this->clients_adresses->id_client = $this->clients->id_client;
-                    $this->clients_adresses->create();
-
-                    // On recup l'entreprise et on attribut le client a celle ci
-                    $this->companies->get($this->projects->id_company, 'id_company');
-                    $this->companies->id_client_owner = $this->clients->id_client;
-                    $this->companies->email_facture   = $this->clients->email;
-                    $this->companies->update();
-                }
-
-                echo json_encode([
-                    'id_client' => $this->clients->id_client,
-                    'error'     => 'ok'
-                ]);
-            } else {
-                echo json_encode(['id_client' => '0', 'error' => 'nok']);
-            }
-        }
-    }
-
-    public function _valid_create()
-    {
-        $this->autoFireView = false;
-
-        $this->projects  = $this->loadData('projects');
-        $this->companies = $this->loadData('companies');
-        $this->clients   = $this->loadData('clients');
-        $oSettings       = $this->loadData('settings');
-
-        if (isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
-            $this->companies->get($this->projects->id_company, 'id_company');
-            $this->clients->get($this->companies->id_client_owner, 'id_client');
-
-            $oSettings->get('Facebook', 'type');
-            $lien_fb = $oSettings->value;
-
-            $oSettings->get('Twitter', 'type');
-            $lien_tw = $oSettings->value;
-
-            $varMail = [
-                'prenom'               => $this->clients->prenom,
-                'raison_sociale'       => $this->companies->name,
-                'lien_reprise_dossier' => $this->surl . '/depot_de_dossier/reprise/' . $this->projects->hash,
-                'lien_fb'              => $lien_fb,
-                'lien_tw'              => $lien_tw,
-                'surl'                 => $this->surl,
-                'url'                  => $this->url,
-            ];
-
-            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-depot-de-dossier', $varMail);
-            try {
-                $message->setTo($this->clients->email);
-                $mailer = $this->get('mailer');
-                $mailer->send($message);
-            } catch (\Exception $exception) {
-                $this->get('logger')->warning(
-                    'Could not send email : confirmation-depot-de-dossier - Exception: ' . $exception->getMessage(),
-                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $this->clients->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
-                );
-            }
-            $this->clients->password = password_hash($this->ficelle->generatePassword(8), PASSWORD_DEFAULT);
-            $this->clients->status   = 1;
-            $this->clients->update();
-        }
-    }
-
     public function _generer_mdp()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_LENDERS);
         $this->autoFireView = false;
-        $this->clients      = $this->loadData('clients');
+
+        $this->clients = $this->loadData('clients');
         /** @var \settings $oSettings */
-        $oSettings          = $this->loadData('settings');
+        $oSettings = $this->loadData('settings');
 
         if (isset($_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
             $pass = $this->ficelle->generatePassword(8);
@@ -639,7 +488,9 @@ class ajaxController extends bootstrap
 
     public function _deleteBidPreteur()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_LENDERS);
         $this->autoFireView = true;
+
         /** @var \bids $bids */
         $bids = $this->loadData('bids');
         /** @var \projects projects */
@@ -662,6 +513,8 @@ class ajaxController extends bootstrap
 
     public function _loadMouvTransac()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_LENDERS);
+
         if (isset($_POST['year'], $_POST['id_client'])) {
             /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
             $this->translator = $this->get('translator');
@@ -684,6 +537,7 @@ class ajaxController extends bootstrap
 
     public function _check_status_dossier()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
         $this->autoFireView = false;
 
         /** @var \projects $project */
@@ -758,6 +612,7 @@ class ajaxController extends bootstrap
 
     public function _valid_rejete_etape6()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
         $this->autoFireView = false;
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
@@ -877,6 +732,7 @@ class ajaxController extends bootstrap
 
     public function _valid_rejete_etape7()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
         $this->autoFireView = false;
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
@@ -1041,6 +897,7 @@ class ajaxController extends bootstrap
 
     public function _session_content_email_completude()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_LENDERS);
         $this->autoFireView = false;
 
         if (isset($_POST['id_client']) && isset($_POST['content']) && isset($_POST['liste'])) {
@@ -1053,6 +910,7 @@ class ajaxController extends bootstrap
 
     public function _session_project_completude()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
         $this->autoFireView = false;
 
         if (isset($_POST['id_project']) && isset($_POST['content']) && isset($_POST['list'])) {
@@ -1090,48 +948,11 @@ class ajaxController extends bootstrap
         die;
     }
 
-    public function _ibanExist()
-    {
-
-        $companies = $this->loadData('companies');
-        $list      = array();
-        foreach ($companies->select('id_client_owner != "' . $this->bdd->escape_string($_POST['id']) . '" AND iban = "' . $this->bdd->escape_string($_POST['iban']) . '"') as $company) {
-            $list[] = $company['id_company'] . ': ' . $company['name'];
-        }
-        if (count($list) != 0) {
-            echo implode(' / ', $list);
-        } else {
-            echo "none";
-        }
-        die;
-    }
-
-    public function _ibanExistV2()
-    {
-        $this->autoFireView = false;
-
-        $companies = $this->loadData('companies');
-        $list      = array();
-        foreach (
-            $companies->select('
-                id_client_owner != "' . $this->bdd->escape_string($_POST['id']) . '"
-                AND iban = "' . $this->bdd->escape_string($_POST['iban']) . '"
-                AND bic = "' . $this->bdd->escape_string($_POST['bic']) . '"'
-            ) as $company
-        ) {
-            $list[] = $company['id_company'];
-        }
-        if (count($list) != 0) {
-            echo implode('-', $list);
-        } else {
-            echo "none";
-        }
-        die;
-    }
-
     public function _get_cities()
     {
+        $this->users->checkAccess();
         $this->autoFireView = false;
+
         $aCities = array();
         if (isset($_GET['term']) && '' !== trim($_GET['term'])) {
             $_GET  = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
@@ -1174,6 +995,7 @@ class ajaxController extends bootstrap
 
     public function _updateClientFiscalAddress()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_LENDERS);
         $this->autoFireView = false;
 
         $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
@@ -1210,7 +1032,9 @@ class ajaxController extends bootstrap
 
     public function _patchClient()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_LENDERS);
         $this->autoFireView = false;
+
         $_POST  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
         /** @var clients $oClient */
@@ -1231,6 +1055,7 @@ class ajaxController extends bootstrap
 
     public function _send_email_borrower_area()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
         $this->autoFireView = false;
 
         if (isset($_POST['id_client'], $_POST['type'])) {
@@ -1252,6 +1077,7 @@ class ajaxController extends bootstrap
 
     public function _quick_search()
     {
+        $this->users->checkAccess();
         $this->autoFireView = false;
 
         $result = [

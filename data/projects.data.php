@@ -1322,20 +1322,22 @@ class projects extends projects_crud
                 ps.label AS status_label,
                 co.name AS company_name,
                 co.siren AS siren,
-                CONCAT(cl.prenom, " ", cl.nom) AS client_name,
-                cl.telephone AS client_phone,
                 p.added AS creation,
                 (SELECT MAX(added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status WHERE psh.id_project = p.id_project AND ps.status = :waitingAnalystStatus) AS risk_status_datetime,
                 TIMESTAMPDIFF(HOUR, (SELECT MAX(added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status WHERE psh.id_project = p.id_project AND ps.status = :waitingAnalystStatus), NOW()) AS risk_status_duration,
                 IFNULL((SELECT content FROM projects_comments WHERE id_project = p.id_project ORDER BY added DESC, id_project_comment DESC LIMIT 1), "") AS memo_content,
                 IFNULL((SELECT added FROM projects_comments WHERE id_project = p.id_project ORDER BY added DESC, id_project_comment DESC LIMIT 1), "") AS memo_datetime,
-                IFNULL((SELECT CONCAT(users.firstname, " ", users.name) FROM projects_comments INNER JOIN users ON projects_comments.id_user = users.id_user WHERE id_project = p.id_project ORDER BY projects_comments.added DESC, id_project_comment DESC LIMIT 1), "") AS memo_author
+                IFNULL((SELECT CONCAT(users.firstname, " ", users.name) FROM projects_comments INNER JOIN users ON projects_comments.id_user = users.id_user WHERE id_project = p.id_project ORDER BY projects_comments.added DESC, id_project_comment DESC LIMIT 1), "") AS memo_author,
+                IFNULL(need.label, "") AS need,
+                IFNULL(pn.pre_scoring, "") AS pre_scoring
             ')
             ->from('projects', 'p')
             ->innerJoin('p', 'companies', 'co', 'p.id_company = co.id_company')
             ->innerJoin('co', 'clients', 'cl', 'co.id_client_owner = cl.id_client')
             ->innerJoin('p', 'projects_status', 'ps', 'p.status = ps.status')
             ->leftJoin('p', 'partner', 'pa', 'p.id_partner = pa.id')
+            ->leftJoin('p', 'projects_notes', 'pn', 'p.id_project = pn.id_project')
+            ->leftJoin('p', 'project_need', 'need', 'p.id_project_need = need.id_project_need')
             ->where('p.status IN (:riskStatus)')
             ->setParameter('waitingAnalystStatus', ProjectsStatus::PENDING_ANALYSIS)
             ->setParameter('riskStatus', ProjectsStatus::RISK_TEAM, Connection::PARAM_INT_ARRAY)

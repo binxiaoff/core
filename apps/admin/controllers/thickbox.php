@@ -1,6 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class thickboxController extends bootstrap
 {
@@ -18,18 +19,10 @@ class thickboxController extends bootstrap
 
     }
 
-    public function _loginInterdit()
-    {
-
-    }
-
-    public function _newPassword()
-    {
-
-    }
-
     public function _pop_up_edit_date_retrait()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
+
         $this->projects = $this->loadData('projects');
         $this->projects->get($this->params[0], 'id_project');
 
@@ -41,11 +34,13 @@ class thickboxController extends bootstrap
 
     public function _popup_confirmation_send_email()
     {
-
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
     }
 
     public function _project_history()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
+
         $oProjects = $this->loadData('projects');
 
         $this->aHistory = array();
@@ -88,6 +83,8 @@ class thickboxController extends bootstrap
 
     public function _project_status_update()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
+
         $this->projects_status = $this->loadData('projects_status');
         $this->projects_status->get($this->params[1], 'status');
 
@@ -134,6 +131,8 @@ class thickboxController extends bootstrap
 
     public function _confirm_tax_exemption()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_LENDERS);
+
         if ('uncheck' === $this->params[1]) {
             $this->message = 'Le préteur ne sera pas exonéré pour l\'année ' . $this->params[0] . '<br>une fois les modifications sauvegardées';
         } elseif ('check' === $this->params[1]) {

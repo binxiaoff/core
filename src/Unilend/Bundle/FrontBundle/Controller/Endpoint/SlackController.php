@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Bundle\FrontBundle\Controller;
+namespace Unilend\Bundle\FrontBundle\Controller\Endpoint;
 
 use GuzzleHttp\Client;
 use Doctrine\ORM\EntityManager;
@@ -11,10 +11,10 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 
-class SlackEndpointController extends Controller
+class SlackController extends Controller
 {
     /**
-     * @Route("/slack-command-api-endpoint", name="slack_command_api_endpoint")
+     * @Route("/ws/slack/command", name="slack_command_api_endpoint")
      *
      * @param Request $request
      *
