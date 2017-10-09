@@ -14,9 +14,8 @@ class CompanyStatus
 {
     const STATUS_IN_BONIS               = 'in_bonis';
     const STATUS_PRECAUTIONARY_PROCESS  = 'precautionary_process';
-    const STATUS_RECEIVER_SHIP          = 'receivership';
+    const STATUS_RECEIVERSHIP           = 'receivership';
     const STATUS_COMPULSORY_LIQUIDATION = 'compulsory_liquidation';
-    const STATUS_DEFAULT                = 'default';
 
     /**
      * @var integer
