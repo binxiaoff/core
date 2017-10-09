@@ -3302,8 +3302,8 @@ class dossiersController extends bootstrap
                     $projectCloseOutNettingManager->decline($project, new DateTime());
                 } catch (Exception $exception) {
                     $this->get('logger')->error($exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
-                    $_SESSION['freeow']['title']   = 'Refus de prêt';
-                    $_SESSION['freeow']['message'] = 'Le prêt a déjà été refusé';
+                    $_SESSION['freeow']['title']   = 'Déchéance du terme';
+                    $_SESSION['freeow']['message'] = 'L\'opétation échouée.';
                 }
             }
         }
