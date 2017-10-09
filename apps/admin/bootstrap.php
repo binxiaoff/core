@@ -205,6 +205,10 @@ class bootstrap extends Controller
                     'uri'   => 'dossiers/remboursements'
                 ],
                 [
+                    'title' => 'Projets avec retard',
+                    'uri'   => 'emprunteurs/projets_avec_retard'
+                ],
+                [
                     'title' => 'Erreurs remboursements',
                     'uri'   => 'dossiers/no_remb'
                 ],
@@ -540,8 +544,6 @@ class bootstrap extends Controller
     /**
      * @param string $template
      * @param array  $context
-     *
-     * @return string
      */
     public function render($template = null, array $context = [])
     {

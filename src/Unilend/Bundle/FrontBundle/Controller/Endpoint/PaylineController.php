@@ -1,5 +1,6 @@
 <?php
-namespace Unilend\Bundle\FrontBundle\Controller;
+
+namespace Unilend\Bundle\FrontBundle\Controller\Endpoint;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -10,7 +11,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 class PaylineController extends Controller
 {
     /**
-     * @Route("/notification_payline", name="payline_callback")
+     * @Route("/ws/payment/payline/notify", name="payline_callback")
      *
      */
     public function callbackAction(Request $request)

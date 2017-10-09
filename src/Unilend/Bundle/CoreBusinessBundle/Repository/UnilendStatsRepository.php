@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 
 use Doctrine\ORM\EntityRepository;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
@@ -71,33 +72,7 @@ class UnilendStatsRepository extends EntityRepository
                         AND ee.id_project = e2.id_project
                     LIMIT 1
                 ) = 0
-                AND p.status = ' . \projects_status::REMBOURSEMENT . '
-                AND ee.id_project > 0
-
-        UNION ALL
-
-            SELECT
-                CASE WHEN ee.date_echeance_emprunteur < NOW() THEN "0" ELSE ee.capital + ee.interets END AS amount,
-                (
-                    SELECT e.date_echeance
-                    FROM echeanciers e
-                    WHERE
-                        e.ordre = ee.ordre
-                        AND ee.id_project = e.id_project
-                    LIMIT 1
-                ) AS date
-            FROM echeanciers_emprunteur ee
-            INNER JOIN projects p ON ee.id_project = p.id_project
-            WHERE
-                (
-                    SELECT e2.status
-                    FROM echeanciers e2
-                    WHERE
-                        e2.ordre = ee.ordre
-                        AND ee.id_project = e2.id_project
-                    LIMIT 1
-                ) = 0
-                AND p.status IN (' . implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X]) . ')
+                AND p.status = ' . ProjectsStatus::REMBOURSEMENT . '
                 AND ee.id_project > 0
 
         UNION ALL
@@ -110,7 +85,7 @@ class UnilendStatsRepository extends EntityRepository
                         FROM projects_status_history psh2
                         INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
                         WHERE
-                            ps2.status = ' . \projects_status::PROBLEME . '
+                            ps2.status = ' . ProjectsStatus::PROBLEME . '
                             AND psh2.id_project = ee.id_project
                         ORDER BY psh2.added DESC
                         LIMIT 1
@@ -126,6 +101,8 @@ class UnilendStatsRepository extends EntityRepository
                 ) AS date
             FROM echeanciers_emprunteur ee
             INNER JOIN projects p ON ee.id_project = p.id_project
+            INNER JOIN companies com ON p.id_company = com.id_company
+            INNER JOIN company_status cs2 ON cs2.id = com.id_status
             WHERE
                 (
                     SELECT e2.status
@@ -135,8 +112,9 @@ class UnilendStatsRepository extends EntityRepository
                         AND ee.id_project = e2.id_project
                     LIMIT 1
                 ) = 0
-                AND p.status = ' . \projects_status::RECOUVREMENT . '
+                AND p.status = ' . ProjectsStatus::PROBLEME . '
                 AND ee.id_project > 0
+                AND cs2.label = \'' . CompanyStatus::STATUS_IN_BONIS . '\'
 
         UNION ALL
 
@@ -152,6 +130,8 @@ class UnilendStatsRepository extends EntityRepository
                 ) AS date
             FROM echeanciers_emprunteur ee
             INNER JOIN projects p ON ee.id_project = p.id_project
+            INNER JOIN companies com ON com.id_company = p.id_company
+            INNER JOIN company_status cs ON cs.id = com.id_status
             WHERE
                 (
                     SELECT e2.status
@@ -161,12 +141,12 @@ class UnilendStatsRepository extends EntityRepository
                         AND ee.id_project = e2.id_project
                     LIMIT 1
                 ) = 0
-                AND p.status IN (' . implode(',', [
-                \projects_status::PROCEDURE_SAUVEGARDE,
-                \projects_status::REDRESSEMENT_JUDICIAIRE,
-                \projects_status::LIQUIDATION_JUDICIAIRE,
-                \projects_status::DEFAUT
-            ]) . ')
+                AND p.status >= ' . ProjectsStatus::REMBOURSEMENT . '
+                AND cs.label IN (\'' . implode('\',\'', [
+                CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
+                CompanyStatus::STATUS_RECEIVERSHIP,
+                CompanyStatus::STATUS_COMPULSORY_LIQUIDATION
+            ]) . '\')
                 AND ee.id_project > 0
 
         UNION ALL
@@ -255,36 +235,7 @@ class UnilendStatsRepository extends EntityRepository
                         AND ee.id_project = e2.id_project
                     LIMIT 1
                 ) = 0
-                AND p.status = ' . \projects_status::REMBOURSEMENT . '
-                AND ee.id_project > 0
-                AND (SELECT DATE(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
-                  WHERE psh.id_project = ee.id_project
-                  ORDER BY psh.id_project_status ASC LIMIT 1) BETWEEN :startDate AND :endDate
-
-        UNION ALL
-
-            SELECT
-                CASE WHEN ee.date_echeance_emprunteur < NOW() THEN "0" ELSE ee.capital + ee.interets END AS amount,
-                (
-                    SELECT e.date_echeance
-                    FROM echeanciers e
-                    WHERE
-                        e.ordre = ee.ordre
-                        AND ee.id_project = e.id_project
-                    LIMIT 1
-                ) AS date
-            FROM echeanciers_emprunteur ee
-            INNER JOIN projects p ON ee.id_project = p.id_project
-            WHERE
-                (
-                    SELECT e2.status
-                    FROM echeanciers e2
-                    WHERE
-                        e2.ordre = ee.ordre
-                        AND ee.id_project = e2.id_project
-                    LIMIT 1
-                ) = 0
-                AND p.status IN (' . implode(',', [\projects_status::PROBLEME, \projects_status::PROBLEME_J_X]) . ')
+                AND p.status = ' . ProjectsStatus::REMBOURSEMENT . '
                 AND ee.id_project > 0
                 AND (SELECT DATE(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
                   WHERE psh.id_project = ee.id_project
@@ -300,7 +251,7 @@ class UnilendStatsRepository extends EntityRepository
                         FROM projects_status_history psh2
                         INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
                         WHERE
-                            ps2.status = ' . \projects_status::PROBLEME . '
+                            ps2.status = ' . ProjectsStatus::PROBLEME . '
                             AND psh2.id_project = ee.id_project
                         ORDER BY psh2.added DESC
                         LIMIT 1
@@ -316,6 +267,8 @@ class UnilendStatsRepository extends EntityRepository
                 ) AS date
             FROM echeanciers_emprunteur ee
             INNER JOIN projects p ON ee.id_project = p.id_project
+            INNER JOIN companies c ON c.id_company = p.id_company
+            INNER JOIN company_status cs ON cs.id = c.id_status
             WHERE
                 (
                     SELECT e2.status
@@ -325,7 +278,8 @@ class UnilendStatsRepository extends EntityRepository
                         AND ee.id_project = e2.id_project
                     LIMIT 1
                 ) = 0
-                AND p.status = ' . \projects_status::RECOUVREMENT . '
+                AND p.status = ' . ProjectsStatus::PROBLEME . '
+                AND cs.label = \'' . CompanyStatus::STATUS_IN_BONIS . '\'
                 AND ee.id_project > 0
                 AND (SELECT DATE(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
                   WHERE psh.id_project = ee.id_project
@@ -345,6 +299,8 @@ class UnilendStatsRepository extends EntityRepository
                 ) AS date
             FROM echeanciers_emprunteur ee
             INNER JOIN projects p ON ee.id_project = p.id_project
+            INNER JOIN companies c ON c.id_company = p.id_company
+            INNER JOIN company_status cs ON cs.id = c.id_status
             WHERE
                 (
                     SELECT e2.status
@@ -354,12 +310,12 @@ class UnilendStatsRepository extends EntityRepository
                         AND ee.id_project = e2.id_project
                     LIMIT 1
                 ) = 0
-                AND p.status IN (' . implode(',', [
-                \projects_status::PROCEDURE_SAUVEGARDE,
-                \projects_status::REDRESSEMENT_JUDICIAIRE,
-                \projects_status::LIQUIDATION_JUDICIAIRE,
-                \projects_status::DEFAUT
-            ]) . ')
+                AND p.status >= 80 
+                AND cs.label IN (\'' . implode('\',\'', [
+                CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
+                CompanyStatus::STATUS_RECEIVERSHIP,
+                CompanyStatus::STATUS_COMPULSORY_LIQUIDATION
+            ]) . '\')
                 AND ee.id_project > 0
                 AND (SELECT DATE(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . \projects_status::REMBOURSEMENT . '
                   WHERE psh.id_project = ee.id_project

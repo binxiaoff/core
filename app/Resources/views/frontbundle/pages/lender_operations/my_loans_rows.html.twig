@@ -1,5 +1,5 @@
-<tr id="loan-{{ loan.id }}" class="table-myloans-item {{ 'ui-loan-status-' ~ loan.status }}" data-details
-    data-sortable-status="{{ loan.status }}"
+<tr id="loan-{{ loan.id }}" class="table-myloans-item {{ 'ui-loan-status-' ~ loan.loanStatus }}" data-details
+    data-sortable-status="{{ loan.loanStatus }}"
     data-sortable-project="{{ loan.name|escape('html_attr') }}"
     data-sortable-rating="{{ loan.risk|convertRisk }}"
     data-sortable-amount="{{ loan.amount }}"
@@ -11,7 +11,7 @@
     <td class="table-myloans-item-project"
         data-toggle="tooltip"
         data-html="true"
-        data-original-title="<strong>{{ loan.name|e('html_attr') }}</strong><br><em>{% trans with {'%risk%': loan.risk|convertRisk|localizednumber} %} lender-operations_unilend-rating-wording-label {% endtrans %}</em><br/>{{ "lender-operations_project-status-label-#{ loan.project_status }"|trans|e('html_attr') }}">
+        data-original-title="<strong>{{ loan.name|e('html_attr') }}</strong><br><em>{% trans with {'%risk%': loan.risk|convertRisk|localizednumber} %} lender-operations_unilend-rating-wording-label {% endtrans %}</em><br/>{{ loan.loanStatusLabel|e('html_attr') }}">
         <a href="{{ loan.url }}" target="_blank" class="table-myloans-item-project-name">{{ loan.name }}</a>
         <span class="rating rating-{{ loan.risk|convertRisk|split('.')|join('-') }}">
             <span class="sr-only">
@@ -25,13 +25,13 @@
     <td class="table-myloans-item-rate">
         {{ loan.rate|localizednumber }}&nbsp;<sup>%</sup>
     </td>
-    {% if loan.project_status == constant('\\projects_status::REMBOURSEMENT_ANTICIPE') or loan.project_status == constant('\\projects_status::REMBOURSE') %}
+    {% if loan.loanStatus == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\LenderOperationsManager::LOAN_STATUS_DISPLAY_COMPLETED') %}
         <td colspan="4" class="table-myloans-item-next">
             <em class="c-t2">
                 {% trans with {'%date%': loan.final_repayment_date|date('d/m/Y')} %} lender-operations_loans-table-project-status-label-repayment-finished-on-date {% endtrans %}
             </em>
         </td>
-    {% elseif loan.project_status in [constant('\\projects_status::PROCEDURE_SAUVEGARDE'), constant('\\projects_status::REDRESSEMENT_JUDICIAIRE'), constant('\\projects_status::LIQUIDATION_JUDICIAIRE'), constant('\\projects_status::RECOUVREMENT')] %}
+    {% elseif loan.loanStatus in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\LenderOperationsManager::LOAN_STATUS_DISPLAY_PROCEEDING'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\LenderOperationsManager::LOANS_STATUS_DISPLAY_AMICABLE_DC'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\LenderOperationsManager::LOANS_STATUS_DISPLAY_LITIGATION_DC')] %}
         <td colspan="4" class="table-myloans-item-next">
             <em class="c-t2">
                 {% transchoice loan.count.declaration %} lender-operations_loans-table-project-procedure-in-progress {% endtranschoice %}
@@ -61,7 +61,7 @@
                 <span class="pip pip-has-many"><span class="pip-number">{{ loan.activity.unread_count }}</span></span>
             {% endif %}
         </a>
-        <a href="javascript:;" title="{{ 'lender-operations_loans-table-project-documents'|trans|e('html_attr') }}"  class="ui-show-table-myloans-item-docs loan-doc {% if loan.status == 'problem' or  loan.status == 'defaulted' %} loan-doc-declaration {% endif %}" data-toggle="tooltip">
+        <a href="javascript:;" title="{{ 'lender-operations_loans-table-project-documents'|trans|e('html_attr') }}"  class="ui-show-table-myloans-item-docs loan-doc {% if loan.loanStatus in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\LenderOperationsManager::LOAN_STATUS_DISPLAY_PROCEEDING'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\LenderOperationsManager::LOAN_STATUS_DISPLAY_LOSS')] %} loan-doc-declaration {% endif %}" data-toggle="tooltip">
             <span class="sr-only">{% trans %} lender-operations_loans-table-project-documents {% endtrans %}</span>
             {% set docCount = 0 %}
             {% for docType, totalCount in loan.count if totalCount > 0 %}

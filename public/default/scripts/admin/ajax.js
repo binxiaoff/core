@@ -60,26 +60,6 @@ function deleteFichierElement(id_elt, slug) {
     xhr_object.send(null);
 }
 
-/* Fonction AJAX delete fichier protected ELEMENT */
-function deleteFichierProtectedElement(id_elt, slug) {
-    xhr_object = AjaxObject();
-    var param = no_cache();
-
-    xhr_object.onreadystatechange = function () {
-        if (xhr_object.readyState != 4) {
-            document.getElementById('deleteFichierProtectedElement' + id_elt).innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
-        }
-        if (xhr_object.readyState == 4 && xhr_object.status == 200) {
-            var reponse = xhr_object.responseText;
-            document.getElementById('deleteFichierProtectedElement' + id_elt).innerHTML = reponse;
-            document.getElementById(slug + '-old').value = '';
-            document.getElementById('nom_' + slug).value = '';
-        }
-    };
-    xhr_object.open('GET', add_url + '/ajax/deleteFichierProtectedElement/' + id_elt + '/' + param, true);
-    xhr_object.send(null);
-}
-
 /* Fonction AJAX delete image ELEMENT BLOC */
 function deleteImageElementBloc(id_elt, slug) {
     xhr_object = AjaxObject();
@@ -120,26 +100,6 @@ function deleteFichierElementBloc(id_elt, slug) {
     xhr_object.send(null);
 }
 
-/* Fonction AJAX delete fichier protected ELEMENT Bloc */
-function deleteFichierProtectedElementBloc(id_elt, slug) {
-    xhr_object = AjaxObject();
-    var param = no_cache();
-
-    xhr_object.onreadystatechange = function () {
-        if (xhr_object.readyState != 4) {
-            document.getElementById('deleteFichierProtectedElementBloc' + id_elt).innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
-        }
-        if (xhr_object.readyState == 4 && xhr_object.status == 200) {
-            var reponse = xhr_object.responseText;
-            document.getElementById('deleteFichierProtectedElementBloc' + id_elt).innerHTML = reponse;
-            document.getElementById(slug + '-old').value = '';
-            document.getElementById('nom_' + slug).value = '';
-        }
-    };
-    xhr_object.open('GET', add_url + '/ajax/deleteFichierProtectedElementBloc/' + id_elt + '/' + param, true);
-    xhr_object.send(null);
-}
-
 /* Fonction AJAX delete image TREE */
 function deleteImageTree(id_tree, lng) {
     xhr_object = AjaxObject();
@@ -156,25 +116,6 @@ function deleteImageTree(id_tree, lng) {
         }
     };
     xhr_object.open('GET', add_url + '/ajax/deleteImageTree/' + id_tree + '/' + lng + '/' + param, true);
-    xhr_object.send(null);
-}
-
-/* Fonction AJAX delete image TREE */
-function deleteVideoTree(id_tree, lng) {
-    xhr_object = AjaxObject();
-    var param = no_cache();
-
-    xhr_object.onreadystatechange = function () {
-        if (xhr_object.readyState != 4) {
-            document.getElementById('deleteVideoTree_' + lng).innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
-        }
-        if (xhr_object.readyState == 4 && xhr_object.status == 200) {
-            var reponse = xhr_object.responseText;
-            document.getElementById('deleteVideoTree_' + lng).innerHTML = reponse;
-            document.getElementById('video_' + lng + '-old').value = '';
-        }
-    };
-    xhr_object.open('GET', add_url + '/ajax/deleteVideoTree/' + id_tree + '/' + lng + '/' + param, true);
     xhr_object.send(null);
 }
 
@@ -321,41 +262,6 @@ function valid_etape1(id_project) {
             $('#error_etape1').slideUp();
         }, 3000);
 
-    });
-}
-
-// Creation du client apres saisi de l'email dans l'etape 2 de la creation de dossier
-
-function create_client(id_project) {
-    var val = {email: $("#email_etape2").val(), id_client: $("#id_client").val(), id_project: id_project};
-    $.post(add_url + '/ajax/create_client', val).done(function (data) {
-
-        obj = jQuery.parseJSON(data);
-
-        var error = obj.error;
-        if (error == 'nok') {
-            $("#email_etape2").css('border-color', 'red');
-            $("#email_etape2").css('color', 'red');
-
-            $("#sav_email2").show();
-            $("#sav_etape2").hide();
-
-            $("#valid_end").show();
-            $("#end_create").hide();
-        }
-        else {
-            var id_client = obj.id_client;
-
-            $("#email_etape2").css('border-color', '#2F86B2');
-            $("#email_etape2").css('color', '#2F86B2');
-
-            $("#id_client").val(id_client);
-            $("#sav_email2").hide();
-            $("#sav_etape2").show();
-
-            $("#valid_end").hide();
-            $("#end_create").show();
-        }
     });
 }
 

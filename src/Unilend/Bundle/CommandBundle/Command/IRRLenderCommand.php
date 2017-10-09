@@ -8,9 +8,11 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatusHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatisticQueue;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatusHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsStatusHistoryRepository;
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\IRRManager;
 use Unilend\librairies\CacheKeys;
@@ -75,25 +77,24 @@ EOF
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
 
         /** @var WalletRepository $walletRepository */
-        $walletRepository        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         foreach ($walletRepository->getLendersWalletsWithLatePaymentsForIRR() as $lender) {
             $this->addLenderToStatisticQueue($lender);
         }
         $entityManager->flush();
 
-        /** @var ProjectsStatusHistoryRepository $projectStatusHistoryRepository */
         $projectStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
+        $companyStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory');
         $yesterday                      = new \DateTime('NOW - 1 day');
-        $projectStatusChanges           = $projectStatusHistoryRepository->getProjectStatusChangesOnDate($yesterday, \projects_status::$runningRepayment);
+        $projectStatusChanges           = $projectStatusHistoryRepository->getProjectStatusChangesOnDate($yesterday, IRRManager::PROJECT_STATUS_TRIGGERING_CHANGE);
+        $companyStatusChanges           = $companyStatusHistoryRepository->getCompanyStatusChangesOnDate($yesterday, IRRManager::COMPANY_STATUS_TRIGGERING_CHANGE);
 
         /** @var \projects $project */
         $project = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('projects');
-        if (false === empty($projectStatusChanges)) {
-            foreach ($projectStatusChanges as $projectStatusChange) {
-                foreach ($project->getLoansAndLendersForProject($projectStatusChange->getIdProject()) as $lender) {
-                    $this->addLenderToStatisticQueue($lender);
-                    $entityManager->flush();
-                }
+        foreach ($this->getProjects($projectStatusChanges, $companyStatusChanges) as $projectStatusChange) {
+            foreach ($project->getLoansAndLendersForProject($projectStatusChange->getIdProject()) as $lender) {
+                $this->addLenderToStatisticQueue($lender);
+                $entityManager->flush();
             }
         }
 
@@ -128,5 +129,32 @@ EOF
             $lenderInQueue->setIdWallet($lenderWallet);
             $entityManager->persist($lenderInQueue);
         }
+    }
+
+    /**
+     * @param ProjectsStatusHistory[] $projectStatusHistory
+     * @param CompanyStatusHistory[] $companyStatusHistory
+     *
+     * @return Projects[]
+     */
+    private function getProjects(array $projectStatusHistory, array $companyStatusHistory)
+    {
+        $entityManager      = $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $projectsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+
+        $projects = [];
+
+        foreach ($projectStatusHistory as $statusHistory) {
+            $projects[$statusHistory->getIdProject()] = $projectsRepository->find($statusHistory->getIdProject());
+        }
+        foreach ($companyStatusHistory as $statusHistory) {
+            /** @var Projects[] $companyProjects */
+            $companyProjects = $projectsRepository->findFundedButNotRepaidProjectsByCompany($statusHistory->getIdCompany());
+            foreach ($companyProjects as $project) {
+                $projects[$project->getIdProject()] = $project;
+            }
+        }
+
+        return $projects;
     }
 }

@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
@@ -150,6 +151,32 @@ class ReceptionsRepository extends EntityRepository
             ->setMaxResults(1);
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @return array
+     */
+    public function getPendingReceipt(Projects $project)
+    {
+        $qbRejected = $this->createQueryBuilder('r_rejected')
+            ->select('r_rejected.idReception')
+            ->where('r_rejected.idReceptionRejected = r.idReception');
+
+        $queryBuilder = $this->createQueryBuilder('r')
+            ->select('r.idReception, r.montant AS amount, IDENTITY(r.idProject) AS idProejct, r.added as date')
+            ->leftJoin('UnilendCoreBusinessBundle:ProjectRepaymentTask', 'prt', Join::WITH, 'prt.idWireTransferIn = r.idReception')
+            ->where('r.idProject = :projectId')
+            ->setParameter('projectId', $project)
+            ->andWhere('r.statusPrelevement != :directDebitRejected')
+            ->setParameter('directDebitRejected', Receptions::DIRECT_DEBIT_STATUS_REJECTED)
+            ->andWhere('r.statusVirement != :wireTransferRejected')
+            ->setParameter('wireTransferRejected', Receptions::WIRE_TRANSFER_STATUS_REJECTED)
+            ->andWhere('NOT EXISTS (' . $qbRejected->getDQL() . ')')
+            ->andWhere('prt.id IS NULL');
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }
 

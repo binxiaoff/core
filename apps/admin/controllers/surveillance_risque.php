@@ -37,7 +37,7 @@ class surveillance_risqueController extends bootstrap
     {
         /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\OperationRepository $operationRepository */
         $operationRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Operation');
-        $activeStatus        = array_merge(ProjectsStatus::SALES_TEAM_UPCOMING_STATUS, ProjectsStatus::SALES_TEAM, ProjectsStatus::RISK_TEAM, ProjectsStatus::RUNNING_REPAYMENT);
+        $activeStatus        = [ProjectsStatus::SALES_TEAM_UPCOMING_STATUS, ProjectsStatus::SALES_TEAM, ProjectsStatus::RISK_TEAM, ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME];
         $formattedEvents     = [];
 
         foreach ($events as $event) {
