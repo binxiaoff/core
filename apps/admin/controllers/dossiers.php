@@ -1,24 +1,24 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
+use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
-use \Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 
 class dossiersController extends bootstrap
 {
@@ -981,9 +981,6 @@ class dossiersController extends bootstrap
                 'annee'                => date('Y')
             );
 
-        $this->mail_template->get($sMailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
-        $aReplacements['sujet'] = $this->mail_template->subject;
-
         /** @var LoggerInterface $logger */
         $logger = $this->get('logger');
         $logger->debug('Mail to send : ' . $sMailType . ' Variables : ' . json_encode($aReplacements), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project]);
@@ -1140,9 +1137,6 @@ class dossiersController extends bootstrap
                     ];
 
                     $sMailType = ($wallet->getIdClient()->isNaturalPerson()) ? $sEmailTypePerson : $sEmailTypeSociety;
-                    $locale    = $this->getParameter('locale');
-                    $this->mail_template->get($sMailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $locale . '" AND type');
-                    $aReplacements['sujet'] = $this->mail_template->subject;
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                     $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMailType, $aReplacements);
@@ -1871,7 +1865,6 @@ class dossiersController extends bootstrap
                 $this->echeanciers            = $this->loadData('echeanciers');
                 $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
                 $this->clients                = $this->loadData('clients');
-                $this->mail_template          = $this->loadData('mail_templates');
                 $this->companies              = $this->loadData('companies');
 
                 $reception = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($id_reception);
@@ -2237,7 +2230,15 @@ class dossiersController extends bootstrap
         $this->iProjectId = $oProjects->id_project;
 
         $sTypeEmail = $this->selectEmailCompleteness($iClientId);
-        $this->mail_template->get($sTypeEmail, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
+
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager      = $this->get('doctrine.orm.entity_manager');
+        $this->mailTemplate = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
+            'type'   => $sTypeEmail,
+            'locale' => $this->getParameter('locale'),
+            'status' => MailTemplates::STATUS_ACTIVE,
+            'part'   => MailTemplates::PART_TYPE_CONTENT
+        ]);
     }
 
     public function _completude_preview_iframe()
@@ -2250,8 +2251,6 @@ class dossiersController extends bootstrap
         $oClients = $this->loadData('clients');
         /** @var \companies $oCompanies */
         $oCompanies = $this->loadData('companies');
-        /** @var \mail_templates $oMailTemplate */
-        $oMailTemplate = $this->loadData('mail_templates');
 
         if (false === isset($this->params[0]) || false === $oProjects->get($this->params[0])) {
             echo 'no projects found';
@@ -2268,18 +2267,24 @@ class dossiersController extends bootstrap
             return;
         }
 
+        $tabVars    = [];
         $sTypeEmail = $this->selectEmailCompleteness($oClients->id_client);
-        $oMailTemplate->get($sTypeEmail, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
+        $varMail    = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
 
-        $varMail          = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
-        $varMail['sujet'] = $oMailTemplate->subject;
-
-        $tabVars = array();
         foreach ($varMail as $key => $value) {
             $tabVars['[EMV DYN]' . $key . '[EMV /DYN]'] = $value;
         }
 
-        echo strtr($oMailTemplate->content, $tabVars);
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $mailTemplate  = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
+            'type'   => $sTypeEmail,
+            'locale' => $this->getParameter('locale'),
+            'status' => MailTemplates::STATUS_ACTIVE,
+            'part'   => MailTemplates::PART_TYPE_CONTENT
+        ]);
+
+        echo strtr($mailTemplate->getContent(), $tabVars);
     }
 
     public function _send_completude()
@@ -2296,8 +2301,6 @@ class dossiersController extends bootstrap
             $oClients = $this->loadData('clients');
             /** @var \companies $oCompanies */
             $oCompanies = $this->loadData('companies');
-            /** @var \mail_templates $oMailTemplate */
-            $oMailTemplate = $this->loadData('mail_templates');
 
             if (false === isset($_POST['id_project']) || false === $oProjects->get($_POST['id_project'])) {
                 echo 'no projects found';
@@ -2313,11 +2316,10 @@ class dossiersController extends bootstrap
                 echo 'no company found';
                 return;
             }
-            $sTypeEmail       = $this->selectEmailCompleteness($oClients->id_client);
-            $oMailTemplate->get($sTypeEmail, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
-            $varMail          = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
-            $varMail['sujet'] = htmlentities($oMailTemplate->subject, null, 'UTF-8');
-            $sRecipientEmail  = preg_replace('/^(.*)-[0-9]+$/', '$1', trim($oClients->email));
+
+            $sTypeEmail      = $this->selectEmailCompleteness($oClients->id_client);
+            $varMail         = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
+            $sRecipientEmail = preg_replace('/^(.*)-[0-9]+$/', '$1', trim($oClients->email));
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeEmail, $varMail);

@@ -5,27 +5,29 @@
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
         <!-- Swift Mailer and its bridges -->
-        <service id="swiftmailer.spool.db" alias="unilend.swiftmailer.db_spool" />
-        <service id="swiftmailer.mailer.default.spool.db" alias="unilend.swiftmailer.db_spool" />
-        <service id="mailjet" alias="swiftmailer.mailer.transport.mailjet" />
+        <service id="swiftmailer.spool.db" alias="unilend.swiftmailer.db_spool"/>
+        <service id="swiftmailer.mailer.default.spool.db" alias="unilend.swiftmailer.db_spool"/>
+        <service id="mailjet" alias="swiftmailer.mailer.transport.mailjet"/>
 
         <service id="unilend.service.mail_queue" class="Unilend\Bundle\MessagingBundle\Service\MailQueueManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
-            <argument type="service" id="logger" />
+            <argument type="service" id="logger"/>
             <argument>%path.shared_tmp%</argument>
         </service>
 
         <service id="unilend.service.mail_template" class="Unilend\Bundle\MessagingBundle\Service\MailTemplateManager">
-            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.mail_queue"/>
+            <argument type="service" id="unilend.service.translation_manager"/>
             <argument>%kernel.default_locale%</argument>
         </service>
 
         <service id="unilend.swiftmailer.message_provider" class="Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider">
-            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument>Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage</argument>
             <argument>%kernel.default_locale%</argument>
+            <argument type="service" id="translator"/>
             <call method="setLogger">
                 <argument type="service" id="logger" on-invalid="null"/>
             </call>
@@ -39,7 +41,7 @@
         <service id="swiftmailer.mailer.transport.mailjet" class="Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\MailjetTransport">
             <argument type="service" id="swiftmailer.mailer.default.transport.eventdispatcher"/>
             <argument type="service" id="mailjet.api.client"/>
-            <argument type="service" id="logger" />
+            <argument type="service" id="logger"/>
         </service>
 
         <!-- Mailjet API -->

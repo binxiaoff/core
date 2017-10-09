@@ -3,6 +3,13 @@
 // Controller de developpement, aucun accès client autorisé, fonctions en BETA
 class devboxController extends bootstrap
 {
+    public function initialize()
+    {
+        parent::initialize();
+
+        $this->users->checkAccess();
+    }
+
     public function _importINSEEPostalCodes()
     {
         $this->hideDecoration();

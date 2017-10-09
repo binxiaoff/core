@@ -19,8 +19,6 @@ class TemplateMessage extends \Swift_Message
     private $logger;
 
     /**
-     * TemplateMessage constructor.
-     *
      * @param null|string    $templateId
      * @param null|array     $variables
      * @param null|\DateTime $toSendAt

@@ -9,6 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
+use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectNotification;
@@ -742,26 +743,31 @@ class preteursController extends bootstrap
 
         $_SESSION['request_url'] = $this->url;
 
-        $this->clients       = $this->loadData('clients');
-        $this->mail_template = $this->loadData('mail_templates');
-
+        $this->clients = $this->loadData('clients');
         $this->clients->get($this->params[0], 'id_client');
-        $this->mail_template->get('completude', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
+
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager      = $this->get('doctrine.orm.entity_manager');
+        $this->mailTemplate = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
+            'type'   => 'completude',
+            'locale' => $this->getParameter('locale'),
+            'status' => MailTemplates::STATUS_ACTIVE,
+            'part'   => MailTemplates::PART_TYPE_CONTENT
+        ]);
     }
 
     public function _completude_preview_iframe()
     {
         $this->hideDecoration();
+        $this->autoFireView = false;
 
         $_SESSION['request_url'] = $this->url;
 
         $this->clients                = $this->loadData('clients');
         $this->clients_status_history = $this->loadData('clients_status_history');
-        $this->mail_template          = $this->loadData('mail_templates');
         $this->settings               = $this->loadData('settings');
 
         $this->clients->get($this->params[0], 'id_client');
-        $this->mail_template->get('completude', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
 
         $this->settings->get('Facebook', 'type');
         $lien_fb = $this->settings->value;
@@ -789,8 +795,16 @@ class preteursController extends bootstrap
             $tabVars['[EMV DYN]' . $key . '[EMV /DYN]'] = $value;
         }
 
-        echo strtr($this->mail_template->content, $tabVars);
-        die;
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $mailTemplate  = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
+            'type'   => 'completude',
+            'locale' => $this->getParameter('locale'),
+            'status' => MailTemplates::STATUS_ACTIVE,
+            'part'   => MailTemplates::PART_TYPE_CONTENT
+        ]);
+
+        echo strtr($mailTemplate->getContent(), $tabVars);
     }
 
     public function _offres_de_bienvenue()
@@ -1646,6 +1660,9 @@ class preteursController extends bootstrap
             isset($_POST['dateStart']) && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $_POST['dateStart'])
             && isset($_POST['dateEnd']) && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $_POST['dateEnd'])
         ) {
+            $this->autoFireView = false;
+            $this->hideDecoration();
+
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var LenderOperationsManager $lenderOperationsManager */
@@ -1653,21 +1670,9 @@ class preteursController extends bootstrap
             $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER);
             $start                   = \DateTime::createFromFormat('m/d/Y', $_POST['dateStart']);
             $end                     = \DateTime::createFromFormat('m/d/Y', $_POST['dateEnd']);
-
-            $document = $lenderOperationsManager->getOperationsExcelFile($wallet, $start, $end, null, LenderOperationsManager::ALL_TYPES);
-            $fileName = 'operations_' . date('Y-m-d_H:i:s');
-
-            /** @var \PHPExcel_Writer_Excel2007 $writer */
-            $writer = PHPExcel_IOFactory::createWriter($document, 'Excel2007');
-
-            header('Content-Type: application/force-download; charset=utf-8');
-            header('Content-Disposition: attachment;filename=' . $fileName . '.xlsx');
-            header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-            header('Expires: 0');
-
-            $writer->save('php://output');
-
-            die;
+            $fileName                = 'operations_' . date('Y-m-d_H:i:s') . '.xlsx';
+            $writer                  = $lenderOperationsManager->getOperationsExcelFile($wallet, $start, $end, null, LenderOperationsManager::ALL_TYPES, $fileName);
+            $writer->close();
         }
     }
 

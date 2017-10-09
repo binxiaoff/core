@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Bundle\FrontBundle\Controller;
+namespace Unilend\Bundle\FrontBundle\Controller\Endpoint;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,14 +15,14 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
 use Unilend\Bundle\WSClientBundle\Service\InfolegaleManager;
 use Unilend\librairies\CacheKeys;
 
-class MonitoringController extends Controller
+class UptimeController extends Controller
 {
     /** This value is set directly from PingDom BO account */
     const PINGDOM_FREQUENCY    = 5;
     const PINGDOM_IPS_LIST_URL = 'https://my.pingdom.com/probes/ipv4';
 
     /**
-     * @Route("/monitoring/altares", name="monitoring_altares")
+     * @Route("/ws/uptime-check/altares", name="monitoring_altares")
      *
      * @return Response
      */
@@ -51,7 +51,7 @@ class MonitoringController extends Controller
     }
 
     /**
-     * @Route("/monitoring/codinf", name="monitoring_codinf")
+     * @Route("/ws/uptime-check/codinf", name="monitoring_codinf")
      *
      * @return Response
      */
@@ -77,7 +77,7 @@ class MonitoringController extends Controller
     }
 
     /**
-     * @Route("/monitoring/euler", name="monitoring_euler")
+     * @Route("/ws/uptime-check/euler", name="monitoring_euler")
      *
      * @return Response
      */
@@ -107,7 +107,7 @@ class MonitoringController extends Controller
     /**
      * Infogreffe was deactivated, so this method will always respond ok
      *
-     * @Route("/monitoring/infogreffe", name="monitoring_infogreffe")
+     * @Route("/ws/uptime-check/infogreffe", name="monitoring_infogreffe")
      *
      * @return Response
      */
@@ -134,7 +134,7 @@ class MonitoringController extends Controller
     }
 
     /**
-     * @Route("/monitoring/infolegale", name="monitoring_infolegale")
+     * @Route("/ws/uptime-check/infolegale", name="monitoring_infolegale")
      *
      * @return Response
      */
@@ -160,7 +160,7 @@ class MonitoringController extends Controller
     }
 
     /**
-     * @Route("/monitoring/ellisphere", name="monitoring_ellisphere")
+     * @Route("/ws/uptime-check/ellisphere", name="monitoring_ellisphere")
      *
      * @return Response
      */

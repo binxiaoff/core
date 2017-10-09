@@ -719,17 +719,6 @@ var Form = (function ($) {
         $(settings.selector).on('submit', function (event) {
             var $form = $(this);
 
-            /*if($('.validationRadio1').attr("checked"))
-             {
-             alert('check');
-
-             }
-             else
-             {
-             alert('ncheck');
-             }*/
-
-
             if (
                 $('.LV_invalid_field:visible', $form).length ||
                 $('input.required:visible', $form).value == '' ||
