@@ -21,11 +21,11 @@ use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\ContentManager;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
@@ -785,6 +785,32 @@ class MainController extends Controller
         ];
 
         return $this->renderCmsNav($tree, $finalElements, $entityManagerSimulator, 'apropos-statistiques');
+    }
+
+    /**
+     * @Route("/indicateurs-de-performance", name="statistics_fpf")
+     * @return Response
+     */
+    public function statisticsFpfAction(Request $request)
+    {
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        /** @var \tree $tree */
+        $tree = $entityManagerSimulator->getRepository('tree');
+        $tree->get(['slug' => 'indicateurs-de-performance']);
+        $this->setCmsSeoData($tree);
+        $template = [
+            'years' => array_merge(['2013-2014'], range(2015, date('Y')))
+        ];
+        $response = $this->render('pages/static_pages/statistics-fpf.html.twig', $template);
+
+        $finalElements = [
+            'contenu'      => $response->getContent(),
+            'complement'   => '',
+            'image-header' => 'apropos-header-1682x400.jpg',
+        ];
+
+        return $this->renderCmsNav($tree, $finalElements, $entityManagerSimulator, 'apropos-statistiques-fpf');
     }
 
     /**
