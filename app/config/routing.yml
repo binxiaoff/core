@@ -7,4 +7,5 @@ sonata_cache_cache:
     prefix: /
 
 _knp_mailjet:
-    resource: "@KnpMailjetBundle/Resources/config/routing.yml"
+    path:  /ws/mailjet/notify/{token}
+    defaults: { _controller: knp_mailjet.event.controller:handleEventAction, token: null }
