@@ -45,13 +45,12 @@
         <div class="row">
         <div class="col-lg-6 col-md-6">
             <header class="block-header">
-                <h1 class="h4">Financement Participatif France - nos indicateurs publics</h1>
+                <h1 class="h4">{% trans %}fpf-statistics_general-description-title{% endtrans %}</h1>
             </header>
             </div>
             <div class="col-lg-6 col-md-6">
                 <div class="block-text">
-                    <p>Les indicateurs présentés sont représentatifs de l'intégralité des projets ouverts au public et financés sur Unilend. Ils ne sont en aucun cas un reflet des indicateurs individuels de chaque prêteur d'Unilend.</p>
-                    <p>Les performances et les indicateurs passés ne préjugent en rien des performances et des indicateurs futurs. Les indicateurs présentés sont établis selon le code de déontologie de Financement Participatif France.</p>
+                    {% trans %}fpf-statistics_general-description-text{% endtrans %}
                 </div>
             </div>
         </div>
@@ -60,18 +59,18 @@
 <div class="bg-bg3">
     <section class="page-section remove-margin-b">
         <div class="site-wrap">
-            <h2 class="text-align-center">Les indicateurs d'Unilend</h2>
+            <h2 class="text-align-center">{% trans %}fpf-statistics_table-title{% endtrans %}</h2>
             <div class="table-stats-fpf-controls">
                 <div class="row">
                     <div class="col-md-6 col-lg-6 table-stats-fpf-filter">
-                        <label class="c-p1">Filtrer par : </label>
+                        <label class="c-p1">{% trans %}fpf-statistics_table-filter{% endtrans %}</label>
                         <ul class="nav nav-tabs-text" role="tablist">
-                            <li role="presentation" class="active"><a data-toggle="volume">Volume</a></li>
-                            <li role="presentation"><a data-toggle="number">Nombre</a></li>
+                            <li role="presentation" class="active"><a data-toggle="volume">{% trans %}fpf-statistics_table-filter-volume{% endtrans %}</a></li>
+                            <li role="presentation"><a data-toggle="number">{% trans %}fpf-statistics_table-filter-number{% endtrans %}</a></li>
                         </ul>
                     </div>
                     <div class="col-md-6 col-lg-6 table-stats-fpf-date">
-                        <label class="c-p1">Date</label>
+                        <label class="c-p1">{% trans %}fpf-statistics_table-filter-date{% endtrans %}</label>
                         <div class="form-field remove-margin-b">
                             <div class="input-group set-right">
                                 <input type="text" id="table-stats-fpf-datepicker" name="date" value="{{ "now"|date("d/m/Y") }}" class="input-field ui-has-datepicker" data-max-date-today data-formvalidation-input="" data-formvalidation-required="true" data-formvalidation-type="date">
@@ -90,18 +89,11 @@
                 {% for group in tableData %}
                     <tr>
                         <th class="bg-bg2 c-t2">{{ group.header }}</th>
-                        {% set years = tableData[0].rows[0].values %}
                         {% set currentYear = "now"|date("Y") %}
                         {% for year in years %}
-                            {% if loop.index == 1 %}
-                                {% set year = currentYear %}
-                            {% elseif loop.index == years|length %}
-                                {% set year = 'Total' %}
-                            {% else %}
-                                {% set year = currentYear - (loop.index - 1) %}
-                            {% endif %}
                             <th class="bg-bg2 c-t2">{{ year }}</th>
                         {% endfor %}
+                            <th class="bg-bg2 c-t2">Total</th>
                     </tr>
                     {% for row in group.rows %}
                         <tr>
