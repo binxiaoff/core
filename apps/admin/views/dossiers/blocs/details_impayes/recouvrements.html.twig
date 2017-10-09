@@ -44,7 +44,7 @@
                     </td>
                     <td>{{ mission.getIdClientDebtCollector().nom }}</td>
                     <td>
-                        {% if null == mission.getIdProject.getCloseOutNettingDate() %}
+                        {% if mission.getDebtCollectionMissionPaymentSchedules() is not empty %}
                             {% for missionPaymentSchedule in mission.getDebtCollectionMissionPaymentSchedules() %}
                                 {% set paymentSchedule = missionPaymentSchedule.getIdPaymentSchedule() %}
                                 {% set missionPaymentScheduleAmount = missionPaymentSchedule.getCapital()+missionPaymentSchedule.getInterest()+missionPaymentSchedule.getCommissionVatIncl() %}

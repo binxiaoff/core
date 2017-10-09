@@ -132,6 +132,8 @@ class OperationManager
                 }
                 if ($item instanceof ProjectRepaymentTaskLog) {
                     $operation->setIdRepaymentTaskLog($item);
+                    $operation->setProject($item->getIdTask()->getIdProject());
+                    $operation->setWireTransferIn($item->getIdTask()->getIdWireTransferIn());
                 }
                 if ($item instanceof Operation) {
                     $operation->setProject($item->getProject())

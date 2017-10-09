@@ -47,7 +47,7 @@ class DebtCollectionFeeDetailRepository extends EntityRepository
         if ($debtorWallet instanceof Wallet) {
             $debtorWallet = $debtorWallet->getId();
         }
-        $update = 'UPDATE debt_collection_fee_detail SET status = :status WHERE id_wire_transfer_in = :wireTransferIn AND id_wallet_debtor = :debtor';
+        $update = 'UPDATE debt_collection_fee_detail SET status = :status, updated = NOW() WHERE id_wire_transfer_in = :wireTransferIn AND id_wallet_debtor = :debtor';
 
         return $this->getEntityManager()->getConnection()->executeUpdate($update, ['wireTransferIn' => $wireTransferIn, 'status' => $status, 'debtor' => $debtorWallet]);
     }

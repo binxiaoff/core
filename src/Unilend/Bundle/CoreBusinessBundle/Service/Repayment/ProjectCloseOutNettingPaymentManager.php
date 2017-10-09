@@ -76,7 +76,7 @@ class ProjectCloseOutNettingPaymentManager
         $closeOutNettingPayment = $closeOutNettingPaymentRepository->findOneBy(['idProject' => $project]);
         $unpaidCapital          = round(bcsub($closeOutNettingPayment->getCapital(), $closeOutNettingPayment->getPaidCapital(), 4), 2);
         $unpaidInterest         = round(bcsub($closeOutNettingPayment->getInterest(), $closeOutNettingPayment->getPaidInterest(), 4), 2);
-        $unpaidCommission       = round(bcsub($closeOutNettingPayment->getCommission(), $closeOutNettingPayment->getPaidCommission(), 4), 2);
+        $unpaidCommission       = round(bcsub($closeOutNettingPayment->getCommissionTaxIncl(), $closeOutNettingPayment->getPaidCommissionTaxIncl(), 4), 2);
         $totalUnpaidAmount      = round(bcadd($unpaidCommission, bcadd($unpaidCapital, $unpaidInterest, 4), 4), 2);
 
         $debtCollectorWallet = null;
@@ -110,7 +110,7 @@ class ProjectCloseOutNettingPaymentManager
 
             $debtCollectionFeeOnRepayment = 0;
 
-            $closeOutNettingRepayments = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment')->findBy(['idProject' => $project]);
+            $closeOutNettingRepayments = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment')->findByProject($project);
 
             foreach ($closeOutNettingRepayments as $closeOutNettingRepayment) {
                 $notRepaidCapital       = round(bcsub($closeOutNettingRepayment->getCapital(), $closeOutNettingRepayment->getRepaidCapital(), 4), 2);

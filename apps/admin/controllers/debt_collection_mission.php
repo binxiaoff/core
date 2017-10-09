@@ -169,7 +169,7 @@ class debt_collection_missionController extends bootstrap
                 $newCharge = new ProjectCharge();
                 $newCharge->setIdProject($project)
                     ->setIdType($projectChargeType)
-                    ->setStatus(ProjectCharge::STATUS_PENDING)
+                    ->setStatus(ProjectCharge::STATUS_PAID_BY_UNILEND)
                     ->setAmountInclVat($chargeAmountVatIncl)
                     ->setAmountVat(round($chargeAmountVat, 2))
                     ->setInvoiceDate($chargeInvoiceDate);

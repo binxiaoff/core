@@ -22,7 +22,7 @@ class ProjectRepaymentTaskRepository extends EntityRepository
             ->andWhere('prt.type in (:supportedType)')
             ->setParameter('ready', ProjectRepaymentTask::STATUS_READY)
             ->setParameter('repaymentDate', $repaymentDate)
-            ->setParameter('supportedType', [ProjectRepaymentTask::TYPE_REGULAR, ProjectRepaymentTask::TYPE_LATE, ProjectRepaymentTask::TYPE_EARLY])
+            ->setParameter('supportedType', [ProjectRepaymentTask::TYPE_REGULAR, ProjectRepaymentTask::TYPE_LATE, ProjectRepaymentTask::TYPE_EARLY, ProjectRepaymentTask::TYPE_CLOSE_OUT_NETTING])
             ->setMaxResults($limit)
             ->orderBy('prt.repayAt', 'ASC');
 
