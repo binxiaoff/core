@@ -855,5 +855,18 @@ $doc.ready(function ($) {
     $modal.find('.sponsor-names').text($('#form-sponsorship-sponsor-names').val())
     $modal.find('.sponsor-message').text($('#form-sponsorship-message').val())
   })
+
+  // Page Statistics (FPF)
+  $('.table-stats-fpf-filter a').click(function(){
+    var $btn = $(this)
+    var $table = $('#table-stats-fpf')
+    $btn.parent().siblings().removeClass('active')
+    $btn.parent().addClass('active')
+    if ($btn.data('toggle') === 'volume') {
+      $table.removeClass('ui-display-number').addClass('ui-display-volume')
+    } else {
+      $table.removeClass('ui-display-volume').addClass('ui-display-number')
+    }
+  })
 })
 

@@ -1,0 +1,158 @@
+{% set tableData = [
+    {
+        header: 'Généraux',
+        rows: [
+            { label: 'Montant prêté', values: [ 1, 1, 1, 1, 1, 5 ], type: 'currency' },
+            { label: 'Nombre de projets financés', values: [ 1, 1, 1, 1, 1, 5 ], type: 'integer' },
+            { label: 'Montant moyen emprunté', values: [ 1, 1, 1, 1, 1, 5 ], type: 'currency' },
+            { label: 'Taux d\'intérêt annuel moyen d\'emprunt', values: [ { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 5, number: 5 } ], type: 'percentage' },
+            { label: 'Durée moyenne initiale d\'emprunt', values: [ { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 5, number: 5 } ], type: 'month' },
+            { label: 'Age moyen des prêts', values: [ { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 5, number: 5 } ], type: 'month' },
+            { label: 'Capital remboursé', values: [ 1, 1, 1, 1, 1, 5 ], type: 'currency' },
+            { label: 'Capital remboursé', values: [1, 1, 1, 1, 1, 5], type: 'percentage', legend: true },
+            { label: 'Intérêts reçus', values: [1, 1, 1, 1, 1, 5], type: 'currency', legend: true },
+            { label: 'Intérêts reçus', values: [1, 1, 1, 1, 1, 5], type: 'percentage', legend: true },
+        ]
+    },
+    {
+        header: 'Performance',
+        rows: [
+            { label: 'Taux de rendement interne net', values: [1, 1, 1, 1, 1, 5], type: 'percentage', legend: true },
+            { label: 'Taux de rendement interne maximum possible', values: [1, 1, 1, 1, 1, 5], type: 'percentage', legend: true },
+            { label: 'Coût du risque annuel constaté', values: [1, 1, 1, 1, 1, 5], type: 'percentage', legend: true }
+        ]
+    },
+    {
+        header: 'Incidents',
+        rows: [
+            { label: 'Capital en retard', values: [1, 1, 1, 1, 1, 5], type: 'currency' },
+            { label: 'Taux de retard', values: [ { volume: 'n/a', number: 1 }, { volume: 'n/a', number: 1 }, { volume: 'n/a', number: 1 }, { volume: 'n/a', number: 1 }, { volume: 'n/a', number: 1 }, { volume: 'n/a', number: 1 } ], type: 'percentage', legend: true },
+            { label: 'Capital en défaut', values: [1, 1, 1, 1, 1, 5], type: 'currency', legend: true },
+            { label: 'Taux de défaut', values: [ { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 } ], type: 'percentage', legend: true }
+        ]
+    },
+    {
+        header: 'Indicateurs légaux (C.M.F, article R.548n/a5, alinea 3)',
+        rows: [
+            { label: 'Taux de rendement interne net', values: [1, 1, 1, 1, 1, 5], type: 'percentage', legend: true },
+            { label: 'Taux de rendement interne maximum possible', values: [1, 1, 1, 1, 1, 5], type: 'percentage', legend: true }
+        ]
+    },
+] %}
+
+<section class="page-section">
+    <div class="site-wrap">
+        <div class="row">
+        <div class="col-lg-6 col-md-6">
+            <header class="block-header">
+                <h1 class="h4">Financement Participatif France - nos indicateurs publics</h1>
+            </header>
+            </div>
+            <div class="col-lg-6 col-md-6">
+                <div class="block-text">
+                    <p>Les indicateurs présentés sont représentatifs de l'intégralité des projets ouverts au public et financés sur Unilend. Ils ne sont en aucun cas un reflet des indicateurs individuels de chaque prêteur d'Unilend.</p>
+                    <p>Les performances et les indicateurs passés ne préjugent en rien des performances et des indicateurs futurs. Les indicateurs présentés sont établis selon le code de déontologie de Financement Participatif France.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="bg-bg3">
+    <section class="page-section remove-margin-b">
+        <div class="site-wrap">
+            <h2 class="text-align-center">Les indicateurs d'Unilend</h2>
+            <div class="table-stats-fpf-controls">
+                <div class="row">
+                    <div class="col-md-6 col-lg-6 table-stats-fpf-filter">
+                        <label class="c-p1">Filtrer par : </label>
+                        <ul class="nav nav-tabs-text" role="tablist">
+                            <li role="presentation" class="active"><a data-toggle="volume">Volume</a></li>
+                            <li role="presentation"><a data-toggle="number">Nombre</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6 col-lg-6 table-stats-fpf-date">
+                        <label class="c-p1">Date</label>
+                        <div class="form-field remove-margin-b">
+                            <div class="input-group set-right">
+                                <input type="text" id="table-stats-fpf-datepicker" name="date" value="{{ "now"|date("d/m/Y") }}" class="input-field ui-has-datepicker" data-max-date-today data-formvalidation-input="" data-formvalidation-required="true" data-formvalidation-type="date">
+                                <div class="btn-group">
+                                    <label for="table-stats-fpf-datepicker"><span class="icon fa-calendar-u32 c-p1"> <span class="sr-only">Choose start date</span></span></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="table-scroll">
+                <table id="table-stats-fpf" class="table table-stats-fpf ui-display-volume">
+                <tbody>
+                {% set legendIndex = 0 %}
+                {% for group in tableData %}
+                    <tr>
+                        <th class="bg-bg2 c-t2">{{ group.header }}</th>
+                        {% set years = tableData[0].rows[0].values %}
+                        {% set currentYear = "now"|date("Y") %}
+                        {% for year in years %}
+                            {% if loop.index == 1 %}
+                                {% set year = currentYear %}
+                            {% elseif loop.index == years|length %}
+                                {% set year = 'Total' %}
+                            {% else %}
+                                {% set year = currentYear - (loop.index - 1) %}
+                            {% endif %}
+                            <th class="bg-bg2 c-t2">{{ year }}</th>
+                        {% endfor %}
+                    </tr>
+                    {% for row in group.rows %}
+                        <tr>
+                            <td>{{ row.label }}
+                                {% if row.legend is defined %}
+                                    {% set legendIndex = legendIndex + 1 %}
+                                    <sup class="c-p1">{{ legendIndex }}</sup>
+                                {% endif %}
+                            </td>
+                            {% for value in row.values %}
+                                {% if value is iterable %}
+                                    {% if row.type == 'currency' %}
+                                        <td><span class="volume">{{ value.volume|localizednumber }} €</span><span class="number">{{ value.number|localizednumber }} €</span></td>
+                                    {% elseif row.type == 'percentage' %}
+                                        <td><span class="volume">{{ value.volume|number_format(2, ',') }} %</span><span class="number">{{ value.number|number_format(2, ',') }} %</span></td>
+                                    {% elseif row.type == 'month' %}
+                                        <td><span class="volume">{{ value.volume|number_format(1, ',') }} mois</span><span class="number">{{ value.number|number_format(1, ',') }} mois</span></td>
+                                    {% else %}
+                                        <td><span class="volume">{{ value.volume|localizednumber }}</span><span class="number">{{ value.number|localizednumber }}</span></td>
+                                    {% endif %}
+
+                                {% else %}
+                                    {% if row.type == 'currency' %}
+                                        <td>{{ value|localizednumber }} €</td>
+                                    {% elseif row.type == 'percentage' %}
+                                        <td>{{ value|number_format(2, ',') }} %</td>
+                                    {% elseif row.type == 'month' %}
+                                        <td>{{ value|number_format(1, ',') }} mois</td>
+                                    {% else %}
+                                        <td>{{ value|localizednumber }}</td>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+            <div class="table-stats-fpf-legend">
+                <h4 class="c-p1 remove-margin-t">Legend</h4>
+                <p><span class="c-p1 number">1.</span> Cet indicateur représente la part du capital emprunté qui a déjà été remboursée. Plus les prêts sont anciens, plus la part déjà remboursée est élevée.</p>
+                <p><span class="c-p1 number">2.</span> Cet indicateur représente la part des intérêts dus qui a déjà été remboursée. Plus les prêts sont anciens, plus la part déjà versée est élevée.</p>
+                <p><span class="c-p1 number">3.</span> Le taux de rendement interne net représente la rentabilité annuelle des prêts, déduction faite des pertes connues ou avérées à la date du calcul.</p>
+                <p><span class="c-p1 number">4.</span> Le taux de rendement interne maximum possible représente le rendement annualisé des prêts si l'intégralité des prêts étaient remboursés conformément aux échéances prévues initialement.</p>
+                <p><span class="c-p1 number">5.</span> Le coût du risque annuel constaté représente la diminution de rentabilité causée par les retards et les défauts de paiement par rapport au taux de rentabilité maximum possible. Il s'agit de la différence entre <span class="c-p1">4</span> et <span class="c-p1">5</span>.</p>
+                <p><span class="c-p1 number">6.</span> Le capital en retard est la somme du capital des échéances en retard de paiement depuis moins de 120 jours, net des recouvrements.</p>
+                <p><span class="c-p1 number">7.</span> Le taux de retard représente la part d'échéances en retard de paiement depuis moins de 120 jours par rapport au capital emprunté. Il est calculé de la manière suivante : - en volume : N/A, - en nombre : nombre de projets présentant un retard / nombre de projets financés.</p>
+                <p><span class="c-p1 number">8.</span>le capital en défaut est la somme du capital dont le remboursement ne sera jamais ou probablement pas effectué. Il est calculé de la manière suivante : somme du capital des échéances en retard de paiement de plus de 120 jours + somme du capital en retard de paiement et du capital restant dû d'une société en procédure collective ou ayant fait l'objet d'une déchéance du terme contractuelle, net des recouvrements</p>
+                <p class="remove-margin-b"><span class="c-p1 number">9.</span>le taux de défaut représente la part de capital dont le remboursement ne sera jamais ou probablement pas effectué par rapport au capital emprunté. Il est calculé de la manière suivante :  - en volume : <span class="c-p1">8</span> / montant prêté, - en nombre : nombre de projets en défaut / nombre de projets financés.</p>
+            </div>
+        </div>
+    </section>
+</div>
