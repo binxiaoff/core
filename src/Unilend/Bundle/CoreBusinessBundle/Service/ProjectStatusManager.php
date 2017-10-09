@@ -106,6 +106,8 @@ class ProjectStatusManager
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-ellisphere-treasury-tax-privileges');
             case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_INCIDENT:
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-current-manager-incident');
+            case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_COMPANY_INCIDENT:
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-company-incident');
             case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT:
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-previous-manager-incident');
             case ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity':

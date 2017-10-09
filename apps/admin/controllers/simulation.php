@@ -290,8 +290,8 @@ class simulationController extends bootstrap
                 ],
                 [
                     'label'  => 'getListAnnonceLegale',
-                    'name'   => 'get_legal_notice_infolegale',
-                    'method' => 'getListAnnonceLegale',
+                    'name'   => 'get_announcements_list_infolegale',
+                    'method' => 'getAnnouncements',
                     'fields' => [
                         [
                             'name'      => 'parameter[siren]',
@@ -302,8 +302,21 @@ class simulationController extends bootstrap
                     ]
                 ],
                 [
+                    'label'  => 'getAnnonceLegale',
+                    'name'   => 'get_announcements_details_infolegale',
+                    'method' => 'getAnnouncementsDetails',
+                    'fields' => [
+                        [
+                            'name'      => 'parameter[announcementsId]',
+                            'label'     => 'ID annonces',
+                            'type'      => 'string',
+                            'mandatory' => true
+                        ]
+                    ]
+                ],
+                [
                     'label'  => 'getListAnnonceLegaleDirigeant',
-                    'name'   => 'get_announcements__director_infolegale',
+                    'name'   => 'get_announcements_director_infolegale',
                     'method' => 'getDirectorAnnouncements',
                     'fields' => [
                         [
@@ -530,6 +543,9 @@ class simulationController extends bootstrap
                     break;
                 case 'includeRegularized':
                     $parameter = 'true' === $parameter;
+                    break;
+                case 'announcementsId':
+                    $parameter = explode(',', $parameter);
                     break;
             }
 

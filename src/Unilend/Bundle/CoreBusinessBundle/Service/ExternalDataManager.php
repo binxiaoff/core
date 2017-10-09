@@ -15,6 +15,7 @@ use Unilend\Bundle\WSClientBundle\Entity\Codinf\IncidentList;
 use Unilend\Bundle\WSClientBundle\Entity\Ellisphere\Report as EllisphereReport;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
 use Unilend\Bundle\WSClientBundle\Entity\Infogreffe\CompanyIndebtedness;
+use Unilend\Bundle\WSClientBundle\Entity\Infolegale\AnnouncementDetails;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\DirectorAnnouncement;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\Executive;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\Mandate;
@@ -46,7 +47,7 @@ class ExternalDataManager
     private $companyBalanceSheetManager;
     /** @var CompanyRatingHistory */
     private $companyRatingHistory;
-    /** @var  RiskDataMonitoringManager */
+    /** @var RiskDataMonitoringManager */
     private $riskDataMonitoringManager;
 
     /**
@@ -318,10 +319,10 @@ class ExternalDataManager
             && $this->companyRatingHistory->getIdCompany()->getSiren() === $siren
             && false === $this->hasRating(CompanyRating::TYPE_INFOGREFFE_RETURN_CODE)
             && is_array($indebtedness)
-            && isset($privileges['code'])
-            && in_array($privileges['code'], [InfogreffeManager::RETURN_CODE_UNKNOWN_SIREN, InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS, InfogreffeManager::RETURN_CODE_NO_DEBTOR])
+            && isset($indebtedness['code'])
+            && in_array($indebtedness['code'], [InfogreffeManager::RETURN_CODE_UNKNOWN_SIREN, InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS, InfogreffeManager::RETURN_CODE_NO_DEBTOR])
         ) {
-            $this->setRating(CompanyRating::TYPE_INFOGREFFE_RETURN_CODE, $privileges['code']);
+            $this->setRating(CompanyRating::TYPE_INFOGREFFE_RETURN_CODE, $indebtedness['code']);
         }
 
         return $indebtedness;
@@ -479,6 +480,34 @@ class ExternalDataManager
         }
 
         return $ended;
+    }
+
+    /**
+     * @param string   $siren
+     * @param int|null $yearsSince
+     *
+     * @return AnnouncementDetails[]
+     */
+    public function getAnnouncements($siren, $yearsSince = null)
+    {
+        $id            = [];
+        $announcements = $this->infolegaleManager->getAnnouncements($siren)->getAnnouncements();
+
+        if (null !== $yearsSince) {
+            $dateLimit = (new \DateTime())->sub(new \DateInterval('P' . $yearsSince . 'Y'))->setTime(0, 0, 0);
+        }
+
+        foreach ($announcements as $announcement) {
+            if (null === $yearsSince || isset($dateLimit) && $announcement->getPublishedDate() >= $dateLimit) {
+                $id[] = $announcement->getId();
+            }
+        }
+
+        if (empty($id)) {
+            return [];
+        }
+
+        return $this->infolegaleManager->getAnnouncementsDetails($id)->getAnnouncementDetails();
     }
 
     /**
