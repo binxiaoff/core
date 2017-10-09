@@ -736,4 +736,58 @@ class ProjectsRepository extends EntityRepository
                 WHERE ps.status = ' . ProjectsStatus::REMBOURSEMENT . ' AND p.id_project = psh.id_project
                 GROUP BY psh.id_project';
     }
+
+    /**
+     * @param bool $healthy
+     *
+     * @return array
+     */
+    public function getCountProjectsWithLateRepayments($healthy = true)
+    {
+        $query = 'SELECT
+                      COUNT(p.id_project) AS amount,
+                      (' . $this->getCohortQuery() . ') AS cohort
+                    FROM projects p
+                      INNER JOIN echeanciers_emprunteur ON echeanciers_emprunteur.id_project = p.id_project 
+                      INNER JOIN companies c ON c.id_company = p.id_company
+                      INNER JOIN company_status cs ON cs.id = c.id_status
+                    WHERE p.status >= '. ProjectsStatus::REMBOURSEMENT .'
+                      AND
+                        (
+                        SELECT lender_payment_status.status
+                        FROM echeanciers lender_payment_status
+                        WHERE lender_payment_status.ordre = echeanciers_emprunteur.ordre
+                          AND echeanciers_emprunteur.id_project = lender_payment_status.id_project
+                        LIMIT 1 ) = 0
+                      AND
+                        (
+                        SELECT lender_payment_date.date_echeance
+                        FROM echeanciers lender_payment_date
+                        WHERE lender_payment_date.ordre = echeanciers_emprunteur.ordre
+                          AND echeanciers_emprunteur.id_project = lender_payment_date.id_project
+                        LIMIT 1) < NOW()
+                      AND IF(
+                            cs.label IN (:companyStatus)
+                            OR p.status = ' . ProjectsStatus::LOSS . '
+                            OR (p.status = ' . ProjectsStatus::PROBLEME . '
+                                AND DATEDIFF(NOW(), (
+                                                    SELECT psh2.added
+                                                    FROM projects_status_history psh2
+                                                      INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                                                    WHERE ps2.status = ' . ProjectsStatus::PROBLEME . '
+                                                      AND psh2.id_project = echeanciers_emprunteur.id_project
+                                                    ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
+                                                    LIMIT 1)) > 120), TRUE, FALSE) = :healthy
+                    GROUP BY cohort';
+
+        $statement = $this->getEntityManager()->getConnection()->executeQuery(
+            $query,
+            ['companyStatus' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION], 'healthy' => $healthy],
+            ['companyStatus' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_STR_ARRAY, 'healthy' => \PDO::PARAM_BOOL]
+        );
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return $result;
+    }
 }

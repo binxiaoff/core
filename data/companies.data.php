@@ -1,7 +1,7 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
 class companies extends companies_crud
@@ -340,7 +340,7 @@ class companies extends companies_crud
                           ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                           LIMIT 1
                          )
-                ) > 180)
+                ) > 120)
             GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery(

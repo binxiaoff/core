@@ -1,4 +1,5 @@
 <?php
+
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
@@ -218,7 +219,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                                                             AND psh2.id_project = echeanciers_emprunteur.id_project
                                                           ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                                                           LIMIT 1
-                                                          )) > 180)), TRUE, FALSE) = FALSE
+                                                          )) > 120)), TRUE, FALSE) = FALSE
                         GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery(
@@ -279,7 +280,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                                                         AND psh2.id_project = echeanciers_emprunteur.id_project
                                                       ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                                                       LIMIT 1
-                                                      )) > 180)), TRUE, FALSE) = FALSE
+                                                      )) > 120)), TRUE, FALSE) = FALSE
                         GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery(
@@ -336,7 +337,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                                         WHERE ps2.status = ' . ProjectsStatus::PROBLEME . '
                                           AND psh2.id_project = echeanciers_emprunteur.id_project
                                         ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
-                                        LIMIT 1)) > 180), TRUE, FALSE) = TRUE
+                                        LIMIT 1)) > 120), TRUE, FALSE) = TRUE
                     GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery(
@@ -394,7 +395,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                                                         WHERE ps2.status = ' . ProjectsStatus::PROBLEME . '
                                                           AND psh2.id_project = echeanciers_emprunteur.id_project
                                                         ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
-                                                        LIMIT 1)) > 180)), TRUE, FALSE) = TRUE
+                                                        LIMIT 1)) > 120)), TRUE, FALSE) = TRUE
                     GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery(
@@ -451,7 +452,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                                                     WHERE ps2.status = ' . ProjectsStatus::PROBLEME . '
                                                       AND psh2.id_project = echeanciers_emprunteur.id_project
                                                     ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
-                                                    LIMIT 1)) > 180), TRUE, FALSE) = FALSE
+                                                    LIMIT 1)) > 120), TRUE, FALSE) = FALSE
                     GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery(

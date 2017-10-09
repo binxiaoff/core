@@ -70,7 +70,7 @@ class LenderStatisticRepository extends EntityRepository
                         ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                         LIMIT 1
                     )
-                ) > 180 THEN "0" ELSE e.capital + e.interets END
+                ) > 120 THEN "0" ELSE e.capital + e.interets END
                 END AS amount
             FROM echeanciers e
               INNER JOIN projects p ON e.id_project = p.id_project

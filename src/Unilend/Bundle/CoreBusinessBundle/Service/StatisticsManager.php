@@ -58,6 +58,7 @@ class StatisticsManager
     public function getStatistic($name, \DateTime $date)
     {
         $statistics = $this->getStatisticsAtDate($date);
+
         return $statistics[lcfirst($name)];
     }
 
@@ -359,6 +360,8 @@ class StatisticsManager
         $weightedAveragePeriod          = $this->formatCohortQueryResult($projectRepository->getWeightedAveragePeriodByCohortUntil(), $years);
         $notWeightedAveragePeriod       = $this->formatCohortQueryResult($projectRepository->getNonWeightedAverageInterestRateByCohortUntil(), $years);
         $totalInterest                  = $this->formatCohortQueryResult($paymentScheduleRepository->getTotalInterestToBePaidByCohortUntil(), $years);
+        $numberLateHealthyProjects      = $this->formatCohortQueryResult($projectRepository->getCountProjectsWithLateRepayments(true), $years);
+        $numberLateProblematicProjects  = $this->formatCohortQueryResult($projectRepository->getCountProjectsWithLateRepayments(false), $years);
 
         $data = [];
         foreach ($years as $year) {
@@ -376,28 +379,34 @@ class StatisticsManager
                 $data['optimisticUnilendIRR'][$year] = 'NA';
             }
 
-
-            $data['borrowedCapital'][$year]       = $regulatoryData['borrowed-capital'][$year];
-            $data['numberOfProjects'][$year]      = $regulatoryData['projects'][$year];
-            $data['averageBorrowedAmount'][$year] = round(bcdiv($regulatoryData['borrowed-capital'][$year], $regulatoryData['projects'][$year], 4));
-            $data['averageInterestRate'][$year]   = [
+            $data['borrowedCapital'][$year]                  = $regulatoryData['borrowed-capital'][$year];
+            $data['numberOfProjects'][$year]                 = $regulatoryData['projects'][$year];
+            $data['averageBorrowedAmount'][$year]            = round(bcdiv($regulatoryData['borrowed-capital'][$year], $regulatoryData['projects'][$year], 4));
+            $data['averageInterestRate'][$year]              = [
                 'volume' => $weightedAverageInterestRate[$year],
                 'number' => $notWeightedAverageInterestRate[$year]
             ];
-            $data['averagePeriod']                = [
+            $data['averagePeriod']                           = [
                 'volume' => $weightedAveragePeriod[$year],
                 'number' => $notWeightedAveragePeriod[$year]
             ];
-            $data['repaidCapital'][$year]         = $regulatoryData['repaid-capital'][$year];
-            $data['repaidCapitalRatio'][$year]    = round(bcdiv($data['repaidCapital'][$year], $data['borrowedCapital'][$year], 4), 2);
-            $data['repaidInterest'][$year]        = $regulatoryData['repaid-interest'][$year];
-            $data['repaidInterestRatio'][$year]   = round(bcdiv($data['repaidInterest'][$year], $totalInterest[$year], 4), 2);
-            $data['realisticUnilendIRR'][$year]   = $regulatoryData['IRR'][$year];
-            $data['annualCostOfRisk'][$year]      = 'NA' === $data['optimisticUnilendIRR'][$year] ? 'NA' : bcsub($data['optimisticUnilendIRR'][$year], $data['realisticUnilendIRR'][$year], 4);
+            $data['repaidCapital'][$year]                    = $regulatoryData['repaid-capital'][$year];
+            $data['repaidCapitalRatio'][$year]               = round(bcdiv($data['repaidCapital'][$year], $data['borrowedCapital'][$year], 4), 2);
+            $data['repaidInterest'][$year]                   = $regulatoryData['repaid-interest'][$year];
+            $data['repaidInterestRatio'][$year]              = round(bcdiv($data['repaidInterest'][$year], $totalInterest[$year], 4), 2);
+            $data['realisticUnilendIRR'][$year]              = $regulatoryData['IRR'][$year];
+            $data['annualCostOfRisk'][$year]                 = 'NA' === $data['optimisticUnilendIRR'][$year] ? 'NA' : bcsub($data['optimisticUnilendIRR'][$year], $data['realisticUnilendIRR'][$year], 4);
+            $data['lateOwedCapitalHealthy'][$year]           = $regulatoryData['late-owed-capital-healthy'][$year];
+            $data['lateCapitalPercentage'][$year]            = [
+                'volume' => bcdiv($data['lateOwedCapitalHealthy'][$year], $data['borrowedCapital'][$year], 4),
+                'number' => bcdiv($numberLateHealthyProjects[$year], $data['numberOfProjects'][$year], 4)
+            ];
+            $data['lateOwedCapitalProblematic'][$year]       = $regulatoryData['late-owed-capital-problematic'][$year];
+            $data['lateProblematicCapitalPercentage'][$year] = [
+                'volume' => bcdiv($data['lateOwedCapitalProblematic'][$year], $data['borrowedCapital'][$year], 4),
+                'number' => bcdiv($numberLateProblematicProjects[$year], $data['numberOfProjects'][$year], 4)
+            ];
         }
-
-
-
 
         return $data;
     }

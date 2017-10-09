@@ -4,11 +4,12 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
@@ -20,7 +21,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Doctrine\DBAL\Connection;
 use Unilend\librairies\CacheKeys;
 
 class OperationRepository extends EntityRepository
@@ -856,7 +856,7 @@ class OperationRepository extends EntityRepository
                         WHERE ps2.status = 100
                               AND psh2.id_project = o.id_project
                         ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
-                        LIMIT 1)) > 180), FALSE, TRUE) = :isHealthy
+                        LIMIT 1)) > 120), FALSE, TRUE) = :isHealthy
                   GROUP BY cohort';
 
         $statement = $this->getEntityManager()->getConnection()->executeQuery(
@@ -890,7 +890,7 @@ class OperationRepository extends EntityRepository
                         WHERE ps2.status = 100
                               AND psh2.id_project = o.id_project
                         ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
-                        LIMIT 1)) > 180), FALSE, TRUE) = :isHealthy
+                        LIMIT 1)) > 120), FALSE, TRUE) = :isHealthy
                   GROUP BY cohort';
 
         $statement = $this->getEntityManager()->getConnection()->executeQuery(

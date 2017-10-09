@@ -90,7 +90,7 @@ class UnilendStatsRepository extends EntityRepository
                         ORDER BY psh2.added DESC
                         LIMIT 1
                     )
-                ) > 180 THEN "0" ELSE ee.capital + ee.interets END END AS amount,
+                ) > 120 THEN "0" ELSE ee.capital + ee.interets END END AS amount,
                 (
                     SELECT e.date_echeance
                     FROM echeanciers e
@@ -256,7 +256,7 @@ class UnilendStatsRepository extends EntityRepository
                         ORDER BY psh2.added DESC
                         LIMIT 1
                     )
-                ) > 180 THEN "0" ELSE ee.capital + ee.interets END END AS amount,
+                ) > 120 THEN "0" ELSE ee.capital + ee.interets END END AS amount,
                 (
                     SELECT e.date_echeance
                     FROM echeanciers e
