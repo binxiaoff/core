@@ -667,14 +667,16 @@ class CompanyValidator
                 if (in_array($event->getCode(), AnnouncementDetails::PEJORATIVE_EVENT_CODE)) {
                     if ($announcement->getContentiousParticipants()) {
                         foreach ($announcement->getContentiousParticipants() as $participant) {
-                            if (
-                                $siren === $participant->getSiren()
-                                && (
-                                    ContentiousParticipant::TYPE_TARGET === $participant->getType()
-                                    || ContentiousParticipant::TYPE_COMPLAINANT === $participant->getType() && 3 === ++$requestedEvents
-                                )
-                            ) {
-                                return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_COMPANY_INCIDENT];
+                            if ($siren === $participant->getSiren()) {
+                                if (ContentiousParticipant::TYPE_TARGET === $participant->getType()) {
+                                    return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_COMPANY_INCIDENT];
+                                } elseif (ContentiousParticipant::TYPE_COMPLAINANT === $participant->getType()) {
+                                    ++$requestedEvents;
+
+                                    if (3 === $requestedEvents) {
+                                        return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_COMPANY_INCIDENT];
+                                    }
+                                }
                             }
                         }
                     } else {
