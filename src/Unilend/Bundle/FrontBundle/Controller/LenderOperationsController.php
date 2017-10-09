@@ -173,7 +173,12 @@ class LenderOperationsController extends Controller
         return new StreamedResponse(
             function () use ($writer) {
                 $writer->close();
-            }, Response::HTTP_OK
+            }, Response::HTTP_OK, [
+                'Content-type'        => 'application/force-download; charset=utf-8',
+                'Expires'             => 0,
+                'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+                'Content-Disposition' => 'attachment;filename=' . $fileName . '.xlsx'
+            ]
         );
     }
 
