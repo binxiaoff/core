@@ -120,7 +120,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
                 LEFT JOIN bids b ON wbh.id_bid = b.id_bid
                 LEFT JOIN projects p ON IF(o.id_project IS NULL, wbh.id_project, o.id_project) = p.id_project
             WHERE wbh.id_wallet = :idWallet
-            AND wbh.added BETWEEN :startDate AND :endDate
+                AND wbh.added BETWEEN :startDate AND :endDate
             GROUP BY id_loan, order_by_id
             ORDER BY wbh.id DESC';
 
