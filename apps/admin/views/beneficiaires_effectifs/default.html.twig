@@ -14,14 +14,37 @@
     <script>
         $(function() {
             App.initHelpers(['validation', 'datepicker', 'datatables']);
-            $('#beneficial-owners table').DT({
+            var $table = $('#beneficial-owners table')
+            var $wrapper // The wrapper element will be stored here after DT init
+            function appendPreviewBtn($wrapper) {
+                var $btn = '<a id="declaration-preview-btn" class="btn btn-primary pull-right" href="declaration/{{ company.idCompany }}" target="_blank">Prévisualiser</a>'
+                if (!$wrapper.find('#declaration-preview-btn').length && $table.find('tbody tr[data-id]').length) {
+                    $wrapper.find('.col-sm-6:eq(1)').append($btn)
+                }
+            }
+            // Initialise DT
+            $table.DT({
+                // After init callback
+                after: function() {
+                    $wrapper = $table.closest('.dataTables_wrapper')
+                    appendPreviewBtn($wrapper)
+                },
+                // After row added callback
+                updated: function() {
+                    appendPreviewBtn($wrapper)
+                },
+                // Modal open callback
                 modal: function($modal) {
+                    // Owner status and validation should not be editable
                     $modal.find('[name=status], [name=validation_type]').attr('type', 'hidden').siblings().hide()
+                    // Set the datepicker to Year view
                     $modal.find('[name=birthdate]').datepicker('remove').datepicker({
                         startView: 'decade',
                         autoclose: true
                     })
+                    // When creating new owner
                     if ($modal.find('[name=action]').val() === 'create') {
+                        // Append autocomplete ID field
                         $modal.find('.block-content').prepend('<div class="form-group">' +
                                 '<label>Client ID</label><small class="text-muted"> <em class="push-5-l">Commencez par rechercher le client dans la base existante.</em></small>' +
                                 '<input type="text" class="form-control" id="search-client-autocomplete">' +
@@ -43,6 +66,7 @@
                                 return html
                             },
                             onSelect: function(e, term, item){
+                                // Populate fields on select
                                 $modal.find('[name=last_name]').val(item.data('last-name'))
                                 $modal.find('[name=first_name]').val(item.data('first-name'))
                                 $modal.find('[name=id]').val(item.data('id'))
@@ -51,7 +75,8 @@
                             },
                         })
                     }
-                    if ($modal.find('[name=action]').val() === 'deactivate') {
+                    // When deleting an owner from the table
+                    if ($modal.find('[name=action]').val() === 'delete') {
                         var $form = $modal.find('form')
                         $form.submit(function(e){
                             e.preventDefault()
@@ -60,8 +85,22 @@
                                 type: 'POST',
                                 data: $form.serialize(),
                                 dataType: 'json',
-                                success: function () {
-                                    location.reload()
+                                success: function(response) {
+                                    if (response.success) {
+                                        // Reload the page, not sure why
+                                        $modal.modal('hide')
+                                        App.blocks('#beneficial-owners', 'state_loading')
+                                        location.reload()
+                                    } else {
+                                        var errors = ''
+                                        $.each(response.error, function(i, val){
+                                            errors += '<p>' + val + '</p>'
+                                        })
+                                        $wrapper.find('.messages').html(errors)
+                                    }
+                                },
+                                error: function() {
+                                    $wrapper.find('.messages').html('Une erreur s\'est produite.')
                                 }
                             })
                         })
@@ -88,7 +127,7 @@
                 <h3 class="block-title">Liste des bénéficiaires effectifs</h3>
             </div>
             <div class="block-content block-content-full">
-                <table class="table table-striped table-hover table-bordered table-header-bg" data-table-editor data-table-editor-url="/beneficiaires_effectifs/edit/" data-table-editor-actions="add, modify, toggle" data-table-editor-hidden="id_declaration:{{ declaration.id }}, id_company:{{ company.idCompany }}">
+                <table class="table table-striped table-hover table-bordered table-header-bg" data-table-editor data-table-editor-url="/beneficiaires_effectifs/edit/" data-table-editor-actions="add, modify, delete" data-table-editor-hidden="id_declaration:{{ declaration.id }}, id_company:{{ company.idCompany }}">
                     <thead>
                     <tr>
                         <th data-editor-name="last_name" data-editor-type="text">Nom</th>
@@ -129,7 +168,15 @@
                 <h3 class="block-title">Déclarations</h3>
             </div>
             <div class="block-content block-content-full">
-                <a id="declaration-preview-btn" class="btn btn-primary" href="declaration/{{ company.idCompany }}" target="_blank">Prévisualiser la déclaration en cours</a>
+                <div class="content-mini content-mini-full bg-warning">
+                    <div class="clearfix">
+                        <span class="si si-info font-s36 pull-left"></span>
+                        <ul class="font-s12 remove-margin-b push-30-l">
+                            <li>Une declaration peut être utilisée dans plusieurs projets. </li>
+                            <li>Si une declaration est archivée, le document signé par universign au moment du transfer des fonds sera toujours valide.</li>
+                        </ul>
+                    </div>
+                </div>
                 <hr>
                 <label class="push-10">Déclarations par projet</label>
                 {% if emailStatusErrors is defined and emailStatusErrors is not empty %}
@@ -185,10 +232,8 @@
                         </tbody>
                     </table>
                 {% else %}
-                    <p>Il n'y pas encore de documents à signer/signés</p>
+                    <p>Aucun document à signer/signé.</p>
                 {% endif %}
-                <p class="content-mini content-mini-full bg-info">
-                    Une declaration peut avoir été utilisé dans plusieurs projets. Elle peut être archivée, tout en ne pas invalidant le document signé par universign, qui était valable au moment du transfer des fonds. </p>
             </div>
         </div>
     </div>

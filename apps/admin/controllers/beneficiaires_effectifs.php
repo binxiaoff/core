@@ -104,7 +104,7 @@ class beneficiaires_effectifsController extends bootstrap
                 case 'modify':
                     $return = $this->modifyBeneficialOwner($this->request);
                     break;
-                case 'deactivate':
+                case 'delete':
                     $return = $this->deactivateBeneficialOwner($this->request);
                     break;
                 default:
@@ -281,7 +281,7 @@ class beneficiaires_effectifsController extends bootstrap
             $beneficialOwner = $beneficialOwnerManager->createBeneficialOwner($declaration, $lastName, $firstName, $birthday, $birthPlace, $idBirthCountry, $countryOfResidence, $request->files->get('id_card_passport'), $ownerType, $percentage, $idClient);
         } catch (\Exception $exception) {
             $beneficialOwner = null;
-            $errors[]        = 'Une erreur c\'est produit.';
+            $errors[]        = 'Une erreur c\'est produite.';
             $this->get('logger')->warning($exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
         }
 
