@@ -144,12 +144,13 @@ class LenderOperationsController extends Controller
     }
 
     /**
-     * @Route("/operations/exportOperationsCsv", name="export_operations_csv")
+     * @Route("/operations/excel", name="lender_operations_excel")
+     * @Route("/operations/exportOperationsCsv", name="export_operations_csv_legacy")
      * @Security("has_role('ROLE_LENDER')")
      *
      * @return Response
      */
-    public function exportOperationsCsvAction()
+    public function exportOperationsExcelAction()
     {
         /** @var SessionInterface $session */
         $session = $this->get('session');
@@ -166,32 +167,26 @@ class LenderOperationsController extends Controller
         $wallet     = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
         $filters    = $session->get('lenderOperationsFilters');
         $operations = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
-        $document   = $lenderOperationsManager->getOperationsExcelFile($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
-        $fileName   = 'operations_' . date('Y-m-d_H:i:s');
-
-        /** @var \PHPExcel_Writer_Excel2007 $writer */
-        $writer = PHPExcel_IOFactory::createWriter($document, 'Excel2007');
+        $fileName   = 'operations_' . date('Y-m-d_H:i:s') . '.xlsx';
+        $writer     = $lenderOperationsManager->getOperationsExcelFile($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations, $fileName);
 
         return new StreamedResponse(
             function () use ($writer) {
-                $writer->save('php://output');
-            }, Response::HTTP_OK, [
-            'Content-type'        => 'application/force-download; charset=utf-8',
-            'Expires'             => 0,
-            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
-            'Content-Disposition' => 'attachment;filename=' . $fileName . '.xlsx'
-        ]);
+                $writer->close();
+            }, Response::HTTP_OK
+        );
     }
 
     /**
-     * @Route("/operations/exportLoansCsv", name="export_loans_csv")
+     * @Route("/prets/excel", name="lender_loans_excel")
+     * @Route("/operations/exportLoansCsv", name="export_loans_csv_legacy")
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
      *
      * @return Response
      */
-    public function exportLoansCsvAction(Request $request)
+    public function exportLoansExcelAction(Request $request)
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
@@ -229,7 +224,7 @@ class LenderOperationsController extends Controller
             $oActiveSheet->setCellValue('E' . ($iRowIndex + 2), round($aProjectLoans['rate'], 1));
             $oActiveSheet->setCellValue('F' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['start_date'])));
 
-            if(in_array($aProjectLoans['project_status'], [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE])) {
+            if (in_array($aProjectLoans['project_status'], [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE])) {
                 $oActiveSheet->mergeCells('G' . ($iRowIndex + 2) . ':K'. ($iRowIndex + 2));
                 $oActiveSheet->setCellValue(
                     'G' . ($iRowIndex + 2),
@@ -333,7 +328,7 @@ class LenderOperationsController extends Controller
         $projectsInDept     = $project->getProjectsInDebt();
         $filters            = $request->request->get('filter', []);
         $year               = isset($filters['date']) && false !== filter_var($filters['date'], FILTER_VALIDATE_INT) ? $filters['date'] : null;
-        $status             = isset($filters['status']) && in_array($filters['status'], array_keys(self::LOAN_STATUS_FILTER)) ? [self::LOAN_STATUS_FILTER[$filters['status']]] : null;
+        $status             = isset($filters['status']) && in_array($filters['status'], array_keys(self::LOAN_STATUS_FILTER)) ? self::LOAN_STATUS_FILTER[$filters['status']] : null;
         $loanStatus         = array_fill_keys(array_keys(self::LOAN_STATUS_FILTER), 0);
         $lenderLoans        = $loan->getSumLoansByProject($wallet->getId(), 'debut ASC, p.title ASC', $year, $status);
         $lenderProjectLoans = [];
@@ -905,7 +900,7 @@ class LenderOperationsController extends Controller
      *
      * @return Response
      */
-    public function downloadOperationPDF()
+    public function downloadOperationPdfAction()
     {
         /** @var SessionInterface $session */
         $session = $this->get('session');

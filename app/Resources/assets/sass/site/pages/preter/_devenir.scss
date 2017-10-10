@@ -154,8 +154,29 @@
   }
 
   .promo-highlight {
-    font-size: 50px;
-    margin-top: -20px;
+    margin-top: -10px;
+  }
+  @include devices('md') {
+    .promo {
+      .promo-image {
+        svg {
+          width: 160px;
+          height: 160px;
+        }
+      }
+    }
+  }
+  @include devices('lg') {
+    .promo-highlight {
+      font-size: 50px;
+    }
+  }
+
+  .accepted-cards {
+    padding-left: 0;
+    img {
+      max-height: 40px;
+    }
   }
 
   .iban-info-details {
@@ -175,8 +196,6 @@
   }
 
   .unilend-iban-info {
-    border: solid 1px $c-bg2;
-    padding: 20px;
     position: relative;
 
     .btn-print {
@@ -212,6 +231,14 @@
       color: $c-t2;
       font-style: italic;
       line-height: 1.3em;
+    }
+
+    @include devices('xs') {
+      dt, dd {
+        width: 80%;
+        word-wrap: break-word;
+        padding: 0;
+      }
     }
   }
 

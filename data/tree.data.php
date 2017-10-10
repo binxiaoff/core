@@ -67,856 +67,304 @@ class tree extends tree_crud
     //**************************************** AJOUTS ******************************************//
     //******************************************************************************************//
     // Definition des types d'éléments
-    public $typesElements = ['Texte', 'Textearea', 'Texteditor', 'Lien Interne', 'Lien Externe', 'Image', 'Fichier', 'Fichier Protected', 'Date', 'Checkbox', 'Boolean', 'SVG', 'Partner'];
+    public $typesElements = ['Texte', 'Textearea', 'Texteditor', 'Lien Interne', 'Image', 'Fichier', 'Boolean', 'SVG', 'Partner'];
 
     // Affichage des elements de formulaire en fonction du type d'élément
     public function displayFormElement($id_tree, $element, $type = 'tree', $langue = 'fr')
     {
-        if ($type == 'tree') {
-            $this->params['tree_elements']->unsetData();
-            $this->params['tree_elements']->get($element['id_element'], 'id_tree = ' . $id_tree . ' AND id_langue = "' . $langue . '" AND id_element');
+        $elementType   = 'tree' === $type ? 'tree_elements' : 'blocs_elements';
+        $jsFunction    = 'tree' === $type ? '' : 'Bloc';
+        $parentIdField = 'tree' === $type ? 'id_tree' : 'id_bloc';
 
-            switch ($element['type_element']) {
-                case 'Texte':
-                    echo '
-                    <tr>
-                        <th>
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input class="input_big" type="text" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" value="' . $this->params['tree_elements']->value . '" />
-                        </td>
-                    </tr>';
-                    break;
+        $this->params[$elementType]->unsetData();
+        $this->params[$elementType]->get($element['id_element'], $parentIdField . ' = ' . $id_tree . ' AND id_langue = "' . $langue . '" AND id_element');
 
-                case 'Textearea':
-                    echo '
-                    <tr>
-                        <th>
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <textarea class="textarea_large" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">' . $this->params['tree_elements']->value . '</textarea>
-                        </td>
-                    </tr>';
-                    break;
+        switch ($element['type_element']) {
+            case 'Texte':
+                echo '
+                <tr>
+                    <th>
+                        <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
+                    </th>
+                </tr>
+                <tr>
+                    <td>
+                        <input class="input_big" type="text" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" value="' . $this->params[$elementType]->value . '" />
+                    </td>
+                </tr>';
+                break;
 
-                case 'Texteditor':
-                    echo '
-                    <tr>
-                        <th>
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <textarea class="textarea_large" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">' . $this->params['tree_elements']->value . '</textarea>
-                            <script type="text/javascript">var cked = CKEDITOR.replace(\'' . $element['slug'] . '_' . $langue . '\');</script>
-                        </td>
-                    </tr>';
-                    break;
+            case 'Textearea':
+                echo '
+                <tr>
+                    <th>
+                        <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
+                    </th>
+                </tr>
+                <tr>
+                    <td>
+                        <textarea class="textarea_large" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">' . $this->params[$elementType]->value . '</textarea>
+                    </td>
+                </tr>';
+                break;
 
-                case 'Lien Interne':
+            case 'Texteditor':
+                echo '
+                <tr>
+                    <th>
+                        <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
+                    </th>
+                </tr>
+                <tr>
+                    <td>
+                        <textarea class="textarea_large" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">' . $this->params[$elementType]->value . '</textarea>
+                        <script type="text/javascript">var cked = CKEDITOR.replace(\'' . $element['slug'] . '_' . $langue . '\');</script>
+                    </td>
+                </tr>';
+                break;
+
+            case 'Lien Interne':
+                echo '
+                <tr>
+                    <th class="bas">
+                        <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
+                        <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" class="select">';
+                foreach ($this->listChilds(0, array(), $langue) as $tree) {
+                    echo '<option value="' . $tree['id_tree'] . '"' . ($this->params[$elementType]->value == $tree['id_tree'] ? ' selected' : '') . '>' . $tree['title'] . '</option>';
+                }
+                echo '
+                        </select>
+                    </th>
+                </tr>';
+                break;
+
+            case 'Image':
+                echo '
+                <tr>
+                    <th>
+                        <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
+                    </th>
+                </tr>
+                <tr>
+                    <th class="bas">
+                        <input type="file" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" />
+                        <input type="hidden" name="' . $element['slug'] . '_' . $langue . '-old" id="' . $element['slug'] . '_' . $langue . '-old" value="' . $this->params[$elementType]->value . '" />
+                        &nbsp;&nbsp;<label for="nom_' . $element['slug'] . '_' . $langue . '">Nom du fichier image :</label>
+                        <input class="input_large" type="text" name="nom_' . $element['slug'] . '_' . $langue . '" id="nom_' . $element['slug'] . '_' . $langue . '" value="' . $this->params[$elementType]->complement . '" />
+                    </th>
+                </tr>
+                <tr id="deleteImageElement' . $jsFunction . $this->params[$elementType]->id . '">';
+                if ($this->params[$elementType]->value != '') {
+                    $imagePath = 'tree' === $type ? $this->params['spath'] . 'images/' : $this->params['surl'] . '/var/images/';
+                    list($width, $height) = @getimagesize($imagePath . $this->params[$elementType]->value);
                     echo '
-                    <tr>
                         <th class="bas">
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
-                            <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" class="select">';
-                    foreach ($this->listChilds(0, array(), $langue) as $tree) {
-                        echo '<option value="' . $tree['id_tree'] . '"' . ($this->params['tree_elements']->value == $tree['id_tree'] ? ' selected="selected"' : '') . '>' . $tree['title'] . '</option>';
-                    }
+                            <a href="' . $this->params['surl'] . '/var/images/' . $this->params[$elementType]->value . '" class="thickbox">
+                                <img src="' . $this->params['surl'] . '/var/images/' . $this->params[$elementType]->value . '" alt="' . $element['name'] . '"' . ($height > 180 ? ' height="180"' : ($width > 400 ? ' width="400"' : '')) . ' style="vertical-align:middle;" />
+                            </a>
+                            &nbsp;&nbsp; Supprimer l\'image&nbsp;&nbsp;
+                            <a onclick="if(confirm(\'Etes vous sur de vouloir supprimer cette image ?\')){deleteImageElement' . $jsFunction . '(' . $this->params[$elementType]->id . ',\'' . $element['slug'] . '_' . $langue . '\');return false;}">
+                                <img src="' . $this->params['surl'] . '/images/admin/delete.png" alt="Supprimer" style="vertical-align:middle;" />
+                            </a>
+                        </th>';
+                } else {
                     echo '
-                            </select>
-                        </th>
-                    </tr>';
-                    break;
+                        <td>&nbsp;</td>';
+                }
+                echo '
+                </tr>';
+                break;
 
-                case 'Lien Externe':
+            case 'Fichier':
+                echo '
+                <tr>
+                    <th>
+                        <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
+                    </th>
+                </tr>
+                <tr>
+                    <th class="bas">
+                        <input type="file" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" />
+                        <input type="hidden" name="' . $element['slug'] . '_' . $langue . '-old" id="' . $element['slug'] . '_' . $langue . '-old" value="' . $this->params[$elementType]->value . '" />
+                        &nbsp;&nbsp;<label for="nom_' . $element['slug'] . '_' . $langue . '">Nom du fichier :</label>
+                        <input class="input_large" type="text" name="nom_' . $element['slug'] . '_' . $langue . '" id="nom_' . $element['slug'] . '_' . $langue . '" value="' . $this->params[$elementType]->complement . '" />
+                    </th>
+                </tr>
+                <tr id="deleteFichierElement' . $jsFunction . $this->params[$elementType]->id . '">';
+                if ($this->params[$elementType]->value != '') {
                     echo '
-                    <tr>
-                        <th>
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input class="input_big" type="text" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" value="' . $this->params['tree_elements']->value . '" />
-                        </td>
-                    </tr>';
-                    break;
-
-                case 'Image':
-                    echo '
-                    <tr>
-                        <th>
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
-                        </th>
-                    </tr>
-                    <tr>
                         <th class="bas">
-                            <input type="file" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" />
-                            <input type="hidden" name="' . $element['slug'] . '_' . $langue . '-old" id="' . $element['slug'] . '_' . $langue . '-old" value="' . $this->params['tree_elements']->value . '" />
-                            &nbsp;&nbsp;<label for="nom_' . $element['slug'] . '_' . $langue . '">Nom du fichier image :</label>
-                            <input class="input_large" type="text" name="nom_' . $element['slug'] . '_' . $langue . '" id="nom_' . $element['slug'] . '_' . $langue . '" value="' . $this->params['tree_elements']->complement . '" />
-                        </th>
-                    </tr>
-                    <tr id="deleteImageElement' . $this->params['tree_elements']->id . '">';
-                    if ($this->params['tree_elements']->value != '') {
-                        if (substr(strtolower(strrchr(basename($this->params['tree_elements']->value), '.')), 1) == 'swf') {
+                            <label>Fichier actuel</label> :
+                            <a href="' . $this->params['surl'] . '/var/fichiers/' . $this->params[$elementType]->value . '" target="blank">' . $this->params['surl'] . '/var/fichiers/' . $this->params[$elementType]->value . '</a>
+                            &nbsp;&nbsp;
+                            <a onclick="if(confirm(\'Etes vous sur de vouloir supprimer ce fichier ?\')){deleteFichierElement' . $jsFunction . '(' . $this->params[$elementType]->id . ',\'' . $element['slug'] . '_' . $langue . '\');return false;}">
+                                <img src="' . $this->params['surl'] . '/images/admin/delete.png" alt="Supprimer">
+                            </a>
+                        </th>';
+                } else {
+                    echo '
+                        <td>&nbsp;</td>';
+                }
+                echo '
+                </tr>';
+                break;
+
+            case 'SVG':
+                $icons = ['header-contact', 'header-fiscalite', 'header-legal', 'header-plandusite', 'header-recrutement', 'header-securite', 'avatar-f-level-1', 'category-1', 'category-10', 'category-11', 'category-12', 'category-13', 'category-14', 'category-15', 'category-2', 'category-3', 'category-4', 'category-5', 'category-6', 'category-7', 'category-8', 'category-9', 'promo-balance', 'promo-barchart', 'promo-calendarweek', 'promo-clock', 'promo-francemap', 'promo-handshake', 'promo-info', 'promo-linechart', 'promo-linechart2', 'promo-money', 'promo-pagestack', 'promo-people', 'promo-piggybank', 'promo-profile', 'promo-projects', 'promo-protection', 'promo-saving', 'promo-transparancy', 'promo-verified'];
+                sort($icons);
+                echo '
+                <tr>
+                    <th>
+                        <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' : </label>
+                    </th>
+                </tr>
+                <tr>
+                    <th class="bas">
+                        <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">
+                            <option value=""></option>';
+                            foreach ($icons as $icon) {
+                                echo '<option value="' . $icon . '"' . ($this->params[$elementType]->value === $icon ? ' selected' : '') . '>' . $icon . '</option>';
+                            }
                             echo '
-                                <th class="bas">
-                                    <object type="application/x-shockwave-flash" data="' . $this->params['surl'] . '/var/images/' . $this->params['tree_elements']->value . '" width="400" height="180" style="vertical-align:middle;">
-                                        <param name="src" value="' . $this->params['surl'] . '/var/images/' . $this->params['tree_elements']->value . '" />
-                                        <param name="movie" value="' . $this->params['surl'] . '/var/images/' . $this->params['tree_elements']->value . '" />
-                                        <param name="quality" value="high" />
-                                        <param name="bgcolor" value="#fff" />
-                                        <param name="play" value="true" />
-                                        <param name="loop" value="true" />
-                                        <param name="scale" value="showall" />
-                                        <param name="menu" value="true" />
-                                        <param name="align" value="middle" />
-                                        <param name="wmode" value="transparent" />
-                                        <param name="pluginspage" value="http://www.macromedia.com/go/getflashplayer" />
-                                        <param name="type" value="application/x-shockwave-flash" />
-                                    </object>
-                                    &nbsp;&nbsp; Supprimer le flash&nbsp;&nbsp;
-                                    <a onclick="if(confirm(\'Etes vous sur de vouloir supprimer ce flash ?\')){deleteImageElement(' . $this->params['tree_elements']->id . ',\'' . $element['slug'] . '_' . $langue . '\');return false;}">
-                                        <img src="' . $this->params['surl'] . '/images/admin/delete.png" alt="Supprimer" style="vertical-align:middle;" />
-                                    </a>
-                                </th>';
-                        } else {
-                            list($width, $height) = @getimagesize($this->params['spath'] . 'images/' . $this->params['tree_elements']->value);
-                            echo '
-                                <th class="bas">
-                                    <a href="' . $this->params['surl'] . '/var/images/' . $this->params['tree_elements']->value . '" class="thickbox">
-                                        <img src="' . $this->params['surl'] . '/var/images/' . $this->params['tree_elements']->value . '" alt="' . $element['name'] . '"' . ($height > 180 ? ' height="180"' : ($width > 400 ? ' width="400"' : '')) . ' style="vertical-align:middle;" />
-                                    </a>
-                                    &nbsp;&nbsp; Supprimer l\'image&nbsp;&nbsp;
-                                    <a onclick="if(confirm(\'Etes vous sur de vouloir supprimer cette image ?\')){deleteImageElement(' . $this->params['tree_elements']->id . ',\'' . $element['slug'] . '_' . $langue . '\');return false;}">
-                                        <img src="' . $this->params['surl'] . '/images/admin/delete.png" alt="Supprimer" style="vertical-align:middle;" />
-                                    </a>
-                                </th>';
-                        }
-                    } else {
-                        echo '
-                            <td>&nbsp;</td>';
-                    }
-                    echo '
-                    </tr>';
-                    break;
+                        </select>
+                        <a href="https://unilend.atlassian.net/wiki/display/PROJ/UI+nouveau+site" target="_blank">Voir la liste</a>
+                    </th>
+                </tr>';
+                break;
 
-                case 'Fichier':
-                    echo '
-                    <tr>
-                        <th>
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <th colspan="2" class="bas">
-                            <input type="file" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" />
-                            <input type="hidden" name="' . $element['slug'] . '_' . $langue . '-old" id="' . $element['slug'] . '_' . $langue . '-old" value="' . $this->params['tree_elements']->value . '" />
-                            &nbsp;&nbsp;<label for="nom_' . $element['slug'] . '_' . $langue . '">Nom du fichier :</label>
-                            <input class="input_large" type="text" name="nom_' . $element['slug'] . '_' . $langue . '" id="nom_' . $element['slug'] . '_' . $langue . '" value="' . $this->params['tree_elements']->complement . '" />
-                        </th>
-                    </tr>
-                    <tr id="deleteFichierElement' . $this->params['tree_elements']->id . '">';
-                    if ($this->params['tree_elements']->value != '') {
-                        echo '
-                            <th class="bas">
-                                <label>Fichier actuel</label> :
-                                <a href="' . $this->params['surl'] . '/var/fichiers/' . $this->params['tree_elements']->value . '" target="blank">' . $this->params['surl'] . '/var/fichiers/' . $this->params['tree_elements']->value . '</a>
-                                &nbsp;&nbsp;
-                                <a onclick="if(confirm(\'Etes vous sur de vouloir supprimer ce fichier ?\')){deleteFichierElement(' . $this->params['tree_elements']->id . ',\'' . $element['slug'] . '_' . $langue . '\');return false;}">
-                                    <img src="' . $this->params['surl'] . '/images/admin/delete.png" alt="Supprimer" />
-                                </a>
-                            </th>';
-                    } else {
-                        echo '
-                            <td>&nbsp;</td>';
-                    }
-                    echo '
-                    </tr>';
-                    break;
+            case 'Boolean':
+                echo '
+                <tr>
+                    <th style="padding-top:10px">
+                        <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' : </label>
+                        <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">
+                            <option value="0"' . ($this->params[$elementType]->value == 0 ? ' selected' : '') . '>Non</option>
+                            <option value="1"' . ($this->params[$elementType]->value == 1 ? ' selected' : '') . '>Oui</option>
+                        </select>
+                    </th>
+                </tr>';
+                break;
 
-                case 'Fichier Protected':
-                    echo '
-                    <tr>
-                        <th>
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <th class="bas">
-                            <input type="file" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" />
-                            <input type="hidden" name="' . $element['slug'] . '_' . $langue . '-old" id="' . $element['slug'] . '_' . $langue . '-old" value="' . $this->params['tree_elements']->value . '" />
-                            &nbsp;&nbsp;<label for="nom_' . $element['slug'] . '_' . $langue . '">Nom du fichier :</label>
-                            <input class="input_large" type="text" name="nom_' . $element['slug'] . '_' . $langue . '" id="nom_' . $element['slug'] . '_' . $langue . '" value="' . $this->params['tree_elements']->complement . '" />
-                        </th>
-                    </tr>
-                    <tr id="deleteFichierProtectedElement' . $this->params['tree_elements']->id . '">';
-                    if ($this->params['tree_elements']->value != '') {
-                        echo '
-                            <th class="bas">
-                                <label>Fichier actuel</label> :
-                                <a href="' . $this->params['url'] . '/protected/templates/' . $this->params['tree_elements']->value . '" target="blank">' . $this->params['tree_elements']->value . '</a>
-                                &nbsp;&nbsp;
-                                <a onclick="if(confirm(\'Etes vous sur de vouloir supprimer ce fichier ?\')){deleteFichierProtectedElement(' . $this->params['tree_elements']->id . ',\'' . $element['slug'] . '_' . $langue . '\');return false;}">
-                                    <img src="' . $this->params['surl'] . '/images/admin/delete.png" alt="Supprimer" />
-                                </a>
-                            </th>';
-                    } else {
-                        echo '
-                            <td>&nbsp;</td>';
-                    }
-                    echo '
-                    </tr>';
-                    break;
+            case 'Partner':
+                $partner  = new \partner($this->bdd);
+                $partners = $partner->select('status = ' . Partner::STATUS_VALIDATED, 'label ASC');
 
-                case 'Date':
-                    echo '
-                    <tr>
-                        <th>
-                            <label for="datepik_' . $langue . '">' . $element['name'] . ' :</label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <th class="bas">
-                            <input class="input_dp" type="text" name="' . $element['slug'] . '_' . $langue . '" id="datepik_' . $langue . '" value="' . $this->params['tree_elements']->value . '" />
-                        </th>
-                    </tr>';
-                    break;
+                echo '
+                <tr>
+                    <th style="padding-top:10px">
+                        <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' : </label>
+                        <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">
+                            <option value=""></option>';
 
-                case 'Checkbox':
-                    echo '
-                    <tr>
-                        <th class="bas">
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . '</label> :
-                            <input type="checkbox" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" value="1"' . ($this->params['tree_elements']->value == 1 ? ' checked="checked"' : '') . ' />
-                        </th>
-                    </tr>';
-                    break;
+                foreach ($partners as $partner) {
+                    echo '<option value="' . $partner['id'] . '"' . ($this->params[$elementType]->value == $partner['id'] ? ' selected' : '') . '>' . $partner['label'] . '</option>';
+                }
 
-                case 'SVG':
-                    $icons = ['header-contact', 'header-fiscalite', 'header-legal', 'header-plandusite', 'header-recrutement', 'header-securite', 'avatar-f-level-1', 'category-1', 'category-10', 'category-11', 'category-12', 'category-13', 'category-14', 'category-15', 'category-2', 'category-3', 'category-4', 'category-5', 'category-6', 'category-7', 'category-8', 'category-9', 'promo-balance', 'promo-barchart', 'promo-calendarweek', 'promo-clock', 'promo-francemap', 'promo-handshake', 'promo-info', 'promo-linechart', 'promo-linechart2', 'promo-money', 'promo-pagestack', 'promo-people', 'promo-piggybank', 'promo-profile', 'promo-projects', 'promo-protection', 'promo-saving', 'promo-transparancy', 'promo-verified'];
-                    sort($icons);
-                    echo '
-                    <tr>
-                        <th>
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' : </label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <th class="bas">
-                            <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">
-                                <option value=""></option>';
-                                foreach ($icons as $icon) {
-                                    echo '<option value="' . $icon . '"' . ($this->params['tree_elements']->value === $icon ? ' selected' : '') . '>' . $icon . '</option>';
-                                }
-                    echo '
-                            </select>
-                            <a href="https://unilend.atlassian.net/wiki/display/PROJ/UI+nouveau+site" target="_blank">Voir la liste</a>
-                        </th>
-                    </tr>';
-                    break;
+                echo '
+                        </select>
+                    </th>
+                </tr>';
+                break;
 
-                case 'Boolean':
-                    echo '
-                    <tr>
-                        <th style="padding-top:10px">
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' : </label>
-                            <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">
-                                <option value="0"' . ($this->params['tree_elements']->value == 0 ? ' selected' : '') . '>Non</option>
-                                <option value="1"' . ($this->params['tree_elements']->value == 1 ? ' selected' : '') . '>Oui</option>
-                            </select>
-                        </th>
-                    </tr>';
-                    break;
-
-                case 'Partner':
-                    $partner  = new \partner($this->bdd);
-                    $partners = $partner->select('status = ' . Partner::STATUS_VALIDATED, 'label ASC');
-
-                    echo '
-                    <tr>
-                        <th style="padding-top:10px">
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' : </label>
-                            <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">
-                                <option value=""></option>';
-
-                    foreach ($partners as $partner) {
-                        echo '<option value="' . $partner['id'] . '"' . ($this->params['tree_elements']->value == $partner['id'] ? ' selected' : '') . '>' . $partner['label'] . '</option>';
-                    }
-
-                    echo '
-                            </select>
-                        </th>
-                    </tr>';
-                    break;
-
-                default:
-                    echo '
-                    <tr>
-                        <th>
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input class="input_big" type="text" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" value="' . $this->params['tree_elements']->value . '" />
-                        </td>
-                    </tr>';
-                    break;
-            }
-        } else {
-            $this->params['blocs_elements']->unsetData();
-            $this->params['blocs_elements']->get($element['id_element'], 'id_bloc = ' . $id_tree . ' AND id_langue = "' . $langue . '" AND id_element');
-
-            switch ($element['type_element']) {
-                case 'Texte':
-                    echo '
-                    <tr>
-                        <th>
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input class="input_big" type="text" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" value="' . $this->params['blocs_elements']->value . '" />
-                        </td>
-                    </tr>';
-                    break;
-
-                case 'Textearea':
-                    echo '
-                    <tr>
-                        <th>
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <textarea class="textarea_large" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">' . $this->params['blocs_elements']->value . '</textarea>
-                        </td>
-                    </tr>';
-                    break;
-
-                case 'Texteditor':
-                    echo '
-                    <tr>
-                        <th>
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <textarea class="textarea_large" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">' . $this->params['blocs_elements']->value . '</textarea>
-                            <script type="text/javascript">var cked = CKEDITOR.replace(\'' . $element['slug'] . '_' . $langue . '\');</script>
-                        </td>
-                    </tr>';
-                    break;
-
-                case 'Lien Interne':
-                    echo '
-                    <tr>
-                        <th class="bas">
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
-                            <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" class="select">';
-                    foreach ($this->listChilds(0, array(), $langue) as $tree) {
-                        echo '<option value="' . $tree['id_tree'] . '"' . ($this->params['blocs_elements']->value == $tree['id_tree'] ? ' selected="selected"' : '') . '>' . $tree['title'] . '</option>';
-                    }
-                    echo '
-                            </select>
-                        </th>
-                    </tr>';
-                    break;
-
-                case 'Lien Externe':
-                    echo '
-                    <tr>
-                        <th>
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input class="input_big" type="text" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" value="' . $this->params['blocs_elements']->value . '" />
-                        </td>
-                    </tr>';
-                    break;
-
-                case 'Image':
-                    echo '
-                    <tr>
-                        <th>
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <th class="bas">
-                            <input type="file" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" />
-                            <input type="hidden" name="' . $element['slug'] . '_' . $langue . '-old" id="' . $element['slug'] . '_' . $langue . '-old" value="' . $this->params['blocs_elements']->value . '" />
-                            &nbsp;&nbsp;<label for="nom_' . $element['slug'] . '_' . $langue . '">Nom du fichier image :</label>
-                            <input class="input_large" type="text" name="nom_' . $element['slug'] . '_' . $langue . '" id="nom_' . $element['slug'] . '_' . $langue . '" value="' . $this->params['blocs_elements']->complement . '" />
-                        </th>
-                    </tr>
-                    <tr id="deleteImageElementBloc' . $this->params['blocs_elements']->id . '">';
-                    if ($this->params['blocs_elements']->value != '') {
-                        if (substr(strtolower(strrchr(basename($this->params['blocs_elements']->value), '.')), 1) == 'swf') {
-                            echo '
-                                <th class="bas">
-                                    <object type="application/x-shockwave-flash" data="' . $this->params['surl'] . '/var/images/' . $this->params['blocs_elements']->value . '" width="400" height="180" style="vertical-align:middle;">
-                                        <param name="src" value="' . $this->params['surl'] . '/var/images/' . $this->params['blocs_elements']->value . '" />
-                                        <param name="movie" value="' . $this->params['surl'] . '/var/images/' . $this->params['blocs_elements']->value . '" />
-                                        <param name="quality" value="high" />
-                                        <param name="bgcolor" value="#fff" />
-                                        <param name="play" value="true" />
-                                        <param name="loop" value="true" />
-                                        <param name="scale" value="showall" />
-                                        <param name="menu" value="true" />
-                                        <param name="align" value="middle" />
-                                        <param name="wmode" value="transparent" />
-                                        <param name="pluginspage" value="http://www.macromedia.com/go/getflashplayer" />
-                                        <param name="type" value="application/x-shockwave-flash" />
-                                    </object>
-                                    &nbsp;&nbsp; Supprimer le flash&nbsp;&nbsp;
-                                    <a onclick="if(confirm(\'Etes vous sur de vouloir supprimer ce flash ?\')){deleteImageElementBloc(' . $this->params['blocs_elements']->id . ',\'' . $element['slug'] . '_' . $langue . '\');return false;}">
-                                        <img src="' . $this->params['surl'] . '/images/admin/delete.png" alt="Supprimer" style="vertical-align:middle;" />
-                                    </a>
-                                </th>';
-                        } else {
-                            list($width, $height) = @getimagesize($this->params['surl'] . '/var/images/' . $this->params['blocs_elements']->value);
-                            echo '
-                                <th class="bas">
-                                    <a href="' . $this->params['surl'] . '/var/images/' . $this->params['blocs_elements']->value . '" class="thickbox">
-                                        <img src="' . $this->params['surl'] . '/var/images/' . $this->params['blocs_elements']->value . '" alt="' . $element['name'] . '"' . ($height > 180 ? ' height="180"' : ($width > 400 ? ' width="400"' : '')) . ' style="vertical-align:middle;" />
-                                    </a>
-                                    &nbsp;&nbsp; Supprimer l\'image&nbsp;&nbsp;
-                                    <a onclick="if(confirm(\'Etes vous sur de vouloir supprimer cette image ?\')){deleteImageElementBloc(' . $this->params['blocs_elements']->id . ',\'' . $element['slug'] . '_' . $langue . '\');return false;}">
-                                        <img src="' . $this->params['surl'] . '/images/admin/delete.png" alt="Supprimer" style="vertical-align:middle;" />
-                                    </a>
-                                </th>';
-                        }
-                    } else {
-                        echo '
-                            <td>&nbsp;</td>';
-                    }
-                    echo '
-                    </tr>';
-                    break;
-
-                case 'Fichier':
-                    echo '
-                    <tr>
-                        <th>
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <th class="bas">
-                            <input type="file" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" />
-                            <input type="hidden" name="' . $element['slug'] . '_' . $langue . '-old" id="' . $element['slug'] . '_' . $langue . '-old" value="' . $this->params['blocs_elements']->value . '" />
-                            &nbsp;&nbsp;<label for="nom_' . $element['slug'] . '_' . $langue . '">Nom du fichier :</label>
-                            <input class="input_large" type="text" name="nom_' . $element['slug'] . '_' . $langue . '" id="nom_' . $element['slug'] . '_' . $langue . '" value="' . $this->params['blocs_elements']->complement . '" />
-                        </th>
-                    </tr>
-                    <tr id="deleteFichierElementBloc' . $this->params['blocs_elements']->id . '">';
-                    if ($this->params['blocs_elements']->value != '') {
-                        echo '
-                            <th class="bas">
-                                <label>Fichier actuel</label> :
-                                <a href="' . $this->params['surl'] . '/var/fichiers/' . $this->params['blocs_elements']->value . '" target="blank">' . $this->params['surl'] . '/var/fichiers/' . $this->params['blocs_elements']->value . '</a>
-                                &nbsp;&nbsp;
-                                <a onclick="if(confirm(\'Etes vous sur de vouloir supprimer ce fichier ?\')){deleteFichierElementBloc(' . $this->params['blocs_elements']->id . ',\'' . $element['slug'] . '_' . $langue . '\');return false;}">
-                                    <img src="' . $this->params['surl'] . '/images/admin/delete.png" alt="Supprimer" />
-                                </a>
-                            </th>';
-                    } else {
-                        echo '
-                            <td>&nbsp;</td>';
-                    }
-                    echo '
-                    </tr>';
-                    break;
-
-                case 'Fichier Protected':
-                    echo '
-                    <tr>
-                        <th>
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <th class="bas">
-                            <input type="file" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" />
-                            <input type="hidden" name="' . $element['slug'] . '_' . $langue . '-old" id="' . $element['slug'] . '_' . $langue . '-old" value="' . $this->params['blocs_elements']->value . '" />
-                            &nbsp;&nbsp;<label for="nom_' . $element['slug'] . '_' . $langue . '">Nom du fichier :</label>
-                            <input class="input_large" type="text" name="nom_' . $element['slug'] . '_' . $langue . '" id="nom_' . $element['slug'] . '_' . $langue . '" value="' . $this->params['blocs_elements']->complement . '" />
-                        </th>
-                    </tr>
-                    <tr id="deleteFichierProtectedElementBloc' . $this->params['blocs_elements']->id . '">';
-                    if ($this->params['blocs_elements']->value != '') {
-                        echo '
-                            <th class="bas">
-                                <label>Fichier actuel</label> :
-                                <a href="' . $this->params['url'] . '/protected/templates/' . $this->params['blocs_elements']->value . '" target="blank">' . $this->params['blocs_elements']->value . '</a>
-                                &nbsp;&nbsp;
-                                <a onclick="if(confirm(\'Etes vous sur de vouloir supprimer ce fichier ?\')){deleteFichierProtectedElementBloc(' . $this->params['blocs_elements']->id . ',\'' . $element['slug'] . '_' . $langue . '\');return false;}">
-                                    <img src="' . $this->params['surl'] . '/images/admin/delete.png" alt="Supprimer" />
-                                </a>
-                            </th>';
-                    } else {
-                        echo '
-                            <td>&nbsp;</td>';
-                    }
-                    echo '
-                    </tr>';
-                    break;
-
-                case 'Date':
-                    echo '
-                    <tr>
-                        <th>
-                            <label for="datepik_' . $langue . '">' . $element['name'] . ' :</label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <th class="bas">
-                            <input class="input_dp" type="text" name="' . $element['slug'] . '_' . $langue . '" id="datepik_' . $langue . '" value="' . $this->params['blocs_elements']->value . '" />
-                        </th>
-                    </tr>';
-                    break;
-
-                case 'Checkbox':
-                    echo '
-                    <tr>
-                        <th class="bas">
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . '</label> :
-                            <input type="checkbox" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" value="1"' . ($this->params['blocs_elements']->value == 1 ? ' checked="checked"' : '') . ' />
-                        </th>
-                    </tr>';
-                    break;
-
-                case 'Boolean':
-                    echo '
-                    <tr>
-                        <th>
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' : </label>
-                            <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">
-                                <option value="0"' . ($this->params['blocs_elements']->value == 0 ? ' selected' : '') . '>Non</option>
-                                <option value="1"' . ($this->params['blocs_elements']->value == 1 ? ' selected' : '') . '>Oui</option>
-                            </select>
-                        </th>
-                    </tr>';
-                    break;
-
-                case 'SVG':
-                    $icons = ['header-contact', 'header-fiscalite', 'header-legal', 'header-plandusite', 'header-recrutement', 'header-securite', 'avatar-f-level-1', 'category-1', 'category-10', 'category-11', 'category-12', 'category-13', 'category-14', 'category-15', 'category-2', 'category-3', 'category-4', 'category-5', 'category-6', 'category-7', 'category-8', 'category-9', 'promo-balance', 'promo-barchart', 'promo-calendarweek', 'promo-clock', 'promo-francemap', 'promo-handshake', 'promo-info', 'promo-linechart', 'promo-linechart2', 'promo-money', 'promo-pagestack', 'promo-people', 'promo-piggybank', 'promo-profile', 'promo-projects', 'promo-protection', 'promo-saving', 'promo-transparancy', 'promo-verified'];
-                    sort($icons);
-                    echo '
-                    <tr>
-                        <th>
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' : </label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <th class="bas">
-                            <select name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '">
-                                <option value=""></option>';
-                    foreach ($icons as $icon) {
-                        echo '<option value="' . $icon . '"' . ($this->params['blocs_elements']->value === $icon ? ' selected' : '') . '>' . $icon . '</option>';
-                    }
-                    echo '
-                            </select>
-                            <a href="https://unilend.atlassian.net/wiki/display/PROJ/UI+nouveau+site" target="_blank">Voir la liste</a>
-                        </th>
-                    </tr>';
-                    break;
-
-                default:
-                    echo '
-                    <tr>
-                        <th>
-                            <label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . ' :</label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input class="input_big" type="text" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" value="' . $this->params['blocs_elements']->value . '" />
-                        </td>
-                    </tr>';
-                    break;
-            }
+            default:
+                trigger_error('Unknown element type: ' . $element['type_element'], E_USER_ERROR);
         }
     }
 
     // Traitement du formulaire des elements en fonction du type d'element
     public function handleFormElement($id_tree, $element, $type = 'tree', $langue = 'fr')
     {
-        if ($type == 'tree') {
-            // Traitement des differents elements
-            switch ($element['type_element']) {
-                case 'Image':
-                    if (isset($_FILES[$element['slug'] . '_' . $langue]) && $_FILES[$element['slug'] . '_' . $langue]['name'] != '') {
-                        if ($_POST['nom_' . $element['slug'] . '_' . $langue] != '') {
-                            $this->nom_fichier = $this->bdd->generateSlug($_POST['nom_' . $element['slug'] . '_' . $langue]);
-                        } else {
-                            $this->nom_fichier = '';
-                        }
+        $elementType = 'tree' === $type ? 'tree_elements' : 'blocs_elements';
+        $idFieldName = 'tree' === $type ? 'id_tree' : 'id_bloc';
 
-                        $this->params['upload']->setUploadDir($this->params['spath'], 'images/');
-
-                        if ($this->params['upload']->doUpload($element['slug'] . '_' . $langue, $this->nom_fichier)) {
-                            $_POST[$element['slug'] . '_' . $langue]   = $this->params['upload']->getName();
-                            $this->params['tree_elements']->id_tree    = $id_tree;
-                            $this->params['tree_elements']->id_element = $element['id_element'];
-                            $this->params['tree_elements']->id_langue  = $langue;
-                            $this->params['tree_elements']->value      = $_POST[$element['slug'] . '_' . $langue];
-                            $this->params['tree_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                            $this->params['tree_elements']->status     = 1;
-                            $this->params['tree_elements']->create();
-                        } else {
-                            $this->params['tree_elements']->id_tree    = $id_tree;
-                            $this->params['tree_elements']->id_element = $element['id_element'];
-                            $this->params['tree_elements']->id_langue  = $langue;
-                            $this->params['tree_elements']->value      = '';
-                            $this->params['tree_elements']->complement = '';
-                            $this->params['tree_elements']->status     = 1;
-                            $this->params['tree_elements']->create();
-                        }
+        switch ($element['type_element']) {
+            case 'Image':
+                if (isset($_FILES[$element['slug'] . '_' . $langue]) && $_FILES[$element['slug'] . '_' . $langue]['name'] != '') {
+                    if ($_POST['nom_' . $element['slug'] . '_' . $langue] != '') {
+                        $this->nom_fichier = $this->bdd->generateSlug($_POST['nom_' . $element['slug'] . '_' . $langue]);
                     } else {
-                        $this->params['tree_elements']->id_tree    = $id_tree;
-                        $this->params['tree_elements']->id_element = $element['id_element'];
-                        $this->params['tree_elements']->id_langue  = $langue;
-                        $this->params['tree_elements']->value      = $_POST[$element['slug'] . '_' . $langue . '-old'];
-                        $this->params['tree_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                        $this->params['tree_elements']->status     = 1;
-                        $this->params['tree_elements']->create();
+                        $this->nom_fichier = '';
                     }
-                    break;
 
-                case 'Fichier':
-                    if (isset($_FILES[$element['slug'] . '_' . $langue]) && $_FILES[$element['slug'] . '_' . $langue]['name'] != '') {
-                        if ($_POST['nom_' . $element['slug'] . '_' . $langue] != '') {
-                            $this->nom_fichier = $this->bdd->generateSlug($_POST['nom_' . $element['slug'] . '_' . $langue]);
-                        } else {
-                            $this->nom_fichier = '';
-                        }
+                    $this->params['upload']->setUploadDir($this->params['spath'], 'images/');
 
-                        $this->params['upload']->setUploadDir($this->params['spath'], 'fichiers/');
-
-                        if ($this->params['upload']->doUpload($element['slug'] . '_' . $langue, $this->nom_fichier)) {
-                            $_POST[$element['slug'] . '_' . $langue]   = $this->params['upload']->getName();
-                            $this->params['tree_elements']->id_tree    = $id_tree;
-                            $this->params['tree_elements']->id_element = $element['id_element'];
-                            $this->params['tree_elements']->id_langue  = $langue;
-                            $this->params['tree_elements']->value      = $_POST[$element['slug'] . '_' . $langue];
-                            $this->params['tree_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                            $this->params['tree_elements']->status     = 1;
-                            $this->params['tree_elements']->create();
-                        } else {
-                            $this->params['tree_elements']->id_tree    = $id_tree;
-                            $this->params['tree_elements']->id_element = $element['id_element'];
-                            $this->params['tree_elements']->id_langue  = $langue;
-                            $this->params['tree_elements']->value      = '';
-                            $this->params['tree_elements']->complement = '';
-                            $this->params['tree_elements']->status     = 1;
-                            $this->params['tree_elements']->create();
-                        }
+                    if ($this->params['upload']->doUpload($element['slug'] . '_' . $langue, $this->nom_fichier)) {
+                        $_POST[$element['slug'] . '_' . $langue]   = $this->params['upload']->getName();
+                        $this->params[$elementType]->{$idFieldName} = $id_tree;
+                        $this->params[$elementType]->id_element     = $element['id_element'];
+                        $this->params[$elementType]->id_langue      = $langue;
+                        $this->params[$elementType]->value          = $_POST[$element['slug'] . '_' . $langue];
+                        $this->params[$elementType]->complement     = $_POST['nom_' . $element['slug'] . '_' . $langue];
+                        $this->params[$elementType]->status         = 1;
+                        $this->params[$elementType]->create();
                     } else {
-                        $this->params['tree_elements']->id_tree    = $id_tree;
-                        $this->params['tree_elements']->id_element = $element['id_element'];
-                        $this->params['tree_elements']->id_langue  = $langue;
-                        $this->params['tree_elements']->value      = $_POST[$element['slug'] . '_' . $langue . '-old'];
-                        $this->params['tree_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                        $this->params['tree_elements']->status     = 1;
-                        $this->params['tree_elements']->create();
+                        $this->params[$elementType]->{$idFieldName} = $id_tree;
+                        $this->params[$elementType]->id_element     = $element['id_element'];
+                        $this->params[$elementType]->id_langue      = $langue;
+                        $this->params[$elementType]->value          = '';
+                        $this->params[$elementType]->complement     = '';
+                        $this->params[$elementType]->status         = 1;
+                        $this->params[$elementType]->create();
                     }
-                    break;
+                } else {
+                    $this->params[$elementType]->{$idFieldName} = $id_tree;
+                    $this->params[$elementType]->id_element     = $element['id_element'];
+                    $this->params[$elementType]->id_langue      = $langue;
+                    $this->params[$elementType]->value          = $_POST[$element['slug'] . '_' . $langue . '-old'];
+                    $this->params[$elementType]->complement     = $_POST['nom_' . $element['slug'] . '_' . $langue];
+                    $this->params[$elementType]->status         = 1;
+                    $this->params[$elementType]->create();
+                }
+                break;
 
-                case 'Fichier Protected':
-                    if (isset($_FILES[$element['slug'] . '_' . $langue]) && $_FILES[$element['slug'] . '_' . $langue]['name'] != '') {
-                        if ($_POST['nom_' . $element['slug'] . '_' . $langue] != '') {
-                            $this->nom_fichier = $this->bdd->generateSlug($_POST['nom_' . $element['slug'] . '_' . $langue]);
-                        } else {
-                            $this->nom_fichier = '';
-                        }
-
-                        $this->params['upload']->setUploadDir($this->params['path'], 'protected/templates/');
-
-                        if ($this->params['upload']->doUpload($element['slug'] . '_' . $langue, $this->nom_fichier)) {
-                            $_POST[$element['slug'] . '_' . $langue]   = $this->params['upload']->getName();
-                            $this->params['tree_elements']->id_tree    = $id_tree;
-                            $this->params['tree_elements']->id_element = $element['id_element'];
-                            $this->params['tree_elements']->id_langue  = $langue;
-                            $this->params['tree_elements']->value      = $_POST[$element['slug'] . '_' . $langue];
-                            $this->params['tree_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                            $this->params['tree_elements']->status     = 1;
-                            $this->params['tree_elements']->create();
-                        } else {
-                            $this->params['tree_elements']->id_tree    = $id_tree;
-                            $this->params['tree_elements']->id_element = $element['id_element'];
-                            $this->params['tree_elements']->id_langue  = $langue;
-                            $this->params['tree_elements']->value      = '';
-                            $this->params['tree_elements']->complement = '';
-                            $this->params['tree_elements']->status     = 1;
-                            $this->params['tree_elements']->create();
-                        }
+            case 'Fichier':
+                if (isset($_FILES[$element['slug'] . '_' . $langue]) && $_FILES[$element['slug'] . '_' . $langue]['name'] != '') {
+                    if ($_POST['nom_' . $element['slug'] . '_' . $langue] != '') {
+                        $this->nom_fichier = $this->bdd->generateSlug($_POST['nom_' . $element['slug'] . '_' . $langue]);
                     } else {
-                        $this->params['tree_elements']->id_tree    = $id_tree;
-                        $this->params['tree_elements']->id_element = $element['id_element'];
-                        $this->params['tree_elements']->id_langue  = $langue;
-                        $this->params['tree_elements']->value      = $_POST[$element['slug'] . '_' . $langue . '-old'];
-                        $this->params['tree_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                        $this->params['tree_elements']->status     = 1;
-                        $this->params['tree_elements']->create();
+                        $this->nom_fichier = '';
                     }
-                    break;
 
-                default:
-                    $this->params['tree_elements']->id_tree    = $id_tree;
-                    $this->params['tree_elements']->id_element = $element['id_element'];
-                    $this->params['tree_elements']->id_langue  = $langue;
-                    $this->params['tree_elements']->value      = $_POST[$element['slug'] . '_' . $langue];
-                    $this->params['tree_elements']->complement = '';
-                    $this->params['tree_elements']->status     = 1;
-                    $this->params['tree_elements']->create();
-                    break;
-            }
-        } else {
-            // Traitement des differents elements
-            switch ($element['type_element']) {
-                case 'Image':
-                    if (isset($_FILES[$element['slug'] . '_' . $langue]) && $_FILES[$element['slug'] . '_' . $langue]['name'] != '') {
-                        if ($_POST['nom_' . $element['slug'] . '_' . $langue] != '') {
-                            $this->nom_fichier = $this->bdd->generateSlug($_POST['nom_' . $element['slug'] . '_' . $langue]);
-                        } else {
-                            $this->nom_fichier = '';
-                        }
+                    $this->params['upload']->setUploadDir($this->params['spath'], 'fichiers/');
 
-                        $this->params['upload']->setUploadDir($this->params['spath'], 'images/');
-
-                        if ($this->params['upload']->doUpload($element['slug'] . '_' . $langue, $this->nom_fichier)) {
-                            $_POST[$element['slug'] . '_' . $langue]    = $this->params['upload']->getName();
-                            $this->params['blocs_elements']->id_bloc    = $id_tree;
-                            $this->params['blocs_elements']->id_element = $element['id_element'];
-                            $this->params['blocs_elements']->id_langue  = $langue;
-                            $this->params['blocs_elements']->value      = $_POST[$element['slug'] . '_' . $langue];
-                            $this->params['blocs_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                            $this->params['blocs_elements']->status     = 1;
-                            $this->params['blocs_elements']->create();
-                        } else {
-                            $this->params['blocs_elements']->id_bloc    = $id_tree;
-                            $this->params['blocs_elements']->id_element = $element['id_element'];
-                            $this->params['blocs_elements']->id_langue  = $langue;
-                            $this->params['blocs_elements']->value      = '';
-                            $this->params['blocs_elements']->complement = '';
-                            $this->params['blocs_elements']->status     = 1;
-                            $this->params['blocs_elements']->create();
-                        }
+                    if ($this->params['upload']->doUpload($element['slug'] . '_' . $langue, $this->nom_fichier)) {
+                        $_POST[$element['slug'] . '_' . $langue]   = $this->params['upload']->getName();
+                        $this->params[$elementType]->{$idFieldName} = $id_tree;
+                        $this->params[$elementType]->id_element     = $element['id_element'];
+                        $this->params[$elementType]->id_langue      = $langue;
+                        $this->params[$elementType]->value          = $_POST[$element['slug'] . '_' . $langue];
+                        $this->params[$elementType]->complement     = $_POST['nom_' . $element['slug'] . '_' . $langue];
+                        $this->params[$elementType]->status         = 1;
+                        $this->params[$elementType]->create();
                     } else {
-                        $this->params['blocs_elements']->id_bloc    = $id_tree;
-                        $this->params['blocs_elements']->id_element = $element['id_element'];
-                        $this->params['blocs_elements']->id_langue  = $langue;
-                        $this->params['blocs_elements']->value      = $_POST[$element['slug'] . '_' . $langue . '-old'];
-                        $this->params['blocs_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                        $this->params['blocs_elements']->status     = 1;
-                        $this->params['blocs_elements']->create();
+                        $this->params[$elementType]->{$idFieldName} = $id_tree;
+                        $this->params[$elementType]->id_element     = $element['id_element'];
+                        $this->params[$elementType]->id_langue      = $langue;
+                        $this->params[$elementType]->value          = '';
+                        $this->params[$elementType]->complement     = '';
+                        $this->params[$elementType]->status         = 1;
+                        $this->params[$elementType]->create();
                     }
-                    break;
+                } else {
+                    $this->params[$elementType]->{$idFieldName} = $id_tree;
+                    $this->params[$elementType]->id_element     = $element['id_element'];
+                    $this->params[$elementType]->id_langue      = $langue;
+                    $this->params[$elementType]->value          = $_POST[$element['slug'] . '_' . $langue . '-old'];
+                    $this->params[$elementType]->complement     = $_POST['nom_' . $element['slug'] . '_' . $langue];
+                    $this->params[$elementType]->status         = 1;
+                    $this->params[$elementType]->create();
+                }
+                break;
 
-                case 'Fichier':
-                    if (isset($_FILES[$element['slug'] . '_' . $langue]) && $_FILES[$element['slug'] . '_' . $langue]['name'] != '') {
-                        if ($_POST['nom_' . $element['slug'] . '_' . $langue] != '') {
-                            $this->nom_fichier = $this->bdd->generateSlug($_POST['nom_' . $element['slug'] . '_' . $langue]);
-                        } else {
-                            $this->nom_fichier = '';
-                        }
-
-                        $this->params['upload']->setUploadDir($this->params['spath'], 'fichiers/');
-
-                        if ($this->params['upload']->doUpload($element['slug'] . '_' . $langue, $this->nom_fichier)) {
-                            $_POST[$element['slug'] . '_' . $langue]    = $this->params['upload']->getName();
-                            $this->params['blocs_elements']->id_bloc    = $id_tree;
-                            $this->params['blocs_elements']->id_element = $element['id_element'];
-                            $this->params['blocs_elements']->id_langue  = $langue;
-                            $this->params['blocs_elements']->value      = $_POST[$element['slug'] . '_' . $langue];
-                            $this->params['blocs_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                            $this->params['blocs_elements']->status     = 1;
-                            $this->params['blocs_elements']->create();
-                        } else {
-                            $this->params['blocs_elements']->id_bloc    = $id_tree;
-                            $this->params['blocs_elements']->id_element = $element['id_element'];
-                            $this->params['blocs_elements']->id_langue  = $langue;
-                            $this->params['blocs_elements']->value      = '';
-                            $this->params['blocs_elements']->complement = '';
-                            $this->params['blocs_elements']->status     = 1;
-                            $this->params['blocs_elements']->create();
-                        }
-                    } else {
-                        $this->params['blocs_elements']->id_bloc    = $id_tree;
-                        $this->params['blocs_elements']->id_element = $element['id_element'];
-                        $this->params['blocs_elements']->id_langue  = $langue;
-                        $this->params['blocs_elements']->value      = $_POST[$element['slug'] . '_' . $langue . '-old'];
-                        $this->params['blocs_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                        $this->params['blocs_elements']->status     = 1;
-                        $this->params['blocs_elements']->create();
-                    }
-                    break;
-
-                case 'Fichier Protected':
-                    if (isset($_FILES[$element['slug'] . '_' . $langue]) && $_FILES[$element['slug'] . '_' . $langue]['name'] != '') {
-                        if ($_POST['nom_' . $element['slug'] . '_' . $langue] != '') {
-                            $this->nom_fichier = $this->bdd->generateSlug($_POST['nom_' . $element['slug'] . '_' . $langue]);
-                        } else {
-                            $this->nom_fichier = '';
-                        }
-
-                        $this->params['upload']->setUploadDir($this->params['path'], 'protected/templates/');
-
-                        if ($this->params['upload']->doUpload($element['slug'] . '_' . $langue, $this->nom_fichier)) {
-                            $_POST[$element['slug'] . '_' . $langue]    = $this->params['upload']->getName();
-                            $this->params['blocs_elements']->id_bloc    = $id_tree;
-                            $this->params['blocs_elements']->id_element = $element['id_element'];
-                            $this->params['blocs_elements']->id_langue  = $langue;
-                            $this->params['blocs_elements']->value      = $_POST[$element['slug'] . '_' . $langue];
-                            $this->params['blocs_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                            $this->params['blocs_elements']->status     = 1;
-                            $this->params['blocs_elements']->create();
-                        } else {
-                            $this->params['blocs_elements']->id_bloc    = $id_tree;
-                            $this->params['blocs_elements']->id_element = $element['id_element'];
-                            $this->params['blocs_elements']->id_langue  = $langue;
-                            $this->params['blocs_elements']->value      = '';
-                            $this->params['blocs_elements']->complement = '';
-                            $this->params['blocs_elements']->status     = 1;
-                            $this->params['blocs_elements']->create();
-                        }
-                    } else {
-                        $this->params['blocs_elements']->id_bloc    = $id_tree;
-                        $this->params['blocs_elements']->id_element = $element['id_element'];
-                        $this->params['blocs_elements']->id_langue  = $langue;
-                        $this->params['blocs_elements']->value      = $_POST[$element['slug'] . '_' . $langue . '-old'];
-                        $this->params['blocs_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                        $this->params['blocs_elements']->status     = 1;
-                        $this->params['blocs_elements']->create();
-                    }
-                    break;
-
-                default:
-                    $this->params['blocs_elements']->id_bloc    = $id_tree;
-                    $this->params['blocs_elements']->id_element = $element['id_element'];
-                    $this->params['blocs_elements']->id_langue  = $langue;
-                    $this->params['blocs_elements']->value      = $_POST[$element['slug'] . '_' . $langue];
-                    $this->params['blocs_elements']->complement = '';
-                    $this->params['blocs_elements']->status     = 1;
-                    $this->params['blocs_elements']->create();
-                    break;
-            }
+            default:
+                $this->params[$elementType]->{$idFieldName} = $id_tree;
+                $this->params[$elementType]->id_element     = $element['id_element'];
+                $this->params[$elementType]->id_langue      = $langue;
+                $this->params[$elementType]->value          = $_POST[$element['slug'] . '_' . $langue];
+                $this->params[$elementType]->complement     = '';
+                $this->params[$elementType]->status         = 1;
+                $this->params[$elementType]->create();
+                break;
         }
     }
 
@@ -1167,7 +615,6 @@ class tree extends tree_crud
             }
         }
     }
-
 
     /**
      * @param string $search

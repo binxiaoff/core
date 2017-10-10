@@ -116,7 +116,6 @@ class templatesController extends bootstrap
                     @unlink($this->path . 'apps/default/views/templates/' . $this->templates->slug . '.php');
                     @unlink($this->path . 'apps/default/controllers/templates/' . $this->templates->slug . '.php');
 
-                    $this->blocs_templates->delete($this->params[1], 'id_template');
                     $this->elements->delete($this->params[1], 'id_template');
                     $this->templates->delete($this->params[1], 'id_template');
                     $this->tree->deleteTemplate($this->params[1]);
@@ -150,48 +149,14 @@ class templatesController extends bootstrap
         $this->templates->get($this->params[0], 'id_template');
     }
 
-    public function _addBloc()
-    {
-        $this->hideDecoration();
-
-        $this->blocs     = $this->loadData('blocs');
-        $this->templates = $this->loadData('templates');
-
-        $_SESSION['request_url'] = $this->url;
-
-        $this->lBlocsOnline = $this->blocs->select('status = 1', 'name ASC');
-
-        $this->templates->get($this->params[0], 'id_template');
-    }
-
     public function _elements()
     {
-        $this->templates       = $this->loadData('templates');
-        $this->elements        = $this->loadData('elements');
-        $this->blocs           = $this->loadData('blocs');
-        $this->blocs_templates = $this->loadData('blocs_templates');
-
+        $this->templates = $this->loadData('templates');
         $this->templates->get($this->params[0], 'id_template');
 
-        $this->lElements  = $this->elements->select('id_template = "' . $this->params[0] . '" AND id_template != 0', 'ordre ASC');
-        $this->lPositions = $this->bdd->getEnum('blocs_templates', 'position');
-
-        if (isset($_POST['form_add_bloc'])) {
-            $this->blocs_templates->id_bloc     = $_POST['id_bloc'];
-            $this->blocs_templates->id_template = $_POST['id_template'];
-            $this->blocs_templates->position    = $_POST['position'];
-            $this->blocs_templates->ordre       = $this->blocs_templates->getLastPosition($this->blocs_templates->position, $_POST['id_template']);
-            $this->blocs_templates->status      = $_POST['status'];
-            $this->blocs_templates->create();
-
-            $this->blocs_templates->reordre($_POST['id_template'], $this->blocs_templates->position);
-
-            $_SESSION['freeow']['title']   = 'Ajout d\'un bloc';
-            $_SESSION['freeow']['message'] = 'Le bloc a bien &eacute;t&eacute; ajout&eacute; !';
-
-            header('Location: ' . $this->lurl . '/templates/elements/' . $_POST['id_template']);
-            die;
-        }
+        $this->elements  = $this->loadData('elements');
+        $this->blocs     = $this->loadData('blocs');
+        $this->lElements = $this->elements->select('id_template = "' . $this->params[0] . '" AND id_template != 0', 'ordre ASC');
 
         if (isset($_POST['form_add_element'])) {
             $this->elements->id_template  = $_POST['id_template'];
@@ -253,32 +218,6 @@ class templatesController extends bootstrap
 
                     $_SESSION['freeow']['title']   = 'Suppression d\'un &eacute;l&eacute;ment';
                     $_SESSION['freeow']['message'] = 'L\'&eacute;l&eacute;ment a bien &eacute;t&eacute; supprim&eacute; !';
-
-                    header('Location: ' . $this->lurl . '/templates/elements/' . $this->params[0]);
-                    die;
-                case 'upBloc':
-                    $this->blocs_templates->moveUp($this->params[3], $this->params[0], $this->params[2]);
-                    header('Location: ' . $this->lurl . '/templates/elements/' . $this->params[0]);
-                    die;
-                case 'downBloc':
-                    $this->blocs_templates->moveDown($this->params[3], $this->params[0], $this->params[2]);
-                    header('Location: ' . $this->lurl . '/templates/elements/' . $this->params[0]);
-                    die;
-                case 'statusBloc':
-                    $this->blocs_templates->get($this->params[2]);
-                    $this->blocs_templates->status = ($this->params[3] == 0 ? 1 : 0);
-                    $this->blocs_templates->update();
-
-                    $_SESSION['freeow']['title']   = 'Statut d\'un bloc';
-                    $_SESSION['freeow']['message'] = 'Le statut du bloc a bien &eacute;t&eacute; modifi&eacute; !';
-
-                    header('Location: ' . $this->lurl . '/templates/elements/' . $this->params[0]);
-                    die;
-                case 'deleteBloc':
-                    $this->blocs_templates->delete($this->params[2]);
-
-                    $_SESSION['freeow']['title']   = 'Suppression d\'un bloc';
-                    $_SESSION['freeow']['message'] = 'Le bloc a bien &eacute;t&eacute; supprim&eacute; !';
 
                     header('Location: ' . $this->lurl . '/templates/elements/' . $this->params[0]);
                     die;
