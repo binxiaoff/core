@@ -469,9 +469,11 @@
     display: none;
   }
 
-  #{$js-site-header-fixed} & {
-    display: inline-block;
-    margin-top: 0;
+  @include devices('md', 'lg') {
+    #{$js-site-header-fixed} & {
+      display: inline-block;
+      margin-top: 0;
+    }
   }
 }
 
