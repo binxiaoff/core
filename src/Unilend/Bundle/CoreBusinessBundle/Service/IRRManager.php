@@ -234,4 +234,17 @@ class IRRManager
 
         return $this->calculateIRR($valuesIRR);
     }
+
+    /**
+     * @return string
+     */
+    public function getOptimisticUnilendIRR()
+    {
+        set_time_limit(1000);
+
+        $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+        $valuesIRR = $unilendStatsRepository->getOptimisticIRRValuesUntilDateLimit(new \DateTime('NOW'));
+
+        return $this->calculateIRR($valuesIRR);
+    }
 }

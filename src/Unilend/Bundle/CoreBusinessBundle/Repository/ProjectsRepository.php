@@ -608,6 +608,40 @@ class ProjectsRepository extends EntityRepository
     /**
      * @param \DateTime|null $date
      *
+     * @return string
+     */
+    public function getNonWeightedAverageInterestRateUntil(\DateTime $date = null)
+    {
+        $query = 'SELECT
+                      AVG(l.rate) AS averageRate
+                    FROM projects p
+                      INNER JOIN loans l ON p.id_project = l.id_project
+                    WHERE p.status >= :repayment';
+
+        $bind = ['repayment' => ProjectsStatus::REMBOURSEMENT];
+
+        if (null !== $date) {
+            $date->setTime(23, 59, 59);
+            $bind  = array_merge($bind, ['end' => $date->format('Y-m-d H:i:s')]);
+            $query .= 'AND (SELECT added
+                               FROM projects_status_history psh
+                                 INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                               WHERE ps.status = 80
+                                 AND psh.id_project = l.id_project
+                               ORDER BY added ASC
+                               LIMIT 1) <= :end';
+        }
+
+        $statement = $this->getEntityManager()->getConnection()->executeQuery($query, $bind);
+        $result    = $statement->fetchColumn();
+        $statement->closeCursor();
+
+        return $result;
+    }
+
+    /**
+     * @param \DateTime|null $date
+     *
      * @return array
      */
     public function getWeightedAverageInterestRateByCohortUntil(\DateTime $date = null)
@@ -684,6 +718,39 @@ class ProjectsRepository extends EntityRepository
     /**
      * @param \DateTime|null $date
      *
+     * @return string
+     */
+    public function getNonWeightedAveragePeriodUntil(\DateTime $date = null)
+    {
+        $query = 'SELECT
+                      AVG(p.period) AS averagePeriod
+                    FROM projects p
+                    WHERE p.status >= :repayment';
+
+        $bind = ['repayment' => ProjectsStatus::REMBOURSEMENT];
+
+        if (null !== $date) {
+            $date->setTime(23, 59, 59);
+            $bind  = array_merge($bind, ['end' => $date->format('Y-m-d H:i:s')]);
+            $query .= 'AND (SELECT added
+                               FROM projects_status_history psh
+                                 INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                               WHERE ps.status = 80
+                                 AND psh.id_project = p.id_project
+                               ORDER BY added ASC
+                               LIMIT 1) <= :end';
+        }
+
+        $statement = $this->getEntityManager()->getConnection()->executeQuery($query, $bind);
+        $result    = $statement->fetchColumn();
+        $statement->closeCursor();
+
+        return $result;
+    }
+
+    /**
+     * @param \DateTime|null $date
+     *
      * @return array
      */
     public function getWeightedAveragePeriodByCohortUntil(\DateTime $date = null)
@@ -715,6 +782,44 @@ class ProjectsRepository extends EntityRepository
 
         $statement = $this->getEntityManager()->getConnection()->executeQuery($query, $bind);
         $result    = $statement->fetchAll();
+        $statement->closeCursor();
+
+        return $result;
+    }
+
+    /**
+     * @param \DateTime|null $date
+     *
+     * @return string
+     */
+    public function getWeightedAveragePeriodUntil(\DateTime $date = null)
+    {
+        $baseQuery = 'SELECT
+                        p.period,
+                        p.amount,
+                        p.id_project
+                      FROM projects p
+                      WHERE p.status >= :repayment';
+        $bind      = ['repayment' => ProjectsStatus::REMBOURSEMENT];
+
+        if (null !== $date) {
+            $date->setTime(23, 59, 59);
+            $bind      = array_merge($bind, ['end' => $date->format('Y-m-d H:i:s')]);
+            $baseQuery .= ' AND (
+                                SELECT added
+                                FROM projects_status_history psh
+                                  INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                                WHERE ps.status = 80
+                                  AND psh.id_project = p.id_project
+                                ORDER BY added ASC
+                                LIMIT 1) <=:end ';
+        }
+
+        $query = 'SELECT SUM(amount * period) / SUM(amount) AS averagePeriod
+                    FROM ( ' . $baseQuery . ') AS p';
+
+        $statement = $this->getEntityManager()->getConnection()->executeQuery($query, $bind);
+        $result    = $statement->fetchColumn();
         $statement->closeCursor();
 
         return $result;

@@ -1,45 +1,3 @@
-{% set tableData = [
-    {
-        header: 'Généraux',
-        rows: [
-            { label: 'Montant prêté', values: [ 1, 1, 1, 1, 1, 5 ], type: 'currency' },
-            { label: 'Nombre de projets financés', values: [ 1, 1, 1, 1, 1, 5 ], type: 'integer' },
-            { label: 'Montant moyen emprunté', values: [ 1, 1, 1, 1, 1, 5 ], type: 'currency' },
-            { label: 'Taux d\'intérêt annuel moyen d\'emprunt', values: [ { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 5, number: 5 } ], type: 'percentage' },
-            { label: 'Durée moyenne initiale d\'emprunt', values: [ { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 5, number: 5 } ], type: 'month' },
-            { label: 'Age moyen des prêts', values: [ { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 5, number: 5 } ], type: 'month' },
-            { label: 'Capital remboursé', values: [ 1, 1, 1, 1, 1, 5 ], type: 'currency' },
-            { label: 'Capital remboursé', values: [1, 1, 1, 1, 1, 5], type: 'percentage', legend: true },
-            { label: 'Intérêts reçus', values: [1, 1, 1, 1, 1, 5], type: 'currency', legend: true },
-            { label: 'Intérêts reçus', values: [1, 1, 1, 1, 1, 5], type: 'percentage', legend: true },
-        ]
-    },
-    {
-        header: 'Performance',
-        rows: [
-            { label: 'Taux de rendement interne net', values: [1, 1, 1, 1, 1, 5], type: 'percentage', legend: true },
-            { label: 'Taux de rendement interne maximum possible', values: [1, 1, 1, 1, 1, 5], type: 'percentage', legend: true },
-            { label: 'Coût du risque annuel constaté', values: [1, 1, 1, 1, 1, 5], type: 'percentage', legend: true }
-        ]
-    },
-    {
-        header: 'Incidents',
-        rows: [
-            { label: 'Capital en retard', values: [1, 1, 1, 1, 1, 5], type: 'currency' },
-            { label: 'Taux de retard', values: [ { volume: 'n/a', number: 1 }, { volume: 'n/a', number: 1 }, { volume: 'n/a', number: 1 }, { volume: 'n/a', number: 1 }, { volume: 'n/a', number: 1 }, { volume: 'n/a', number: 1 } ], type: 'percentage', legend: true },
-            { label: 'Capital en défaut', values: [1, 1, 1, 1, 1, 5], type: 'currency', legend: true },
-            { label: 'Taux de défaut', values: [ { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 }, { volume: 1, number: 1 } ], type: 'percentage', legend: true }
-        ]
-    },
-    {
-        header: 'Indicateurs légaux (C.M.F, article R.548n/a5, alinea 3)',
-        rows: [
-            { label: 'Taux de rendement interne net', values: [1, 1, 1, 1, 1, 5], type: 'percentage', legend: true },
-            { label: 'Taux de rendement interne maximum possible', values: [1, 1, 1, 1, 1, 5], type: 'percentage', legend: true }
-        ]
-    },
-] %}
-
 <section class="page-section">
     <div class="site-wrap">
         <div class="row">
@@ -83,55 +41,274 @@
                 </div>
             </div>
             <div class="table-scroll">
+                {% set maxColSpan = data|first|length + 1 %}
                 <table id="table-stats-fpf" class="table table-stats-fpf ui-display-volume">
-                <tbody>
-                {% set legendIndex = 0 %}
-                {% for group in tableData %}
-                    <tr>
-                        <th class="bg-bg2 c-t2">{{ group.header }}</th>
-                        {% set currentYear = "now"|date("Y") %}
-                        {% for year in years %}
-                            <th class="bg-bg2 c-t2">{{ year }}</th>
-                        {% endfor %}
-                            <th class="bg-bg2 c-t2">Total</th>
-                    </tr>
-                    {% for row in group.rows %}
+                    <tbody>
+                        <tr><th class="bg-bg2 c-t2" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-general-indicators"|trans|raw }}</th></tr>
                         <tr>
-                            <td>{{ row.label }}
-                                {% if row.legend is defined %}
-                                    {% set legendIndex = legendIndex + 1 %}
-                                    <sup class="c-p1">{{ legendIndex }}</sup>
-                                {% endif %}
-                            </td>
-                            {% for value in row.values %}
-                                {% if value is iterable %}
-                                    {% if row.type == 'currency' %}
-                                        <td><span class="volume">{{ value.volume|localizednumber }} €</span><span class="number">{{ value.number|localizednumber }} €</span></td>
-                                    {% elseif row.type == 'percentage' %}
-                                        <td><span class="volume">{{ value.volume|number_format(2, ',') }} %</span><span class="number">{{ value.number|number_format(2, ',') }} %</span></td>
-                                    {% elseif row.type == 'month' %}
-                                        <td><span class="volume">{{ value.volume|number_format(1, ',') }} mois</span><span class="number">{{ value.number|number_format(1, ',') }} mois</span></td>
-                                    {% else %}
-                                        <td><span class="volume">{{ value.volume|localizednumber }}</span><span class="number">{{ value.number|localizednumber }}</span></td>
-                                    {% endif %}
+                            <th class="bg-bg2 c-t2"></th>
+                            {% for year in years %}
+                                <th class="bg-bg2 c-t2">{{ year }}</th>
+                            {% endfor %}
+                            <th class="bg-bg2 c-t2">Total</th>
+                        </tr>
 
-                                {% else %}
-                                    {% if row.type == 'currency' %}
-                                        <td>{{ value|localizednumber }} €</td>
-                                    {% elseif row.type == 'percentage' %}
-                                        <td>{{ value|number_format(2, ',') }} %</td>
-                                    {% elseif row.type == 'month' %}
-                                        <td>{{ value|number_format(1, ',') }} mois</td>
-                                    {% else %}
-                                        <td>{{ value|localizednumber }}</td>
-                                    {% endif %}
-                                {% endif %}
+                        <!-- borrowed-capital -->
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-borrowed-capital"|trans|raw }}</td>
+                        </tr>
+                        <tr>
+                            <td class="table-stats-unilend-item-label">&nbsp;</td>
+                            {% for value in data['borrowed-capital'] %}
+                                <td>{{ value|localizednumber }} €</td>
                             {% endfor %}
                         </tr>
-                    {% endfor %}
-                {% endfor %}
-                </tbody>
-            </table>
+                        <!-- /borrowed-capital -->
+
+                        <!-- number-of-projects -->
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-number-of-projects"|trans|raw }}</td>
+                        </tr>
+                        <tr>
+                            <td class="table-stats-unilend-item-label">&nbsp;</td>
+                            {% for value in data['number-of-projects'] %}
+                                <td>{{ value|localizednumber }} </td>
+                            {% endfor %}
+                        </tr>
+                        <!-- /number-of-projects -->
+
+                        <!-- average-borrowed-amount -->
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-average-borrowed-amount"|trans|raw }}</td>
+                        </tr>
+                        <tr>
+                            <td class="table-stats-unilend-item-label">&nbsp;</td>
+                            {% for value in data['average-borrowed-amount'] %}
+                                <td>{{ value|localizednumber }} €</td>
+                            {% endfor %}
+                        </tr>
+                        <!-- /average-borrowed-amount -->
+
+
+                        <!-- average-interest-rate -->
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-average-interest-rate"|trans|raw }}</td>
+                        </tr>
+                        <tr>
+                            <td class="table-stats-unilend-item-label">&nbsp;</td>
+                            {% for value in data['average-interest-rate'] %}
+                                <td><span class="volume">{{ value.volume|localizednumberwithprecision(2) }} %</span><span class="number">{{ value.number|localizednumberwithprecision(2) }} %</span></td>
+                            {% endfor %}
+                        </tr>
+                        <!-- /average-interest-rate -->
+
+                        <!-- average-period -->
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-average-period"|trans|raw }}</td>
+                        </tr>
+                        <tr>
+                            <td class="table-stats-unilend-item-label">&nbsp;</td>
+                            {% for value in data['average-period'] %}
+                                <td><span class="volume">{{ value.volume|number_format(1, ',') }} mois</span><span class="number">{{ value.number|number_format(1, ',') }} mois</span></td>
+                            {% endfor %}
+                        </tr>
+                        <!-- /average-period -->
+
+                        <!-- average-loan-age -->
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-average-loan-age"|trans|raw }}</td>
+                        </tr>
+                        <tr>
+                            <td class="table-stats-unilend-item-label">&nbsp;</td>
+                            {% for value in data['average-loan-age'] %}
+                                <td><span class="volume">{{ value.volume|number_format(1, ',') }} mois</span><span class="number">{{ value.number|number_format(1, ',') }} mois</span></td>
+                            {% endfor %}
+                        </tr>
+                        <!-- /average-loan-age -->
+
+                        <!-- repaid-capital -->
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-repaid-capital"|trans|raw }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-stats-unilend-item-label">&nbsp;</td>
+                            {% for value in data['repaid-capital'] %}
+                                <td><span class="volume">{{ value|localizednumber }} €</span><span class="number">{{ value|localizednumber }} €</span></td>
+                            {% endfor %}
+                        </tr>
+                        <!-- /repaid-capital -->
+
+                        <!-- repaid-capital-ratio -->
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-repaid-capital-ratio"|trans|raw }}</td>
+                        </tr>
+                        <tr>
+                            <td class="table-stats-unilend-item-label">&nbsp;</td>
+                            {% for value in data['repaid-capital-ratio'] %}
+                                <td><span class="volume">{{ value|localizednumberwithprecision(2) }} %</span><span class="number">{{ value|localizednumberwithprecision(2) }} %</span></td>
+                            {% endfor %}
+                        </tr>
+                        <!-- /repaid-capital-ratio -->
+
+                        <!-- repaid-interest -->
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-repaid-interest"|trans|raw }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-stats-unilend-item-label">&nbsp;</td>
+                            {% for value in data['repaid-interest'] %}
+                                <td><span class="volume">{{ value|localizednumber }} €</span><span class="number">{{ value|localizednumber }} €</span></td>
+                            {% endfor %}
+                        </tr>
+                        <!-- /repaid-interest -->
+
+                        <!-- repaid-interest-ratio -->
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-repaid-interest-ratio"|trans|raw }}</td>
+                        </tr>
+                        <tr>
+                            <td class="table-stats-unilend-item-label">&nbsp;</td>
+                            {% for value in data['repaid-interest-ratio'] %}
+                                <td><span class="volume">{{ value|localizednumberwithprecision(2) }} %</span><span class="number">{{ value|localizednumberwithprecision(2) }} %</span></td>
+                            {% endfor %}
+                        </tr>
+                        <!-- /average-interest-ratio -->
+
+                        <tr><th class="bg-bg2 c-t2" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-performace-indicators"|trans|raw }}</th></tr>
+                        <tr>
+                            <th class="bg-bg2 c-t2"></th>
+                            {% for year in years %}
+                                <th class="bg-bg2 c-t2">{{ year }}</th>
+                            {% endfor %}
+                            <th class="bg-bg2 c-t2">Total</th>
+                        </tr>
+
+                        <!-- realistic-unilend-irr -->
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-realistic-unilend-irr"|trans|raw }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-stats-unilend-item-label">&nbsp;</td>
+                            {% for value in data['realistic-unilend-irr'] %}
+                                <td>{{ value|localizednumberwithprecision(2) }} %</td>
+                            {% endfor %}
+                        </tr>
+                        <!-- /realistic-unilend-irr -->
+
+                        <!-- optimistic-unilend-irr -->
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-optimistic-unilend-irr"|trans|raw }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-stats-unilend-item-label">&nbsp;</td>
+                            {% for value in data['optimistic-unilend-irr'] %}
+                                <td>{{ value|localizednumberwithprecision(2) }} %</td>
+                            {% endfor %}
+                        </tr>
+                        <!-- /optimistic-unilend-irr -->
+
+                        <!-- annual-cost-of-risk -->
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-annual-cost-of-risk"|trans|raw }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-stats-unilend-item-label">&nbsp;</td>
+                            {% for value in data['annual-cost-of-risk'] %}
+                                <td>{{ value|localizednumberwithprecision(2) }} %</td>
+                            {% endfor %}
+                        </tr>
+                        <!-- /annual-cost-of-risk -->
+
+                        <tr><th class="bg-bg2 c-t2" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-incident-indicators"|trans|raw }}</th></tr>
+                        <tr>
+                            <th class="bg-bg2 c-t2"></th>
+                            {% for year in years %}
+                                <th class="bg-bg2 c-t2">{{ year }}</th>
+                            {% endfor %}
+                            <th class="bg-bg2 c-t2">Total</th>
+                        </tr>
+
+                        <!-- late-owed-capital-healthy -->
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-late-owed-capital-healthy"|trans|raw }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-stats-unilend-item-label">&nbsp;</td>
+                            {% for value in data['late-owed-capital-healthy'] %}
+                                <td>{{ value|localizednumber }} €</td>
+                            {% endfor %}
+                        </tr>
+                        <!-- /late-owed-capital-healthy -->
+
+                        <!-- late-capital-percentage -->
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-late-capital-percentage"|trans|raw }}</td>
+                        </tr>
+                        <tr>
+                            <td class="table-stats-unilend-item-label">&nbsp;</td>
+                            {% for value in data['late-capital-percentage'] %}
+                                <td><span class="volume">{{ value|localizednumberwithprecision(2) }} %</span><span class="number">{{ value|localizednumberwithprecision(2)) }} %</span></td>
+                            {% endfor %}
+                        </tr>
+                        <!-- /repaid-capital-ratio -->
+
+                        <!-- late-owed-capital-problematic -->
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_late-owed-capital-problematic"|trans|raw }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-stats-unilend-item-label">&nbsp;</td>
+                            {% for value in data['late-owed-capital-problematic'] %}
+                                <td>{{ value|localizednumber }} €</td>
+                            {% endfor %}
+                        </tr>
+                        <!-- /late-owed-capital-problematic -->
+
+                        <!-- late-problematic-capital-percentage -->
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-late-problematic-capital-percentage"|trans|raw }}</td>
+                        </tr>
+                        <tr>
+                            <td class="table-stats-unilend-item-label">&nbsp;</td>
+                            {% for value in data['late-problematic-capital-percentage'] %}
+                                <td><span class="volume">{{ value|localizednumberwithprecision(2) }} %</span><span class="number">{{ value|localizednumberwithprecision(2) }} %</span></td>
+                            {% endfor %}
+                        </tr>
+                        <!-- /average-interest-ratio -->
+
+                        <tr>
+                            <th class="bg-bg2 c-t2" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-legal-indicators"|trans|raw }}</th>
+                        </tr>
+
+                        {% set incidenceRate = getStatistic('incidenceRate', date) %}
+                        <tr>
+                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan-1 }}">{% trans %} fpf_statistic_ifp-incidence-rate-amount {% endtrans %}</td>
+                            <td class="table-stats-unilend-item-value">{{ incidenceRate['amountIFP']|localizednumberwithprecision(2) }}%</td>
+                        </tr>
+                        <tr class="alt">
+                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan-1 }}">{% trans %} fpf_statistic_ifp-incidence-rate-project {% endtrans %}</td>
+                            <td class="table-stats-unilend-item-value">{{ incidenceRate['projectsIFP']|localizednumberwithprecision(2) }}%</td>
+                        </tr>
+                        {# for display of historic statistics page #}
+                        {% if incidenceRate['amountCIP'] is defined %}
+                            <tr>
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan-1 }}">{% trans %} fpf_statistic_cip-incidence-rate-amount {% endtrans %}</td>
+                                <td class="table-stats-unilend-item-value">{{ incidenceRate['amountCIP']|localizednumberwithprecision(2) }}%</td>
+                            </tr>
+                            <tr class="alt">
+                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan-1 }}">{% trans %} fpf_statistic_cip-incidence-rate-project {% endtrans %}</td>
+                                <td class="table-stats-unilend-item-value">{{ incidenceRate['projectsCIP']|localizednumberwithprecision(2) }}%</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
             </div>
             <div class="table-stats-fpf-legend">
                 <h4 class="c-p1 remove-margin-t">Legend</h4>

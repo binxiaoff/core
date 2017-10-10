@@ -410,6 +410,13 @@ class UnilendStatsRepository extends EntityRepository
         return $values;
     }
 
+    /**
+     * @param string $cohortStartDate
+     * @param string $cohortEndDate
+     * @param string $dateLimit
+     *
+     * @return array
+     */
     public function getOptimisticIRRValuesForCohortUntilDateLimit($cohortStartDate, $cohortEndDate, $dateLimit)
     {
         $query = 'SELECT
@@ -430,7 +437,7 @@ class UnilendStatsRepository extends EntityRepository
                     WHERE (SELECT added
                            FROM projects_status_history psh
                              INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                           WHERE ps.status = :repayment
+                           WHERE ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
                              AND psh.id_project = o_withdraw.id_project
                            ORDER BY added ASC
                            LIMIT 1) <= :end
@@ -458,12 +465,61 @@ class UnilendStatsRepository extends EntityRepository
                       AND (SELECT added
                            FROM projects_status_history psh
                              INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                           WHERE ps.status = :repayment
+                           WHERE ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
                                  AND psh.id_project = ee.id_project
                            ORDER BY added ASC
                            LIMIT 1) <= :end';
 
         $values = $this->getEntityManager()->getConnection()->executeQuery($query, ['startDate' => $cohortStartDate, 'endDate' => $cohortEndDate, 'end' => $dateLimit])->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $values;
+    }
+
+    /**
+     * @param \DateTime $dateLimit
+     *
+     * @return array
+     */
+    public function getOptimisticIRRValuesUntilDateLimit(\DateTime $dateLimit)
+    {
+        $query = 'SELECT
+                    -ROUND((o_withdraw.amount + o_comission.amount) * 100) AS amount,
+                    o_withdraw.added                                       AS date
+                  FROM operation o_withdraw
+                    INNER JOIN operation_type ot_withdraw ON o_withdraw.id_type = ot_withdraw.id AND ot_withdraw.label = "' . OperationType::BORROWER_WITHDRAW . '"
+                    INNER JOIN operation o_comission ON o_withdraw.id_wallet_debtor = o_comission.id_wallet_debtor AND DATE(o_withdraw.added) = DATE(o_comission.added)
+                    INNER JOIN operation_type ot_comission ON o_comission.id_type = ot_comission.id AND ot_comission.label = "' . OperationType::BORROWER_COMMISSION . '"
+                  WHERE (SELECT added
+                           FROM projects_status_history psh
+                             INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                           WHERE ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
+                             AND psh.id_project = o_withdraw.id_project
+                           ORDER BY added ASC
+                           LIMIT 1) <= :end
+                    GROUP BY o_withdraw.id
+                    
+                    UNION ALL
+                    
+                    SELECT
+                      ee.capital + ee.interets AS amount,
+                      (SELECT CASE WHEN e.status = 1
+                        THEN e.date_echeance_reel
+                              ELSE e.date_echeance END
+                       FROM echeanciers e
+                       WHERE e.ordre = ee.ordre
+                             AND ee.id_project = e.id_project
+                       LIMIT 1)                AS date
+                    FROM echeanciers_emprunteur ee
+                    WHERE
+                      (SELECT added
+                       FROM projects_status_history psh
+                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                       WHERE ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
+                             AND psh.id_project = ee.id_project
+                       ORDER BY added ASC
+                       LIMIT 1) <= :end';
+
+        $values = $this->getEntityManager()->getConnection()->executeQuery($query, ['end' => $dateLimit->format('Y-m-d H:i:s')])->fetchAll(\PDO::FETCH_ASSOC);
 
         return $values;
     }

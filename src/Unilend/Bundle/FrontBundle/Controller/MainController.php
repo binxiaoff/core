@@ -793,16 +793,24 @@ class MainController extends Controller
      */
     public function statisticsFpfAction(Request $request)
     {
+        /** @var StatisticsManager $statisticsManager */
+        $statisticsManager = $this->get('unilend.service.statistics_manager');
+        $date = new \DateTime('NOW');
+        $data = $statisticsManager->getPerformanceIndicatorAtDate($date);
+
+        $template = [
+            'data'  => $data,
+            'years' => array_merge(['2013-2014'], range(2015, date('Y'))),
+            'date'  => $date->format('Y-m-d')
+        ];
+        $response = $this->render('pages/static_pages/statistics-fpf.html.twig', $template);
+
         /** @var EntityManagerSimulator $entityManagerSimulator */
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \tree $tree */
         $tree = $entityManagerSimulator->getRepository('tree');
         $tree->get(['slug' => 'indicateurs-de-performance']);
         $this->setCmsSeoData($tree);
-        $template = [
-            'years' => array_merge(['2013-2014'], range(2015, date('Y')))
-        ];
-        $response = $this->render('pages/static_pages/statistics-fpf.html.twig', $template);
 
         $finalElements = [
             'contenu'      => $response->getContent(),
