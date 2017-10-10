@@ -2,10 +2,11 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Psr\Cache\CacheItemPoolInterface;
 use Doctrine\ORM\EntityManager;
+use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\librairies\CacheKeys;
@@ -100,7 +101,7 @@ class StatisticsManager
         $statistics = [
             'numberOfLendersInCommunity'      => $clientRepository->countLenders(),
             'numberOfActiveLenders'           => $clientRepository->countLenders(true),
-            'numberOfFinancedProjects'        => $projects->countSelectProjectsByStatus(\projects_status::$afterRepayment),
+            'numberOfFinancedProjects'        => $projects->countSelectProjectsByStatus(ProjectsStatus::AFTER_REPAYMENT),
             'numberOfProjectRequests'         => self::HISTORIC_NUMBER_OF_SIREN + $projects->getNumberOfUniqueProjectRequests(self::VALUE_DATE_HISTORIC_NUMBER_OF_SIREN),
             'averageFundingTime'              => $projects->getAverageFundingTime(new \DateTime('NOW - 4 MONTHS')),
             'averageInterestRateForLenders'   => $projects->getGlobalAverageRateOfFundedProjects(PHP_INT_MAX),

@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * DebtCollectionMissionPaymentSchedule
  *
  * @ORM\Table(name="debt_collection_mission_payment_schedule", indexes={@ORM\Index(name="idx_dc_mission_payment_schedule_id_mission", columns={"id_mission"}), @ORM\Index(name="idx_dc_mission_payment_schedule_id_payment", columns={"id_payment_schedule"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\DebtCollectionMissionPaymentScheduleRepository")
  */
 class DebtCollectionMissionPaymentSchedule
 {
@@ -41,7 +41,26 @@ class DebtCollectionMissionPaymentSchedule
      */
     private $idMission;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="capital", type="decimal", precision=11, scale=2, nullable=false)
+     */
+    private $capital;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="interest", type="decimal", precision=11, scale=2, nullable=false)
+     */
+    private $interest;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="commission_vat_incl", type="decimal", precision=11, scale=2, nullable=false)
+     */
+    private $commissionVatIncl;
 
     /**
      * Get id
@@ -60,7 +79,7 @@ class DebtCollectionMissionPaymentSchedule
      *
      * @return DebtCollectionMissionPaymentSchedule
      */
-    public function setIdPaymentSchedule(\Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur $idPaymentSchedule = null)
+    public function setIdPaymentSchedule(EcheanciersEmprunteur $idPaymentSchedule = null)
     {
         $this->idPaymentSchedule = $idPaymentSchedule;
 
@@ -84,7 +103,7 @@ class DebtCollectionMissionPaymentSchedule
      *
      * @return DebtCollectionMissionPaymentSchedule
      */
-    public function setIdMission(\Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission $idMission = null)
+    public function setIdMission(DebtCollectionMission $idMission = null)
     {
         $this->idMission = $idMission;
 
@@ -99,5 +118,77 @@ class DebtCollectionMissionPaymentSchedule
     public function getIdMission()
     {
         return $this->idMission;
+    }
+
+    /**
+     * get entrusted capital
+     *
+     * @return string
+     */
+    public function getCapital()
+    {
+        return $this->capital;
+    }
+
+    /**
+     * set entrusted capital amount
+     *
+     * @param string $capital
+     *
+     * @return DebtCollectionMissionPaymentSchedule
+     */
+    public function setCapital($capital)
+    {
+        $this->capital = $capital;
+
+        return $this;
+    }
+
+    /**
+     * get entrusted interest amount
+     *
+     * @return string
+     */
+    public function getInterest()
+    {
+        return $this->interest;
+    }
+
+    /**
+     * set entrusted interests amount
+     *
+     * @param string $interest
+     *
+     * @return DebtCollectionMissionPaymentSchedule
+     */
+    public function setInterest($interest)
+    {
+        $this->interest = $interest;
+
+        return $this;
+    }
+
+    /**
+     * get entrusted commission VAT included amount
+     *
+     * @return string
+     */
+    public function getCommissionVatIncl()
+    {
+        return $this->commissionVatIncl;
+    }
+
+    /**
+     * set entrusted commission VAT included amount
+     *
+     * @param string $commissionVatIncl
+     *
+     * @return DebtCollectionMissionPaymentSchedule
+     */
+    public function setCommissionVatIncl($commissionVatIncl)
+    {
+        $this->commissionVatIncl = $commissionVatIncl;
+
+        return $this;
     }
 }

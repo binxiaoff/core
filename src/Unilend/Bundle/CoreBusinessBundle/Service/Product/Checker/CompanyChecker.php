@@ -195,7 +195,7 @@ trait CompanyChecker
             if (null === $product || Product::PRODUCT_BLEND === $product->getLabel()) {
                 continue;
             }
-            $lastIncidentStatus = $projectStatusHistoryRepository->findStatusLastOccurrence($project, [ProjectsStatus::PROBLEME, ProjectsStatus::PROBLEME_J_X, ProjectsStatus::RECOUVREMENT]);
+            $lastIncidentStatus = $projectStatusHistoryRepository->findStatusLastOccurrence($project, [ProjectsStatus::PROBLEME]);
 
             if ($lastIncidentStatus && $lastIncidentStatus->getAdded()->diff(new \DateTime())->days <= $noUnilendIncidentSince[0]) {
                 return false;
@@ -231,7 +231,7 @@ trait CompanyChecker
             if (null === $product || Product::PRODUCT_BLEND !== $product->getLabel()) {
                 continue;
             }
-            $lastIncidentStatus = $projectStatusHistoryRepository->findStatusLastOccurrence($project, [ProjectsStatus::PROBLEME, ProjectsStatus::PROBLEME_J_X, ProjectsStatus::RECOUVREMENT]);
+            $lastIncidentStatus = $projectStatusHistoryRepository->findStatusLastOccurrence($project, [ProjectsStatus::PROBLEME]);
 
             if ($lastIncidentStatus && $lastIncidentStatus->getAdded()->diff(new \DateTime())->days <= $noBlendIncidentSince[0]) {
                 return false;

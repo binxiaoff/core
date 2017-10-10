@@ -1,7 +1,9 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager;
 
 class debt_collection_missionController extends bootstrap
 {
@@ -14,200 +16,192 @@ class debt_collection_missionController extends bootstrap
         $this->menu_admin = 'emprunteurs';
     }
 
-    public function _creditor_details()
+    public function _downloadCreditorDetailsFile()
     {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager $debtCollectionMissionManager */
+        /** @var DebtCollectionMissionManager $debtCollectionMissionManager */
         $debtCollectionMissionManager = $this->get('unilend.service.debt_collection_mission_manager');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        if (false === empty($this->params[0])) {
-            $missionId             = filter_var($this->params[0], FILTER_VALIDATE_INT);
-            $debtCollectionMission = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMission')->find($missionId);
-            if ($debtCollectionMission) {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMissionPaymentSchedule[] $missionPaymentSchedules */
-                $missionPaymentSchedules = $debtCollectionMission->getDebtCollectionMissionPaymentSchedules();
-
-                $excel       = new \PHPExcel();
-                $activeSheet = $excel->setActiveSheetIndex(0);
-
-                $titles            = [
-                    'Identifiant du prêt',
-                    'Nom',
-                    'Prénom',
-                    'Email',
-                    'Type',
-                    'Raison social',
-                    'Date de naissance',
-                    'Téléphone',
-                    'Mobile',
-                    'Adresse',
-                    'Code postal',
-                    'Ville',
-                    'Montant du prêt'
-                ];
-                $titleColumn       = 'A';
-                $titleRow          = 2;
-                $commissionColumns = [];
-                $feeColumn         = [];
-                $chargeColumn      = null;
-                $totalColumn       = null;
-                foreach ($titles as $title) {
-                    $activeSheet->setCellValue($titleColumn . $titleRow, $title);
-                    $titleColumn++;
-                }
-
-                $paymentScheduleTitleCellLeft = $titleColumn;
-                $titleColumn++;
-                $titleColumn++;
-                $paymentScheduleTitleCellRight = $titleColumn;
-                foreach ($missionPaymentSchedules as $missionPaymentSchedule) {
-                    $activeSheet->setCellValue($paymentScheduleTitleCellLeft . '1', 'Échéance ' . $missionPaymentSchedule->getIdPaymentSchedule()->getOrdre());
-                    $activeSheet->getStyle($paymentScheduleTitleCellLeft . '1')->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-                    $activeSheet->mergeCells($paymentScheduleTitleCellLeft . '1:' . $paymentScheduleTitleCellRight . '1');
-                    $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Capital');
-                    $paymentScheduleTitleCellLeft++;
-                    $paymentScheduleTitleCellRight++;
-
-                    $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Intérêts');
-                    $paymentScheduleTitleCellLeft++;
-                    $paymentScheduleTitleCellRight++;
-
-                    $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Commission');
-                    $paymentScheduleTitleCellLeft++;
-                    $paymentScheduleTitleCellRight++;
-                }
-
-                $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Frais');
-
-                $paymentScheduleTitleCellLeft++;
-                $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Honoraires');
-
-                $paymentScheduleTitleCellLeft++;
-                $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Tva');
-
-                $paymentScheduleTitleCellLeft++;
-                $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Total');
-
-                $creditorDetails = $debtCollectionMissionManager->getCreditorsDetails($debtCollectionMission);
-
-                $dataRow = $titleRow;
-                foreach ($creditorDetails['loans'] as $loanId => $loanDetails) {
-                    $dataRow++;
-                    $dataColumn = 0;
-                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanId);
-
-                    $dataColumn++;
-                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['name']);
-
-                    $dataColumn++;
-                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['first_name']);
-
-                    $dataColumn++;
-                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['email']);
-
-                    $dataColumn++;
-                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow,
-                        in_array($loanDetails['type'], [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 'Physique' : 'Morale');
-
-                    $dataColumn++;
-                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['company_name']);
-
-                    $dataColumn++;
-                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['birthday']->format('d/m/Y'));
-
-                    $dataColumn++;
-                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['telephone']);
-
-                    $dataColumn++;
-                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['mobile']);
-
-                    $dataColumn++;
-                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['address']);
-
-                    $dataColumn++;
-                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['postal_code']);
-
-                    $dataColumn++;
-                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['city']);
-
-                    $dataColumn++;
-                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['amount'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
-
-                    foreach ($missionPaymentSchedules as $missionPaymentSchedule) {
-                        $sequence = $missionPaymentSchedule->getIdPaymentSchedule()->getOrdre();
-
-                        $dataColumn++;
-                        $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['schedule'][$sequence]['remaining_capital'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
-
-                        $dataColumn++;
-                        $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['schedule'][$sequence]['remaining_interest'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
-
-                        $dataColumn++; // commission
-                        if (empty($commissionColumns['schedule'][$sequence])) {
-                            $commissionColumns['schedule'][$sequence] = $dataColumn;
+        if ($this->isUserTypeRisk()) {
+            if (false === empty($this->params[0])) {
+                $missionId = filter_var($this->params[0], FILTER_VALIDATE_INT);
+                if (null !== ($debtCollectionMission = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMission')->find($missionId))) {
+                    try {
+                        if (is_dir($this->getParameter('path.protected') . $debtCollectionMission->getAttachment())
+                            || false === file_exists($this->getParameter('path.protected') . $debtCollectionMission->getAttachment())) {
+                            $debtCollectionMissionManager->generateExcelFile($debtCollectionMission);
                         }
+                        header('Content-Type: application/force-download; charset=utf-8');
+                        header('Content-Disposition: attachment;filename=' . basename($debtCollectionMission->getAttachment()));
+                        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+                        header('Expires: 0');
+                        readfile($this->getParameter('path.protected') . $debtCollectionMission->getAttachment());
+                        die;
+                    } catch (\Exception $exception) {
+                        $this->get('logger')->warning(
+                            'Could not download the Excel file for debt collection mission: ' . $debtCollectionMission->getId() . ' Error: ' . $exception->getMessage(),
+                            ['method' => __METHOD__, ['id_mission' => $debtCollectionMission->getId(), 'id_project' => $debtCollectionMission->getIdProject()->getIdProject()]]
+                        );
+                        header('Location: ' . $this->url . 'details_impayes/' . $debtCollectionMission->getIdProject()->getIdProject());
+                        die;
                     }
-
-                    $dataColumn++;
-                    if (empty($chargeColumn)) {
-                        $chargeColumn = $dataColumn;
-                    }
-
-                    $dataColumn++;
-                    if (empty($feeColumn['fee_tax_excl'])) {
-                        $feeColumn['fee_tax_excl'] = $dataColumn;
-                    }
-                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['fee_tax_excl'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
-
-                    $dataColumn++;
-                    if (empty($feeColumn['fee_vat'])) {
-                        $feeColumn['fee_vat'] = $dataColumn;
-                    }
-                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['fee_vat'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
-
-                    $dataColumn++;
-                    if (empty($totalColumn)) {
-                        $totalColumn = $dataColumn;
-                    }
-                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['total'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
                 }
-
-                $commissionDetails = $creditorDetails['commission'];
-                $dataRow++;
-                $activeSheet->setCellValueByColumnAndRow(0, $dataRow, 'Commission unilend');
-                foreach ($commissionColumns['schedule'] as $sequence => $column) {
-                    $activeSheet->setCellValueExplicitByColumnAndRow($column, $dataRow, $commissionDetails['schedule'][$sequence], PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                }
-                $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_tax_excl'], $dataRow, $commissionDetails['fee_tax_excl'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_vat'], $dataRow, $commissionDetails['fee_vat'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $activeSheet->setCellValueExplicitByColumnAndRow($totalColumn, $dataRow, $commissionDetails['total'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
-
-                $chargeDetails = $creditorDetails['charge'];
-                $dataRow++;
-                $activeSheet->setCellValueByColumnAndRow(0, $dataRow, 'Frais');
-                $activeSheet->setCellValueExplicitByColumnAndRow($chargeColumn, $dataRow, $chargeDetails['charge'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_tax_excl'], $dataRow, $chargeDetails['fee_tax_excl'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_vat'], $dataRow, $chargeDetails['fee_vat'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $activeSheet->setCellValueExplicitByColumnAndRow($totalColumn, $dataRow, $chargeDetails['total'], PHPExcel_Cell_DataType::TYPE_NUMERIC);
-
-                $fileName = 'recouvrement_' . $missionId . '_' . (new DateTime())->format('Y-m-d');
-
-                /** @var \PHPExcel_Writer_Excel2007 $writer */
-                $writer = PHPExcel_IOFactory::createWriter($excel, 'Excel2007');
-
-                header('Content-Type: application/force-download; charset=utf-8');
-                header('Content-Disposition: attachment;filename=' . $fileName . '.xlsx');
-                header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-                header('Expires: 0');
-
-                $writer->save('php://output');
-
-                die;
             }
         }
 
         header('Location: ' . $this->url);
         die;
+    }
+
+    public function _add()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        if (false === empty($this->params[0] && $this->isUserTypeRisk())) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager      = $this->get('doctrine.orm.entity_manager');
+            $projectId          = filter_var($this->params[0], FILTER_VALIDATE_INT);
+            $debtCollector      = null;
+            $debtCollectionType = null;
+            $feesRate           = -1;
+            $errors             = [];
+
+            if (null === ($project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId))) {
+                $errors[] = 'Le projet n\'existe pas.';
+            }
+            if (false === empty($_POST['debt-collector-hash'])) {
+                $debtCollector = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $_POST['debt-collector-hash']]);
+            }
+            if (null === $debtCollector) {
+                $errors[] = 'Le recouvreur n\'existe pas.';
+            }
+            if (empty($_POST['debt-collection-type'])
+                || false === ($debtCollectionType = filter_var($_POST['debt-collection-type'], FILTER_VALIDATE_INT))
+                || false === in_array($debtCollectionType, [DebtCollectionMission::TYPE_AMICABLE, DebtCollectionMission::TYPE_LITIGATION,])
+            ) {
+                $errors[] = 'Le type de mission est incorrect: valeures possibles (1, 2). Fournit: ' . $debtCollectionType;
+            }
+            if (empty($_POST['debt-collection-rate'])
+                || false === ($feesRate = filter_var(str_replace(',', '.', $_POST['debt-collection-rate']), FILTER_VALIDATE_FLOAT))
+                || $feesRate < 0
+            ) {
+                $errors[] = 'Le taux d\'honoraires est incorrect.';
+            }
+            $feesRate = round(bcdiv($feesRate, 100, 6), 4);
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager $debtCollectionManager */
+            $debtCollectionManager = $this->get('unilend.service.debt_collection_mission_manager');
+            $user                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+
+            if (empty($errors)) {
+                $newMission = $debtCollectionManager->newMission($project, $debtCollector, $debtCollectionType, $feesRate, $user);
+
+                if (false === $newMission) {
+                    $errors[] = 'Erreur à la création de la mission de recouvrement.';
+                } else {
+                    try {
+                        $debtCollectionManager->generateExcelFile($newMission);
+                    } catch (Exception $exception) {
+                        $this->get('logger')->warning(
+                            'Could not generate the debt collection mission Excel file for mission: ' . $newMission->getId() . ' - Error: ' . $exception->getMessage() . ' - In file: ' . $exception->getFile() . ' at line: ' . $exception->getLine(),
+                            ['method' => __METHOD__, 'id_mission' => $newMission->getId(), 'id_project' => $newMission->getIdProject()->getIdProject()]
+                        );
+                    }
+                }
+            }
+
+            echo json_encode(['error' => $errors, 'success' => empty($errors)]);
+            return;
+        }
+
+        header('Location: ' . $this->url);
+        die;
+    }
+
+    public function _addCharge()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        if (false === empty($this->params[0] && $this->isUserTypeRisk())) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager       = $this->get('doctrine.orm.entity_manager');
+            $projectId           = filter_var($this->params[0], FILTER_VALIDATE_INT);
+            $projectChargeType   = null;
+            $chargeAmountVatFree = -1;
+            $chargeAmountVat     = -1;
+            $chargeInvoiceDate   = null;
+
+            $errors = [];
+
+            if (null === ($project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId))) {
+                $errors[] = 'Le projet n\'existe pas.';
+            }
+            if (empty($_POST['fee-type'])
+                || false === ($projectChargeType = filter_var($_POST['fee-type'], FILTER_VALIDATE_INT))
+                || null === ($projectChargeType = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectChargeType')->find($projectChargeType))
+            ) {
+                $errors[] = 'Le type de frais est incorrect';
+            }
+            if (empty($_POST['fee-amount-vat-free'])
+                || false === ($chargeAmountVatFree = filter_var(str_replace(',', '.', $_POST['fee-amount-vat-free']), FILTER_VALIDATE_FLOAT))
+                || $chargeAmountVatFree < 0
+            ) {
+                $errors[] = 'Le montant HT saisi est incorrect';
+            }
+            if (empty($_POST['fee-amount-vat'])
+                || false === ($chargeAmountVat = filter_var(str_replace(',', '.', $_POST['fee-amount-vat']), FILTER_VALIDATE_FLOAT))
+                || $chargeAmountVat < 0
+            ) {
+                $errors[] = 'Le montant TVA saisi est incorrect';
+            }
+            if (empty($_POST['fee-invoice-date'])
+                || false === ($chargeInvoiceDate = \DateTime::createFromFormat('d/m/Y', $_POST['fee-invoice-date']))
+            ) {
+                $errors[] = 'Le format de la date est incorrect';
+            }
+
+            if (empty($errors)) {
+                $chargeAmountVatIncl = round(bcadd($chargeAmountVatFree, $chargeAmountVat, 4), 2);
+
+                $newCharge = new ProjectCharge();
+                $newCharge->setIdProject($project)
+                    ->setIdType($projectChargeType)
+                    ->setStatus(ProjectCharge::STATUS_PENDING)
+                    ->setAmountInclVat($chargeAmountVatIncl)
+                    ->setAmountVat(round($chargeAmountVat, 2))
+                    ->setInvoiceDate($chargeInvoiceDate);
+
+                $entityManager->persist($newCharge);
+                $entityManager->flush($newCharge);
+            }
+
+            echo json_encode(['error' => $errors, 'success' => empty($errors)]);
+            return;
+        }
+
+        header('Location: ' . $this->url);
+        die;
+    }
+
+    /**
+     * @return bool
+     */
+    private function isUserTypeRisk()
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $user          = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+
+        if (\users_types::TYPE_RISK == $user->getIdUserType()->getIdUserType()
+            || $user->getIdUser() == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_ALAIN_ELKAIM
+            || isset($this->params[1]) && 'risk' == $this->params[1] && in_array($user->getIdUserType()->getIdUserType(), [\users_types::TYPE_ADMIN, \users_types::TYPE_IT])
+        ) {
+            return true;
+        }
+
+        return false;
     }
 }

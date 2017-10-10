@@ -8,6 +8,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\core\Loader;
 
@@ -152,7 +153,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 
     /**
      * @param \transmission_sequence $transmissionSequence
-     * @param string $fileName
+     * @param string                 $fileName
      *
      * @return string
      */
@@ -181,7 +182,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $projectData = $this->getProjectInformation($projectData);
 
         if (null !== $projectData) {
-            return $this->multiBytePad($this->getStartingRecord('11') . $projectData , self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
+            return $this->multiBytePad($this->getStartingRecord('11') . $projectData, self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
         }
 
         return null;
@@ -231,7 +232,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $projectLineInfo .= $data['repayment_frequency'];
         $projectLineInfo .= $roundedDueCapital;
         $projectLineInfo .= $this->checkAmounts($amount['unpaid_amount']);
-        $projectLineInfo .= $this->checkUnpaidDate($data['recovery_date'], $data['judgement_date'], $data['late_payment_date']);
+        $projectLineInfo .= $this->checkUnpaidDate($data['close_out_netting_date'], $data['judgement_date'], $data['late_payment_date']);
         $projectLineInfo .= $this->checkLoanContributorNumber($data['contributor_person_number'], 'person');
         $projectLineInfo .= $this->checkLoanContributorPercentage($data['contributor_person_percentage']);
         $projectLineInfo .= $this->checkLoanContributorNumber($data['contributor_legal_entity_number'], 'legal_entity');
@@ -252,13 +253,13 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         /** @var \echeanciers $repayment */
         $repayment = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('echeanciers');
 
-        if (false === empty($data['recovery_date'])) {
+        if (false === empty($data['close_out_netting_date'])) {
             /** @var \DateTime $date */
-            $date   = \DateTime::createFromFormat('Y-m-d H:i:s', $data['recovery_date']);
+            $date   = \DateTime::createFromFormat('Y-m-d', $data['close_out_netting_date']);
             $amount = bcadd($repayment->getUnpaidAmountAtDate($data['id_project'], $date), $repayment->getTotalComingCapitalByProject($data['id_project'], $date), 2);
             $amount = bcsub($amount, $data['debt_collection_repayment'], 2);
             $return = ['unpaid_amount' => $amount, 'owed_capital' => $amount];
-        } elseif (false === empty($data['judgement_date']) && true === in_array($data['status'], [\projects_status::LIQUIDATION_JUDICIAIRE])) {
+        } elseif (false === empty($data['judgement_date'])) {
             /** @var \DateTime $date */
             $date   = \DateTime::createFromFormat('Y-m-d', $data['judgement_date']);
             $amount = bcadd($repayment->getUnpaidAmountAtDate($data['id_project'], $date), $repayment->getTotalComingCapitalByProject($data['id_project'], $date), 2);
@@ -369,19 +370,19 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
     }
 
     /**
-     * @param string $recoveryDate
+     * @param string $closeOutNettingDate
      * @param string $judgementDate
      * @param string $latePaymentDate
      *
      * @return string
      */
-    private function checkUnpaidDate($recoveryDate, $judgementDate, $latePaymentDate)
+    private function checkUnpaidDate($closeOutNettingDate, $judgementDate, $latePaymentDate)
     {
-        if (false === empty($recoveryDate)) {
-            return \DateTime::createFromFormat('Y-m-d H:i:s', $recoveryDate)->format('Ymd');
+        if (false === empty($closeOutNettingDate)) {
+            return \DateTime::createFromFormat('Y-m-d', $closeOutNettingDate)->format('Ymd');
         } elseif (false === empty($judgementDate)) {
             return \DateTime::createFromFormat('Y-m-d', $judgementDate)->format('Ymd');
-        } elseif(false === empty($latePaymentDate)) {
+        } elseif (false === empty($latePaymentDate)) {
             return \DateTime::createFromFormat('Y-m-d H:i:s', $latePaymentDate)->format('Ymd');
         } else {
             return '00000000';
@@ -389,7 +390,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
     }
 
     /**
-     * @param int $number
+     * @param int    $number
      * @param string $type
      *
      * @return string
@@ -431,9 +432,9 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 
     /**
      * @param string $input
-     * @param int $padLength
+     * @param int    $padLength
      * @param string $padString
-     * @param int $padType
+     * @param int    $padType
      * @param string $encoding
      *
      * @return string
@@ -493,7 +494,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $projectLineInfo[] = $data['repayment_frequency'];
         $projectLineInfo[] = $roundedDueCapital;
         $projectLineInfo[] = $this->checkAmounts($amount['unpaid_amount']);
-        $projectLineInfo[] = $this->checkUnpaidDate($data['recovery_date'], $data['judgement_date'], $data['late_payment_date']);
+        $projectLineInfo[] = $this->checkUnpaidDate($data['close_out_netting_date'], $data['judgement_date'], $data['late_payment_date']);
         $projectLineInfo[] = $this->checkLoanContributorNumber($data['contributor_person_number'], 'person');
         $projectLineInfo[] = $this->checkLoanContributorPercentage($data['contributor_person_percentage']);
         $projectLineInfo[] = $this->checkLoanContributorNumber($data['contributor_legal_entity_number'], 'legal_entity');

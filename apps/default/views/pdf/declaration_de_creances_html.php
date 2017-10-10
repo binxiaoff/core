@@ -27,13 +27,13 @@
         <?= $this->mandataires_var ?>
     </div>
     <div class="debiteur">
-        <?=$this->companiesEmpr->forme?> <?=$this->companiesEmpr->name?>
+        <?=$this->borrowerCompany->getForme()?> <?=$this->borrowerCompany->getName()?>
         <br />
-        <?=$this->companiesEmpr->adresse1?>
+        <?=$this->borrowerCompany->getAdresse1()?>
         <br />
-        <?=$this->companiesEmpr->zip?> <?=$this->companiesEmpr->city?>
+        <?=$this->borrowerCompany->getZip()?> <?=$this->borrowerCompany->getCity()?>
         <br />
-        <?=$this->companiesEmpr->siren?>
+        <?=$this->borrowerCompany->getSiren()?>
     </div>
     <div class="procedure">
         <?= $this->nature_var ?>

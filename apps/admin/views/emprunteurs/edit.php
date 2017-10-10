@@ -1,4 +1,8 @@
-<?php ?>
+<?php
+
+use \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
+
+?>
 <script>
     $(function () {
         $(".listeProjets").tablesorter({headers: {4: {sorter: false}, 5: {sorter: false}}});
@@ -27,6 +31,28 @@
                 }
             });
         });
+
+        $('#status').change(function () {
+            var status = $(this).val();
+
+            if (
+                status != '<?= $this->companyStatusInBonis->getId() ?>'
+            ) {
+                $.colorbox({href: "<?= $this->lurl ?>/thickbox/company_status_update/<?= $this->clients->id_client ?>/<?= $this->companies->id_company ?>/" + status});
+            }
+        });
+
+        $('.operation-tooltip').tooltip({
+            show: false,
+            position: {
+                at: 'right center',
+                my: 'right center',
+            },
+            content: function () {
+                var content = $(this).attr('title')
+                return content
+            }
+        })
     });
 </script>
 
@@ -128,6 +154,26 @@
             </tr>
         </table>
     </form>
+
+    <h1>Société : <?= $this->companyEntity->getName() ?></h1>
+    <table class="formColor" style="width: 775px; margin:auto;">
+        <tr>
+            <th style="width: 133px">ID</th>
+            <td style="width: 250px"><?= $this->companyEntity->getIdCompany() ?></td>
+            <th style="width: 105px">Statut</th>
+            <td>
+                <select id="status" name="status" class="select" style="width: 250px;">
+                    <?php /** @var $status CompanyStatus */ ?>
+                    <?php if (false === empty($this->companyEntity->getIdStatus()) && false === in_array($this->companyEntity->getIdStatus(), $this->possibleCompanyStatus)) : ?>
+                        <option selected disabled value="<?= $this->companyEntity->getIdStatus()->getId() ?>"><?= $this->companyManager->getCompanyStatusNameByLabel($this->companyEntity->getIdStatus()->getLabel()) ?></option>
+                    <?php endif; ?>
+                    <?php foreach ($this->possibleCompanyStatus as $status) : ?>
+                        <option <?= $this->companyEntity->getIdStatus()->getId() == $status->getId() ? 'selected' : '' ?> value="<?= $status->getId() ?>"><?= $this->companyManager->getCompanyStatusNameByLabel($status->getLabel()) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </td>
+        </tr>
+    </table>
     <br/><br/>
 
     <?php if (false === in_array($this->companies->legal_form_code, \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager::BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES)) : ?>

@@ -39,12 +39,7 @@ class ProjectsStatus
     const REMBOURSE                  = 90;
     const REMBOURSEMENT_ANTICIPE     = 95;
     const PROBLEME                   = 100;
-    const PROBLEME_J_X               = 110;
-    const RECOUVREMENT               = 120;
-    const PROCEDURE_SAUVEGARDE       = 130;
-    const REDRESSEMENT_JUDICIAIRE    = 140;
-    const LIQUIDATION_JUDICIAIRE     = 150;
-    const DEFAUT                     = 160;
+    const LOSS                       = 160;
 
     const NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND                     = 'product_not_found';
     const NON_ELIGIBLE_REASON_PRODUCT_BLEND                         = 'product_blend';
@@ -76,27 +71,12 @@ class ProjectsStatus
     const NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT  = 'infolegale_previous_manager_incident';
     const UNEXPECTED_RESPONSE                                       = 'unexpected_response_from_';
 
-    const RUNNING_REPAYMENT = [
-        ProjectsStatus::REMBOURSEMENT,
-        ProjectsStatus::PROBLEME,
-        ProjectsStatus::PROBLEME_J_X,
-        ProjectsStatus::RECOUVREMENT,
-        ProjectsStatus::PROCEDURE_SAUVEGARDE,
-        ProjectsStatus::REDRESSEMENT_JUDICIAIRE,
-        ProjectsStatus::LIQUIDATION_JUDICIAIRE
-    ];
-
     const AFTER_REPAYMENT = [
-        ProjectsStatus::REMBOURSEMENT,
-        ProjectsStatus::REMBOURSE,
-        ProjectsStatus::REMBOURSEMENT_ANTICIPE,
-        ProjectsStatus::PROBLEME,
-        ProjectsStatus::PROBLEME_J_X,
-        ProjectsStatus::RECOUVREMENT,
-        ProjectsStatus::PROCEDURE_SAUVEGARDE,
-        ProjectsStatus::REDRESSEMENT_JUDICIAIRE,
-        ProjectsStatus::LIQUIDATION_JUDICIAIRE,
-        ProjectsStatus::DEFAUT
+        self::REMBOURSEMENT,
+        self::REMBOURSE,
+        self::REMBOURSEMENT_ANTICIPE,
+        self::PROBLEME,
+        self::LOSS
     ];
 
     /**
@@ -104,18 +84,18 @@ class ProjectsStatus
      * @var array
      */
     const SALES_TEAM = [
-        ProjectsStatus::POSTPONED,
-        ProjectsStatus::COMMERCIAL_REVIEW,
-        ProjectsStatus::PENDING_ANALYSIS,
-        ProjectsStatus::ANALYSIS_REVIEW,
-        ProjectsStatus::COMITY_REVIEW,
-        ProjectsStatus::SUSPENSIVE_CONDITIONS,
-        ProjectsStatus::PREP_FUNDING,
-        ProjectsStatus::A_FUNDER,
-        ProjectsStatus::AUTO_BID_PLACED,
-        ProjectsStatus::EN_FUNDING,
-        ProjectsStatus::BID_TERMINATED,
-        ProjectsStatus::FUNDE
+        self::POSTPONED,
+        self::COMMERCIAL_REVIEW,
+        self::PENDING_ANALYSIS,
+        self::ANALYSIS_REVIEW,
+        self::COMITY_REVIEW,
+        self::SUSPENSIVE_CONDITIONS,
+        self::PREP_FUNDING,
+        self::A_FUNDER,
+        self::AUTO_BID_PLACED,
+        self::EN_FUNDING,
+        self::BID_TERMINATED,
+        self::FUNDE
     ];
 
     /**
@@ -123,10 +103,10 @@ class ProjectsStatus
      * @var array
      */
     CONST RISK_TEAM = [
-        ProjectsStatus::PENDING_ANALYSIS,
-        ProjectsStatus::ANALYSIS_REVIEW,
-        ProjectsStatus::COMITY_REVIEW,
-        ProjectsStatus::SUSPENSIVE_CONDITIONS
+        self::PENDING_ANALYSIS,
+        self::ANALYSIS_REVIEW,
+        self::COMITY_REVIEW,
+        self::SUSPENSIVE_CONDITIONS
     ];
 
     /**
@@ -134,8 +114,8 @@ class ProjectsStatus
      * @var array
      */
     const SALES_TEAM_UPCOMING_STATUS = [
-        ProjectsStatus::INCOMPLETE_REQUEST,
-        ProjectsStatus::COMPLETE_REQUEST
+        self::INCOMPLETE_REQUEST,
+        self::COMPLETE_REQUEST
     ];
 
     /**
