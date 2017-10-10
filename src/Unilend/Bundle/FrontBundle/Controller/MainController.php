@@ -793,19 +793,18 @@ class MainController extends Controller
      */
     public function statisticsFpfAction(Request $request)
     {
-        /** @var StatisticsManager $statisticsManager */
         $statisticsManager = $this->get('unilend.service.statistics_manager');
-        $date = new \DateTime('NOW');
-        $data = $statisticsManager->getPerformanceIndicatorAtDate($date);
+        $date              = new \DateTime('NOW');
+        $data              = $statisticsManager->getPerformanceIndicatorAtDate($date);
 
         $template = [
-            'data'  => $data,
-            'years' => array_merge(['2013-2014'], range(2015, date('Y'))),
-            'date'  => $date->format('Y-m-d')
+            'data'           => $data,
+            'years'          => array_merge(['2013-2014'], range(2015, date('Y'))),
+            'date'           => $date->format('Y-m-d'),
+            'availableDates' => $statisticsManager->getAvailableDatesForFPFStatistics()
         ];
         $response = $this->render('pages/static_pages/statistics-fpf.html.twig', $template);
 
-        /** @var EntityManagerSimulator $entityManagerSimulator */
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \tree $tree */
         $tree = $entityManagerSimulator->getRepository('tree');
@@ -815,7 +814,7 @@ class MainController extends Controller
         $finalElements = [
             'contenu'      => $response->getContent(),
             'complement'   => '',
-            'image-header' => 'apropos-header-1682x400.jpg',
+            'image-header' => '1682x400_0005_Statistiques.jpg',
         ];
 
         return $this->renderCmsNav($tree, $finalElements, $entityManagerSimulator, 'apropos-statistiques-fpf');

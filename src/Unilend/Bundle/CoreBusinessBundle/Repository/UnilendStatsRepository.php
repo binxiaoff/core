@@ -523,4 +523,21 @@ class UnilendStatsRepository extends EntityRepository
 
         return $values;
     }
+
+    /**
+     * @param string $type
+     *
+     * @return array
+     */
+    public function getAvailableDatesForStatisticType($type)
+    {
+        $queryBuilder = $this->createQueryBuilder('us');
+        $queryBuilder->select('DATE(us.added) AS availableDate','us.added')
+            ->where('us.typeStat = :type')
+            ->groupBy('availableDate')
+            ->orderBy('us.added', 'ASC')
+            ->setParameter('type', $type);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
 }

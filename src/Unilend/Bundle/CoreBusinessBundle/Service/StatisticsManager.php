@@ -7,6 +7,7 @@ use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\librairies\CacheKeys;
@@ -358,7 +359,7 @@ class StatisticsManager
         $weightedAverageInterestRate    = $this->formatCohortQueryResult($projectRepository->getWeightedAverageInterestRateByCohortUntil(), $years);
         $notWeightedAverageInterestRate = $this->formatCohortQueryResult($projectRepository->getNonWeightedAverageInterestRateByCohortUntil(), $years);
         $weightedAveragePeriod          = $this->formatCohortQueryResult($projectRepository->getWeightedAveragePeriodByCohortUntil(), $years);
-        $notWeightedAveragePeriod       = $this->formatCohortQueryResult($projectRepository->getNonWeightedAverageInterestRateByCohortUntil(), $years);
+        $notWeightedAveragePeriod       = $this->formatCohortQueryResult($projectRepository->getNonWeightedAveragePeriodByCohortUntil(), $years);
         $totalInterest                  = $this->formatCohortQueryResult($paymentScheduleRepository->getTotalInterestToBePaidByCohortUntil(), $years);
         $numberLateHealthyProjects      = $this->formatCohortQueryResult($projectRepository->getCountProjectsWithLateRepayments(true), $years);
         $numberLateProblematicProjects  = $this->formatCohortQueryResult($projectRepository->getCountProjectsWithLateRepayments(false), $years);
@@ -374,43 +375,86 @@ class StatisticsManager
             }
 
             try {
-                $data['optimisticUnilendIRR'][$year] = $this->IRRManager->getOptimisticUnilendIRRByCohort($cohortStartDate, $cohortEndDate);
-            } catch (\Exception $exception){
-                $data['optimisticUnilendIRR'][$year] = 'NA';
+                $data['optimistic-unilend-irr'][$year] = $this->IRRManager->getOptimisticUnilendIRRByCohort($cohortStartDate, $cohortEndDate);
+            } catch (\Exception $exception) {
+                $data['optimistic-unilend-irr'][$year] = 'NA';
             }
 
-            $data['borrowedCapital'][$year]                  = $regulatoryData['borrowed-capital'][$year];
-            $data['numberOfProjects'][$year]                 = $regulatoryData['projects'][$year];
-            $data['averageBorrowedAmount'][$year]            = round(bcdiv($regulatoryData['borrowed-capital'][$year], $regulatoryData['projects'][$year], 4));
-            $data['averageInterestRate'][$year]              = [
+            $data['borrowed-capital'][$year]                    = $regulatoryData['borrowed-capital'][$year];
+            $data['number-of-projects'][$year]                  = $regulatoryData['projects'][$year];
+            $data['average-borrowed-amount'][$year]             = round(bcdiv($regulatoryData['borrowed-capital'][$year], $regulatoryData['projects'][$year], 4));
+            $data['average-interest-rate'][$year]               = [
                 'volume' => $weightedAverageInterestRate[$year],
                 'number' => $notWeightedAverageInterestRate[$year]
             ];
-            $data['averagePeriod']                           = [
+            $data['average-period'][$year]                      = [
                 'volume' => $weightedAveragePeriod[$year],
                 'number' => $notWeightedAveragePeriod[$year]
             ];
-            $data['repaidCapital'][$year]                    = $regulatoryData['repaid-capital'][$year];
-            $data['repaidCapitalRatio'][$year]               = round(bcdiv($data['repaidCapital'][$year], $data['borrowedCapital'][$year], 4), 2);
-            $data['repaidInterest'][$year]                   = $regulatoryData['repaid-interest'][$year];
-            $data['repaidInterestRatio'][$year]              = round(bcdiv($data['repaidInterest'][$year], $totalInterest[$year], 4), 2);
-            $data['realisticUnilendIRR'][$year]              = $regulatoryData['IRR'][$year];
-            $data['annualCostOfRisk'][$year]                 = 'NA' === $data['optimisticUnilendIRR'][$year] ? 'NA' : bcsub($data['optimisticUnilendIRR'][$year], $data['realisticUnilendIRR'][$year], 4);
-            $data['lateOwedCapitalHealthy'][$year]           = $regulatoryData['late-owed-capital-healthy'][$year];
-            $data['lateCapitalPercentage'][$year]            = [
-                'volume' => bcdiv($data['lateOwedCapitalHealthy'][$year], $data['borrowedCapital'][$year], 4),
-                'number' => bcdiv($numberLateHealthyProjects[$year], $data['numberOfProjects'][$year], 4)
+            $data['average-loan-age'][$year]                    = [
+                'volume' => 0, //@TODO calcul à faire
+                'number' => 0 //@TODO calcul à faire
             ];
-            $data['lateOwedCapitalProblematic'][$year]       = $regulatoryData['late-owed-capital-problematic'][$year];
-            $data['lateProblematicCapitalPercentage'][$year] = [
-                'volume' => bcdiv($data['lateOwedCapitalProblematic'][$year], $data['borrowedCapital'][$year], 4),
-                'number' => bcdiv($numberLateProblematicProjects[$year], $data['numberOfProjects'][$year], 4)
+            $data['repaid-capital'][$year]                      = $regulatoryData['repaid-capital'][$year];
+            $data['repaid-capital-ratio'][$year]                = round(bcmul(bcdiv($data['repaid-capital'][$year], $data['borrowed-capital'][$year], 6), 100, 3), 2);
+            $data['repaid-interest'][$year]                     = $regulatoryData['repaid-interest'][$year];
+            $data['repaid-interest-ratio'][$year]               = round(bcmul(bcdiv($data['repaid-interest'][$year], $totalInterest[$year], 6), 100, 3), 2);
+            $data['realistic-unilend-irr'][$year]               = $regulatoryData['IRR'][$year];
+            $data['annual-cost-of-risk'][$year]                 = 'NA' === $data['optimistic-unilend-irr'][$year] ? 'NA' : bcsub($data['optimistic-unilend-irr'][$year], $data['realistic-unilend-irr'][$year], 4);
+            $data['late-owed-capital-healthy'][$year]           = $regulatoryData['late-owed-capital-healthy'][$year];
+            $data['late-capital-percentage'][$year]             = [
+                'volume' => round(bcmul(bcdiv($data['late-owed-capital-healthy'][$year], $data['borrowed-capital'][$year], 6), 100, 3), 2),
+                'number' => round(bcdiv($numberLateHealthyProjects[$year], $data['number-of-projects'][$year], 6), 2)
+            ];
+            $data['late-owed-capital-problematic'][$year]       = $regulatoryData['late-owed-capital-problematic'][$year];
+            $data['late-problematic-capital-percentage'][$year] = [
+                'volume' => round(bcmul(bcdiv($data['late-owed-capital-problematic'][$year], $data['borrowed-capital'][$year], 6), 100, 3), 2),
+                'number' => round(bcdiv($numberLateProblematicProjects[$year], $data['number-of-projects'][$year], 6), 2)
             ];
         }
 
-        return $data;
-    }
+        try {
+            $data['optimistic-unilend-irr']['total'] = $this->IRRManager->getOptimisticUnilendIRR();
+        } catch (\Exception $exception) {
+            $data['optimistic-unilend-irr']['total'] = 'NA';
+        }
 
+        $data['borrowed-capital']['total']                    = $regulatoryData['borrowed-capital']['total'];
+        $data['average-borrowed-amount']['total']             = round(bcdiv($regulatoryData['borrowed-capital']['total'], $regulatoryData['projects']['total'], 4));
+        $data['number-of-projects']['total']                  = $regulatoryData['projects']['total'];
+        $data['repaid-capital']['total']                      = $regulatoryData['repaid-capital']['total'];
+        $data['repaid-interest']['total']                     = $regulatoryData['repaid-interest']['total'];
+        $data['repaid-capital-ratio']['total']                = round(bcdiv($data['repaid-capital']['total'], $data['borrowed-capital']['total'], 6), 2);
+        $data['repaid-interest-ratio']['total']               = round(bcdiv($data['repaid-interest']['total'], array_sum($totalInterest), 4), 2);
+        $data['late-owed-capital-healthy']['total']           = $regulatoryData['late-owed-capital-healthy']['total'];
+        $data['late-owed-capital-problematic']['total']       = $regulatoryData['late-owed-capital-problematic']['total'];
+        $data['realistic-unilend-irr']['total']               = $regulatoryData['IRR']['total'];
+        $data['annual-cost-of-risk']['total']                 = 'NA' === $data['optimistic-unilend-irr']['total'] ? 'NA' : bcsub($data['optimistic-unilend-irr']['total'], $data['realistic-unilend-irr']['total'], 4);
+        $data['average-interest-rate']['total']               = [
+            'volume' => $this->getStatistic('averageInterestRateForLenders', $date),
+            'number' => $projectRepository->getNonWeightedAverageInterestRateUntil()
+        ];
+        $data['late-capital-percentage']['total']             = [
+            'volume' => round(bcmul(bcdiv($data['late-owed-capital-healthy']['total'], $data['borrowed-capital']['total'], 6), 100, 3), 2),
+            'number' => round(bcdiv(array_sum($numberLateHealthyProjects), $data['number-of-projects']['total'], 6), 2)
+        ];
+        $data['late-problematic-capital-percentage']['total'] = [
+            'volume' => round(bcmul(bcdiv($data['late-owed-capital-problematic']['total'], $data['borrowed-capital']['total'], 6), 100, 3), 2),
+            'number' => round(bcdiv(array_sum($numberLateProblematicProjects), $data['number-of-projects']['total'], 6), 2)
+        ];
+        $data['average-loan-age']['total']                    = [
+            'volume' => 0, //@TODO calcul à faire
+            'number' => 0 //@TODO calcul à faire
+        ];
+
+        $data['average-period']['total'] = [
+            'volume' => $projectRepository->getWeightedAveragePeriodUntil(),
+            'number' => $projectRepository->getNonWeightedAveragePeriodUntil()
+        ];
+
+        return $data;
+
+    }
     /**
      * @return array
      */
@@ -419,4 +463,45 @@ class StatisticsManager
         return array_merge(['2013-2014'], range(2015, date('Y')));
     }
 
+
+    /**
+     * @param \DateTime $date
+     * @return mixed|null
+     */
+    public function getPerformanceIndicatorAtDate(\DateTime $date)
+    {
+        $today    = new \DateTime('NOW');
+        $cacheKey = $date->format('Y-m-d') == $today->format('Y-m-d') ? CacheKeys::UNILEND_PERFORMANCE_INDICATOR : CacheKeys::UNILEND_PERFORMANCE_INDICATOR . '_' . $date->format('Y-m-d');
+        $statsEntry = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->findOneBy(['typeStat' => UnilendStats::TYPE_FPF_FRONT_STATISTIC], ['added' => 'DESC']);
+
+        return  json_decode($statsEntry->getValue(), true);
+
+
+        $cachedItem = $this->cachePool->getItem($cacheKey);
+        if (false === $cachedItem->isHit()) {
+            if ($date->format('Y-m-d') == $today->format('Y-m-d')) {
+                $statsEntry = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->findOneBy(['typeStat' => UnilendStats::TYPE_FPF_FRONT_STATISTIC], ['added' => 'DESC']);
+            } else {
+                $statsEntry = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->findOneBy(['typeStat' => UnilendStats::TYPE_FPF_FRONT_STATISTIC, 'added' => $date]);
+            }
+            $statistics = json_decode($statsEntry->getValue(), true);
+            $cachedItem->set($statistics)->expiresAfter(CacheKeys::LONG_TIME);
+            $this->cachePool->save($cachedItem);
+
+            return $statistics;
+        } else {
+            return $cachedItem->get();
+        }
+    }
+
+    public function getAvailableDatesForFPFStatistics()
+    {
+        $availableDates = [];
+
+        foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->getAvailableDatesForStatisticType(UnilendStats::TYPE_FPF_FRONT_STATISTIC) as $date) {
+            $availableDates[] = $date['added']->format('d/m/Y');
+        }
+
+        return $availableDates;
+    }
 }
