@@ -5,8 +5,8 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
@@ -501,6 +501,8 @@ EOF
 
                         $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
                         $projectPaymentManager->rejectPayment($reception, $user);
+
+                        $this->sendBorrowerRepaymentRejectionNotification($originalRejectedDirectDebit);
                     }
                 }
             }
@@ -521,5 +523,22 @@ EOF
         }
 
         return null;
+    }
+
+    /**
+     * @param Receptions $rejectedDirectDebit
+     */
+    private function sendBorrowerRepaymentRejectionNotification(Receptions $rejectedDirectDebit)
+    {
+        try {
+            $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
+            $slackManager->sendMessage('Rejet SFPMEI - Projet: ' . $slackManager->getProjectName($rejectedDirectDebit->getIdProject()) .
+                ' - réception (ID ' . $rejectedDirectDebit->getIdReception() . ') du ' . $rejectedDirectDebit->getAdded()->format('d/m/Y') . ' vient d\'être rejetée.');
+        } catch (\Exception $exception) {
+            $this->logger->warning(
+                'Could not send rejection notification message: ' . $exception->getMessage(),
+                ['id_reception_rejected' => $rejectedDirectDebit->getIdReception(),  'id_project' => $rejectedDirectDebit->getIdProject()->getIdProject(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
+        }
     }
 }
