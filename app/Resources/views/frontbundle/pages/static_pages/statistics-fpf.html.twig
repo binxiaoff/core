@@ -105,7 +105,7 @@
                             <td>{{ row.label }}
                                 {% if row.legend is defined %}
                                     {% set legendIndex = legendIndex + 1 %}
-                                    <sup class="c-p1">{{ legendIndex }}</sup>
+                                    <sup class="c-p1" data-sup-index="{{ legendIndex }}">{{ legendIndex }}</sup>
                                 {% endif %}
                             </td>
                             {% for value in row.values %}
@@ -140,15 +140,15 @@
             </div>
             <div class="table-stats-fpf-legend">
                 <h4 class="c-p1 remove-margin-t">Legend</h4>
-                <p><span class="c-p1 number">1.</span> Cet indicateur représente la part du capital emprunté qui a déjà été remboursée. Plus les prêts sont anciens, plus la part déjà remboursée est élevée.</p>
-                <p><span class="c-p1 number">2.</span> Cet indicateur représente la part des intérêts dus qui a déjà été remboursée. Plus les prêts sont anciens, plus la part déjà versée est élevée.</p>
-                <p><span class="c-p1 number">3.</span> Le taux de rendement interne net représente la rentabilité annuelle des prêts, déduction faite des pertes connues ou avérées à la date du calcul.</p>
-                <p><span class="c-p1 number">4.</span> Le taux de rendement interne maximum possible représente le rendement annualisé des prêts si l'intégralité des prêts étaient remboursés conformément aux échéances prévues initialement.</p>
-                <p><span class="c-p1 number">5.</span> Le coût du risque annuel constaté représente la diminution de rentabilité causée par les retards et les défauts de paiement par rapport au taux de rentabilité maximum possible. Il s'agit de la différence entre <span class="c-p1">4</span> et <span class="c-p1">5</span>.</p>
-                <p><span class="c-p1 number">6.</span> Le capital en retard est la somme du capital des échéances en retard de paiement depuis moins de 120 jours, net des recouvrements.</p>
-                <p><span class="c-p1 number">7.</span> Le taux de retard représente la part d'échéances en retard de paiement depuis moins de 120 jours par rapport au capital emprunté. Il est calculé de la manière suivante : - en volume : N/A, - en nombre : nombre de projets présentant un retard / nombre de projets financés.</p>
-                <p><span class="c-p1 number">8.</span>le capital en défaut est la somme du capital dont le remboursement ne sera jamais ou probablement pas effectué. Il est calculé de la manière suivante : somme du capital des échéances en retard de paiement de plus de 120 jours + somme du capital en retard de paiement et du capital restant dû d'une société en procédure collective ou ayant fait l'objet d'une déchéance du terme contractuelle, net des recouvrements</p>
-                <p class="remove-margin-b"><span class="c-p1 number">9.</span>le taux de défaut représente la part de capital dont le remboursement ne sera jamais ou probablement pas effectué par rapport au capital emprunté. Il est calculé de la manière suivante :  - en volume : <span class="c-p1">8</span> / montant prêté, - en nombre : nombre de projets en défaut / nombre de projets financés.</p>
+                <p><span class="c-p1 number" data-legend-index="1">1.</span> Cet indicateur représente la part du capital emprunté qui a déjà été remboursée. Plus les prêts sont anciens, plus la part déjà remboursée est élevée.</p>
+                <p><span class="c-p1 number" data-legend-index="2">2.</span> Cet indicateur représente la part des intérêts dus qui a déjà été remboursée. Plus les prêts sont anciens, plus la part déjà versée est élevée.</p>
+                <p><span class="c-p1 number" data-legend-index="3">3.</span> Le taux de rendement interne net représente la rentabilité annuelle des prêts, déduction faite des pertes connues ou avérées à la date du calcul.</p>
+                <p><span class="c-p1 number" data-legend-index="4">4.</span> Le taux de rendement interne maximum possible représente le rendement annualisé des prêts si l'intégralité des prêts étaient remboursés conformément aux échéances prévues initialement.</p>
+                <p><span class="c-p1 number" data-legend-index="5">5.</span> Le coût du risque annuel constaté représente la diminution de rentabilité causée par les retards et les défauts de paiement par rapport au taux de rentabilité maximum possible. Il s'agit de la différence entre <span class="c-p1">4</span> et <span class="c-p1">5</span>.</p>
+                <p><span class="c-p1 number" data-legend-index="6">6.</span> Le capital en retard est la somme du capital des échéances en retard de paiement depuis moins de 120 jours, net des recouvrements.</p>
+                <p><span class="c-p1 number" data-legend-index="7">7.</span> Le taux de retard représente la part d'échéances en retard de paiement depuis moins de 120 jours par rapport au capital emprunté. Il est calculé de la manière suivante : - en volume : N/A, - en nombre : nombre de projets présentant un retard / nombre de projets financés.</p>
+                <p><span class="c-p1 number" data-legend-index="8">8.</span>le capital en défaut est la somme du capital dont le remboursement ne sera jamais ou probablement pas effectué. Il est calculé de la manière suivante : somme du capital des échéances en retard de paiement de plus de 120 jours + somme du capital en retard de paiement et du capital restant dû d'une société en procédure collective ou ayant fait l'objet d'une déchéance du terme contractuelle, net des recouvrements</p>
+                <p class="remove-margin-b"><span class="c-p1 number" data-legend-index="9">9.</span>le taux de défaut représente la part de capital dont le remboursement ne sera jamais ou probablement pas effectué par rapport au capital emprunté. Il est calculé de la manière suivante :  - en volume : <span class="c-p1">8</span> / montant prêté, - en nombre : nombre de projets en défaut / nombre de projets financés.</p>
             </div>
         </div>
     </section>
