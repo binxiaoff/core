@@ -584,20 +584,6 @@
   sup {
     font-size: 12px;
   }
-  @include devices('xs', 'sm') {
-    tr {
-      > th {
-        padding: 10px 15px;
-        &:first-child {
-          width: 200px;
-        }
-      }
-      > td {
-        padding: 10px 15px;
-        font-size: 14px;
-      }
-    }
-  }
 }
 // Statistics FPF Controls
 .table-stats-fpf-controls {
@@ -628,11 +614,6 @@
     width: 240px;
   }
 }
-@include devices('md', 'lg') {
-  .table-stats-fpf-date {
-    text-align: right;
-  }
-}
 // Statistics FPF Legend
 .table-stats-fpf-legend {
   padding: 30px;
@@ -647,5 +628,48 @@
   }
   .number {
     margin-right: 10px;
+  }
+}
+[data-sup-index], [data-legend-index] {
+  cursor: pointer;
+}
+@include devices('xs', 'sm') {
+  .table-stats-fpf {
+    tr {
+      > th {
+        padding: 10px 15px;
+        &:first-child {
+          width: 200px;
+        }
+      }
+      > td {
+        padding: 10px 15px;
+        font-size: 14px;
+        &:first-child {
+          padding-right: 25px;
+          position: relative;
+        }
+      }
+    }
+  }
+  [data-sup-index], [data-legend-index] {
+    display: inline-block;
+    border: 2px solid $c-grey-l2;
+    width: 25px;
+    height: 25px;
+    text-align: center;
+    box-sizing: border-box;
+    background: $c-purple-l2;
+  }
+  [data-sup-index] {
+    padding: 4px 2px 0;
+    position: absolute;
+    top: 7px;
+    right: 0;
+  }
+}
+@include devices('md', 'lg') {
+  .table-stats-fpf-date {
+    text-align: right;
   }
 }
