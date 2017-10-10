@@ -70,20 +70,22 @@
                         </ul>
                     </div>
                     <div class="col-md-6 col-lg-6 table-stats-fpf-date">
-                        <label for="table-stats-fpf-dateselect" class="c-p1">{% trans %}fpf-statistics_table-filter-date{% endtrans %}</label>
-                        <div class="form-field remove-margin-b">
-                            <div class="input-group set-right">
-                                <select id="table-stats-fpf-dateselect" name="date" value="{Last available date}" class="input-field">
-                                    <option value="12-12-2016">12/12/2016</option>
-                                    <option value="12-12-2015">12/12/2015</option>
-                                    <option value="12-12-2014">12/12/2014</option>
-                                    <option value="12-12-2013">12/12/2013</option>
-                                </select>
-                                <div class="btn-group">
-                                    <label for="table-stats-fpf-dateselect"><span class="icon fa-calendar-u32 c-p1"> <span class="sr-only">Choose start date</span></span></label>
+                        <form action="{{ path('statistics_fpf') }}" method="post">
+                            <label for="table-stats-fpf-dateselect" class="c-p1">{% trans %}fpf-statistics_table-filter-date{% endtrans %}</label>
+                            <div class="form-field remove-margin-b">
+                                <div class="input-group set-right">
+                                    <select id="table-stats-fpf-dateselect" name="date" value="{Last available date}" class="input-field">
+                                        <option value="12-12-2016">12/12/2016</option>
+                                        <option value="12-12-2015">12/12/2015</option>
+                                        <option value="12-12-2014">12/12/2014</option>
+                                        <option value="12-12-2013">12/12/2013</option>
+                                    </select>
+                                    <div class="btn-group">
+                                        <label for="table-stats-fpf-dateselect"><span class="icon fa-calendar-u32 c-p1"> <span class="sr-only">Choose start date</span></span></label>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </div>

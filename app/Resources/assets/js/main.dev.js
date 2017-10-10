@@ -870,9 +870,7 @@ $doc.ready(function ($) {
   })
   $('#table-stats-fpf-dateselect').change(function(){
     $('body').addClass('ui-is-loading')
-    var date = $(this).val()
-    var url = window.location.href
-    window.location.href = url + '/' + date;
+    $(this).closest('form').submit()
   })
   $('[data-sup-index]').click(function(){
     var index = $(this).data('sup-index')
