@@ -868,5 +868,11 @@ $doc.ready(function ($) {
       $table.removeClass('ui-display-volume').addClass('ui-display-number')
     }
   })
+  $('#table-stats-fpf-dateselect').change(function(){
+    $('body').addClass('ui-is-loading')
+    var date = $(this).val()
+    var url = window.location.href
+    window.location.href = url + '/' + date;
+  })
 })
 
