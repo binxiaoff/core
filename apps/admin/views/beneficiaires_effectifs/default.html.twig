@@ -173,7 +173,7 @@
                         <span class="si si-info font-s36 pull-left"></span>
                         <ul class="font-s12 remove-margin-b push-30-l">
                             <li>Une declaration peut être utilisée dans plusieurs projets. </li>
-                            <li>Si une declaration est archivée, le document signé par universign au moment du transfer des fonds sera toujours valide.</li>
+                            <li>Si une déclaration est archivée, le document signé électroniquement au moment du transfer des fonds sera toujours valide.</li>
                         </ul>
                     </div>
                 </div>
@@ -204,9 +204,9 @@
                         <thead>
                         <tr>
                             <th style="width: 10%">ID projet</th>
-                            <th style="width: 10%">Date d'ajout de la declaration</th>
-                            <th style="width: 10%">Status de la declaration</th>
-                            <th style="width: 10%">Status du document universign</th>
+                            <th style="width: 10%">Date d'ajout de la déclaration</th>
+                            <th style="width: 10%">Statut de la déclaration</th>
+                            <th style="width: 10%">Statut de la signature électronique</th>
                             <th>Fichier</th>
                             <th style="width: 10%">Actions</th>
                         </tr>
@@ -224,7 +224,7 @@
                                     <a href="/protected/beneficial_owner/{{ declaration.name }}" class="btn btn-default btn-xs" data-toggle="tooltip" title="Télécharger la déclaration"><span class="fa fa-download"></span></a>
                                     {% endif %}
                                     {% if declaration.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\UniversignEntityInterface::STATUS_PENDING') %}
-                                        <a href="send_email/{{ declaration.idDeclaration.idCompany.idCompany }}/{{ declaration.idProject.idProject }}" class="btn btn-default btn-xs" data-toggle="tooltip" title="Renvoyer les documents à signer"><span class="fa fa-envelope"></span></a>
+                                        <a href="send_email/{{ declaration.idDeclaration.idCompany.idCompany }}/{{ declaration.idProject.idProject }}" class="btn btn-default btn-xs" data-toggle="tooltip" title="Renvoyer l'email de signature"><span class="fa fa-envelope"></span></a>
                                     {% endif %}
                                 </td>
                             </tr>

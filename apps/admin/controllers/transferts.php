@@ -390,7 +390,7 @@ class transfertsController extends bootstrap
 
             if (null === $mandate || null === $proxy || ($beneficialOwnerManager->projectNeedsBeneficialOwnerDeclaration($project) && null === $beneficialOwnerDeclaration)) {
                 $_SESSION['freeow']['title']   = 'Déblocage des fonds impossible';
-                $_SESSION['freeow']['message'] = 'Le mandat ou pouvoir ou déclaration des bénéficiaires effectifs non signé pour le project ' . $_POST['id_project'];
+                $_SESSION['freeow']['message'] = 'Mandat, pouvoir ou déclaration des bénéficiaires effectifs non signé pour le projet ' . $_POST['id_project'];
                 header('Location: ' . $this->lurl . '/transferts/deblocage/');
                 die;
             }

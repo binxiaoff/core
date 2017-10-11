@@ -2429,7 +2429,7 @@ class dossiersController extends bootstrap
         }
 
         if (null === $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentBeneficialOwnerDeclaration($this->projects->id_company)) {
-            $_SESSION['publish_error'] = 'Il n\'y a pas de bénéficiaires effectifs déclarés';
+            $_SESSION['publish_error'] = 'Il n\'y a pas de bénéficiaire effectif déclaré';
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
             die;

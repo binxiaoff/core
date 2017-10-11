@@ -1,11 +1,11 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 
 ?>
 <style type="text/css">
@@ -966,7 +966,7 @@ use \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
                                     <td><a href="<?= $this->furl ?>/pdf/beneficiaires-effectifs/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/beneficiaires-effectifs/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
                                 </tr>
                                 <td colspan="2">
-                                    <a role="button" class="btn btn-default" href="/beneficiaires_effectifs/<?= $this->companies->id_company ?>">Renvoyer la declaration des bénéficiaires effectifs <br> (et eventuels autres documents non signés)</a>
+                                    <a role="button" class="btn btn-default" href="/beneficiaires_effectifs/<?= $this->companies->id_company ?>">Renvoyer la déclaration des bénéficiaires effectifs<br>(et éventuels autres documents non signés)</a>
                                 </td>
                             <?php endif; ?>
                         <?php endif; ?>

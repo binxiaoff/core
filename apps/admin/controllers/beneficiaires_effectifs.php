@@ -151,11 +151,11 @@ class beneficiaires_effectifsController extends bootstrap
         $idCompany          = $request->request->getInt('id_company');
 
         if (empty($lastName)) {
-            $errors[] = 'Le nom doit etre rempli.';
+            $errors[] = 'Le nom doit être rempli.';
         }
 
         if (empty($firstName)) {
-            $errors[] = 'le prénom doit etre rempli.';
+            $errors[] = 'Le prénom doit être rempli.';
         }
 
         if (empty($birthDate)) {
@@ -202,7 +202,7 @@ class beneficiaires_effectifsController extends bootstrap
         }
 
         if (false === empty($type) && null === $ownerType = $entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwnerType')->find($type)) {
-            $errors[] = 'Le type de bénéficiaire effectiv n\'est pas valide.';
+            $errors[] = 'Le type de bénéficiaire effectif n\'est pas valide.';
         }
 
         $minPercentage = 100 / BeneficialOwnerManager::MAX_NUMBER_BENEFICIAL_OWNERS_TYPE_SHAREHOLDER;
@@ -281,7 +281,7 @@ class beneficiaires_effectifsController extends bootstrap
             $beneficialOwner = $beneficialOwnerManager->createBeneficialOwner($declaration, $lastName, $firstName, $birthday, $birthPlace, $idBirthCountry, $countryOfResidence, $request->files->get('id_card_passport'), $ownerType, $percentage, $idClient);
         } catch (\Exception $exception) {
             $beneficialOwner = null;
-            $errors[]        = 'Une erreur c\'est produite.';
+            $errors[]        = 'Une erreur s\'est produite.';
             $this->get('logger')->warning($exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
         }
 
@@ -369,7 +369,7 @@ class beneficiaires_effectifsController extends bootstrap
 
         $type = 0 === $request->request->getInt('type') ? null : $request->request->getInt('type');
         if (false === empty($type) && null === $ownerType = $entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwnerType')->find($type)) {
-            $errors[] = 'Le type de bénéficiaire effectiv n\'est pas valide.';
+            $errors[] = 'Le type de bénéficiaire effectif n\'est pas valide.';
         }
 
         $percentage = $request->request->getDigits('percentage');
@@ -429,7 +429,7 @@ class beneficiaires_effectifsController extends bootstrap
         $owner = $entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwner')->find($idBeneficialOwner);
 
         if (null === $owner) {
-            $errors[] = 'Une erreur c\'est produit';
+            $errors[] = 'Une erreur s\'est produit';
             $this->get('logger')->warning('Beneficial owner does not exist (idBeneficialOwner  = ' . $idBeneficialOwner, ['class' => __CLASS__, 'function' => __FUNCTION__]);
 
             return [
@@ -694,7 +694,7 @@ class beneficiaires_effectifsController extends bootstrap
         } else {
             $_SESSION['email_status'] = [
                 'success' => '',
-                'errors'  => 'Une erreur s\'est produit.'
+                'errors'  => 'Une erreur s\'est produite.'
             ];
         }
 
