@@ -8,7 +8,6 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
@@ -41,7 +40,7 @@ class EcheanciersRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:CompanyStatus', 'cs', Join::WITH, 'cs.id = c.idStatus')
             ->where('e.idLender = :idLender')
             ->andWhere('e.status = ' . Echeanciers::STATUS_PENDING)
-            ->andWhere('cs.label IN (:companyStatus) OR (p.status = ' . ProjectsStatus::PROBLEME . ' AND DATEDIFF(NOW(), e.dateEcheance) > 180)')
+            ->andWhere('cs.label IN (:companyStatus) OR (p.status = ' . ProjectsStatus::PROBLEME . ' AND DATEDIFF(NOW(), e.dateEcheance) > 120)')
             ->setParameter('idLender', $idLender)
             ->setParameter('companyStatus', $companyStatus, Connection::PARAM_STR_ARRAY);
 
@@ -400,7 +399,7 @@ class EcheanciersRepository extends EntityRepository
                         AND psh2.id_project = e.id_project
                         ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                         LIMIT 1
-                    )) > 180)), TRUE, FALSE) = FALSE
+                    )) > 120)), TRUE, FALSE) = FALSE
                 GROUP BY month
             ) AS t
             GROUP BY t.month';

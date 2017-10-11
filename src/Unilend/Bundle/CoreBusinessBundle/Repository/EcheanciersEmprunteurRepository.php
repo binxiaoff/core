@@ -142,22 +142,28 @@ class EcheanciersEmprunteurRepository extends EntityRepository
     }
 
     /**
+     * @param bool           $groupFirstYears
      * @param \DateTime|null $date
      *
      * @return array
      */
-    public function getTotalInterestToBePaidByCohortUntil(\DateTime $date = null)
+    public function getTotalInterestToBePaidByCohortUntil($groupFirstYears = true, \DateTime $date = null)
     {
+        if ($groupFirstYears) {
+            $cohortSelect = 'CASE LEFT(projects_status_history.added, 4)
+                                WHEN 2013 THEN "2013-2014"
+                                WHEN 2014 THEN "2013-2014"
+                                ELSE LEFT(projects_status_history.added, 4)
+                            END';
+        } else {
+            $cohortSelect = 'LEFT(projects_status_history.added, 4)';
+        }
+
         $bind = ['repayment' => ProjectsStatus::REMBOURSEMENT];
 
         $query = 'SELECT SUM(echeanciers_emprunteur.interets)/100 AS amount,
                   (
-                    SELECT
-                      CASE LEFT(projects_status_history.added, 4)
-                      WHEN 2013 THEN "2013-2014"
-                      WHEN 2014 THEN "2013-2014"
-                      ELSE LEFT(projects_status_history.added, 4)
-                      END AS date_range
+                    SELECT ' . $cohortSelect . ' AS date_range
                     FROM projects_status_history
                       INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                     WHERE  projects_status.status = :repayment

@@ -535,7 +535,7 @@ class UnilendStatsRepository extends EntityRepository
         $queryBuilder->select('DATE(us.added) AS availableDate','us.added')
             ->where('us.typeStat = :type')
             ->groupBy('availableDate')
-            ->orderBy('us.added', 'ASC')
+            ->orderBy('us.added', 'DESC')
             ->setParameter('type', $type);
 
         return $queryBuilder->getQuery()->getResult();

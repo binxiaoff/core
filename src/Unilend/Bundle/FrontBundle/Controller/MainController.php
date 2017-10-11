@@ -793,13 +793,24 @@ class MainController extends Controller
      */
     public function statisticsFpfAction(Request $request)
     {
+        $requestedDate = $request->request->filter('date', FILTER_SANITIZE_STRING);
+
+        if (empty($requestedDate)) {
+            $date  = new \DateTime('NOW');
+        } else {
+            $date             = \DateTime::createFromFormat('d/m/Y', $requestedDate);
+            $firstHistoryDate = new \DateTime(StatisticsManager::START_FPF_STATISTIC_HISTORY);
+            if ($date < $firstHistoryDate) {
+                $date  = new \DateTime('NOW');
+            }
+        }
+        $years             = range(2013, $date->format('Y'));
         $statisticsManager = $this->get('unilend.service.statistics_manager');
-        $date              = new \DateTime('NOW');
         $data              = $statisticsManager->getPerformanceIndicatorAtDate($date);
 
         $template = [
             'data'           => $data,
-            'years'          => array_merge(['2013-2014'], range(2015, date('Y'))),
+            'years'          => $years,
             'date'           => $date->format('Y-m-d'),
             'availableDates' => $statisticsManager->getAvailableDatesForFPFStatistics()
         ];

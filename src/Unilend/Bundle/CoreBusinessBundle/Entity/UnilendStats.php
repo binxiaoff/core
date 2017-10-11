@@ -14,6 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
 class UnilendStats
 {
     const TYPE_STAT_IRR             = 'IRR';
+    const TYPE_STAT_MAX_IRR         = 'max_IRR';
     const TYPE_STAT_FRONT_STATISTIC = 'unilend_front_statistics';
     const TYPE_FPF_FRONT_STATISTIC  = 'fpf_front_statistic';
 

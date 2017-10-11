@@ -128,17 +128,27 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
     }
 
 
-    public function getRepaidCapitalByCohort()
+    /**
+     * @param bool $groupFirstYears
+     *
+     * @return mixed
+     */
+    public function getRepaidCapitalByCohort($groupFirstYears = true)
     {
+        if ($groupFirstYears) {
+            $cohortSelect = 'CASE LEFT(projects_status_history.added, 4)
+                               WHEN 2013 THEN "2013-2014"
+                               WHEN 2014 THEN "2013-2014"
+                               ELSE LEFT(projects_status_history.added, 4)
+                             END';
+        } else {
+            $cohortSelect = 'LEFT(projects_status_history.added, 4)';
+        }
+
         $query = 'SELECT
                   SUM(echeanciers_emprunteur.capital)/100 AS amount,
                   (
-                    SELECT
-                      CASE LEFT(projects_status_history.added, 4)
-                        WHEN 2013 THEN "2013-2014"
-                        WHEN 2014 THEN "2013-2014"
-                        ELSE LEFT(projects_status_history.added, 4)
-                      END AS date_range
+                    SELECT ' . $cohortSelect . ' AS date_range
                     FROM projects_status_history
                     INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                     WHERE  projects_status.status = '. ProjectsStatus::REMBOURSEMENT .'
@@ -155,6 +165,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
               GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery($query);
+
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -177,17 +188,27 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
         return $statement->fetchColumn(0);
     }
 
-    public function getInterestPaymentsOfHealthyProjectsByCohort()
+    /**
+     * @param bool $groupFirstYears
+     *
+     * @return mixed
+     */
+    public function getInterestPaymentsOfHealthyProjectsByCohort($groupFirstYears = true)
     {
+        if ($groupFirstYears) {
+            $cohortSelect = 'CASE LEFT(projects_status_history.added, 4)
+                               WHEN 2013 THEN "2013-2014"
+                               WHEN 2014 THEN "2013-2014"
+                               ELSE LEFT(projects_status_history.added, 4)
+                             END';
+        } else {
+            $cohortSelect = 'LEFT(projects_status_history.added, 4)';
+        }
+
         $query = 'SELECT
                       SUM(echeanciers_emprunteur.interets)/100 AS amount,
                       (
-                        SELECT
-                          CASE LEFT(projects_status_history.added, 4)
-                            WHEN 2013 THEN "2013-2014"
-                            WHEN 2014 THEN "2013-2014"
-                            ELSE LEFT(projects_status_history.added, 4)
-                          END AS date_range
+                        SELECT ' . $cohortSelect . ' AS date_range
                         FROM projects_status_history
                           INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE  projects_status.status = '. ProjectsStatus::REMBOURSEMENT .'
@@ -227,21 +248,32 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
             ['companyStatus' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]],
             ['companyStatus' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_STR_ARRAY]
         );
+
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
 
-    public function getFutureCapitalPaymentsOfHealthyProjectsByCohort()
+    /**
+     * @param bool $groupFirstYears
+     *
+     * @return mixed
+     */
+    public function getFutureCapitalPaymentsOfHealthyProjectsByCohort($groupFirstYears = true)
     {
+        if ($groupFirstYears) {
+            $cohortSelect = 'CASE LEFT(projects_status_history.added, 4)
+                                WHEN 2013 THEN "2013-2014"
+                                WHEN 2014 THEN "2013-2014"
+                                ELSE LEFT(projects_status_history.added, 4)
+                            END';
+        } else {
+            $cohortSelect = 'LEFT(projects_status_history.added, 4)';
+        }
+
         $query = 'SELECT
                       SUM(echeanciers_emprunteur.capital)/100 AS amount,
                       (
-                        SELECT
-                          CASE LEFT(projects_status_history.added, 4)
-                            WHEN 2013 THEN "2013-2014"
-                            WHEN 2014 THEN "2013-2014"
-                            ELSE LEFT(projects_status_history.added, 4)
-                          END AS date_range
+                        SELECT ' . $cohortSelect . ' AS date_range
                         FROM projects_status_history
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE  projects_status.status = '. ProjectsStatus::REMBOURSEMENT .'
@@ -292,17 +324,27 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
     }
 
 
-    public function getFutureOwedCapitalOfProblematicProjectsByCohort()
+    /**
+     * @param bool $groupFirstYears
+     *
+     * @return mixed
+     */
+    public function getFutureOwedCapitalOfProblematicProjectsByCohort($groupFirstYears = true)
     {
-        $query = 'SELECT
-                      SUM(echeanciers_emprunteur.capital)/100 AS amount,
-                      (
-                        SELECT
-                            CASE LEFT(projects_status_history.added, 4)
+        if ($groupFirstYears) {
+            $cohortSelect = 'CASE LEFT(projects_status_history.added, 4)
                                 WHEN 2013 THEN "2013-2014"
                                 WHEN 2014 THEN "2013-2014"
                                 ELSE LEFT(projects_status_history.added, 4)
-                            END AS date_range
+                            END';
+        } else {
+            $cohortSelect = 'LEFT(projects_status_history.added, 4)';
+        }
+
+        $query = 'SELECT
+                      SUM(echeanciers_emprunteur.capital)/100 AS amount,
+                      (
+                        SELECT ' . $cohortSelect . ' AS date_range
                         FROM projects_status_history
                             INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE projects_status.status = ' . ProjectsStatus::REMBOURSEMENT . '
@@ -345,20 +387,31 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
             ['companyStatus' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]],
             ['companyStatus' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_STR_ARRAY]
         );
+
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getLateCapitalRepaymentsProblematicProjects()
+    /**
+     * @param bool $groupFirstYears
+     *
+     * @return mixed
+     */
+    public function getLateCapitalRepaymentsProblematicProjects($groupFirstYears = true)
     {
+        if ($groupFirstYears) {
+            $cohortSelect = 'CASE LEFT(projects_status_history.added, 4)
+                                WHEN 2013 THEN "2013-2014"
+                                WHEN 2014 THEN "2013-2014"
+                                ELSE LEFT(projects_status_history.added, 4)
+                            END';
+        } else {
+            $cohortSelect = 'LEFT(projects_status_history.added, 4)';
+        }
+
         $query = 'SELECT
                       SUM(echeanciers_emprunteur.capital)/100 AS amount,
                       (
-                        SELECT
-                          CASE LEFT(projects_status_history.added, 4)
-                            WHEN 2013 THEN "2013-2014"
-                            WHEN 2014 THEN "2013-2014"
-                            ELSE LEFT(projects_status_history.added, 4)
-                          END AS date_range
+                        SELECT ' . $cohortSelect . ' AS date_range
                         FROM projects_status_history
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE  projects_status.status = '. ProjectsStatus::REMBOURSEMENT .'
@@ -403,20 +456,31 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
             ['companyStatus' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]],
             ['companyStatus' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_STR_ARRAY]
         );
+
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getLateCapitalRepaymentsHealthyProjects()
+    /**
+     * @param bool $groupFirstYears
+     *
+     * @return mixed
+     */
+    public function getLateCapitalRepaymentsHealthyProjects($groupFirstYears = true)
     {
+        if ($groupFirstYears) {
+            $cohortSelect = 'CASE LEFT(projects_status_history.added, 4)
+                                WHEN 2013 THEN "2013-2014"
+                                WHEN 2014 THEN "2013-2014"
+                                ELSE LEFT(projects_status_history.added, 4)
+                            END';
+        } else {
+            $cohortSelect = 'LEFT(projects_status_history.added, 4)';
+        }
+
         $query = 'SELECT
                       SUM(echeanciers_emprunteur.capital)/100 AS amount,
                       (
-                        SELECT
-                          CASE LEFT(projects_status_history.added, 4)
-                            WHEN 2013 THEN "2013-2014"
-                            WHEN 2014 THEN "2013-2014"
-                            ELSE LEFT(projects_status_history.added, 4)
-                          END AS date_range
+                        SELECT ' . $cohortSelect . ' AS date_range
                         FROM projects_status_history
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE  projects_status.status = '. ProjectsStatus::REMBOURSEMENT .'
@@ -460,6 +524,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
             ['companyStatus' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]],
             ['companyStatus' => \Unilend\Bridge\Doctrine\DBAL\Connection::PARAM_STR_ARRAY]
         );
+
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 }

@@ -800,16 +800,23 @@ class OperationRepository extends EntityRepository
     }
 
     /**
+     * @param bool $groupFirstYears
+     *
      * @return string
      */
-    private function getCohortQuery()
+    private function getCohortQuery($groupFirstYears)
     {
-        return 'SELECT
-                  CASE LEFT(MIN(psh.added), 4)
-                  WHEN 2013 THEN "2013-2014"
-                  WHEN 2014 THEN "2013-2014"
-                  ELSE LEFT(psh.added, 4)
-                  END AS date_range
+        if ($groupFirstYears) {
+            $cohortSelect = 'CASE LEFT(psh.added, 4)
+                                WHEN 2013 THEN "2013-2014"
+                                WHEN 2014 THEN "2013-2014"
+                                ELSE LEFT(psh.added, 4)
+                             END';
+        } else {
+            $cohortSelect = 'LEFT(psh.added, 4)';
+        }
+
+        return 'SELECT ' . $cohortSelect . ' AS date_range
                 FROM projects_status_history psh
                   INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                 WHERE ps.status = ' . ProjectsStatus::REMBOURSEMENT . ' AND o.id_project = psh.id_project
@@ -817,13 +824,14 @@ class OperationRepository extends EntityRepository
     }
 
     /**
-     * @param $repaymentType
+     * @param bool $repaymentType
+     * @param bool $groupFirstYears
      *
      * @return array
      */
-    public function getTotalRepaymentByCohort($repaymentType)
+    public function getTotalRepaymentByCohort($repaymentType, $groupFirstYears = true)
     {
-        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery() . ' ) AS cohort
+        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery($groupFirstYears) . ' ) AS cohort
                   FROM operation o
                   WHERE o.id_type = (SELECT id FROM operation_type WHERE label = :repayment_type)
                   GROUP BY cohort';
@@ -836,13 +844,14 @@ class OperationRepository extends EntityRepository
     }
 
     /**
-     * @param boolean $isHealthy
+     * @param bool $groupFirstYears
+     * @param bool $isHealthy
      *
      * @return array
      */
-    public function getTotalDebtCollectionRepaymentByCohort($isHealthy)
+    public function getTotalDebtCollectionRepaymentByCohort($isHealthy, $groupFirstYears = true)
     {
-        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery() . ' ) AS cohort
+        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery($groupFirstYears) . ' ) AS cohort
                   FROM operation o
                   INNER JOIN projects p ON o.id_project = p.id_project
                   WHERE o.id_sub_type = (SELECT id FROM operation_sub_type WHERE label = :capital_repayment_debt_collection)
@@ -870,13 +879,14 @@ class OperationRepository extends EntityRepository
     }
 
     /**
-     * @param boolean $isHealthy
+     * @param bool $isHealthy
+     * @param bool $groupFirstYears
      *
      * @return array
      */
-    public function getTotalDebtCollectionLenderCommissionByCohort($isHealthy)
+    public function getTotalDebtCollectionLenderCommissionByCohort($isHealthy, $groupFirstYears = true)
     {
-        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery() . ' ) AS cohort
+        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery($groupFirstYears) . ' ) AS cohort
                   FROM operation o
                   INNER JOIN projects p ON o.id_project = p.id_project
                   WHERE o.id_type = (SELECT id FROM operation_type WHERE label = :collection_commission_lender)

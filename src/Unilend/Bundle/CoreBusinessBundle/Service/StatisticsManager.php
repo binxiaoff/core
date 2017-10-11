@@ -23,7 +23,13 @@ class StatisticsManager
     /**
      * Day we started saving front statistics. Before that data there is no data.
      */
-    const START_FRONT_STATISTICS_HISTORY      = '2016-11-17';
+    const START_FRONT_STATISTICS_HISTORY = '2016-11-17';
+    const START_FPF_STATISTIC_HISTORY    = '2017-10-12'; //TODO change to put in production date
+
+    /** Constants to make method calls more readable */
+    const GROUP_FIRST_YEAR_COHORT = false;
+    const HEALTHY_PROJECTS        = true;
+    const PROBLEMATIC_PROJECTS    = false;
 
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
@@ -200,7 +206,7 @@ class StatisticsManager
 
     private function calculateRegulatoryData()
     {
-        $years = $this->getYearsRange();
+        $years = array_merge(['2013-2014'], range(2015, date('Y')));
 
         /** @var \loans $loans */
         $loans = $this->entityManagerSimulator->getRepository('loans');
@@ -215,10 +221,10 @@ class StatisticsManager
         $borrowedCapital                             = $this->formatCohortQueryResult($loans->sumLoansByCohort(), $years);
         $repaidCapital                               = $this->formatCohortQueryResult($operationRepository->getTotalRepaymentByCohort(OperationType::CAPITAL_REPAYMENT), $years);
         $repaidCapitalRegularized                    = $this->formatCohortQueryResult($operationRepository->getTotalRepaymentByCohort(OperationType::CAPITAL_REPAYMENT_REGULARIZATION), $years);
-        $debtCollectionRepaymentHealthyProjects      = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionRepaymentByCohort(true), $years);
-        $debtCollectionCommissionHealthyProjects     = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionLenderCommissionByCohort(true), $years);
-        $debtCollectionRepaymentProblematicProjects  = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionRepaymentByCohort(false), $years);
-        $debtCollectionCommissionProblematicProjects = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionLenderCommissionByCohort(false), $years);
+        $debtCollectionRepaymentHealthyProjects      = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionRepaymentByCohort(self::HEALTHY_PROJECTS), $years);
+        $debtCollectionCommissionHealthyProjects     = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionLenderCommissionByCohort(self::HEALTHY_PROJECTS), $years);
+        $debtCollectionRepaymentProblematicProjects  = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionRepaymentByCohort(self::PROBLEMATIC_PROJECTS), $years);
+        $debtCollectionCommissionProblematicProjects = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionLenderCommissionByCohort(self::PROBLEMATIC_PROJECTS), $years);
         $repaidInterest                              = $this->formatCohortQueryResult($operationRepository->getTotalRepaymentByCohort(OperationType::GROSS_INTEREST_REPAYMENT), $years);
         $repaidInterestRegularized                   = $this->formatCohortQueryResult($operationRepository->getTotalRepaymentByCohort(OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION), $years);
         $interestHealthyProjects                     = $this->formatCohortQueryResult($borrowerPaymentSchedule->getInterestPaymentsOfHealthyProjectsByCohort(), $years);
@@ -332,14 +338,18 @@ class StatisticsManager
         $paymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
 
         $problematicProjectsIfp       = $paymentSchedule->getProblematicOwedCapitalByProjects(\underlying_contract::CONTRACT_IFP, 60);
+        $owedCapitalProjectsIfp       = $paymentSchedule->getProblematicOwedCapitalByProjects(\underlying_contract::CONTRACT_IFP, 0);
         $allProjectsIfp               = $paymentSchedule->getOwedCapitalByProjects(\underlying_contract::CONTRACT_IFP);
         $incidenceRate['amountIFP']   = bcmul(bcdiv(array_sum(array_column($problematicProjectsIfp, 'amount')), array_sum(array_column($allProjectsIfp, 'amount')), 4), 100, 2);
         $incidenceRate['projectsIFP'] = bcmul(bcdiv(count($problematicProjectsIfp), count($allProjectsIfp), 4), 100, 2);
+        $incidenceRate['ratioIFP']    = bcmul(bcdiv(count($owedCapitalProjectsIfp), count($allProjectsIfp), 4), 100, 2);
 
         $problematicProjectsCip       = $paymentSchedule->getProblematicOwedCapitalByProjects(\underlying_contract::CONTRACT_MINIBON, 60);
+        $owedCapitalProjectsCip       = $paymentSchedule->getProblematicOwedCapitalByProjects(\underlying_contract::CONTRACT_MINIBON, 0);
         $allProjectsCip               = $paymentSchedule->getOwedCapitalByProjects(\underlying_contract::CONTRACT_MINIBON);
         $incidenceRate['amountCIP']   = bcmul(bcdiv(array_sum(array_column($problematicProjectsCip, 'amount')), array_sum(array_column($allProjectsCip, 'amount')), 4), 100, 2);
         $incidenceRate['projectsCIP'] = bcmul(bcdiv(count($problematicProjectsCip), count($allProjectsCip), 4), 100, 2);
+        $incidenceRate['ratioCIP']    = bcmul(bcdiv(count($owedCapitalProjectsCip), count($allProjectsCip), 4), 100, 2);
 
         return $incidenceRate;
     }
@@ -351,28 +361,44 @@ class StatisticsManager
      */
     public function calculatePerformanceIndicators(\DateTime $date)
     {
+        /** @var \loans $loans */
+        $loans = $this->entityManagerSimulator->getRepository('loans');
+        /** @var \projects $projects */
+        $projects = $this->entityManagerSimulator->getRepository('projects');
+        /** @var \echeanciers_emprunteur $borrowerPaymentSchedule */
+        $borrowerPaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
+
         $projectRepository         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $paymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        $operationRepository       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
 
-        $years                          = $this->getYearsRange();
-        $regulatoryData                 = $this->getStatisticsAtDate($date)['regulatoryData'];
-        $weightedAverageInterestRate    = $this->formatCohortQueryResult($projectRepository->getWeightedAverageInterestRateByCohortUntil(), $years);
-        $notWeightedAverageInterestRate = $this->formatCohortQueryResult($projectRepository->getNonWeightedAverageInterestRateByCohortUntil(), $years);
-        $weightedAveragePeriod          = $this->formatCohortQueryResult($projectRepository->getWeightedAveragePeriodByCohortUntil(), $years);
-        $notWeightedAveragePeriod       = $this->formatCohortQueryResult($projectRepository->getNonWeightedAveragePeriodByCohortUntil(), $years);
-        $totalInterest                  = $this->formatCohortQueryResult($paymentScheduleRepository->getTotalInterestToBePaidByCohortUntil(), $years);
-        $numberLateHealthyProjects      = $this->formatCohortQueryResult($projectRepository->getCountProjectsWithLateRepayments(true), $years);
-        $numberLateProblematicProjects  = $this->formatCohortQueryResult($projectRepository->getCountProjectsWithLateRepayments(false), $years);
+        $years                                       = range(2013, date('Y'));
+        $borrowedCapital                             = $this->formatCohortQueryResult($loans->sumLoansByCohort(self::GROUP_FIRST_YEAR_COHORT), $years);
+        $fundedProjects                              = $this->formatCohortQueryResult($projects->countFundedProjectsByCohort(self::GROUP_FIRST_YEAR_COHORT), $years);
+        $repaidCapital                               = $this->formatCohortQueryResult($operationRepository->getTotalRepaymentByCohort(OperationType::CAPITAL_REPAYMENT, self::GROUP_FIRST_YEAR_COHORT), $years);
+        $repaidCapitalRegularized                    = $this->formatCohortQueryResult($operationRepository->getTotalRepaymentByCohort(OperationType::CAPITAL_REPAYMENT_REGULARIZATION, self::GROUP_FIRST_YEAR_COHORT), $years);
+        $repaidInterest                              = $this->formatCohortQueryResult($operationRepository->getTotalRepaymentByCohort(OperationType::GROSS_INTEREST_REPAYMENT, self::GROUP_FIRST_YEAR_COHORT), $years);
+        $repaidInterestRegularized                   = $this->formatCohortQueryResult($operationRepository->getTotalRepaymentByCohort(OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION, self::GROUP_FIRST_YEAR_COHORT), $years);
+        $weightedAverageInterestRate                 = $this->formatCohortQueryResult($projectRepository->getWeightedAverageInterestRateByCohortUntil(self::GROUP_FIRST_YEAR_COHORT), $years);
+        $notWeightedAverageInterestRate              = $this->formatCohortQueryResult($projectRepository->getNonWeightedAverageInterestRateByCohortUntil(self::GROUP_FIRST_YEAR_COHORT), $years);
+        $weightedAveragePeriod                       = $this->formatCohortQueryResult($projectRepository->getWeightedAveragePeriodByCohortUntil(self::GROUP_FIRST_YEAR_COHORT), $years);
+        $notWeightedAveragePeriod                    = $this->formatCohortQueryResult($projectRepository->getNonWeightedAveragePeriodByCohortUntil(self::GROUP_FIRST_YEAR_COHORT), $years);
+        $weightedAverageLoanAge                      = $this->formatCohortQueryResult($projectRepository->getAverageLoanAgeByCohortUntil(true, self::GROUP_FIRST_YEAR_COHORT), $years);
+        $NotWeightedAverageLoanAge                   = $this->formatCohortQueryResult($projectRepository->getAverageLoanAgeByCohortUntil(false, self::GROUP_FIRST_YEAR_COHORT), $years);
+        $totalInterest                               = $this->formatCohortQueryResult($paymentScheduleRepository->getTotalInterestToBePaidByCohortUntil(self::GROUP_FIRST_YEAR_COHORT), $years);
+        $numberLateHealthyProjects                   = $this->formatCohortQueryResult($projectRepository->getCountProjectsWithLateRepayments(self::HEALTHY_PROJECTS, self::GROUP_FIRST_YEAR_COHORT), $years);
+        $numberLateProblematicProjects               = $this->formatCohortQueryResult($projectRepository->getCountProjectsWithLateRepayments(self::PROBLEMATIC_PROJECTS, self::GROUP_FIRST_YEAR_COHORT), $years);
+        $lateCapitalRepaymentsHealthyProjects        = $this->formatCohortQueryResult($borrowerPaymentSchedule->getLateCapitalRepaymentsHealthyProjects(self::GROUP_FIRST_YEAR_COHORT), $years);
+        $debtCollectionRepaymentHealthyProjects      = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionRepaymentByCohort(self::HEALTHY_PROJECTS, self::GROUP_FIRST_YEAR_COHORT), $years);
+        $debtCollectionCommissionHealthyProjects     = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionLenderCommissionByCohort(self::HEALTHY_PROJECTS, self::GROUP_FIRST_YEAR_COHORT), $years);
+        $lateCapitalRepaymentsProblematicProjects    = $this->formatCohortQueryResult($borrowerPaymentSchedule->getLateCapitalRepaymentsProblematicProjects(self::GROUP_FIRST_YEAR_COHORT), $years);
+        $debtCollectionRepaymentProblematicProjects  = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionRepaymentByCohort(self::PROBLEMATIC_PROJECTS, self::GROUP_FIRST_YEAR_COHORT), $years);
+        $debtCollectionCommissionProblematicProjects = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionLenderCommissionByCohort(self::PROBLEMATIC_PROJECTS, self::GROUP_FIRST_YEAR_COHORT), $years);
 
         $data = [];
         foreach ($years as $year) {
-            if ($year == '2013-2014') {
-                $cohortStartDate = '2013-01-01 00:00:00';
-                $cohortEndDate   = '2014-12-31 23:59:59';
-            } else {
-                $cohortStartDate = $year . '-01-01 00:00:00';
-                $cohortEndDate   = $year . '-12-31 23:59:59';
-            }
+            $cohortStartDate = $year . '-01-01 00:00:00';
+            $cohortEndDate   = $year . '-12-31 23:59:59';
 
             try {
                 $data['optimistic-unilend-irr'][$year] = $this->IRRManager->getOptimisticUnilendIRRByCohort($cohortStartDate, $cohortEndDate);
@@ -380,9 +406,15 @@ class StatisticsManager
                 $data['optimistic-unilend-irr'][$year] = 'NA';
             }
 
-            $data['borrowed-capital'][$year]                    = $regulatoryData['borrowed-capital'][$year];
-            $data['number-of-projects'][$year]                  = $regulatoryData['projects'][$year];
-            $data['average-borrowed-amount'][$year]             = round(bcdiv($regulatoryData['borrowed-capital'][$year], $regulatoryData['projects'][$year], 4));
+            try {
+                $data['realistic-unilend-irr'][$year] = $this->IRRManager->getUnilendIRRByCohort($cohortStartDate, $cohortEndDate);
+            } catch (\Exception $exception) {
+                $data['realistic-unilend-irr'][$year] = 'NA';
+            }
+
+            $data['borrowed-capital'][$year]                    = round($borrowedCapital[$year]);
+            $data['number-of-projects'][$year]                  = $fundedProjects[$year];
+            $data['average-borrowed-amount'][$year]             = round(bcdiv($borrowedCapital[$year], $fundedProjects[$year], 4));
             $data['average-interest-rate'][$year]               = [
                 'volume' => $weightedAverageInterestRate[$year],
                 'number' => $notWeightedAverageInterestRate[$year]
@@ -392,43 +424,38 @@ class StatisticsManager
                 'number' => $notWeightedAveragePeriod[$year]
             ];
             $data['average-loan-age'][$year]                    = [
-                'volume' => 0, //@TODO calcul à faire
-                'number' => 0 //@TODO calcul à faire
+                'volume' => $weightedAverageLoanAge[$year],
+                'number' => $NotWeightedAverageLoanAge[$year]
             ];
-            $data['repaid-capital'][$year]                      = $regulatoryData['repaid-capital'][$year];
+            $data['repaid-capital'][$year]                      = round(bcsub($repaidCapital[$year], $repaidCapitalRegularized[$year], 4));
             $data['repaid-capital-ratio'][$year]                = round(bcmul(bcdiv($data['repaid-capital'][$year], $data['borrowed-capital'][$year], 6), 100, 3), 2);
-            $data['repaid-interest'][$year]                     = $regulatoryData['repaid-interest'][$year];
+            $data['repaid-interest'][$year]                     = round(bcsub($repaidInterest[$year], $repaidInterestRegularized[$year], 4), 2);
             $data['repaid-interest-ratio'][$year]               = round(bcmul(bcdiv($data['repaid-interest'][$year], $totalInterest[$year], 6), 100, 3), 2);
-            $data['realistic-unilend-irr'][$year]               = $regulatoryData['IRR'][$year];
-            $data['annual-cost-of-risk'][$year]                 = 'NA' === $data['optimistic-unilend-irr'][$year] ? 'NA' : bcsub($data['optimistic-unilend-irr'][$year], $data['realistic-unilend-irr'][$year], 4);
-            $data['late-owed-capital-healthy'][$year]           = $regulatoryData['late-owed-capital-healthy'][$year];
+            $data['annual-cost-of-risk'][$year]                 = 'NA' === $data['optimistic-unilend-irr'][$year] ? 'NA' : round(bcsub($data['optimistic-unilend-irr'][$year], $data['realistic-unilend-irr'][$year], 4), 2);
+            $data['late-owed-capital-healthy'][$year]           = round(bcsub($lateCapitalRepaymentsHealthyProjects[$year], bcsub($debtCollectionRepaymentHealthyProjects[$year], $debtCollectionCommissionHealthyProjects[$year], 4), 4));
             $data['late-capital-percentage'][$year]             = [
                 'volume' => round(bcmul(bcdiv($data['late-owed-capital-healthy'][$year], $data['borrowed-capital'][$year], 6), 100, 3), 2),
                 'number' => round(bcdiv($numberLateHealthyProjects[$year], $data['number-of-projects'][$year], 6), 2)
             ];
-            $data['late-owed-capital-problematic'][$year]       = $regulatoryData['late-owed-capital-problematic'][$year];
+            $data['late-owed-capital-problematic'][$year]       = round(bcsub($lateCapitalRepaymentsProblematicProjects[$year], bcsub($debtCollectionRepaymentProblematicProjects[$year], $debtCollectionCommissionProblematicProjects[$year], 4), 4));
+
             $data['late-problematic-capital-percentage'][$year] = [
                 'volume' => round(bcmul(bcdiv($data['late-owed-capital-problematic'][$year], $data['borrowed-capital'][$year], 6), 100, 3), 2),
                 'number' => round(bcdiv($numberLateProblematicProjects[$year], $data['number-of-projects'][$year], 6), 2)
             ];
         }
 
-        try {
-            $data['optimistic-unilend-irr']['total'] = $this->IRRManager->getOptimisticUnilendIRR();
-        } catch (\Exception $exception) {
-            $data['optimistic-unilend-irr']['total'] = 'NA';
-        }
-
-        $data['borrowed-capital']['total']                    = $regulatoryData['borrowed-capital']['total'];
-        $data['average-borrowed-amount']['total']             = round(bcdiv($regulatoryData['borrowed-capital']['total'], $regulatoryData['projects']['total'], 4));
-        $data['number-of-projects']['total']                  = $regulatoryData['projects']['total'];
-        $data['repaid-capital']['total']                      = $regulatoryData['repaid-capital']['total'];
-        $data['repaid-interest']['total']                     = $regulatoryData['repaid-interest']['total'];
+        $data['borrowed-capital']['total']                    = array_sum($data['borrowed-capital']);
+        $data['number-of-projects']['total']                  = array_sum($data['number-of-projects']);
+        $data['average-borrowed-amount']['total']             = round(bcdiv($data['borrowed-capital']['total'], $data['number-of-projects']['total'], 4));
+        $data['repaid-capital']['total']                      = array_sum($data['repaid-capital']);
+        $data['repaid-interest']['total']                     = array_sum($data['repaid-interest']);
         $data['repaid-capital-ratio']['total']                = round(bcdiv($data['repaid-capital']['total'], $data['borrowed-capital']['total'], 6), 2);
         $data['repaid-interest-ratio']['total']               = round(bcdiv($data['repaid-interest']['total'], array_sum($totalInterest), 4), 2);
-        $data['late-owed-capital-healthy']['total']           = $regulatoryData['late-owed-capital-healthy']['total'];
-        $data['late-owed-capital-problematic']['total']       = $regulatoryData['late-owed-capital-problematic']['total'];
-        $data['realistic-unilend-irr']['total']               = $regulatoryData['IRR']['total'];
+        $data['late-owed-capital-healthy']['total']           = array_sum($data['late-owed-capital-healthy']);
+        $data['late-owed-capital-problematic']['total']       = array_sum($data['late-owed-capital-problematic']);
+        $data['optimistic-unilend-irr']['total']              = $this->IRRManager->getLastOptimisticUnilendIRR()->getValue();
+        $data['realistic-unilend-irr']['total']               = $this->IRRManager->getLastUnilendIRR()->getValue();
         $data['annual-cost-of-risk']['total']                 = 'NA' === $data['optimistic-unilend-irr']['total'] ? 'NA' : bcsub($data['optimistic-unilend-irr']['total'], $data['realistic-unilend-irr']['total'], 4);
         $data['average-interest-rate']['total']               = [
             'volume' => $this->getStatistic('averageInterestRateForLenders', $date),
@@ -443,46 +470,34 @@ class StatisticsManager
             'number' => round(bcdiv(array_sum($numberLateProblematicProjects), $data['number-of-projects']['total'], 6), 2)
         ];
         $data['average-loan-age']['total']                    = [
-            'volume' => 0, //@TODO calcul à faire
-            'number' => 0 //@TODO calcul à faire
+            'volume' => $projectRepository->getAverageLoanAgeUntil(true),
+            'number' => $projectRepository->getAverageLoanAgeUntil(false)
         ];
 
         $data['average-period']['total'] = [
-            'volume' => $projectRepository->getWeightedAveragePeriodUntil(),
-            'number' => $projectRepository->getNonWeightedAveragePeriodUntil()
+            'volume' => round($projectRepository->getWeightedAveragePeriodUntil(), 1),
+            'number' => round($projectRepository->getNonWeightedAveragePeriodUntil(), 1)
         ];
 
         return $data;
-
     }
-    /**
-     * @return array
-     */
-    private function getYearsRange()
-    {
-        return array_merge(['2013-2014'], range(2015, date('Y')));
-    }
-
 
     /**
      * @param \DateTime $date
+     *
      * @return mixed|null
      */
     public function getPerformanceIndicatorAtDate(\DateTime $date)
     {
-        $today    = new \DateTime('NOW');
-        $cacheKey = $date->format('Y-m-d') == $today->format('Y-m-d') ? CacheKeys::UNILEND_PERFORMANCE_INDICATOR : CacheKeys::UNILEND_PERFORMANCE_INDICATOR . '_' . $date->format('Y-m-d');
-        $statsEntry = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->findOneBy(['typeStat' => UnilendStats::TYPE_FPF_FRONT_STATISTIC], ['added' => 'DESC']);
-
-        return  json_decode($statsEntry->getValue(), true);
-
-
+        $today      = new \DateTime('NOW');
+        $cacheKey   = $date->format('Y-m-d') == $today->format('Y-m-d') ? CacheKeys::UNILEND_PERFORMANCE_INDICATOR : CacheKeys::UNILEND_PERFORMANCE_INDICATOR . '_' . $date->format('Y-m-d');
         $cachedItem = $this->cachePool->getItem($cacheKey);
+
         if (false === $cachedItem->isHit()) {
             if ($date->format('Y-m-d') == $today->format('Y-m-d')) {
                 $statsEntry = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->findOneBy(['typeStat' => UnilendStats::TYPE_FPF_FRONT_STATISTIC], ['added' => 'DESC']);
             } else {
-                $statsEntry = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->findOneBy(['typeStat' => UnilendStats::TYPE_FPF_FRONT_STATISTIC, 'added' => $date]);
+                $statsEntry = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->getStatisticAtDate($date, UnilendStats::TYPE_FPF_FRONT_STATISTIC);
             }
             $statistics = json_decode($statsEntry->getValue(), true);
             $cachedItem->set($statistics)->expiresAfter(CacheKeys::LONG_TIME);
@@ -494,6 +509,9 @@ class StatisticsManager
         }
     }
 
+    /**
+     * @return array
+     */
     public function getAvailableDatesForFPFStatistics()
     {
         $availableDates = [];

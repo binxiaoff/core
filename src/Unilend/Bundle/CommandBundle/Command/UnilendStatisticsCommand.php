@@ -23,15 +23,15 @@ class UnilendStatisticsCommand extends ContainerAwareCommand
         $statisticsManager = $this->getContainer()->get('unilend.service.statistics_manager');
         $entityManager     = $this->getContainer()->get('doctrine.orm.entity_manager');
 
-//        $statistics = $statisticsManager->calculateStatistics();
-//
-//        $frontStats = new UnilendStats();
-//        $frontStats->setTypeStat(UnilendStats::TYPE_STAT_FRONT_STATISTIC)
-//            ->setValue(json_encode($statistics));
-//
-//        $entityManager->persist($frontStats);
-//
-//        $entityManager->flush($frontStats);
+        $statistics = $statisticsManager->calculateStatistics();
+
+        $frontStats = new UnilendStats();
+        $frontStats->setTypeStat(UnilendStats::TYPE_STAT_FRONT_STATISTIC)
+            ->setValue(json_encode($statistics));
+
+        $entityManager->persist($frontStats);
+
+        $entityManager->flush($frontStats);
 
         $fpfStatistics = $statisticsManager->calculatePerformanceIndicators(new \DateTime('NOW'));
 
