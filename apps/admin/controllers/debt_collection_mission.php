@@ -158,9 +158,16 @@ class debt_collection_missionController extends bootstrap
                 $errors[] = 'Le montant TVA saisi est incorrect';
             }
             if (empty($_POST['fee-invoice-date'])
-                || false === ($chargeInvoiceDate = \DateTime::createFromFormat('d/m/Y', $_POST['fee-invoice-date']))
+                || false === ($chargeInvoiceDate = \DateTime::createFromFormat('d/m/y', $_POST['fee-invoice-date']))
             ) {
                 $errors[] = 'Le format de la date est incorrect';
+            }
+            /** @var \Doctrine\Common\Collections\ArrayCollection $mission */
+            $mission = $project->getDebtCollectionMissions();
+            if (0 === $mission->count()) {
+                $errors[] = 'Il n\'y a pas de mission de recouvrement en cours sur ce projet';
+            } elseif ($mission->count() > 1) {
+                $errors[] = 'Il y a plusieurs missions de recouvrement en cours sur ce projet';
             }
 
             if (empty($errors)) {
@@ -168,8 +175,9 @@ class debt_collection_missionController extends bootstrap
 
                 $newCharge = new ProjectCharge();
                 $newCharge->setIdProject($project)
+                    ->setIdMission($mission->first())
                     ->setIdType($projectChargeType)
-                    ->setStatus(ProjectCharge::STATUS_PENDING)
+                    ->setStatus(ProjectCharge::STATUS_PAID_BY_UNILEND)
                     ->setAmountInclVat($chargeAmountVatIncl)
                     ->setAmountVat(round($chargeAmountVat, 2))
                     ->setInvoiceDate($chargeInvoiceDate);
