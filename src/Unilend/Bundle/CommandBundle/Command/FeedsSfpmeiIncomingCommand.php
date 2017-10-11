@@ -502,7 +502,7 @@ EOF
                         $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
                         $projectPaymentManager->rejectPayment($reception, $user);
 
-                        $this->sendBorrowerRepaymentRejectionNotification($originalRejectedDirectDebit);
+                        $this->sendBorrowerRepaymentRejectionNotification($reception);
                     }
                 }
             }
@@ -526,18 +526,23 @@ EOF
     }
 
     /**
-     * @param Receptions $rejectedDirectDebit
+     * @param Receptions $wireTransferIn
      */
-    private function sendBorrowerRepaymentRejectionNotification(Receptions $rejectedDirectDebit)
+    private function sendBorrowerRepaymentRejectionNotification(Receptions $wireTransferIn)
     {
         try {
+            $motive = '';
+            if ($wireTransferIn->getRejectionIsoCode() instanceof SepaRejectionReason) {
+                $motive = ' Motif: ' . $wireTransferIn->getRejectionIsoCode()->getIsoCode() . ' (*' . $wireTransferIn->getRejectionIsoCode()->getLabel() . '*)';
+            }
+
             $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
-            $slackManager->sendMessage('Rejet SFPMEI - Projet: ' . $slackManager->getProjectName($rejectedDirectDebit->getIdProject()) .
-                ' - réception (ID ' . $rejectedDirectDebit->getIdReception() . ') du ' . $rejectedDirectDebit->getAdded()->format('d/m/Y') . ' vient d\'être rejetée.');
+            $slackManager->sendMessage('SFPMEI - *Rejet* - Projet: ' . $slackManager->getProjectName($wireTransferIn->getIdProject()) .
+                ' - La réception (ID: ' . $wireTransferIn->getIdReceptionRejected()->getIdReception() . ') *du ' . $wireTransferIn->getIdReceptionRejected()->getAdded()->format('d/m/Y') . '* a été rejetée.' . $motive);
         } catch (\Exception $exception) {
             $this->logger->warning(
                 'Could not send rejection notification message: ' . $exception->getMessage(),
-                ['id_reception_rejected' => $rejectedDirectDebit->getIdReception(),  'id_project' => $rejectedDirectDebit->getIdProject()->getIdProject(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                ['id_reception_rejected' => $wireTransferIn->getIdReceptionRejected()->getIdReception(), 'id_project' => $wireTransferIn->getIdProject()->getIdProject(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
             );
         }
     }
