@@ -26,42 +26,42 @@ class CloseOutNettingPayment
     /**
      * @var string
      *
-     * @ORM\Column(name="capital", type="decimal", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="capital", type="decimal", precision=10, scale=2, nullable=false)
      */
     private $capital;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="paid_capital", type="decimal", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="paid_capital", type="decimal", precision=10, scale=2, nullable=false)
      */
     private $paidCapital;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="interest", type="decimal", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="interest", type="decimal", precision=10, scale=2, nullable=false)
      */
     private $interest;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="paid_interest", type="decimal", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="paid_interest", type="decimal", precision=10, scale=2, nullable=false)
      */
     private $paidInterest;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="commission_tax_incl", type="decimal", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="commission_tax_incl", type="decimal", precision=10, scale=2, nullable=false)
      */
     private $commissionTaxIncl;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="paid_commission_tax_incl", type="decimal", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="paid_commission_tax_incl", type="decimal", precision=10, scale=2, nullable=false)
      */
     private $paidCommissionTaxIncl;
 

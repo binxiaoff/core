@@ -69,12 +69,11 @@ class ProjectCloseOutNettingRepaymentManager
      * Repay completely or partially a repayment schedule with or without debt collection fee.
      *
      * @param ProjectRepaymentTask $projectRepaymentTask
-     * @param int                  $userId
      *
      * @return ProjectRepaymentTaskLog|null
      * @throws \Exception
      */
-    public function repay(ProjectRepaymentTask $projectRepaymentTask, $userId = Users::USER_ID_CRON)
+    public function repay(ProjectRepaymentTask $projectRepaymentTask)
     {
         if (ProjectRepaymentTask::TYPE_CLOSE_OUT_NETTING !== $projectRepaymentTask->getType()) {
             $this->logger->warning(
@@ -103,7 +102,7 @@ class ProjectCloseOutNettingRepaymentManager
             } else {
                 $this->projectRepaymentNotificationSender->sendIncompleteRepaymentNotification($projectRepaymentTask->getIdProject(), $projectRepaymentTask->getSequence());
 
-                throw new \Exception('The amount (' . $totalTaskPlannedAmount . ') in the of the project repayment task (id: ' . $projectRepaymentTask->getId() . ') is different from the repaid amount (' . $totalTaskRepaidAmount . '). The task may not been completely done');
+                throw new \Exception('The amount (' . $totalTaskPlannedAmount . ') of the project repayment task (id: ' . $projectRepaymentTask->getId() . ') is different from the repaid amount (' . $totalTaskRepaidAmount . '). The task may not been completely done');
             }
 
             $this->debtCollectionFeeManager->processDebtCollectionFee($projectRepaymentTask->getIdWireTransferIn());

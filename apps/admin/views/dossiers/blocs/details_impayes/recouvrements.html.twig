@@ -69,9 +69,10 @@
                             Contentieux
                         {% endif %}
                     </td>
-                    <td>{{ mission.getFeesRate()|localizednumber('percent') }}</td>
+                    <td>{{ mission.getFeesRate() * 100|localizednumber }}&nbsp;%</td>
                     <td class="text-center">
-                        <a href="/debt_collection_mission/downloadCreditorDetailsFile/{{ mission.id }}" class="btn btn-xs btn-default push-10-r" data-toggle="tooltip" data-original-title="Télécharger XLS"><i class="fa fa-download"></i></a>
+                        <a href="/debt_collection_mission/downloadCreditorDetailsFile/{{ mission.id }}" class="btn btn-xs btn-default push-10-r" data-toggle="tooltip"
+                           data-original-title="Télécharger XLS"><i class="fa fa-download"></i></a>
                     </td>
                 </tr>
             {% endfor %}

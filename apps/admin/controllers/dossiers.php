@@ -4,7 +4,6 @@ use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
@@ -3149,10 +3148,7 @@ class dossiersController extends bootstrap
         $translator = $this->get('translator');
         $user       = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
-        if (\users_types::TYPE_RISK == $user->getIdUserType()->getIdUserType()
-            || $user->getIdUser() == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_ALAIN_ELKAIM
-            || isset($this->params[1]) && 'risk' == $this->params[1] && in_array($user->getIdUserType()->getIdUserType(), [\users_types::TYPE_ADMIN, \users_types::TYPE_IT])
-        ) {
+        if ($this->isUserTypeRisk()) {
             if (false === empty($this->params[0])) {
                 $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
@@ -3162,11 +3158,11 @@ class dossiersController extends bootstrap
 
                 if (null !== ($project = $projectRepository->find($projectId))) {
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
-                    $projectManager     = $this->get('unilend.service.project_manager');
+                    $projectManager = $this->get('unilend.service.project_manager');
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
                     $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
-                    $projectStatus      = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $project->getStatus()]);
-                    $projectData        = [
+                    $projectStatus                 = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $project->getStatus()]);
+                    $projectData                   = [
                         'projectId'                => $project->getIdProject(),
                         'siren'                    => $project->getIdCompany()->getSiren(),
                         'companyActivity'          => $project->getIdCompany()->getActivite(),
@@ -3290,7 +3286,7 @@ class dossiersController extends bootstrap
     public function _dechoir_terme()
     {
         $projectId = filter_var($this->request->request->get('id_project'), FILTER_VALIDATE_INT);
-        if ($projectId) {
+        if ($this->isUserTypeRisk() && $projectId) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
@@ -3300,8 +3296,8 @@ class dossiersController extends bootstrap
                 $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
                 try {
                     $projectCloseOutNettingManager->decline($project, new DateTime());
-                } catch (Exception $exception) {
-                    $this->get('logger')->error($exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
+                } catch (\Exception $exception) {
+                    $this->get('logger')->error($exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine(), 'method' => __METHOD__]);
                     $_SESSION['freeow']['title']   = 'Déchéance du terme';
                     $_SESSION['freeow']['message'] = 'L\'opétation échouée.';
                 }
@@ -3310,5 +3306,24 @@ class dossiersController extends bootstrap
 
         header('Location: ' . $this->request->server->get('HTTP_REFERER'));
         die;
+    }
+
+    /**
+     * @return bool
+     */
+    private function isUserTypeRisk()
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $user          = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+
+        if (\users_types::TYPE_RISK == $user->getIdUserType()->getIdUserType()
+            || $user->getIdUser() == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_ALAIN_ELKAIM
+            || isset($this->params[1]) && 'risk' == $this->params[1] && in_array($user->getIdUserType()->getIdUserType(), [\users_types::TYPE_ADMIN, \users_types::TYPE_IT])
+        ) {
+            return true;
+        }
+
+        return false;
     }
 }

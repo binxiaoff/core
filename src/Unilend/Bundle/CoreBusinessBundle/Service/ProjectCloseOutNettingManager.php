@@ -32,11 +32,6 @@ class ProjectCloseOutNettingManager
      */
     public function decline(Projects $project, \DateTime $closeOutNettingDate)
     {
-        $projectRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
-            'idProject' => $project,
-            'status'    => [ProjectRepaymentTask::STATUS_PENDING, ProjectRepaymentTask::STATUS_READY, ProjectRepaymentTask::STATUS_IN_PROGRESS, ProjectRepaymentTask::STATUS_ERROR]
-        ]);
-
         if ($project->getCloseOutNettingDate()) {
             throw new \Exception('The project (id: ' . $project->getIdProject() . ') has already been declined.');
         }
@@ -45,6 +40,10 @@ class ProjectCloseOutNettingManager
             throw new \Exception('The project (id: ' . $project->getIdProject() . ') has status ' . $project->getStatus() . '. You cannot decline the repayment schedules.');
         }
 
+        $projectRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
+            'idProject' => $project,
+            'status'    => [ProjectRepaymentTask::STATUS_PENDING, ProjectRepaymentTask::STATUS_READY, ProjectRepaymentTask::STATUS_IN_PROGRESS, ProjectRepaymentTask::STATUS_ERROR]
+        ]);
         if ($projectRepaymentTask) {
             throw new \Exception('There are pending repayment tasks to treat for the project (id: ' . $project->getIdProject() . '). You cannot decline the repayment schedules.');
         }
@@ -75,22 +74,26 @@ class ProjectCloseOutNettingManager
             'status'    => [ProjectRepaymentTask::STATUS_PENDING, ProjectRepaymentTask::STATUS_READY, ProjectRepaymentTask::STATUS_IN_PROGRESS, ProjectRepaymentTask::STATUS_ERROR]
         ]);
 
-        return null === $project->getCloseOutNettingDate() && $project->getStatus() < ProjectsStatus::PROBLEME && null === $projectRepaymentTask;
+        return null === $project->getCloseOutNettingDate() && $project->getStatus() >= ProjectsStatus::PROBLEME && null === $projectRepaymentTask;
     }
 
     /**
-     * @param Projects  $project
-     * @param \DateTime $closeOutNettingDate
+     * @param Projects $project
+     *
+     * @throws \Exception
      */
-    private function buildRepayments(Projects $project, \DateTime $closeOutNettingDate)
+    private function buildRepayments(Projects $project)
     {
+        if (null === $project->getCloseOutNettingDate()) {
+            throw new \Exception('The project (id:' . $project->getIdProject() . ' has not the close out netting date');
+        }
         $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
 
         $loans = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project]);
 
         foreach ($loans as $loan) {
             $capital  = $repaymentScheduleRepository->getRemainingCapitalByLoan($loan);
-            $interest = $repaymentScheduleRepository->getOverdueInterestByLoan($loan, $closeOutNettingDate);
+            $interest = $repaymentScheduleRepository->getOverdueInterestByLoan($loan, $project->getCloseOutNettingDate());
 
             $closeOutNettingRepayment = new CloseOutNettingRepayment();
             $closeOutNettingRepayment->setIdLoan($loan)
@@ -105,14 +108,18 @@ class ProjectCloseOutNettingManager
     }
 
     /**
-     * @param Projects  $project
-     * @param \DateTime $closeOutNettingDate
+     * @param Projects $project
+     *
+     * @throws \Exception
      */
-    private function buildPayments(Projects $project, \DateTime $closeOutNettingDate)
+    private function buildPayments(Projects $project)
     {
+        if (null === $project->getCloseOutNettingDate()) {
+            throw new \Exception('The project (id:' . $project->getIdProject() . ' has not the close out netting date');
+        }
         $paymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
 
-        $overdueAmounts = $paymentScheduleRepository->getTotalOverdueAmounts($project, $closeOutNettingDate);
+        $overdueAmounts = $paymentScheduleRepository->getTotalOverdueAmounts($project, $project->getCloseOutNettingDate());
         $capital        = $paymentScheduleRepository->getRemainingCapitalByProject($project);
         $interest       = $overdueAmounts['interest'];
         $commission     = $overdueAmounts['commission'];

@@ -250,7 +250,6 @@ class DebtCollectionMissionManager
                 $dataColumn++;
                 if (empty($totalColumn)) {
                     $totalColumn = $dataColumn;
-
                 }
                 $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['total'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             }
@@ -821,8 +820,10 @@ class DebtCollectionMissionManager
                     ['dateEcheanceEmprunteur' => 'ASC']
                 );
                 $paymentScheduleMissionCollection = new ArrayCollection();
+                $today                            = (new \DateTime())->setTime(0, 0, 0);
+
                 foreach ($pendingPayments as $key => $payment) {
-                    if ($payment->getDateEcheanceEmprunteur() < (new \DateTime())->setTime(0, 0, 0)) {
+                    if ($payment->getDateEcheanceEmprunteur() < $today) {
                         $paymentScheduleMission = new DebtCollectionMissionPaymentSchedule();
                         $paymentScheduleMission->setIdMission($newMission)
                             ->setIdPaymentSchedule($payment)
