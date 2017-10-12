@@ -43,4 +43,19 @@ class ProjectRepaymentTaskRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }
+
+    /**
+     * @param Receptions|int $wireTransferIn
+     *
+     * @return float
+     */
+    public function getTotalRepaymentByWireTransferIn($wireTransferIn)
+    {
+        $queryBuilder = $this->createQueryBuilder('prt');
+        $queryBuilder->select('SUM(prt.capital + prt.interest)')
+            ->where('prt.idWireTransferIn = :wireTransferIn')
+            ->setParameter('wireTransferIn', $wireTransferIn);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
 }

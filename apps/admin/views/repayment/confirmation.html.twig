@@ -1,0 +1,341 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
+{% endblock %}
+
+
+{% block pageHeader %}
+    <div class="pull-left">
+        <a href="/dossiers/details_impayes/{{ recepion.idProject.idProject }}" class="text-muted"><span class="fa fa-arrow-left"></span>&nbsp;Détails impayés</a>
+    </div>
+    <div class="pull-right">
+        <small>SIREN : {{ reception.idProject.idCompany.siren }}</small>
+        <small>|</small>
+        <small>ID Projet : {{ reception.idProject.idProject }}</small>
+        <span class="label label-info push-10-l">{{ projectStatus }}</span>
+    </div>
+    <h1 class="h3" style="clear:both;margin-top:30px">
+        Confirmation du remboursement pour {{ reception.idProject.title }}
+    </h1>
+    <table class="table-condensed push-20" style="margin-left: -3px;">
+        <tr>
+            <th>Date de la réception :</th>
+            <td>{{ reception.added|localizeddate('short', 'none') }}</td>
+            <th>Montant :</th>
+            <td>{{ (reception.montant / 100)|localizedcurrency('EUR') }}</td>
+            <th>ID :</th>
+            <td>{{ reception.idReception }}</td>
+        </tr>
+    </table>
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <div id="repayment-summary" class="block block-rounded">
+            <div class="block-content block-content-full">
+                <form class="validate" method="post">
+
+                    {% if session.flashBag.has('repayment_task_info') %}
+                        <div class="alert alert-success">
+                            {% for info in session.flashBag.get('repayment_task_info') %}
+                                <p>{{ info }}.</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="row push">
+                        <div class="col-md-3">
+                            <div class="content-mini content-mini-full push" style="background: #f5f5f5;">
+                                <div class="font-s12 font-w600 text-uppercase">Montant remboursé</div>
+                                <a class="h2 font-w300 text-primary">{{ (reception.montant / 100)|localizedcurrency('EUR') }}</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h3 class="h5 push">Opérations prévues</h3>
+                            <table class="table table-bordered table-hover table-header-bg">
+                                <thead>
+                                <tr>
+                                    <th class="description" style="width: 40%">
+                                        Description
+                                    </th>
+                                    <th class="borrower" style="width: 15%">
+                                        Recouvreur
+                                    </th>
+                                    <th class="unilend" style="width: 15%">
+                                        Emprunteur
+                                    </th>
+                                    <th class="lender" style="width: 15%">
+                                        Unilend
+                                    </th>
+                                    <th class="description" style="width: 15%">
+                                        Prêteurs
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td class="description">
+                                        Réception brut
+                                    </td>
+                                    <td class="debt-collection-agency">
+                                    </td>
+                                    <td class="borrower">
+                                        + {{ (reception.montant / 100)|localizedcurrency('EUR') }}
+                                    </td>
+                                    <td class="unilend">
+                                    </td>
+                                    <td class="lender">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="description">
+                                        Honoraires de recouvrement (loans)
+                                    </td>
+                                    <td class="debt-collection-agency">
+                                        {% if feeOnLoan.amountTaxIncl > 0 %}
+                                            + {{ feeOnLoan.amountTaxIncl|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="borrower">
+                                        {% if isDebtCollectionFeeDueToBorrowerand and feeOnLoan.amountTaxIncl > 0 %}
+                                            - {{ feeOnLoan.amountTaxIncl|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="unilend">
+                                    </td>
+                                    <td class="lender">
+                                        {% if false == isDebtCollectionFeeDueToBorrower and feeOnLoan.amountTaxIncl > 0 %}
+                                            - {{ feeOnLoan.amountTaxIncl|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="description">
+                                        TVA sur honoraires de recouvrement (loans)
+                                    </td>
+                                    <td class="debt-collection-agency">
+                                        {% if feeOnLoan.vat > 0 %}
+                                            + {{ feeOnLoan.vat|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="borrower">
+                                        {% if isDebtCollectionFeeDueToBorrower and feeOnLoan.vat > 0 %}
+                                            - {{ feeOnLoan.vat|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="unilend">
+                                    </td>
+                                    <td class="lender">
+                                        {% if false == isDebtCollectionFeeDueToBorrower and feeOnLoan.vat > 0 %}
+                                            - {{ feeOnLoan.vat|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="description">
+                                        Frais
+                                    </td>
+                                    <td class="debt-collection-agency">
+                                    </td>
+                                    <td class="borrower">
+                                        {% if projectCharge > 0 %}
+                                            - {{ projectCharge|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="unilend">
+                                        {% if projectCharge > 0 %}
+                                            + {{ projectCharge|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="lender">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="description">
+                                        Honoraires sur frais
+                                    </td>
+                                    <td class="debt-collection-agency">
+                                        {% if feeOnCharge.amountTaxIncl > 0 %}
+                                            + {{ feeOnCharge.amountTaxIncl|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="borrower">
+                                        {% if feeOnCharge.amountTaxIncl > 0 %}
+                                            - {{ feeOnCharge.amountTaxIncl|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="unilend">
+                                    </td>
+                                    <td class="lender">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="description">
+                                        TVA sur honoraires de frais
+                                    </td>
+                                    <td class="debt-collection-agency">
+                                        {% if feeOnCharge.vat > 0 %}
+                                            + {{ feeOnCharge.vat|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="borrower">
+                                        {% if feeOnCharge.vat > 0 %}
+                                            - {{ feeOnCharge.vat|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="unilend">
+                                    </td>
+                                    <td class="lender">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="description">
+                                        Honoraires de recouvrement Com Unilend
+                                    </td>
+                                    <td class="debt-collection-agency">
+                                        {% if feeOnCommission.amountTaxIncl > 0 %}
+                                            + {{ feeOnCommission.amountTaxIncl|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="borrower">
+                                        {% if isDebtCollectionFeeDueToBorrower and feeOnCommission.amountTaxIncl > 0 %}
+                                            - {{ feeOnCommission.amountTaxIncl|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="unilend">
+                                        {% if false == isDebtCollectionFeeDueToBorrower and feeOnCommission.amountTaxIncl > 0 %}
+                                            - {{ feeOnCommission.amountTaxIncl|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="lender">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="description">
+                                        TVA sur honoraires de recouvrement Com Unilend
+                                    </td>
+                                    <td class="debt-collection-agency">
+                                        {% if feeOnCommission.vat > 0 %}
+                                            + {{ feeOnCommission.vat|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="borrower">
+                                        {% if isDebtCollectionFeeDueToBorrower and feeOnCommission.vat > 0 %}
+                                            - {{ feeOnCommission.vat|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="unilend">
+                                        {% if false == isDebtCollectionFeeDueToBorrower and feeOnCommission.vat > 0 %}
+                                            - {{ feeOnCommission.vat|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="lender">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="description">
+                                        Montant Comission remboursable à Unilend
+                                    </td>
+                                    <td class="debt-collection-agency">
+                                    </td>
+                                    <td class="borrower">
+                                        {% if commission > 0 %}
+                                            - {{ commission|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="unilend">
+                                        {% if commission > 0 %}
+                                            + {{ commission|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="lender">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="description">
+                                        Montant remboursable aux prêteurs
+                                    </td>
+                                    <td class="debt-collection-agency">
+                                    </td>
+                                    <td class="borrower">
+                                        {% if totalRepayment > 0 %}
+                                            - {{ totalRepayment|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="unilend">
+                                    </td>
+                                    <td class="lender">
+                                        {% if totalRepayment > 0 %}
+                                            + {{ totalRepayment|localizedcurrency('EUR') }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h3 class="h5 push">Amortissement du prêt suite réception :</h3>
+                            <table class="table table-bordered table-hover table-header-bg">
+                                <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th>Capital (payé / total)</th>
+                                    <th>Intérêt (payé / total)</th>
+                                    <th>Commission (payé / total)</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% if paidPaymentSchedules is not empty %}
+                                    {% for paymentSchedule in paidPaymentSchedules %}
+                                        <tr>
+                                            <td>
+                                                Échéance {{ paymentSchedule.dateEcheanceEmprunteur|localizeddate("medium", "none", null, null, "MMMM yyyy") }}
+                                            </td>
+                                            <td>
+                                                {{ (paymentSchedule.paidCapital / 100)|localizedcurrency('EUR') }} / {{ (paymentSchedule.capital / 100)|localizedcurrency('EUR') }}
+                                            </td>
+                                            <td>
+                                                {{ (paymentSchedule.paidInterest / 100)|localizedcurrency('EUR') }} / {{ (paymentSchedule.interets / 100)|localizedcurrency('EUR') }}
+                                            </td>
+                                            <td>
+                                                {{ (paymentSchedule.paidCommissionVatIncl / 100)|localizedcurrency('EUR') }}
+                                                / {{ ((paymentSchedule.commission + paymentSchedule.tva) / 100)|localizedcurrency('EUR') }}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% endif %}
+                                {% if closeOutNettingPayment is not null %}
+                                    <tr>
+                                        <td>
+                                            Montants
+                                        </td>
+                                        <td>
+                                            {{ closeOutNettingPayment.paidCapital|localizedcurrency('EUR') }} / {{ closeOutNettingPayment.capital|localizedcurrency('EUR') }}
+                                        </td>
+                                        <td>
+                                            {{ closeOutNettingPayment.paidInterest|localizedcurrency('EUR') }} / {{ closeOutNettingPayment.interest|localizedcurrency('EUR') }}
+                                        </td>
+                                        <td>
+                                            {{ closeOutNettingPayment.paidCommissionTaxIncl|localizedcurrency('EUR') }} / {{ closeOutNettingPayment.commissionTaxIncl|localizedcurrency('EUR') }}
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <br>
+                    {% if canValidateTask %}
+                        <button class="btn btn-primary push-10-r" type="submit" name="validate" value="validate">Confirmer</button>
+                    {% endif %}
+                    <button class="btn btn-default" type="submit" name="cancel" value="cancel">Annuler</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

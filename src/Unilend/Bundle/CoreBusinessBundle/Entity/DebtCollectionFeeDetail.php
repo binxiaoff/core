@@ -48,6 +48,13 @@ class DebtCollectionFeeDetail
     private $vat;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="applied_fee_rate", type="decimal", precision=4, scale=4, nullable=false)
+     */
+    private $appliedFeeRate;
+
+    /**
      * @var integer
      *
      * @ORM\Column(name="status", type="integer", nullable=false)
@@ -417,5 +424,25 @@ class DebtCollectionFeeDetail
     public function getIdDebtCollectionMission()
     {
         return $this->idDebtCollectionMission;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAppliedFeeRate()
+    {
+        return $this->appliedFeeRate;
+    }
+
+    /**
+     * @param string $appliedFeeRate
+     *
+     * @return DebtCollectionFeeDetail
+     */
+    public function setAppliedFeeRate($appliedFeeRate)
+    {
+        $this->appliedFeeRate = $appliedFeeRate;
+
+        return $this;
     }
 }
