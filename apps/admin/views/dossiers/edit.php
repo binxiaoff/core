@@ -837,7 +837,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                                     <tr>
                                         <th>Déclaration de <br>bénéficiaires effectifs</th>
                                         <td>
-                                            <a role="button" class="btn btn-default" href="/beneficiaires_effectifs/<?= $this->companies->id_company ?>">Déclarer les bénéficiaires effectifs</a>
+                                            <a role="button" class="btn btn-default" href="<?= $this->lurl ?>/beneficiaires_effectifs/<?= $this->companies->id_company ?>">Déclarer les bénéficiaires effectifs</a>
                                         </td>
                                     </tr>
                                 <?php endif; ?>
@@ -947,14 +947,22 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                             <?php if (empty($this->proxy) || $this->proxy['status'] != UniversignEntityInterface::STATUS_SIGNED) : ?>
                                 <tr>
                                     <th>Pouvoir</th>
-                                    <td><a href="<?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
+                                    <td>
+                                        <a href="<?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>">
+                                            <img src="<?= $this->surl ?>/images/admin/pdf.png" alt="PDF">
+                                        </a>
+                                    </td>
                                 </tr>
                             <?php endif ?>
                             <?php if (empty($this->mandate) || $this->mandate['status'] != UniversignEntityInterface::STATUS_SIGNED) : ?>
                                 <tr>
                                     <th>Mandat</th>
                                     <?php if ($this->validBankAccount) : ?>
-                                        <td><a href="<?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
+                                        <td>
+                                            <a href="<?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>">
+                                                <img src="<?= $this->surl ?>/images/admin/pdf.png" alt="PDF">
+                                            </a>
+                                        </td>
                                     <?php else : ?>
                                         <td>L'emprunteur n'a pas de RIB en vigueur.</td>
                                     <?php endif ?>
@@ -963,10 +971,14 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                             <?php if (empty($this->beneficialOwnerDeclaration) || $this->beneficialOwnerDeclaration->getStatus() != UniversignEntityInterface::STATUS_SIGNED) : ?>
                                 <tr>
                                     <th>Déclaration de <br> bénéficiaires effectifs</th>
-                                    <td><a href="<?= $this->furl ?>/pdf/beneficiaires-effectifs/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/beneficiaires-effectifs/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
+                                    <td>
+                                        <a href="<?= $this->furl ?>/pdf/beneficiaires-effectifs/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>">
+                                            <img src="<?= $this->surl ?>/images/admin/pdf.png" alt="PDF">
+                                        </a>
+                                    </td>
                                 </tr>
                                 <td colspan="2">
-                                    <a role="button" class="btn btn-default" href="/beneficiaires_effectifs/<?= $this->companies->id_company ?>">Renvoyer la déclaration des bénéficiaires effectifs<br>(et éventuels autres documents non signés)</a>
+                                    <a role="button" class="btn btn-default" href="<?= $this->lurl ?>/beneficiaires_effectifs/<?= $this->companies->id_company ?>">Renvoyer la déclaration des bénéficiaires effectifs<br>(et éventuels autres documents non signés)</a>
                                 </td>
                             <?php endif; ?>
                         <?php endif; ?>

@@ -91,14 +91,14 @@ class BeneficialOwnerManager
         }
 
         $universign = new ProjectBeneficialOwnerUniversign();
-        $universign->setIdDeclaration($declaration)
+        $universign
+            ->setIdDeclaration($declaration)
             ->setIdProject($project)
             ->setStatus(UniversignEntityInterface::STATUS_PENDING);
 
         $universign->setName($this->getBeneficialOwnerDeclarationFileName($universign));
 
         $this->entityManager->persist($universign);
-
         $this->entityManager->flush($universign);
 
         return $universign;
@@ -114,7 +114,7 @@ class BeneficialOwnerManager
     }
 
     /**
-     * @param ProjectBeneficialOwnerUniversign $universignDeclaration
+     * @param ProjectBeneficialOwnerUniversign $projectDeclaration
      *
      * @return string
      */

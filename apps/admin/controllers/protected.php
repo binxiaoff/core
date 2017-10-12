@@ -154,17 +154,17 @@ class protectedController extends bootstrap
 
     public function _beneficial_owner()
     {
-        if (file_exists($this->path . 'protected/pdf/beneficial_owner/' . $this->params[0])) {
-            $url = ($this->path . 'protected/pdf/beneficial_owner/' . $this->params[0]);
+        $path = $this->path . 'protected/pdf/beneficial_owner/' . $this->params[0];
 
-            header('Content-Description: File Transfer');
-            header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename="' . basename($url) . '";');
-            @readfile($url);
-            die();
-        } else {
+        if (false === file_exists($path)) {
             header('location: ' . $this->url . '/protected/document_not_found');
             die;
         }
+
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="' . basename($path) . '"');
+        @readfile($path);
+        die;
     }
 }
