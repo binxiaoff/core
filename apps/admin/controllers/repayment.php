@@ -70,7 +70,15 @@ class repaymentController extends bootstrap
             die;
         }
 
-        $repaymentTask = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy(['idWireTransferIn' => $reception]);
+        $repaymentTask = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
+            'idWireTransferIn' => $reception,
+            'status'           => [
+                ProjectRepaymentTask::STATUS_PENDING,
+                ProjectRepaymentTask::STATUS_READY,
+                ProjectRepaymentTask::STATUS_IN_PROGRESS,
+                ProjectRepaymentTask::STATUS_REPAID
+            ]
+        ]);
         if ($repaymentTask) {
             header('Location: ' . $this->url);
             die;
