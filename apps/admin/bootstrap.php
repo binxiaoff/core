@@ -319,6 +319,10 @@ class bootstrap extends Controller
                     'uri'   => 'sfpmei/transferts/emprunteurs',
                 ],
                 [
+                    'title' => 'Opérations non attribuées',
+                    'uri'   => 'sfpmei/transferts/non_attribues',
+                ],
+                [
                     'title' => 'Exports',
                     'uri'   => 'sfpmei/exports',
                 ]
