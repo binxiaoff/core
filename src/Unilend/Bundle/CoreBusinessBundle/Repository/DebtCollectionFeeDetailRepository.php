@@ -96,6 +96,6 @@ class DebtCollectionFeeDetailRepository extends EntityRepository
 
         $delete = 'DELETE FROM debt_collection_fee_detail WHERE id_wire_transfer_in = :wireTransferIn AND status = :pending';
 
-        return $this->getEntityManager()->getConnection()->executeUpdate($delete, ['wireTransferIn' => $wireTransferIn, 'status' => DebtCollectionFeeDetail::STATUS_PENDING]);
+        return $this->getEntityManager()->getConnection()->executeUpdate($delete, ['wireTransferIn' => $wireTransferIn, 'pending' => DebtCollectionFeeDetail::STATUS_PENDING]);
     }
 }
