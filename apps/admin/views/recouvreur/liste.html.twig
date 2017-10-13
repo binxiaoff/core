@@ -1,0 +1,59 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block pluginsJS %}
+    <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="content bg-gray-lighter">
+        <h1 class="page-heading push">
+            Liste des recouvreurs
+        </h1>
+    </div>
+
+    <div class="content">
+        <div id="debt-collector-list" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Recouvreurs</h3>
+            </div>
+            <div class="block-content">
+                <table class="table table-striped table-bordered table-hover table-header-bg table-vertical-center">
+                    <thead>
+                    <tr>
+                        <th>&nbsp;</th>
+                        <th>Nom de l'agence</th>
+                        <th>Date d'ajout</th>
+                        <th>Dossiers confiés</th>
+                        <th>Dossiers en cours</th>
+                        <th>Montant confié en cours</th>
+                        <th style="width: 160px">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for debtCollector in debtCollectors %}
+                        <tr>
+                            <td>
+                                <img src="{{ app.adminUrl }}/images/logos/{{ debtCollector.client.slug }}" alt="Logo {{ debtCollector.client.nom }}" class="img-responsive-vertical box-shadow">
+                            </td>
+                            <td>{{ debtCollector.client.nom }}</td>
+                            <td>{{ debtCollector.client.added|localizeddate('short', 'none') }}</td>
+                            <td>{{ debtCollector.entrustedProjects.total|localizednumber }}</td>
+                            <td>{{ debtCollector.entrustedProjects.ongoing|localizednumber }}</td>
+                            <td>{{ debtCollector.entrustedProjects.amount > 0 ? debtCollector.entrustedProjects.amount|localizedcurrency('EUR') : '0 €' }}</td>
+                            <td>
+                                <a href="/details_recouvreur/{{ debtCollector.client.idClient }}" class="btn btn-xs btn-default">
+                                    Voir détails<span class="fa fa-chevron-right push-5-l"></span>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

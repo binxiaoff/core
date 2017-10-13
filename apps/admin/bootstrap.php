@@ -240,6 +240,17 @@ class bootstrap extends Controller
             ]
         ],
         [
+            'title'    => 'Recouvreurs',
+            'uri'      => 'recouvreur/liste',
+            'zone'     => Zones::ZONE_LABEL_BORROWERS,
+            'children' => [
+                [
+                    'title' => 'Recouvreurs',
+                    'uri'   => 'recouvreur/liste',
+                ],
+            ]
+        ],
+        [
             'title'    => 'Dépôt de fonds',
             'uri'      => 'transferts',
             'zone'     => Zones::ZONE_LABEL_TRANSFERS,
