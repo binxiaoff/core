@@ -110,8 +110,6 @@ class DebtCollectionFeeManager
             throw new \Exception('The wallet for the debt collector (id client : ' . $debtCollectionMission->getIdClientDebtCollector()->getIdClient() . ')is not defined.');
         }
 
-        $borrowerWallet = $walletRepository->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
-
         $debtCollectionFeeOnCommissionTaxExcl = round(bcmul($commissionUnilend, $debtCollectionFeeRate, 4), 2);
         $debtCollectionFeeOnCommissionVat     = round(bcmul($debtCollectionFeeOnCommissionTaxExcl, $vatTaxRate, 4), 2);
         $debtCollectionFeeOnCommission        = round(bcadd($debtCollectionFeeOnCommissionTaxExcl, $debtCollectionFeeOnCommissionVat, 4), 2);
@@ -119,6 +117,7 @@ class DebtCollectionFeeManager
         $debtCollectionFeeDetail = new DebtCollectionFeeDetail();
 
         if ($isDebtCollectionFeeDueToBorrower) {
+            $borrowerWallet = $walletRepository->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
             $debtCollectionFeeDetail->setIdWalletDebtor($borrowerWallet);
         } else {
             $unilendWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);

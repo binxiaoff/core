@@ -56,8 +56,6 @@ class ProjectRepaymentTaskManager
      * @param \DateTime|null             $repayOn
      * @param DebtCollectionMission|null $debtCollectionMission
      *
-     * @return ProjectRepaymentTask
-     *
      * @throws \Exception
      */
     public function planRepaymentTask(
@@ -175,6 +173,17 @@ class ProjectRepaymentTaskManager
         return $projectRepaymentTask;
     }
 
+    /**
+     * @param float                      $capitalToRepay
+     * @param float                      $interestToRepay
+     * @param  float                     $commissionToPay
+     * @param \DateTime                  $repayOn
+     * @param Receptions                 $reception
+     * @param Users                      $user
+     * @param DebtCollectionMission|null $debtCollectionMission
+     *
+     * @throws \Exception
+     */
     public function planCloseOutNettingRepaymentTask(
         $capitalToRepay,
         $interestToRepay,
@@ -612,17 +621,17 @@ class ProjectRepaymentTaskManager
 
         $compareCapital = bccomp($plannedCapital, $closeOutNettingPayment->getCapital(), 2);
         if (1 === $compareCapital) {
-            throw new \Exception('The total capital (' . $plannedCapital . ') of all the close out netting repayment tasks for project (id: ' . $project->getIdProject() . ') is more then the monthly capital (' . $closeOutNettingPayment->getCapital() . '). Please check the data consistency.');
+            throw new \Exception('The total capital (' . $plannedCapital . ') of all the close out netting repayment tasks for project (id: ' . $project->getIdProject() . ') is more then the total remaining capital (' . $closeOutNettingPayment->getCapital() . '). Please check the data consistency.');
         }
 
         $compareInterest = bccomp($plannedInterest, $closeOutNettingPayment->getInterest(), 2);
         if (1 === $compareInterest) {
-            throw new \Exception('The total interest (' . $plannedInterest . ') of all the close out netting repayment tasks for project (id: ' . $project->getIdProject() . ') is more then the monthly interest (' . $closeOutNettingPayment->getInterest() . '). Please check the data consistency.');
+            throw new \Exception('The total interest (' . $plannedInterest . ') of all the close out netting repayment tasks for project (id: ' . $project->getIdProject() . ') is more then the total remaining interest (' . $closeOutNettingPayment->getInterest() . '). Please check the data consistency.');
         }
 
         $compareCommission = bccomp($plannedCommission, $closeOutNettingPayment->getCommissionTaxIncl(), 2);
         if (1 === $compareCommission) {
-            throw new \Exception('The total commission (' . $plannedCommission . ') of all the close out netting repayment tasks for project (id: ' . $project->getIdProject() . ') is more then the monthly commission (' . $closeOutNettingPayment->getCommissionTaxIncl() . '). Please check the data consistency.');
+            throw new \Exception('The total commission (' . $plannedCommission . ') of all the close out netting repayment tasks for project (id: ' . $project->getIdProject() . ') is more then the total remaining commission (' . $closeOutNettingPayment->getCommissionTaxIncl() . '). Please check the data consistency.');
         }
 
     }
