@@ -7,7 +7,7 @@
 
 {% block pageHeader %}
     <div class="pull-left">
-        <a href="/dossiers/details_impayes/{{ recepion.idProject.idProject }}" class="text-muted"><span class="fa fa-arrow-left"></span>&nbsp;Détails impayés</a>
+        <a href="/dossiers/details_impayes/{{ reception.idProject.idProject }}" class="text-muted"><span class="fa fa-arrow-left"></span>&nbsp;Détails impayés</a>
     </div>
     <div class="pull-right">
         <small>SIREN : {{ reception.idProject.idCompany.siren }}</small>
@@ -39,8 +39,14 @@
                     {% if session.flashBag.has('repayment_task_info') %}
                         <div class="alert alert-success">
                             {% for info in session.flashBag.get('repayment_task_info') %}
-                                <p>{{ info }}.</p>
+                                <p>{{ info }}</p>
                             {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {% if repaymentTaskValidated %}
+                        <div class="alert alert-success">
+                            <p>Le remboursement a bien été validé</p>
                         </div>
                     {% endif %}
 
@@ -330,7 +336,7 @@
                     </div>
 
                     <br>
-                    {% if canValidateTask %}
+                    {% if false == repaymentTaskValidated %}
                         <button class="btn btn-primary push-10-r" type="submit" name="validate" value="validate">Confirmer</button>
                     {% endif %}
                     <button class="btn btn-default" type="submit" name="cancel" value="cancel">Annuler</button>

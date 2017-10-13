@@ -196,6 +196,8 @@ class repaymentController extends bootstrap
                 $paymentManager = $this->get('unilend.service_repayment.project_payment_manager');
             }
             $paymentManager->rejectPayment($reception, $user);
+
+            header('Location: ' . $this->url . '/dossiers/details_impayes/' . $reception->getIdProject()->getIdProject());
         }
 
         if ($this->request->request->get('validate')) {
@@ -205,6 +207,8 @@ class repaymentController extends bootstrap
                     ->setIdUserValidation($user);
 
                 $entityManager->flush($projectRepaymentTask);
+
+                header('Location: ' . $this->url . '/repayment/confirmation/' . $receptionId);
             }
         }
 
@@ -235,10 +239,12 @@ class repaymentController extends bootstrap
 
             $paidPaymentSchedules = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findBy(['idProject' => $reception->getIdProject(), 'ordre' => $sequences]);
         }
-
-        $canValidateTask = false;
-        if (\users_types::TYPE_COMPLIANCE == $user->getIdUserType()->getIdUserType()) {
-            $canValidateTask = true;
+        $validated = true;
+        foreach ($projectRepaymentTasks as $projectRepaymentTask) {
+            if (ProjectRepaymentTask::STATUS_PENDING === $projectRepaymentTask->getStatus()) {
+                $validated = false;
+                break;
+            }
         }
 
         $this->render(null, [
@@ -252,8 +258,8 @@ class repaymentController extends bootstrap
             'commission'                       => $commission,
             'totalRepayment'                   => $totalRepayment,
             'paidPaymentSchedules'             => $paidPaymentSchedules,
-            'closeOutNettingPayment'           => $closeOutNettingPayment,
-            'canValidateTask'                  => $canValidateTask,
+            'repaymentTaskValidated'           => $validated,
+            'closeOutNettingPayment'           => $closeOutNettingPayment
         ]);
     }
 }
