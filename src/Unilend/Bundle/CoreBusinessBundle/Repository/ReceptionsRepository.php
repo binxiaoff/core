@@ -177,7 +177,8 @@ class ReceptionsRepository extends EntityRepository
             ->andWhere('r.statusVirement != :wireTransferRejected')
             ->setParameter('wireTransferRejected', Receptions::WIRE_TRANSFER_STATUS_REJECTED)
             ->andWhere('NOT EXISTS (' . $qbRejected->getDQL() . ')')
-            ->andWhere('prt.id IS NULL');
+            ->andWhere('prt.id IS NULL OR prt.status = :cancelled')
+            ->setParameter('cancelled', ProjectRepaymentTask::STATUS_CANCELLED);
 
         return $queryBuilder->getQuery()->getResult();
     }

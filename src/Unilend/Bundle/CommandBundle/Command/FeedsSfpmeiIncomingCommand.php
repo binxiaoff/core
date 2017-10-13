@@ -500,7 +500,7 @@ EOF
                         $operationManager->cancelProvisionBorrowerWallet($wallet, $amount, $reception);
 
                         $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
-                        $projectPaymentManager->rejectPayment($reception, $user);
+                        $projectPaymentManager->rejectPayment($originalRejectedDirectDebit, $user);
                     }
                 }
             }
