@@ -37,7 +37,7 @@
                     {% for debtCollector in debtCollectors %}
                         <tr>
                             <td>
-                                <img src="{{ app.adminUrl }}/images/logos/{{ debtCollector.client.slug }}" alt="Logo {{ debtCollector.client.nom }}" class="img-responsive-vertical box-shadow">
+                                <img src="{{ app.adminUrl }}/images/logos/{{ debtCollector.client.slug }}" alt="Logo {{ debtCollector.client.nom }}" style="max-width: 120px; max-height: 60px; width: auto; box-shadow: 0 0 5px #999;">
                             </td>
                             <td>{{ debtCollector.client.nom }}</td>
                             <td>{{ debtCollector.client.added|localizeddate('short', 'none') }}</td>
