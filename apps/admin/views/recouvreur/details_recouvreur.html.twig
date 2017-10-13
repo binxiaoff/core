@@ -1,0 +1,78 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block pluginsJS %}
+    <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="content bg-gray-lighter">
+        <h1 class="page-heading push-5">
+            {{ debtCollectorData.address.idClient.nom }}
+            <small>Agence de recouvrement</small>
+        </h1>
+        <table class="table-condensed push-20" style="margin-left: -3px;">
+            <th>Adresse :</th>
+            <td>{{ debtCollectorData.address.adresse1 ~ ', ' ~ debtCollectorData.address.cp ~ ' ' ~ debtCollectorData.address.ville }}</td>
+            <th>Telephone :</th>
+            <td>{{ debtCollectorData.address.idClient.telephone }}</td>
+        </table>
+    </div>
+
+    <div class="content">
+        <div id="debt-collector-kpi" class="block">
+            <div class="block-content">
+                <div class="row push-30">
+                    <div class="col-md-3">
+                        <div class="font-s12 font-w600 text-uppercase">Montant confié en cours</div>
+                        <a class="h2 font-w300 text-primary">{{ debtCollectorData.entrustedProjects.amount > 0 ? debtCollectorData.entrustedProjects.amount|localizedcurrency('EUR') : '0 €' }}</a>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="font-s12 font-w600 text-uppercase">Dossiers confiés</div>
+                        <a class="h2 font-w300 text-primary">{{ debtCollectorData.entrustedProjects.total }}</a>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="font-s12 font-w600 text-uppercase">Dossiers en cours</div>
+                        <a class="h2 font-w300 text-primary">{{ debtCollectorData.entrustedProjects.ongoing }}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="debt-collector-operations" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Relevé d'opérations (solde: <span class="text-primary">{{ debtCollectorData.availableBalance|localizedcurrency('EUR') }}</span>)</h3>
+            </div>
+            <div class="block-content">
+                {% if debtCollectorData.operationHistory|length > 0 %}
+                    <table class="table table-striped table-bordered table-hover table-header-bg">
+                        <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Opération</th>
+                            <th class="text-right">Montant débité</th>
+                            <th class="text-right">Montant crédité</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for operation in debtCollectorData.operationHistory %}
+                            <tr>
+                                <td>{{ operation.date|localizeddate('short', 'none') }}</td>
+                                <td>{{ 'debt-collector-operation_' ~ operation.label|trans }}</td>
+                                <td class="text-right">{{ operation.amount > 0 ? '' : operation.amount|localizedcurrency('EUR') }}</td>
+                                <td class="text-right">{{ operation.amount < 0 ? '' : operation.amount|localizedcurrency('EUR') }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="alert">
+                        <p>Aucune opération pour ce recouvreur.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

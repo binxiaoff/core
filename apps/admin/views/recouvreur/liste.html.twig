@@ -45,7 +45,7 @@
                             <td>{{ debtCollector.entrustedProjects.ongoing|localizednumber }}</td>
                             <td>{{ debtCollector.entrustedProjects.amount > 0 ? debtCollector.entrustedProjects.amount|localizedcurrency('EUR') : '0 €' }}</td>
                             <td>
-                                <a href="/details_recouvreur/{{ debtCollector.client.idClient }}" class="btn btn-xs btn-default">
+                                <a href="/recouvreur/details_recouvreur/{{ debtCollector.client.idClient }}" class="btn btn-xs btn-default">
                                     Voir détails<span class="fa fa-chevron-right push-5-l"></span>
                                 </a>
                             </td>

@@ -8,12 +8,12 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 class DebtCollectionMissionRepository extends EntityRepository
 {
     /**
-     * @param Clients $debtCollector
-     * @param bool    $includeArchived
+     * @param Clients|int $debtCollector
+     * @param bool        $includeArchived
      *
      * @return mixed
      */
-    public function getCountMissionsByDebtCollector(Clients $debtCollector, $includeArchived = false)
+    public function getCountMissionsByDebtCollector($debtCollector, $includeArchived = false)
     {
         $queryBuilder = $this->createQueryBuilder('dcm')
             ->select('COUNT(DISTINCT dcm.idProject) AS entrustedProjects')
@@ -28,11 +28,11 @@ class DebtCollectionMissionRepository extends EntityRepository
     }
 
     /**
-     * @param Clients $debtCollector
+     * @param Clients|int $debtCollector
      *
      * @return mixed
      */
-    public function getAmountMissionsByDebtCollector(Clients $debtCollector)
+    public function getAmountMissionsByDebtCollector($debtCollector)
     {
         $queryBuilder = $this->createQueryBuilder('dcm')
             ->select('SUM(CASE WHEN dcm.archived IS NULL THEN (dcm.capital + dcm.interest + dcm.commissionVatIncl) ELSE 0 END) AS entrustedAmount')
