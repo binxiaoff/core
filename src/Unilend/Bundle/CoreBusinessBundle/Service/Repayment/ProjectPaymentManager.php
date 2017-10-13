@@ -237,7 +237,7 @@ class ProjectPaymentManager
         $project = $wireTransferIn->getIdProject();
 
         $projectRepaymentTasksToCancel = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
-            ->findBy(['idProject' => $project, 'idWireTransferIn' => $wireTransferIn->getIdReceptionRejected()]);
+            ->findBy(['idProject' => $project, 'idWireTransferIn' => $wireTransferIn]);
 
         $this->entityManager->getConnection()->beginTransaction();
         try {
