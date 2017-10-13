@@ -650,31 +650,30 @@ class OperationRepository extends EntityRepository
      */
     public function getTotalGrossDebtCollectionRepayment($project, array $clients)
     {
-        $qbRegularization = $this->createQueryBuilder('o_r');
-        $qbRegularization->select('IFNULL(SUM(o_r.amount), 0)')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost_r', Join::WITH, 'o_r.idSubType = ost_r.id')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w_r', Join::WITH, 'w_r.id = o_r.idWalletDebtor')
-            ->where('ost_r.label IN (:regularizationTypes)')
-            ->andWhere('w.idClient IN (:clients)')
-            ->andWhere('o.idProject = :project');
-        $regularization = $qbRegularization->getDQL();
-
         $qb = $this->createQueryBuilder('o');
-        $qb->select('IFNULL(SUM(o.amount), 0) as amount')
-            ->addSelect('(' . $regularization . ') as regularized_amount')
+        $qb->select('SUM(
+            CASE WHEN ost.label in (:normalDebtCollectionRepayment) THEN IFNULL(o.amount, 0)
+            ELSE IFNULL(- o.amount, 0) END
+        ) as amount')
             ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = o.idWalletCreditor')
-            ->where('ost.label = :operationSubType')
+            ->where('ost.label IN (:allDebtCollectionRepayment)')
             ->andWhere('w.idClient IN (:clients)')
             ->andWhere('o.idProject = :project')
-            ->setParameter('operationSubType', OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION)
-            ->setParameter('regularizationTypes', OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION_REGULARIZATION)
+            ->setParameter('allDebtCollectionRepayment', [
+                OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION,
+                OperationSubType::GROSS_INTEREST_REPAYMENT_DEBT_COLLECTION,
+                OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION_REGULARIZATION,
+                OperationSubType::GROSS_INTEREST_REPAYMENT_DEBT_COLLECTION_REGULARIZATION
+            ])
+            ->setParameter('normalDebtCollectionRepayment', [
+                OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION,
+                OperationSubType::GROSS_INTEREST_REPAYMENT_DEBT_COLLECTION
+            ])
             ->setParameter('clients', $clients)
             ->setParameter('project', $project);
 
-        $result = $qb->getQuery()->getArrayResult();
-
-        return round(bcsub($result[0]['amount'], $result[0]['regularized_amount'], 4), 2);
+        return $qb->getQuery()->getSingleScalarResult();
     }
 
     /**
