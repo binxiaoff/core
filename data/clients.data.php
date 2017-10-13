@@ -1,40 +1,11 @@
 <?php
-// **************************************************************************************************** //
-// ***************************************    ASPARTAM    ********************************************* //
-// **************************************************************************************************** //
-//
-// Copyright (c) 2008-2011, equinoa
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-// associated documentation files (the "Software"), to deal in the Software without restriction,
-// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
-// subject to the following conditions:
-// The above copyright notice and this permission notice shall be included in all copies
-// or substantial portions of the Software.
-// The Software is provided "as is", without warranty of any kind, express or implied, including but
-// not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.
-// In no event shall the authors or copyright holders equinoa be liable for any claim,
-// damages or other liability, whether in an action of contract, tort or otherwise, arising from,
-// out of or in connection with the software or the use or other dealings in the Software.
-// Except as contained in this notice, the name of equinoa shall not be used in advertising
-// or otherwise to promote the sale, use or other dealings in this Software without
-// prior written authorization from equinoa.
-//
-//  Version : 2.4.0
-//  Date : 21/03/2011
-//  Coupable : CM
-//
-// **************************************************************************************************** //
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients AS clientEntity;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 
 class clients extends clients_crud
 {
-    //Type, Status, Subscription Step & Title constants moved to Entity
-
     public function __construct($bdd, $params = '')
     {
         parent::clients($bdd, $params);
@@ -77,17 +48,6 @@ class clients extends clients_crud
         return ($this->bdd->fetch_array($result) > 0);
     }
 
-    //******************************************************************************************//
-    //**************************************** AJOUTS ******************************************//
-    //******************************************************************************************//
-
-    public $loginPage = '';
-    public $connectedPage = '';
-    public $userTable = 'clients';
-    public $securityKey = 'clients';
-    public $userMail = 'email';
-    public $userPass = 'password';
-
     //TODO delete all login and check access functions no longer needed
 
     /**
@@ -117,17 +77,17 @@ class clients extends clients_crud
         unset($_SESSION['partenaire']);
 
         if ($bRedirect) {
-            header('Location: http://' . $_SERVER['HTTP_HOST'] . '/' . (isset($this->params['lng']) ? $this->params['lng'] : '') . $this->loginPage);
+            header('Location: http://' . $_SERVER['HTTP_HOST'] . '/' . (isset($this->params['lng']) ? $this->params['lng'] : ''));
         }
     }
 
     public function changePassword($email, $pass)
     {
         $this->bdd->query('
-            UPDATE ' . $this->userTable . '
-            SET ' . $this->userPass . ' = "' . password_hash($pass, PASSWORD_DEFAULT) . '",
+            UPDATE clients
+            SET password = "' . password_hash($pass, PASSWORD_DEFAULT) . '",
             updated = NOW()
-            WHERE ' . $this->userMail . ' = "' . $email . '"'
+            WHERE email = "' . $email . '"'
         );
     }
 
@@ -141,7 +101,12 @@ class clients extends clients_crud
             return false;
         }
 
-        $sql = 'SELECT COUNT(*) FROM ' . $this->userTable . ' WHERE id_client = "' . $_SESSION['client']['id_client'] . '" AND password = "' . $_SESSION['client']['password'] . '" AND status = 1';
+        $sql = '
+            SELECT COUNT(*) 
+            FROM clients 
+            WHERE id_client = "' . $_SESSION['client']['id_client'] . '" 
+                AND password = "' . $_SESSION['client']['password'] . '" 
+                AND status = 1';
         $res = $this->bdd->query($sql);
 
         if ($this->bdd->result($res, 0) != 1) {
@@ -191,13 +156,6 @@ class clients extends clients_crud
                 die;
             }
         } else {
-            $this->handleLogout();
-        }
-    }
-
-    public function checkAccessBorrower()
-    {
-        if (false === $this->isBorrower()) {
             $this->handleLogout();
         }
     }
@@ -290,12 +248,6 @@ class clients extends clients_crud
         return $result;
     }
 
-    public function update_added($date, $id_client)
-    {
-        $sql = "UPDATE clients SET added = '" . $date . "' WHERE id_client = " . $id_client;
-        $this->bdd->query($sql);
-    }
-
     public function searchPrescripteur($iAdvisorId = '', $nom = '', $prenom = '', $email = '', $sCompanyName = '', $sSiren = '', $offset = '', $limit = 100, $sOperation = 'AND')
     {
         $aWhere = array();
@@ -358,12 +310,6 @@ class clients extends clients_crud
         return $result;
     }
 
-    public function isAdvisor()
-    {
-        $oAdvisors = new \prescripteurs($this->bdd);
-        return $oAdvisors->exist($this->id_client, 'id_client');
-    }
-
     public function isLender()
     {
         $query = 'SELECT COUNT(*) FROM wallet w
@@ -399,20 +345,6 @@ class clients extends clients_crud
         $statement = $this->bdd->executeQuery($query, ['idClient' => $idClient]);
 
         return $statement->fetchColumn(0);
-    }
-
-    /**
-     * Check whether given pattern corresponds to actual lender pattern
-     * @param int    $clientId
-     * @param string $pattern
-     * @return bool
-     */
-    public function isLenderPattern($clientId, $pattern)
-    {
-        $pattern       = str_replace(' ', '', $pattern);
-        $lenderPattern = str_replace(' ', '', $this->getLenderPattern($clientId));
-
-        return (false !== strpos($pattern, $lenderPattern));
     }
 
     public function getClientsWithNoWelcomeOffer($iClientId = null, $sStartDate = null, $sEndDate = null)
@@ -782,9 +714,9 @@ class clients extends clients_crud
               WHERE csh_max.id_client = csh.id_client
               ORDER BY csh_max.added DESC, csh_max.id_client_status_history DESC LIMIT 1
             )
-              AND cs.status IN (:clientStatus)
-              AND TIMESTAMPDIFF(YEAR, naissance, CURDATE()) < 80
-              AND last_cvsh.id_client IS NULL";
+            AND cs.status IN (:clientStatus)
+            AND TIMESTAMPDIFF(YEAR, naissance, CURDATE()) < 80
+            AND last_cvsh.id_client IS NULL";
 
         /** @var \Doctrine\DBAL\Statement $statement */
         $statement = $this->bdd->executeQuery($sql, $bind, $type);
