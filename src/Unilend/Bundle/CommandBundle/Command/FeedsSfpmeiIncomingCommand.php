@@ -5,8 +5,8 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
@@ -501,6 +501,8 @@ EOF
 
                         $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
                         $projectPaymentManager->rejectPayment($originalRejectedDirectDebit, $user);
+
+                        $this->sendBorrowerRepaymentRejectionNotification($reception);
                     }
                 }
             }
@@ -521,5 +523,27 @@ EOF
         }
 
         return null;
+    }
+
+    /**
+     * @param Receptions $wireTransferIn
+     */
+    private function sendBorrowerRepaymentRejectionNotification(Receptions $wireTransferIn)
+    {
+        try {
+            $motive = '';
+            if ($wireTransferIn->getRejectionIsoCode() instanceof SepaRejectionReason) {
+                $motive = ' Motif: ' . $wireTransferIn->getRejectionIsoCode()->getIsoCode() . ' (*' . $wireTransferIn->getRejectionIsoCode()->getLabel() . '*)';
+            }
+
+            $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
+            $slackManager->sendMessage('SFPMEI - *Rejet* - Projet: ' . $slackManager->getProjectName($wireTransferIn->getIdProject()) .
+                ' - La réception (ID: ' . $wireTransferIn->getIdReceptionRejected()->getIdReception() . ') *du ' . $wireTransferIn->getIdReceptionRejected()->getAdded()->format('d/m/Y') . '* a été rejetée.' . $motive);
+        } catch (\Exception $exception) {
+            $this->logger->warning(
+                'Could not send rejection notification message: ' . $exception->getMessage(),
+                ['id_reception_rejected' => $wireTransferIn->getIdReceptionRejected()->getIdReception(), 'id_project' => $wireTransferIn->getIdProject()->getIdProject(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
+        }
     }
 }
