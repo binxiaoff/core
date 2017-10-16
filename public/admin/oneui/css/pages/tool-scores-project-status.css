@@ -89,27 +89,34 @@
 }
 
 /* Project Status Charts */
-.highcharts-legend {
+.project-status-chart-legend {
     margin-top: 45px;
-    min-width: 270px;
+    min-width: 330px;
     border: 1px solid #e6e6e6;
     padding: 15px 15px 10px;
 }
-.highcharts-legend ul {
+.project-status-chart-legend ul {
     list-style: none;
     padding: 0;
     margin: 0;
     overflow: auto;
 }
-.highcharts-legend li {
+.project-status-chart-legend li {
     margin-bottom: 5px;
     font-size: 12px;
     line-height: 20px;
 }
-.highcharts-legend li:last-child {
+.project-status-chart-legend li:last-child {
     margin-bottom: 0;
 }
-.highcharts-legend span {
+.project-status-chart-legend li.left, .project-status-chart-legend li.right {
+    float: left;
+    width: 50%;
+}
+.project-status-chart-legend li.right {
+    float: right;
+}
+.project-status-chart-legend span {
     display: inline-block;
     width: 15px;
     height: 15px;
@@ -118,15 +125,15 @@
     top: 2px;
     margin-right: 2px;
 }
-.highcharts-container {
+.project-status-chart {
     padding: 0 15px;
 }
-.highcharts-container .col-left {
+.project-status-chart .col-left {
     float: left;
-    width: calc(100% - 300px);
+    width: calc(100% - 360px);
 }
-.highcharts-container .col-right {
+.project-status-chart .col-right {
     float: left;
     padding-left: 30px;
-    width: 300px;
+    width: 360px;
 }
