@@ -793,6 +793,10 @@ class MainController extends Controller
      */
     public function statisticsFpfAction(Request $request)
     {
+        if ($request->getClientIp() != '92.154.10.41') {
+            return $this->render('/pages/static_pages/error.html.twig');
+        }
+
         $requestedDate = $request->request->filter('date', FILTER_SANITIZE_STRING);
 
         if (empty($requestedDate)) {
