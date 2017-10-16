@@ -176,18 +176,6 @@ $(document).ready(function()
         event.preventDefault()
 
     })
-    // $(document).on('click', '#tab_memos .btn-edit-memo, #tab_memos .btn-delete-memo', function() {
-    //     var $target = $('#tab_memos_memo')
-    //     var $tr = $(this).closest('tr')
-    //     var commentId = $tr.attr('data-comment-id')
-    //     var public = $tr.data('public')
-    //     if ($(this).is('.btn-edit-memo')) {
-    //         var comment = $tr.find('.content-memo').html()
-    //         $target[0].Memo.edit(comment, commentId, public)
-    //     } else {
-    //         $target[0].Memo.delete(commentId)
-    //     }
-    // })
 });
 
 // Prevent double-click
