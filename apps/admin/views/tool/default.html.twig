@@ -5,86 +5,86 @@
 {% endblock %}
 
 {% block pluginsJS %}
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/modules/xrange.js"></script>
-    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="{{ adminUrl }}/oneui/js/plugins/highcharts/highcharts.js"></script>
+    <script src="{{ adminUrl }}/oneui/js/plugins/highcharts/modules/xrange.js"></script>
 {% endblock %}
+
+{% set projects = [
+     {
+         id: '586753',
+         statuses: [
+             { start: '2015, 01, 12', end: '2015, 01, 20', color: '#d0f5d0', label: 'Demande en cours', type: 'Recrutement', amount: '10000' },
+             { start: '2015, 01, 20', end: '2015, 01, 25', color: '#aae3c9', label: 'Demande Complète', type: 'Recrutement', amount: '10000' },
+             { start: '2015, 01, 25', end: '2015, 02, 01', color: '#98d9d4', label: 'Traitement Commercial', type: 'Recrutement', amount: '10000' },
+             { start: '2015, 02, 01', end: '2015, 02, 12', color: '#91c8d9', label: 'Analyse risque', type: 'Recrutement', amount: '10000' },
+             { start: '2015, 02, 12', end: '2015, 02, 13', color: '#eccd81', label: 'Abandon', type: 'Recrutement', amount: '10000' }
+         ]
+     },
+     {
+         id: '32323',
+         statuses: [
+             { start: '2015, 01, 08', end: '2015, 01, 18', color: '#d0f5d0', label: 'Demande en cours', type: 'IT', amount: '20000' },
+             { start: '2015, 01, 18', end: '2015, 01, 23', color: '#aae3c9', label: 'Demande Complète', type: 'IT', amount: '20000' },
+             { start: '2015, 01, 23', end: '2015, 02, 02', color: '#98d9d4', label: 'Traitement Commercial', type: 'IT', amount: '20000' },
+             { start: '2015, 02, 02', end: '2015, 02, 10', color: '#91c8d9', label: 'Analyse risque', type: 'IT', amount: '20000' },
+             { start: '2015, 02, 10', end: '2015, 02, 13', color: '#80b5d9', label: 'Comité', type: 'IT', amount: '20000' },
+         ]
+     },
+     {
+         id: '18327',
+         statuses: [
+             { start: '2015, 01, 08', end: '2015, 01, 18', color: '#d0f5d0', label: 'Demande en cours', type: 'IT', amount: '20000' },
+             { start: '2015, 01, 18', end: '2015, 01, 23', color: '#aae3c9', label: 'Demande Complète', type: 'IT', amount: '20000' },
+             { start: '2015, 01, 23', end: '2015, 02, 02', color: '#98d9d4', label: 'Traitement Commercial', type: 'IT', amount: '20000' },
+             { start: '2015, 02, 02', end: '2015, 02, 10', color: '#91c8d9', label: 'Analyse risque', type: 'IT', amount: '20000' },
+             { start: '2015, 02, 10', end: '2015, 02, 13', color: '#80b5d9', label: 'Comité', type: 'IT', amount: '20000' },
+             { start: '2015, 02, 12', end: '2015, 02, 13', color: '#b6babe', label: 'Rejet Comité', type: 'IT', amount: '20000' }
+         ]
+     },
+     {
+         id: '87988',
+         statuses: [
+             { start: '2017, 01, 08', end: '2017, 01, 18', color: '#d0f5d0', label: 'Demande en cours', type: 'Transport', amount: '40000' },
+             { start: '2017, 01, 18', end: '2017, 01, 23', color: '#aae3c9', label: 'Demande Complète', type: 'Transport', amount: '40000' },
+             { start: '2017, 01, 23', end: '2017, 02, 02', color: '#98d9d4', label: 'Traitement Commercial', type: 'Transport', amount: '40000' },
+             { start: '2017, 02, 02', end: '2017, 02, 10', color: '#91c8d9', label: 'Analyse risque', type: 'Transport', amount: '40000' },
+             { start: '2017, 02, 10', end: '2017, 02, 13', color: '#80b5d9', label: 'Comité', type: 'Transport', amount: '40000' },
+             { start: '2017, 02, 13', end: '2017, 02, 16', color: '#6ea8dc', label: 'Prep funding', type: 'Transport', amount: '40000' },
+             { start: '2017, 02, 16', end: '2017, 02, 18', color: '#5293de', label: 'Funding', type: 'Transport', amount: '40000' },
+             { start: '2017, 02, 18', end: '2017, 02, 19', color: '#5293de', label: 'Fundé', type: 'Transport', amount: '40000' },
+             { start: '2017, 02, 19', end: '2017, 08, 20', color: '#1b88db', label: 'Remboursement', type: 'Transport', amount: '40000' }
+         ]
+     }
+] %}
 
 {% block pageScripts %}
     <script>
         $(function(){
             App.initHelpers();
 
-            // Scores table
+            /*
+             * Company scores table
+             */
             var $scoresTable = $('.scores-table')
-            var columnWidth = 200
+            var columnWidth = 120
             var columns = $scoresTable.find('tr:eq(0) td').length
             var tableWidth = columns * columnWidth
             var blockWidth = $scoresTable.parent().width()
             var bordersWidth = columns * 2
-
+            // Fix table width if parent block isn't large enough
             if (tableWidth > blockWidth) {
                 $scoresTable.width(columns * columnWidth + bordersWidth)
+            // Insert empty cell to fill the parent block
             } else {
                 var emptyWidth = blockWidth - tableWidth
-                console.log(blockWidth)
                 var $bgColumn = '<td style="width: ' + emptyWidth + 'px"></td>'
                 $scoresTable.find('tr').append($bgColumn)
                 $scoresTable.unwrap()
             }
 
             /*
-            * Highcharts Chart
+            * Project Status Chart
             */
-
-            {% set projects = [
-                {
-                    id: '586753',
-                    statuses: [
-                        { start: '2015, 01, 12', end: '2015, 01, 20', color: '#d0f5d0', label: 'Demande en cours', type: 'Recrutement', amount: '10000' },
-                        { start: '2015, 01, 20', end: '2015, 01, 25', color: '#aae3c9', label: 'Demande Complète', type: 'Recrutement', amount: '10000' },
-                        { start: '2015, 01, 25', end: '2015, 02, 01', color: '#98d9d4', label: 'Traitement Commercial', type: 'Recrutement', amount: '10000' },
-                        { start: '2015, 02, 01', end: '2015, 02, 12', color: '#91c8d9', label: 'Analyse risque', type: 'Recrutement', amount: '10000' },
-                        { start: '2015, 02, 12', end: '2015, 02, 13', color: '#eccd81', label: 'Abandon', type: 'Recrutement', amount: '10000' }
-                    ]
-                },
-                {
-                    id: '32323',
-                    statuses: [
-                        { start: '2015, 01, 08', end: '2015, 01, 18', color: '#d0f5d0', label: 'Demande en cours', type: 'IT', amount: '20000' },
-                        { start: '2015, 01, 18', end: '2015, 01, 23', color: '#aae3c9', label: 'Demande Complète', type: 'IT', amount: '20000' },
-                        { start: '2015, 01, 23', end: '2015, 02, 02', color: '#98d9d4', label: 'Traitement Commercial', type: 'IT', amount: '20000' },
-                        { start: '2015, 02, 02', end: '2015, 02, 10', color: '#91c8d9', label: 'Analyse risque', type: 'IT', amount: '20000' },
-                        { start: '2015, 02, 10', end: '2015, 02, 13', color: '#80b5d9', label: 'Comité', type: 'IT', amount: '20000' },
-                    ]
-                },
-                {
-                    id: '18327',
-                    statuses: [
-                        { start: '2015, 01, 08', end: '2015, 01, 18', color: '#d0f5d0', label: 'Demande en cours', type: 'IT', amount: '20000' },
-                        { start: '2015, 01, 18', end: '2015, 01, 23', color: '#aae3c9', label: 'Demande Complète', type: 'IT', amount: '20000' },
-                        { start: '2015, 01, 23', end: '2015, 02, 02', color: '#98d9d4', label: 'Traitement Commercial', type: 'IT', amount: '20000' },
-                        { start: '2015, 02, 02', end: '2015, 02, 10', color: '#91c8d9', label: 'Analyse risque', type: 'IT', amount: '20000' },
-                        { start: '2015, 02, 10', end: '2015, 02, 13', color: '#80b5d9', label: 'Comité', type: 'IT', amount: '20000' },
-                        { start: '2015, 02, 12', end: '2015, 02, 13', color: '#b6babe', label: 'Rejet Comité', type: 'IT', amount: '20000' }
-                    ]
-                },
-                {
-                    id: '87988',
-                    statuses: [
-                        { start: '2017, 01, 08', end: '2017, 01, 18', color: '#d0f5d0', label: 'Demande en cours', type: 'Transport', amount: '40000' },
-                        { start: '2017, 01, 18', end: '2017, 01, 23', color: '#aae3c9', label: 'Demande Complète', type: 'Transport', amount: '40000' },
-                        { start: '2017, 01, 23', end: '2017, 02, 02', color: '#98d9d4', label: 'Traitement Commercial', type: 'Transport', amount: '40000' },
-                        { start: '2017, 02, 02', end: '2017, 02, 10', color: '#91c8d9', label: 'Analyse risque', type: 'Transport', amount: '40000' },
-                        { start: '2017, 02, 10', end: '2017, 02, 13', color: '#80b5d9', label: 'Comité', type: 'Transport', amount: '40000' },
-                        { start: '2017, 02, 13', end: '2017, 02, 16', color: '#6ea8dc', label: 'Prep funding', type: 'Transport', amount: '40000' },
-                        { start: '2017, 02, 16', end: '2017, 02, 18', color: '#5293de', label: 'Funding', type: 'Transport', amount: '40000' },
-                        { start: '2017, 02, 18', end: '2017, 02, 19', color: '#5293de', label: 'Fundé', type: 'Transport', amount: '40000' },
-                        { start: '2017, 02, 19', end: '2017, 08, 20', color: '#1b88db', label: 'Remboursement', type: 'Transport', amount: '40000' }
-                    ]
-                }
-            ] %}
-
             // Chart Data
             var chartData = [
                 {% for project in projects %}
@@ -121,9 +121,8 @@
                     },
                 {% endfor %}
             ]
-
+            // Y-axis labels
             var categoriesData = [{% for project in projects %}'#{{ project.id }}',{% endfor %}]
-
             // Update the length of the x-axis when series are hidden
             function updateXaxisMax(chart) {
                 var series = chart.series
@@ -142,19 +141,21 @@
                     max: maxDate
                 })
             }
+            // Translate dates
+            Highcharts.setOptions({
+                lang: {
+                    months: ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'],
+                    weekdays: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'],
+                    shortMonths: ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aout', 'Sept', 'Oct', 'Nov', 'Déc']
+                },
+            })
             // Initialise chart
-            var chart = Highcharts.chart('project-status-highcharts', {
+            Highcharts.chart('project-status-highcharts', {
                 chart: {
                     type: 'xrange',
                     zoomType: 'x',
-                    events: {
-                        load: function(){
-                            this.plotBackground.toFront().css({
-                                cursor: "crosshair"
-                            });
-                        }
-                    }
                 },
+
                 title: {
                     text: ''
                 },
@@ -162,7 +163,10 @@
                     enabled: false
                 },
                 xAxis: {
-                    type: 'datetime'
+                    type: 'datetime',
+                    dateTimeLabelFormats: {
+                        day: '%e %b %y'
+                    }
                 },
                 yAxis: {
                     title: '',
@@ -191,8 +195,8 @@
                 exporting: { enabled: false },
                 tooltip: {
                     formatter: function () {
-                        var start = Highcharts.dateFormat('%e. %b', this.x, true),
-                                end = Highcharts.dateFormat('%e. %b', this.x2, true),
+                        var start = Highcharts.dateFormat('%e %b %y', this.x, true),
+                                end = Highcharts.dateFormat('%e %b %y', this.x2, true),
                                 status = this.point.status,
                                 type = this.point.type,
                                 amount = this.point.amount
