@@ -450,8 +450,8 @@ class StatisticsManager
         $data['average-borrowed-amount']['total']             = round(bcdiv($data['borrowed-capital']['total'], $data['number-of-projects']['total'], 4));
         $data['repaid-capital']['total']                      = array_sum($data['repaid-capital']);
         $data['repaid-interest']['total']                     = array_sum($data['repaid-interest']);
-        $data['repaid-capital-ratio']['total']                = round(bcdiv($data['repaid-capital']['total'], $data['borrowed-capital']['total'], 6), 2);
-        $data['repaid-interest-ratio']['total']               = round(bcdiv($data['repaid-interest']['total'], array_sum($totalInterest), 4), 2);
+        $data['repaid-capital-ratio']['total']                = round(bcmul(bcdiv($data['repaid-capital']['total'], $data['borrowed-capital']['total'], 4), 100, 3), 2);
+        $data['repaid-interest-ratio']['total']               = round(bcmul(bcdiv($data['repaid-interest']['total'], array_sum($totalInterest), 4), 100, 3), 2);
         $data['late-owed-capital-healthy']['total']           = array_sum($data['late-owed-capital-healthy']);
         $data['late-owed-capital-problematic']['total']       = array_sum($data['late-owed-capital-problematic']);
         $data['optimistic-unilend-irr']['total']              = $this->IRRManager->getLastOptimisticUnilendIRR()->getValue();
