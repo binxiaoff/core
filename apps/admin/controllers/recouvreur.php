@@ -56,7 +56,7 @@ class recouvreurController extends bootstrap
                     'availableBalance'  => $wallet->getAvailableBalance()
                 ];
             }
-            $this->render(null, ['debtCollectorData' => $data]);
+            $this->render(null, $data);
         }
     }
 
