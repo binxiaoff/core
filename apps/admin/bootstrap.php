@@ -240,6 +240,17 @@ class bootstrap extends Controller
             ]
         ],
         [
+            'title' => 'Remboursements',
+            'uri'   => 'repayment/validation',
+            'zone'  => Zones::ZONE_LABEL_TRANSFERS,
+            'children' => [
+                [
+                    'title' => 'Remboursements à valider',
+                    'uri'   => 'repayment/validation'
+                ]
+            ]
+        ],
+        [
             'title'    => 'Dépôt de fonds',
             'uri'      => 'transferts',
             'zone'     => Zones::ZONE_LABEL_TRANSFERS,
