@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ProjectCharge
  *
- * @ORM\Table(name="project_charge", indexes={@ORM\Index(name="idx_project_charge_id_project", columns={"id_project"}), @ORM\Index(name="idx_project_charge_id_type", columns={"id_type"})})
+ * @ORM\Table(name="project_charge", indexes={@ORM\Index(name="idx_project_charge_id_project", columns={"id_project"}), @ORM\Index(name="idx_project_charge_id_type", columns={"id_type"}), @ORM\Index(name="idx_project_charge_id_mission", columns={"id_mission"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectChargeRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -96,6 +96,16 @@ class ProjectCharge
      * })
      */
     private $idWireTransferIn;
+
+    /**
+     * @var DebtCollectionMission
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_mission", referencedColumnName="id")
+     * })
+     */
+    private $idMission;
 
     /**
      * @return int
@@ -305,5 +315,29 @@ class ProjectCharge
     public function getIdWireTransferIn()
     {
         return $this->idWireTransferIn;
+    }
+
+    /**
+     * Get idMission
+     *
+     * @return DebtCollectionMission
+     */
+    public function getIdMission()
+    {
+        return $this->idMission;
+    }
+
+    /**
+     * Set idMission
+     *
+     * @param DebtCollectionMission $idMission
+     *
+     * @return ProjectCharge
+     */
+    public function setIdMission($idMission)
+    {
+        $this->idMission = $idMission;
+
+        return $this;
     }
 }
