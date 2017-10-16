@@ -638,6 +638,17 @@ class ajaxController extends bootstrap
             return;
         }
 
+        if (
+            $project->getStatus() !== ProjectsStatus::ANALYSIS_REVIEW
+            || $this->userEntity->getIdUser() !== $project->getIdAnalyste()
+        ) {
+            echo json_encode([
+                'success' => false,
+                'error'   => 'Vous ne disposez pas des droits nécessaires'
+            ]);
+            return;
+        }
+
         $projectRating = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project]);
 
         if (null === $projectRating) {
@@ -755,6 +766,17 @@ class ajaxController extends bootstrap
             )
         ) {
             echo json_encode(['success' => false, 'error' => 'Paramètres invalides']);
+            return;
+        }
+
+        if (
+            $project->getStatus() !== ProjectsStatus::COMITY_REVIEW
+            || $this->userEntity->getIdUserType()->getIdUserType() != \users_types::TYPE_DIRECTION
+        ) {
+            echo json_encode([
+                'success' => false,
+                'error'   => 'Vous ne disposez pas des droits nécessaires'
+            ]);
             return;
         }
 

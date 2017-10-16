@@ -29,7 +29,7 @@ var Memo = function($trigger) {
 
     var html = '<form method="post" action="' + self.track.submitUrl + '">' +
                     '<div class="existing">' + existingHmtl + '</div>' +
-                    '<textarea id="' + self.textarea + '" name="comment" method="post"></textarea>' +
+                    '<textarea id="' + self.textarea + '" name="comment"></textarea>' +
                     '<input type="hidden" name="projectId" value="' + self.track.projectId + '">' +
                     '<div class="controls text-right">' +
                         '<button type="button" data-memo-close class="btn-default">Annuler</button>' +
@@ -89,8 +89,6 @@ Memo.prototype.submit = function() {
         return false
     }
 
-    console.log(self.track.submitUrl)
-
     self.$textarea.html(comment)
 
     if (self.track.submitUrl === 'suspensive') {
@@ -134,8 +132,7 @@ Memo.prototype.close = function() {
 }
 
 /* Elements Jquery */
-$(document).ready(function()
-{
+$(document).ready(function() {
     $(".thickbox").colorbox();
 
     $('.extract_rib_btn').colorbox({
