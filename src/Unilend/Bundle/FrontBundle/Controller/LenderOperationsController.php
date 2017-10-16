@@ -167,17 +167,15 @@ class LenderOperationsController extends Controller
         $wallet     = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
         $filters    = $session->get('lenderOperationsFilters');
         $operations = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
-        $fileName   = 'operations_' . date('Y-m-d_H:i:s') . '.xlsx';
+        $fileName   = 'operations_' . date('Y-m-d_His') . '.xlsx';
         $writer     = $lenderOperationsManager->getOperationsExcelFile($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations, $fileName);
 
         return new StreamedResponse(
             function () use ($writer) {
                 $writer->close();
             }, Response::HTTP_OK, [
-                'Content-type'        => 'application/force-download; charset=utf-8',
-                'Expires'             => 0,
-                'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
-                'Content-Disposition' => 'attachment;filename=' . $fileName . '.xlsx'
+                'Content-Type' => 'application/force-download; charset=utf-8',
+                'Expires'      => 0
             ]
         );
     }
