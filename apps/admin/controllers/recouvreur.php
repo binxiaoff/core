@@ -10,9 +10,9 @@ class recouvreurController extends bootstrap
     {
         parent::initialize();
 
-        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
+        $this->users->checkAccess(Zones::ZONE_LABEL_DEBT_COLLECTOR);
 
-        $this->menu_admin = 'emprunteurs';
+        $this->menu_admin = 'recouvreur';
     }
 
     public function _liste()
