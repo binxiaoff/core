@@ -17,7 +17,6 @@ class parrainageController extends bootstrap
 
         $this->users->checkAccess(Zones::ZONE_LABEL_LENDERS);
 
-        $this->catchAll   = true;
         $this->menu_admin = 'preteurs';
     }
 
