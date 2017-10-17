@@ -1670,6 +1670,10 @@ class Projects
      */
     public function getCloseOutNettingDate()
     {
+        /** @todo to be removed when projects is fully under doctrine */
+        if ($this->closeOutNettingDate->getTimestamp() < 0) {
+            return null;
+        }
         return $this->closeOutNettingDate;
     }
 
