@@ -27,12 +27,13 @@ class ProjectCloseOutNettingManager
     /**
      * @param Projects  $project
      * @param \DateTime $closeOutNettingDate
+     * @param bool      $rebuildMode
      *
      * @throws \Exception
      */
-    public function decline(Projects $project, \DateTime $closeOutNettingDate)
+    public function decline(Projects $project, \DateTime $closeOutNettingDate, $rebuildMode = false)
     {
-        if ($project->getCloseOutNettingDate()) {
+        if ($project->getCloseOutNettingDate() && false === $rebuildMode) {
             throw new \Exception('The project (id: ' . $project->getIdProject() . ') has already been declined.');
         }
 

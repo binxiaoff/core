@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
@@ -15,7 +16,7 @@ class LoanManager
 {
     /** @var LoggerInterface */
     private $logger;
-    /** @var EntityManagerSimulator  */
+    /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
     /** @var EntityManager */
     private $entityManager;
@@ -26,6 +27,7 @@ class LoanManager
         $this->entityManager          = $entityManager;
 
     }
+
     /**
      * @param LoggerInterface $logger
      */
@@ -52,7 +54,7 @@ class LoanManager
         }
         /** @var \accepted_bids $acceptedBid */
         $acceptedBid = $this->entityManagerSimulator->getRepository('accepted_bids');
-        foreach ($acceptedBids  as $aAcceptedBid) {
+        foreach ($acceptedBids as $aAcceptedBid) {
             $acceptedBid->unsetData();
             $acceptedBid->id_bid  = $aAcceptedBid['bid_id'];
             $acceptedBid->id_loan = $loan->id_loan;
@@ -83,29 +85,29 @@ class LoanManager
 
         $loanTransfer = $loan->getIdTransfer();
         if ($loanTransfer) {
-            return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($loanTransfer->getIdTransfer()->getClientOrigin());
+            return $loanTransfer->getIdTransfer()->getClientOrigin();
         }
 
         return null;
     }
 
     /**
-     * @param \loans $loan
+     * @param \loans|Loans $loan
      *
      * @return Clients
      */
-    public function getFirstOwner(\loans $loan)
+    public function getFirstOwner($loan)
     {
-        /** @var \loan_transfer $loanTransfer */
-        $loanTransfer  = $this->entityManagerSimulator->getRepository('loan_transfer');
-        $firstTransfer = $loanTransfer->select('id_loan = ' . $loan->id_loan, 'added ASC', null, 1)[0];
-        $loanTransfer->get($firstTransfer['id_loan_transfer']);
+        if ($loan instanceof \loans) {
+            $loan = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($loan->id_loan);
+        }
 
-        /** @var \transfer $transfer */
-        $transfer = $this->entityManagerSimulator->getRepository('transfer');
-        $transfer->get($loanTransfer->id_transfer);
+        $firstTransfer = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LoanTransfer')->findOneBy(['idLoan' => $loan], ['added' => 'ASC']);
 
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($transfer->id_client_origin);
+        if ($firstTransfer) {
+            return $firstTransfer->getIdTransfer()->getClientOrigin();
+        }
+
+        return null;
     }
-
 }
