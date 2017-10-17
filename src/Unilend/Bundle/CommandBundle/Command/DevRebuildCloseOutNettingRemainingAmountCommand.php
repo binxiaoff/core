@@ -20,7 +20,7 @@ class DevRebuildCloseOutNettingRemainingAmountCommand extends ContainerAwareComm
     protected function configure()
     {
         $this->setName('unilend:dev_tools:con_remaining_amount:rebuild')
-            ->setDescription('Rebuild the remainning amount for the colse out netting projects ');
+            ->setDescription('Rebuild the remaining amount for the close out netting projects');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
