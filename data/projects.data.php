@@ -1,12 +1,12 @@
 <?php
 
-use \Doctrine\DBAL\Statement;
-use \Unilend\Bridge\Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Statement;
+use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 
 class projects extends projects_crud
 {
@@ -1122,40 +1122,51 @@ class projects extends projects_crud
     public function getDataForBDFDeclaration(\DateTime $declarationDate)
     {
         $bind = [
-            'statusRepayment'       => ProjectsStatus::REMBOURSEMENT,
-            'statusProblem'         => ProjectsStatus::PROBLEME,
-            'loanAccepted'          => Loans::STATUS_ACCEPTED,
-            'declarationLastDay'    => $declarationDate->format('Y-m-t'),
-            'inBonis'               => CompanyStatus::STATUS_IN_BONIS,
-            'collectiveProceeding'  => [
+            'statusRepayment'                  => ProjectsStatus::REMBOURSEMENT,
+            'statusProblem'                    => ProjectsStatus::PROBLEME,
+            'loanAccepted'                     => Loans::STATUS_ACCEPTED,
+            'declarationLastDay'               => $declarationDate->format('Y-m-t'),
+            'inBonis'                          => CompanyStatus::STATUS_IN_BONIS,
+            'collectiveProceeding'             => [
                 CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
                 CompanyStatus::STATUS_RECEIVERSHIP,
                 CompanyStatus::STATUS_COMPULSORY_LIQUIDATION,
             ],
-            'projectStatusList'     => [
+            'projectStatusList'                => [
                 ProjectsStatus::REMBOURSEMENT,
                 ProjectsStatus::PROBLEME,
                 ProjectsStatus::LOSS,
             ],
-            'clientTypePerson'      => [
+            'clientTypePerson'                 => [
                 Clients::TYPE_PERSON,
                 Clients::TYPE_PERSON_FOREIGNER
             ],
-            'clientTypeLegalEntity' => [
+            'clientTypeLegalEntity'            => [
                 Clients::TYPE_LEGAL_ENTITY,
                 Clients::TYPE_LEGAL_ENTITY_FOREIGNER
+            ],
+            'opSubTypeTypeRepayment'           => [
+                OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION,
+                OperationSubType::GROSS_INTEREST_REPAYMENT_DEBT_COLLECTION
+
+            ],
+            'opSubTypeRepaymentRegularization' => [
+                OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION_REGULARIZATION,
+                OperationSubType::GROSS_INTEREST_REPAYMENT_DEBT_COLLECTION_REGULARIZATION
             ]
         ];
         $type = [
-            'statusRepayment'       => \PDO::PARAM_INT,
-            'statusProblem'         => \PDO::PARAM_INT,
-            'loanAccepted'          => \PDO::PARAM_INT,
-            'declarationLastDay'    => \PDO::PARAM_STR,
-            'inBonis'               => \PDO::PARAM_STR,
-            'collectiveProceeding'  => \Doctrine\DBAL\Connection::PARAM_STR_ARRAY,
-            'projectStatusList'     => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
-            'clientTypePerson'      => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
-            'clientTypeLegalEntity' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'statusRepayment'                  => \PDO::PARAM_INT,
+            'statusProblem'                    => \PDO::PARAM_INT,
+            'loanAccepted'                     => \PDO::PARAM_INT,
+            'declarationLastDay'               => \PDO::PARAM_STR,
+            'inBonis'                          => \PDO::PARAM_STR,
+            'collectiveProceeding'             => \Doctrine\DBAL\Connection::PARAM_STR_ARRAY,
+            'projectStatusList'                => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'clientTypePerson'                 => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'clientTypeLegalEntity'            => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'opSubTypeTypeRepayment'           => \Doctrine\DBAL\Connection::PARAM_STR_ARRAY,
+            'opSubTypeRepaymentRegularization' => \Doctrine\DBAL\Connection::PARAM_STR_ARRAY,
         ];
 
         $sql = "
@@ -1178,7 +1189,7 @@ class projects extends projects_crud
           p.amount AS loan_amount,
           (SELECT MIN(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status AND ps.status = :statusRepayment WHERE psh.id_project = p.id_project) AS loan_date,
           CASE
-            WHEN p.close_out_netting_date IS NOT NULL THEN NULL
+            WHEN p.close_out_netting_date IS NOT NULL AND p.close_out_netting_date != '0000-00-00' THEN NULL
             ELSE
               CASE
                 WHEN cs.label = :inBonis AND p.status = :statusProblem THEN
@@ -1193,16 +1204,19 @@ class projects extends projects_crud
             SELECT MIN(csh_min.id) FROM company_status_history csh_min
             INNER JOIN company_status cs_min ON cs_min.id = csh_min.id_status AND cs_min.label IN (:collectiveProceeding) WHERE csh.id_company = p.id_company)
           ) AS judgement_date,
-          p.close_out_netting_date,
+          CASE
+            WHEN p.close_out_netting_date IS NOT NULL AND p.close_out_netting_date != '0000-00-00' THEN p.close_out_netting_date
+            ELSE NULL
+          END AS close_out_netting_date,
           (
             SELECT IFNULL(SUM(o.amount),0)
             FROM operation o
-            WHERE id_sub_type in (SELECT id FROM operation_sub_type WHERE label IN ('" . OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION . "', '" . OperationSubType::GROSS_INTEREST_REPAYMENT_DEBT_COLLECTION . "'))
+            WHERE id_sub_type in (SELECT id FROM operation_sub_type WHERE label IN (:opSubTypeTypeRepayment))
             AND id_project = p.id_project
           ) - (
             SELECT IFNULL(SUM(o.amount),0)
             FROM operation o
-            WHERE id_sub_type in (SELECT id FROM operation_sub_type WHERE label IN ('" . OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION_REGULARIZATION . "', '" . OperationSubType::GROSS_INTEREST_REPAYMENT_DEBT_COLLECTION_REGULARIZATION . "'))
+            WHERE id_sub_type in (SELECT id FROM operation_sub_type WHERE label IN (:opSubTypeRepaymentRegularization))
                   AND id_project = p.id_project
           ) AS debt_collection_repayment,
           (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l INNER JOIN wallet w ON w.id = l.id_lender
