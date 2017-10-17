@@ -53,8 +53,8 @@ class ProjectCloseOutNettingManager
             $project->setCloseOutNettingDate($closeOutNettingDate);
             $this->entityManager->flush($project);
 
-            $this->buildRepayments($project, $closeOutNettingDate);
-            $this->buildPayments($project, $closeOutNettingDate);
+            $this->buildRepayments($project);
+            $this->buildPayments($project);
             $this->entityManager->getConnection()->commit();
         } catch (\Exception $exception) {
             $this->entityManager->getConnection()->rollBack();
