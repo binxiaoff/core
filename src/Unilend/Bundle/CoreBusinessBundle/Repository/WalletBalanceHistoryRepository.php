@@ -120,7 +120,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
                 LEFT JOIN bids b ON wbh.id_bid = b.id_bid
                 LEFT JOIN projects p ON IF(o.id_project IS NULL, wbh.id_project, o.id_project) = p.id_project
             WHERE wbh.id_wallet = :idWallet
-            AND wbh.added BETWEEN :startDate AND :endDate
+                AND wbh.added BETWEEN :startDate AND :endDate
             GROUP BY id_loan, order_by_id
             ORDER BY wbh.id DESC';
 
@@ -174,11 +174,61 @@ class WalletBalanceHistoryRepository extends EntityRepository
      */
     public function getBorrowerWalletOperations($idWallet, \DateTime $startDate, \DateTime $endDate, array $idProjects = [], $operationType = null)
     {
+        $qb = $this->getClientWalletOperationsQuery($idWallet, $startDate, $endDate);
+        $qb->addSelect('
+                IDENTITY(o.idPaymentSchedule) AS idPaymentSchedule, 
+                -ROUND((f.montantHt/100), 2) AS netCommission,
+                -ROUND((f.tva/100), 2) AS vat,
+                e.ordre,
+                IDENTITY(r.rejectionIsoCode) AS rejectionIsoCode,
+                srr.label as rejectionReasonLabel'
+        )
+            ->leftJoin('UnilendCoreBusinessBundle:Receptions', 'r', Join::WITH, 'o.idWireTransferIn = r.idReception')
+            ->leftJoin('UnilendCoreBusinessBundle:SepaRejectionReason', 'srr', Join::WITH, 'r.rejectionIsoCode = srr.isoCode')
+            ->leftJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'o.idPaymentSchedule = ee.idEcheancierEmprunteur')
+            ->leftJoin('UnilendCoreBusinessBundle:Factures', 'f', Join::WITH, 'ee.ordre = f.ordre AND ee.idProject = f.idProject')
+            ->leftJoin('UnilendCoreBusinessBundle:Echeanciers', 'e', Join::WITH, 'o.idRepaymentSchedule = e.idEcheancier');
+
+        if (false === empty($idProjects)) {
+            $qb->andWhere('o.idProject IN (:idProjects)')
+                ->setParameter('idProjects', $idProjects, Connection::PARAM_INT_ARRAY);
+        }
+        if (null !== $operationType) {
+            $qb->andWhere('ot.label = :operationType')
+                ->setParameter('operationType', $operationType);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @param           $idWallet
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     *
+     * @return array
+     */
+    public function getDebtCollectorWalletOperations($idWallet, \DateTime $startDate, \DateTime $endDate)
+    {
+        $queryBuilder = $this->getClientWalletOperationsQuery($idWallet, $startDate, $endDate);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param           $idWallet
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
+     *
+     * @return \Doctrine\ORM\QueryBuilder
+     */
+    private function getClientWalletOperationsQuery($idWallet, \DateTime $startDate, \DateTime $endDate)
+    {
         $startDate->setTime(00, 00, 00);
         $endDate->setTime(23, 59, 59);
 
-        $qb = $this->createQueryBuilder('wbh');
-        $qb->select('
+        $queryBuilder = $this->createQueryBuilder('wbh')
+            ->select('
                 o.id,
                 CASE 
                     WHEN(o.idWalletDebtor = wbh.idWallet)  
@@ -191,22 +241,11 @@ class WalletBalanceHistoryRepository extends EntityRepository
                     ELSE ost.label
                 END AS label, 
                 IDENTITY(o.idProject) AS idProject, 
-                IDENTITY(o.idPaymentSchedule) AS idPaymentSchedule, 
-                DATE(o.added) AS date,
-                -ROUND((f.montantHt/100), 2) AS netCommission,
-                -ROUND((f.tva/100), 2) AS vat,
-                e.ordre,
-                IDENTITY(r.rejectionIsoCode) AS rejectionIsoCode,
-                srr.label as rejectionReasonLabel'
-        )
+                DATE(o.added) AS date'
+            )
             ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.id = wbh.idOperation')
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
             ->leftJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
-            ->leftJoin('UnilendCoreBusinessBundle:Receptions', 'r', Join::WITH, 'o.idWireTransferIn = r.idReception')
-            ->leftJoin('UnilendCoreBusinessBundle:SepaRejectionReason', 'srr', Join::WITH, 'r.rejectionIsoCode = srr.isoCode')
-            ->leftJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'o.idPaymentSchedule = ee.idEcheancierEmprunteur')
-            ->leftJoin('UnilendCoreBusinessBundle:Factures', 'f', Join::WITH, 'ee.ordre = f.ordre AND ee.idProject = f.idProject')
-            ->leftJoin('UnilendCoreBusinessBundle:Echeanciers', 'e', Join::WITH, 'o.idRepaymentSchedule = e.idEcheancier')
             ->where('wbh.idWallet = :idWallet')
             ->andWhere('o.added BETWEEN :startDate AND :endDate')
             ->setParameter('idWallet', $idWallet)
@@ -215,18 +254,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
             ->groupBy('o.idProject, o.idType, date')
             ->orderBy('wbh.id', 'DESC');
 
-        if (false === empty($idProjects)) {
-            $qb->andWhere('o.idProject IN (:idProjects)')
-                ->setParameter('idProjects', $idProjects, Connection::PARAM_INT_ARRAY);
-        }
-        if (null !== $operationType) {
-            $qb->andWhere('ot.label = :operationType')
-                ->setParameter('operationType', $operationType);
-        }
-
-        $query = $qb->getQuery();
-
-        return $query->getResult();
+        return $queryBuilder;
     }
 
     /**

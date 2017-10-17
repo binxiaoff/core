@@ -2,13 +2,14 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use JMS\Serializer\Serializer;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
+use Unilend\Bundle\WSClientBundle\Entity\Infolegale\AnnouncementCollection;
+use Unilend\Bundle\WSClientBundle\Entity\Infolegale\AnnouncementDetailsCollection;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\DirectorAnnouncementCollection;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\ExecutiveCollection;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\HomonymCollection;
@@ -21,11 +22,12 @@ class InfolegaleManager
     const RESOURCE_COMPANY_SCORE          = 'get_score_infolegale';
     const RESOURCE_SEARCH_COMPANY         = 'search_company_infolegale';
     const RESOURCE_COMPANY_IDENTITY       = 'get_identity_infolegale';
-    const RESOURCE_LEGAL_NOTICE           = 'get_legal_notice_infolegale';
+    const RESOURCE_ANNOUNCEMENTS_LIST     = 'get_announcements_list_infolegale';
+    const RESOURCE_ANNOUNCEMENTS_DETAILS  = 'get_announcements_details_infolegale';
     const RESOURCE_EXECUTIVES             = 'get_executives_infolegale';
     const RESOURCE_MANDATES               = 'get_mandates_infolegale';
     const RESOURCE_HOMONYMS               = 'get_homonyms_infolegale';
-    const RESOURCE_ANNOUNCEMENTS_DIRECTOR = 'get_announcements__director_infolegale';
+    const RESOURCE_ANNOUNCEMENTS_DIRECTOR = 'get_announcements_director_infolegale';
 
     /** @var Client */
     private $client;
@@ -136,11 +138,27 @@ class InfolegaleManager
     /**
      * @param string $siren
      *
-     * @return null|\SimpleXMLElement
+     * @return AnnouncementCollection|null
      */
-    public function getListAnnonceLegale($siren)
+    public function getAnnouncements($siren)
     {
-        return $this->sendRequest(self::RESOURCE_LEGAL_NOTICE, ['siren' => $siren]);
+        if (null !== ($result = $this->sendRequest(self::RESOURCE_ANNOUNCEMENTS_LIST, ['siren' => $siren]))) {
+            return $this->serializer->deserialize($result->asXML(), AnnouncementCollection::class, 'xml');
+        }
+        return null;
+    }
+
+    /**
+     * @param int[] $announcementsId
+     *
+     * @return AnnouncementDetailsCollection|null
+     */
+    public function getAnnouncementsDetails(array $announcementsId)
+    {
+        if (null !== ($result = $this->sendRequest(self::RESOURCE_ANNOUNCEMENTS_DETAILS, ['adsId' => $announcementsId]))) {
+            return $this->serializer->deserialize($result->asXML(), AnnouncementDetailsCollection::class, 'xml');
+        }
+        return null;
     }
 
     /**
@@ -163,7 +181,7 @@ class InfolegaleManager
      */
     public function getMandates($executiveId)
     {
-        if (null !== $result = $this->sendRequest(self::RESOURCE_MANDATES, ['execId' => $executiveId])) {
+        if (null !== ($result = $this->sendRequest(self::RESOURCE_MANDATES, ['execId' => $executiveId]))) {
             return $this->serializer->deserialize($result->asXML(), MandateCollection::class, 'xml');
         }
         return null;
@@ -176,7 +194,7 @@ class InfolegaleManager
      */
     public function getHomonyms($executiveId)
     {
-        if (null !== $result = $this->sendRequest(self::RESOURCE_HOMONYMS, ['execId' => $executiveId])) {
+        if (null !== ($result = $this->sendRequest(self::RESOURCE_HOMONYMS, ['execId' => $executiveId]))) {
             return $this->serializer->deserialize($result->asXML(), HomonymCollection::class, 'xml');
         }
         return null;
@@ -189,7 +207,7 @@ class InfolegaleManager
      */
     public function getDirectorAnnouncements($executiveId)
     {
-        if (null !== $result = $this->sendRequest(self::RESOURCE_ANNOUNCEMENTS_DIRECTOR, ['execId' => $executiveId])) {
+        if (null !== ($result = $this->sendRequest(self::RESOURCE_ANNOUNCEMENTS_DIRECTOR, ['execId' => $executiveId]))) {
             return $this->serializer->deserialize($result->asXML(), DirectorAnnouncementCollection::class, 'xml');
         }
         return null;

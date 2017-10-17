@@ -7,6 +7,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRatingHistory;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
 use Unilend\Bundle\CoreBusinessBundle\Entity\RiskDataMonitoring;
 use Unilend\Bundle\CoreBusinessBundle\Entity\RiskDataMonitoringCallLog;
@@ -19,18 +20,21 @@ use Unilend\Bundle\WSClientBundle\Service\EulerHermesManager;
 class RiskDataMonitoringManager
 {
     const LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS = [
-            ProjectsStatus::ABANDONED,
-            ProjectsStatus::COMMERCIAL_REJECTION,
-            ProjectsStatus::ANALYSIS_REJECTION,
-            ProjectsStatus::COMITY_REJECTION,
-            ProjectsStatus::PRET_REFUSE,
-            ProjectsStatus::FUNDING_KO,
-            ProjectsStatus::REMBOURSE,
-            ProjectsStatus::REMBOURSEMENT_ANTICIPE,
-            ProjectsStatus::LIQUIDATION_JUDICIAIRE,
-            ProjectsStatus::REDRESSEMENT_JUDICIAIRE,
-            ProjectsStatus::PROCEDURE_SAUVEGARDE
-        ];
+        ProjectsStatus::ABANDONED,
+        ProjectsStatus::COMMERCIAL_REJECTION,
+        ProjectsStatus::ANALYSIS_REJECTION,
+        ProjectsStatus::COMITY_REJECTION,
+        ProjectsStatus::PRET_REFUSE,
+        ProjectsStatus::FUNDING_KO,
+        ProjectsStatus::REMBOURSE,
+        ProjectsStatus::REMBOURSEMENT_ANTICIPE
+    ];
+
+    const LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS = [
+        CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
+        CompanyStatus::STATUS_RECEIVERSHIP,
+        CompanyStatus::STATUS_COMPULSORY_LIQUIDATION
+    ];
 
     /** @var EntityManager */
     private $entityManager;
@@ -162,7 +166,7 @@ class RiskDataMonitoringManager
         $riskDataMonitoringRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoring');
         $projectRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
-        if (0 == $projectRepository->getCountProjectsBySirenAndNotInStatus($siren, self::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS)) {
+        if (0 == $projectRepository->getCountProjectsBySirenAndNotInStatus($siren, self::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS, self::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS)) {
             /** @var RiskDataMonitoring $monitoring */
             foreach ($riskDataMonitoringRepository->findBy(['siren' => $siren, 'end' => null]) as $monitoring) {
                 switch ($monitoring->getRatingType()) {
@@ -218,6 +222,9 @@ class RiskDataMonitoringManager
      */
     private function eligibleForEulerLongTermMonitoring(Companies $company)
     {
+        if (in_array($company->getIdStatus()->getLabel(), self::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS)) {
+            return false;
+        }
         foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $company]) as $project) {
             if (false === in_array($project->getStatus(), self::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS )) {
                 return true;

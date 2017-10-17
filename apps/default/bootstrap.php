@@ -18,14 +18,6 @@ class bootstrap extends Controller
     {
         parent::initialize();
 
-        // @todo kept for temporary backward compatibility
-        $this->tabProjectDisplay = [\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE];
-        $this->tabOrdreProject   = [
-            [],
-            [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC],
-            [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_ASC]
-        ];
-
         if ($this->current_function != 'login') {
             $_SESSION['redirection_url'] = $_SERVER['REQUEST_URI'];
         }
@@ -37,9 +29,7 @@ class bootstrap extends Controller
         $this->tree                    = $this->loadData('tree', array('url' => $this->url, 'surl' => $this->surl, 'tree_elements' => $this->tree_elements, 'blocs_elements' => $this->blocs_elements, 'upload' => $this->upload, 'spath' => $this->spath));
         $this->templates               = $this->loadData('templates');
         $this->elements                = $this->loadData('elements');
-        $this->blocs_templates         = $this->loadData('blocs_templates');
         $this->blocs                   = $this->loadData('blocs');
-        $this->mail_template           = $this->loadData('mail_templates');
         $this->ln                      = $this->loadData('translations');
         $this->clients                 = $this->loadData('clients');
         $this->clients_adresses        = $this->loadData('clients_adresses');

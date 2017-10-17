@@ -4,13 +4,13 @@
         <form id="send_completude_form">
             <table class="formMail">
                 <tr>
-                    <th>From : "<?= $this->mail_template->sender_name ?>" <?= $this->mail_template->sender_email ?></th>
+                    <th>From : "<?= $this->mailTemplate->getSenderName() ?>" <?= $this->mailTemplate->getSenderEmail() ?></th>
                 </tr>
                 <tr>
                     <th>Destinataire : <?= $this->sRecipient ?></th>
                 </tr>
                 <tr>
-                    <th>Sujet : <?= $this->mail_template->subject ?></th>
+                    <th>Sujet : <?= $this->mailTemplate->getSubject() ?></th>
                 </tr>
                 <tr>
                     <td><iframe src="<?= $this->lurl ?>/dossiers/completude_preview_iframe/<?= $this->iProjectId ?>/<?= $this->iClientId ?>" width="760px" height="400px"></iframe></td>

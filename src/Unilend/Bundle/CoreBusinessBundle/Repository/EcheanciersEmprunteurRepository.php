@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
@@ -56,23 +57,6 @@ class EcheanciersEmprunteurRepository extends EntityRepository
     }
 
     /**
-     * @param Projects|int $project
-     *
-     * @return EcheanciersEmprunteur[]
-     */
-    public function findUnFinishedSchedules($project)
-    {
-        $queryBuilder = $this->createQueryBuilder('ee');
-        $queryBuilder->where('ee.idProject = :project')
-            ->andWhere('ee.statusEmprunteur in (:unfinished)')
-            ->orderBy('ee.ordre', 'ASC')
-            ->setParameter('project', $project)
-            ->setParameter('unfinished', [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]);
-
-        return $queryBuilder->getQuery()->getResult();
-    }
-
-    /**
      * @param int|Projects $project
      * @param int          $sequence
      *
@@ -120,14 +104,107 @@ class EcheanciersEmprunteurRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('ee');
         $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'ee.idProject = p.idProject')
+            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'c.idCompany = p.idCompany')
+            ->innerJoin('UnilendCoreBusinessBundle:CompanyStatus', 'cs', Join::WITH, 'cs.id = c.idStatus')
             ->leftJoin('UnilendCoreBusinessBundle:Factures', 'f', Join::WITH, 'ee.idProject = f.idProject AND f.ordre = ee.ordre')
             ->where('DATE(ee.dateEcheanceEmprunteur) <= :today')
             ->andWhere('p.status in (:status)')
+            ->andWhere('p.closeOutNettingDate IS NULL')
+            ->andWhere('cs.label = :inBonis')
             ->andWhere('f.idFacture IS NULL')
             ->setParameter('today', (new \DateTime())->format('Y-m-d'))
-            ->setParameter('status', [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME, ProjectsStatus::PROBLEME_J_X])
+            ->setParameter('status', [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME])
+            ->setParameter('inBonis', CompanyStatus::STATUS_IN_BONIS)
             ->setMaxResults($limit);
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    public function getTotalOverdueAmounts($project)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee');
+        $queryBuilder->select(
+            'ROUND(SUM(ee.capital - ee.paidCapital)/100, 2) as capital,
+            ROUND(SUM(ee.interets - ee.paidInterest)/100, 2) as interest,
+            ROUND(SUM(ee.commission + ee.tva - ee.paidCommissionVatIncl)/100, 2) as commission'
+        )
+            ->where('ee.idProject = :project')
+            ->andWhere('ee.dateEcheanceEmprunteur < :today')
+            ->setParameter('project', $project)
+            ->setParameter('today', (new \DateTime())->format('Y-m-d 00:00:00'));
+
+        return $queryBuilder->getQuery()->getSingleResult();
+    }
+
+    /**
+     * @param int|Projects $projectId
+     *
+     * @return null|EcheanciersEmprunteur
+     */
+    public function getNextPaymentSchedule($projectId)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee')
+            ->where('ee.idProject = :projectId')
+            ->setParameter('projectId', $projectId)
+            ->andWhere('DATE(ee.dateEcheanceEmprunteur) > :now')
+            ->setParameter('now', (new \DateTime())->format('Y-m-d'))
+            ->orderBy('ee.dateEcheanceEmprunteur', 'ASC')
+            ->setMaxResults(1);
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * @param int|Projects $project
+     * @param \DateTime    $endDate
+     *
+     * @return array
+     */
+    public function getPendingAmountAndPaymentsCountOnProjectAtDate($project, \DateTime $endDate)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee')
+            ->select('ROUND(SUM(ee.capital - ee.paidCapital + ee.interets - ee.paidInterest + ee.commission + ee.tva - ee.paidCommissionVatIncl) / 100, 2) AS amount,
+            SUM(ROUND((ee.capital - ee.paidCapital + ee.interets - ee.paidInterest + ee.commission - ee.paidCommissionVatIncl) / (ee.capital + ee.interets + ee.commission), 1)) AS paymentsCount')
+            ->where('ee.idProject = :projectId')
+            ->setParameter('projectId', $project)
+            ->andWhere('ee.dateEcheanceEmprunteur <= :endDate')
+            ->setParameter('endDate', $endDate->format('Y-m-d 23:59:59'))
+            ->groupBy('ee.idProject');
+
+        return $queryBuilder->getQuery()->getSingleResult();
+    }
+
+    /**
+     * @param int|Projects $project
+     * @param \DateTime    $startDate
+     *
+     * @return array
+     */
+    public function getPendingCapitalAndPaymentsCountOnProjectFromDate($project, \DateTime $startDate)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee')
+            ->select('ROUND(SUM(ee.capital - ee.paidCapital) / 100, 2) AS amount, SUM(ROUND((ee.capital - ee.paidCapital) / ee.capital, 1)) AS paymentsCount')
+            ->where('ee.idProject = :projectId')
+            ->setParameter('projectId', $project)
+            ->andWhere('ee.dateEcheanceEmprunteur > :startDate')
+            ->setParameter('startDate', $startDate->format('Y-m-d 00:00:00'))
+            ->groupBy('ee.idProject');
+
+        return $queryBuilder->getQuery()->getSingleResult();
+    }
+
+    /**
+     * @param int|Projects $project
+     *
+     * @return mixed
+     */
+    public function getTotalAmountToRepayOnProject($project)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee')
+            ->select('ROUND(SUM(ee.capital + ee.interets + ee.commission + ee.tva) / 100, 2) AS totalAmountToRepay')
+            ->where('ee.idProject = :project')
+            ->setParameter('project', $project);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }

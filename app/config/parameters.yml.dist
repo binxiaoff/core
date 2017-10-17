@@ -70,6 +70,7 @@ parameters:
     mongodb_server:                 mongodb://datalake-shard-00-00-lnres.mongodb.net:27017,datalake-shard-00-01-lnres.mongodb.net:27017,datalake-shard-00-02-lnres.mongodb.net:27017/ws_call_%kernel.environment%?ssl=true&replicaSet=DataLake-shard-0&authSource=admin
     mongodb_username:               uld-mdb-admin
     mongodb_password:               cyPKA2c0C6hq3JLp
+    mongodb_replica_set_name:       DataLake-shard-0
 
     secret:                         440caf9a41b35b72dc75ec333e3a33b7cab2366b
     locale:                         fr_FR

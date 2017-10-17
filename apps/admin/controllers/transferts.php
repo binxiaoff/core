@@ -95,7 +95,9 @@ class transfertsController extends bootstrap
                         $projectRepaymentTaskManager->planEarlyRepaymentTask($project, $reception, $user);
                     } elseif ($_POST['type_remb'] === 'regularisation') {
                         $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_REGULARISATION);
-                        $projectPaymentManager->pay($reception, $user);
+                        if ($project->getStatus() === ProjectsStatus::REMBOURSEMENT) {
+                            $projectPaymentManager->pay($reception, $user);
+                        }
                     }
                     $entityManager->flush();
                     $entityManager->getConnection()->commit();
@@ -673,7 +675,7 @@ class transfertsController extends bootstrap
 
             /** @var \loans $loans */
             $loans                 = $this->loadData('loans');
-            $loansInRepayment      = $loans->getLoansForProjectsWithStatus($originalWallet->getId(), array_merge(\projects_status::$runningRepayment, [\projects_status::FUNDE]));
+            $loansInRepayment      = $loans->getLoansForProjectsWithStatus($originalWallet->getId(), [ProjectsStatus::FUNDE, ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME]);
             $originalClientBalance = $originalWallet->getAvailableBalance();
 
             if (isset($_POST['succession_check'])) {

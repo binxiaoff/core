@@ -184,8 +184,6 @@ abstract class Controller implements ContainerAwareInterface
     /**
      * @param string $template
      * @param array  $context
-     *
-     * @return string
      */
     public function render($template = null, array $context = [])
     {
@@ -227,6 +225,7 @@ abstract class Controller implements ContainerAwareInterface
         ]);
         $this->twigEnvironment->addExtension(new Twig_Extension_Debug());
         $this->twigEnvironment->addExtension(new Twig_Extensions_Extension_Intl());
+        $this->twigEnvironment->addExtension(new Symfony\Bridge\Twig\Extension\TranslationExtension($this->get('translator')));
     }
 
     protected function loadData($object, $params = [])
@@ -305,15 +304,20 @@ abstract class Controller implements ContainerAwareInterface
     }
 
     /**
-     * @param            $success
+     * @param bool       $success
      * @param array|null $data
      * @param array|null $errors
      */
     protected function sendAjaxResponse($success, array $data = null, array $errors = null)
     {
-        $result = ['success' => $success, 'data' => $data, 'error' => $errors];
         header('Content-Type: application/json');
-        echo json_encode($result);
-        die;
+
+        echo json_encode([
+            'success' => $success,
+            'data'    => $data,
+            'error'   => $errors
+        ]);
+
+        exit;
     }
 }

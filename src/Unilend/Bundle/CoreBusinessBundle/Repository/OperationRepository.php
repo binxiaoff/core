@@ -17,6 +17,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Doctrine\DBAL\Connection;
@@ -121,7 +122,7 @@ class OperationRepository extends EntityRepository
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                         WHERE ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
                         AND psh.added <= :end
-                        AND p.status != ' . ProjectsStatus::DEFAUT;
+                        AND p.status != ' . ProjectsStatus::LOSS;
 
         $query = '
             SELECT IFNULL(SUM(o_loan.amount), 0) - (
@@ -1209,5 +1210,48 @@ class OperationRepository extends EntityRepository
         }
 
         return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Loans|int      $loan
+     * @param Receptions|int $wireTransferIn
+     *
+     * @return array
+     */
+    public function getTotalRepaidAmountsByLoanAndWireTransferIn($loan, $wireTransferIn)
+    {
+        $queryBuilder = $this->createQueryBuilder('o');
+        $queryBuilder->select('
+            SUM(CASE 
+                WHEN ot.label = :capital THEN o.amount
+                WHEN ot.label = :capitalRegularization THEN -o.amount
+                ELSE 0
+            END) as capital,
+            SUM(CASE 
+                WHEN ot.label = :interest THEN o.amount
+                WHEN ot.label = :interestRegularization THEN -o.amount
+                ELSE 0
+            END) as interest
+        ')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectRepaymentTaskLog', 'prtl', Join::WITH, 'o.idRepaymentTaskLog = prtl.id')
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectRepaymentTask', 'prt', Join::WITH, 'prtl.idTask = prt.id')
+            ->where('o.idLoan = :loan')
+            ->andWhere('ot.label in (:repaymentTypes)')
+            ->andWhere('prt.idWireTransferIn = :wireTransferIn')
+            ->setParameter('loan', $loan)
+            ->setParameter('wireTransferIn', $wireTransferIn)
+            ->setParameter('capital', OperationType::CAPITAL_REPAYMENT)
+            ->setParameter('capitalRegularization', OperationType::CAPITAL_REPAYMENT_REGULARIZATION)
+            ->setParameter('interest', OperationType::GROSS_INTEREST_REPAYMENT)
+            ->setParameter('interestRegularization', OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION)
+            ->setParameter('repaymentTypes', [
+                OperationType::CAPITAL_REPAYMENT,
+                OperationType::CAPITAL_REPAYMENT_REGULARIZATION,
+                OperationType::GROSS_INTEREST_REPAYMENT,
+                OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION
+            ]);
+
+        return $queryBuilder->getQuery()->getSingleResult();
     }
 }

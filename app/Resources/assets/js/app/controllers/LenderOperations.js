@@ -139,12 +139,8 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
           })
         })
 
-        // Check columns to show depending on user level
-        var colspanDetails = 8
-        if (!$('body').is('.ui-user-type-partner-admin')) {
-          colspanDetails = 7
-        }
-
+        // Adjust colspan
+        var colspanDetails = $item.find('>td').length + 1
         $details = $('<tr class="table-projects-details" data-parent="' + $item.attr('id') + '" style="display: none;"><td colspan="' + colspanDetails + '"><table>' + detailsItemsHtml + '</table></td></tr>')
       }
 

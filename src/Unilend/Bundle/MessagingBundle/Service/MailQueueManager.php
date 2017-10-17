@@ -6,39 +6,37 @@ use Doctrine\ORM\EntityManager;
 use Mailjet\Response;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class MailQueueManager
 {
-    /** @var EntityManagerSimulator */
+    /** @var EntityManager */
     private $entityManager;
     /** @var TemplateMessageProvider */
     private $templateMessage;
-    /** @var string */
-    private $sharedTemporaryPath;
     /** @var LoggerInterface */
     private $logger;
-    /** @var EntityManager */
-    private $em;
+    /** @var string */
+    private $sharedTemporaryPath;
 
     /**
-     * MailQueueManager constructor.
-     *
-     * @param EntityManagerSimulator  $entityManager
-     * @param EntityManager           $em
+     * @param EntityManager           $entityManager
      * @param TemplateMessageProvider $templateMessage
      * @param LoggerInterface         $logger
-     * @param                         $sharedTemporaryPath
+     * @param string                  $sharedTemporaryPath
      */
-    public function __construct(EntityManagerSimulator $entityManager, EntityManager $em, TemplateMessageProvider $templateMessage, LoggerInterface $logger, $sharedTemporaryPath)
+    public function __construct(
+        EntityManager $entityManager,
+        TemplateMessageProvider $templateMessage,
+        LoggerInterface $logger,
+        $sharedTemporaryPath
+    )
     {
         $this->entityManager       = $entityManager;
         $this->templateMessage     = $templateMessage;
-        $this->sharedTemporaryPath = $sharedTemporaryPath;
         $this->logger              = $logger;
-        $this->em                  = $em;
+        $this->sharedTemporaryPath = $sharedTemporaryPath;
     }
 
     /**
@@ -71,33 +69,37 @@ class MailQueueManager
             chmod($this->sharedTemporaryPath . $attachments[$index]['tmp_file'], 0660);
         }
 
-        /** @var \clients $client */
-        $client = $this->entityManager->getRepository('clients');
-        /** @var \mail_queue $mailQueue */
-        $mailQueue                       = $this->entityManager->getRepository('mail_queue');
-        $mailQueue->id_mail_template     = $message->getTemplateId();
-        $mailQueue->serialized_variables = json_encode($message->getVariables());
-        $mailQueue->attachments          = json_encode($attachments);
-        $recipients                      = TemplateMessage::emailAddressToString($message->getTo());
-        $replyTo                         = is_array($message->getReplyTo()) ? TemplateMessage::emailAddressToString($message->getReplyTo()) : null;
+        $clientId     = null;
+        $recipients   = TemplateMessage::emailAddressToString($message->getTo());
+        $replyTo      = is_array($message->getReplyTo()) ? TemplateMessage::emailAddressToString($message->getReplyTo()) : null;
+        $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->find($message->getTemplateId());
 
-        if (1 === count($message->getTo()) && $client->get($recipients, 'email')) {
-            $mailQueue->id_client = $client->id_client;
+        if (1 === count($message->getTo())) {
+            $clients = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findBy(['email' => $recipients]);
+
+            if (1 === count($clients)) {
+                $clientId = $clients[0]->getIdClient();
+            }
         }
 
-        $mailQueue->recipient  = $recipients;
-        $mailQueue->reply_to   = $replyTo;
-        $mailQueue->status     = \mail_queue::STATUS_PENDING;
-        if ($message->getToSendAt() instanceof \DateTime) {
-            $mailQueue->to_send_at = $message->getToSendAt()->format('Y-m-d H:i:s');
-        }
-        $mailQueue->create();
+        $mailQueue = new MailQueue();
+        $mailQueue->setIdMailTemplate($mailTemplate);
+        $mailQueue->setSerializedVariables(json_encode($message->getVariables()));
+        $mailQueue->setAttachments(json_encode($attachments));
+        $mailQueue->setRecipient($recipients);
+        $mailQueue->setIdClient($clientId);
+        $mailQueue->setReplyTo($replyTo);
+        $mailQueue->setStatus(MailQueue::STATUS_PENDING);
+        $mailQueue->setToSendAt($message->getToSendAt());
+
+        $this->entityManager->persist($mailQueue);
+        $this->entityManager->flush($mailQueue);
 
         return true;
     }
 
     /**
-     * Build a TemplateMessage object from a mail_queue object, so that we Swift Mailer can handle it.
+     * Build a TemplateMessage object from a MailQueue object, so that we Swift Mailer can handle it.
      *
      * @param MailQueue $email
      *
@@ -106,14 +108,8 @@ class MailQueueManager
      */
     public function getMessage(MailQueue $email)
     {
-        /** @var \mail_templates $mailTemplate */
-        $mailTemplate = $this->entityManager->getRepository('mail_templates');
-        if (false === $mailTemplate->get($email->getIdMailTemplate())) {
-            return false;
-        }
-
         /** @var TemplateMessage $message */
-        $message = $this->templateMessage->newMessage($mailTemplate->type, json_decode($email->getSerializedVariables(), true), false);
+        $message = $this->templateMessage->newMessage($email->getIdMailTemplate()->getType(), json_decode($email->getSerializedVariables(), true), false);
         $message
             ->setTo($email->getRecipient())
             ->setQueueId($email->getIdQueue());
@@ -146,7 +142,8 @@ class MailQueueManager
      */
     public function getMailsToSend($limit)
     {
-        return $this->em->getRepository('UnilendCoreBusinessBundle:MailQueue')->getPendingMails($limit);
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailQueue')
+            ->getPendingMails($limit);
     }
 
     /**
@@ -161,9 +158,8 @@ class MailQueueManager
      */
     public function searchSentEmails($clientId = null, $from = null, $to = null, $subject = null, \DateTime $dateStart = null, \DateTime $dateEnd = null)
     {
-        /** @var \mail_queue $mailQueue */
-        $mailQueue = $this->entityManager->getRepository('mail_queue');
-        return $mailQueue->searchSentEmails($clientId, $from, $to, $subject, $dateStart, $dateEnd);
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailQueue')
+            ->searchSentEmails($clientId, $from, $to, $subject, $dateStart, $dateEnd);
     }
 
     /**
@@ -173,9 +169,8 @@ class MailQueueManager
      */
     public function existsInMailQueue($templateId)
     {
-        /** @var \mail_queue $mailQueue */
-        $mailQueue = $this->entityManager->getRepository('mail_queue');
-        return $mailQueue->exist($templateId, 'id_mail_template');
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailQueue')
+            ->existsTemplateInMailQueue($templateId);
     }
 
     /**

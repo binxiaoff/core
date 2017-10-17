@@ -14,9 +14,6 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Projects
 {
-    //todo: move to the debt collection entity
-    const DEBT_COLLECTION_CONDITION_CHANGEMENT_DATE = '2016-04-19';
-
     const AUTO_REPAYMENT_ON  = 0;
     const AUTO_REPAYMENT_OFF = 1;
 
@@ -426,20 +423,28 @@ class Projects
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="close_out_netting_date", type="datetime", nullable=true)
+     * @ORM\Column(name="close_out_netting_date", type="date", nullable=true)
      */
     private $closeOutNettingDate;
+
+    /**
+     * @var DebtCollectionMission[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission", mappedBy="idProject")
+     */
+    private $debtCollectionMissions;
 
     /**
      * Projects constructor.
      */
     public function __construct()
     {
-        $this->attachments      = new ArrayCollection();
-        $this->mandates         = new ArrayCollection();
-        $this->notes            = new ArrayCollection();
-        $this->wireTransferOuts = new ArrayCollection();
-        $this->invoices         = new ArrayCollection();
+        $this->attachments            = new ArrayCollection();
+        $this->mandates               = new ArrayCollection();
+        $this->notes                  = new ArrayCollection();
+        $this->wireTransferOuts       = new ArrayCollection();
+        $this->invoices               = new ArrayCollection();
+        $this->debtCollectionMissions = new ArrayCollection();
     }
 
     /**
@@ -1665,6 +1670,10 @@ class Projects
      */
     public function getCloseOutNettingDate()
     {
+        /** @todo to be removed when projects is fully under doctrine */
+        if ($this->closeOutNettingDate->getTimestamp() < 0) {
+            return null;
+        }
         return $this->closeOutNettingDate;
     }
 
@@ -1678,5 +1687,56 @@ class Projects
         $this->closeOutNettingDate = $closeOutNettingDate;
 
         return $this;
+    }
+
+    /**
+     * @param bool $includeArchived
+     *
+     * @return ArrayCollection|DebtCollectionMission[]
+     */
+    public function getDebtCollectionMissions($includeArchived = false)
+    {
+        if (false === $includeArchived) {
+            $criteria = Criteria::create()
+                ->where(Criteria::expr()->isNull('archived'));
+
+            return $this->debtCollectionMissions->matching($criteria);
+        }
+
+        return $this->debtCollectionMissions;
+    }
+
+    /**
+     * @param bool $includeArchived
+     *
+     * @return ArrayCollection|DebtCollectionMission[]
+     */
+    public function getAmicableDebtCollectionMissions($includeArchived = false)
+    {
+        $criteria = Criteria::create()
+            ->where(Criteria::expr()->eq('type', DebtCollectionMission::TYPE_AMICABLE));
+
+        if (false === $includeArchived) {
+            $criteria->andWhere(Criteria::expr()->isNull('archived'));
+        }
+
+        return $this->debtCollectionMissions->matching($criteria);
+    }
+
+    /**
+     * @param bool $includeArchived
+     *
+     * @return ArrayCollection|DebtCollectionMission[]
+     */
+    public function getLitigationDebtCollectionMissions($includeArchived = false)
+    {
+        $criteria = Criteria::create()
+            ->where(Criteria::expr()->eq('type', DebtCollectionMission::TYPE_LITIGATION));
+
+        if (false === $includeArchived) {
+            $criteria->andWhere(Criteria::expr()->isNull('archived'));
+        }
+
+        return $this->debtCollectionMissions->matching($criteria);
     }
 }

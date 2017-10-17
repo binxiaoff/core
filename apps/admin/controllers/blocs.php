@@ -32,11 +32,9 @@ class blocsController extends bootstrap
 
     public function _default()
     {
-        $this->blocs           = $this->loadData('blocs');
-        $this->blocs_templates = $this->loadData('blocs_templates');
-        $this->elements        = $this->loadData('elements');
-
-        $this->lBlocs = $this->blocs->select('', 'name ASC');
+        $this->blocs    = $this->loadData('blocs');
+        $this->elements = $this->loadData('elements');
+        $this->lBlocs   = $this->blocs->select('', 'name ASC');
 
         if (isset($_POST['form_edit_bloc'])) {
             $this->blocs->get($this->params[0], 'id_bloc');
@@ -92,7 +90,6 @@ class blocsController extends bootstrap
 
                     @unlink($this->path . 'apps/default/views/blocs/' . $this->blocs->slug . '.php');
 
-                    $this->blocs_templates->delete($this->params[1], 'id_bloc');
                     $this->blocs_elements->delete($this->params[1], 'id_bloc');
                     $this->elements->delete($this->params[1], 'id_bloc');
                     $this->blocs->delete($this->params[1], 'id_bloc');
