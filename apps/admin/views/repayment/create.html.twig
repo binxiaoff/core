@@ -1,0 +1,159 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
+{% endblock %}
+
+{% block pluginsJS %}
+    <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
+{% endblock %}
+
+{% block pageScripts %}
+    <script>
+      $(function () {
+        // Page helpers are initialised in app.js and can be called quickly using their name
+        App.initHelpers(['datepicker', 'validation']);
+
+        // Repayment date
+        $('#repayment-date').datepicker({
+          startDate: new Date({{ repaymentMinDate|date('Y') }}, {{ repaymentMinDate|date('m') }} -1, {{ repaymentMinDate|date('d') }}),
+          autoclose: true
+        })
+
+        // Pre-fill tax-rate
+        $('#debt-collection-mission').change(function () {
+          var rate = $(this).find('option:selected').data('tax-rate')
+          $('#debt-collection-rate').val(rate)
+        })
+      })
+    </script>
+{% endblock %}
+
+{% block pageHeader %}
+    <div class="pull-left">
+        <a href="/dossiers/details_impayes/{{ reception.idProject.idProject }}" class="text-muted"><span class="fa fa-arrow-left"></span>&nbsp;Détails impayés</a>
+    </div>
+    <div class="pull-right">
+        <small>SIREN : {{ reception.idProject.idCompany.siren }}</small>
+        <small>|</small>
+        <small>ID Projet : {{ reception.idProject.idProject }}</small>
+        <span class="label label-info push-10-l">{{ projectStatus }}</span>
+    </div>
+    <h1 class="h3" style="clear:both;margin-top:30px">
+        Planifier un remboursement pour {{ reception.idProject.title }}
+    </h1>
+    <table class="table-condensed push-20" style="margin-left: -3px;">
+        <tr>
+            <th>Date de la réception :</th>
+            <td>{{ reception.added|localizeddate('short', 'none') }}</td>
+            <th>Montant :</th>
+            <td>{{ (reception.montant / 100)|localizedcurrency('EUR') }}</td>
+            <th>ID :</th>
+            <td>{{ reception.idReception }}</td>
+        </tr>
+    </table>
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <div class="block block-rounded">
+            <div class="block-content block-content-full">
+                {% if session.flashBag.has('repayment_task_error') %}
+                    <div class="alert">
+                        {% for error in session.flashBag.get('repayment_task_error') %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <form id="schedule-repayment-form" class="validate" method="post">
+                    <div class="row">
+                        <div class="col-md-6">
+
+                            <h4 class="font-w400 push-20">Voulez-vous régulariser des frais avec cette reception ? </h4>
+                            {% if charges is not empty and isDebtCollectionFeeDueToBorrower %}
+                                <table class="table table-bordered table-hover table-header-bg table-vertical-center push-10">
+                                    <thead>
+                                    <tr>
+                                        <th>
+                                            Date
+                                        </th>
+                                        <th>
+                                            Description
+                                        </th>
+                                        <th>
+                                            Montant
+                                        </th>
+                                        <th>
+                                            Régulariser
+                                        </th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for charge in charges %}
+                                        <tr data-id="{{ charge.id }}">
+                                            <td>
+                                                {{ charge.invoiceDate|localizeddate('short', 'none') }}
+                                            </td>
+                                            <td>
+                                                {{ ('project-charge-type_' ~ charge.idType.label|replace('_', '-')) | trans }}
+                                            </td>
+                                            <td>
+                                                {{ charge.amountInclVat|localizedcurrency('EUR') }}
+                                            </td>
+                                            <td class="text-center">
+                                                <label class="css-input css-checkbox css-checkbox-default">
+                                                    <input type="checkbox" name="charges[0]" class="charge-checkbox" value="{{ charge.id }}"><span></span>
+                                                </label>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                                <p class="bg-warning font-s12" style="padding: 10px 15px;">Les frais non-régularisés peuvent l'être lors du traitement d'une prochaine réception. </p>
+                            {% elseif false == isDebtCollectionFeeDueToBorrower %}
+                                <p>Vous ne pouvez pas régulariser les frais sur un projet imputable prêteur</p>
+                            {% elseif charges is empty %}
+                                <p>Ce projet n'a pas de frais à régulariser.</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <h4 class="font-w400 push-20">Saisir la mission et le taux d'honoraire de recouvrement ? </h4>
+                            <div class="row">
+                                <div class="form-group col-md-6">
+                                    <select id="debt-collection-mission" class="form-control required" name="mission">
+                                        <option value="0">Selectionner une mission</option>
+                                        {% for mission in missions %}
+                                            <option value="{{ mission.id }}" data-tax-rate="{{ mission.feesRate * 100 }}">#{{ mission.id }} - {{ mission.added|localizeddate('short', 'none') }}
+                                                - {{ mission.idClientDebtCollector.nom }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <div class="input-group">
+                                        <input id="debt-collection-rate" class="form-control" name="fee_rate" type="text" placeholder="Taux">
+                                        <span class="input-group-addon">%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="push"></div>
+                            <h4 class="font-w400 push-20">Date du remboursement :</h4>
+                            <div class="row">
+                                <div class="form-group col-md-12">
+                                    <input id="repayment-date" class="form-control required push-10" type="text" name="repay_on" data-date-format="dd/mm/yyyy" placeholder="dd/mm/yyyy">
+                                    {% if reception.type == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Receptions::TYPE_DIRECT_DEBIT') %}
+                                        <p class="bg-warning font-s12" style="padding: 10px 15px;">
+                                            S'agissant d'un prélèvement emprunteur pendant un recouvrement, un délai de 8 semaines s'impose, pendant lequel aucun rejet ne devra avoir eu lieu.
+                                        </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-left">
+                        <button class="btn btn-primary" type="submit">Continuer <span class="fa fa-chevron-right"></span></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

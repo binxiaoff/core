@@ -65,6 +65,7 @@ class ProjectPaymentManager
     /**
      * @param Receptions                 $wireTransferIn
      * @param Users                      $user
+     * @param \DateTime|null             $repayOn
      * @param DebtCollectionMission|null $debtCollectionMission
      * @param float|null                 $debtCollectionFeeRate
      * @param ProjectCharge[]|null       $projectCharges
@@ -72,7 +73,7 @@ class ProjectPaymentManager
      * @return bool
      * @throws \Exception
      */
-    public function pay(Receptions $wireTransferIn, Users $user, DebtCollectionMission $debtCollectionMission = null, $debtCollectionFeeRate = null, $projectCharges = null)
+    public function pay(Receptions $wireTransferIn, Users $user, \DateTime $repayOn = null, DebtCollectionMission $debtCollectionMission = null, $debtCollectionFeeRate = null, $projectCharges = null)
     {
         $paymentScheduleRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
         $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
@@ -207,7 +208,7 @@ class ProjectPaymentManager
                     'ordre'     => $paymentSchedule->getOrdre()
                 ]);
 
-                $this->projectRepaymentTaskManager->planRepaymentTask($repaymentSchedule, $capitalToPay, $interestToPay, $commissionToPay, $wireTransferIn, $user, $debtCollectionMission);
+                $this->projectRepaymentTaskManager->planRepaymentTask($repaymentSchedule, $capitalToPay, $interestToPay, $commissionToPay, $repayOn, $wireTransferIn, $user, $debtCollectionMission);
 
                 $paidAmount = round(bcadd(bcadd($capitalToPay, $interestToPay, 4), $commissionToPay, 4), 2);
                 $amount     = round(bcsub($amount, $paidAmount, 4), 2);

@@ -53,6 +53,7 @@ class ProjectRepaymentTaskManager
      * @param float                      $commissionToPay
      * @param Receptions                 $reception
      * @param Users                      $user
+     * @param \DateTime|null             $repayOn
      * @param DebtCollectionMission|null $debtCollectionMission
      *
      * @throws \Exception
@@ -62,6 +63,7 @@ class ProjectRepaymentTaskManager
         $capitalToRepay,
         $interestToRepay,
         $commissionToPay,
+        \DateTime $repayOn = null,
         Receptions $reception,
         Users $user,
         DebtCollectionMission $debtCollectionMission = null
@@ -77,6 +79,10 @@ class ProjectRepaymentTaskManager
             throw new \Exception('The repayment amount of project (id: ' . $project->getIdProject() . ') sequence ' . $repaymentSchedule->getOrdre() . ' is 0. Please check the data consistency.');
         }
 
+        if (null === $repayOn) {
+            $repayOn = $repaymentSchedule->getDateEcheance();
+        }
+
         $projectRepaymentTask = new ProjectRepaymentTask();
         $projectRepaymentTask->setIdProject($project)
             ->setSequence($repaymentSchedule->getOrdre())
@@ -85,7 +91,7 @@ class ProjectRepaymentTaskManager
             ->setCommissionUnilend($commissionToPay)
             ->setType(ProjectRepaymentTask::TYPE_REGULAR)
             ->setStatus(projectRepaymentTask::STATUS_PENDING)
-            ->setRepayAt($repaymentSchedule->getDateEcheance())
+            ->setRepayAt($repayOn)
             ->setIdUserCreation($user)
             ->setIdDebtCollectionMission($debtCollectionMission)
             ->setIdWireTransferIn($reception);
