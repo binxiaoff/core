@@ -126,7 +126,7 @@ class repaymentController extends bootstrap
                 }
                 $paymentManager->pay($reception, $user, $repayOn, $debtCollectionMission, $debtCollectionFeeRate, $projectCharges);
 
-                $session->getFlashBag()->add('repayment_task_info', 'SUCCÈS: Le remboursement a été soumis au contrôle interne.');
+                $session->getFlashBag()->add('repayment_task_info', 'Le remboursement est créé, il est en attente de validation.');
 
                 header('Location: ' . $this->url . '/repayment/confirmation/' . $receptionId);
                 die;
@@ -141,7 +141,7 @@ class repaymentController extends bootstrap
         }
 
         $projectCharges         = $projectChargeRepository->findBy(['idProject' => $reception->getIdProject(), 'idWireTransferIn' => null]);
-        $debtCollectionMissions = $debtCollectionMissionRepository->findBy(['idProject' => $reception->getIdProject()]);
+        $debtCollectionMissions = $reception->getIdProject()->getDebtCollectionMissions(true, ['id' => 'DESC']);
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager $debtCollectionMissionManager */
         $debtCollectionMissionManager = $this->get('unilend.service.debt_collection_mission_manager');

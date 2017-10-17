@@ -16,7 +16,7 @@
 
         // Repayment date
         $('#repayment-date').datepicker({
-          startDate: new Date({{ repaymentMinDate|date('Y') }}, {{ repaymentMinDate|date('m') }} - 1, {{ repaymentMinDate|date('d') }}),
+          startDate: new Date({{ repaymentMinDate|date('Y') }}, {{ repaymentMinDate|date('m') }} -1, {{ repaymentMinDate|date('d') }}),
           autoclose: true
         })
 
@@ -139,11 +139,11 @@
                             <h4 class="font-w400 push-20">Date du remboursement :</h4>
                             <div class="row">
                                 <div class="form-group col-md-12">
-                                    <input id="repayment-date" class="form-control required push-10" type="text" name="repay_on" data-date-format="dd/mm/yy" placeholder="dd/mm/yy">
+                                    <input id="repayment-date" class="form-control required push-10" type="text" name="repay_on" data-date-format="dd/mm/yyyy" placeholder="dd/mm/yyyy">
                                     {% if reception.type == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Receptions::TYPE_DIRECT_DEBIT') %}
-                                        <p class="bg-warning font-s12" style="padding: 10px 15px;">S'agissant d'un prélèvement emprunteur pendant un recouvrement, un délai de 8 semaines s'impose,
-                                            pendant
-                                            lequel aucun rejet ne devra avoir eu lieu.</p>
+                                        <p class="bg-warning font-s12" style="padding: 10px 15px;">
+                                            S'agissant d'un prélèvement emprunteur pendant un recouvrement, un délai de 8 semaines s'impose, pendant lequel aucun rejet ne devra avoir eu lieu.
+                                        </p>
                                     {% endif %}
                                 </div>
                             </div>

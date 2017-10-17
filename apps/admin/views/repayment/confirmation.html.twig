@@ -1,10 +1,5 @@
 {% extends 'layout.html.twig' %}
 
-{% block pluginsCSS %}
-    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
-{% endblock %}
-
-
 {% block pageHeader %}
     <div class="pull-left">
         <a href="/dossiers/details_impayes/{{ reception.idProject.idProject }}" class="text-muted"><span class="fa fa-arrow-left"></span>&nbsp;Détails impayés</a>
@@ -337,7 +332,7 @@
 
                     <br>
                     {% if false == repaymentTaskValidated %}
-                        <button class="btn btn-primary push-10-r" type="submit" name="validate" value="validate">Confirmer</button>
+                        <button class="btn btn-primary push-10-r" type="submit" name="validate" value="validate">Valider</button>
                     {% endif %}
                     <button class="btn btn-default" type="submit" name="cancel" value="cancel">Annuler</button>
                 </form>
