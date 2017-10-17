@@ -423,7 +423,7 @@ class Projects
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="close_out_netting_date", type="datetime", nullable=true)
+     * @ORM\Column(name="close_out_netting_date", type="date", nullable=true)
      */
     private $closeOutNettingDate;
 
