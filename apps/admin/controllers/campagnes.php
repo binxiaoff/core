@@ -2,7 +2,7 @@
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
-class partenairesController extends bootstrap
+class campagnesController extends bootstrap
 {
     /** @var \partenaires */
     public $partenaires;
@@ -15,8 +15,7 @@ class partenairesController extends bootstrap
         parent::initialize();
 
         $this->users->checkAccess(Zones::ZONE_LABEL_CONFIGURATION);
-
-        $this->menu_admin = 'configuration';
+        $this->menu_admin = Zones::ZONE_LABEL_CONFIGURATION;
     }
 
     public function _types()
@@ -31,7 +30,7 @@ class partenairesController extends bootstrap
             $_SESSION['freeow']['title']   = 'Ajout d\'un type de campagne';
             $_SESSION['freeow']['message'] = 'Le type a bien &eacute;t&eacute; ajout&eacute; !';
 
-            header('Location:' . $this->lurl . '/partenaires/types');
+            header('Location: ' . $this->lurl . '/campagnes/types');
             die;
         }
 
@@ -44,7 +43,7 @@ class partenairesController extends bootstrap
             $_SESSION['freeow']['title']   = 'Modification d\'un type de campagne';
             $_SESSION['freeow']['message'] = 'Le type a bien &eacute;t&eacute; modifi&eacute; !';
 
-            header('Location:' . $this->lurl . '/partenaires/types');
+            header('Location: ' . $this->lurl . '/campagnes/types');
             die;
         }
 
@@ -54,7 +53,7 @@ class partenairesController extends bootstrap
             $_SESSION['freeow']['title']   = 'Suppression d\'un type de campagne';
             $_SESSION['freeow']['message'] = 'Le type a bien &eacute;t&eacute; supprim&eacute; !';
 
-            header('Location:' . $this->lurl . '/partenaires/types');
+            header('Location: ' . $this->lurl . '/campagnes/types');
             die;
         }
 
@@ -66,7 +65,7 @@ class partenairesController extends bootstrap
             $_SESSION['freeow']['title']   = 'Statut d\'un type de campagne';
             $_SESSION['freeow']['message'] = 'Le statut a bien &eacute;t&eacute; modifi&eacute; !';
 
-            header('Location:' . $this->lurl . '/partenaires/types');
+            header('Location: ' . $this->lurl . '/campagnes/types');
             die;
         }
 
@@ -106,7 +105,7 @@ class partenairesController extends bootstrap
             $_SESSION['freeow']['title']   = 'Ajout d\'une campagne';
             $_SESSION['freeow']['message'] = 'La campagne a bien &eacute;t&eacute; ajout&eacute;e !';
 
-            header('Location:' . $this->lurl . '/partenaires');
+            header('Location: ' . $this->lurl . '/campagnes');
             die;
         }
 
@@ -122,7 +121,7 @@ class partenairesController extends bootstrap
             $_SESSION['freeow']['title']   = 'Modification d\'une campagne';
             $_SESSION['freeow']['message'] = 'La campagne a bien &eacute;t&eacute; modifi&eacute;e !';
 
-            header('Location:' . $this->lurl . '/partenaires');
+            header('Location: ' . $this->lurl . '/campagnes');
             die;
         }
 
@@ -132,7 +131,7 @@ class partenairesController extends bootstrap
             $_SESSION['freeow']['title']   = 'Suppression d\'une campagne';
             $_SESSION['freeow']['message'] = 'La campagne a bien &eacute;t&eacute; supprim&eacute;e !';
 
-            header('Location:' . $this->lurl . '/partenaires');
+            header('Location: ' . $this->lurl . '/campagnes');
             die;
         }
 
@@ -145,7 +144,7 @@ class partenairesController extends bootstrap
             $_SESSION['freeow']['title']   = 'Statut d\'une campagne';
             $_SESSION['freeow']['message'] = 'Le statut a bien &eacute;t&eacute; modifi&eacute; !';
 
-            header('Location:' . $this->lurl . '/partenaires');
+            header('Location: ' . $this->lurl . '/campagnes');
             die;
         }
 

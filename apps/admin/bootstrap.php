@@ -61,11 +61,11 @@ class bootstrap extends Controller
                 ],
                 [
                     'title' => 'Campagnes',
-                    'uri'   => 'partenaires'
+                    'uri'   => 'campagnes'
                 ],
                 [
                     'title' => 'Types de campagnes',
-                    'uri'   => 'partenaires/types'
+                    'uri'   => 'campagnes/types'
                 ],
                 [
                     'title' => 'Grille de taux',
