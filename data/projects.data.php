@@ -641,11 +641,11 @@ class projects extends projects_crud
         $rResult   = $this->bdd->query('
             SELECT p.*
             FROM projects p
-            INNER JOIN (SELECT id_project, MIN(date_echeance_emprunteur) AS date_echeance_emprunteur FROM echeanciers_emprunteur WHERE status_emprunteur = 0 GROUP BY id_project) min_unpaid ON min_unpaid.id_project = p.id_project
-            INNER JOIN echeanciers_emprunteur prev ON prev.id_project = p.id_project AND prev.date_echeance_emprunteur = min_unpaid.date_echeance_emprunteur
-            INNER JOIN echeanciers_emprunteur next ON next.id_project = p.id_project AND next.ordre = prev.ordre + 1 AND next.status_emprunteur = 0
-            WHERE p.status = ' . ProjectsStatus::PROBLEME . '
-                AND DATE(next.date_echeance_emprunteur) = DATE(ADDDATE(NOW(), INTERVAL 7 DAY))'
+              INNER JOIN (SELECT id_project, MIN(date_echeance_emprunteur) AS date_echeance_emprunteur FROM echeanciers_emprunteur WHERE (capital + interets + commission + tva - paid_capital - paid_interest - paid_commission_vat_incl) > 0 GROUP BY id_project) min_unpaid ON min_unpaid.id_project = p.id_project
+              INNER JOIN echeanciers_emprunteur prev ON prev.id_project = p.id_project AND prev.date_echeance_emprunteur = min_unpaid.date_echeance_emprunteur
+              INNER JOIN echeanciers_emprunteur next ON next.id_project = p.id_project AND next.ordre = prev.ordre + 1 AND next.status_emprunteur = 0
+            WHERE p.status = 100
+                  AND DATE(next.date_echeance_emprunteur) = DATE(ADDDATE(NOW(), INTERVAL 7 DAY))'
         );
         while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
             $aProjects[] = $aRecord;
