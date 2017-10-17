@@ -226,7 +226,7 @@ class bootstrap extends Controller
                 ],
                 [
                     'title' => 'Partenaires',
-                    'uri'   => 'partner'
+                    'uri'   => 'partenaires'
                 ],
                 [
                     'title' => 'Surveillance données risque',
