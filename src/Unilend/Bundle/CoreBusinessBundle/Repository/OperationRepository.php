@@ -656,7 +656,7 @@ class OperationRepository extends EntityRepository
             ELSE IFNULL(- o.amount, 0) END
         ) as amount')
             ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = o.idWalletCreditor')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = o.idWalletCreditor OR w.id = o.idWalletDebtor')
             ->where('ost.label IN (:allDebtCollectionRepayment)')
             ->andWhere('w.idClient IN (:clients)')
             ->andWhere('o.idProject = :project')

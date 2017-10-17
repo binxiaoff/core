@@ -41,7 +41,7 @@ class DevRebuildCloseOutNettingRemainingAmountCommand extends ContainerAwareComm
             ->leftJoin('UnilendCoreBusinessBundle:CloseOutNettingPayment', 'conp', Join::WITH, 'p.idProject = conp.idProject')
             ->where('p.closeOutNettingDate IS NOT NULL')
             ->andWhere('conp.id IS NULL')
-            ->setMaxResults(1)->getQuery()->getResult();
+            ->setMaxResults(26)->getQuery()->getResult();
 
         foreach ($projectsToRebuild as $project) {
             $output->writeln('Rebuilding the close out repayment for project id ' . $project->getIdProject() . '...');
@@ -55,77 +55,81 @@ class DevRebuildCloseOutNettingRemainingAmountCommand extends ContainerAwareComm
                 'status'    => ProjectRepaymentTask::STATUS_REPAID
             ]);
 
-            if (0 === count($closeOutNettingRepaymentTasks)) {
-                $output->writeln('No repayment after decline date. Rebuild done for project id ' . $project->getIdProject());
-                return;
-            }
-
-            $output->writeln('Rebuilding the close out remaining amount for project id ' . $project->getIdProject() . '...');
-
-            /** @var Loans[] $loans */
-            $loans = $loanRepository->findBy(['idProject' => $project]);
-
-            foreach ($loans as $loan) {
-                /** @var CloseOutNettingRepayment $closeOutNettingRepayment */
-                $closeOutNettingRepayment = $closeOutNettingRepaymentRepository->findOneBy(['idLoan' => $loan]);
-                if (1 === bccomp($closeOutNettingRepayment->getRepaidCapital(), 0, 2)) {
-                    continue; // already rebuilt.
-                }
-
-                $lenderAmounts = [];
-
-                $clients = [$loan->getIdLender()->getIdClient()];
-
-                if (false === empty($loan->getIdTransfer())) {
-                    $clients[] = $loanManager->getFirstOwner($loan);
-                }
-                $totalGrossDebtCollectionRepayment = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getTotalGrossDebtCollectionRepayment($project, $clients);
-
-                if (1 === bccomp($totalGrossDebtCollectionRepayment, 0, 2)) {
-                    /** @var Loans[] $allLenderLoans */
-                    $allLenderLoans             = $loanRepository->findLoansByClients($project, $clients);
-                    $totalLoans                 = $loanRepository->getLoansSumByClients($project, $clients);
-                    $totalLenderRepaymentAmount = 0;
-
-                    foreach ($allLenderLoans as $lenderLoan) {
-                        $loanAmount                              = round(bcdiv($lenderLoan->getAmount(), 100, 4), 2);
-                        $loanProportion                          = bcdiv($loanAmount, $totalLoans, 10);
-                        $loanRepaymentAmount                     = round(bcmul($totalGrossDebtCollectionRepayment, $loanProportion, 4), 2);
-                        $lenderAmounts[$lenderLoan->getIdLoan()] = $loanRepaymentAmount;
-                        $totalLenderRepaymentAmount              = round(bcadd($loanRepaymentAmount, $totalLenderRepaymentAmount, 4), 2);
-                    }
-
-                    $roundDifference = round(bcsub($totalLenderRepaymentAmount, $totalGrossDebtCollectionRepayment, 4), 2);
-
-                    if (0 !== bccomp($roundDifference, 0, 2)) {
-                        $maxAmountLoanId                 = array_search(max($lenderAmounts), $lenderAmounts);
-                        $lenderAmounts[$maxAmountLoanId] = round(bcsub($lenderAmounts[$maxAmountLoanId], $roundDifference, 4), 2);
-                    }
-
-                    foreach ($lenderAmounts as $loanId => $repaidAmount) {
-                        /** @var CloseOutNettingRepayment $closeOutNettingRepayment */
-                        $closeOutNettingRepayment = $closeOutNettingRepaymentRepository->findOneBy(['idLoan' => $loanId]);
-                        $closeOutNettingRepayment->setRepaidCapital($repaidAmount); // We have repaid only the capitals until now.
-
-                        $entityManager->flush($closeOutNettingRepayment);
-                    }
-                }
-            }
-
-            $notRepaidCapital = $closeOutNettingRepaymentRepository->getNotRepaidCapitalByProject($project);
-
             /** @var CloseoutNettingPayment $closeOutNettingPayment */
             $closeOutNettingPayment = $closeOutNettingPaymentRepository->findOneBy(['idProject' => $project]);
 
-            $repaidCapital = round(bcsub($closeOutNettingPayment->getCapital(), $notRepaidCapital, 4), 2);
-
-            $closeOutNettingPayment->setPaidCapital($repaidCapital);
+            $closeOutNettingPayment->setNotified(true);
             $entityManager->flush($closeOutNettingPayment);
 
             $totalTaskRepaidAmount = 0;
-            foreach ($closeOutNettingRepaymentTasks as $repaymentTask) {
-                $taskRepaidAmount      = round(bcadd($repaymentTask->getCommissionUnilend(), bcadd($repaymentTask->getCapital(), $repaymentTask->getInterest(), 4), 4), 2);
-                $totalTaskRepaidAmount = round(bcadd($totalTaskRepaidAmount, $taskRepaidAmount, 4), 2);
+            $repaidCapital         = 0;
+
+            if (0 === count($closeOutNettingRepaymentTasks)) {
+                $output->writeln('No repayment after decline date. Rebuild done for project id ' . $project->getIdProject());
+            } else {
+                $output->writeln('Rebuilding the close out remaining amount for project id ' . $project->getIdProject() . '...');
+
+                /** @var Loans[] $loans */
+                $loans = $loanRepository->findBy(['idProject' => $project]);
+
+                foreach ($loans as $loan) {
+                    /** @var CloseOutNettingRepayment $closeOutNettingRepayment */
+                    $closeOutNettingRepayment = $closeOutNettingRepaymentRepository->findOneBy(['idLoan' => $loan]);
+                    if (1 === bccomp($closeOutNettingRepayment->getRepaidCapital(), 0, 2)) {
+                        continue; // already rebuilt.
+                    }
+
+                    $lenderAmounts = [];
+
+                    $clients = [$loan->getIdLender()->getIdClient()];
+
+                    if (false === empty($loan->getIdTransfer())) {
+                        $clients[] = $loanManager->getFirstOwner($loan);
+                    }
+                    $totalGrossDebtCollectionRepayment = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getTotalGrossDebtCollectionRepayment($project, $clients);
+
+                    if (1 === bccomp($totalGrossDebtCollectionRepayment, 0, 2)) {
+                        /** @var Loans[] $allLenderLoans */
+                        $allLenderLoans             = $loanRepository->findLoansByClients($project, $clients);
+                        $totalLoans                 = $loanRepository->getLoansSumByClients($project, $clients);
+                        $totalLenderRepaymentAmount = 0;
+
+                        foreach ($allLenderLoans as $lenderLoan) {
+                            $loanAmount                              = round(bcdiv($lenderLoan->getAmount(), 100, 4), 2);
+                            $loanProportion                          = bcdiv($loanAmount, $totalLoans, 10);
+                            $loanRepaymentAmount                     = round(bcmul($totalGrossDebtCollectionRepayment, $loanProportion, 4), 2);
+                            $lenderAmounts[$lenderLoan->getIdLoan()] = $loanRepaymentAmount;
+                            $totalLenderRepaymentAmount              = round(bcadd($loanRepaymentAmount, $totalLenderRepaymentAmount, 4), 2);
+                        }
+
+                        $roundDifference = round(bcsub($totalLenderRepaymentAmount, $totalGrossDebtCollectionRepayment, 4), 2);
+
+                        if (0 !== bccomp($roundDifference, 0, 2)) {
+                            $maxAmountLoanId                 = array_search(max($lenderAmounts), $lenderAmounts);
+                            $lenderAmounts[$maxAmountLoanId] = round(bcsub($lenderAmounts[$maxAmountLoanId], $roundDifference, 4), 2);
+                        }
+
+                        foreach ($lenderAmounts as $loanId => $repaidAmount) {
+                            /** @var CloseOutNettingRepayment $closeOutNettingRepayment */
+                            $closeOutNettingRepayment = $closeOutNettingRepaymentRepository->findOneBy(['idLoan' => $loanId]);
+                            $closeOutNettingRepayment->setRepaidCapital($repaidAmount); // We have repaid only the capitals until now.
+
+                            $entityManager->flush($closeOutNettingRepayment);
+                        }
+                    }
+                }
+
+                $notRepaidCapital = $closeOutNettingRepaymentRepository->getNotRepaidCapitalByProject($project);
+
+                $repaidCapital = round(bcsub($closeOutNettingPayment->getCapital(), $notRepaidCapital, 4), 2);
+
+                $closeOutNettingPayment->setPaidCapital($repaidCapital);
+                $entityManager->flush($closeOutNettingPayment);
+
+                foreach ($closeOutNettingRepaymentTasks as $repaymentTask) {
+                    $taskRepaidAmount      = round(bcadd($repaymentTask->getCommissionUnilend(), bcadd($repaymentTask->getCapital(), $repaymentTask->getInterest(), 4), 4), 2);
+                    $totalTaskRepaidAmount = round(bcadd($totalTaskRepaidAmount, $taskRepaidAmount, 4), 2);
+                }
             }
 
             if (0 !== bccomp($totalTaskRepaidAmount, $repaidCapital, 2)) {

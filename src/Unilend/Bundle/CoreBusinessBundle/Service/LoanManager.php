@@ -96,7 +96,7 @@ class LoanManager
      *
      * @return Clients
      */
-    public function getFirstOwner(\loans $loan)
+    public function getFirstOwner($loan)
     {
         if ($loan instanceof \loans) {
             $loan = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($loan->id_loan);
