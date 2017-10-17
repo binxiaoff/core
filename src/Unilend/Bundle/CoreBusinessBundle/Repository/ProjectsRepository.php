@@ -568,4 +568,19 @@ class ProjectsRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }
+
+    /**
+     * @return array
+     */
+    public function getProjectsInDebt()
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+        $queryBuilder->select('p.idProject')
+            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'c.idCompany = p.idCompany')
+            ->innerJoin('UnilendCoreBusinessBundle:CompanyStatus', 'cs', Join::WITH, 'c.idStatus = cs.id')
+            ->where('cs.label in (:problemStatus)')
+            ->setParameter('problemStatus', [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]);
+
+        return array_column($queryBuilder->getQuery()->getArrayResult(), 'idProject');
+    }
 }

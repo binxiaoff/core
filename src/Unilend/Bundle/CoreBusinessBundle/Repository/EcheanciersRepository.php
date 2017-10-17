@@ -678,6 +678,19 @@ class EcheanciersRepository extends EntityRepository
      *
      * @return float
      */
+    public function getOverdueCapitalByLoan($loan, \DateTime $date = null)
+    {
+        $amount = $this->getOverdueAmountsByLoan($loan, $date);
+
+        return $amount['capital'];
+    }
+
+    /**
+     * @param Loans|int      $loan
+     * @param \DateTime|null $date
+     *
+     * @return float
+     */
     public function getTotalOverdueAmountByLoan($loan, \DateTime $date = null)
     {
         $amount = $this->getOverdueAmountsByLoan($loan, $date);

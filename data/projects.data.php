@@ -492,26 +492,6 @@ class projects extends projects_crud
         return $projects;
     }
 
-    public function getProjectsInDebt()
-    {
-        $aProjects = array();
-        $rResult   = $this->bdd->query('
-            SELECT *
-            FROM projects
-            INNER JOIN companies c ON c.id_company = projects.id_company
-            INNER JOIN unilend.company_status cs ON cs.id = c.id_status
-            WHERE cs.label IN ("' . implode('", " ', [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]) . '")'
-        );
-
-        if ($this->bdd->num_rows($rResult) > 0) {
-            while ($aResult = $this->bdd->fetch_assoc($rResult)) {
-                $aProjects[] = (int) $aResult['id_project'];
-            }
-        }
-
-        return $aProjects;
-    }
-
     /**
      * @param bool $cache
      *
