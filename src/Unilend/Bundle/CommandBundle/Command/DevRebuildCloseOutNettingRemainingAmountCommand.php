@@ -39,7 +39,7 @@ class DevRebuildCloseOutNettingRemainingAmountCommand extends ContainerAwareComm
             ->select('p')
             ->from('UnilendCoreBusinessBundle:Projects', 'p')
             ->leftJoin('UnilendCoreBusinessBundle:CloseOutNettingPayment', 'conp', Join::WITH, 'p.idProject = conp.idProject')
-            ->where('p.closeOutNettingDate IS NOT NULL')
+            ->where('p.closeOutNettingDate IS NOT NULL AND p.closeOutNettingDate != \'0000-00-00 00:00:00\'')
             ->andWhere('conp.id IS NULL')
             ->setMaxResults(26)->getQuery()->getResult();
 
