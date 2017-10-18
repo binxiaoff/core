@@ -936,64 +936,18 @@ class pdfController extends bootstrap
             $this->date            = $companyStatusHistory->getChangedOn();
             $this->mandataires_var = $companyStatusHistory->getReceiver();
 
-            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
-            if ($project->getCloseOutNettingDate() instanceof \DateTime && (new \DateTime()) > $project->getCloseOutNettingDate()) {
-                $expiration = $project->getCloseOutNettingDate();
-            } else {
-                $expiration = $this->date;
-            }
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+            $projectManager = $this->get('unilend.service.project_manager');
+
+            $creditorClaimAmounts = $projectManager->getCreditorClaimAmounts($loan);
+            $this->echu           = $creditorClaimAmounts['expired'];
+            $this->echoir         = $creditorClaimAmounts['to_expired'];
+            $this->total          = round(bcadd($creditorClaimAmounts['expired'], $creditorClaimAmounts['to_expired'], 4), 2);
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
             $companyManager   = $this->get('unilend.service.company_manager');
             $this->nature_var = $companyManager->getCompanyStatusNameByLabel($companyStatusHistory->getIdStatus()->getLabel());
 
-            $repaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-            $this->echu                  = $repaymentScheduleRepository->getTotalOverdueAmountByLoan($loan, $expiration);
-            $this->echoir                = round(bcsub(
-                $repaymentScheduleRepository->getRemainingCapitalByLoan($loan),
-                $repaymentScheduleRepository->getOverdueCapitalByLoan($loan, $expiration),
-                4
-            ), 2);
-
-            $clients = [$wallet->getIdClient()];
-
-            if (false === empty($loan->getIdTransfer())) {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager $loanManager */
-                $loanManager = $this->get('unilend.service.loan_manager');
-                $clients[]   = $loanManager->getFirstOwner($loan);
-            }
-            $totalGrossDebtCollectionRepayment = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getTotalGrossDebtCollectionRepayment($this->projects->id_project, $clients);
-
-            if (0 < $totalGrossDebtCollectionRepayment) {
-
-                $loanRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
-                /** @var Loans[] $allLenderLoans */
-                $allLenderLoans             = $loanRepository->findLoansByClients($project, $clients);
-                $totalLoans                 = $loanRepository->getLoansSumByClients($project, $clients);
-                $totalLenderRepaymentAmount = 0;
-                $lenderAmounts              = [];
-
-                foreach ($allLenderLoans as $lenderLoan) {
-                    $loanAmount                              = round(bcdiv($lenderLoan->getAmount(), 100, 4), 2);
-                    $loanProportion                          = bcdiv($loanAmount, $totalLoans, 10);
-                    $loanRepaymentAmount                     = round(bcmul($totalGrossDebtCollectionRepayment, $loanProportion, 4), 2);
-                    $lenderAmounts[$lenderLoan->getIdLoan()] = $loanRepaymentAmount;
-                    $totalLenderRepaymentAmount              = round(bcadd($loanRepaymentAmount, $totalLenderRepaymentAmount, 4), 2);
-                }
-
-                $roundDifference = round(bcsub($totalLenderRepaymentAmount, $totalGrossDebtCollectionRepayment, 4), 2);
-
-                if (0 !== bccomp($roundDifference, 0, 2)) {
-                    $maxAmountLoanId                 = array_search(max($lenderAmounts), $lenderAmounts);
-                    $lenderAmounts[$maxAmountLoanId] = round(bcsub($lenderAmounts[$maxAmountLoanId], $roundDifference, 4), 2);
-                }
-
-                $debtCollectionTaxIncl = $lenderAmounts[$loan->getIdLoan()];
-                $this->echu            = bcsub(bcadd($this->echu, $this->echoir, 2), $debtCollectionTaxIncl, 2);
-                $this->echoir          = 0;
-            }
-
-            $this->total        = bcadd($this->echu, $this->echoir, 2);
             $lastEcheance       = $this->echeanciers->select('id_lender = ' . $wallet->getId() . ' AND id_loan = ' . $loan->getIdLoan(), 'ordre DESC', 0, 1);
             $this->lastEcheance = date('d/m/Y', strtotime($lastEcheance[0]['date_echeance']));
 

@@ -643,6 +643,8 @@ class OperationRepository extends EntityRepository
     }
 
     /**
+     * Todo: it can be deleted after the release of "recouvrement"
+     *
      * @param Projects|integer $project
      * @param Clients[]        $clients
      *
@@ -1222,8 +1224,8 @@ class OperationRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('o');
         $queryBuilder->select('
             SUM(CASE 
-                WHEN ot.label = :capital THEN o.amount
-                WHEN ot.label = :capitalRegularization THEN -o.amount
+                WHEN ot.label = :capital THEN IFNULL(o.amount, 0)
+                WHEN ot.label = :capitalRegularization THEN IFNULL(-o.amount, 0)
                 ELSE 0
             END) as capital,
             SUM(CASE 

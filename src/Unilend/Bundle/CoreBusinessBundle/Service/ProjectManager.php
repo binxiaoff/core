@@ -8,7 +8,9 @@ use PhpXmlRpc\Request as soapRequest;
 use PhpXmlRpc\Value as documentId;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
@@ -1287,10 +1289,6 @@ class ProjectManager
             $remainingAmount  = round(bcadd($remainingAmounts['commission'], bcadd($remainingAmounts['capital'], $remainingAmounts['interest'], 4), 4), 2);
         } else {
             $closeOutNettingPayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $project]);
-            if (null === $closeOutNettingPayment) {
-                // todo : Temporary code to avoid error for the incomplete migration of declined project.
-                return 0;
-            }
             $totalAmount = round(bcadd(
                 $closeOutNettingPayment->getCommissionTaxIncl(),
                 bcadd($closeOutNettingPayment->getCapital(), $closeOutNettingPayment->getInterest(), 4),
@@ -1306,5 +1304,35 @@ class ProjectManager
         }
 
         return $remainingAmount;
+    }
+
+    public function getCreditorClaimAmounts(Loans $loan)
+    {
+        if ($loan->getProject()->getCloseOutNettingDate()) {
+            $closeOutNettingRepayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment')->findOneBy(['idLoan' => $loan]);
+            $remainingCapital         = round(bcsub($closeOutNettingRepayment->getCapital(), $closeOutNettingRepayment->getRepaidCapital(), 4), 2);
+            $remainingInterest        = round(bcsub($closeOutNettingRepayment->getInterest(), $closeOutNettingRepayment->getRepaidInterest(), 4), 2);
+            $expired                  = round(bcadd($remainingCapital, $remainingInterest, 4), 2);
+            $toExpire                 = 0;
+        } else {
+            $collectiveProceedingStatus = [
+                CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
+                CompanyStatus::STATUS_RECEIVERSHIP,
+                CompanyStatus::STATUS_COMPULSORY_LIQUIDATION
+            ];
+            $companyStatusHistory       = $this->entityManager
+                ->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')
+                ->findFirstHistoryByCompanyAndStatus($loan->getProject()->getIdCompany(), $collectiveProceedingStatus);
+
+            $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+            $expired                     = $repaymentScheduleRepository->getTotalOverdueAmountByLoan($loan, $companyStatusHistory->getChangedOn());
+            $toExpire                    = round(bcsub(
+                $repaymentScheduleRepository->getRemainingCapitalByLoan($loan),
+                $repaymentScheduleRepository->getOverdueCapitalByLoan($loan, $companyStatusHistory->getChangedOn()),
+                4
+            ), 2);
+        }
+
+        return ['expired' => $expired, 'to_expired' => $toExpire];
     }
 }
