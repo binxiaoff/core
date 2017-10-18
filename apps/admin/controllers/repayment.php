@@ -15,8 +15,8 @@ class repaymentController extends bootstrap
     {
         parent::initialize();
 
-        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
-        $this->menu_admin = 'remboursements';
+        $this->users->checkAccess(Zones::ZONE_LABEL_REPAYMENT);
+        $this->menu_admin = 'remboursement';
 
         /** @var \Symfony\Component\Translation\TranslatorInterface translator */
         $this->translator = $this->get('translator');

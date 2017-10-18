@@ -242,7 +242,7 @@ class bootstrap extends Controller
         [
             'title' => 'Remboursements',
             'uri'   => 'repayment/validation',
-            'zone'  => Zones::ZONE_LABEL_TRANSFERS,
+            'zone'  => Zones::ZONE_LABEL_REPAYMENT,
             'children' => [
                 [
                     'title' => 'Remboursements à valider',
@@ -253,7 +253,7 @@ class bootstrap extends Controller
         [
             'title'    => 'Recouvreurs',
             'uri'      => 'recouvreur/liste',
-            'zone'     => Zones::ZONE_LABEL_BORROWERS,
+            'zone'     => Zones::ZONE_LABEL_DEBT_COLLECTOR,
             'children' => [
                 [
                     'title' => 'Recouvreurs',

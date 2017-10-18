@@ -22,6 +22,8 @@ class Zones
     const ZONE_LABEL_SIMULATOR      = 'simulator';
     const ZONE_LABEL_STATISTICS     = 'stats';
     const ZONE_LABEL_TRANSFERS      = 'transferts';
+    const ZONE_LABEL_REPAYMENT      = 'remboursement';
+    const ZONE_LABEL_DEBT_COLLECTOR = 'recouvreur';
 
     /**
      * @var string
