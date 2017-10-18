@@ -41,53 +41,6 @@
                 $sendPasswordModal.find('input[name=id]').val(id)
                 $sendPasswordModal.modal('show')
             })
-
-            /*
-             * Draggable tree
-             * for the organisation's hierarchy
-             */
-            var $tree = $('#organisation .tree-js')
-            var treeBackupHtml = $tree.html()
-            $tree.before('<div class="tree-js-backup hide">' + treeBackupHtml + '</div>')
-            $tree.find('.tree-js-dd').nestable({ maxDepth: 1 })
-            // Adds new item to the tree
-            function treeAppendItem(agencyName, formData) {
-                var index = $tree.find('.new-item-input').length
-                $tree.find('.tree-js-outer').prepend('<li class="dd-item new" data-id="new-' + index + '"><div class="dd-handle">' + agencyName + '</div></li>')
-                var $hiddenInput = $('<input type="hidden" name="new_item[' + index + ']" class="new-item-input">')
-                $hiddenInput.val(formData)
-                $tree.append($hiddenInput)
-                $tree.find('.tree-js-dd').trigger('change')
-            }
-            // Resets the tree to initial state
-            function treeReset() {
-                $tree.html(treeBackupHtml)
-                $tree.find('.tree-js-dd').nestable({ maxDepth: 1 })
-            }
-            $(document).on('change', '.tree-js-dd', function(){
-                $tree.find('.reset-btn, .submit-btn').removeClass('hide')
-            })
-            $(document).on('click', '.reset-btn', function(){
-                treeReset()
-            })
-            // New agency data, append without submitting the form
-            $(document).on('submit', '#modal-create-agency form', function(e){
-                e.preventDefault()
-                var $modal = $(this).closest('.modal')
-                var $form = $(this)
-                if (!$form.find('.has-error').length) {
-                    var name = $form.find('input[name=name]').val()
-                    var formData = $form.serialize()
-                    // Append the item + form values from the popup
-                    treeAppendItem(name, formData)
-                    $modal.modal('hide')
-                }
-            })
-            // Updated structure data, append before submitting the form
-            $(document).on('submit', '#organisation form', function() {
-                var newStructure = $tree.find('.tree-js-dd').nestable('serialize')
-                $tree.find('.structure-input').val(JSON.stringify(newStructure))
-            })
             $(document).on('submit', '#modal-send-password form', function(e) {
                 e.preventDefault()
                 var $form = $(this)
@@ -119,57 +72,6 @@
 {% endblock %}
 
 {% block modals %}
-    <div class="modal" id="modal-create-agency" tabindex="-1" role="dialog" aria-hidden="true">
-        <form class="modal-dialog validate">
-            <div class="modal-content">
-                <div class="block block-bordered remove-margin-b">
-                    <div class="block-header">
-                        <h3 class="block-title">Nouvelle entité</h3>
-                    </div>
-                    <div class="block-content">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group" style="margin-bottom: 10px">
-                                    <label>Nom de l'entité</label>
-                                    <input type="text" class="form-control input-sm required" name="name">
-                                </div>
-                                <div class="form-group" style="margin-bottom: 10px">
-                                    <label>SIREN</label>
-                                    <input type="text" class="form-control input-sm required" name="siren">
-                                </div>
-                                <div class="form-group" style="margin-bottom: 10px">
-                                    <label>Ville</label>
-                                    <input type="text" class="form-control input-sm required" name="city">
-                                </div>
-                                <div class="form-group">
-                                    <label>Code postal</label>
-                                    <input type="text" class="form-control input-sm required" name="postcode">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group" style="margin-bottom: 10px">
-                                    <label>Raison sociale</label>
-                                    <input type="text" class="form-control input-sm required" name="company">
-                                </div>
-                                <div class="form-group" style="margin-bottom: 10px">
-                                    <label>Téléphone</label>
-                                    <input type="text" class="form-control input-sm required" name="phone">
-                                </div>
-                                <div class="form-group">
-                                    <label>Adresse</label>
-                                    <input type="text" class="form-control input-sm required" name="address">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-sm btn-default" data-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-sm btn-primary" >Valider</button>
-                </div>
-            </div>
-        </form>
-    </div>
     <div class="modal" id="modal-send-password" tabindex="-1" role="dialog" aria-hidden="true">
         <form class="modal-dialog" method="post" action="/partnerEdit/send_password/">
             <div class="modal-content">
@@ -197,14 +99,12 @@
 {% set formErrors = {
     settings: ['Error 1', 'Error 2'],
     products:  ['Error 1', 'Error 2'],
-    organisation: ['Error 1', 'Error 2'],
     instructionsSubmissions:  ['Error 1', 'Error 2'],
     instructionsDocuments:  ['Error 1', 'Error 2']
 } %}
 {% set formSuccess = {
     settings: ['Success message'],
     products:  ['Success message'],
-    organisation: ['Success message'],
     instructionsSubmissions:  ['Success message'],
     instructionsDocuments:  ['Success message']
 } %}
@@ -217,10 +117,7 @@
 ] %}
 
  {% set partnerAgencies = [
-     {text: 'Axa Nord', id: '10'},
-     {text: 'Axa Sud', id: '11'},
-     {text: 'Axa Ouest', id: '12'},
-     {text: 'Axa Est', id: '13'}
+     {id: '10', name: 'Axa Nord', company: 'Axa Nord', siren: '29132983',  city: 'Paris', postcode: '75016', address: '12 Rue Fallempin', phone: '023920392'}
  ] %}
 
 {% set users = [
@@ -254,40 +151,32 @@
                         <h3 class="block-title">Organisation</h3>
                     </div>
                     <div class="block-content block-content-full">
-                        <form action="/partnerEdit/organisation/" method="post" class="tree-js">
-                            {%  if formErrors.organisation is defined and formErrors.organisation is not empty %}
-                                <div class="alert alert-error">
-                                    {% for error in formErrors.organisation %}
-                                        <p>{{ error }}</p>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                            {%  if formSuccess.organisation is defined %}
-                                <div class="alert alert-success">
-                                    {% for success in formSuccess.organisation %}
-                                        <p>{{ success }}</p>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                            <div class="row push">
-                                <div class="col-md-12">
-                                    <li class="dd-item static">
-                                        <div class="dd-handle">AXA Banque</div>
-                                    </li>
-                                    <div class="dd tree-js-dd push-20-l">
-                                        <ol class="dd-list tree-js-outer">
-                                            {% include "partnerEdit/partnerAgencies.html.twig" with {'items':partnerAgencies} only %}
-                                        </ol>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="text-left">
-                                <input type="hidden" name="structure" class="structure-input">
-                                <button class="btn btn-default" type="button" data-toggle="modal" data-target="#modal-create-agency">Ajouter une entité</button>
-                                <button class="btn btn-default reset-btn hide" type="button">Réinitialiser</button>
-                                <button class="btn btn-primary submit-btn hide" type="submit">Mise à jour</button>
-                            </div>
-                        </form>
+                        <table id="table-agencies" class="table table-bordered table-header-bg table-striped" data-table data-table-search="false" data-table-editor data-table-editor-url="/partnerEdit/users/" data-table-editor-actions="add, modify">
+                            <thead>
+                                <tr>
+                                    <th data-editor-name="name" data-editor-type="text">Nom de l'agence</th>
+                                    <th data-editor-name="company" data-editor-type="text">Raison Sociale</th>
+                                    <th data-editor-name="siren" data-editor-type="text">SIREN</th>
+                                    <th data-editor-name="city" data-editor-type="text">Ville</th>
+                                    <th data-editor-name="postcode" data-editor-type="text">Code Postal</th>
+                                    <th data-editor-name="address" data-editor-type="text">Adresse</th>
+                                    <th data-editor-name="phone" data-editor-type="text">Téléphone</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for agency in partnerAgencies %}
+                                    <tr data-id="{{ agency.id }}">
+                                        <td>{{ agency.name }}</td>
+                                        <td>{{ agency.company }}</td>
+                                        <td>{{ agency.siren }}</td>
+                                        <td>{{ agency.city }}</td>
+                                        <td>{{ agency.postcode }}</td>
+                                        <td>{{ agency.address }}</td>
+                                        <td>{{ agency.phone }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -379,12 +268,12 @@
                 <h3 class="block-title">Utilisateurs</h3>
             </div>
             <div class="block-content block-content-full">
-                <table id="table-users" class="table table-bordered table-header-bg table-striped" data-table-search="true" data-table-editor data-table-editor-url="/partnerEdit/users/" data-table-editor-actions="add, modify, toggle">
+                <table id="table-users" class="table table-bordered table-header-bg table-striped" data-table data-table-search="true" data-table-editor data-table-editor-url="/partnerEdit/users/" data-table-editor-actions="add, modify, toggle">
                     <thead>
                         <tr>
                             <th data-editor-name="name" data-editor-type="text">Prénom et nom</th>
                             <th data-editor-name="position" data-editor-type="text">Rôle</th>
-                            <th data-editor-name="agency" data-editor-type="selectArray" data-editor-options="{{ partnerAgencies|json_encode|escape('html_attr') }}">Entité de rattachement</th>
+                            <th data-editor-name="agency" data-editor-type="multilevel" data-editor-options="{{ partnerAgencies|json_encode|escape('html_attr') }}">Entité de rattachement</th>
                             <th data-editor-name="date_added" data-editor-type="date">Date d'ajout</th>
                             <th data-editor-name="last_connection" data-editor-type="date">Dernière connexion</th>
                         </tr>
