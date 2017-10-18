@@ -115,8 +115,6 @@ class LoansRepository extends EntityRepository
         $statement    = $this->getEntityManager()->getConnection()->executeQuery($query, $bind, $type);
         $regionsCount = $statement->fetchAll(\PDO::FETCH_ASSOC);
 
-
-
         return $regionsCount;
     }
 
@@ -174,6 +172,7 @@ class LoansRepository extends EntityRepository
 
     /**
      * @param Wallet $wallet
+     *
      * @return mixed
      */
     public function getDefinitelyAcceptedLoansCount(Wallet $wallet)

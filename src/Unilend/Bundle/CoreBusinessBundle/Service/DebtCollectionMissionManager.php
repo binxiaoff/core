@@ -73,238 +73,238 @@ class DebtCollectionMissionManager
      */
     public function generateExcelFile(DebtCollectionMission $debtCollectionMission)
     {
-        if ($debtCollectionMission) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMissionPaymentSchedule[] $missionPaymentSchedules */
-            $missionPaymentSchedules          = $debtCollectionMission->getDebtCollectionMissionPaymentSchedules();
-            $isDebtCollectionFeeDueToBorrower = $this->isDebtCollectionFeeDueToBorrower($debtCollectionMission->getIdProject());
-            $isCloseOutNetting                = null !== $debtCollectionMission->getIdProject()->getCloseOutNettingDate();
+        ini_set('memory_limit', '512M');
 
-            $excel       = new \PHPExcel();
-            $activeSheet = $excel->setActiveSheetIndex(0);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMissionPaymentSchedule[] $missionPaymentSchedules */
+        $missionPaymentSchedules          = $debtCollectionMission->getDebtCollectionMissionPaymentSchedules();
+        $isDebtCollectionFeeDueToBorrower = $this->isDebtCollectionFeeDueToBorrower($debtCollectionMission->getIdProject());
+        $isCloseOutNetting                = null !== $debtCollectionMission->getIdProject()->getCloseOutNettingDate();
 
-            $titles            = [
-                'Identifiant du prêt',
-                'Nom',
-                'Prénom',
-                'Email',
-                'Type',
-                'Raison social',
-                'Date de naissance',
-                'Téléphone',
-                'Mobile',
-                'Adresse',
-                'Code postal',
-                'Ville',
-                'Montant du prêt'
-            ];
-            $titleColumn       = 'A';
-            $titleRow          = 2;
-            $commissionColumns = [];
-            $commissionColumn  = null; // in case of close out netting
-            $feeColumn         = [];
-            $chargeColumn      = null;
-            $totalColumn       = null;
-            foreach ($titles as $title) {
-                $activeSheet->setCellValue($titleColumn . $titleRow, $title);
-                $titleColumn++;
-            }
+        $excel       = new \PHPExcel();
+        $activeSheet = $excel->setActiveSheetIndex(0);
 
-            $paymentScheduleTitleCellLeft = $titleColumn;
+        $titles            = [
+            'Identifiant du prêt',
+            'Nom',
+            'Prénom',
+            'Email',
+            'Type',
+            'Raison social',
+            'Date de naissance',
+            'Téléphone',
+            'Mobile',
+            'Adresse',
+            'Code postal',
+            'Ville',
+            'Montant du prêt'
+        ];
+        $titleColumn       = 'A';
+        $titleRow          = 2;
+        $commissionColumns = [];
+        $commissionColumn  = null; // in case of close out netting
+        $feeColumn         = [];
+        $chargeColumn      = null;
+        $totalColumn       = null;
+        foreach ($titles as $title) {
+            $activeSheet->setCellValue($titleColumn . $titleRow, $title);
+            $titleColumn++;
+        }
 
-            if (false === $isCloseOutNetting) {
-                $titleColumn++;
-                $titleColumn++;
-                $paymentScheduleTitleCellRight = $titleColumn;
+        $paymentScheduleTitleCellLeft = $titleColumn;
 
-                foreach ($missionPaymentSchedules as $missionPaymentSchedule) {
-                    $activeSheet->setCellValue($paymentScheduleTitleCellLeft . '1', 'Échéance ' . $missionPaymentSchedule->getIdPaymentSchedule()->getOrdre());
-                    $activeSheet->getStyle($paymentScheduleTitleCellLeft . '1')->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-                    $activeSheet->mergeCells($paymentScheduleTitleCellLeft . '1:' . $paymentScheduleTitleCellRight . '1');
-                    $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Capital');
-                    $paymentScheduleTitleCellLeft++;
-                    $paymentScheduleTitleCellRight++;
+        if (false === $isCloseOutNetting) {
+            $titleColumn++;
+            $titleColumn++;
+            $paymentScheduleTitleCellRight = $titleColumn;
 
-                    $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Intérêts');
-                    $paymentScheduleTitleCellLeft++;
-                    $paymentScheduleTitleCellRight++;
-
-                    $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Commission');
-                    $paymentScheduleTitleCellLeft++;
-                    $paymentScheduleTitleCellRight++;
-                }
-            } else {
+            foreach ($missionPaymentSchedules as $missionPaymentSchedule) {
+                $activeSheet->setCellValue($paymentScheduleTitleCellLeft . '1', 'Échéance ' . $missionPaymentSchedule->getIdPaymentSchedule()->getOrdre());
+                $activeSheet->getStyle($paymentScheduleTitleCellLeft . '1')->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+                $activeSheet->mergeCells($paymentScheduleTitleCellLeft . '1:' . $paymentScheduleTitleCellRight . '1');
                 $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Capital');
                 $paymentScheduleTitleCellLeft++;
+                $paymentScheduleTitleCellRight++;
 
                 $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Intérêts');
                 $paymentScheduleTitleCellLeft++;
+                $paymentScheduleTitleCellRight++;
 
                 $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Commission');
                 $paymentScheduleTitleCellLeft++;
+                $paymentScheduleTitleCellRight++;
             }
+        } else {
+            $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Capital');
+            $paymentScheduleTitleCellLeft++;
 
-            $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Frais');
-            if ($isDebtCollectionFeeDueToBorrower) {
-                $paymentScheduleTitleCellLeft++;
-                $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Honoraires');
+            $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Intérêts');
+            $paymentScheduleTitleCellLeft++;
 
-                $paymentScheduleTitleCellLeft++;
-                $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Tva');
-            }
+            $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Commission');
+            $paymentScheduleTitleCellLeft++;
+        }
+
+        $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Frais');
+        if ($isDebtCollectionFeeDueToBorrower) {
+            $paymentScheduleTitleCellLeft++;
+            $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Honoraires');
 
             $paymentScheduleTitleCellLeft++;
-            $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Total');
+            $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Tva');
+        }
 
-            $creditorDetails = $this->getCreditorsDetails($debtCollectionMission);
+        $paymentScheduleTitleCellLeft++;
+        $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Total');
 
-            $dataRow = $titleRow;
-            foreach ($creditorDetails['loans'] as $loanId => $loanDetails) {
-                $dataRow++;
-                $dataColumn = 0;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanId);
+        $creditorDetails = $this->getCreditorsDetails($debtCollectionMission);
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['name']);
+        $dataRow = $titleRow;
+        foreach ($creditorDetails['loans'] as $loanId => $loanDetails) {
+            $dataRow++;
+            $dataColumn = 0;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanId);
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['first_name']);
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['name']);
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['email']);
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['first_name']);
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow,
-                    in_array($loanDetails['type'], [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 'Physique' : 'Morale');
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['email']);
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['company_name']);
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow,
+                in_array($loanDetails['type'], [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 'Physique' : 'Morale');
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['birthday']->format('d/m/Y'));
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['company_name']);
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['telephone']);
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['birthday']->format('d/m/Y'));
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['mobile']);
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['telephone']);
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['address']);
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['mobile']);
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['postal_code']);
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['address']);
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['city']);
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['postal_code']);
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['amount'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['city']);
 
-                if (false === $isCloseOutNetting) {
-                    foreach ($missionPaymentSchedules as $missionPaymentSchedule) {
-                        $sequence = $missionPaymentSchedule->getIdPaymentSchedule()->getOrdre();
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['amount'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
-                        $dataColumn++;
-                        $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['schedule'][$sequence]['remaining_capital'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-
-                        $dataColumn++;
-                        $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['schedule'][$sequence]['remaining_interest'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-
-                        $dataColumn++; // commission
-                        if (empty($commissionColumns['schedule'][$sequence])) {
-                            $commissionColumns['schedule'][$sequence] = $dataColumn;
-                        }
-                    }
-                } else {
-                    $dataColumn++;
-                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['remaining_capital'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            if (false === $isCloseOutNetting) {
+                foreach ($missionPaymentSchedules as $missionPaymentSchedule) {
+                    $sequence = $missionPaymentSchedule->getIdPaymentSchedule()->getOrdre();
 
                     $dataColumn++;
-                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['remaining_interest'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['schedule'][$sequence]['remaining_capital'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+
+                    $dataColumn++;
+                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['schedule'][$sequence]['remaining_interest'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
                     $dataColumn++; // commission
-                    if (empty($commissionColumn)) {
-                        $commissionColumn = $dataColumn;
+                    if (empty($commissionColumns['schedule'][$sequence])) {
+                        $commissionColumns['schedule'][$sequence] = $dataColumn;
                     }
-                }
-
-                $dataColumn++;
-                if (empty($chargeColumn)) {
-                    $chargeColumn = $dataColumn;
-                }
-
-                if ($isDebtCollectionFeeDueToBorrower) {
-                    $dataColumn++;
-                    if (empty($feeColumn['fee_tax_excl'])) {
-                        $feeColumn['fee_tax_excl'] = $dataColumn;
-                    }
-                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['fee_tax_excl'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-
-                    $dataColumn++;
-                    if (empty($feeColumn['fee_vat'])) {
-                        $feeColumn['fee_vat'] = $dataColumn;
-                    }
-                    $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['fee_vat'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                }
-
-                $dataColumn++;
-                if (empty($totalColumn)) {
-                    $totalColumn = $dataColumn;
-                }
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['total'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            }
-
-            $commissionDetails = $creditorDetails['commission'];
-            $dataRow++;
-            $activeSheet->setCellValueByColumnAndRow(0, $dataRow, 'Commission unilend');
-            if (false === $isCloseOutNetting) {
-                foreach ($commissionColumns['schedule'] as $sequence => $column) {
-                    $activeSheet->setCellValueExplicitByColumnAndRow($column, $dataRow, $commissionDetails['schedule'][$sequence], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
                 }
             } else {
-                $activeSheet->setCellValueExplicitByColumnAndRow($commissionColumn, $dataRow, $commissionDetails['remaining_commission'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $dataColumn++;
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['remaining_capital'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+
+                $dataColumn++;
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['remaining_interest'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+
+                $dataColumn++; // commission
+                if (empty($commissionColumn)) {
+                    $commissionColumn = $dataColumn;
+                }
+            }
+
+            $dataColumn++;
+            if (empty($chargeColumn)) {
+                $chargeColumn = $dataColumn;
             }
 
             if ($isDebtCollectionFeeDueToBorrower) {
-                $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_tax_excl'], $dataRow, $commissionDetails['fee_tax_excl'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_vat'], $dataRow, $commissionDetails['fee_vat'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            }
-            $activeSheet->setCellValueExplicitByColumnAndRow($totalColumn, $dataRow, $commissionDetails['total'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                $dataColumn++;
+                if (empty($feeColumn['fee_tax_excl'])) {
+                    $feeColumn['fee_tax_excl'] = $dataColumn;
+                }
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['fee_tax_excl'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
-            $chargeDetails = $creditorDetails['charge'];
-            $dataRow++;
-            $activeSheet->setCellValueByColumnAndRow(0, $dataRow, 'Frais');
-            $activeSheet->setCellValueExplicitByColumnAndRow($chargeColumn, $dataRow, $chargeDetails['charge'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            if ($isDebtCollectionFeeDueToBorrower) {
-                $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_tax_excl'], $dataRow, $chargeDetails['fee_tax_excl'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_vat'], $dataRow, $chargeDetails['fee_vat'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            }
-            $activeSheet->setCellValueExplicitByColumnAndRow($totalColumn, $dataRow, $chargeDetails['total'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-
-            $fileName     = 'recouvrement_' . $debtCollectionMission->getId() . '_' . $debtCollectionMission->getAdded()->format('Y-m-d');
-            $absolutePath = implode(DIRECTORY_SEPARATOR, [
-                $this->protectedPath,
-                self::DEBT_COLLECTION_MISSION_FOLDER,
-                trim($debtCollectionMission->getIdClientDebtCollector()->getIdClient()),
-                $debtCollectionMission->getIdProject()->getIdProject()
-            ]);
-
-            if (false === is_dir($absolutePath)) {
-                $this->fileSystem->mkdir($absolutePath);
+                $dataColumn++;
+                if (empty($feeColumn['fee_vat'])) {
+                    $feeColumn['fee_vat'] = $dataColumn;
+                }
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['fee_vat'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             }
 
-            if ($this->fileSystem->exists($absolutePath . DIRECTORY_SEPARATOR . $fileName . self::FILE_EXTENSION)) {
-                $fileName = 'recouvrement_' . $debtCollectionMission->getId() . '_' . $debtCollectionMission->getAdded()->format('Y-m-d') . '_' . uniqid();
+            $dataColumn++;
+            if (empty($totalColumn)) {
+                $totalColumn = $dataColumn;
             }
-            $absoluteFileName = $absolutePath . DIRECTORY_SEPARATOR . $fileName . self::FILE_EXTENSION;
-
-            /** @var \PHPExcel_Writer_Excel2007 $writer */
-            $writer = \PHPExcel_IOFactory::createWriter($excel, 'Excel2007');
-            $writer->save($absoluteFileName);
-
-            $debtCollectionMission->setAttachment(str_replace($this->protectedPath, '', $absoluteFileName));
-            $this->entityManager->flush($debtCollectionMission);
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['total'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
         }
+
+        $commissionDetails = $creditorDetails['commission'];
+        $dataRow++;
+        $activeSheet->setCellValueByColumnAndRow(0, $dataRow, 'Commission unilend');
+        if (false === $isCloseOutNetting) {
+            foreach ($commissionColumns['schedule'] as $sequence => $column) {
+                $activeSheet->setCellValueExplicitByColumnAndRow($column, $dataRow, $commissionDetails['schedule'][$sequence], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            }
+        } else {
+            $activeSheet->setCellValueExplicitByColumnAndRow($commissionColumn, $dataRow, $commissionDetails['remaining_commission'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        }
+
+        if ($isDebtCollectionFeeDueToBorrower) {
+            $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_tax_excl'], $dataRow, $commissionDetails['fee_tax_excl'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_vat'], $dataRow, $commissionDetails['fee_vat'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        }
+        $activeSheet->setCellValueExplicitByColumnAndRow($totalColumn, $dataRow, $commissionDetails['total'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+
+        $chargeDetails = $creditorDetails['charge'];
+        $dataRow++;
+        $activeSheet->setCellValueByColumnAndRow(0, $dataRow, 'Frais');
+        $activeSheet->setCellValueExplicitByColumnAndRow($chargeColumn, $dataRow, $chargeDetails['charge'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        if ($isDebtCollectionFeeDueToBorrower) {
+            $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_tax_excl'], $dataRow, $chargeDetails['fee_tax_excl'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_vat'], $dataRow, $chargeDetails['fee_vat'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        }
+        $activeSheet->setCellValueExplicitByColumnAndRow($totalColumn, $dataRow, $chargeDetails['total'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+
+        $fileName     = 'recouvrement_' . $debtCollectionMission->getId() . '_' . $debtCollectionMission->getAdded()->format('Y-m-d');
+        $absolutePath = implode(DIRECTORY_SEPARATOR, [
+            $this->protectedPath,
+            self::DEBT_COLLECTION_MISSION_FOLDER,
+            trim($debtCollectionMission->getIdClientDebtCollector()->getIdClient()),
+            $debtCollectionMission->getIdProject()->getIdProject()
+        ]);
+
+        if (false === is_dir($absolutePath)) {
+            $this->fileSystem->mkdir($absolutePath);
+        }
+
+        if ($this->fileSystem->exists($absolutePath . DIRECTORY_SEPARATOR . $fileName . self::FILE_EXTENSION)) {
+            $fileName = 'recouvrement_' . $debtCollectionMission->getId() . '_' . $debtCollectionMission->getAdded()->format('Y-m-d') . '_' . uniqid();
+        }
+        $absoluteFileName = $absolutePath . DIRECTORY_SEPARATOR . $fileName . self::FILE_EXTENSION;
+
+        /** @var \PHPExcel_Writer_Excel2007 $writer */
+        $writer = \PHPExcel_IOFactory::createWriter($excel, 'Excel2007');
+        $writer->save($absoluteFileName);
+
+        $debtCollectionMission->setAttachment(str_replace($this->protectedPath, '', $absoluteFileName));
+        $this->entityManager->flush($debtCollectionMission);
     }
 
     private function getCreditorsDetails(DebtCollectionMission $debtCollectionMission)
@@ -455,9 +455,9 @@ class DebtCollectionMissionManager
                 foreach ($missionPaymentSchedules as $missionPaymentSchedule) {
                     $sequence = $missionPaymentSchedule->getIdPaymentSchedule()->getOrdre();
 
-                    $repaymentSchedule = $repaymentScheduleRepository->findOneBy(['idLoan' => $loan, 'ordre' => $sequence]);
-                    $remainingCapital  = round(bcdiv($repaymentSchedule->getCapital() - $repaymentSchedule->getCapitalRembourse(), 100, 4), 2);
-                    $remainingInterest = round(bcdiv($repaymentSchedule->getInterets() - $repaymentSchedule->getInteretsRembourses(), 100, 4), 2);
+                    $remainingAmounts  = $repaymentScheduleRepository->getRemainingAmountsByLoanAndSequence($loan, $sequence); // for resolve the memory issue. 140 MB reduced.
+                    $remainingCapital  = $remainingAmounts['capital'];
+                    $remainingInterest = $remainingAmounts['interest'];
 
                     $pendingCapital  = 0;
                     $pendingInterest = 0;
@@ -501,9 +501,9 @@ class DebtCollectionMissionManager
             }
 
             if ($this->isDebtCollectionFeeDueToBorrower($debtCollectionMission->getIdProject())) {
-                $feeVatExcl                                      = round(bcmul($totalRemainingAmount, $debtCollectionMission->getFeesRate(), 4), 2);
-                $feeVat                                          = round(bcmul($feeVatExcl, $vatTaxRate, 4), 2);
-                $feeOnRemainingAmountTaxIncl                     = round(bcadd($feeVatExcl, $feeVat, 4), 2);
+                $feeVatExcl                           = round(bcmul($totalRemainingAmount, $debtCollectionMission->getFeesRate(), 4), 2);
+                $feeVat                               = round(bcmul($feeVatExcl, $vatTaxRate, 4), 2);
+                $feeOnRemainingAmountTaxIncl          = round(bcadd($feeVatExcl, $feeVat, 4), 2);
                 $loanDetails[$loan->getIdLoan()]['fee_tax_excl'] = $feeVatExcl;
                 $loanDetails[$loan->getIdLoan()]['fee_vat']      = $feeVat;
                 $loanDetails[$loan->getIdLoan()]['total']        = round(bcadd($totalRemainingAmount, $feeOnRemainingAmountTaxIncl, 4), 2);
@@ -512,7 +512,6 @@ class DebtCollectionMissionManager
                 $loanDetails[$loan->getIdLoan()]['fee_vat']      = 0;
                 $loanDetails[$loan->getIdLoan()]['total']        = $totalRemainingAmount;
             }
-
         }
 
         return $loanDetails;

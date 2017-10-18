@@ -697,4 +697,24 @@ class EcheanciersRepository extends EntityRepository
 
         return round(bcadd($amount['capital'], $amount['interest'], 4), 2);
     }
+
+    /**
+     * @param Loans|int $loan
+     * @param int       $sequence
+     *
+     * @return array
+     */
+    public function getRemainingAmountsByLoanAndSequence($loan, $sequence)
+    {
+        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder->select('ROUND(SUM(e.capital  - e.capitalRembourse) / 100, 2) AS capital, ROUND(SUM(e.interets  - e.interetsRembourses) / 100, 2) AS interest')
+            ->where('e.idLoan = :loan')
+            ->andWhere('e.ordre = :sequence')
+            ->setParameters([
+                'loan'     => $loan,
+                'sequence' => $sequence
+            ]);
+
+        return $queryBuilder->getQuery()->getSingleResult();
+    }
 }
