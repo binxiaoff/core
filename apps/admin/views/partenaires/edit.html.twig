@@ -238,15 +238,98 @@
 
 {% block pageHeader %}
     <div class="push-15-r pull-left">
-        <img class="img-avatar img-avatar-thumb" style="border-radius: 0" src="https://placehold.it/120x120" alt="">
+        <img class="img-responsive-vertical" src="{{ app.staticUrl }}/images/admin/partner/{{ partner.logo }}" alt="{{ partner.idCompany.name|e('html_attr') }}">
     </div>
     <div class="push clearfix">
-        <h1 class="h2 push-20-t">AXA Banque</h1>
+        <h1 class="h2 push-20-t">{{ partner.idCompany.name }}</h1>
     </div>
 {% endblock %}
 
 {% block content %}
     <div class="content">
+        <div class="row">
+            <div class="col-md-6">
+                <div id="organisation" class="block block-bordered">
+                    <div class="block-header">
+                        <h3 class="block-title">Organisation</h3>
+                    </div>
+                    <div class="block-content block-content-full">
+                        <form action="/partnerEdit/organisation/" method="post" class="tree-js">
+                            {%  if formErrors.organisation is defined and formErrors.organisation is not empty %}
+                                <div class="alert alert-error">
+                                    {% for error in formErrors.organisation %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {%  if formSuccess.organisation is defined %}
+                                <div class="alert alert-success">
+                                    {% for success in formSuccess.organisation %}
+                                        <p>{{ success }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="row push">
+                                <div class="col-md-12">
+                                    <li class="dd-item static">
+                                        <div class="dd-handle">AXA Banque</div>
+                                    </li>
+                                    <div class="dd tree-js-dd push-20-l">
+                                        <ol class="dd-list tree-js-outer">
+                                            {% include "partnerEdit/partnerAgencies.html.twig" with {'items':partnerAgencies} only %}
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-left">
+                                <input type="hidden" name="structure" class="structure-input">
+                                <button class="btn btn-default" type="button" data-toggle="modal" data-target="#modal-create-agency">Ajouter une entité</button>
+                                <button class="btn btn-default reset-btn hide" type="button">Réinitialiser</button>
+                                <button class="btn btn-primary submit-btn hide" type="submit">Mise à jour</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div id="products" class="block block-bordered">
+                    <div class="block-header">
+                        <h3 class="block-title">Produits</h3>
+                    </div>
+                    <div class="block-content block-content-full">
+                        <form action="/partnerEdit/products/" method="post">
+                            {%  if formErrors.products is defined and formErrors.products is not empty %}
+                                <div class="alert alert-error">
+                                    {% for error in formErrors.products %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {%  if formSuccess.products is defined %}
+                                <div class="alert alert-success">
+                                    {% for success in formSuccess.products %}
+                                        <p>{{ success }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="row push">
+                                {% for product in products %}
+                                    <div class="col-md-3">
+                                        <p style="margin-bottom: 5px">{{ product.name }}</p>
+                                        <label class="css-input switch switch-primary">
+                                            <input type="checkbox" name="products[]" value="{{ product.value }}"{% if product.status == 'active' %} checked{% endif %}><span></span> {{ product.description }}
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="text-left">
+                                <button class="btn btn-primary" type="submit">Mise à jour</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div id="settings" class="block block-bordered">
             <div class="block-header">
                 <h3 class="block-title">Paramètres partenaire</h3>
@@ -287,83 +370,6 @@
                     </div>
                     <div class="text-left">
                         <button class="btn btn-primary" type="submit">Mise à jour</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        <div id="products" class="block block-bordered">
-            <div class="block-header">
-                <h3 class="block-title">Produits</h3>
-            </div>
-            <div class="block-content block-content-full">
-                <form action="/partnerEdit/products/" method="post">
-                    {%  if formErrors.products is defined and formErrors.products is not empty %}
-                        <div class="alert alert-error">
-                            {% for error in formErrors.products %}
-                                <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                    {%  if formSuccess.products is defined %}
-                        <div class="alert alert-success">
-                            {% for success in formSuccess.products %}
-                                <p>{{ success }}</p>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                    <div class="row push">
-                        {% for product in products %}
-                            <div class="col-md-3">
-                                <p style="margin-bottom: 5px">{{ product.name }}</p>
-                                <label class="css-input switch switch-primary">
-                                    <input type="checkbox" name="products[]" value="{{ product.value }}"{% if product.status == 'active' %} checked{% endif %}><span></span> {{ product.description }}
-                                </label>
-                            </div>
-                        {% endfor %}
-                    </div>
-                    <div class="text-left">
-                        <button class="btn btn-primary" type="submit">Mise à jour</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        <div id="organisation" class="block block-bordered">
-            <div class="block-header">
-                <h3 class="block-title">Organisation</h3>
-            </div>
-            <div class="block-content block-content-full">
-                <form action="/partnerEdit/organisation/" method="post" class="tree-js">
-                    {%  if formErrors.organisation is defined and formErrors.organisation is not empty %}
-                        <div class="alert alert-error">
-                            {% for error in formErrors.organisation %}
-                                <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                    {%  if formSuccess.organisation is defined %}
-                        <div class="alert alert-success">
-                            {% for success in formSuccess.organisation %}
-                                <p>{{ success }}</p>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                    <div class="row push">
-                        <div class="col-md-12">
-                            <li class="dd-item static">
-                                <div class="dd-handle">AXA Banque</div>
-                            </li>
-                            <div class="dd tree-js-dd push-20-l">
-                                <ol class="dd-list tree-js-outer">
-                                    {% include "partnerEdit/partnerAgencies.html.twig" with {'items':partnerAgencies} only %}
-                                </ol>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="text-left">
-                        <input type="hidden" name="structure" class="structure-input">
-                        <button class="btn btn-default" type="button" data-toggle="modal" data-target="#modal-create-agency">Ajouter une entité</button>
-                        <button class="btn btn-default reset-btn hide" type="button">Réinitialiser</button>
-                        <button class="btn btn-primary submit-btn hide" type="submit">Mise à jour</button>
                     </div>
                 </form>
             </div>

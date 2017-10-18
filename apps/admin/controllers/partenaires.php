@@ -23,19 +23,41 @@ class partenairesController extends bootstrap
         $this->render(null, ['partners' => $partners]);
     }
 
-    public function _tiers()
+    public function _edit()
     {
-        if (false === empty($this->params[0]) && filter_var($this->params[0], FILTER_VALIDATE_INT)) {
-            /** @var Doctrine\ORM\EntityManager $entityManager = */
-            $entityManager    = $this->get('doctrine.orm.entity_manager');
-            $this->translator = $this->get('translator');
-            $this->partner    = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->params[0]);
+        /** @var Doctrine\ORM\EntityManager $entityManager = */
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
+
+        if (
+            empty($this->params[0])
+            || false === filter_var($this->params[0], FILTER_VALIDATE_INT)
+            || null === ($partner = $partnerRepository->find($this->params[0]))
+        ) {
+            header('Location: ' . $this->lurl . '/partenaires');
+            exit;
         }
 
-        if (empty($this->partner)) {
+        $this->render(null, ['partner' => $partner]);
+    }
+
+    public function _tiers()
+    {
+        /** @var Doctrine\ORM\EntityManager $entityManager = */
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
+
+        if (
+            empty($this->params[0])
+            || false === filter_var($this->params[0], FILTER_VALIDATE_INT)
+            || null === ($this->partner = $partnerRepository->find($this->params[0]))
+        ) {
             header('Location: ' . $this->lurl . '/partenaires');
-            die;
+            exit;
         }
+
+        $this->translator = $this->get('translator');
+        $this->partner    = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->params[0]);
     }
 
     public function _ajout_tiers()
@@ -70,7 +92,7 @@ class partenairesController extends bootstrap
                 }
 
                 header('Location: ' . $this->lurl . '/partenaires/tiers/' . $this->params[0]);
-                die;
+                exit;
             }
         }
 
