@@ -78,16 +78,19 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
      * @return mixed
      */
     public function getDetailedProjectRepaymentSchedule(\projects $project) {
-        $sql = 'SELECT ee.*, e.date_echeance AS date_echeance_preteur,
-				CASE e.status
-					WHEN 0 THEN "En cours"
-					WHEN 1 THEN "Remboursé"
-				END AS "statut_preteur"
+        $sql = 'SELECT
+                  ee.*,
+                  e.date_echeance AS date_echeance_preteur,
+                  CASE
+                    WHEN SUM(e.capital) = SUM(e.capital_rembourse) AND SUM(e.interets) = SUM(e.interets_rembourses) THEN "Remboursé"
+                    WHEN SUM(e.capital_rembourse) > 0 THEN "Remboursé partiellement"
+                    ELSE "En cours"
+                  END             AS "statut_preteur"
                 FROM echeanciers_emprunteur ee
-                INNER JOIN echeanciers e ON e.id_project = ee.id_project
+                  INNER JOIN echeanciers e ON e.id_project = ee.id_project
                 WHERE ee.id_project = :idProject
-                AND ee.ordre = e.ordre
-                AND ee.status_ra = :earlyRefundStatus
+                      AND ee.ordre = e.ordre
+                      AND ee.status_ra = :earlyRefundStatus
                 GROUP BY ee.id_project, ee.ordre
                 ORDER BY ee.ordre ASC';
 
@@ -98,56 +101,6 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
         $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
 
         return $result;
-    }
-
-
-    public function getRepaidCapitalByCohort()
-    {
-        $query = 'SELECT
-                  SUM(echeanciers_emprunteur.capital)/100 AS amount,
-                  (
-                    SELECT
-                      CASE LEFT(projects_status_history.added, 4)
-                        WHEN 2013 THEN "2013-2014"
-                        WHEN 2014 THEN "2013-2014"
-                        ELSE LEFT(projects_status_history.added, 4)
-                      END AS date_range
-                    FROM projects_status_history
-                    INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                    WHERE  projects_status.status = '. ProjectsStatus::REMBOURSEMENT .'
-                      AND echeanciers_emprunteur.id_project = projects_status_history.id_project
-                    ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
-                  ) AS cohort
-                FROM echeanciers_emprunteur
-                WHERE (
-                        SELECT e2.status
-                        FROM echeanciers e2
-                        WHERE e2.ordre = echeanciers_emprunteur.ordre
-                          AND echeanciers_emprunteur.id_project = e2.id_project
-                        LIMIT 1) = 1
-              GROUP BY cohort';
-
-        $statement = $this->bdd->executeQuery($query);
-        return $statement->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function getRepaidCapital()
-    {
-        $query = 'SELECT
-                  ROUND(SUM(echeanciers_emprunteur.capital)/100)
-                FROM echeanciers_emprunteur
-                WHERE (
-                        SELECT e2.status
-                        FROM
-                          echeanciers e2
-                        WHERE
-                          e2.ordre = echeanciers_emprunteur.ordre
-                          AND echeanciers_emprunteur.id_project = e2.id_project
-                        LIMIT 1
-                      ) = 1';
-
-        $statement = $this->bdd->executeQuery($query);
-        return $statement->fetchColumn(0);
     }
 
     public function getInterestPaymentsOfHealthyProjectsByCohort()

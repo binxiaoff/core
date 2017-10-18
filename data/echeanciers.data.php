@@ -100,24 +100,6 @@ class echeanciers extends echeanciers_crud
      * @param array $selector
      * @return string
      */
-    public function getTotalCapital(array $selector)
-    {
-        return $this->getPartialSum('capital', $selector);
-    }
-
-    /**
-     * @param array $selector
-     * @return string
-     */
-    public function getOwedAmount(array $selector)
-    {
-        return $this->getPartialSum('capital - capital_rembourse + interets - interets_rembourses', $selector, array(self::STATUS_PENDING, self::STATUS_PARTIALLY_REPAID));
-    }
-
-    /**
-     * @param array $selector
-     * @return string
-     */
     public function getOwedCapital(array $selector)
     {
         return $this->getPartialSum('capital - capital_rembourse', $selector, array(self::STATUS_PENDING, self::STATUS_PARTIALLY_REPAID));
@@ -291,32 +273,6 @@ class echeanciers extends echeanciers_crud
     }
 
     /**
-     * number of remaining periods
-     * @param int $id_lender
-     * @param int $id_project
-     * @return int
-     */
-    public function counterPeriodRestantes($id_lender, $id_project)
-    {
-        $sql = 'SELECT count(DISTINCT(ordre)) FROM `echeanciers` WHERE id_lender = ' . $id_lender . ' AND id_project = ' . $id_project . ' AND status = ' . self::STATUS_PENDING;
-
-        $result = $this->bdd->query($sql);
-        return (int) $this->bdd->result($result);
-    }
-
-    /**
-     * @param int $lenderId
-     * @param string $startDate
-     * @param string $endDate
-     * @param int $loanId
-     * @return string
-     */
-    public function getRepaidAmountInDateRange($lenderId, $startDate, $endDate, $loanId = null)
-    {
-        return $this->getRepaymentAmountInDateRange($lenderId, $startDate, $endDate, 'e.capital_rembourse + e.interets_rembourses', [self::STATUS_PARTIALLY_REPAID, self::STATUS_REPAID], null, $loanId);
-    }
-
-    /**
      * @param int $lenderId
      * @param string $startDate
      * @param string $endDate
@@ -327,49 +283,6 @@ class echeanciers extends echeanciers_crud
         return $this->getRepaymentAmountInDateRange($lenderId, $startDate, $endDate, 'e.capital + e.interets', [self::STATUS_PENDING]);
     }
 
-    public function getNonRepaidAmountInDateRange($lenderId, DateTime $startDate, DateTime $endDate, $loanId = null)
-    {
-        return $this->getRepaymentAmountInDateRange($lenderId, $startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s'), 'e.capital - e.capital_rembourse + e.interets - e.interets_rembourses', [self::STATUS_PENDING, self::STATUS_PARTIALLY_REPAID], null, $loanId);
-    }
-
-    /**
-     * @param int $lenderId
-     * @param int $loanId
-     * @param DateTime $startDate
-     * @return string
-     * @throws Exception
-     */
-    public function getTotalComingCapital($lenderId, $loanId, DateTime $startDate = null)
-    {
-        if ($startDate === null) {
-            $startDate = new DateTime();
-        }
-        $bind     = [
-            'id_lender'        => $lenderId,
-            'loan_status'      => \loans::STATUS_ACCEPTED,
-            'id_loan'          => $loanId,
-            'repayment_status' => self::STATUS_PENDING,
-            'date_echeance'    => $startDate->format('Y-m-d')
-        ];
-        $bindType = [
-            'id_lender'        => \PDO::PARAM_INT,
-            'loan_status'      => \PDO::PARAM_INT,
-            'id_loan'          => \PDO::PARAM_INT,
-            'repayment_status' => \PDO::PARAM_INT,
-            'date_echeance'    => \PDO::PARAM_STR
-        ];
-        $query    = '
-            SELECT SUM(e.capital)
-            FROM echeanciers e
-            INNER JOIN loans l ON e.id_loan = l.id_loan
-            WHERE l.status = :loan_status
-              AND e.id_lender = :id_lender
-              AND e.id_loan = :id_loan
-              AND e.status = :repayment_status
-              AND date(e.date_echeance) > :date_echeance';
-        return bcdiv($this->bdd->executeQuery($query, $bind, $bindType)
-            ->fetchColumn(0), 100, 2);
-    }
     /**
      * @param int $projectId
      * @param DateTime $startDate

@@ -368,7 +368,7 @@ class ProjectRepaymentTaskManager
             );
 
             if ($nextPayment) {
-                $borrowerOwedCapital = $paymentScheduleRepository->getRemainingCapitalFrom($projectRepaymentTask->getIdProject(), $nextPayment->getOrdre());
+                $borrowerOwedCapital = $paymentScheduleRepository->getRemainingCapitalByProject($projectRepaymentTask->getIdProject());
 
                 if (0 !== bccomp($borrowerOwedCapital, $projectRepaymentTask->getCapital(), 2)) {
                     $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_ERROR);

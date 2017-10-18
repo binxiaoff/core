@@ -21,7 +21,7 @@
             <?= $this->pays_fiscal ?>
         <?php } ?>
         <br/><br/>
-        n°de <?= $this->translator->trans('contract-type-label_' . $this->contract->label); ?> :  <?= $this->oLoans->id_loan ?>
+        n°de <?= $this->translator->trans('contract-type-label_' . $this->contract->getLabel()); ?> :  <?= $this->loan->getIdLoan() ?>
     </div>
     <div class="mandataire_du_creancier">
         <?= $this->mandataires_var ?>
@@ -48,10 +48,10 @@
         <div class="case2">
         </div>
         <div class="case3">
-            <?php if ($this->contract->label == \underlying_contract::CONTRACT_IFP) : ?>
-                Contrat de prêt émis le <?= date('d/m/Y', strtotime($this->oLoans->added)) ?>, échéance au <?= $this->lastEcheance ?>, d’un montant de <?= $this->ficelle->formatNumber(($this->oLoans->amount / 100)) ?>€ assorti d’un taux d’intérêt annuel de <?= $this->ficelle->formatNumber($this->oLoans->rate, 1) ?>%, amortissable mensuellement.
+            <?php if ($this->contract->getLabel() == \underlying_contract::CONTRACT_IFP) : ?>
+                Contrat de prêt émis le <?= $this->loan->getAdded()->format('d/m/Y') ?>, échéance au <?= $this->lastEcheance ?>, d’un montant de <?= $this->ficelle->formatNumber(($this->loan->getAmount() / 100)) ?>€ assorti d’un taux d’intérêt annuel de <?= $this->ficelle->formatNumber($this->loan->getRate(), 1) ?>%, amortissable mensuellement.
             <?php else : ?>
-                Bon de caisse à ordre, émis le <?= date('d/m/Y', strtotime($this->oLoans->added)) ?>, échéance au <?= $this->lastEcheance ?>, d’un montant de <?= $this->ficelle->formatNumber(($this->oLoans->amount / 100)) ?>€ assorti d’un taux d’intérêt annuel de <?= $this->ficelle->formatNumber($this->oLoans->rate, 1) ?>%, amortissable mensuellement.
+                Bon de caisse à ordre, émis le <?= $this->loan->getAdded()->format('d/m/Y') ?>, échéance au <?= $this->lastEcheance ?>, d’un montant de <?= $this->ficelle->formatNumber(($this->loan->getAmount() / 100)) ?>€ assorti d’un taux d’intérêt annuel de <?= $this->ficelle->formatNumber($this->loan->getRate(), 1) ?>%, amortissable mensuellement.
             <?php endif; ?>
 
         </div>
