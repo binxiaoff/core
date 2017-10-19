@@ -108,21 +108,27 @@
                     var $document = $form.find('[name=document]')
                     var label = $document.find(':selected').text()
                     var id = $document.val()
-
                     var $mandatory = $form.find('[name=mandatory]:checked')
                     var mandatory = ($mandatory.val() === 'true') ? '<small class="text-primary pull-right">* champ obligatoire</small>' : ''
-
                     if ($tree.find('[data-id=' + id + ']').length) {
                         $modal.find('.messages').html('<div class="alert"><p>Le document est déjà dans la liste.</p></div>')
                         return false
                     }
-
-                    var item = '<li class="dd-item new" data-id="' + id + '"><div class="dd-handle">' + label + ' ' + mandatory + '</div></li>'
+                    var item = '<li class="dd-item dd-item-document dd-item-new closable" data-id="' + id + '">' +
+                            '<div class="dd-handle">' + label + ' ' + mandatory + '</div>' +
+                            '<a role="button" class="closable-icon">' +
+                            '<span class="fa fa-close"></span>' +
+                            '</a>' +
+                            '</li>'
                     $tree.find('.dd-list').prepend(item)
                     $tree.find('.dd').trigger('change')
-
                     $modal.modal('hide')
                 }
+            })
+            $(document).on('click', '.dd-item .closable-icon, .dd-item-new .closable-icon', function() {
+                var $item = $(this).closest('.dd-item')
+                $item.remove()
+                $tree.find('.dd').trigger('change')
             })
             // Prepare form data
             $(document).on('submit', '#documents form', function(e) {
@@ -480,8 +486,9 @@
                                 <div class="dd">
                                     <ol class="dd-list">
                                         {% for document in documents %}
-                                            <li class="dd-item" data-id="{{ document.id }}">
+                                            <li class="dd-item dd-item-document closable" data-id="{{ document.id }}">
                                                 <div class="dd-handle">{{ document.label }}{% if document.mandatory %} <small class="text-primary pull-right">* champ obligatoire</small>{% endif %}</div>
+                                                <a role="button" class="closable-icon"><span class="fa fa-close"></span></a>
                                             </li>
                                         {% endfor %}
                                     </ol>
