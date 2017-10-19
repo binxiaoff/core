@@ -84,28 +84,35 @@ class repaymentController extends bootstrap
             die;
         }
 
-        if (
-            $this->request->request->get('mission')
-            && $this->request->request->get('fee_rate')
-            && $this->request->request->get('repay_on')
-        ) {
-            $errors         = [];
-            $projectCharges = [];
+        $debtCollectionMissions = $reception->getIdProject()->getDebtCollectionMissions(true, ['id' => 'DESC']);
+
+        if ($this->request->isMethod('POST')) {
+            $errors                = [];
+            $projectChargesToApply = [];
             if ($this->request->request->get('charges')) {
-                $projectCharges = $projectChargeRepository->findBy(['id' => $this->request->request->get('charges')]);
+                $projectChargesToApply = $projectChargeRepository->findBy(['id' => $this->request->request->get('charges')]);
             }
 
-            $debtCollectionMissionId = filter_var($this->request->request->get('mission'), FILTER_VALIDATE_INT);
-            $debtCollectionMission   = $debtCollectionMissionRepository->find($debtCollectionMissionId);
-            if (null === $debtCollectionMission) {
-                $errors[] = 'Id mission recouvrement ' . $debtCollectionMissionId . 'n\'existe pas';
+            $debtCollectionMission = null;
+            $debtCollectionFeeRate = null;
+
+            if (count($debtCollectionMissions) > 0) {
+                if ($this->request->request->get('mission')) {
+                    $debtCollectionMissionId = filter_var($this->request->request->get('mission'), FILTER_VALIDATE_INT);
+                    $debtCollectionMission   = $debtCollectionMissionRepository->find($debtCollectionMissionId);
+                    if (null === $debtCollectionMission) {
+                        $errors[] = 'Id mission recouvrement ' . $debtCollectionMissionId . 'n\'existe pas';
+                    }
+                    $debtCollectionFeeRate = str_replace(',', '.', $this->request->request->get('fee_rate'));
+                    $debtCollectionFeeRate = filter_var($debtCollectionFeeRate, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+                    if (false === $debtCollectionFeeRate || $debtCollectionFeeRate > 100) {
+                        $errors[] = 'Le taux d\'honoraires  n\'est pas valide';
+                    }
+                    $debtCollectionFeeRate = round(bcdiv($debtCollectionFeeRate, 100, 6), 4);
+                } else {
+                    $errors[] = 'Mission recouvrement n\'est pas défini.';
+                }
             }
-            $debtCollectionFeeRate = str_replace(',', '.', $this->request->request->get('fee_rate'));
-            $debtCollectionFeeRate = filter_var($debtCollectionFeeRate, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-            if (false === $debtCollectionFeeRate || $debtCollectionFeeRate > 100) {
-                $errors[] = 'Le taux d\'honoraires  n\'est pas valide';
-            }
-            $debtCollectionFeeRate = round(bcdiv($debtCollectionFeeRate, 100, 6), 4);
 
             $repayOn = DateTime::createFromFormat('d/m/Y', $this->request->request->get('repay_on'));
             if (false === $repayOn) {
@@ -124,7 +131,7 @@ class repaymentController extends bootstrap
                     /** @var ProjectPaymentManager $paymentManager */
                     $paymentManager = $this->get('unilend.service_repayment.project_payment_manager');
                 }
-                $paymentManager->pay($reception, $user, $repayOn, $debtCollectionMission, $debtCollectionFeeRate, $projectCharges);
+                $paymentManager->pay($reception, $user, $repayOn, $debtCollectionMission, $debtCollectionFeeRate, $projectChargesToApply);
 
                 $session->getFlashBag()->add('repayment_task_info', 'Le remboursement est créé, il est en attente de validation.');
 
@@ -140,8 +147,7 @@ class repaymentController extends bootstrap
             }
         }
 
-        $projectCharges         = $projectChargeRepository->findBy(['idProject' => $reception->getIdProject(), 'idWireTransferIn' => null]);
-        $debtCollectionMissions = $reception->getIdProject()->getDebtCollectionMissions(true, ['id' => 'DESC']);
+        $projectCharges = $projectChargeRepository->findBy(['idProject' => $reception->getIdProject(), 'idWireTransferIn' => null]);
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager $debtCollectionMissionManager */
         $debtCollectionMissionManager = $this->get('unilend.service.debt_collection_mission_manager');

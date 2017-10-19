@@ -118,23 +118,27 @@
                         </div>
                         <div class="col-md-6">
                             <h4 class="font-w400 push-20">Saisir la mission et le taux d'honoraire de recouvrement ? </h4>
-                            <div class="row">
-                                <div class="form-group col-md-6">
-                                    <select id="debt-collection-mission" class="form-control required" name="mission">
-                                        <option value="0">Selectionner une mission</option>
-                                        {% for mission in missions %}
-                                            <option value="{{ mission.id }}" data-tax-rate="{{ mission.feesRate * 100 }}">#{{ mission.id }} - {{ mission.added|localizeddate('short', 'none') }}
-                                                - {{ mission.idClientDebtCollector.nom }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="form-group col-md-6">
-                                    <div class="input-group">
-                                        <input id="debt-collection-rate" class="form-control" name="fee_rate" type="text" placeholder="Taux">
-                                        <span class="input-group-addon">%</span>
+                            {% if mission|length > 0 %}
+                                <div class="row">
+                                    <div class="form-group col-md-6">
+                                        <select id="debt-collection-mission" class="form-control required" name="mission">
+                                            <option value="0">Selectionner une mission</option>
+                                            {% for mission in missions %}
+                                                <option value="{{ mission.id }}" data-tax-rate="{{ mission.feesRate * 100 }}">#{{ mission.id }} - {{ mission.added|localizeddate('short', 'none') }}
+                                                    - {{ mission.idClientDebtCollector.nom }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <div class="input-group">
+                                            <input id="debt-collection-rate" class="form-control" name="fee_rate" type="text" placeholder="Taux">
+                                            <span class="input-group-addon">%</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            {% else %}
+                                <p>Ce projet n'a pas de mission de recouvrement.</p>
+                            {% endif %}
                             <div class="push"></div>
                             <h4 class="font-w400 push-20">Date du remboursement :</h4>
                             <div class="row">
