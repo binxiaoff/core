@@ -86,13 +86,18 @@
                 $tree.html(treeBackupHtml)
                 $tree.find('.dd').nestable({ maxDepth: 1 })
             })
-            // Reset modal on close
-            $(document).on('hidden.bs.modal', '#modal-add-document', function(){
+            // Reset modals on close
+            $(document).on('hidden.bs.modal', '#modal-add-document, #modal-add-product', function(){
                 var $modal = $(this)
                 $modal.find('.messages').html('')
                 $modal.find('.form-group').removeClass('has-error')
                 $modal.find('select').val(0)
-                $modal.find(':checked').attr('checked', '').prop('checked', '')
+                if ($modal.is('#modal-add-document')) {
+                    $modal.find(':checked').attr('checked', '').prop('checked', '')
+                }
+                if ($modal.is('#modal-add-product')) {
+                    $modal.find('input').val('')
+                }
             })
             // Add new item
             $(document).on('submit', '#modal-add-document form', function(e){
@@ -123,6 +128,35 @@
             $(document).on('submit', '#documents form', function(e) {
                 var newOrder = $tree.find('.dd').nestable('serialize')
                 $tree.find('[name=new_order]').val(JSON.stringify(newOrder))
+            })
+            // Pre-fill rates depending on product
+            $(document).on('change', '#modal-add-product [name=product]', function(){
+                var $product = $(this)
+                var $modal = $(this).closest('.modal')
+                var $funds = $modal.find('[name=rate_funds]')
+                var $repayment = $modal.find('[name=rate_repayment]')
+                if ($product.val() !== '0') {
+                    $funds.val($product.find(':selected').data('funds'))
+                    $repayment.val($product.find(':selected').data('repayment'))
+                }
+            })
+            // Pre-fill modal for deleting a product
+            $(document).on('click', '#products .closable-icon', function(){
+                var $product = $(this).closest('[data-product]')
+                var $modal = $('#modal-delete-product')
+                var id = $product.data('product-id')
+                var funds = $product.data('product-rate-funds')
+                var repayment = $product.data('product-rate-repayment')
+                $modal.find('[name=rate_funds]').val(funds)
+                $modal.find('[name=rate_repayment]').val(repayment)
+                $modal.find('[name=id]').val(id)
+            })
+            // Submit new product
+            $(document).on('submit', '#modal-add-product form', function() {
+                var $form = $(this)
+                if (!$form.find('.has-errors').length) {
+                    App.blocks('#modal-add-product .block', 'state_loading')
+                }
             })
         })
     </script>
@@ -193,6 +227,68 @@
             </div>
         </form>
     </div>
+    <div class="modal" id="modal-add-product" tabindex="-1" role="dialog" aria-hidden="true">
+        <form class="modal-dialog validate">
+            <div class="modal-content">
+                <div class="block block-bordered remove-margin-b">
+                    <div class="block-header">
+                        <h3 class="block-title">Ajouter un produit</h3>
+                    </div>
+                    <div class="block-content">
+                        <div class="messages"></div>
+                        <div class="form-group">
+                            <select name="product" class="form-control required">
+                                <option value="0">Selectionner un produit</option>
+                                {% for product in products %}
+                                    <option value="{{ product.id }}" data-funds="{{ product.rateFunds }}" data-repayment="{{ product.rateRepayment }}">
+                                        {{ product.label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <input type="text" class="form-control required" name="rate_funds" placeholder="Taux de déblocage">
+                                <span class="input-group-addon">%</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <input type="text" class="form-control required" name="rate_repayment" placeholder="Taux de remboursement">
+                                <span class="input-group-addon">%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                    <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal" id="modal-delete-product" tabindex="-1" role="dialog" aria-hidden="true">
+        <form class="modal-dialog validate" method="post" action="/documents/delete/">
+            <div class="modal-content">
+                <div class="block block-bordered remove-margin-b">
+                    <div class="block-header">
+                        <h3 class="block-title">Supprimer</h3>
+                    </div>
+                    <div class="block-content">
+                        <div class="messages"></div>
+                        <p>Êtes-vous sûr de vouloir supprimer le produit ?</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="hidden" name="id">
+                    <input type="hidden" name="rate_funds">
+                    <input type="hidden" name="rate_repayment">
+                    <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                    <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+                </div>
+            </div>
+        </form>
+    </div>
 {% endblock %}
 
 {% set formErrors = {
@@ -211,10 +307,8 @@
 } %}
 
 {% set products = [
-    {label: 'Product 1', description: 'Débl. 9% / Remb. 12%', value: '1', status: 'inactive'},
-    {label: 'Product 2', description: 'Débl. 9% / Remb. 12%', value: '2', status: 'active'},
-    {label: 'Product 3', description: 'Débl. 9% / Remb. 12%', value: '3', status: 'active'},
-    {label: 'Product 4', description: 'Débl. 9% / Remb. 12%', value: '4', status: 'active'}
+    {id: 1, label: 'Product 1', rateFunds: '4.00', rateRepayment: '1.00'},
+    {id: 2, label: 'Product 2', rateFunds: '5.00', rateRepayment: '1.00'}
 ] %}
 
  {% set partnerAgencies = [
@@ -304,13 +398,18 @@
                                     {% endfor %}
                                 </div>
                             {% endif %}
+                            <button class="btn btn-default add-btn push-5" type="button" data-toggle="modal" data-target="#modal-add-product"><span class="fa fa-plus"></span> Ajouter</button>
                             <div class="row push">
                                 {% for product in products %}
-                                    <div class="col-md-3">
-                                        <p style="margin-bottom: 5px">{{ product.name }}</p>
-                                        <label class="css-input switch switch-primary">
-                                            <input type="checkbox" name="products[]" value="{{ product.value }}"{% if product.status == 'active' %} checked{% endif %}><span></span> {{ product.description }}
-                                        </label>
+                                    <div class="col-md-3" data-product data-product-id="{{ product.id }}" data-product-rate-funds="{{ product.rateFunds }}" data-product-rate-repayment="{{ product.rateRepayment }}">
+                                        <div class="closable content-mini content-mini-full bg-gray-lighter">
+                                            <a role="button" class="closable-icon" data-toggle="modal" data-target="#modal-delete-product">
+                                                <span class="fa fa-close"></span>
+                                            </a>
+                                            <p class="push-5"><b>{{ product.label }}</b></p>
+                                            <p class="push-5">Commission déblocage <br> <span class="text-primary">{{ product.rateFunds }}&nbsp;%</span> </p>
+                                            <p class="push-5">Commission remboursement <br> <span class="text-primary">{{ product.rateRepayment }}&nbsp;%</span></p>
+                                        </div>
                                     </div>
                                 {% endfor %}
                             </div>

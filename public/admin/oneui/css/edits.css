@@ -199,3 +199,18 @@ table.dataTable thead .sorting:after, table.dataTable thead .sorting_asc:after, 
     font-size: 12px;
     color: #999;
 }
+
+/* Extra UI Elements */
+.closable {
+    position: relative;
+}
+.closable-icon {
+    padding: 10px 15px;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+.closable-icon-left {
+    right: auto;
+    left: 0;
+}
