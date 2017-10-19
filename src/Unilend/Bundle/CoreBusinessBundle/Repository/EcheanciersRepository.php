@@ -699,22 +699,27 @@ class EcheanciersRepository extends EntityRepository
     }
 
     /**
-     * @param Loans|int $loan
-     * @param int       $sequence
+     * @param Projects|int $project
      *
      * @return array
      */
-    public function getRemainingAmountsByLoanAndSequence($loan, $sequence)
+    public function getRemainingAmountsByLoanAndSequence($project)
     {
         $queryBuilder = $this->createQueryBuilder('e');
-        $queryBuilder->select('ROUND(SUM(e.capital  - e.capitalRembourse) / 100, 2) AS capital, ROUND(SUM(e.interets  - e.interetsRembourses) / 100, 2) AS interest')
-            ->where('e.idLoan = :loan')
-            ->andWhere('e.ordre = :sequence')
-            ->setParameters([
-                'loan'     => $loan,
-                'sequence' => $sequence
-            ]);
+        $queryBuilder->select('IDENTITY(e.idLoan) as idLoan, e.ordre, ROUND(SUM(e.capital  - e.capitalRembourse) / 100, 2) AS capital, ROUND(SUM(e.interets  - e.interetsRembourses) / 100, 2) AS interest')
+            ->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'e.idLoan = l.idLoan')
+            ->where('l.idProject = :project')
+            ->setParameter('project', $project)
+            ->groupBy('e.idLoan')
+            ->addGroupBy('e.ordre');
 
-        return $queryBuilder->getQuery()->getSingleResult();
+        $remainingAmounts = $queryBuilder->getQuery()->getArrayResult();
+        $remainingAmountsByLoanAndSequence = [];
+
+        foreach ($remainingAmounts as $remainingAmount) {
+            $remainingAmountsByLoanAndSequence[$remainingAmount['idLoan']][$remainingAmount['ordre']] = $remainingAmount;
+        }
+
+        return $remainingAmountsByLoanAndSequence;
     }
 }

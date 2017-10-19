@@ -73,8 +73,6 @@ class DebtCollectionMissionManager
      */
     public function generateExcelFile(DebtCollectionMission $debtCollectionMission)
     {
-        ini_set('memory_limit', '512M');
-
         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMissionPaymentSchedule[] $missionPaymentSchedules */
         $missionPaymentSchedules          = $debtCollectionMission->getDebtCollectionMissionPaymentSchedules();
         $isDebtCollectionFeeDueToBorrower = $this->isDebtCollectionFeeDueToBorrower($debtCollectionMission->getIdProject());
@@ -439,6 +437,7 @@ class DebtCollectionMissionManager
         $project     = $debtCollectionMission->getIdProject();
         $loans       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project, 'status' => Loans::STATUS_ACCEPTED]);
         $vatTax      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+        $remainingAmountsByLoans  = $repaymentScheduleRepository->getRemainingAmountsByLoanAndSequence($project); // for resolve the memory issue. 200 MB reduced.
 
         if (null === $vatTax) {
             throw new \Exception('The VAT rate is not defined.');
@@ -455,9 +454,8 @@ class DebtCollectionMissionManager
                 foreach ($missionPaymentSchedules as $missionPaymentSchedule) {
                     $sequence = $missionPaymentSchedule->getIdPaymentSchedule()->getOrdre();
 
-                    $remainingAmounts  = $repaymentScheduleRepository->getRemainingAmountsByLoanAndSequence($loan, $sequence); // for resolve the memory issue. 140 MB reduced.
-                    $remainingCapital  = $remainingAmounts['capital'];
-                    $remainingInterest = $remainingAmounts['interest'];
+                    $remainingCapital  = $remainingAmountsByLoans[$loan->getIdLoan()][$sequence]['capital'];
+                    $remainingInterest = $remainingAmountsByLoans[$loan->getIdLoan()][$sequence]['interest'];
 
                     $pendingCapital  = 0;
                     $pendingInterest = 0;
