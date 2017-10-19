@@ -3,12 +3,12 @@
 namespace Unilend\Bundle\FrontBundle\Twig;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
+use Symfony\Component\Asset\Packages;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
-use Symfony\Component\Asset\Packages;
 use Unilend\core\Loader;
 
 class FrontBundleExtension extends \Twig_Extension
@@ -144,6 +144,7 @@ class FrontBundleExtension extends \Twig_Extension
     public function getStatisticFunction($statisticType, $date = null)
     {
         $requestedDate = (is_null($date)) ? new \DateTime('NOW') : new \DateTime($date);
+
         return $this->statisticsManager->getStatistic($statisticType, $requestedDate);
     }
 
@@ -170,6 +171,7 @@ class FrontBundleExtension extends \Twig_Extension
     public function getCountry($countryId)
     {
         $countryList = $this->locationManager->getCountries();
+
         return $countryList[$countryId];
     }
 
@@ -179,6 +181,7 @@ class FrontBundleExtension extends \Twig_Extension
             $nationalityId = PaysV2::COUNTRY_FRANCE;
         }
         $nationalityList = $this->locationManager->getNationalities();
+
         return $nationalityList[$nationalityId];
     }
 
@@ -209,6 +212,7 @@ class FrontBundleExtension extends \Twig_Extension
     public function photo($image, $format = '')
     {
         $photos = new \photos([$this->rootDir . '/../public/default/var/', $this->packages->getUrl('')]);
+
         return $photos->display($image, $format);
     }
 

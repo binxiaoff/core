@@ -8,6 +8,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
 
 class LenderStatisticRepository extends EntityRepository
 {
@@ -70,7 +71,7 @@ class LenderStatisticRepository extends EntityRepository
                         ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                         LIMIT 1
                     )
-                ) > 120 THEN "0" ELSE e.capital + e.interets END
+                ) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . ' THEN "0" ELSE e.capital + e.interets END
                 END AS amount
             FROM echeanciers e
               INNER JOIN projects p ON e.id_project = p.id_project

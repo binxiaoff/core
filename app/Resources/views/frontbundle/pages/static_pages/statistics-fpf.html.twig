@@ -3,12 +3,12 @@
         <div class="row">
         <div class="col-lg-6 col-md-6">
             <header class="block-header">
-                <h1 class="h4">{% trans %}fpf-statistics_general-description-title{% endtrans %}</h1>
+                <h1 class="h4">{% trans %} fpf-statistics_general-description-title {% endtrans %}</h1>
             </header>
             </div>
             <div class="col-lg-6 col-md-6">
                 <div class="block-text">
-                    {% trans %}fpf-statistics_general-description-text{% endtrans %}
+                    {% trans %} fpf-statistics_general-description-text {% endtrans %}
                 </div>
             </div>
         </div>
@@ -17,28 +17,28 @@
 <div class="bg-bg3">
     <section class="page-section remove-margin-b">
         <div class="site-wrap">
-            <h2 class="text-align-center">{% trans %}fpf-statistics_table-title{% endtrans %}</h2>
+            <h2 class="text-align-center">{% trans %} fpf-statistics_table-title {% endtrans %}</h2>
             <div class="table-stats-fpf-controls">
                 <div class="row">
                     <div class="col-md-6 col-lg-6 table-stats-fpf-filter">
-                        <label class="c-p1">{% trans %}fpf-statistics_table-filter{% endtrans %}</label>
+                        <label class="c-p1">{% trans %} fpf-statistics_table-filter {% endtrans %}</label>
                         <ul class="nav nav-tabs-text" role="tablist">
-                            <li role="presentation" class="active"><a data-toggle="volume">{% trans %}fpf-statistics_table-filter-volume{% endtrans %}</a></li>
-                            <li role="presentation"><a data-toggle="number">{% trans %}fpf-statistics_table-filter-number{% endtrans %}</a></li>
+                            <li role="presentation" class="active"><a data-toggle="volume">{% trans %} fpf-statistics_table-filter-volume {% endtrans %}</a></li>
+                            <li role="presentation"><a data-toggle="number">{% trans %} fpf-statistics_table-filter-number {% endtrans %}</a></li>
                         </ul>
                     </div>
                     <div class="col-md-6 col-lg-6 table-stats-fpf-date">
-                        <form action="{{ path('statistics_fpf') }}" method="post">
-                            <label for="table-stats-fpf-dateselect" class="c-p1">{% trans %}fpf-statistics_table-filter-date{% endtrans %}</label>
+                        <form action="{{ path('statistics_fpf') }}" method="get">
+                            <label for="table-stats-fpf-dateselect" class="c-p1">{% trans %} fpf-statistics_table-filter-date {% endtrans %}</label>
                             <div class="form-field remove-margin-b">
                                 <div class="input-group set-right">
                                     <select id="table-stats-fpf-dateselect" name="date" class="input-field">
                                         {% for availableDate in availableDates %}
-                                            <option value="{{ availableDate  }}" {% if date|date('d/m/Y') == availableDate %}selected{% endif %}>{{ availableDate }}</option>
+                                            <option value="{{ availableDate|date('d-m-Y') }}"{% if date|date('d-m-Y') == availableDate|date('d-m-Y') %} selected{% endif %}>{{ availableDate|date('d/m/Y') }}</option>
                                         {% endfor %}
                                     </select>
                                     <div class="btn-group">
-                                        <label for="table-stats-fpf-dateselect"><span class="icon fa-calendar-u32 c-p1"><span class="sr-only">{% trans %}fpf-statistics_table-filter-date-hint{% endtrans %}</span></span></label>
+                                        <label for="table-stats-fpf-dateselect"><span class="icon fa-calendar-u32 c-p1"><span class="sr-only">{% trans %} fpf-statistics_table-filter-date-hint {% endtrans %}</span></span></label>
                                     </div>
                                 </div>
                             </div>
@@ -50,7 +50,6 @@
                 {% set maxColSpan = data|first|length + 1 %}
                 <table id="table-stats-fpf" class="table table-stats-fpf ui-display-volume">
                     <tbody>
-                        {#<tr><th class="bg-bg2 c-t2" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-section-general-indicators"|trans|raw }}</th></tr>#}
                         <tr>
                             <th class="bg-bg2 c-t2">{{ "fpf-statistics_table-section-general-indicators"|trans|raw }}</th>
                             {% for year in years %}
@@ -60,7 +59,6 @@
                         </tr>
 
                         <!-- borrowed-capital -->
-                        {#<tr><td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-borrowed-capital"|trans|raw }}</td></tr>#}
                         <tr>
                             <td class="table-stats-unilend-item-label">{{ "fpf-statistics_table-borrowed-capital"|trans|raw }}&nbsp;</td>
                             {% for value in data['borrowed-capital'] %}
@@ -70,7 +68,6 @@
                         <!-- /borrowed-capital -->
 
                         <!-- number-of-projects -->
-                        {#<tr><td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-number-of-projects"|trans|raw }}</td></tr>#}
                         <tr>
                             <td class="table-stats-unilend-item-label">{{ "fpf-statistics_table-number-of-projects"|trans|raw }}&nbsp;</td>
                             {% for value in data['number-of-projects'] %}
@@ -80,7 +77,6 @@
                         <!-- /number-of-projects -->
 
                         <!-- average-borrowed-amount -->
-                        {#<tr><td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-average-borrowed-amount"|trans|raw }}</td></tr>#}
                         <tr>
                             <td class="table-stats-unilend-item-label">{{ "fpf-statistics_table-average-borrowed-amount"|trans|raw }}&nbsp;</td>
                             {% for value in data['average-borrowed-amount'] %}
@@ -89,9 +85,7 @@
                         </tr>
                         <!-- /average-borrowed-amount -->
 
-
                         <!-- average-interest-rate -->
-                        {#<tr><td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-average-interest-rate"|trans|raw }}</td></tr>#}
                         <tr>
                             <td class="table-stats-unilend-item-label">{{ "fpf-statistics_table-average-interest-rate"|trans|raw }}&nbsp;</td>
                             {% for value in data['average-interest-rate'] %}
@@ -101,27 +95,24 @@
                         <!-- /average-interest-rate -->
 
                         <!-- average-period -->
-                        {#<tr><td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-average-period"|trans|raw }}</td></tr>#}
                         <tr>
                             <td class="table-stats-unilend-item-label">{{ "fpf-statistics_table-average-period"|trans|raw }}&nbsp;</td>
                             {% for value in data['average-period'] %}
-                                <td><span class="volume">{{ value.volume|number_format(1, ',') }} mois</span><span class="number">{{ value.number|number_format(1, ',') }} mois</span></td>
+                                <td><span class="volume">{{ value.volume|localizednumberwithprecision(1) }} mois</span><span class="number">{{ value.number|localizednumberwithprecision(1) }} mois</span></td>
                             {% endfor %}
                         </tr>
                         <!-- /average-period -->
 
                         <!-- average-loan-age -->
-                        {#<tr><td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-average-loan-age"|trans|raw }}</td></tr>#}
                         <tr>
                             <td class="table-stats-unilend-item-label">{{ "fpf-statistics_table-average-loan-age"|trans|raw }}&nbsp;</td>
                             {% for value in data['average-loan-age'] %}
-                                <td><span class="volume">{{ value.volume|number_format(1, ',') }} mois</span><span class="number">{{ value.number|number_format(1, ',') }} mois</span></td>
+                                <td><span class="volume">{{ value.volume|localizednumberwithprecision(1) }} mois</span><span class="number">{{ value.number|localizednumberwithprecision(1) }} mois</span></td>
                             {% endfor %}
                         </tr>
                         <!-- /average-loan-age -->
 
                         <!-- repaid-capital -->
-                        {#<tr><td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-repaid-capital"|trans|raw }}</td></tr>#}
                         <tr>
                             <td class="table-stats-unilend-item-label">{{ "fpf-statistics_table-repaid-capital"|trans|raw }}&nbsp;</td>
                             {% for value in data['repaid-capital'] %}
@@ -131,7 +122,6 @@
                         <!-- /repaid-capital -->
 
                         <!-- repaid-capital-ratio -->
-                        {#<tr><td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-repaid-capital-ratio"|trans|raw }}</td></tr>#}
                         <tr>
                             <td class="table-stats-unilend-item-label">{{ "fpf-statistics_table-repaid-capital-ratio"|trans|raw }}&nbsp;</td>
                             {% for value in data['repaid-capital-ratio'] %}
@@ -141,7 +131,6 @@
                         <!-- /repaid-capital-ratio -->
 
                         <!-- repaid-interest -->
-                        {#<tr><td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-repaid-interest"|trans|raw }}</td></tr>#}
                         <tr>
                             <td class="table-stats-unilend-item-label">{{ "fpf-statistics_table-repaid-interest"|trans|raw }}&nbsp;</td>
                             {% for value in data['repaid-interest'] %}
@@ -151,7 +140,6 @@
                         <!-- /repaid-interest -->
 
                         <!-- repaid-interest-ratio -->
-                        {#<tr><td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-repaid-interest-ratio"|trans|raw }}</td></tr>#}
                         <tr>
                             <td class="table-stats-unilend-item-label">{{ "fpf-statistics_table-repaid-interest-ratio"|trans|raw }}&nbsp;</td>
                             {% for value in data['repaid-interest-ratio'] %}
@@ -160,7 +148,6 @@
                         </tr>
                         <!-- /average-interest-ratio -->
 
-                        {#<tr><th class="bg-bg2 c-t2" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-section-performance-indicators"|trans|raw }}</th></tr>#}
                         <tr>
                             <th class="bg-bg2 c-t2">{{ "fpf-statistics_table-section-performance-indicators"|trans|raw }}</th>
                             {% for year in years %}
@@ -170,7 +157,6 @@
                         </tr>
 
                         <!-- realistic-unilend-irr -->
-                        {#<tr><td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-realistic-unilend-irr"|trans|raw }}</td></tr>#}
                         <tr>
                             <td class="table-stats-unilend-item-label">{{ "fpf-statistics_table-realistic-unilend-irr"|trans|raw }}&nbsp;</td>
                             {% for value in data['realistic-unilend-irr'] %}
@@ -180,7 +166,6 @@
                         <!-- /realistic-unilend-irr -->
 
                         <!-- optimistic-unilend-irr -->
-                        {#<tr><td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-optimistic-unilend-irr"|trans|raw }}</td></tr>#}
                         <tr>
                             <td class="table-stats-unilend-item-label">{{ "fpf-statistics_table-optimistic-unilend-irr"|trans|raw }}&nbsp;</td>
                             {% for value in data['optimistic-unilend-irr'] %}
@@ -190,7 +175,6 @@
                         <!-- /optimistic-unilend-irr -->
 
                         <!-- annual-cost-of-risk -->
-                        {#<tr><td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-annual-cost-of-risk"|trans|raw }}</td></tr>#}
                         <tr>
                             <td class="table-stats-unilend-item-label">{{ "fpf-statistics_table-annual-cost-of-risk"|trans|raw }}&nbsp;</td>
                             {% for value in data['annual-cost-of-risk'] %}
@@ -199,7 +183,6 @@
                         </tr>
                         <!-- /annual-cost-of-risk -->
 
-                        {#<tr><th class="bg-bg2 c-t2" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-section-incident-indicators"|trans|raw }}</th></tr>#}
                         <tr>
                             <th class="bg-bg2 c-t2">{{ "fpf-statistics_table-section-incident-indicators"|trans|raw }}</th>
                             {% for year in years %}
@@ -209,7 +192,6 @@
                         </tr>
 
                         <!-- late-owed-capital-healthy -->
-                        {#<tr><td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-late-owed-capital-healthy"|trans|raw }}</td></tr>#}
                         <tr>
                             <td class="table-stats-unilend-item-label">{{ "fpf-statistics_table-late-owed-capital-healthy"|trans|raw }}&nbsp</td>
                             {% for value in data['late-owed-capital-healthy'] %}
@@ -219,7 +201,6 @@
                         <!-- /late-owed-capital-healthy -->
 
                         <!-- late-capital-percentage -->
-                        {#<tr><td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-late-capital-percentage"|trans|raw }}</td></tr>#}
                         <tr>
                             <td class="table-stats-unilend-item-label">{{ "fpf-statistics_table-late-capital-percentage"|trans|raw }}&nbsp;</td>
                             {% for value in data['late-capital-percentage'] %}
@@ -229,7 +210,6 @@
                         <!-- /repaid-capital-ratio -->
 
                         <!-- late-owed-capital-problematic -->
-                        {#<tr><td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_late-owed-capital-problematic"|trans|raw }}</td></tr>#}
                         <tr>
                             <td class="table-stats-unilend-item-label">{{ "fpf-statistics_late-owed-capital-problematic"|trans|raw }}&nbsp;</td>
                             {% for value in data['late-owed-capital-problematic'] %}
@@ -239,7 +219,6 @@
                         <!-- /late-owed-capital-problematic -->
 
                         <!-- late-problematic-capital-percentage -->
-                        {#<tr><td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-late-problematic-capital-percentage"|trans|raw }}</td></tr>#}
                         <tr>
                             <td class="table-stats-unilend-item-label">{{ "fpf-statistics_table-late-problematic-capital-percentage"|trans|raw }}&nbsp;</td>
                             {% for value in data['late-problematic-capital-percentage'] %}
@@ -249,7 +228,7 @@
                         <!-- /average-interest-ratio -->
 
                         <tr><th class="bg-bg2 c-t2" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-section-legal-indicators"|trans|raw }}</th></tr>
-                        {% set incidenceRate = getStatistic('incidenceRate', date) %}
+                        {% set incidenceRate = getStatistic('incidenceRate', date|date('Y-m-d')) %}
                         <tr>
                             <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan-1 }}">{% trans %} fpf-statistics_ifp-incidence-rate-amount {% endtrans %}</td>
                             <td class="table-stats-unilend-item-value">{{ incidenceRate['amountIFP']|localizednumberwithprecision(2) }}%</td>
@@ -278,16 +257,16 @@
                 </table>
             </div>
             <div class="table-stats-fpf-legend">
-                <h4 class="c-p1 remove-margin-t">{% trans %}fpf-statistics_table-legend{% endtrans %}</h4>
-                <p>{% trans %}fpf-statistics_table-index-1{% endtrans %}</p>
-                <p>{% trans %}fpf-statistics_table-index-2{% endtrans %}</p>
-                <p>{% trans %}fpf-statistics_table-index-3{% endtrans %}</p>
-                <p>{% trans %}fpf-statistics_table-index-4{% endtrans %}</p>
-                <p>{% trans %}fpf-statistics_table-index-5{% endtrans %}</p>
-                <p>{% trans %}fpf-statistics_table-index-6{% endtrans %}</p>
-                <p>{% trans %}fpf-statistics_table-index-7{% endtrans %}</p>
-                <p>{% trans %}fpf-statistics_table-index-8{% endtrans %}</p>
-                <p>{% trans %}fpf-statistics_table-index-9{% endtrans %}</p>
+                <h4 class="c-p1 remove-margin-t">{% trans %} fpf-statistics_table-legend {% endtrans %}</h4>
+                <p>{% trans %} fpf-statistics_table-index-1 {% endtrans %}</p>
+                <p>{% trans %} fpf-statistics_table-index-2 {% endtrans %}</p>
+                <p>{% trans %} fpf-statistics_table-index-3 {% endtrans %}</p>
+                <p>{% trans %} fpf-statistics_table-index-4 {% endtrans %}</p>
+                <p>{% trans %} fpf-statistics_table-index-5 {% endtrans %}</p>
+                <p>{% trans %} fpf-statistics_table-index-6 {% endtrans %}</p>
+                <p>{% trans %} fpf-statistics_table-index-7 {% endtrans %}</p>
+                <p>{% trans %} fpf-statistics_table-index-8 {% endtrans %}</p>
+                <p>{% trans %} fpf-statistics_table-index-9 {% endtrans %}</p>
             </div>
         </div>
     </section>

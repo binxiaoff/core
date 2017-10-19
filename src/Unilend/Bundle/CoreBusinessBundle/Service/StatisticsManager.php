@@ -24,12 +24,14 @@ class StatisticsManager
      * Day we started saving front statistics. Before that data there is no data.
      */
     const START_FRONT_STATISTICS_HISTORY = '2016-11-17';
-    const START_FPF_STATISTIC_HISTORY    = '2017-10-12'; //TODO change to put in production date
+    const START_FPF_STATISTIC_HISTORY    = '2017-10-10'; //TODO change to put in production date
 
     /** Constants to make method calls more readable */
     const GROUP_FIRST_YEAR_COHORT = false;
     const HEALTHY_PROJECTS        = true;
     const PROBLEMATIC_PROJECTS    = false;
+
+    const NOT_APPLICABLE = 'NA';
 
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
@@ -251,7 +253,7 @@ class StatisticsManager
             try {
                 $data['IRR'][$year] = $this->IRRManager->getUnilendIRRByCohort($cohortStartDate, $cohortEndDate);
             } catch (\Exception $exception){
-                $data['IRR'][$year] = 'NA';
+                $data['IRR'][$year] = self::NOT_APPLICABLE;
             }
 
             $data['projects'][$year]                            = $fundedProjects[$year];
@@ -403,13 +405,13 @@ class StatisticsManager
             try {
                 $data['optimistic-unilend-irr'][$year] = $this->IRRManager->getOptimisticUnilendIRRByCohort($cohortStartDate, $cohortEndDate);
             } catch (\Exception $exception) {
-                $data['optimistic-unilend-irr'][$year] = 'NA';
+                $data['optimistic-unilend-irr'][$year] = self::NOT_APPLICABLE;
             }
 
             try {
                 $data['realistic-unilend-irr'][$year] = $this->IRRManager->getUnilendIRRByCohort($cohortStartDate, $cohortEndDate);
             } catch (\Exception $exception) {
-                $data['realistic-unilend-irr'][$year] = 'NA';
+                $data['realistic-unilend-irr'][$year] = self::NOT_APPLICABLE;
             }
 
             $data['borrowed-capital'][$year]                    = round($borrowedCapital[$year]);
@@ -431,7 +433,7 @@ class StatisticsManager
             $data['repaid-capital-ratio'][$year]                = round(bcmul(bcdiv($data['repaid-capital'][$year], $data['borrowed-capital'][$year], 6), 100, 3), 2);
             $data['repaid-interest'][$year]                     = round(bcsub($repaidInterest[$year], $repaidInterestRegularized[$year], 4), 2);
             $data['repaid-interest-ratio'][$year]               = round(bcmul(bcdiv($data['repaid-interest'][$year], $totalInterest[$year], 6), 100, 3), 2);
-            $data['annual-cost-of-risk'][$year]                 = 'NA' === $data['optimistic-unilend-irr'][$year] ? 'NA' : round(bcsub($data['optimistic-unilend-irr'][$year], $data['realistic-unilend-irr'][$year], 4), 2);
+            $data['annual-cost-of-risk'][$year]                 = self::NOT_APPLICABLE === $data['optimistic-unilend-irr'][$year] ? self::NOT_APPLICABLE : round(bcsub($data['optimistic-unilend-irr'][$year], $data['realistic-unilend-irr'][$year], 4), 2);
             $data['late-owed-capital-healthy'][$year]           = round(bcsub($lateCapitalRepaymentsHealthyProjects[$year], bcsub($debtCollectionRepaymentHealthyProjects[$year], $debtCollectionCommissionHealthyProjects[$year], 4), 4));
             $data['late-capital-percentage'][$year]             = [
                 'volume' => round(bcmul(bcdiv($data['late-owed-capital-healthy'][$year], $data['borrowed-capital'][$year], 6), 100, 3), 2),
@@ -456,7 +458,7 @@ class StatisticsManager
         $data['late-owed-capital-problematic']['total']       = array_sum($data['late-owed-capital-problematic']);
         $data['optimistic-unilend-irr']['total']              = $this->IRRManager->getLastOptimisticUnilendIRR()->getValue();
         $data['realistic-unilend-irr']['total']               = $this->IRRManager->getLastUnilendIRR()->getValue();
-        $data['annual-cost-of-risk']['total']                 = 'NA' === $data['optimistic-unilend-irr']['total'] ? 'NA' : bcsub($data['optimistic-unilend-irr']['total'], $data['realistic-unilend-irr']['total'], 4);
+        $data['annual-cost-of-risk']['total']                 = self::NOT_APPLICABLE === $data['optimistic-unilend-irr']['total'] ? self::NOT_APPLICABLE : bcsub($data['optimistic-unilend-irr']['total'], $data['realistic-unilend-irr']['total'], 4);
         $data['average-interest-rate']['total']               = [
             'volume' => $this->getStatistic('averageInterestRateForLenders', $date),
             'number' => $projectRepository->getNonWeightedAverageInterestRateUntil()
@@ -517,7 +519,7 @@ class StatisticsManager
         $availableDates = [];
 
         foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->getAvailableDatesForStatisticType(UnilendStats::TYPE_FPF_FRONT_STATISTIC) as $date) {
-            $availableDates[] = $date['added']->format('d/m/Y');
+            $availableDates[] = $date['added'];
         }
 
         return $availableDates;

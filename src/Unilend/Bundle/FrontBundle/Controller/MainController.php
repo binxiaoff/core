@@ -789,33 +789,35 @@ class MainController extends Controller
 
     /**
      * @Route("/indicateurs-de-performance", name="statistics_fpf")
+     * @Route("/indicateurs-de-performance/{requestedDate}", name="historic_statistics_fpf", requirements={"requestedDate": "[0-9]{2}-[0-9]{2}-20[0-9]{2}"})
+     *
      * @return Response
      */
     public function statisticsFpfAction(Request $request)
     {
-        if ($request->getClientIp() != '92.154.10.41') {
-            return $this->render('/pages/static_pages/error.html.twig');
-        }
+        $date = $request->query->filter('date', FILTER_SANITIZE_STRING);
 
-        $requestedDate = $request->request->filter('date', FILTER_SANITIZE_STRING);
-
-        if (empty($requestedDate)) {
-            $date  = new \DateTime('NOW');
-        } else {
-            $date             = \DateTime::createFromFormat('d/m/Y', $requestedDate);
+        if (
+            false === empty($date)
+            && preg_match("/^(0[1-9]|[1-2][0-9]|3[0-1])-(0[1-9]|1[0-2])-[0-9]{4}$/", $date)
+        ) {
+            $requestedDate    = \DateTime::createFromFormat('d-m-Y', $date);
             $firstHistoryDate = new \DateTime(StatisticsManager::START_FPF_STATISTIC_HISTORY);
-            if ($date < $firstHistoryDate) {
-                $date  = new \DateTime('NOW');
+            if ($requestedDate < $firstHistoryDate) {
+                return $this->redirectToRoute('statistics_fpf');
             }
+        } else {
+            $requestedDate  = new \DateTime('NOW');
         }
-        $years             = range(2013, $date->format('Y'));
+
         $statisticsManager = $this->get('unilend.service.statistics_manager');
-        $data              = $statisticsManager->getPerformanceIndicatorAtDate($date);
+        $years             = range(2013, $requestedDate->format('Y'));
+        $data              = $statisticsManager->getPerformanceIndicatorAtDate($requestedDate);
 
         $template = [
             'data'           => $data,
             'years'          => $years,
-            'date'           => $date->format('Y-m-d'),
+            'date'           => $requestedDate,
             'availableDates' => $statisticsManager->getAvailableDatesForFPFStatistics()
         ];
         $response = $this->render('pages/static_pages/statistics-fpf.html.twig', $template);

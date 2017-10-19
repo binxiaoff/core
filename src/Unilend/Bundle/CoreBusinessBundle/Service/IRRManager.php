@@ -231,7 +231,7 @@ class IRRManager
         set_time_limit(1000);
 
         $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
-        $valuesIRR = $unilendStatsRepository->getOptimisticIRRValuesByCohort($cohortStartDate, $cohortEndDate);
+        $valuesIRR              = $unilendStatsRepository->getOptimisticIRRValuesByCohort($cohortStartDate, $cohortEndDate);
 
         return $this->calculateIRR($valuesIRR);
     }
@@ -244,7 +244,7 @@ class IRRManager
         set_time_limit(1000);
 
         $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
-        $valuesIRR = $unilendStatsRepository->getOptimisticIRRValuesUntilDateLimit(new \DateTime('NOW'));
+        $valuesIRR              = $unilendStatsRepository->getOptimisticIRRValuesUntilDateLimit(new \DateTime('NOW'));
 
         return $this->calculateIRR($valuesIRR);
     }

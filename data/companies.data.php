@@ -345,7 +345,7 @@ class companies extends companies_crud
                           ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                           LIMIT 1
                          )
-                ) > 120)
+                ) > ' . \Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . ' )
             GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery(
