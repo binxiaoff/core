@@ -151,10 +151,14 @@
                 $modal.find('[name=rate_repayment]').val(repayment)
                 $modal.find('[name=id]').val(id)
             })
+            // Delete product
+            $(document).on('submit', '#modal-delete-product form', function() {
+                App.blocks('#modal-delete-product .block', 'state_loading')
+            })
             // Submit new product
             $(document).on('submit', '#modal-add-product form', function() {
                 var $form = $(this)
-                if (!$form.find('.has-errors').length) {
+                if (!$form.find('.has-error').length) {
                     App.blocks('#modal-add-product .block', 'state_loading')
                 }
             })
