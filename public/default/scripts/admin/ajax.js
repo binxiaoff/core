@@ -170,54 +170,6 @@ function loadTradTexte(nom, section) {
     }
 }
 
-function editMemo(projectId, commentId) {
-    $.ajax({
-        url: add_url + '/dossiers/memo',
-        method: 'POST',
-        dataType: 'html',
-        data: {
-            projectId: projectId,
-            commentId: commentId,
-            content: CKEDITOR.instances['content_memo'].getData(),
-            public: $('[name="public_memo"]:checked').val()
-        },
-        success: function(response) {
-            $('#table_memo').html(response)
-            $.fn.colorbox.close()
-        }
-    });
-}
-
-function deleteMemo(projectId, commentId) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer le mémo ?')) {
-        var memoRows = $('#table_memo .tablesorter tbody tr'),
-            targetedMemoRow = event.target
-
-        $.ajax({
-            url: add_url + '/dossiers/memo/' + projectId + '/' + commentId,
-            method: 'DELETE',
-            dataType: 'json',
-            success: function(response) {
-                if (response.success != undefined && response.success) {
-                    if (memoRows.length == 1) {
-                        $('#table_memo *').remove()
-                    } else {
-                        $(targetedMemoRow).closest('tr').remove()
-                    }
-                } else {
-                    if (response.error != undefined && response.error) {
-                        if (response.message != undefined) {
-                            alert(response.message)
-                        } else {
-                            alert('Erreur inconnue')
-                        }
-                    }
-                }
-            }
-        })
-    }
-}
-
 /* Activer un utilisateur sur une zone */
 function activeUserZone(id_user, id_zone, zone) {
     xhr_object = AjaxObject();
