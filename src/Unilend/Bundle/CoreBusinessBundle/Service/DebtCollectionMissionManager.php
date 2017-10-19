@@ -11,7 +11,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionFeeDetail;
 use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
 use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMissionPaymentSchedule;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
@@ -432,12 +431,12 @@ class DebtCollectionMissionManager
         $repaymentScheduleRepository        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
         $projectRepaymentDetailRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail');
         $closeOutNettingRepaymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment');
+        $loanRepository                     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
 
-        $loanDetails = [];
-        $project     = $debtCollectionMission->getIdProject();
-        $loans       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project, 'status' => Loans::STATUS_ACCEPTED]);
-        $vatTax      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
-        $remainingAmountsByLoans  = $repaymentScheduleRepository->getRemainingAmountsByLoanAndSequence($project); // for resolve the memory issue. 200 MB reduced.
+        $project                 = $debtCollectionMission->getIdProject();
+        $vatTax                  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+        $remainingAmountsByLoans = $repaymentScheduleRepository->getRemainingAmountsByLoanAndSequence($project); // for resolve the memory issue. 200 MB reduced.
+        $loanDetails             = $loanRepository->getBasicInformation($project); // for resolve the memory issue. 30 MB reduced.
 
         if (null === $vatTax) {
             throw new \Exception('The VAT rate is not defined.');
@@ -445,22 +444,20 @@ class DebtCollectionMissionManager
 
         $vatTaxRate = round(bcdiv($vatTax->getRate(), 100, 6), 4);
 
-        foreach ($loans as $loan) {
-            $loanDetails[$loan->getIdLoan()] = $this->getLoanBasicInformation($loan);
-
+        foreach ($loanDetails as $loanId => $loanDetail) {
             $totalRemainingAmount = 0;
 
             if (false === $isCloseOutNetting) {
                 foreach ($missionPaymentSchedules as $missionPaymentSchedule) {
                     $sequence = $missionPaymentSchedule->getIdPaymentSchedule()->getOrdre();
 
-                    $remainingCapital  = $remainingAmountsByLoans[$loan->getIdLoan()][$sequence]['capital'];
-                    $remainingInterest = $remainingAmountsByLoans[$loan->getIdLoan()][$sequence]['interest'];
+                    $remainingCapital  = $remainingAmountsByLoans[$loanId][$sequence]['capital'];
+                    $remainingInterest = $remainingAmountsByLoans[$loanId][$sequence]['interest'];
 
                     $pendingCapital  = 0;
                     $pendingInterest = 0;
 
-                    $pendingAmount = $projectRepaymentDetailRepository->getPendingAmountToRepay($loan, $sequence);
+                    $pendingAmount = $projectRepaymentDetailRepository->getPendingAmountToRepay($loanId, $sequence);
                     if ($pendingAmount) {
                         $pendingCapital  = $pendingAmount['capital'];
                         $pendingInterest = $pendingAmount['interest'];
@@ -469,13 +466,13 @@ class DebtCollectionMissionManager
                     $remainingCapital  = round(bcsub($remainingCapital, $pendingCapital, 4), 2);
                     $remainingInterest = round(bcsub($remainingInterest, $pendingInterest, 4), 2);
 
-                    $loanDetails[$loan->getIdLoan()]['schedule'][$sequence]['remaining_capital']  = $remainingCapital;
-                    $loanDetails[$loan->getIdLoan()]['schedule'][$sequence]['remaining_interest'] = $remainingInterest;
+                    $loanDetails[$loanId]['schedule'][$sequence]['remaining_capital']  = $remainingCapital;
+                    $loanDetails[$loanId]['schedule'][$sequence]['remaining_interest'] = $remainingInterest;
 
                     $totalRemainingAmount = round(bcadd($totalRemainingAmount, bcadd($remainingCapital, $remainingInterest, 4), 4), 2);
                 }
             } else {
-                $closeOutNettingRepayment = $closeOutNettingRepaymentRepository->findOneBy(['idLoan' => $loan]);
+                $closeOutNettingRepayment = $closeOutNettingRepaymentRepository->findOneBy(['idLoan' => $loanId]);
 
                 $remainingCapital  = round(bcsub($closeOutNettingRepayment->getCapital(), $closeOutNettingRepayment->getRepaidCapital(), 4), 2);
                 $remainingInterest = round(bcsub($closeOutNettingRepayment->getInterest(), $closeOutNettingRepayment->getRepaidInterest(), 4), 2);
@@ -483,7 +480,7 @@ class DebtCollectionMissionManager
                 $pendingCapital  = 0;
                 $pendingInterest = 0;
 
-                $pendingAmount = $projectRepaymentDetailRepository->getPendingAmountToRepay($loan);
+                $pendingAmount = $projectRepaymentDetailRepository->getPendingAmountToRepay($loanId);
                 if ($pendingAmount) {
                     $pendingCapital  = $pendingAmount['capital'];
                     $pendingInterest = $pendingAmount['interest'];
@@ -492,8 +489,8 @@ class DebtCollectionMissionManager
                 $remainingCapital  = round(bcsub($remainingCapital, $pendingCapital, 4), 2);
                 $remainingInterest = round(bcsub($remainingInterest, $pendingInterest, 4), 2);
 
-                $loanDetails[$loan->getIdLoan()]['remaining_capital']  = $remainingCapital;
-                $loanDetails[$loan->getIdLoan()]['remaining_interest'] = $remainingInterest;
+                $loanDetails[$loanId]['remaining_capital']  = $remainingCapital;
+                $loanDetails[$loanId]['remaining_interest'] = $remainingInterest;
 
                 $totalRemainingAmount = round(bcadd($totalRemainingAmount, bcadd($remainingCapital, $remainingInterest, 4), 4), 2);
             }
@@ -502,13 +499,13 @@ class DebtCollectionMissionManager
                 $feeVatExcl                           = round(bcmul($totalRemainingAmount, $debtCollectionMission->getFeesRate(), 4), 2);
                 $feeVat                               = round(bcmul($feeVatExcl, $vatTaxRate, 4), 2);
                 $feeOnRemainingAmountTaxIncl          = round(bcadd($feeVatExcl, $feeVat, 4), 2);
-                $loanDetails[$loan->getIdLoan()]['fee_tax_excl'] = $feeVatExcl;
-                $loanDetails[$loan->getIdLoan()]['fee_vat']      = $feeVat;
-                $loanDetails[$loan->getIdLoan()]['total']        = round(bcadd($totalRemainingAmount, $feeOnRemainingAmountTaxIncl, 4), 2);
+                $loanDetails[$loanId]['fee_tax_excl'] = $feeVatExcl;
+                $loanDetails[$loanId]['fee_vat']      = $feeVat;
+                $loanDetails[$loanId]['total']        = round(bcadd($totalRemainingAmount, $feeOnRemainingAmountTaxIncl, 4), 2);
             } else {
-                $loanDetails[$loan->getIdLoan()]['fee_tax_excl'] = 0;
-                $loanDetails[$loan->getIdLoan()]['fee_vat']      = 0;
-                $loanDetails[$loan->getIdLoan()]['total']        = $totalRemainingAmount;
+                $loanDetails[$loanId]['fee_tax_excl'] = 0;
+                $loanDetails[$loanId]['fee_vat']      = 0;
+                $loanDetails[$loanId]['total']        = $totalRemainingAmount;
             }
         }
 
@@ -558,21 +555,17 @@ class DebtCollectionMissionManager
      */
     private function getLoanFeeDetails(Receptions $wireTransferIn)
     {
-        $loanDetails = [];
-
         $operationRepository               = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $debtCollectionFeeDetailRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionFeeDetail');
-        $project                           = $wireTransferIn->getIdProject();
-        $loans                             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project, 'status' => Loans::STATUS_ACCEPTED]);
+        $loanDetails                       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getBasicInformation($wireTransferIn->getIdProject());
 
-        foreach ($loans as $loan) {
-            $loanDetails[$loan->getIdLoan()]                    = $this->getLoanBasicInformation($loan);
-            $repaidAmounts                                      = $operationRepository->getTotalRepaidAmountsByLoanAndWireTransferIn($loan, $wireTransferIn);
-            $loanDetails[$loan->getIdLoan()]['repaid_capital']  = $repaidAmounts['capital'];
-            $loanDetails[$loan->getIdLoan()]['repaid_interest'] = $repaidAmounts['interest'];
-            $feeAmounts                                         = $debtCollectionFeeDetailRepository->getAmountsByLoanAndWireTransferIn($loan, $wireTransferIn);
-            $loanDetails[$loan->getIdLoan()]['fee_tax_excl']    = round(bcsub($feeAmounts['amountTaxIncl'], $feeAmounts['vat'], 4), 2);
-            $loanDetails[$loan->getIdLoan()]['fee_vat']         = $feeAmounts['vat'];
+        foreach ($loanDetails as $loanId => $loanDetail) {
+            $repaidAmounts                           = $operationRepository->getTotalRepaidAmountsByLoanAndWireTransferIn($loanId, $wireTransferIn);
+            $loanDetails[$loanId]['repaid_capital']  = $repaidAmounts['capital'];
+            $loanDetails[$loanId]['repaid_interest'] = $repaidAmounts['interest'];
+            $feeAmounts                              = $debtCollectionFeeDetailRepository->getAmountsByLoanAndWireTransferIn($loanId, $wireTransferIn);
+            $loanDetails[$loanId]['fee_tax_excl']    = round(bcsub($feeAmounts['amountTaxIncl'], $feeAmounts['vat'], 4), 2);
+            $loanDetails[$loanId]['fee_vat']         = $feeAmounts['vat'];
         }
 
         return $loanDetails;
@@ -612,41 +605,6 @@ class DebtCollectionMissionManager
         $chargeDetails['fee_vat']      = $feeAmounts['vat'];
 
         return $chargeDetails;
-    }
-
-    /**
-     * @param Loans $loan
-     *
-     * @return array
-     */
-    private function getLoanBasicInformation(Loans $loan)
-    {
-        $companyRepository       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
-        $clientAddressRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses');
-
-        $client        = $loan->getIdLender()->getIdClient();
-        $company       = $companyRepository->findOneBy(['idClientOwner' => $client]);
-        $postalAddress = $clientAddressRepository->findOneBy(['idClient' => $client]);
-
-        $companyName = '';
-        if ($company) {
-            $companyName = $company->getName();
-        }
-
-        return [
-            'name'         => $client->getNom(),
-            'first_name'   => $client->getPrenom(),
-            'email'        => $client->getEmail(),
-            'type'         => $client->getType(),
-            'company_name' => $companyName,
-            'birthday'     => $client->getNaissance(),
-            'telephone'    => $client->getTelephone(),
-            'mobile'       => $client->getMobile(),
-            'address'      => $postalAddress->getAdresse1() . ' ' . $postalAddress->getAdresse2() . ' ' . $postalAddress->getAdresse3(),
-            'postal_code'  => $postalAddress->getCp(),
-            'city'         => $postalAddress->getVille(),
-            'amount'       => round(bcdiv($loan->getAmount(), 100, 4), 2),
-        ];
     }
 
     /**

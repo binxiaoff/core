@@ -189,4 +189,34 @@ class LoansRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }
+
+    /**
+     * @param int|Projects $project
+     *
+     * @return array
+     */
+    public function getBasicInformation($project)
+    {
+        $queryBuilder = $this->createQueryBuilder('l');
+        $queryBuilder->select('
+            l.idLoan, c.nom AS name, c.prenom AS first_name, c.email, c.type, com.name AS company_name, c.naissance AS birthday,
+            c.telephone, c.mobile, TRIM(CONCAT(ca.adresse1, \' \', ca.adresse2, \' \', ca.adresse3)) as address, ca.cp AS postal_code,
+            ca.ville AS city, ROUND(l.amount / 100, 2) as amount
+        ')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'l.idLender = w.id')
+            ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'c.idClient = w.idClient')
+            ->leftJoin('UnilendCoreBusinessBundle:Companies', 'com', Join::WITH, 'com.idClientOwner = w.idClient')
+            ->leftJoin('UnilendCoreBusinessBundle:ClientsAdresses', 'ca', Join::WITH, 'ca.idClient = w.idClient')
+            ->where('l.idProject = :project')
+            ->setParameter('project', $project);
+
+        $loans                 = $queryBuilder->getQuery()->getArrayResult();
+        $loansBasicInformation = [];
+
+        foreach ($loans as $loan) {
+            $loansBasicInformation[$loan['idLoan']] = $loan;
+        }
+
+        return $loansBasicInformation;
+    }
 }

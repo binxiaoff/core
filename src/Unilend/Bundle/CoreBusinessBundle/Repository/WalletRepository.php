@@ -270,25 +270,4 @@ class WalletRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getResult();
     }
-
-    /**
-     * @param int|Wallet $walletId
-     *
-     * @return array
-     */
-    public function getWalletBasicInformation($walletId)
-    {
-        $queryBuilder = $this->createQueryBuilder('w');
-        $queryBuilder->select('
-            c.nom AS name, c.prenom AS first_name, c.email, c.type, com.name AS company_name, c.naissance AS birthday,
-            c.telephone, c.mobile, ca.adresse1, ca.adresse2, ca.adresse3, ca.cp AS postal_code, ca.ville AS city 
-            ')
-            ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'c.idClient = w.idClient')
-            ->leftJoin('UnilendCoreBusinessBundle:Companies', 'com', Join::WITH, 'com.idClientOwner = w.idClient')
-            ->leftJoin('UnilendCoreBusinessBundle:ClientsAdresses', 'ca', Join::WITH, 'ca.idClient = w.idClient')
-            ->where('w.id = :wallet')
-            ->setParameter('wallet', $walletId);
-
-        return $queryBuilder->getQuery()->getOneOrNullResult();
-    }
 }
