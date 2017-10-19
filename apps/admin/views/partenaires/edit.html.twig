@@ -298,26 +298,20 @@
 {% set formErrors = {
     settings: ['Error 1', 'Error 2'],
     products:  ['Error 1', 'Error 2'],
-    instructionsSubmissions:  ['Error 1', 'Error 2'],
-    documents:  ['Error 1', 'Error 2'],
-    instructionsDocuments:  ['Error 1', 'Error 2']
+    instructions:  ['Error 1', 'Error 2'],
+    documents:  ['Error 1', 'Error 2']
 } %}
 {% set formSuccess = {
     settings: ['Success message'],
     products:  ['Success message'],
-    documents:  ['Success message'],
-    instructionsSubmissions:  ['Success message'],
-    instructionsDocuments:  ['Success message']
+    instructions:  ['Success message'],
+    documents:  ['Error 1', 'Error 2']
 } %}
 
 {% set products = [
     {id: 1, label: 'Product 1', rateFunds: '4.00', rateRepayment: '1.00'},
     {id: 2, label: 'Product 2', rateFunds: '5.00', rateRepayment: '1.00'}
 ] %}
-
- {% set partnerAgencies = [
-     {id: '10', name: 'Axa Nord', company: 'Axa Nord', siren: '29132983',  city: 'Paris', postcode: '75016', address: '12 Rue Fallempin', phone: '023920392'}
- ] %}
 
 {% set users = [
     {id: 342442, status: 'inactive', name: 'Henry Gordon', position: 'Manager', agency: 'Axa Nord', date_added: '15/05/2017', last_connection: '15/08/2017'},
@@ -349,163 +343,94 @@
             <div class="col-md-6">
                 <div id="organisation" class="block block-bordered">
                     <div class="block-header">
-                        <h3 class="block-title">Organisation</h3>
+                        <h3 class="block-title">Agences</h3>
                     </div>
                     <div class="block-content block-content-full">
-                        <table id="table-agencies" class="table table-bordered table-header-bg table-striped" data-table data-table-search="false" data-table-editor data-table-editor-url="/partnerEdit/users/" data-table-editor-actions="add, modify">
+                        <table id="table-agencies" class="table table-bordered table-header-bg table-striped"
+                               data-table
+                               data-table-search="true"
+                               data-table-editor data-table-editor-url="{{ app.adminUrl }}/partenaires/agency/{{ partner.idCompany.idCompany }}"
+                               data-table-editor-actions="add, modify">
                             <thead>
                                 <tr>
-                                    <th data-editor-name="name" data-editor-type="text">Nom de l'agence</th>
-                                    <th data-editor-name="company" data-editor-type="text">Raison Sociale</th>
-                                    <th data-editor-name="siren" data-editor-type="text">SIREN</th>
-                                    <th data-editor-name="city" data-editor-type="text">Ville</th>
-                                    <th data-editor-name="postcode" data-editor-type="text">Code Postal</th>
-                                    <th data-editor-name="address" data-editor-type="text">Adresse</th>
-                                    <th data-editor-name="phone" data-editor-type="text">Téléphone</th>
+                                    <th data-editor-name="name" data-editor-type="text">Nom</th>
+                                    <th data-editor-name="siren" data-editor-type="text" data-editor-optional class="hidden">SIREN</th>
+                                    <th data-editor-name="phone" data-editor-type="text" data-editor-optional>Téléphone</th>
+                                    <th data-editor-name="address" data-editor-type="text" data-editor-optional class="hidden">Adresse</th>
+                                    <th data-editor-name="postcode" data-editor-type="text" data-editor-optional class="hidden">Code postal</th>
+                                    <th data-editor-name="city" data-editor-type="text" data-editor-optional>Ville</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for agency in partnerAgencies %}
-                                    <tr data-id="{{ agency.id }}">
-                                        <td>{{ agency.name }}</td>
-                                        <td>{{ agency.company }}</td>
-                                        <td>{{ agency.siren }}</td>
-                                        <td>{{ agency.city }}</td>
-                                        <td>{{ agency.postcode }}</td>
-                                        <td>{{ agency.address }}</td>
-                                        <td>{{ agency.phone }}</td>
-                                    </tr>
-                                {% endfor %}
+                            {% for agency in agencies %}
+                                <tr data-id="{{ agency.idCompany }}">
+                                    <td>{{ agency.name }}</td>
+                                    <td class="hidden">{{ agency.siren }}</td>
+                                    <td>{{ agency.phone }}</td>
+                                    <td class="hidden">{{ agency.adresse1 }}</td>
+                                    <td class="hidden">{{ agency.zip }}</td>
+                                    <td>{{ agency.city }}</td>
+                                </tr>
+                            {% endfor %}
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
             <div class="col-md-6">
-                <div id="products" class="block block-bordered">
+                <div id="users" class="block block-bordered">
                     <div class="block-header">
-                        <h3 class="block-title">Produits</h3>
+                        <h3 class="block-title">Utilisateurs</h3>
                     </div>
                     <div class="block-content block-content-full">
-                        <form action="/partnerEdit/products/" method="post">
-                            {%  if formErrors.products is defined and formErrors.products is not empty %}
-                                <div class="alert alert-error">
-                                    {% for error in formErrors.products %}
-                                        <p>{{ error }}</p>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                            {%  if formSuccess.products is defined %}
-                                <div class="alert alert-success">
-                                    {% for success in formSuccess.products %}
-                                        <p>{{ success }}</p>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                            <button class="btn btn-default add-btn push-5" type="button" data-toggle="modal" data-target="#modal-add-product"><span class="fa fa-plus"></span> Ajouter</button>
-                            <div class="row push">
-                                {% for product in products %}
-                                    <div class="col-md-3" data-product data-product-id="{{ product.id }}" data-product-rate-funds="{{ product.rateFunds }}" data-product-rate-repayment="{{ product.rateRepayment }}">
-                                        <div class="closable content-mini content-mini-full bg-gray-lighter">
-                                            <a role="button" class="closable-icon" data-toggle="modal" data-target="#modal-delete-product">
-                                                <span class="fa fa-close"></span>
-                                            </a>
-                                            <p class="push-5"><b>{{ product.label }}</b></p>
-                                            <p class="push-5">Commission déblocage <br> <span class="text-primary">{{ product.rateFunds }}&nbsp;%</span> </p>
-                                            <p class="push-5">Commission remboursement <br> <span class="text-primary">{{ product.rateRepayment }}&nbsp;%</span></p>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                            <div class="text-left">
-                                <button class="btn btn-primary" type="submit">Mise à jour</button>
-                            </div>
-                        </form>
+                        <table id="table-users" class="table table-bordered table-header-bg table-striped" data-table-search="true" data-table-editor data-table-editor-url="/partnerEdit/users/" data-table-editor-actions="add, modify, toggle">
+                            <thead>
+                            <tr>
+                                <th data-editor-name="name" data-editor-type="text">Prénom et nom</th>
+                                <th data-editor-name="position" data-editor-type="text">Rôle</th>
+                                <th data-editor-name="agency" data-editor-type="multilevel" data-editor-options="{{ partnerAgencies|json_encode|escape('html_attr') }}">Entité de rattachement</th>
+                                <th data-editor-name="date_added" data-editor-type="date">Date d'ajout</th>
+                                <th data-editor-name="last_connection" data-editor-type="date">Dernière connexion</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for user in users %}
+                                <tr data-id="{{ user.id }}" data-state="{{ user.status }}">
+                                    <td>{{ user.name }}</td>
+                                    <td>{{ user.position }}</td>
+                                    <td>{{ user.agency }}</td>
+                                    <td>{{ user.date_added }}</td>
+                                    <td>{{ user.last_connection }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
-        <div id="settings" class="block block-bordered">
-            <div class="block-header">
-                <h3 class="block-title">Paramètres partenaire</h3>
-            </div>
-            <div class="block-content block-content-full">
-                <form action="/partnerEdit/settings/" method="post">
-                    {%  if formErrors.settings is defined and formErrors.settings is not empty %}
-                        <div class="alert alert-error">
-                            {% for error in formErrors.settings %}
-                                <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                    {%  if formSuccess.settings is defined %}
-                        <div class="alert alert-success">
-                            {% for success in formSuccess.settings %}
-                                <p>{{ success }}</p>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <p style="margin-bottom: 5px">Statut du partenaire</p>
-                                <label class="css-input switch switch-primary">
-                                    <input type="checkbox" name="status" checked><span></span>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <p style="margin-bottom: 5px">Prospections</p>
-                                <label class="css-input switch switch-primary">
-                                    <input type="checkbox" name="prospections" checked><span></span>
-                                </label>
-                            </div>
-                        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div id="instructions" class="block block-bordered">
+                    <div class="block-header">
+                        <h3 class="block-title">Instructions</h3>
                     </div>
-                    <div class="text-left">
-                        <button class="btn btn-primary" type="submit">Mise à jour</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        <div id="users" class="block block-bordered">
-            <div class="block-header">
-                <h3 class="block-title">Utilisateurs</h3>
-            </div>
-            <div class="block-content block-content-full">
-                <table id="table-users" class="table table-bordered table-header-bg table-striped" data-table-search="true" data-table-editor data-table-editor-url="/partnerEdit/users/" data-table-editor-actions="add, modify, toggle">
-                    <thead>
-                        <tr>
-                            <th data-editor-name="name" data-editor-type="text">Prénom et nom</th>
-                            <th data-editor-name="position" data-editor-type="text">Rôle</th>
-                            <th data-editor-name="agency" data-editor-type="multilevel" data-editor-options="{{ partnerAgencies|json_encode|escape('html_attr') }}">Entité de rattachement</th>
-                            <th data-editor-name="date_added" data-editor-type="date">Date d'ajout</th>
-                            <th data-editor-name="last_connection" data-editor-type="date">Dernière connexion</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {% for user in users %}
-                        <tr data-id="{{ user.id }}" data-state="{{ user.status }}">
-                            <td>{{ user.name }}</td>
-                            <td>{{ user.position }}</td>
-                            <td>{{ user.agency }}</td>
-                            <td>{{ user.date_added }}</td>
-                            <td>{{ user.last_connection }}</td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div id="instructions" class="block block-bordered">
-            <div class="block-header">
-                <h3 class="block-title">Instructions</h3>
-            </div>
-            <div class="block-content block-content-full">
-                <div class="row">
-                    <div class="col-md-6">
+                    <div class="block-content block-content-full">
                         <form action="/partnerEdit/instructionsSubmissions/" method="post">
+                            {%  if formErrors.instructions is defined and formErrors.instructions is not empty %}
+                                <div class="alert alert-error">
+                                    {% for error in formErrors.instructions %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {%  if formSuccess.instructions is defined %}
+                                <div class="alert alert-success">
+                                    {% for success in formSuccess.instructions %}
+                                        <p>{{ success }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                             {%  if formErrors.instructionsSubmissions is defined and formErrors.instructionsSubmissions is not empty %}
                                 <div class="alert alert-error">
                                     {% for error in formErrors.instructionsSubmissions %}
@@ -520,36 +445,15 @@
                                     {% endfor %}
                                 </div>
                             {% endif %}
-                            <p>Description de dossier :</p>
-                            <textarea class="js-summernote-simple" name="instructions">{{ instructionsProjectSubmissions }}</textarea>
-                            <button type="submit" class="btn btn-primary">Mise à jour</button>
-                        </form>
-                    </div>
-                    <div class="col-md-6">
-                        <form action="/partnerEdit/instructionsDocuments/" method="post">
-                            {%  if formErrors.instructionsDocuments is defined and formErrors.instructionsDocuments is not empty %}
-                                <div class="alert alert-error">
-                                    {% for error in formErrors.instructionsDocuments %}
-                                        <p>{{ error }}</p>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                            {%  if formSuccess.instructionsDocuments is defined %}
-                                <div class="alert alert-success">
-                                    {% for success in formSuccess.instructionsDocuments %}
-                                        <p>{{ success }}</p>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                            <p>Pièces à fournir :</p>
-                            <textarea class="js-summernote-simple" name="instructions">{{ instructionsDocuments }}</textarea>
-                            <button type="submit" class="btn btn-primary">Mise à jour</button>
+                            <label for="instructions-description">Description du projet</label>
+                            <textarea id="instructions-description" name="instructions[description]" class="js-summernote-simple">{{ instructionsProjectSubmissions }}</textarea>
+                            <label for="instructions-documents">Pièces à fournir</label>
+                            <textarea id="instructions-documents" name="instructions[documents]" class="js-summernote-simple">{{ instructionsDocuments }}</textarea>
+                            <button type="submit" class="btn btn-primary">Mettre à jour</button>
                         </form>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="row">
             <div class="col-md-6">
                 <div id="documents" class="block block-bordered">
                     <div class="block-header">
@@ -587,7 +491,98 @@
                             <div class="text-left">
                                 <input type="hidden" name="new_order">
                                 <button class="btn btn-default reset-btn hide" type="button">Réinitialiser</button>
-                                <button class="btn btn-primary submit-btn hide" type="submit">Mise à jour</button>
+                                <button class="btn btn-primary submit-btn hide" type="submit">Mettre à jour</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div id="products" class="block block-bordered">
+                    <div class="block-header">
+                        <h3 class="block-title">Produits</h3>
+                    </div>
+                    <div class="block-content block-content-full">
+                        <form action="/partnerEdit/products/" method="post">
+                            {%  if formErrors.products is defined and formErrors.products is not empty %}
+                                <div class="alert alert-error">
+                                    {% for error in formErrors.products %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {%  if formSuccess.products is defined %}
+                                <div class="alert alert-success">
+                                    {% for success in formSuccess.products %}
+                                        <p>{{ success }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <button class="btn btn-default add-btn push-5" type="button" data-toggle="modal" data-target="#modal-add-product"><span class="fa fa-plus"></span> Ajouter</button>
+                            <div class="row push">
+                                {% for product in products %}
+                                    <div class="col-md-3" data-product data-product-id="{{ product.id }}" data-product-rate-funds="{{ product.rateFunds }}" data-product-rate-repayment="{{ product.rateRepayment }}">
+                                        <div class="closable content-mini content-mini-full bg-gray-lighter">
+                                            <a role="button" class="closable-icon" data-toggle="modal" data-target="#modal-delete-product">
+                                                <span class="fa fa-close"></span>
+                                            </a>
+                                            <p class="push-5"><b>{{ product.label }}</b></p>
+                                            <p class="push-5">Commission déblocage <br> <span class="text-primary">{{ product.rateFunds }}&nbsp;%</span> </p>
+                                            <p class="push-5">Commission remboursement <br> <span class="text-primary">{{ product.rateRepayment }}&nbsp;%</span></p>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="text-left">
+                                <button class="btn btn-primary" type="submit">Mettre à jour</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div id="settings" class="block block-bordered">
+                    <div class="block-header">
+                        <h3 class="block-title">Paramètres partenaire</h3>
+                    </div>
+                    <div class="block-content block-content-full">
+                        <form action="/partnerEdit/settings/" method="post">
+                            {%  if formErrors.settings is defined and formErrors.settings is not empty %}
+                                <div class="alert alert-error">
+                                    {% for error in formErrors.settings %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {%  if formSuccess.settings is defined %}
+                                <div class="alert alert-success">
+                                    {% for success in formSuccess.settings %}
+                                        <p>{{ success }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <p style="margin-bottom: 5px">Statut du partenaire</p>
+                                        <label class="css-input switch switch-primary">
+                                            <input type="checkbox" name="status" checked><span></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <p style="margin-bottom: 5px">Prospections</p>
+                                        <label class="css-input switch switch-primary">
+                                            <input type="checkbox" name="prospections" checked><span></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-left">
+                                <button class="btn btn-primary" type="submit">Mettre à jour</button>
                             </div>
                         </form>
                     </div>
