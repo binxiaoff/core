@@ -120,6 +120,11 @@ class EcheanciersEmprunteurRepository extends EntityRepository
         return $queryBuilder->getQuery()->getResult();
     }
 
+    /**
+     * @param $project
+     *
+     * @return mixed
+     */
     public function getTotalOverdueAmounts($project)
     {
         $queryBuilder = $this->createQueryBuilder('ee');
@@ -134,6 +139,62 @@ class EcheanciersEmprunteurRepository extends EntityRepository
             ->setParameter('today', (new \DateTime())->format('Y-m-d 00:00:00'));
 
         return $queryBuilder->getQuery()->getSingleResult();
+    }
+
+    /**
+     * @param bool           $groupFirstYears
+     * @param \DateTime|null $date
+     *
+     * @return array
+     */
+    public function getTotalInterestToBePaidByCohortUntil($groupFirstYears = true, \DateTime $date = null)
+    {
+        if ($groupFirstYears) {
+            $cohortSelect = 'CASE LEFT(projects_status_history.added, 4)
+                                WHEN 2013 THEN "2013-2014"
+                                WHEN 2014 THEN "2013-2014"
+                                ELSE LEFT(projects_status_history.added, 4)
+                            END';
+        } else {
+            $cohortSelect = 'LEFT(projects_status_history.added, 4)';
+        }
+
+        $bind = ['repayment' => ProjectsStatus::REMBOURSEMENT];
+
+        $query = 'SELECT SUM(echeanciers_emprunteur.interets)/100 AS amount,
+                  (
+                    SELECT ' . $cohortSelect . ' AS date_range
+                    FROM projects_status_history
+                      INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
+                    WHERE  projects_status.status = :repayment
+                           AND echeanciers_emprunteur.id_project = projects_status_history.id_project
+                    ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
+                  ) AS cohort
+                FROM echeanciers_emprunteur
+                  INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= :repayment';
+
+        if (null !== $date) {
+            $date->setTime(23, 59, 59);
+            $bind  = array_merge($bind, ['end' => $date->format('Y-m-d H:i:s')]);
+            $query .= 'WHERE
+                   (
+                        SELECT added
+                        FROM projects_status_history psh
+                          INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                        WHERE ps.status = :repayment
+                          AND psh.id_project = projects.id_project
+                        ORDER BY added ASC
+                        LIMIT 1
+                   ) <= :end';
+        }
+
+        $query .= ' GROUP BY cohort';
+
+        $statement = $this->getEntityManager()->getConnection()->executeQuery($query, $bind);
+        $result    = $statement->fetchAll();
+        $statement->closeCursor();
+
+        return $result;
     }
 
     /**
