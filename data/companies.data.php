@@ -1,7 +1,7 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
 class companies extends companies_crud
@@ -300,22 +300,27 @@ class companies extends companies_crud
         }
     }
 
-    public function countCompaniesWithProblematicProjectsByCohort()
+    /**
+     * @param bool $groupFirstYears
+     *
+     * @return mixed
+     */
+    public function countCompaniesWithProblematicProjectsByCohort($groupFirstYears = true)
     {
-        $caseSql  = '';
-        foreach (range(2015, date('Y')) as $year ) {
-            $caseSql .= ' WHEN ' . $year . ' THEN "' . $year . '"';
+        if ($groupFirstYears) {
+            $cohortSelect = 'CASE LEFT(projects_status_history.added, 4)
+                               WHEN 2013 THEN "2013-2014"
+                               WHEN 2014 THEN "2013-2014"
+                               ELSE LEFT(projects_status_history.added, 4)
+                             END';
+        } else {
+            $cohortSelect = 'LEFT(projects_status_history.added, 4)';
         }
 
         $query = '
             SELECT COUNT(DISTINCT projects.id_company) AS amount,
                (
-                 SELECT
-                   CASE LEFT(projects_status_history.added, 4)
-                   WHEN 2013 THEN "2013-2014"
-                   WHEN 2014 THEN "2013-2014"
-                   ELSE LEFT(projects_status_history.added, 4)
-                   END AS date_range
+                 SELECT ' . $cohortSelect . ' AS date_range
                  FROM projects_status_history
                    INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                  WHERE  projects_status.status = ' . ProjectsStatus::REMBOURSEMENT . '
@@ -340,7 +345,7 @@ class companies extends companies_crud
                           ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
                           LIMIT 1
                          )
-                ) > 180)
+                ) > ' . \Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . ' )
             GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery(
@@ -358,16 +363,26 @@ class companies extends companies_crud
     }
 
 
-    public function countCompaniesFundedByCohort()
+    /**
+     * @param bool $groupFirstYears
+     *
+     * @return mixed
+     */
+    public function countCompaniesFundedByCohort($groupFirstYears = true)
     {
+        if ($groupFirstYears) {
+            $cohortSelect = 'CASE LEFT(projects_status_history.added, 4)
+                               WHEN 2013 THEN "2013-2014"
+                               WHEN 2014 THEN "2013-2014"
+                               ELSE LEFT(projects_status_history.added, 4)
+                             END';
+        } else {
+            $cohortSelect = 'LEFT(projects_status_history.added, 4)';
+        }
+
         $query = 'SELECT COUNT(DISTINCT id_company) AS amount,
                     (
-                        SELECT
-                          CASE LEFT(projects_status_history.added, 4)
-                            WHEN 2013 THEN "2013-2014"
-                            WHEN 2014 THEN "2013-2014"
-                            ELSE LEFT(projects_status_history.added, 4)
-                          END AS date_range
+                        SELECT ' . $cohortSelect . ' AS date_range
                         FROM projects_status_history
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE  projects_status.status = '. ProjectsStatus::REMBOURSEMENT .'
@@ -379,6 +394,7 @@ class companies extends companies_crud
                     GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery($query);
+
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 

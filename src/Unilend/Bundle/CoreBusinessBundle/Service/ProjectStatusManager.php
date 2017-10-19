@@ -86,8 +86,8 @@ class ProjectStatusManager
      */
     public function getPossibleStatus(Projects $project)
     {
-        $projectStatus              = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus');
-        $paymentScheduleRepository  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        $projectStatus             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus');
+        $paymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
 
         switch ($project->getStatus()) {
             case ProjectsStatus::PROBLEME:
@@ -347,7 +347,8 @@ class ProjectStatusManager
         $debtCollector       = $settingsRepository->findOneBy(['type' => 'Cabinet de recouvrement'])->getValue();
         /** @var \projects_status_history $projectStatusHistory */
         $projectStatusHistory = $this->entityManagerSimulator->getRepository('projects_status_history');
-        $aFundingDate         = $projectStatusHistory->select('id_project = ' . $project->getIdProject() . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . ProjectsStatus::REMBOURSEMENT . ')', 'added ASC, id_project_status_history ASC', 0, 1);
+        $aFundingDate         = $projectStatusHistory->select('id_project = ' . $project->getIdProject() . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . ProjectsStatus::REMBOURSEMENT . ')',
+            'added ASC, id_project_status_history ASC', 0, 1);
         $iFundingTime         = strtotime($aFundingDate[0]['added']);
 
         $paymentScheduleAmount = $paymentSchedule->getCapital() + $paymentSchedule->getInterets() + $paymentSchedule->getCommission() + $paymentSchedule->getTva();
@@ -426,7 +427,8 @@ class ProjectStatusManager
             $replacements['date_annonce_liquidation_judiciaire'] = $compulsoryLiquidation->getAdded()->format('d/m/Y');
         }
 
-        $this->sendLenderNotifications($project, Notifications::TYPE_PROJECT_FAILURE, 'preteur-projet-statut-defaut-personne-physique', 'preteur-projet-statut-defaut-personne-morale', $replacements, true);
+        $this->sendLenderNotifications($project, Notifications::TYPE_PROJECT_FAILURE, 'preteur-projet-statut-defaut-personne-physique', 'preteur-projet-statut-defaut-personne-morale', $replacements,
+            true);
     }
 
     /**
@@ -439,6 +441,7 @@ class ProjectStatusManager
 
     /**
      * @param Projects $project
+     *
      * @throws \Exception
      */
     public function sendCollectiveProceedingStatusNotificationsToLenders(Projects $project)
@@ -532,11 +535,11 @@ class ProjectStatusManager
             ['added' => 'ASC', 'idProjectStatusHistory' => 'ASC']
         );
         $commonReplacements   = [
-            'url'                  => $this->frontUrl,
-            'surl'                 => $this->frontUrl,
-            'lien_fb'              => $sFacebookURL,
-            'lien_tw'              => $sTwitterURL,
-            'annee_projet'         => $firstRepaymentStatus->getAdded()->format('Y')
+            'url'          => $this->frontUrl,
+            'surl'         => $this->frontUrl,
+            'lien_fb'      => $sFacebookURL,
+            'lien_tw'      => $sTwitterURL,
+            'annee_projet' => $firstRepaymentStatus->getAdded()->format('Y')
         ];
         $commonReplacements   += $replacements;
 
@@ -553,19 +556,10 @@ class ProjectStatusManager
                 /** @var Wallet $wallet */
                 $wallet = $walletRepository->find($aLoans['id_lender']);
 
-                $netRepayment = 0.0;
-                $loansCount   = $aLoans['cnt'];
-                $loansAmount  = round(bcdiv($aLoans['amount'], 100, 4), 2);
-                $repaidLoans  = $lenderRepaymentRepository->findBy(
-                    [
-                        'idLoan' => explode(',', $aLoans['loans']),
-                        'status' => Echeanciers::STATUS_REPAID
-                    ]
-                );
-
-                foreach ($repaidLoans as $aPayment) {
-                    $netRepayment += $operationRepository->getNetAmountByRepaymentScheduleId($aPayment->getIdEcheancier());
-                }
+                $netRepayment  = 0.0;
+                $loansCount    = $aLoans['cnt'];
+                $loansAmount   = round(bcdiv($aLoans['amount'], 100, 4), 2);
+                $repaidCapital = $operationRepository->getRepaidCapitalByProjectAndWallet($project, $wallet);
 
                 $notificationsData->type       = $notificationType;
                 $notificationsData->id_lender  = $aLoans['id_lender'];
@@ -593,10 +587,10 @@ class ProjectStatusManager
                             'montant_rembourse'           => '<span style=\'color:#b20066;\'>' . $this->numberFormatter->format($netRepayment) . '&nbsp;euros</span> vous ont d&eacute;j&agrave; &eacute;t&eacute; rembours&eacute;s.<br/><br/>',
                             'nombre_prets'                => $loansCount . ' ' . (($loansCount > 1) ? 'pr&ecirc;ts' : 'pr&ecirc;t'), // @todo intl
                             'date_prochain_remboursement' => $nextRepayment->getDateEcheance()->format('d/m/Y'),
-                            'CRD'                         => $this->numberFormatter->format($loansAmount - $netRepayment)
+                            'CRD'                         => $this->numberFormatter->format(round(bcsub($loansAmount, $repaidCapital, 4), 2))
                         ];
 
-                    $mailType               = ($wallet->getIdClient()->isNaturalPerson()) ? $mailTypePerson : $mailTypeLegalEntity;
+                    $mailType = ($wallet->getIdClient()->isNaturalPerson()) ? $mailTypePerson : $mailTypeLegalEntity;
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                     $message = $this->messageProvider->newMessage($mailType, $aReplacements);
