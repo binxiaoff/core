@@ -48,7 +48,7 @@ class partenairesController extends bootstrap
         ]);
     }
 
-    public function _agency()
+    public function _agence()
     {
         if (
             false === $this->request->isXmlHttpRequest()
@@ -66,6 +66,16 @@ class partenairesController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
+        $partner       = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->params[0]);
+
+        if (null === $partner) {
+            echo json_encode([
+                'success' => false,
+                'error'   => ['Partenaire inconnu']
+            ]);
+            return;
+        }
+
         /** @var Companies $agency */
         $agency = null;
         $errors = [];
@@ -77,7 +87,8 @@ class partenairesController extends bootstrap
                 $errors       = array_merge($errors, $agencyErrors);
 
                 if (empty($agencyErrors)) {
-                    $agency->setIdParentCompany();
+                    $agency->setIdParentCompany($partner->getIdCompany());
+                    $agency->setIdClientOwner(0); // @todo remove once id_client_owner is nullable
 
                     $entityManager->persist($agency);
                     $entityManager->flush($agency);

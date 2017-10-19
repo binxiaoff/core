@@ -339,74 +339,73 @@
 
 {% block content %}
     <div class="content">
-        <div class="row">
-            <div class="col-md-6">
-                <div id="organisation" class="block block-bordered">
-                    <div class="block-header">
-                        <h3 class="block-title">Agences</h3>
-                    </div>
-                    <div class="block-content block-content-full">
-                        <table id="table-agencies" class="table table-bordered table-header-bg table-striped"
-                               data-table
-                               data-table-search="true"
-                               data-table-editor data-table-editor-url="{{ app.adminUrl }}/partenaires/agency/{{ partner.idCompany.idCompany }}"
-                               data-table-editor-actions="add, modify">
-                            <thead>
-                                <tr>
-                                    <th data-editor-name="name" data-editor-type="text">Nom</th>
-                                    <th data-editor-name="siren" data-editor-type="text" data-editor-optional class="hidden">SIREN</th>
-                                    <th data-editor-name="phone" data-editor-type="text" data-editor-optional>Téléphone</th>
-                                    <th data-editor-name="address" data-editor-type="text" data-editor-optional class="hidden">Adresse</th>
-                                    <th data-editor-name="postcode" data-editor-type="text" data-editor-optional class="hidden">Code postal</th>
-                                    <th data-editor-name="city" data-editor-type="text" data-editor-optional>Ville</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            {% for agency in agencies %}
-                                <tr data-id="{{ agency.idCompany }}">
-                                    <td>{{ agency.name }}</td>
-                                    <td class="hidden">{{ agency.siren }}</td>
-                                    <td>{{ agency.phone }}</td>
-                                    <td class="hidden">{{ agency.adresse1 }}</td>
-                                    <td class="hidden">{{ agency.zip }}</td>
-                                    <td>{{ agency.city }}</td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+        <div id="organisation" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Agences</h3>
             </div>
-            <div class="col-md-6">
-                <div id="users" class="block block-bordered">
-                    <div class="block-header">
-                        <h3 class="block-title">Utilisateurs</h3>
-                    </div>
-                    <div class="block-content block-content-full">
-                        <table id="table-users" class="table table-bordered table-header-bg table-striped" data-table-search="true" data-table-editor data-table-editor-url="/partnerEdit/users/" data-table-editor-actions="add, modify, toggle">
-                            <thead>
-                            <tr>
-                                <th data-editor-name="name" data-editor-type="text">Prénom et nom</th>
-                                <th data-editor-name="position" data-editor-type="text">Rôle</th>
-                                <th data-editor-name="agency" data-editor-type="multilevel" data-editor-options="{{ partnerAgencies|json_encode|escape('html_attr') }}">Entité de rattachement</th>
-                                <th data-editor-name="date_added" data-editor-type="date">Date d'ajout</th>
-                                <th data-editor-name="last_connection" data-editor-type="date">Dernière connexion</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% for user in users %}
-                                <tr data-id="{{ user.id }}" data-state="{{ user.status }}">
-                                    <td>{{ user.name }}</td>
-                                    <td>{{ user.position }}</td>
-                                    <td>{{ user.agency }}</td>
-                                    <td>{{ user.date_added }}</td>
-                                    <td>{{ user.last_connection }}</td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <div class="block-content block-content-full">
+                <table id="table-agencies" class="table table-bordered table-header-bg table-striped"
+                       data-table
+                       data-table-search="true"
+                       data-table-editor
+                       data-table-editor-url="{{ app.adminUrl }}/partenaires/agence/{{ partner.id }}"
+                       data-table-editor-actions="add, modify">
+                    <thead>
+                        <tr>
+                            <th data-editor-name="name" data-editor-type="text">Nom</th>
+                            <th data-editor-name="siren" data-editor-type="text" data-editor-optional>SIREN</th>
+                            <th data-editor-name="phone" data-editor-type="text" data-editor-optional>Téléphone</th>
+                            <th data-editor-name="address" data-editor-type="text" data-editor-optional>Adresse</th>
+                            <th data-editor-name="postcode" data-editor-type="text" data-editor-optional>Code postal</th>
+                            <th data-editor-name="city" data-editor-type="text" data-editor-optional>Ville</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for agency in agencies %}
+                        <tr data-id="{{ agency.idCompany }}">
+                            <td>{{ agency.name }}</td>
+                            <td>{{ agency.siren }}</td>
+                            <td>{{ agency.phone }}</td>
+                            <td>{{ agency.adresse1 }}</td>
+                            <td>{{ agency.zip }}</td>
+                            <td>{{ agency.city }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div id="users" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Utilisateurs</h3>
+            </div>
+            <div class="block-content block-content-full">
+                <table id="table-users" class="table table-bordered table-header-bg table-striped"
+                       data-table-search="true"
+                       data-table-editor
+                       data-table-editor-url="{{ app.aminUrl }}/partenaires/utilisateur/{{ partner.id }}"
+                       data-table-editor-actions="add, modify, toggle">
+                    <thead>
+                    <tr>
+                        <th data-editor-name="name" data-editor-type="text">Prénom et nom</th>
+                        <th data-editor-name="position" data-editor-type="text">Rôle</th>
+                        <th data-editor-name="agency" data-editor-type="multilevel" data-editor-options="{{ partnerAgencies|json_encode|escape('html_attr') }}">Entité de rattachement</th>
+                        <th data-editor-name="date_added" data-editor-type="date">Date d'ajout</th>
+                        <th data-editor-name="last_connection" data-editor-type="date">Dernière connexion</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for user in users %}
+                        <tr data-id="{{ user.id }}" data-state="{{ user.status }}">
+                            <td>{{ user.name }}</td>
+                            <td>{{ user.position }}</td>
+                            <td>{{ user.agency }}</td>
+                            <td>{{ user.date_added }}</td>
+                            <td>{{ user.last_connection }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
         <div class="row">
