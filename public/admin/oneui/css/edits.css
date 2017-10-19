@@ -194,11 +194,6 @@ table.dataTable thead .sorting:after, table.dataTable thead .sorting_asc:after, 
     padding-top: 10px; padding-bottom: 10px;
 }
 
-.tree-js-add-item .form-control {
-    width: calc(100% - 62px);
-    float: left;
-}
-
 .modal label + .optional {
     font-weight: normal;
     font-size: 12px;

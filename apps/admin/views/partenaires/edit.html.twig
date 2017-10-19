@@ -67,6 +67,63 @@
                     }
                 })
             })
+
+            /*
+             * Draggable tree
+             */
+            var $tree = $('#documents .tree-js')
+            var treeBackupHtml = $tree.html()
+            // Backup initial state
+            $tree.before('<div class="tree-js-backup hide">' + treeBackupHtml + '</div>')
+            // Plugin init
+            $tree.find('.dd').nestable({ maxDepth: 1 })
+            // Show submit and reset buttons on change
+            $(document).on('change', '.dd', function(){
+                $tree.find('.reset-btn, .submit-btn').removeClass('hide')
+            })
+            // Resets the tree to initial state
+            $(document).on('click', '.reset-btn', function(){
+                $tree.html(treeBackupHtml)
+                $tree.find('.dd').nestable({ maxDepth: 1 })
+            })
+            // Reset modal on close
+            $(document).on('hidden.bs.modal', '#modal-add-document', function(){
+                var $modal = $(this)
+                $modal.find('.messages').html('')
+                $modal.find('.form-group').removeClass('has-error')
+                $modal.find('select').val(0)
+                $modal.find(':checked').attr('checked', '').prop('checked', '')
+            })
+            // Add new item
+            $(document).on('submit', '#modal-add-document form', function(e){
+                e.preventDefault()
+                var $modal = $(this).closest('.modal')
+                var $form = $(this)
+                if (!$form.find('.has-error').length) {
+                    var $document = $form.find('[name=document]')
+                    var label = $document.find(':selected').text()
+                    var id = $document.val()
+
+                    var $mandatory = $form.find('[name=mandatory]:checked')
+                    var mandatory = ($mandatory.val() === 'true') ? '<small class="text-primary pull-right">* champ obligatoire</small>' : ''
+
+                    if ($tree.find('[data-id=' + id + ']').length) {
+                        $modal.find('.messages').html('<div class="alert"><p>Le document est déjà dans la liste.</p></div>')
+                        return false
+                    }
+
+                    var item = '<li class="dd-item new" data-id="' + id + '"><div class="dd-handle">' + label + ' ' + mandatory + '</div></li>'
+                    $tree.find('.dd-list').prepend(item)
+                    $tree.find('.dd').trigger('change')
+
+                    $modal.modal('hide')
+                }
+            })
+            // Prepare form data
+            $(document).on('submit', '#documents form', function(e) {
+                var newOrder = $tree.find('.dd').nestable('serialize')
+                $tree.find('[name=new_order]').val(JSON.stringify(newOrder))
+            })
         })
     </script>
 {% endblock %}
@@ -94,17 +151,61 @@
             </div>
         </form>
     </div>
+    <div class="modal" id="modal-add-document" tabindex="-1" role="dialog" aria-hidden="true">
+        <form class="modal-dialog validate">
+            <div class="modal-content">
+                <div class="block block-bordered remove-margin-b">
+                    <div class="block-header">
+                        <h3 class="block-title">Ajouter un document</h3>
+                    </div>
+                    <div class="block-content">
+                        <div class="messages"></div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <select name="document" class="form-control required">
+                                        <option value="0">Selectionner</option>
+                                        {% for type in documentTypes %}
+                                            <option value="{{ type.id }}">
+                                                {{ type.label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="css-input css-radio css-radio-default push-10-r">
+                                        <input type="radio" name="mandatory" value="true" class="form-control required"><span></span> Yes
+                                    </label>
+                                    <label class="css-input css-radio css-radio-default">
+                                        <input type="radio" name="mandatory" value="false" class="form-control required"><span></span> No
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                    <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+                </div>
+            </div>
+        </form>
+    </div>
 {% endblock %}
 
 {% set formErrors = {
     settings: ['Error 1', 'Error 2'],
     products:  ['Error 1', 'Error 2'],
     instructionsSubmissions:  ['Error 1', 'Error 2'],
+    documents:  ['Error 1', 'Error 2'],
     instructionsDocuments:  ['Error 1', 'Error 2']
 } %}
 {% set formSuccess = {
     settings: ['Success message'],
     products:  ['Success message'],
+    documents:  ['Success message'],
     instructionsSubmissions:  ['Success message'],
     instructionsDocuments:  ['Success message']
 } %}
@@ -128,9 +229,11 @@
 {% set instructionsProjectSubmissions = '<p>Je pense donc <b>je suis</b>.</p>' %}
 {% set instructionsDocuments = '<p>C\'est pas vrai !</p>' %}
 
-
+{% set documentTypes = [
+    { id: 1, label: 'CNI' }, { id: 2, label: 'Passport' }, { id: 3, label: 'RIB' } ]
+%}
 {% set documents = [
-    {id: 3434879, type: 'CNI', mandatory: 'Oui', date_added: '24/03/2017', file: '/path/to/document.jpg'}
+    { id: 1, label: 'CNI', mandatory: 'true' }
 ] %}
 
 {% block pageHeader %}
@@ -268,7 +371,7 @@
                 <h3 class="block-title">Utilisateurs</h3>
             </div>
             <div class="block-content block-content-full">
-                <table id="table-users" class="table table-bordered table-header-bg table-striped" data-table data-table-search="true" data-table-editor data-table-editor-url="/partnerEdit/users/" data-table-editor-actions="add, modify, toggle">
+                <table id="table-users" class="table table-bordered table-header-bg table-striped" data-table-search="true" data-table-editor data-table-editor-url="/partnerEdit/users/" data-table-editor-actions="add, modify, toggle">
                     <thead>
                         <tr>
                             <th data-editor-name="name" data-editor-type="text">Prénom et nom</th>
@@ -343,30 +446,49 @@
                 </div>
             </div>
         </div>
-        <div id="documents" class="block block-bordered">
-            <div class="block-header">
-                <h3 class="block-title">Pièces à fournir</h3>
-            </div>
-            <div class="block-content block-content-full">
-                <table class="table table-bordered table-header-bg table-striped" data-table data-table-search="false" data-table-editor data-table-editor-url="/partnerEdit/documents" data-table-editor-actions="add, modify, delete">
-                    <thead>
-                    <tr>
-                        <th data-editor-name="type" data-editor-type="select" data-editor-options="CNI, Passport, Relevé bancaire, RIB">Type de pièce</th>
-                        <th data-editor-name="mandatory" data-editor-type="radio" data-editor-options="Oui, Non">Obligatoire</th>
-                        <th data-editor-name="date" data-editor-type="date">Date d'ajout</th>
-                        <th data-editor-name="file" data-editor-type="file">Fichier</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for document in documents %}
-                        <tr data-id="{{ document.id }}">
-                            <td>{{ document.type }}</td>
-                            <td>{{ document.mandatory }}</td>
-                            <td>{{ document.date_added }}</td>
-                            <td><a href="{{ document.file }}">{{ document.file|split('/')|last }}</a></td>
-                        </tr>
-                    {% endfor %}
-                </table>
+        <div class="row">
+            <div class="col-md-6">
+                <div id="documents" class="block block-bordered">
+                    <div class="block-header">
+                        <h3 class="block-title">Pièces à fournir</h3>
+                    </div>
+
+                    <div class="block-content block-content-full">
+                        <form action="/partnerEdit/documents/" method="post" class="tree-js">
+                            {%  if formErrors.documents is defined and formErrors.documents is not empty %}
+                                <div class="alert alert-error">
+                                    {% for error in formErrors.documents %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {%  if formSuccess.documents is defined %}
+                                <div class="alert alert-success">
+                                    {% for success in formSuccess.documents %}
+                                        <p>{{ success }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <button class="btn btn-default add-btn push-5" type="button" data-toggle="modal" data-target="#modal-add-document"><span class="fa fa-plus"></span> Ajouter</button>
+                            <div class="push-15">
+                                <div class="dd">
+                                    <ol class="dd-list">
+                                        {% for document in documents %}
+                                            <li class="dd-item" data-id="{{ document.id }}">
+                                                <div class="dd-handle">{{ document.label }}{% if document.mandatory %} <small class="text-primary pull-right">* champ obligatoire</small>{% endif %}</div>
+                                            </li>
+                                        {% endfor %}
+                                    </ol>
+                                </div>
+                            </div>
+                            <div class="text-left">
+                                <input type="hidden" name="new_order">
+                                <button class="btn btn-default reset-btn hide" type="button">Réinitialiser</button>
+                                <button class="btn btn-primary submit-btn hide" type="submit">Mise à jour</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
