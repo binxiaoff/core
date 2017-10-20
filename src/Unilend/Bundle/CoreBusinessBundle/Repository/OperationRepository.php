@@ -4,11 +4,12 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
@@ -19,8 +20,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Doctrine\DBAL\Connection;
 use Unilend\librairies\CacheKeys;
 
 class OperationRepository extends EntityRepository
@@ -801,16 +802,23 @@ class OperationRepository extends EntityRepository
     }
 
     /**
+     * @param bool $groupFirstYears
+     *
      * @return string
      */
-    private function getCohortQuery()
+    private function getCohortQuery($groupFirstYears)
     {
-        return 'SELECT
-                  CASE LEFT(MIN(psh.added), 4)
-                  WHEN 2013 THEN "2013-2014"
-                  WHEN 2014 THEN "2013-2014"
-                  ELSE LEFT(psh.added, 4)
-                  END AS date_range
+        if ($groupFirstYears) {
+            $cohortSelect = 'CASE LEFT(psh.added, 4)
+                                WHEN 2013 THEN "2013-2014"
+                                WHEN 2014 THEN "2013-2014"
+                                ELSE LEFT(psh.added, 4)
+                             END';
+        } else {
+            $cohortSelect = 'LEFT(psh.added, 4)';
+        }
+
+        return 'SELECT ' . $cohortSelect . ' AS date_range
                 FROM projects_status_history psh
                   INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                 WHERE ps.status = ' . ProjectsStatus::REMBOURSEMENT . ' AND o.id_project = psh.id_project
@@ -818,13 +826,14 @@ class OperationRepository extends EntityRepository
     }
 
     /**
-     * @param $repaymentType
+     * @param bool $repaymentType
+     * @param bool $groupFirstYears
      *
      * @return array
      */
-    public function getTotalRepaymentByCohort($repaymentType)
+    public function getTotalRepaymentByCohort($repaymentType, $groupFirstYears = true)
     {
-        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery() . ' ) AS cohort
+        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery($groupFirstYears) . ' ) AS cohort
                   FROM operation o
                   WHERE o.id_type = (SELECT id FROM operation_type WHERE label = :repayment_type)
                   GROUP BY cohort';
@@ -837,13 +846,14 @@ class OperationRepository extends EntityRepository
     }
 
     /**
-     * @param boolean $isHealthy
+     * @param bool $groupFirstYears
+     * @param bool $isHealthy
      *
      * @return array
      */
-    public function getTotalDebtCollectionRepaymentByCohort($isHealthy)
+    public function getTotalDebtCollectionRepaymentByCohort($isHealthy, $groupFirstYears = true)
     {
-        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery() . ' ) AS cohort
+        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery($groupFirstYears) . ' ) AS cohort
                   FROM operation o
                   INNER JOIN projects p ON o.id_project = p.id_project
                   WHERE o.id_sub_type = (SELECT id FROM operation_sub_type WHERE label = :capital_repayment_debt_collection)
@@ -857,7 +867,7 @@ class OperationRepository extends EntityRepository
                         WHERE ps2.status = 100
                               AND psh2.id_project = o.id_project
                         ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
-                        LIMIT 1)) > 180), FALSE, TRUE) = :isHealthy
+                        LIMIT 1)) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '), FALSE, TRUE) = :isHealthy
                   GROUP BY cohort';
 
         $statement = $this->getEntityManager()->getConnection()->executeQuery(
@@ -871,13 +881,14 @@ class OperationRepository extends EntityRepository
     }
 
     /**
-     * @param boolean $isHealthy
+     * @param bool $isHealthy
+     * @param bool $groupFirstYears
      *
      * @return array
      */
-    public function getTotalDebtCollectionLenderCommissionByCohort($isHealthy)
+    public function getTotalDebtCollectionLenderCommissionByCohort($isHealthy, $groupFirstYears = true)
     {
-        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery() . ' ) AS cohort
+        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery($groupFirstYears) . ' ) AS cohort
                   FROM operation o
                   INNER JOIN projects p ON o.id_project = p.id_project
                   WHERE o.id_type = (SELECT id FROM operation_type WHERE label = :collection_commission_lender)
@@ -891,7 +902,7 @@ class OperationRepository extends EntityRepository
                         WHERE ps2.status = 100
                               AND psh2.id_project = o.id_project
                         ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
-                        LIMIT 1)) > 180), FALSE, TRUE) = :isHealthy
+                        LIMIT 1)) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '), FALSE, TRUE) = :isHealthy
                   GROUP BY cohort';
 
         $statement = $this->getEntityManager()->getConnection()->executeQuery(
@@ -1229,8 +1240,8 @@ class OperationRepository extends EntityRepository
                 ELSE 0
             END) as capital,
             SUM(CASE 
-                WHEN ot.label = :interest THEN o.amount
-                WHEN ot.label = :interestRegularization THEN -o.amount
+                WHEN ot.label = :interest THEN IFNULL(o.amount, 0)
+                WHEN ot.label = :interestRegularization THEN IFNULL(-o.amount, 0)
                 ELSE 0
             END) as interest
         ')
@@ -1254,5 +1265,36 @@ class OperationRepository extends EntityRepository
             ]);
 
         return $queryBuilder->getQuery()->getSingleResult();
+    }
+
+    /**
+     * @param int|Projects $project
+     * @param int|Wallet   $wallet
+     *
+     * @return float
+     */
+    public function getRepaidCapitalByProjectAndWallet($project, $wallet)
+    {
+        $queryBuilder = $this->createQueryBuilder('o');
+        $queryBuilder->select('
+            SUM(CASE 
+                WHEN ot.label = :capital THEN IFNULL(o.amount, 0)
+                WHEN ot.label = :capitalRegularization THEN IFNULL(-o.amount, 0)
+                ELSE 0
+            END) as capital
+        ')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('o.idWalletDebtor = :wallet OR o.idWalletCreditor = :wallet')
+            ->andWhere('o.idProject = :project')
+            ->andWhere('ot.label in (:capitalRepaymentTypes)')
+            ->setParameters([
+                'wallet'                => $wallet,
+                'project'               => $project,
+                'capital'               => OperationType::CAPITAL_REPAYMENT,
+                'capitalRegularization' => OperationType::CAPITAL_REPAYMENT_REGULARIZATION,
+                'capitalRepaymentTypes' => [OperationType::CAPITAL_REPAYMENT, OperationType::CAPITAL_REPAYMENT_REGULARIZATION],
+            ]);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }

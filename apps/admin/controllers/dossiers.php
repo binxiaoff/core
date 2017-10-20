@@ -1115,76 +1115,18 @@ class dossiersController extends bootstrap
     {
         $this->hideDecoration();
 
-        switch ($_SERVER['REQUEST_METHOD']) {
-            case 'POST':
-                $this->editMemo();
-                break;
-            case 'DELETE':
-                $this->deleteMemo();
-                break;
-            case 'GET':
-            default:
-                $this->listMemo();
-                break;
-        }
-    }
+        if ($this->request->isMethod(\Symfony\Component\HttpFoundation\Request::METHOD_POST)) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            /** @var \Doctrine\ORM\EntityRepository $projectRepository */
+            $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
-    private function listMemo()
-    {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Doctrine\ORM\EntityRepository $projectCommentRepository */
-        $projectCommentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments');
-
-        if (
-            isset($this->params[0], $this->params[1])
-            && ($projectCommentEntity = $projectCommentRepository->find($this->params[1]))
-            && $projectCommentEntity->getIdProject()->getIdProject() == $this->params[0]
-        ) {
-            /** @var ProjectsComments $projectCommentEntity */
-            $this->type    = 'edit';
-            $this->content = $projectCommentEntity->getContent();
-            $this->public  = $projectCommentEntity->getPublic();
-        } else {
-            $this->type    = 'add';
-            $this->content = '';
-            $this->public  = false;
-        }
-
-        $this->setView('memo/edit');
-    }
-
-    private function editMemo()
-    {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Doctrine\ORM\EntityRepository $projectRepository */
-        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        /** @var \Doctrine\ORM\EntityRepository $projectCommentRepository */
-        $projectCommentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments');
-
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $projectEntity */
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments $projectCommentEntity */
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users $userEntity */
-
-        if (
-            isset($_POST['projectId'], $_POST['content'])
-            && filter_var($_POST['projectId'], FILTER_VALIDATE_INT)
-            && ($projectEntity = $projectRepository->find($_POST['projectId']))
-        ) {
             if (
-                isset($_POST['commentId'])
-                && ($projectCommentEntity = $projectCommentRepository->find($_POST['commentId']))
-                && $_SESSION['user']['id_user'] == $projectCommentEntity->getIdUser()->getIdUser()
+                isset($_POST['projectId'], $_POST['content'])
+                && filter_var($_POST['projectId'], FILTER_VALIDATE_INT)
+                && ($projectEntity = $projectRepository->find($_POST['projectId']))
             ) {
-                $projectCommentEntity->setContent($_POST['content']);
-                $projectCommentEntity->setPublic(empty($_POST['public']) ? false : true);
-
-                $entityManager->persist($projectCommentEntity);
-                $entityManager->flush($projectCommentEntity);
-
-                $slackNotification = 'édité';
-            } else {
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $projectEntity */
                 $projectCommentEntity = new ProjectsComments();
                 $projectCommentEntity->setIdProject($projectEntity);
                 $projectCommentEntity->setContent($_POST['content']);
@@ -1194,78 +1136,34 @@ class dossiersController extends bootstrap
                 $entityManager->persist($projectCommentEntity);
                 $entityManager->flush($projectCommentEntity);
 
-                $slackNotification = 'ajouté';
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SlackManager $slackManager */
+                $slackManager      = $this->get('unilend.service.slack_manager');
+                $slackNotification = 'Mémo ajouté par *' . $projectCommentEntity->getIdUser()->getFirstname() . ' ' . $projectCommentEntity->getIdUser()->getName() . '* sur le projet ' . $slackManager->getProjectName($projectEntity);
+                $userRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+
+                if  (
+                    $projectEntity->getIdCommercial() > 0
+                    && $_SESSION['user']['id_user'] != $projectEntity->getIdCommercial()
+                    && ($userEntity = $userRepository->find($projectEntity->getIdCommercial()))
+                    && false === empty($userEntity->getSlack())
+                ) {
+                    $slackManager->sendMessage($slackNotification, '@' . $userEntity->getSlack());
+                }
+
+                if (
+                    $projectEntity->getIdAnalyste() > 0
+                    && $_SESSION['user']['id_user'] != $projectEntity->getIdAnalyste()
+                    && ($userEntity = $userRepository->find($projectEntity->getIdAnalyste()))
+                    && false === empty($userEntity->getSlack())
+                ) {
+                    $slackManager->sendMessage($slackNotification, '@' . $userEntity->getSlack());
+                }
             }
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SlackManager $slackManager */
-            $slackManager = $this->get('unilend.service.slack_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users $userRepository */
-            $userRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
-            $slackNotification = 'Mémo ' . $slackNotification . ' par *' . $projectCommentEntity->getIdUser()->getFirstname() . ' ' . $projectCommentEntity->getIdUser()
-                    ->getName() . '* sur le projet ' . $slackManager->getProjectName($projectEntity);
+            $projectCommentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments');
+            $this->projectComments    = $projectCommentRepository->findBy(['idProject' => $_POST['projectId']], ['added' => 'DESC']);
 
-            if (
-                $projectEntity->getIdCommercial() > 0
-                && $_SESSION['user']['id_user'] != $projectEntity->getIdCommercial()
-                && ($userEntity = $userRepository->find($projectEntity->getIdCommercial()))
-                && false === empty($userEntity->getSlack())
-            ) {
-                $slackManager->sendMessage($slackNotification, '@' . $userEntity->getSlack());
-            }
-
-            if (
-                $projectEntity->getIdAnalyste() > 0
-                && $_SESSION['user']['id_user'] != $projectEntity->getIdAnalyste()
-                && ($userEntity = $userRepository->find($projectEntity->getIdAnalyste()))
-                && false === empty($userEntity->getSlack())
-            ) {
-                $slackManager->sendMessage($slackNotification, '@' . $userEntity->getSlack());
-            }
-        }
-
-        $this->projectComments = $projectCommentRepository->findBy(['idProject' => $_POST['projectId']], ['added' => 'DESC']);
-
-        $this->setView('memo/list');
-    }
-
-    private function deleteMemo()
-    {
-        $this->autoFireView = false;
-
-        header('Content-Type: application/json');
-
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Doctrine\ORM\EntityRepository $projectCommentRepository */
-        $projectCommentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments');
-
-        if (
-            isset($this->params[0], $this->params[1])
-            && ($projectCommentEntity = $projectCommentRepository->find($this->params[1]))
-            && $projectCommentEntity->getIdProject()->getIdProject() == $this->params[0]
-            && $projectCommentEntity->getIdUser()->getIdUser() == $_SESSION['user']['id_user']
-        ) {
-            $entityManager->remove($projectCommentEntity);
-            $entityManager->flush($projectCommentEntity);
-
-            echo json_encode([
-                'success' => true
-            ]);
-        } else {
-            if (empty($projectCommentEntity)) {
-                $error = 'Erreur inconnue';
-            } elseif ($projectCommentEntity->getIdProject()->getIdProject() != $this->params[0]) {
-                $error = 'Le mémo n\'appartient pas à ce projet';
-            } elseif ($projectCommentEntity->getIdUser()->getIdUser() != $_SESSION['user']['id_user']) {
-                $error = 'Vous ne disposez pas des droits pour supprimer ce mémo';
-            } else {
-                $error = 'Erreur inconnue';
-            }
-
-            echo json_encode([
-                'error'   => true,
-                'message' => $error
-            ]);
+            $this->setView('memos');
         }
     }
 
