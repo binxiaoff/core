@@ -153,6 +153,7 @@
             processing: true,
             columnDefs: [
                 {orderable: false, targets: [1, 3, 6]},
+                {searchable: false, targets: [1, 2, 3, 5, 6]},
                 {visible: false, targets: 7},
                 {name: "idReception", "targets": 0},
                 {name: "motif", "targets": 1},
