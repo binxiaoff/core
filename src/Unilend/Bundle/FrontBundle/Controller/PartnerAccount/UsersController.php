@@ -83,7 +83,7 @@ class UsersController extends Controller
                         'lien_tw'       => $settingsRepository->findOneBy(['type' => 'Twitter'])->getValue()
                     ];
 
-                    $message       = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $keywords);
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $keywords);
                     try {
                         $message->setTo($client->getEmail());
                         $mailer = $this->get('mailer');

@@ -52,7 +52,7 @@
                     dataType:'json',
                     success: function(response) {
                         if (response.success) {
-                            $form.find('.messages').html('<div class="alert alert-success"><p>Le mot de pass a bien été envoyé à l\'utilisateur.</p></div>')
+                            $form.find('.messages').html('<div class="alert alert-success"><p>La demande de réinitialisation de mot de passe a bien été envoyée à l\'utilisateur.</p></div>')
                             $form.find('.hide').removeClass('hide')
                             $form.find('.show-inline').removeClass('show-inline').addClass('hide')
                         } else {
@@ -174,14 +174,14 @@
 
 {% block modals %}
     <div class="modal" id="modal-send-password" tabindex="-1" role="dialog" aria-hidden="true">
-        <form class="modal-dialog" method="post" action="/partnerEdit/send_password/">
+        <form class="modal-dialog" method="post" action="{{ app.adminUrl }}/partenaires/utilisateur/{{ partner.id }}">
             <div class="modal-content">
                 <div class="block block-bordered remove-margin-b">
                     <div class="block-header">
-                        <h3 class="block-title">Envoyer le mot de pass</h3>
+                        <h3 class="block-title">Réinitialisation de mot de passe</h3>
                     </div>
                     <div class="block-content">
-                        <p>Étes-vous sûr de vouloir renvoyer le mot de pass a l'utilisateur ?</p>
+                        <p>Êtes-vous sûr de vouloir envoyer un email de réinitialisation de mot de passe à l'utilisateur ?</p>
                         <div class="messages"></div>
                         <input type="hidden" name="id">
                         <input type="hidden" name="action" value="password">
@@ -208,7 +208,7 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <select name="document" class="form-control required">
-                                        <option value="0">Selectionner</option>
+                                        <option value="0">Sélectionner</option>
                                         {% for type in documentTypes %}
                                             <option value="{{ type.id }}">
                                                 {{ type.label }}
@@ -248,7 +248,7 @@
                         <div class="messages"></div>
                         <div class="form-group">
                             <select name="product" class="form-control required">
-                                <option value="0">Selectionner un produit</option>
+                                <option value="0">Sélectionner un produit</option>
                                 {% for product in products %}
                                     <option value="{{ product.id }}" data-funds="{{ product.rateFunds }}" data-repayment="{{ product.rateRepayment }}">
                                         {{ product.label }}
@@ -319,11 +319,6 @@
     {id: 2, label: 'Product 2', rateFunds: '5.00', rateRepayment: '1.00'}
 ] %}
 
-{% set users = [
-    {id: 342442, status: 'inactive', name: 'Henry Gordon', position: 'Manager', agency: 'Axa Nord', date_added: '15/05/2017', last_connection: '15/08/2017'},
-    {id: 586472, status: 'active', name: 'Sara Holland', position: 'Director', agency: 'Axa Sud', date_added: '13/02/2017', last_connection: '24/09/2017'}
-] %}
-
 {% set instructionsProjectSubmissions = '<p>Je pense donc <b>je suis</b>.</p>' %}
 {% set instructionsDocuments = '<p>C\'est pas vrai !</p>' %}
 
@@ -389,25 +384,29 @@
                 <table id="table-users" class="table table-bordered table-header-bg table-striped"
                        data-table-search="true"
                        data-table-editor
-                       data-table-editor-url="{{ app.aminUrl }}/partenaires/utilisateur/{{ partner.id }}"
+                       data-table-editor-url="{{ app.adminUrl }}/partenaires/utilisateur/{{ partner.id }}"
                        data-table-editor-actions="add, modify, toggle">
                     <thead>
                     <tr>
-                        <th data-editor-name="name" data-editor-type="text">Prénom et nom</th>
-                        <th data-editor-name="position" data-editor-type="text">Rôle</th>
-                        <th data-editor-name="agency" data-editor-type="multilevel" data-editor-options="{{ partnerAgencies|json_encode|escape('html_attr') }}">Entité de rattachement</th>
-                        <th data-editor-name="date_added" data-editor-type="date">Date d'ajout</th>
-                        <th data-editor-name="last_connection" data-editor-type="date">Dernière connexion</th>
+                        <th data-editor-name="lastname" data-editor-type="text">Nom</th>
+                        <th data-editor-name="firstname" data-editor-type="text">Prénom</th>
+                        <th data-editor-name="email" data-editor-type="text">Email</th>
+                        <th data-editor-name="agency" data-editor-type="select" data-editor-options="{% for agency in agencies %}{{ agency.name|e('html_attr') }}:{{ agency.idCompany }}{% if not loop.last %}, {% endif %}{% endfor %}">Agence</th>
+                        <th data-editor-name="phone" data-editor-type="text" data-editor-optional>Téléphone</th>
+                        <th data-editor-name="role" data-editor-type="select" data-editor-options="Administrateur:admin, Agent:agent">Rôle</th>
+                        <th data-editor-disabled data-editor-name="lastlogin" data-editor-type="date" data-editor-optional data-type="date-fr">Dernière connexion</th>
                     </tr>
                     </thead>
                     <tbody>
                     {% for user in users %}
-                        <tr data-id="{{ user.id }}" data-state="{{ user.status }}">
-                            <td>{{ user.name }}</td>
-                            <td>{{ user.position }}</td>
-                            <td>{{ user.agency }}</td>
-                            <td>{{ user.date_added }}</td>
-                            <td>{{ user.last_connection }}</td>
+                        <tr data-id="{{ user.id }}" data-state="{% if user.idClient.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::STATUS_ONLINE') %}active{% else %}inactive{% endif %}">
+                            <td>{{ user.idClient.nom }}</td>
+                            <td>{{ user.idClient.prenom }}</td>
+                            <td>{{ user.idClient.email }}</td>
+                            <td>{{ user.idCompany.name }}</td>
+                            <td>{{ user.idClient.telephone }}</td>
+                            <td>{% if user.role == 'ROLE_PARTNER_ADMIN' %}Administrateur{% else %}Agent{% endif %}</td>
+                            <td>{% if user.idClient.lastlogin is not empty %}{{ user.idClient.lastlogin|date('d/m/Y') }}{% endif %}</td>
                         </tr>
                     {% endfor %}
                     </tbody>

@@ -1148,7 +1148,7 @@ var App = function() {
                 // Radio
                 } else if (type === 'radio' || type === 'select' || type == 'checkbox') {
                     if (type === 'select')
-                        html += '<select class="form-control' + required + '" name="' + name + '"><option value="0">Selectionner</option>'
+                        html += '<select class="form-control' + required + '" name="' + name + '"><option value="0">Sélectionner</option>'
                     else
                         html += '<br>'
                     for (var $l = 0; $l < options.length; $l++) {
@@ -1195,7 +1195,7 @@ var App = function() {
                         }
                         return optionsHtml
                     }
-                    html += '<select class="form-control' + required + ' select-multilevel" name="' + name + '"><option value="0">Selectionner</option>'
+                    html += '<select class="form-control' + required + ' select-multilevel" name="' + name + '"><option value="0">Sélectionner</option>'
                     html += recurseHtml(options)
                     html += '</select>'
                 // File
@@ -1325,7 +1325,7 @@ var App = function() {
                         if (response.success) {
                             self.update(response.id, response.data)
                         } else {
-                            var errors = '<div class="alert alert-danger">'
+                            var errors = '<div class="alert alert-error">'
                             $.each(response.error, function(i, val){
                                 errors += '<p>' + val + '</p>'
                             })
@@ -2120,7 +2120,7 @@ var App = function() {
                     }
                 }
                 if ($input.is('select')) {
-                    if ($input.val() === '' || $input.val() === '0' || $input.val() === 'Selectionner') {
+                    if ($input.val() === '' || $input.val() === '0' || $input.val() === 'Sélectionner') {
                         $input.closest('.form-group').removeClass('has-error').addClass('has-error')
                         valid = false
                     } else {
