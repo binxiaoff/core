@@ -152,10 +152,16 @@
             serverSide: true,
             processing: true,
             columnDefs: [
-                {orderable: false, targets: [0, 1, 6]},
-                {searchable: false, targets: 6},
-                {visible: false, targets: 7}
+                {orderable: false, targets: [1, 3, 6]},
+                {visible: false, targets: 7},
+                {name: "idReception", "targets": 0},
+                {name: "motif", "targets": 1},
+                {name: "montant", "targets": 2},
+                {name: "attribution", "targets": 3},
+                {name: "idProject", "targets": 4},
+                {name: "added", "targets": 5}
             ],
+            order: [[ 0, "desc" ]],
             ajax: '/transferts/emprunteurs_attribues',
             language: {
                 url: '<?= $this->lurl ?>/oneui/js/plugins/datatables/localisation/fr_FR.json'

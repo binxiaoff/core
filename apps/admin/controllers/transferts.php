@@ -67,15 +67,25 @@ class transfertsController extends bootstrap
 
         $receptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
 
-        $start              = 0;
-        $limit              = 10;
-        $draw               = 1;
+        $query = $this->request->query->all();
+        $start = $query['start'];
+        $limit = $query['length'];
+        $draw  = $query['draw'];
+        $sort  = [];
+
+        $orders = $this->request->query->get('order');
+        foreach ($orders as $order) {
+            $columnName        = $query['columns'][$order['column']]['name'];
+            $sort[$columnName] = $order['dir'];
+        }
+
         $error              = '';
         $receptionsCount    = 0;
         $affectedReceptions = [];
+
         try {
             $receptionsCount = $receptionRepository->getBorrowerAttributionsCount();
-            $receptions      = $receptionRepository->getBorrowerAttributions($limit, $start);
+            $receptions      = $receptionRepository->getBorrowerAttributions($limit, $start, $sort);
 
             foreach ($receptions as $reception) {
                 if (Receptions::STATUS_ASSIGNED_MANUAL == $reception->getStatusBo() && null !== $reception->getIdUser()) {

@@ -33,16 +33,16 @@ class ReceptionsRepository extends EntityRepository
     /**
      * Get all assigned the direct debts or wire transfers to borrowers
      *
-     * @param int $limit
-     * @param int $offset
+     * @param int   $limit
+     * @param int   $offset
+     * @param array $sorts
      *
      * @return Receptions[]
      */
-    public function getBorrowerAttributions($limit = null, $offset = null)
+    public function getBorrowerAttributions($limit = null, $offset = null, array $sorts = [])
     {
         $queryBuilder = $this->createQueryBuilder('r');
-        $queryBuilder->andWhere('r.idProject IS NOT NULL')
-            ->orderBy('r.idReception', 'DESC');
+        $queryBuilder->andWhere('r.idProject IS NOT NULL');
 
         if (null !== $limit) {
             $queryBuilder->setMaxResults($limit);
@@ -50,6 +50,12 @@ class ReceptionsRepository extends EntityRepository
 
         if (null !== $offset) {
             $queryBuilder->setFirstResult($offset);
+        }
+
+        if (false === empty($sorts)) {
+            foreach ($sorts as $sort => $order) {
+                $queryBuilder->addOrderBy('r.' . $sort, $order);
+            }
         }
 
         return $queryBuilder->getQuery()->getResult();
