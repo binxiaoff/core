@@ -500,7 +500,7 @@ class projects extends projects_crud
             FROM projects
             INNER JOIN companies c ON c.id_company = projects.id_company
             INNER JOIN unilend.company_status cs ON cs.id = c.id_status
-            WHERE cs.label IN ("' . implode('", " ', [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]) . '")'
+            WHERE cs.label IN ("' . implode('", "', [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]) . '")'
         );
 
         if ($this->bdd->num_rows($rResult) > 0) {
