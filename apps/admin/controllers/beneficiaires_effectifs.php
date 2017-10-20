@@ -47,7 +47,7 @@ class beneficiaires_effectifsController extends bootstrap
         $ownerTypes    = $this->getBeneficialOwnerTypes();
 
         $companyBeneficialOwnerDeclarationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration');
-        $currentDeclaration                          = $companyBeneficialOwnerDeclarationRepository->findCurrentBeneficialOwnerDeclaration($company);
+        $currentDeclaration                          = $companyBeneficialOwnerDeclarationRepository->findCurrentDeclarationByCompany($company);
         if (null !== $currentDeclaration) {
             $currentOwners = $this->formatOwnerList($currentDeclaration->getBeneficialOwner());
         }
@@ -59,14 +59,14 @@ class beneficiaires_effectifsController extends bootstrap
         }
 
         $this->render(null, [
-            'beneficial_owners'      => $currentOwners,
-            'countries'              => $countryList,
-            'types'                  => $ownerTypes,
-            'declaration'            => $currentDeclaration,
-            'company'                => $company,
-            'universignDeclarations' => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findAllDeclarationsForCompany($company),
-            'emailStatusErrors'      => empty($emailStatusErrors) ? null : $emailStatusErrors,
-            'emailStatusSuccess'     => empty($emailStatusSuccess) ? null : $emailStatusSuccess,
+            'beneficial_owners'   => $currentOwners,
+            'countries'           => $countryList,
+            'types'               => $ownerTypes,
+            'currentDeclaration'  => $currentDeclaration,
+            'company'             => $company,
+            'projectDeclarations' => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findAllDeclarationsForCompany($company),
+            'emailStatusErrors'   => empty($emailStatusErrors) ? null : $emailStatusErrors,
+            'emailStatusSuccess'  => empty($emailStatusSuccess) ? null : $emailStatusSuccess,
         ]);
     }
 
@@ -138,16 +138,16 @@ class beneficiaires_effectifsController extends bootstrap
         $ownerType     = null;
         $errors        = [];
 
-        $idClient           = $request->request->getInt('id');
+        $clientId           = $request->request->getInt('id');
         $lastName           = $request->request->filter('last_name', FILTER_SANITIZE_STRING);
         $firstName          = $request->request->filter('first_name', FILTER_SANITIZE_STRING);
         $birthDate          = $request->request->filter('birthdate', FILTER_SANITIZE_STRING);
         $birthPlace         = $request->request->filter('birthplace', FILTER_SANITIZE_STRING);
-        $idBirthCountry     = $request->request->getInt('birth_country');
+        $birthCountryId     = $request->request->getInt('birth_country');
         $countryOfResidence = $request->request->getInt('country');
         $type               = 0 === $request->request->getInt('type') ? null : $request->request->getInt('type');
         $percentage         = $request->request->getDigits('percentage');
-        $idDeclaration      = $request->request->getInt('id_declaration');
+        $declarationId      = $request->request->getInt('id_declaration');
         $idCompany          = $request->request->getInt('id_company');
 
         if (empty($lastName)) {
@@ -166,7 +166,7 @@ class beneficiaires_effectifsController extends bootstrap
             $errors[] = 'Le lieu de naissance doit être rempli';
         }
 
-        if (empty($idBirthCountry)) {
+        if (empty($birthCountryId)) {
             $errors[] = 'Le pays de naissance doit être rempli';
         }
 
@@ -183,11 +183,11 @@ class beneficiaires_effectifsController extends bootstrap
 
         $birthday = \DateTime::createFromFormat('d/m/Y', $birthDate);
         $birthday->setTime(0, 0, 0);
-        if (false == $this->checkDate($birthDate) || false === $birthday || false === $this->isAtLeastEighteenYearsOld($birthday)) {
+        if (false === $this->checkDate($birthDate) || false === $birthday || false === $this->isAtLeastEighteenYearsOld($birthday)) {
             $errors[] = 'La date de naissance n\'est pas valide';
         }
 
-        $checkBirthplace = $this->validateLocations($idBirthCountry, $birthPlace);
+        $checkBirthplace = $this->validateLocations($birthCountryId, $birthPlace);
         if (false === $checkBirthplace['success']) {
             $errors[] = $checkBirthplace['error'] . ' (naissance)';
         }
@@ -204,15 +204,22 @@ class beneficiaires_effectifsController extends bootstrap
             $errors[] = 'Le type de bénéficiaire effectif n\'est pas valide';
         }
 
-        $minPercentage = 100 / BeneficialOwnerManager::MAX_NUMBER_BENEFICIAL_OWNERS_TYPE_SHAREHOLDER;
+        $minPercentage = bcdiv(100, BeneficialOwnerManager::MAX_NUMBER_BENEFICIAL_OWNERS_TYPE_SHAREHOLDER, 2);
         if (false === empty($percentage) && ($percentage < $minPercentage || $percentage > 100)) {
             $errors[] = 'Le pourcentage des parts détenues n\'est pas correct. Il ne doit pas être inférieur à ' . $minPercentage . '&nbsp;% ou supérieur à 100&nbsp;%';
         }
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager $beneficialOwnerManager */
         $beneficialOwnerManager = $this->get('unilend.service.beneficial_owner_manager');
-        /** @var CompanyBeneficialOwnerDeclaration $declaration */
-        $declaration = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->find($idDeclaration);
+        $declaration            = null;
+        if (false === empty($declarationId)) {
+            /** @var CompanyBeneficialOwnerDeclaration $declaration */
+            $declaration = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->find($declarationId);
+        }
+
+        if (null === $declaration && false === empty($declarationId)) {
+            $errors[] = 'Impossible de trouver la déclaration correspondante';
+        }
 
         if (null !== $declaration && null !== $ownerType) {
             /** @var BeneficialOwnerRepository $beneficialOwnerRepository */
@@ -250,10 +257,10 @@ class beneficiaires_effectifsController extends bootstrap
             $entityManager->persist($declaration);
         }
 
-        if (false === empty($idClient)) {
-            $owner = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClient);
+        if (false === empty($clientId)) {
+            $owner = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
             if (null === $owner) {
-                $errors[] = 'Le client ID ' . $idClient . ' n\'existe pas';
+                $errors[] = 'Le client ID ' . $clientId . ' n\'existe pas';
             }
 
             if (false === empty($owner->getNaissance()) && $owner->getNaissance() != $birthday) {
@@ -264,7 +271,7 @@ class beneficiaires_effectifsController extends bootstrap
                 $errors[] = 'Le lieu de naissance du client enregistré en base et le lieu de naissance saisi ne correspondent pas';
             }
 
-            if (false === empty($owner->getIdPaysNaissance()) && $owner->getIdPaysNaissance() !== $idBirthCountry) {
+            if (false === empty($owner->getIdPaysNaissance()) && $owner->getIdPaysNaissance() !== $birthCountryId) {
                 $errors[] = 'Le pays de naissance du client enregistré en base et le pays de naissance saisi ne correspondent pas';
             }
 
@@ -283,12 +290,12 @@ class beneficiaires_effectifsController extends bootstrap
                 $firstName,
                 $birthday,
                 $birthPlace,
-                $idBirthCountry,
+                $birthCountryId,
                 $countryOfResidence,
                 $request->files->get('id_card_passport'),
                 $ownerType,
                 $percentage,
-                $idClient
+                $clientId
             );
         } catch (\Exception $exception) {
             $beneficialOwner = null;
@@ -380,9 +387,10 @@ class beneficiaires_effectifsController extends bootstrap
             $errors[] = 'Le type de bénéficiaire effectif n\'est pas valide.';
         }
 
-        $percentage = $request->request->getDigits('percentage');
-        if (false === empty($percentage) && $percentage < 25 || $percentage > 100) {
-            $errors[] = 'Le pourcentage des parts détenues n\'est pas correct. Il ne doit pas être inférieur à 25% ou supérieur à 100%';
+        $percentage    = $request->request->getDigits('percentage');
+        $minPercentage = bcdiv(100, BeneficialOwnerManager::MAX_NUMBER_BENEFICIAL_OWNERS_TYPE_SHAREHOLDER, 2);
+        if (false === empty($percentage) && ($percentage < $minPercentage || $percentage > 100)) {
+            $errors[] = 'Le pourcentage des parts détenues n\'est pas correct. Il ne doit pas être inférieur à ' . $minPercentage . '&nbsp;% ou supérieur à 100&nbsp;%';
         }
 
         if (false === empty($errors)) {
@@ -450,25 +458,28 @@ class beneficiaires_effectifsController extends bootstrap
             ];
         }
 
-        if (CompanyBeneficialOwnerDeclaration::STATUS_PENDING === $owner->getIdDeclaration()->getStatus()) {
-            $declaration = $owner->getIdDeclaration();
+        switch ($owner->getIdDeclaration()->getStatus()) {
+            case CompanyBeneficialOwnerDeclaration::STATUS_PENDING:
+                $declaration = $owner->getIdDeclaration();
 
-            $entityManager->remove($owner);
-            $entityManager->flush($owner);
+                $entityManager->remove($owner);
+                $entityManager->flush($owner);
 
-            $this->get('unilend.service.beneficial_owner_manager')->modifyPendingCompanyDeclaration($declaration);
-        }
+                $this->get('unilend.service.beneficial_owner_manager')->modifyPendingCompanyDeclaration($declaration);
+                break;
+            case CompanyBeneficialOwnerDeclaration::STATUS_VALIDATED:
+                $newDeclaration = clone $owner->getIdDeclaration();
+                $newDeclaration->setStatus(CompanyBeneficialOwnerDeclaration::STATUS_PENDING);
 
-        if (CompanyBeneficialOwnerDeclaration::STATUS_VALIDATED === $owner->getIdDeclaration()->getStatus()) {
-            $newDeclaration = clone $owner->getIdDeclaration();
-            $newDeclaration->setStatus(CompanyBeneficialOwnerDeclaration::STATUS_PENDING);
+                $entityManager->persist($newDeclaration);
+                $entityManager->flush($newDeclaration);
 
-            $entityManager->persist($newDeclaration);
-            $entityManager->flush($newDeclaration);
-
-            $ownerToArchive = $entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwner')->findOneBy(['idClient' => $owner->getIdClient(), 'idDeclaration' => $newDeclaration->getId()]);
-            $entityManager->remove($ownerToArchive);
-            $entityManager->flush($ownerToArchive);
+                $ownerToArchive = $entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwner')->findOneBy(['idClient' => $owner->getIdClient(), 'idDeclaration' => $newDeclaration->getId()]);
+                $entityManager->remove($ownerToArchive);
+                $entityManager->flush($ownerToArchive);
+                break;
+            default:
+                break;
         }
 
         return [
@@ -542,9 +553,13 @@ class beneficiaires_effectifsController extends bootstrap
      */
     private function checkDate($date)
     {
-        $dayMonthYear = explode('/', $date);
+        if (preg_match("/^(0[1-9]|[1-2][0-9]|3[0-1])\/(0[1-9]|1[0-2])\/[0-9]{4}$/", $date)) {
+            $dayMonthYear = explode('/', $date);
 
-        return checkdate($dayMonthYear[1], $dayMonthYear[0], $dayMonthYear[2]);
+            return checkdate($dayMonthYear[1], $dayMonthYear[0], $dayMonthYear[2]);
+        }
+
+        return false;
     }
 
     /**
@@ -611,9 +626,9 @@ class beneficiaires_effectifsController extends bootstrap
             $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
 
             if (filter_var($search, FILTER_VALIDATE_INT)) {
-                $result = $clientsRepository->findBy(['idClient' => $search]);
+                $result = $clientsRepository->find($search);
             } else {
-                $result = $clientsRepository->findClientByNameLike($search);
+                $result = $clientsRepository->findBeneficialOwnerByName($search);
             }
 
             foreach ($result as $client) {
@@ -631,6 +646,9 @@ class beneficiaires_effectifsController extends bootstrap
 
     public function _declaration()
     {
+        $this->autoFireView = false;
+        $this->hideDecoration();
+
         if (false === isset($this->params[0])) {
             header('Location: ' . $this->lurl);
             die;
@@ -650,7 +668,7 @@ class beneficiaires_effectifsController extends bootstrap
             die;
         }
 
-        $declaration = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentBeneficialOwnerDeclaration($company);
+        $declaration = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($company);
         if (null === $declaration) {
             header('Location: ' . $this->lurl . '/beneficiaires_effectifs/' . $company->getIdCompany());
             die;
@@ -662,6 +680,9 @@ class beneficiaires_effectifsController extends bootstrap
 
     public function _send_email()
     {
+        $this->autoFireView = false;
+        $this->hideDecoration();
+
         if (false === isset($this->params[0])) {
             header('Location: ' . $this->lurl);
             die;

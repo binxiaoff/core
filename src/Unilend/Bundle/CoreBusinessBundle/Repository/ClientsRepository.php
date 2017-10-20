@@ -733,7 +733,7 @@ class ClientsRepository extends EntityRepository
      *
      * @return array
      */
-    public function findClientByNameLike($name)
+    public function findBeneficialOwnerByName($name)
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder->where('c.nom LIKE :name')

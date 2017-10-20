@@ -13,7 +13,7 @@ class CompanyBeneficialOwnerDeclarationRepository extends EntityRepository
      *
      * @return null|CompanyBeneficialOwnerDeclaration
      */
-    public function findCurrentBeneficialOwnerDeclaration($idCompany)
+    public function findCurrentDeclarationByCompany($idCompany)
     {
         $queryBuilder = $this->createQueryBuilder('cbod');
         $queryBuilder->where('cbod.idCompany = :idCompany')

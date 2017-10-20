@@ -28,7 +28,7 @@ class BeneficialOwnerRepository extends EntityRepository
     }
 
     /**
-     * @param $declaration
+     * @param CompanyBeneficialOwnerDeclaration|int $declaration
      *
      * @return mixed
      */

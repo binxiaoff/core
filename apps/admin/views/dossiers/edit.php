@@ -968,7 +968,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                                     <?php endif ?>
                                 </tr>
                             <?php endif ?>
-                            <?php if (empty($this->beneficialOwnerDeclaration) || $this->beneficialOwnerDeclaration->getStatus() != UniversignEntityInterface::STATUS_SIGNED) : ?>
+                            <?php if (null === $this->beneficialOwnerDeclaration || $this->beneficialOwnerDeclaration->getStatus() != UniversignEntityInterface::STATUS_SIGNED) : ?>
                                 <tr>
                                     <th>Déclaration de <br> bénéficiaires effectifs</th>
                                     <td>

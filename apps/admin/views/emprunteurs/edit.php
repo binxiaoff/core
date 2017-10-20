@@ -1,6 +1,6 @@
 <?php
 
-use \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 
 ?>
 <script>
@@ -178,7 +178,7 @@ use \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 
     <?php if (false === in_array($this->companies->legal_form_code, \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager::BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES)) : ?>
         <h2>Bénéficiaires effectifs</h2>
-        <a role="button" class="btn btn-default" href="/beneficiaires_effectifs/<?= $this->companies->id_company ?>">Consulter les Bénéficiaires effectifs</a>
+        <a role="button" class="btn btn-default" href="<?= $this->lurl ?>/beneficiaires_effectifs/<?= $this->companies->id_company ?>">Consulter les Bénéficiaires effectifs</a>
     <?php endif; ?>
     <br/><br/>
 

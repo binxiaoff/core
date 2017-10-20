@@ -588,10 +588,7 @@ class transfertsController extends bootstrap
                 'idProject' => $aProject['id_project'],
                 'status'    => UniversignEntityInterface::STATUS_SIGNED
             ], ['added' => 'DESC']);
-            $beneficialOwnerDeclaration = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findOneBy([
-                'idProject' => $aProject['id_project'],
-                'status'    => UniversignEntityInterface::STATUS_SIGNED
-            ], ['added' => 'DESC']);
+
 
             if ($mandate) {
                 $this->aProjects[$index]['mandat']        = $mandate->getName();
@@ -604,12 +601,17 @@ class transfertsController extends bootstrap
                 $this->aProjects[$index]['authority_status'] = $proxy->getStatus();
             }
 
-            if ($beneficialOwnerManager->projectNeedsBeneficialOwnerDeclaration($project) && $beneficialOwnerDeclaration) {
-                $this->aProjects[$index]['beneficial_owner_declaration']        = $beneficialOwnerDeclaration->getName();
-                $this->aProjects[$index]['beneficial_owner_declaration_status'] = $beneficialOwnerDeclaration->getStatus();
-            } elseif (false === $beneficialOwnerManager->projectNeedsBeneficialOwnerDeclaration($project)) {
-                $this->aProjects[$index]['beneficial_owner_declaration']        = false;
-                $this->aProjects[$index]['beneficial_owner_declaration_status'] = UniversignEntityInterface::STATUS_SIGNED;
+            $this->aProjects[$index]['needsBeneficialOwnerDeclaration'] = $beneficialOwnerManager->projectNeedsBeneficialOwnerDeclaration($project);
+            if ($this->aProjects[$index]['needsBeneficialOwnerDeclaration']) {
+                $beneficialOwnerDeclaration = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findOneBy([
+                    'idProject' => $aProject['id_project'],
+                    'status'    => UniversignEntityInterface::STATUS_SIGNED
+                ], ['added' => 'DESC']);
+
+                if (null !== $beneficialOwnerDeclaration) {
+                    $this->aProjects[$index]['beneficial_owner_declaration']        = $beneficialOwnerDeclaration->getName();
+                    $this->aProjects[$index]['beneficial_owner_declaration_status'] = $beneficialOwnerDeclaration->getStatus();
+                }
             }
 
             $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($project->getIdCompany()->getIdClientOwner());

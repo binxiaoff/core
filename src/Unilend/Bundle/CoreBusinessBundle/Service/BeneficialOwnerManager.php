@@ -55,7 +55,7 @@ class BeneficialOwnerManager
      * @param RouterInterface    $router
      * @param UniversignManager  $universignManager
      * @param AttachmentManager  $attachmentManager
-     * @param                    $protectedPath
+     * @param string             $protectedPath
      */
     public function __construct(
         EntityManager $entityManager,
@@ -66,7 +66,8 @@ class BeneficialOwnerManager
         AttachmentManager $attachmentManager,
         LoggerInterface $logger,
         $protectedPath
-    ) {
+    )
+    {
         $this->entityManager     = $entityManager;
         $this->snappy            = $snappy;
         $this->twig              = $twig;
@@ -103,7 +104,6 @@ class BeneficialOwnerManager
 
         return $universign;
     }
-
 
     /**
      * @return string
@@ -154,7 +154,7 @@ class BeneficialOwnerManager
 
         $projectDeclaration = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findOneBy(['idProject' => $project, 'status' => [UniversignEntityInterface::STATUS_PENDING, UniversignEntityInterface::STATUS_SIGNED]], ['added' => 'DESC']);
         if (null === $projectDeclaration) {
-            $companyDeclaration = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentBeneficialOwnerDeclaration($project->getIdCompany());
+            $companyDeclaration = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($project->getIdCompany());
             $projectDeclaration = $this->addProjectBeneficialOwnerDeclaration($companyDeclaration, $project);
         }
 
@@ -217,13 +217,17 @@ class BeneficialOwnerManager
         $this->snappy->generateFromHtml($pdfContent, $outputFile, $options, true);
     }
 
-
+    /**
+     * @param CompanyBeneficialOwnerDeclaration $declaration
+     *
+     * @return string
+     */
     public function generateCompanyPdfFile(CompanyBeneficialOwnerDeclaration $declaration)
     {
         $beneficialOwners = $declaration->getBeneficialOwner();
         $pdfContent       = $this->twig->render('/pdf/beneficial_owner_declaration.html.twig', [
             'owners'     => $beneficialOwners,
-            'disclaimer' => 'Ce document a pour but le contrôle de contenu et n\'est en aucun cas representativ concernant la mise en forme du document final.'
+            'disclaimer' => 'Ce document a pour but le contrôle de contenu et n\'est en aucun cas representatif de la mise en forme du document final.'
         ]);
         $options          = [
             'footer-html'   => '',
@@ -236,7 +240,6 @@ class BeneficialOwnerManager
 
         return $this->snappy->getOutputFromHtml($pdfContent, $options);
     }
-
 
     /**
      * @param CompanyBeneficialOwnerDeclaration $declaration
@@ -267,7 +270,8 @@ class BeneficialOwnerManager
         BeneficialOwnerType $type = null,
         $percentage = null,
         $idClient = null
-    ) {
+    )
+    {
         if (empty($idClient)) {
             $owner = new Clients();
             $owner->setPrenom($firstName)
@@ -283,7 +287,6 @@ class BeneficialOwnerManager
                 ->setIdClient($owner);
 
             $this->entityManager->persist($ownerAddress);
-
         } else {
             $owner = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClient);
             if (null === $owner) {
@@ -331,7 +334,7 @@ class BeneficialOwnerManager
         $this->entityManager->persist($beneficialOwner);
         $this->entityManager->flush([$declaration, $owner, $ownerAddress, $beneficialOwner]);
 
-        $attachmentType    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::CNI_PASSPORTE);
+        $attachmentType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::CNI_PASSPORTE);
         if ($attachmentType) {
             $this->attachmentManager->upload($owner, $attachmentType, $passport);
         }
@@ -345,8 +348,8 @@ class BeneficialOwnerManager
 
     /**
      * @param BeneficialOwner $owner
-     * @param null            $type
-     * @param null            $percentage
+     * @param null|string     $type
+     * @param null|string     $percentage
      *
      * @throws \Exception
      */
@@ -361,10 +364,9 @@ class BeneficialOwnerManager
             }
         }
 
-        switch($owner->getIdDeclaration()->getStatus()) {
+        switch ($owner->getIdDeclaration()->getStatus()) {
             case CompanyBeneficialOwnerDeclaration::STATUS_ARCHIVED:
                 throw new \Exception('An archived declaration should not be edited. idDeclaration : ' . $owner->getIdDeclaration()->getId() . ' idOwner: ' . $owner->getId());
-                break;
             case CompanyBeneficialOwnerDeclaration::STATUS_PENDING:
                 $this->modifyOwnerInPendingDeclaration($owner, $ownerType, $percentage);
                 break;
@@ -469,13 +471,12 @@ class BeneficialOwnerManager
                 }
             }
         }
-
     }
 
     /**
      * @param Projects $project
      *
-     * @return null|object|Clients
+     * @return null|Clients
      */
     private function getProjectOwner(Projects $project)
     {
@@ -513,8 +514,7 @@ class BeneficialOwnerManager
             $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
         }
 
-        return false === in_array($project->getIdCompany()->getLegalFormCode(), self::BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES);
-
+        return $this->companyNeedsBeneficialOwnerDeclaration($project->getIdCompany());
     }
 
     /**

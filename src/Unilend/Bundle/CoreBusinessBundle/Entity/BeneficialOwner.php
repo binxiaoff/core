@@ -186,7 +186,7 @@ class BeneficialOwner
      *
      * @return BeneficialOwner
      */
-    public function setIdClient($idClient)
+    public function setIdClient(Clients $idClient)
     {
         $this->idClient = $idClient;
 

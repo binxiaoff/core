@@ -131,7 +131,7 @@
                 <h3 class="block-title">Liste des bénéficiaires effectifs</h3>
             </div>
             <div class="block-content block-content-full">
-                <table class="table table-striped table-hover table-bordered table-header-bg" data-table-editor data-table-editor-url="{{ app.adminUrl }}/beneficiaires_effectifs/edit" data-table-editor-actions="add, modify, delete" data-table-editor-hidden="id_declaration:{{ declaration.id }}, id_company:{{ company.idCompany }}">
+                <table class="table table-striped table-hover table-bordered table-header-bg" data-table-editor data-table-editor-url="{{ app.adminUrl }}/beneficiaires_effectifs/edit" data-table-editor-actions="add, modify, delete" data-table-editor-hidden="id_declaration:{{ currentDeclaration.id }}, id_company:{{ company.idCompany }}">
                     <thead>
                     <tr>
                         <th data-editor-name="last_name" data-editor-type="text">Nom</th>
@@ -202,7 +202,7 @@
                         <p>{{ emailStatusSuccess }}</p>
                     </div>
                 {% endif %}
-                {% if universignDeclarations is defined and universignDeclarations is not empty %}
+                {% if projectDeclarations is defined and projectDeclarations is not empty %}
                     <table class="table table-hover table-bordered table-header-bg">
                         <thead>
                         <tr>
@@ -215,7 +215,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        {% for declaration in universignDeclarations %}
+                        {% for declaration in projectDeclarations %}
                             <tr>
                                 <td><a href="{{ app.adminUrl }}/dossiers/edit/{{ declaration.idProject.idProject }}">{{ declaration.idProject.idProject }}</a></td>
                                 <td><a href="{{ app.adminUrl }}/dossiers/edit/{{ declaration.idProject.idProject }}">{{ declaration.idProject.title }}</a></td>

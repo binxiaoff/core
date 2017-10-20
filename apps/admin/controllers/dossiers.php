@@ -222,8 +222,8 @@ class dossiersController extends bootstrap
                 if (false === in_array($this->companies->legal_form_code, \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager::BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES)) {
                     $companyBeneficialOwnerDeclaration = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findBy(['idCompany' => $this->projects->id_company]);
                     if (false === empty($companyBeneficialOwnerDeclaration)) {
-                        $beneficialOwnerDeclaration       = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findBy(['idProject' => $this->projects->id_project], ['id' => 'DESC']);
-                        $this->beneficialOwnerDeclaration = empty($beneficialOwnerDeclaration) ? [] : $beneficialOwnerDeclaration[0];
+                        $beneficialOwnerDeclaration       = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findOneBy(['idProject' => $this->projects->id_project], ['id' => 'DESC']);
+                        $this->beneficialOwnerDeclaration = $beneficialOwnerDeclaration;
                     }
                 }
             }
@@ -749,7 +749,7 @@ class dossiersController extends bootstrap
             $this->isProductUsable    = empty($product->id_product) ? false : in_array($this->selectedProduct, $this->eligibleProducts);
             $this->partnerList        = $partnerRepository->getPartnersSortedByName(Partner::STATUS_VALIDATED);
             $this->partnerProduct     = $this->loadData('partner_product');
-            $this->hasBeneficialOwner = null !== $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentBeneficialOwnerDeclaration($this->projects->id_company);
+            $this->hasBeneficialOwner = null !== $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($this->projects->id_company);
 
             if (false === empty($this->projects->id_product)) {
                 $this->partnerProduct->get($this->projects->id_product, 'id_partner = ' . $this->projects->id_partner . ' AND id_product');
@@ -2428,7 +2428,7 @@ class dossiersController extends bootstrap
             return;
         }
 
-        if (null === $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentBeneficialOwnerDeclaration($this->projects->id_company)) {
+        if (null === $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($this->projects->id_company)) {
             $_SESSION['publish_error'] = 'Il n\'y a pas de bénéficiaire effectif déclaré';
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);

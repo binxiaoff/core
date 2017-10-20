@@ -56,16 +56,24 @@ class UniversignController extends Controller
                     ->findOneBy(['idProject' => $signatureId, 'status' => $status], ['added' => 'DESC']);
                 $proxy                      = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')
                     ->findOneBy(['idProject' => $signatureId, 'status' => $status], ['added' => 'DESC']);
-                $beneficialOwnerDeclaration = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')
-                    ->findOneBy(['idProject' => $signatureId, 'status' => $status], ['added' => 'DESC']);
 
-                if (null === $mandate || null === $proxy || null === $beneficialOwnerDeclaration) {
+                if (null === $mandate || null === $proxy) {
                     return $this->redirectToRoute('home');
+                }
+
+                if ($this->get('unilend.service.beneficial_owner_manager')->projectNeedsBeneficialOwnerDeclaration($proxy->getIdProject())) {
+                    $beneficialOwnerDeclaration = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')
+                        ->findOneBy(['idProject' => $signatureId, 'status' => $status], ['added' => 'DESC']);
+
+                    if (null === $beneficialOwnerDeclaration) {
+                        return $this->redirectToRoute('home');
+                    }
+
+                    $documents[] = $beneficialOwnerDeclaration;
                 }
 
                 $documents[] = $proxy;
                 $documents[] = $mandate;
-                $documents[] = $beneficialOwnerDeclaration;
                 break;
             case ProjectsPouvoir::DOCUMENT_TYPE:
                 $documents[] = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->find($signatureId);

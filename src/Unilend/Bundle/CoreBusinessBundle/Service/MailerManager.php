@@ -290,6 +290,7 @@ class MailerManager
             $documents .= $this->translator->trans('universign_proxy-description-for-email');
         }
 
+        $interestRate = empty($project->getInterestRate()) ? $project->getAverageInterestRate() : $project->getInterestRate();
         $varMail = [
             'surl'                   => $this->sSUrl,
             'url'                    => $this->sFUrl,
@@ -297,7 +298,7 @@ class MailerManager
             'nom_e'                  => $project->getIdCompany()->getName(),
             'mensualite'             => $this->oFicelle->formatNumber($monthlyPayment),
             'montant'                => $this->oFicelle->formatNumber($project->getAmount(), 0),
-            'taux_moyen'             => $this->oFicelle->formatNumber($project->getInterestRate(), 1),
+            'taux_moyen'             => $this->oFicelle->formatNumber($interestRate, 1),
             'link_compte_emprunteur' => $this->sFUrl . '/projects/detail/' . $project->getIdProject(),
             'link_signature'         => $this->sFUrl . '/pdf/projet/' . $borrower->hash . '/' . $project->getIdProject(),
             'document_list'          => $documents,
