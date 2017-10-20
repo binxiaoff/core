@@ -82,14 +82,14 @@
             $filter.html(label)
             $filter.append($filterInput)
         })
-        
+
         $(document).on('click', '.table-action', function(){
             var $modal
             if ($(this).is('.add-comment') || $(this).is('.modify-comment')) {
                 $modal = $('#modal-comment')
-                var receptionId = $(this).data('id')
+                var receptionId = $(this).data('reception-id')
                 var comment = $(this).data('comment')
-                $modal.find('[name=reception]').html(receptionId)
+                $modal.find('[name=reception]').val(receptionId)
                 $modal.find('[name=comment]').html(comment)
                 if ($(this).is('.modify-comment')) {
                     $modal.find('h1').text('Modifier le commentaire')

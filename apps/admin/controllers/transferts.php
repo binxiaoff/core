@@ -412,13 +412,13 @@ class transfertsController extends bootstrap
 
     public function _comment()
     {
-        if (isset($_POST['reception']) && false !== filter_var($_POST['reception'], FILTER_VALIDATE_INT)) {
+        if ($receptionId = $this->request->request->getInt('reception')) {
             /** @var EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['reception'])->setComment($_POST['comment']);
+            $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($receptionId)->setComment($this->request->request->get('comment'));
             $entityManager->flush();
 
-            header('Location: ' . $_POST['referer']);
+            header('Location: ' . $this->request->request->get('referer'));
             exit;
         }
 
