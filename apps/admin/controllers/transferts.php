@@ -102,7 +102,8 @@ class transfertsController extends bootstrap
                     $reception->getIdProject()->getIdProject(),
                     $reception->getAdded()->format('d/m/Y'),
                     '',
-                    $reception->getComment()
+                    $reception->getComment(),
+                    $reception->getLigne()
                 ];
             }
         } catch (Exception $exception) {

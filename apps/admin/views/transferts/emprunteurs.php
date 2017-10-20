@@ -1,4 +1,5 @@
 <link href="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.css" type="text/css" rel="stylesheet">
+<link href="<?= $this->lurl ?>/oneui/css/font-awesome.css" type="text/css" rel="stylesheet">
 <style>
     @font-face {
         font-family: 'FontAwesome';
@@ -11,150 +12,17 @@
         font-weight: normal;
         font-style: normal;
     }
-    table.dataTable thead .sorting:after,
-    table.dataTable thead .sorting_asc:after,
-    table.dataTable thead .sorting_desc:after {
-        top: 7px !important;
-    }
-    .dataTables_paginate ul.pagination {
-        margin: 12px 0;
-        white-space: nowrap;
-        float: right;
-    }
-    .dataTables_paginate ul.pagination > li {
-        display: block;
-        float: left;
-        margin: 0 0 5px 5px;
-    }
-    .pagination>.active>a, .pagination>.active>span, .pagination>.active>a:hover, .pagination>.active>span:hover, .pagination>.active>a:focus, .pagination>.active>span:focus {
-        color: #b20066;
-        -webkit-box-shadow: 0 2px #b20066;
-        box-shadow: 0 2px #b20066;
-    }
 </style>
 <script src="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
 <script>
     $(function() {
-        var $DataTable = $.fn.dataTable
-        $.extend( true, $DataTable.defaults, {
-            dom:
-            "<'row'<'col-md-6'l><'col-md-6'f>>" +
-            "<'row'<'col-md-12'tr>>" +
-            "<'row'<'col-md-6'i><'col-md-6'p>>",
-            renderer: 'bootstrap',
-            oLanguage: {
-                sLengthMenu: "_MENU_",
-                sProcessing:     "Traitement en cours...",
-                sSearch:         "Rechercher&nbsp;:",
-                sLengthMenu:     "Afficher _MENU_ &eacute;l&eacute;ments",
-                sInfo:           "Affichage de l'&eacute;l&eacute;ment _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
-                sInfoEmpty:      "Affichage de l'&eacute;l&eacute;ment 0 &agrave; 0 sur 0 &eacute;l&eacute;ment",
-                sInfoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
-                sInfoPostFix:    "",
-                sLoadingRecords: "Chargement en cours...",
-                sZeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
-                sEmptyTable:     "Aucune donn&eacute;e disponible dans le tableau",
-                oPaginate: {
-                    sFirst:      "Premier",
-                    sPrevious:   "Pr&eacute;c&eacute;dent",
-                    sNext:       "Suivant",
-                    sLast:       "Dernier"
-                },
-                oPaginate: {
-                    sPrevious: '<i class="fa fa-angle-left"></i>',
-                    sNext: '<i class="fa fa-angle-right"></i>'
-                }
-            }
-        })
-        $.extend($DataTable.ext.classes, {
-            sWrapper: "dataTables_wrapper form-inline dt-bootstrap",
-            sFilterInput: "form-control",
-            sLengthSelect: "form-control"
-        })
-        $DataTable.ext.renderer.pageButton.bootstrap = function (settings, host, idx, buttons, page, pages) {
-            var api     = new $DataTable.Api(settings)
-            var classes = settings.oClasses
-            var lang    = settings.oLanguage.oPaginate
-            var btnDisplay, btnClass
-
-            var attach = function (container, buttons) {
-                var i, ien, node, button
-                var clickHandler = function (e) {
-                    e.preventDefault()
-                    if (!jQuery(e.currentTarget).hasClass('disabled')) {
-                        api.page(e.data.action).draw(false)
-                    }
-                }
-                for (i = 0, ien = buttons.length; i < ien; i++) {
-                    button = buttons[i]
-                    if ($.isArray(button)) {
-                        attach(container, button)
-                    }
-                    else {
-                        btnDisplay = ''
-                        btnClass = ''
-                        switch (button) {
-                            case 'ellipsis':
-                                btnDisplay = '...'
-                                btnClass = 'disabled'
-                                break
-                            case 'first':
-                                btnDisplay = lang.sFirst
-                                btnClass = button + (page > 0 ? '' : ' disabled')
-                                break
-                            case 'previous':
-                                btnDisplay = lang.sPrevious
-                                btnClass = button + (page > 0 ? '' : ' disabled')
-                                break
-                            case 'next':
-                                btnDisplay = lang.sNext
-                                btnClass = button + (page < pages - 1 ? '' : ' disabled')
-                                break
-                            case 'last':
-                                btnDisplay = lang.sLast
-                                btnClass = button + (page < pages - 1 ? '' : ' disabled')
-                                break
-                            default:
-                                btnDisplay = button + 1
-                                btnClass = page === button ?
-                                    'active' : ''
-                                break
-                        }
-                        if (btnDisplay) {
-                            node = jQuery('<li>', {
-                                'class': classes.sPageButton + ' ' + btnClass,
-                                'aria-controls': settings.sTableId,
-                                'tabindex': settings.iTabIndex,
-                                'id': idx === 0 && typeof button === 'string' ?
-                                settings.sTableId + '_' + button :
-                                    null
-                            })
-                                .append(jQuery('<a>', {
-                                        'href': '#'
-                                    })
-                                        .html(btnDisplay)
-                                )
-                                .appendTo(container)
-
-                            settings.oApi._fnBindAction(
-                                node, {action: button}, clickHandler
-                            )
-                        }
-                    }
-                }
-            }
-            attach(
-                jQuery(host).empty().html('<ul class="pagination"/>').children('ul'),
-                buttons
-            )
-        }
-        $('#receptions-table').DataTable({
+        var dt = $('#receptions-table').DataTable({
             serverSide: true,
             processing: true,
             columnDefs: [
                 {orderable: false, targets: [1, 3, 6]},
                 {searchable: false, targets: [1, 2, 3, 5, 6]},
-                {visible: false, targets: 7},
+                {visible: false, targets: [7, 8]},
                 {name: "idReception", "targets": 0},
                 {name: "motif", "targets": 1},
                 {name: "montant", "targets": 2},
@@ -168,20 +36,76 @@
                 url: '<?= $this->lurl ?>/oneui/js/plugins/datatables/localisation/fr_FR.json'
             },
             createdRow: function ( row, data, index ) {
-                console.log(data)
-                //                $('.reception-line').tooltip({
-                //                    position: {my: 'left top', at: 'right top'},
-                //                    content: function () {
-                //                        return $(this).prop('title')
-                //                    }
-                //                })
-                //                $('.inline').tooltip({disabled: true})
-                //                $('.inline').colorbox({inline: true, width: '50%'})
+                var surl = '<?= $this->surl ?>'
+                var $row = $(row)
+                var receptionId = data[0]
+                var comment = data[7]
+                var line = data[8]
+                var amount = data[2]
+                var negative = (amount.replace(',', '.').replace(/[^\d\-\.]/g, '') < 0) ? true : false
+
+                var addCommentBtn = '<a class="add-comment table-action" data-reception-id=' + receptionId + '" data-comment="' + comment + '" title="Commenter l\'opération">' +
+                    '<span class="fa fa-pencil"></span>' +
+                    '</a>'
+                var showReceptionBtn = '<a class="show-reception table-action" data-reception-id="' + receptionId + '" data-line="' + line + '" title="Afficher l\'opération">' +
+                    '<span class="fa fa-eye"></span>' +
+                    '</a>'
+
+                if (negative) {
+                    $row.css('background', '#f9adb3')
+                }
+
+                if (comment !== null) {
+                    addCommentBtn = '<a class="add-comment modify-comment table-action" data-reception-id=' + receptionId + '" data-comment="' + comment + '" title="Modifier le commentaire">' +
+                    '<span class="fa fa-pencil-square"></span>' +
+                    '</a>'
+                    if (!negative)
+                        $row.css('background', '#fdeec6')
+                }
+                $row.find('td:last-child').append(showReceptionBtn + addCommentBtn)
             }
         })
-
-    });
+        dt.on('preDraw', function() {
+            var $filter = $('#receptions-table_filter input')
+            $filter.attr('placeholder', 'ID projet ou reception')
+        })
+        dt.on('draw', function() {
+            $('.table-action').tooltip({
+                position: {my: 'left top', at: 'right top'},
+                content: function () {
+                    return $(this).prop('title')
+                }
+            })
+            var $filter = $('#receptions-table_filter')
+            var $filterInput = $filter.find('input')
+            var label = '<label>Rechercher par ID Projet ou ID reception<label>'
+            $filter.html(label)
+            $filter.append($filterInput)
+        })
+        
+        $(document).on('click', '.table-action', function(){
+            var $modal
+            if ($(this).is('.add-comment') || $(this).is('.modify-comment')) {
+                $modal = $('#modal-comment')
+                var receptionId = $(this).data('id')
+                var comment = $(this).data('comment')
+                $modal.find('[name=reception]').html(receptionId)
+                $modal.find('[name=comment]').html(comment)
+                if ($(this).is('.modify-comment')) {
+                    $modal.find('h1').text('Modifier le commentaire')
+                } else {
+                    $modal.find('h1').text('Ajouter un commentaire')
+                }
+            }
+            if ($(this).is('.show-reception')) {
+                $modal = $('#modal-line')
+                $modal.find('.line').html($(this).data('line'))
+            }
+            $.colorbox({html:$modal.html(), width: '50%'});
+        })
+    })
 </script>
+
 <div id="contenu">
     <div class="row">
         <div class="col-md-6">
@@ -201,6 +125,7 @@
             <th style="width:100px">ID projet</th>
             <th style="width:100px">Date</th>
             <th style="width:100px">&nbsp;</th>
+            <th style="width:100px">&nbsp;</th>
         </tr>
         </thead>
         <tfoot>
@@ -212,19 +137,27 @@
             <th style="width:100px">ID projet</th>
             <th style="width:100px">Date</th>
             <th style="width:100px">&nbsp;</th>
+            <th style="width:100px">&nbsp;</th>
         </tr>
         </tfoot>
     </table>
     <div class="hidden">
-        <div id="inline-content-<?= $reception->getIdReception() ?>" style="white-space: nowrap; padding: 10px; background:#fff;"><?= $reception->getLigne() ?></div>
-        <div id="comment-line-<?= $reception->getIdReception() ?>" style="padding: 10px; min-width: 500px;">
-            <form id="comment-line-form-<?= $reception->getIdReception() ?>" class="comment-line-form" method="POST" action="<?= $this->lurl ?>/transferts/comment">
-                <input type="hidden" name="reception" value="<?= $reception->getIdReception() ?>">
+        <div id="modal-line" style="padding: 10px; min-width: 500px;">
+            <div class="line"></div>
+            <div class="text-right">
+                <button type="button" class="btn-default" onclick="$.fn.colorbox.close()">OK</button>
+            </div>
+        </div>
+    </div>
+    <div class="hidden">
+        <div id="modal-comment" style="padding: 10px; min-width: 500px;">
+            <form method="POST" action="<?= $this->lurl ?>/transferts/comment">
+                <input type="hidden" name="reception">
                 <input type="hidden" name="referer" value="<?= $_SERVER['REQUEST_URI'] ?>">
-                <h1>Commenter une opération</h1>
+                <h1>Commenter l'opération</h1>
                 <div class="form-group">
-                    <label for="comment-line-comment-<?= $reception->getIdReception() ?>" class="sr-only">Commentaire</label>
-                    <textarea id="comment-line-comment-<?= $reception->getIdReception() ?>" name="comment" rows="5" class="form-control"><?= $reception->getComment() ?></textarea>
+                    <label class="sr-only">Commentaire</label>
+                    <textarea name="comment" rows="5" class="form-control"></textarea>
                 </div>
                 <div class="text-right">
                     <button type="button" class="btn-default" onclick="$.fn.colorbox.close()">Annuler</button>
