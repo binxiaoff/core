@@ -17,6 +17,7 @@
         top: 7px !important;
     }
 </style>
+<script src="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
 <script>
     $(function() {
         $('#receptions-table').DataTable({

@@ -17,30 +17,34 @@
         top: 7px !important;
     }
 </style>
+<script src="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
 <script>
     $(function() {
         $('#receptions-table').DataTable({
-            order: [[0, 'desc']],
-            pageLength: <?= $this->nb_lignes ?>,
-            bLengthChange: false,
+            serverSide: true,
+            processing: true,
             columnDefs: [
                 {orderable: false, targets: [0, 1, 6]},
-                {searchable: false, targets: 6}
-            ],
+                {searchable: false, targets: 6},
+                {visible: false, targets: 7}
+            ]
+            ajax: '/transferts/emprunteurs_attribues',
             language: {
                 url: '<?= $this->lurl ?>/oneui/js/plugins/datatables/localisation/fr_FR.json'
-            }
-        })
+            },
+           initComplete: function () {
+             $('.reception-line').tooltip({
+               position: {my: 'left top', at: 'right top'},
+               content: function () {
+                 return $(this).prop('title')
+               }
+             })
 
-        $('.reception-line').tooltip({
-            position: {my: 'left top', at: 'right top'},
-            content: function () {
-                return $(this).prop('title')
-            }
-        })
+             $('.inline').tooltip({disabled: true})
+             $('.inline').colorbox({inline: true, width: '50%'})
+           }
 
-        $('.inline').tooltip({disabled: true})
-        $('.inline').colorbox({inline: true, width: '50%'})
+        })
     });
 </script>
 <div id="contenu">
@@ -64,37 +68,20 @@
                 <th style="width:100px">&nbsp;</th>
             </tr>
         </thead>
-        <tbody>
-            <?php use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions; ?>
-            <?php /** @var Receptions $reception */ ?>
-            <?php foreach ($this->receptions as $reception) : ?>
-                <?php $isNegativeAmount = Receptions::TYPE_DIRECT_DEBIT == $reception->getType() && Receptions::DIRECT_DEBIT_STATUS_REJECTED == $reception->getStatusPrelevement(); ?>
-                <tr class="reception-line<?= $isNegativeAmount ? ' danger' : '' ?>" title="<?= htmlspecialchars(nl2br($reception->getComment()), ENT_QUOTES) ?>">
-                    <td><?= $reception->getIdReception() ?></td>
-                    <td><?= $reception->getMotif() ?></td>
-                    <td class="text-right" data-order="<?= $reception->getMontant() ?>" data-search="<?= $reception->getMontant() ?>"><?= $isNegativeAmount ? '- ' : '' ?><?= $this->ficelle->formatNumber($reception->getMontant() / 100) ?> €</td>
-                    <td class="statut_operation_<?= $reception->getIdReception() ?>">
-                        <?php if (Receptions::STATUS_ASSIGNED_MANUAL == $reception->getStatusBo() && null !== $reception->getIdUser()) : ?>
-                            <?= $reception->getIdUser()->getFirstname() . ' ' . $reception->getIdUser()->getName() ?><br>
-                            <?= $reception->getAssignmentDate()->format('d/m/Y H:i:s') ?>
-                        <?php else : ?>
-                            <?= $this->statusOperations[$reception->getStatusBo()] ?>
-                        <?php endif; ?>
-                    </td>
-                    <td class="num_project_<?= $reception->getIdReception() ?>"><a href="<?= $this->lurl ?>/dossiers/edit/<?= $reception->getIdProject()->getIdProject() ?>"><?= $reception->getIdProject()->getIdProject() ?></a></td>
-                    <td data-order="<?= $reception->getAdded()->getTimestamp() ?>"><?= $reception->getAdded()->format('d/m/Y') ?></td>
-                    <td align="center">
-                        <a class="inline" href="#comment-line-<?= $reception->getIdReception() ?>"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Commenter l'opération"></a>
-                        <a class="inline" href="#inline-content-<?= $reception->getIdReception() ?>" title="Ligne de réception">
-                            <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Afficher l'opération">
-                        </a>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
+        <tfoot>
+        <tr>
+            <th style="width:50px">ID</th>
+            <th>Motif</th>
+            <th style="width:150px">Montant</th>
+            <th style="width:150px">Attribution</th>
+            <th style="width:100px">ID projet</th>
+            <th style="width:100px">Date</th>
+            <th style="width:100px">&nbsp;</th>
+        </tr>
+        </tfoot>
     </table>
     <div class="hidden">
-        <?php foreach ($this->receptions as $reception) : ?>
+
             <div id="inline-content-<?= $reception->getIdReception() ?>" style="white-space: nowrap; padding: 10px; background:#fff;"><?= $reception->getLigne() ?></div>
             <div id="comment-line-<?= $reception->getIdReception() ?>" style="padding: 10px; min-width: 500px;">
                 <form id="comment-line-form-<?= $reception->getIdReception() ?>" class="comment-line-form" method="POST" action="<?= $this->lurl ?>/transferts/comment">
@@ -111,7 +98,6 @@
                     </div>
                 </form>
             </div>
-        <?php endforeach; ?>
     </div>
 </div>
 <script src="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>

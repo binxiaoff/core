@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\core;
 
 use Monolog\ErrorHandler;
@@ -6,6 +7,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Stopwatch\Stopwatch;
 
 class Dispatcher
 {
@@ -32,7 +34,8 @@ class Dispatcher
     // Gestion de l'URL pour construire la commande : on récupère les paramètres, on met le tout dans un tableau et on essaye de déterminer ce qui parle du controlleur, ce qui parle de l'action et ce qui est à prendre en paramètres.
     public function handleUrl()
     {
-        $requestURI   = explode('/', $_SERVER['REQUEST_URI']);
+        $path         = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $requestURI   = explode('/', $path);
         $scriptName   = explode('/', $_SERVER['SCRIPT_NAME']);
         $commandArray = array_diff_assoc($requestURI, $scriptName);
         $commandArray = array_values($commandArray);
@@ -98,7 +101,7 @@ class Dispatcher
     {
         $this->fireBootstrap();
 
-        $controllerName = $this->Command->getControllerName();
+        $controllerName  = $this->Command->getControllerName();
         $controllerClass = $controllerName . 'Controller';
 
         include $this->path . 'apps/' . $this->App . '/controllers/' . $controllerName . '.php';
@@ -116,12 +119,6 @@ class Dispatcher
         } else {
             return false;
         }
-    }
-
-    // Test si une action existe dans le controller root
-    public function isActionInRootController($action)
-    {
-        return $this->isActionInController('root', $action);
     }
 
     // Test si une action existe dans le controller root
@@ -152,17 +149,17 @@ class Dispatcher
 
     private function newRelic(\Command $command)
     {
-        if ($this->environment !== 'prod' || false === extension_loaded ('newrelic')) {
+        if ($this->environment !== 'prod' || false === extension_loaded('newrelic')) {
             return;
         }
-        $container = $this->kernel->getContainer();
+        $container       = $this->kernel->getContainer();
         $applicationName = $container->getParameter('new_relic.front_app_name');
         if ($this->App === 'admin') {
             $applicationName = $container->getParameter('new_relic.back_app_name');
         }
         $transactionName = $command->getControllerName() . '::' . $command->getFunction();
 
-        newrelic_set_appname ($applicationName);
+        newrelic_set_appname($applicationName);
         newrelic_name_transaction($transactionName);
     }
 

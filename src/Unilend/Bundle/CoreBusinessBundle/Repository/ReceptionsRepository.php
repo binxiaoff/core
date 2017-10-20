@@ -33,15 +33,39 @@ class ReceptionsRepository extends EntityRepository
     /**
      * Get all assigned the direct debts or wire transfers to borrowers
      *
-     * @return Users[]
+     * @param int $limit
+     * @param int $offset
+     *
+     * @return Receptions[]
      */
-    public function getBorrowerAttributions()
+    public function getBorrowerAttributions($limit = null, $offset = null)
     {
         $queryBuilder = $this->createQueryBuilder('r');
         $queryBuilder->andWhere('r.idProject IS NOT NULL')
             ->orderBy('r.idReception', 'DESC');
 
+        if (null !== $limit) {
+            $queryBuilder->setMaxResults($limit);
+        }
+
+        if (null !== $offset) {
+            $queryBuilder->setFirstResult($offset);
+        }
+
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @return int
+     */
+    public function getBorrowerAttributionsCount()
+    {
+        $queryBuilder = $this->createQueryBuilder('r');
+        $queryBuilder->select('count(r)')
+            ->andWhere('r.idProject IS NOT NULL')
+            ->orderBy('r.idReception', 'DESC');
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 
     /**
@@ -155,7 +179,7 @@ class ReceptionsRepository extends EntityRepository
     }
 
     /**
-     * Get al receipts that didn't have a repayment task yet
+     * Get all receipts that didn't have a repayment task yet
      *
      * @param Projects $project
      *
