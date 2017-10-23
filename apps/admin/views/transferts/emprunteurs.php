@@ -76,13 +76,7 @@
                     return $(this).prop('title')
                 }
             })
-            var $filter = $('#receptions-table_filter')
-            var $filterInput = $filter.find('input')
-            var label = '<label>Rechercher par ID Projet ou ID reception<label>'
-            $filter.html(label)
-            $filter.append($filterInput)
         })
-
         $(document).on('click', '.table-action', function(){
             var $modal
             if ($(this).is('.add-comment') || $(this).is('.modify-comment')) {
