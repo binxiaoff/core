@@ -443,7 +443,7 @@ class StatisticsManager
 
             $data['late-problematic-capital-percentage'][$year] = [
                 'volume' => round(bcmul(bcdiv($data['late-owed-capital-problematic'][$year], $data['borrowed-capital'][$year], 6), 100, 3), 2),
-                'number' => round(bcdiv($numberLateProblematicProjects[$year], $data['number-of-projects'][$year], 6), 2)
+                'number' => round(bcmul(bcdiv($numberLateProblematicProjects[$year], $data['number-of-projects'][$year], 6), 100, 3), 2)
             ];
         }
 
