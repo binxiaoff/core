@@ -937,17 +937,20 @@ var App = function() {
                 return b - a
             }
         })
-        // French date sorting
+        // French date sorting - dd/mm/yy or dd/mm/yyyy
         $.extend($DataTable.ext.oSort, {
             'date-fr-pre': function (a) {
-                a = (a === '-' || a === '') ? 0 : a.replace(/([\d]{2})\/([\d]{2})\/([\d]{4})/g, '')
-                return parseFloat(a)
+                if (a == null || a == '') {
+                    return 0
+                }
+                var date = a.split('/')
+                return (date[2] + date[1] + date[0]) * 1;
             },
             'date-fr-asc': function (a, b) {
-                return a - b
+                return ((a < b) ? -1 : ((a > b) ? 1 : 0));
             },
             'date-fr-desc': function (a, b) {
-                return b - a
+                return ((a < b) ? 1 : ((a > b) ? -1 : 0));
             }
         })
         // Show page of row
@@ -997,17 +1000,29 @@ var App = function() {
                     unsortableColumns = {targets: [self.$elem.find('thead td:last-child').index()], orderable: false}
                 }
             }
+            var $firstRow = self.$elem.find('tbody tr:first-child')
+            var columnIndexes = []
             // Sortable currency columns
             var currencyColumns = {}
-            var $tdEuro = self.$elem.find('td:contains(€)')
+            var $tdEuro = $firstRow.find('td:contains(€)')
             if ($tdEuro.length) {
-                var $trEuro = $tdEuro.first().parent()
-                var indexes = []
-                $trEuro.find('td:contains(€)').each(function(){
-                    indexes.push($(this).index())
+                $tdEuro.each(function(){
+                    columnIndexes.push($(this).index())
                 })
-                currencyColumns = {targets: indexes, type: 'formatted-num'}
+                currencyColumns = {targets: columnIndexes, type: 'formatted-num'}
             }
+            // Sortable date columns
+            var dateColumns = {}
+            var datePattern = new RegExp('[0-9]{2}/[0-9]{2}/[0-9]{4}')
+            columnIndexes = []
+            $firstRow.children('td').each(function () {
+                if (datePattern.test($(this).text())) {
+                    console.log($(this).index())
+                    columnIndexes.push($(this).index())
+                }
+            })
+            dateColumns = {targets: columnIndexes, type: 'date-fr'}
+
             // Rows per page
             var pageLength = self.$elem.data('table-pagelength')
             if (typeof pageLength === 'undefined')
@@ -1033,7 +1048,7 @@ var App = function() {
             self.dtInstance = self.$elem.DataTable({
                 lengthChange: lengthChange,
                 pageLength: pageLength,
-                columnDefs: [unsortableColumns, currencyColumns],
+                columnDefs: [unsortableColumns, currencyColumns, dateColumns],
                 searching: search
             })
 
@@ -1097,6 +1112,7 @@ var App = function() {
                 var type = $th.data('editor-type')
                 var options = $th.data('editor-options')
                 var required = (typeof $th.data('editor-optional') === 'undefined') ? true : false
+                var disabled = (typeof $th.data('editor-disabled') !== 'undefined') ? true : false
                 var label = $th.text()
                 if (typeof name === 'undefined' || typeof type === 'undefined') {
                     if (!$th.is('[data-table-actionscolumn]')) {
@@ -1115,7 +1131,7 @@ var App = function() {
                         }
                         options = parsedOptions
                     }
-                    fields.push({name: name, type: type, label: label, options: options, required: required})
+                    fields.push({name: name, type: type, label: label, options: options, required: required, disabled: disabled })
                 }
             })
             return fields
@@ -1134,86 +1150,95 @@ var App = function() {
                 var value         = (typeof field.value === 'undefined') ? '' : field.value
                 var options       = field.options
 
-                html += '<div class="form-group push-10"><label>' + label + '</label>' + requiredLabel
-                // Text / Email
-                if (type === 'text' || type === 'email') {
-                    html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '">'
-                // Datepicker
-                } else if (type === 'date') {
-                    html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '" data-date-format="dd/mm/yyyy">'
-                // Numerical - currency, number of days, etc.
-                } else if (type === 'numerical') {
-                    value = (value === '') ? '' : parseFloat(value.replace(',', '.').replace(/[^\d\-\.]/g, ''))
-                    html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '">'
-                // Radio
-                } else if (type === 'radio' || type === 'select' || type == 'checkbox') {
-                    if (type === 'select')
-                        html += '<select class="form-control' + required + '" name="' + name + '"><option value="0">Sélectionner</option>'
-                    else
-                        html += '<br>'
-                    for (var $l = 0; $l < options.length; $l++) {
-                        var option = options[$l]
-                        var choice
-                        if (type === 'radio') {
-                            choice = (value === option.text) ? 'checked' : ''
-                            html += '<label class="css-input css-radio css-radio-sm css-radio-default push-10-r">' +
-                                '<input type="radio"  name="' + name + '" value="' + option.id + '" ' + choice + ' class="' + required + '">' +
-                                '<span></span> ' + option.text +
-                                '</label>'
-                        } else if (type === 'select') {
-                            choice = (value === option.text) ? 'selected' : ''
-                            html += '<option value="' + option.id + '" ' + choice + '>' + option.text + '</option>'
-                        } else if (type === 'checkbox') {
-                            choice = (~(value.indexOf(option.text))) ? 'checked' : ''
-                            html += '<label class="css-input css-checkbox css-checkbox-sm css-checkbox-default push-10-r">' +
-                                '<input type="checkbox"  name="' + name + '[]" value="' + option.id + '" ' + choice + ' class="' + required + '">' +
-                                '<span></span> ' + option.text +
-                                '</label>'
-                        }
-                    }
-                    if (type === 'select') {
-                        html += '</select>'
-                    }
-                } else if (type === 'multilevel') {
-                    var optionsHtml = ''
-                    var level = 0
-                    var selectedLevel = 0
-                    function recurseHtml(object) {
-                        for (var i in object) {
-                            var o = object[i]
-                            var selected = (value === o.text) ? 'selected' : ''
-                            var spaces = (selected === 'selected') ? '' : new Array(level + 1).join('&nbsp;&nbsp;')
-                            var id = (typeof o.id !== 'undefined') ? o.id : o.text
-                            optionsHtml += '<option value="' + id + '" ' + selected + ' data-level="' + level + '">' + spaces + o.text + '</option>'
-                            if (selected === 'selected')
-                                selectedLevel = level
-                            if (typeof o.children !== 'undefined') {
-                                level++
-                                recurseHtml(o.children)
-                                level--
+                if (!field.disabled) {
+                    html += '<div class="form-group push-10"><label>' + label + '</label>' + requiredLabel
+                    // Text / Email
+                    if (type === 'text' || type === 'email') {
+                        html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '">'
+                        // Datepicker
+                    } else if (type === 'date') {
+                        html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '" data-date-format="dd/mm/yyyy">'
+                        // Numerical - currency, number of days, etc.
+                    } else if (type === 'numerical') {
+                        value = (value === '') ? '' : parseFloat(value.replace(',', '.').replace(/[^\d\-\.]/g, ''))
+                        html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '">'
+                        // Radio
+                    } else if (type === 'radio' || type === 'select' || type == 'checkbox') {
+                        if (type === 'select')
+                            html += '<select class="form-control' + required + '" name="' + name + '"><option value="0">Sélectionner</option>'
+                        else
+                            html += '<br>'
+                        for (var $l = 0; $l < options.length; $l++) {
+                            var option = options[$l]
+                            var choice
+                            if (type === 'radio') {
+                                choice = (value === option.text) ? 'checked' : ''
+                                html += '<label class="css-input css-radio css-radio-sm css-radio-default push-10-r">' +
+                                    '<input type="radio"  name="' + name + '" value="' + option.id + '" ' + choice + ' class="' + required + '">' +
+                                    '<span></span> ' + option.text +
+                                    '</label>'
+                            } else if (type === 'select') {
+                                choice = (value === option.text) ? 'selected' : ''
+                                html += '<option value="' + option.id + '" ' + choice + '>' + option.text + '</option>'
+                            } else if (type === 'checkbox') {
+                                choice = (~(value.indexOf(option.text))) ? 'checked' : ''
+                                html += '<label class="css-input css-checkbox css-checkbox-sm css-checkbox-default push-10-r">' +
+                                    '<input type="checkbox"  name="' + name + '[]" value="' + option.id + '" ' + choice + ' class="' + required + '">' +
+                                    '<span></span> ' + option.text +
+                                    '</label>'
                             }
                         }
-                        return optionsHtml
-                    }
-                    html += '<select class="form-control' + required + ' select-multilevel" name="' + name + '"><option value="0">Sélectionner</option>'
-                    html += recurseHtml(options)
-                    html += '</select>'
-                // File
-                } else if (type === 'file') {
-                    if (value === '') {
-                        html += '<input type="file" name="' + name + '" value="" class="form-control' + required + '">'
+                        if (type === 'select') {
+                            html += '</select>'
+                        }
+                    } else if (type === 'multilevel') {
+                        var optionsHtml = ''
+                        var level = 0
+                        var selectedLevel = 0
+                        function recurseHtml(object) {
+                            for (var i in object) {
+                                var o = object[i]
+                                var selected = (value === o.text) ? 'selected' : ''
+                                var spaces = (selected === 'selected') ? '' : new Array(level + 1).join('&nbsp;&nbsp;')
+                                var id = (typeof o.id !== 'undefined') ? o.id : o.text
+                                optionsHtml += '<option value="' + id + '" ' + selected + ' data-level="' + level + '">' + spaces + o.text + '</option>'
+                                if (selected === 'selected')
+                                    selectedLevel = level
+                                if (typeof o.children !== 'undefined') {
+                                    level++
+                                    recurseHtml(o.children)
+                                    level--
+                                }
+                            }
+                            return optionsHtml
+                        }
+                        html += '<select class="form-control' + required + ' select-multilevel" name="' + name + '"><option value="0">Sélectionner</option>'
+                        html += recurseHtml(options)
+                        html += '</select>'
+                        // File
+                    } else if (type === 'file') {
+                        if (value === '') {
+                            html += '<input type="file" name="' + name + '" value="" class="form-control' + required + '">'
+                        } else {
+                            html += '<div class="clearfix"><div class="pull-left">' +
+                                '<div class="file">' + value + '</div>' +
+                                '<input type="hidden" name="' + name + '" value="no_change"></div>' +
+                                '<div class="pull-left push-15-l"><a class="btn btn-xs btn-default file-edit-btn edit">Modifier</a></div></div>'
+                        }
+                        // Unknown type
                     } else {
-                        html += '<div class="clearfix"><div class="pull-left">' +
-                            '<div class="file">' + value + '</div>' +
-                            '<input type="hidden" name="' + name + '" value="no_change"></div>' +
-                            '<div class="pull-left push-15-l"><a class="btn btn-xs btn-default file-edit-btn edit">Modifier</a></div></div>'
+                        console.log('Unknown input type')
+                        return false
                     }
-                // Unknown type
-                } else {
-                    console.log('Unknown input type')
-                    return false
+                    html += '</div>'
                 }
-                html += '</div>'
+                else {
+                    if (type === 'file') {
+                        value = value.replace(/"/g, '\'')
+                        console.log(value)
+                    }
+                    html += '<input type="hidden" name="' + name + '" value="' + value + '">'
+                }
             }
             // Add hidden inputs
             html += '<input type="hidden" name="id" value="">'
@@ -1346,12 +1371,14 @@ var App = function() {
             if (data === 'delete') {
                 $tr.addClass('animated flash-bg')
                 setTimeout(function(){ tr.remove().draw(false) }, self.delay)
+                self.updatedCallback(id)
                 return false
             }
             // Toggle row state
             if (data === 'active' || data === 'inactive') {
                 $tr.addClass('animated flash-bg').find('td:last-child').html(self.buttons(data))
                 setTimeout(function(){ $tr.removeClass('animated flash-bg') }, self.delay)
+                self.updatedCallback(id)
                 return false
             }
             // Add or modify row
@@ -1396,7 +1423,7 @@ var App = function() {
                             for (var i in options) {
                                 var o = options[i]
                                 var id = o.id
-                                if (id.trim() === value.trim()) {
+                                if (id == value) {
                                     data[$i] = o.text
                                     break
                                 } else {
@@ -1423,8 +1450,10 @@ var App = function() {
             }
             // Go to the page on which the row is
             self.page(tr.index(), id)
-
-            // After update callback
+            self.updatedCallback(id)
+        }
+        DT.prototype.updatedCallback = function(id) {
+            var self = this
             if (typeof self.options !== 'undefined') {
                 if (self.options.updated) {
                     self.options.updated(id)
@@ -2170,7 +2199,7 @@ var App = function() {
         currencyToInteger: function(currency) {
             var number = parseFloat(currency.replace(',', '.').replace('€', '').replace(/\s+/g, ''))
             return number
-        }
+        },
     };
 
     return {
