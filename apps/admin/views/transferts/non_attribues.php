@@ -1,109 +1,105 @@
+<link href="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.css" type="text/css" rel="stylesheet">
+<link href="<?= $this->lurl ?>/oneui/css/font-awesome.css" type="text/css" rel="stylesheet">
+<script src="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
 <style>
     @font-face {
         font-family: 'FontAwesome';
         src: url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.eot');
         src: url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.eot?#iefix&v=4.7.0') format('embedded-opentype'),
-             url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.woff2') format('woff2'),
-             url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.woff') format('woff'),
-             url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.ttf') format('truetype'),
-             url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.svg#fontawesomeregular') format('svg');
+        url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.woff2') format('woff2'),
+        url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.woff') format('woff'),
+        url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.ttf') format('truetype'),
+        url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.svg#fontawesomeregular') format('svg');
         font-weight: normal;
         font-style: normal;
     }
-
-    table.dataTable thead .sorting:after,
-    table.dataTable thead .sorting_asc:after,
-    table.dataTable thead .sorting_desc:after {
-        top: 7px !important;
-    }
 </style>
-<script src="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
 <script>
-    $(function() {
-        $('#receptions-table').DataTable({
-            order: [[0, 'desc']],
-            pageLength: <?= $this->nb_lignes ?>,
-            bLengthChange: false,
-            columnDefs: [
-                {orderable: false, targets: [1, 5]},
-                {searchable: false, targets: 5}
-            ],
-            language: {
-                url: '<?= $this->lurl ?>/oneui/js/plugins/datatables/localisation/fr_FR.json'
-            }
-        })
+  $(function () {
+    var dt = $('#receptions-table').DataTable({
+      serverSide: true,
+      processing: true,
+      columnDefs: [
+        {orderable: false, targets: [1, 4, 5]},
+        {searchable: false, targets: [1, 2, 3, 4, 5, 6]},
+        {visible: false, targets: [6]},
+        {name: "idReception", "targets": 0},
+        {name: "motif", "targets": 1},
+        {name: "montant", "targets": 2},
+        {name: "added", "targets": 3},
+        {name: "code", "targets": 4}
+      ],
+      order: [[0, "desc"]],
+      ajax: '/transferts/get_non_attribues',
+      language: {
+        url: '<?= $this->lurl ?>/oneui/js/plugins/datatables/localisation/fr_FR.json'
+      }
+    })
 
-        $('.ignore-line-form').on('submit', function (event) {
-            event.preventDefault()
+    $('.ignore-line-form').on('submit', function (event) {
+      event.preventDefault()
 
-            var $form = $(this)
-            var $reception = $form.find('[name=reception]')
+      var $form = $(this)
+      var $reception = $form.find('[name=reception]')
 
-            $.ajax({
-                url: $form.attr('action'),
-                method: $form.attr('method'),
-                data: $form.serialize(),
-                success: function (response) {
-                    $.colorbox.close()
-                    if (response === 'ok') {
-                        $('tr[data-reception-id=' + $reception.val() + ']').fadeOut()
-                    } else {
-                        alert('Une erreur est survenue')
-                    }
-                },
-                error: function () {
-                    $.colorbox.close()
-                    alert('Une erreur est survenue')
-                }
-            })
-        })
+      $.ajax({
+        url: $form.attr('action'),
+        method: $form.attr('method'),
+        data: $form.serialize(),
+        success: function (response) {
+          $.colorbox.close()
+          if (response === 'ok') {
+            $('tr[data-reception-id=' + $reception.val() + ']').fadeOut()
+          } else {
+            alert('Une erreur est survenue')
+          }
+        },
+        error: function () {
+          $.colorbox.close()
+          alert('Une erreur est survenue')
+        }
+      })
+    })
 
-        $('.reception-line').tooltip({
-            position: {my: 'left top', at: 'right top'},
-            content: function () {
-                return $(this).prop('title')
-            }
-        })
+    $('.reception-line').tooltip({
+      position: {my: 'left top', at: 'right top'},
+      content: function () {
+        return $(this).prop('title')
+      }
+    })
 
-        $('#receptions-table > thead > tr > th').tooltip({
-            position: { my: 'top', at: 'bottom' }
-        })
+    $('#receptions-table > thead > tr > th').tooltip({
+      position: {my: 'top', at: 'bottom'}
+    })
 
-        $('.inline').tooltip({disabled: true})
-        $('.inline').colorbox({inline: true})
-    });
+    $('.inline').tooltip({disabled: true})
+    $('.inline').colorbox({inline: true})
+  });
 </script>
 <div id="contenu">
-    <h1>Opérations non affectées (<?= count($this->nonAttributedReceptions) ?>)</h1>
+    <h1>Opérations non affectées</h1>
     <table id="receptions-table" class="table table-bordered table-striped">
         <thead>
-            <tr>
-                <th>ID</th>
-                <th>Motif</th>
-                <th>Montant</th>
-                <th>Date</th>
-                <th title="Code interbancaire (Cfonb120)">Code</th>
-                <th>&nbsp;</th>
-            </tr>
+        <tr>
+            <th>ID</th>
+            <th>Motif</th>
+            <th>Montant</th>
+            <th>Date</th>
+            <th title="Code interbancaire (Cfonb120)">Code</th>
+            <th>&nbsp;</th>
+        </tr>
         </thead>
-        <tbody>
-            <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Receptions $reception */ ?>
-            <?php foreach ($this->nonAttributedReceptions as $reception) : ?>
-                <tr data-reception-id="<?= $reception->getIdReception() ?>" class="reception-line" title="<?= htmlspecialchars(nl2br($reception->getComment()), ENT_QUOTES) ?>">
-                    <td><?= $reception->getIdReception() ?></td>
-                    <td><?= $reception->getMotif() ?></td>
-                    <td class="text-right text-nowrap" data-order="<?= $reception->getMontant() ?>" data-search="<?= $reception->getMontant() ?>"><?= $this->ficelle->formatNumber($reception->getMontant() / 100) ?> €</td>
-                    <td class="text-center text-nowrap" data-order="<?= $reception->getAdded()->getTimestamp() ?>"><?= $reception->getAdded()->format('d/m/Y') ?></td>
-                    <td class="text-center"><?= substr($reception->getLigne(), 32, 2) ?></td>
-                    <td class="text-center text-nowrap">
-                        <a class="thickbox ajouter_<?= $reception->getIdReception() ?>" href="<?= $this->lurl ?>/transferts/attribution/<?= $reception->getIdReception() ?>"><img src="<?= $this->surl ?>/images/admin/check.png" alt="Attribuer l'opération"></a>
-                        <a class="inline" href="#ignore-line-<?= $reception->getIdReception() ?>"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Ignorer l'opération"></a>
-                        <a class="inline" href="#comment-line-<?= $reception->getIdReception() ?>"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Commenter l'opération"></a>
-                        <a class="inline" href="#content-line-<?= $reception->getIdReception() ?>" title="Ligne de réception"><img src="<?= $this->surl ?>/images/admin/modif.png" alt="Afficher l'opération"></a>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
+        <tfoot>
+        <tr>
+            <th>ID</th>
+            <th>Motif</th>
+            <th>Montant</th>
+            <th>Date</th>
+            <th title="Code interbancaire (Cfonb120)">Code</th>
+            <th>&nbsp;</th>
+        </tr>
+        </tfoot>
+
     </table>
     <div class="hidden">
         <?php foreach ($this->nonAttributedReceptions as $reception) : ?>
@@ -141,5 +137,3 @@
         <?php endforeach; ?>
     </div>
 </div>
-<script src="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
-<link type="text/css" rel="stylesheet" href="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.css">

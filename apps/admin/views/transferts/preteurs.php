@@ -13,12 +13,6 @@
         font-weight: normal;
         font-style: normal;
     }
-
-    table.dataTable thead .sorting:after,
-    table.dataTable thead .sorting_asc:after,
-    table.dataTable thead .sorting_desc:after {
-        top: 7px !important;
-    }
 </style>
 <script>
   $(function () {

@@ -65,15 +65,15 @@ class transfertsController extends bootstrap
         $search = $query['search'];
         $sort   = $query['sort'];
 
-        $error              = '';
-        $receptionsCount    = 0;
-        $receptionsCountFiltered    = 0;
-        $affectedReceptions = [];
+        $error                   = '';
+        $receptionsCount         = 0;
+        $receptionsCountFiltered = 0;
+        $affectedReceptions      = [];
 
         try {
-            $receptionsCount = $receptionRepository->getLenderAttributionsCount();
+            $receptionsCount         = $receptionRepository->getLenderAttributionsCount();
             $receptionsCountFiltered = $receptionRepository->getLenderAttributionsCount($search);
-            $receptions      = $receptionRepository->getLenderAttributions($limit, $start, $sort, $search);
+            $receptions              = $receptionRepository->getLenderAttributions($limit, $start, $sort, $search);
 
             foreach ($receptions as $reception) {
                 if (Receptions::STATUS_ASSIGNED_MANUAL == $reception->getStatusBo() && null !== $reception->getIdUser()) {
@@ -143,15 +143,15 @@ class transfertsController extends bootstrap
         $search = $query['search'];
         $sort   = $query['sort'];
 
-        $error              = '';
-        $receptionsCount    = 0;
-        $receptionsCountFiltered    = 0;
-        $affectedReceptions = [];
+        $error                   = '';
+        $receptionsCount         = 0;
+        $receptionsCountFiltered = 0;
+        $affectedReceptions      = [];
 
         try {
-            $receptionsCount = $receptionRepository->getBorrowerAttributionsCount();
+            $receptionsCount         = $receptionRepository->getBorrowerAttributionsCount();
             $receptionsCountFiltered = $receptionRepository->getBorrowerAttributionsCount($search);
-            $receptions      = $receptionRepository->getBorrowerAttributions($limit, $start, $sort, $search);
+            $receptions              = $receptionRepository->getBorrowerAttributions($limit, $start, $sort, $search);
 
             foreach ($receptions as $reception) {
                 if (Receptions::STATUS_ASSIGNED_MANUAL == $reception->getStatusBo() && null !== $reception->getIdUser()) {
@@ -227,9 +227,6 @@ class transfertsController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        $this->nonAttributedReceptions = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')
-            ->findBy(['statusBo' => Receptions::STATUS_PENDING], ['added' => 'DESC', 'idReception' => 'DESC']);
-
         if (isset($_POST['id_project'], $_POST['id_reception'])) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
             $operationManager = $this->get('unilend.service.operation_manager');
@@ -274,6 +271,68 @@ class transfertsController extends bootstrap
             header('Location: ' . $this->lurl . '/transferts/emprunteurs');
             die;
         }
+    }
+
+    public function _get_non_attribues()
+    {
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var NumberFormatter $currencyFormatter */
+        $currencyFormatter = $this->get('currency_formatter');
+
+        $receptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+
+        $query  = $this->handleDataTablesRequest($this->request->query->all());
+        $start  = $query['start'];
+        $limit  = $query['length'];
+        $draw   = $query['draw'];
+        $search = $query['search'];
+        $sort   = $query['sort'];
+
+        $error                   = '';
+        $receptionsCount         = 0;
+        $receptionsCountFiltered = 0;
+        $affectedReceptions      = [];
+
+        try {
+            $receptionsCount         = $receptionRepository->getNonAttributionsCount();
+            $receptionsCountFiltered = $receptionRepository->getNonAttributionsCount($search);
+            $receptions              = $receptionRepository->getNonAttributions($limit, $start, $sort, $search);
+
+            foreach ($receptions as $reception) {
+                $affectedReceptions[] = [
+                    $reception->getIdReception(),
+                    $reception->getMotif(),
+                    $currencyFormatter->formatCurrency(round(bcdiv($reception->getMontant(), 100, 4), 2), 'EUR'),
+                    $reception->getAdded()->format('d/m/Y'),
+                    substr($reception->getLigne(), 32, 2),
+                    '',
+                    $reception->getLigne()
+                ];
+            }
+        } catch (Exception $exception) {
+            $error = $exception->getMessage();
+        }
+
+        if (empty($error)) {
+            $result = [
+                'draw'            => $draw,
+                'recordsTotal'    => $receptionsCount,
+                'recordsFiltered' => $receptionsCountFiltered,
+                'data'            => $affectedReceptions
+            ];
+        } else {
+            $result = [
+                'draw'            => $draw,
+                'recordsTotal'    => $receptionsCount,
+                'recordsFiltered' => $receptionsCountFiltered,
+                'data'            => $affectedReceptions,
+                'error'           => $error,
+            ];
+        }
+
+        echo json_encode($result);
+        die;
     }
 
     public function _attribution()

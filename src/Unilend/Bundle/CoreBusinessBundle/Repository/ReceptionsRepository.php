@@ -78,8 +78,7 @@ class ReceptionsRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('r');
         $queryBuilder->select('count(r)')
-            ->andWhere('r.idProject IS NOT NULL')
-            ->orderBy('r.idReception', 'DESC');
+            ->andWhere('r.idProject IS NOT NULL');
 
         if (false === empty($search)) {
             $orClause = [];
@@ -164,6 +163,68 @@ class ReceptionsRepository extends EntityRepository
         }
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param array $search
+     *
+     * @return int
+     */
+    public function getNonAttributionsCount(array $search = [])
+    {
+        $queryBuilder = $this->createQueryBuilder('r');
+        $queryBuilder->select('count(r)')
+            ->andWhere('r.statusBo = :pending')
+            ->setParameter('pending', Receptions::STATUS_PENDING);
+
+        if (false === empty($search)) {
+            $orClause = [];
+            foreach ($search as $column => $value) {
+                $orClause[] = $queryBuilder->expr()->eq('r.' . $column, $value);
+            }
+            $queryBuilder->andWhere($queryBuilder->expr()->orX(...$orClause));
+        }
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param int   $limit
+     * @param int   $offset
+     * @param array $sorts
+     * @param array $search
+     *
+     * @return Receptions[]
+     */
+    public function getNonAttributions($limit = null, $offset = null, array $sorts = [], array $search = [])
+    {
+        $queryBuilder = $this->createQueryBuilder('r');
+        $queryBuilder->andWhere('r.statusBo = :pending')
+            ->setParameter('pending', Receptions::STATUS_PENDING);
+
+        if (null !== $limit) {
+            $queryBuilder->setMaxResults($limit);
+        }
+
+        if (null !== $offset) {
+            $queryBuilder->setFirstResult($offset);
+        }
+
+        if (false === empty($sorts)) {
+            foreach ($sorts as $sort => $order) {
+                $queryBuilder->addOrderBy('r.' . $sort, $order);
+            }
+        }
+
+        if (false === empty($search)) {
+            $orClause = [];
+            foreach ($search as $column => $value) {
+                $orClause[] = $queryBuilder->expr()->eq('r.' . $column, $value);
+            }
+            $queryBuilder->andWhere($queryBuilder->expr()->orX(...$orClause));
+        }
+
+        return $queryBuilder->getQuery()->getResult();
     }
 
     /**
