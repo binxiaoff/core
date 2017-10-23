@@ -130,11 +130,11 @@ class BankAccountManager
     {
         $this->entityManager->getConnection()->beginTransaction();
         try {
-            $previousValidBankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($bankAccount->getIdClient());
-            if ($previousValidBankAccount !== $bankAccount) {
-                if ($previousValidBankAccount) {
-                    $previousValidBankAccount->setDateArchived(new \DateTime());
-                    $this->entityManager->flush($previousValidBankAccount);
+            $currentlyValidBankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($bankAccount->getIdClient());
+            if ($currentlyValidBankAccount !== $bankAccount) {
+                if ($currentlyValidBankAccount) {
+                    $currentlyValidBankAccount->setDateArchived(new \DateTime());
+                    $this->entityManager->flush($currentlyValidBankAccount);
                 }
                 $bankAccount->setDateValidated(new \DateTime());
                 $bankAccount->setDateArchived(null);
