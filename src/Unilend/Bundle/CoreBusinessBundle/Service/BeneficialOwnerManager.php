@@ -518,12 +518,35 @@ class BeneficialOwnerManager
     }
 
     /**
-     * @param Companies $company
+     * @param Companies|int $company
      *
      * @return bool
      */
-    public function companyNeedsBeneficialOwnerDeclaration(Companies $company)
+    public function companyNeedsBeneficialOwnerDeclaration($company)
     {
+        if (false === $company instanceof Companies) {
+            $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($company);
+        }
+
         return false === in_array($company->getLegalFormCode(), self::BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES);
+    }
+
+    /**
+     * @param Companies|int $company
+     *
+     * @return bool
+     */
+    public function checkBeneficialOwnerDeclarationContainsAtLeastCompanyOwner($company)
+    {
+        if (false === $company instanceof Companies) {
+            $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($company);
+        }
+
+        $currentDeclaration         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')
+            ->findCurrentDeclarationByCompany($company);
+        $companyOwnerBeneficialOwner = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwner')
+            ->findOneBy(['idDeclaration' => $currentDeclaration,'idClient' => $company->getIdClientOwner()]);
+
+        return null !== $companyOwnerBeneficialOwner;
     }
 }

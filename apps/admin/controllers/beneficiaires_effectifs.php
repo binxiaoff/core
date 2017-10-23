@@ -215,10 +215,9 @@ class beneficiaires_effectifsController extends bootstrap
         if (false === empty($declarationId)) {
             /** @var CompanyBeneficialOwnerDeclaration $declaration */
             $declaration = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->find($declarationId);
-        }
-
-        if (null === $declaration && false === empty($declarationId)) {
-            $errors[] = 'Impossible de trouver la déclaration correspondante';
+            if (null === $declaration) {
+                $errors[] = 'Impossible de trouver la déclaration correspondante';
+            }
         }
 
         if (null !== $declaration && null !== $ownerType) {
@@ -250,11 +249,14 @@ class beneficiaires_effectifsController extends bootstrap
                 throw new \Exception('Company ' . $idCompany . ' does not exist');
             }
 
-            $declaration = new CompanyBeneficialOwnerDeclaration();
-            $declaration
-                ->setIdCompany($company)
-                ->setStatus(CompanyBeneficialOwnerDeclaration::STATUS_PENDING);
-            $entityManager->persist($declaration);
+            $declaration = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($company);
+            if (null === $declaration) {
+                $declaration = new CompanyBeneficialOwnerDeclaration();
+                $declaration
+                    ->setIdCompany($company)
+                    ->setStatus(CompanyBeneficialOwnerDeclaration::STATUS_PENDING);
+                $entityManager->persist($declaration);
+            }
         }
 
         if (false === empty($clientId)) {
@@ -514,9 +516,7 @@ class beneficiaires_effectifsController extends bootstrap
             'birthplace'       => $owner->getIdClient()->getVilleNaissance(),
             'birth_country'    => $owner->getIdClient()->getIdPaysNaissance(),
             'country'          => $clientAddress->getIdPaysFiscal(),
-            'id_card_passport' => '<a href="' . $this->lurl . '/attachment/download/id/' . $passport->getId() . '/file/' . urlencode($passport->getPath()) . '" target="_blank">' . $passport->getOriginalName() . '</a>',
-            'status'           => $translator->trans('beneficial-owner_declaration-status-' . $owner->getIdDeclaration()->getStatus()),
-            'validation_type'  => CompanyBeneficialOwnerDeclaration::STATUS_VALIDATED === $owner->getIdDeclaration()->getStatus() ? BeneficialOwnerManager::VALIDATION_TYPE_UNIVERSIGN : ''
+            'id_card_passport' => '<a href="' . $this->lurl . '/attachment/download/id/' . $passport->getId() . '/file/' . urlencode($passport->getPath()) . '" target="_blank">' . $passport->getOriginalName() . '</a>'
         ];
 
         if ($formatForView) {
@@ -624,18 +624,16 @@ class beneficiaires_effectifsController extends bootstrap
             /** @var EntityManager $entityManager */
             $entityManager     = $this->get('doctrine.orm.entity_manager');
             $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-
-            if (filter_var($search, FILTER_VALIDATE_INT)) {
-                $result = $clientsRepository->find($search);
-            } else {
-                $result = $clientsRepository->findBeneficialOwnerByName($search);
-            }
+            $result            = $clientsRepository->findBeneficialOwnerByName($search);
 
             foreach ($result as $client) {
                 $clients[] = [
-                    'firstName' => $client->getPrenom(),
-                    'lastName'  => $client->getNom(),
-                    'id'        => $client->getIdClient()
+                    'firstName'     => $client->getPrenom(),
+                    'lastName'      => $client->getNom(),
+                    'id'            => $client->getIdClient(),
+                    'birthdate'     => $client->getNaissance()->format('d/m/Y'),
+                    'birthplace'    => $client->getVilleNaissance(),
+                    'birth_country' => $client->getIdPaysNaissance()
                 ];
             }
         }

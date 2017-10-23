@@ -47,7 +47,7 @@
                         // Append autocomplete ID field
                         $modal.find('.block-content').prepend(
                             '<div class="form-group">' +
-                                '<label>Client ID</label>' +
+                                '<label>Rechercher par nom</label>' +
                                 '<small class="text-muted"> <em class="push-5-l">Commencez par rechercher le client dans la base existante.</em></small>' +
                                 '<input type="text" class="form-control" id="search-client-autocomplete">' +
                             '</div>' +
@@ -143,8 +143,6 @@
                         <th data-editor-name="birth_country" data-editor-type="select" data-editor-options="{% for id, country in countries %}{{ country|trim }}:{{ id|trim }}{% if loop.index < countries|length %}, {% endif %}{% endfor %}">Pays de naissance</th>
                         <th data-editor-name="country" data-editor-type="select" data-editor-options="{% for id, country in countries %}{{ country|trim }}:{{ id|trim }}{% if loop.index < countries|length %}, {% endif %}{% endfor %}">Pays de résidence</th>
                         <th data-editor-name="id_card_passport" data-editor-type="file">Pièce d'identité</th>
-                        <th data-editor-name="status" data-editor-type="text">Statut</th>
-                        <th data-editor-name="validation_type" data-editor-type="text">Méthode de validation</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -159,8 +157,6 @@
                             <td>{{ owner.birth_country }}</td>
                             <td>{{ owner.country }}</td>
                             <td>{{ owner.id_card_passport }}</td>
-                            <td>{{ owner.status }}</td>
-                            <td>{{ owner.validation_type }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>
@@ -176,6 +172,7 @@
                     <div class="clearfix">
                         <span class="si si-info font-s36 pull-left"></span>
                         <ul class="font-s12 remove-margin-b push-30-l">
+                            <li>La déclaration est créée au moment de l'envoi du document à l'emprunteur pour signature. La bouton "Prévisualiser" ci-dessus sert à vérifier le contenu de la déclaration qui sera envoyé à l'emprunteur.</li>
                             <li>Une déclaration peut être utilisée dans plusieurs projets.</li>
                             <li>Si une déclaration est archivée, le document signé électroniquement au moment du transfer des fonds sera toujours valide.</li>
                         </ul>

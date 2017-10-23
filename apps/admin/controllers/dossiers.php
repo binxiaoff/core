@@ -157,6 +157,10 @@ class dossiersController extends bootstrap
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager $beneficialOwnerManager */
+        $beneficialOwnerManager = $this->get('unilend.service.beneficial_owner_manager');
+
+        $this->beneficialOwnerDeclaration = null;
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->projectEntity   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
@@ -219,7 +223,7 @@ class dossiersController extends bootstrap
 
                 $this->validBankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->clients->id_client);
 
-                if (false === in_array($this->companies->legal_form_code, \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager::BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES)) {
+                if (false === $beneficialOwnerManager->companyNeedsBeneficialOwnerDeclaration($this->projects->id_company)) {
                     $companyBeneficialOwnerDeclaration = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findBy(['idCompany' => $this->projects->id_company]);
                     if (false === empty($companyBeneficialOwnerDeclaration)) {
                         $beneficialOwnerDeclaration       = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findOneBy(['idProject' => $this->projects->id_project], ['id' => 'DESC']);
@@ -744,12 +748,13 @@ class dossiersController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\PartnerRepository $partnerRepository */
             $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
 
-            $this->eligibleProducts   = $productManager->findEligibleProducts($this->projects, true);
-            $this->selectedProduct    = $product;
-            $this->isProductUsable    = empty($product->id_product) ? false : in_array($this->selectedProduct, $this->eligibleProducts);
-            $this->partnerList        = $partnerRepository->getPartnersSortedByName(Partner::STATUS_VALIDATED);
-            $this->partnerProduct     = $this->loadData('partner_product');
-            $this->hasBeneficialOwner = null !== $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($this->projects->id_company);
+            $this->eligibleProducts       = $productManager->findEligibleProducts($this->projects, true);
+            $this->selectedProduct        = $product;
+            $this->isProductUsable        = empty($product->id_product) ? false : in_array($this->selectedProduct, $this->eligibleProducts);
+            $this->partnerList            = $partnerRepository->getPartnersSortedByName(Partner::STATUS_VALIDATED);
+            $this->partnerProduct         = $this->loadData('partner_product');
+            $this->hasBeneficialOwner     = null !== $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($this->projects->id_company);
+            $this->ownerIsBeneficialOwner = $beneficialOwnerManager->checkBeneficialOwnerDeclarationContainsAtLeastCompanyOwner($this->projects->id_company);
 
             if (false === empty($this->projects->id_product)) {
                 $this->partnerProduct->get($this->projects->id_product, 'id_partner = ' . $this->projects->id_partner . ' AND id_product');

@@ -828,12 +828,16 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                             if (false === $this->hasBeneficialOwner) {
                                 $blockingPublishingError[] = 'Veuillez déclarer les bénéficiaires effectifs';
                             }
+
+                            if ($this->hasBeneficialOwner && false === $this->ownerIsBeneficialOwner) {
+                                $blockingPublishingError[] = 'Veuillez déclarer le proprietaire de l\'entreprise comme bénéficiaire effectif';
+                            }
                             ?>
                             <?php if (false === empty($blockingPublishingError)) : ?>
                                 <tr>
                                     <td colspan="2"><?= implode('<br>', $blockingPublishingError) ?></td>
                                 </tr>
-                                <?php if (false === $this->hasBeneficialOwner) : ?>
+                                <?php if (false === $this->hasBeneficialOwner || false === $this->ownerIsBeneficialOwner) : ?>
                                     <tr>
                                         <th>Déclaration de <br>bénéficiaires effectifs</th>
                                         <td>
@@ -971,15 +975,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                             <?php if (null === $this->beneficialOwnerDeclaration || $this->beneficialOwnerDeclaration->getStatus() != UniversignEntityInterface::STATUS_SIGNED) : ?>
                                 <tr>
                                     <th>Déclaration de <br> bénéficiaires effectifs</th>
-                                    <td>
-                                        <a href="<?= $this->furl ?>/pdf/beneficiaires-effectifs/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>">
-                                            <img src="<?= $this->surl ?>/images/admin/pdf.png" alt="PDF">
-                                        </a>
+                                    <td colspan="2">
+                                        <a role="button" class="btn btn-default" href="<?= $this->lurl ?>/beneficiaires_effectifs/<?= $this->companies->id_company ?>">Accéder à la gestion des bénéficiaires effectifs<br>(Modifier/Consulter/Renvoyer la déclaration)</a>
                                     </td>
                                 </tr>
-                                <td colspan="2">
-                                    <a role="button" class="btn btn-default" href="<?= $this->lurl ?>/beneficiaires_effectifs/<?= $this->companies->id_company ?>">Renvoyer la déclaration des bénéficiaires effectifs<br>(et éventuels autres documents non signés)</a>
-                                </td>
                             <?php endif; ?>
                         <?php endif; ?>
                         <tr>
