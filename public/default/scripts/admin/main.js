@@ -133,25 +133,25 @@ Memo.prototype.close = function() {
 
 /* Elements Jquery */
 $(document).ready(function() {
-    $(".thickbox").colorbox();
+    $(".thickbox").colorbox()
 
     $('.extract_rib_btn').colorbox({
         onComplete: function() {
-            var tmpImg = new Image();
-            tmpImg.src = $('#colorbox').find('img').attr('src');
+            var tmpImg = new Image()
+            tmpImg.src = $('#colorbox').find('img').attr('src')
             tmpImg.onload = function() {
-                var origHeight = this.height + 300;
-                var origWidth = this.width + 50;
+                var origHeight = this.height + 300
+                var origWidth = this.width + 50
                 if (origWidth > 1080) {
-                    origWidth = 1080;
+                    origWidth = 1080
                 }
                 if (origWidth < 600) {
-                    origWidth = 600;
+                    origWidth = 600
                 }
-                $.colorbox.resize({height: origHeight, width: origWidth});
-            };
+                $.colorbox.resize({height: origHeight, width: origWidth})
+            }
         }
-    });
+    })
 
     $('[data-memo]').each(function(){
         var $trigger = $(this)
@@ -174,120 +174,122 @@ $(document).ready(function() {
 
     })
 
-    var $DataTable = $.fn.dataTable
-    $.extend( true, $DataTable.defaults, {
-        dom:
-        "<'row'<'col-md-6'l><'col-md-6'f>>" +
-        "<'row'<'col-md-12'tr>>" +
-        "<'row'<'col-md-6'i><'col-md-6'p>>",
-        renderer: 'bootstrap',
-        oLanguage: {
-            sLengthMenu: "_MENU_",
-            sProcessing:     "Traitement en cours...",
-            sSearch:         "Rechercher &nbsp;:",
-            sLengthMenu:     "Afficher _MENU_ &eacute;l&eacute;ments",
-            sInfo:           "Affichage de l'&eacute;l&eacute;ment _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
-            sInfoEmpty:      "Affichage de l'&eacute;l&eacute;ment 0 &agrave; 0 sur 0 &eacute;l&eacute;ment",
-            sInfoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
-            sInfoPostFix:    "",
-            sLoadingRecords: "Chargement en cours...",
-            sZeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
-            sEmptyTable:     "Aucune donn&eacute;e disponible dans le tableau",
-            oPaginate: {
-                sFirst:      "Premier",
-                sPrevious:   "Pr&eacute;c&eacute;dent",
-                sNext:       "Suivant",
-                sLast:       "Dernier"
-            },
-            oPaginate: {
-                sPrevious: '<i class="fa fa-angle-left"></i>',
-                sNext: '<i class="fa fa-angle-right"></i>'
+    if (typeof $.fn.dataTable !== 'undefined') {
+        var $DataTable = $.fn.dataTable
+        $.extend( true, $DataTable.defaults, {
+            dom:
+            "<'row'<'col-md-6'l><'col-md-6'f>>" +
+            "<'row'<'col-md-12'tr>>" +
+            "<'row'<'col-md-6'i><'col-md-6'p>>",
+            renderer: 'bootstrap',
+            oLanguage: {
+                sLengthMenu: "_MENU_",
+                sProcessing:     "Traitement en cours...",
+                sSearch:         "Rechercher &nbsp;:",
+                sLengthMenu:     "Afficher _MENU_ &eacute;l&eacute;ments",
+                sInfo:           "Affichage de l'&eacute;l&eacute;ment _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                sInfoEmpty:      "Affichage de l'&eacute;l&eacute;ment 0 &agrave; 0 sur 0 &eacute;l&eacute;ment",
+                sInfoFiltered:   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+                sInfoPostFix:    "",
+                sLoadingRecords: "Chargement en cours...",
+                sZeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                sEmptyTable:     "Aucune donn&eacute;e disponible dans le tableau",
+                oPaginate: {
+                    sFirst:      "Premier",
+                    sPrevious:   "Pr&eacute;c&eacute;dent",
+                    sNext:       "Suivant",
+                    sLast:       "Dernier"
+                },
+                oPaginate: {
+                    sPrevious: '<i class="fa fa-angle-left"></i>',
+                    sNext: '<i class="fa fa-angle-right"></i>'
+                }
             }
-        }
-    })
-    $.extend($DataTable.ext.classes, {
-        sWrapper: "dataTables_wrapper form-inline dt-bootstrap",
-        sFilterInput: "form-control",
-        sLengthSelect: "form-control"
-    })
-    $DataTable.ext.renderer.pageButton.bootstrap = function (settings, host, idx, buttons, page, pages) {
-        var api     = new $DataTable.Api(settings)
-        var classes = settings.oClasses
-        var lang    = settings.oLanguage.oPaginate
-        var btnDisplay, btnClass
+        })
+        $.extend($DataTable.ext.classes, {
+            sWrapper: "dataTables_wrapper form-inline dt-bootstrap",
+            sFilterInput: "form-control",
+            sLengthSelect: "form-control"
+        })
+        $DataTable.ext.renderer.pageButton.bootstrap = function (settings, host, idx, buttons, page, pages) {
+            var api     = new $DataTable.Api(settings)
+            var classes = settings.oClasses
+            var lang    = settings.oLanguage.oPaginate
+            var btnDisplay, btnClass
 
-        var attach = function (container, buttons) {
-            var i, ien, node, button
-            var clickHandler = function (e) {
-                e.preventDefault()
-                if (!jQuery(e.currentTarget).hasClass('disabled')) {
-                    api.page(e.data.action).draw(false)
-                }
-            }
-            for (i = 0, ien = buttons.length; i < ien; i++) {
-                button = buttons[i]
-                if ($.isArray(button)) {
-                    attach(container, button)
-                }
-                else {
-                    btnDisplay = ''
-                    btnClass = ''
-                    switch (button) {
-                        case 'ellipsis':
-                            btnDisplay = '...'
-                            btnClass = 'disabled'
-                            break
-                        case 'first':
-                            btnDisplay = lang.sFirst
-                            btnClass = button + (page > 0 ? '' : ' disabled')
-                            break
-                        case 'previous':
-                            btnDisplay = lang.sPrevious
-                            btnClass = button + (page > 0 ? '' : ' disabled')
-                            break
-                        case 'next':
-                            btnDisplay = lang.sNext
-                            btnClass = button + (page < pages - 1 ? '' : ' disabled')
-                            break
-                        case 'last':
-                            btnDisplay = lang.sLast
-                            btnClass = button + (page < pages - 1 ? '' : ' disabled')
-                            break
-                        default:
-                            btnDisplay = button + 1
-                            btnClass = page === button ?
-                                'active' : ''
-                            break
+            var attach = function (container, buttons) {
+                var i, ien, node, button
+                var clickHandler = function (e) {
+                    e.preventDefault()
+                    if (!jQuery(e.currentTarget).hasClass('disabled')) {
+                        api.page(e.data.action).draw(false)
                     }
-                    if (btnDisplay) {
-                        node = jQuery('<li>', {
-                            'class': classes.sPageButton + ' ' + btnClass,
-                            'aria-controls': settings.sTableId,
-                            'tabindex': settings.iTabIndex,
-                            'id': idx === 0 && typeof button === 'string' ?
-                            settings.sTableId + '_' + button :
-                                null
-                        })
-                            .append(jQuery('<a>', {
-                                    'href': '#'
-                                })
-                                    .html(btnDisplay)
+                }
+                for (i = 0, ien = buttons.length; i < ien; i++) {
+                    button = buttons[i]
+                    if ($.isArray(button)) {
+                        attach(container, button)
+                    }
+                    else {
+                        btnDisplay = ''
+                        btnClass = ''
+                        switch (button) {
+                            case 'ellipsis':
+                                btnDisplay = '...'
+                                btnClass = 'disabled'
+                                break
+                            case 'first':
+                                btnDisplay = lang.sFirst
+                                btnClass = button + (page > 0 ? '' : ' disabled')
+                                break
+                            case 'previous':
+                                btnDisplay = lang.sPrevious
+                                btnClass = button + (page > 0 ? '' : ' disabled')
+                                break
+                            case 'next':
+                                btnDisplay = lang.sNext
+                                btnClass = button + (page < pages - 1 ? '' : ' disabled')
+                                break
+                            case 'last':
+                                btnDisplay = lang.sLast
+                                btnClass = button + (page < pages - 1 ? '' : ' disabled')
+                                break
+                            default:
+                                btnDisplay = button + 1
+                                btnClass = page === button ?
+                                    'active' : ''
+                                break
+                        }
+                        if (btnDisplay) {
+                            node = jQuery('<li>', {
+                                'class': classes.sPageButton + ' ' + btnClass,
+                                'aria-controls': settings.sTableId,
+                                'tabindex': settings.iTabIndex,
+                                'id': idx === 0 && typeof button === 'string' ?
+                                settings.sTableId + '_' + button :
+                                    null
+                            })
+                                .append(jQuery('<a>', {
+                                        'href': '#'
+                                    })
+                                        .html(btnDisplay)
+                                )
+                                .appendTo(container)
+
+                            settings.oApi._fnBindAction(
+                                node, {action: button}, clickHandler
                             )
-                            .appendTo(container)
-
-                        settings.oApi._fnBindAction(
-                            node, {action: button}, clickHandler
-                        )
+                        }
                     }
                 }
             }
+            attach(
+                jQuery(host).empty().html('<ul class="pagination"/>').children('ul'),
+                buttons
+            )
         }
-        attach(
-            jQuery(host).empty().html('<ul class="pagination"/>').children('ul'),
-            buttons
-        )
     }
-});
+})
 
 // Prevent double-click
 $(document).on('click', '[data-prevent-doubleclick]', function(e) {
