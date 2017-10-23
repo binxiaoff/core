@@ -1,3 +1,6 @@
+<link href="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.css" type="text/css" rel="stylesheet">
+<link href="<?= $this->lurl ?>/oneui/css/font-awesome.css" type="text/css" rel="stylesheet">
+<script src="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
 <style>
     @font-face {
         font-family: 'FontAwesome';
@@ -18,45 +21,89 @@
     }
 </style>
 <script>
-    function annulerAttribution(id_client, id_reception) {
-        if (confirm('Voulez vous vraiment annuler le virement ?')) {
-            var val = {
-                id_client: id_client,
-                id_reception: id_reception
-            };
+  $(function () {
+    var dt = $('#receptions-table').DataTable({
+      serverSide: true,
+      processing: true,
+      columnDefs: [
+        {orderable: false, targets: [1, 3, 6]},
+        {searchable: false, targets: [1, 2, 3, 5, 6, 7, 8]},
+        {visible: false, targets: [7, 8]},
+        {name: "idReception", "targets": 0},
+        {name: "motif", "targets": 1},
+        {name: "montant", "targets": 2},
+        {name: "attribution", "targets": 3},
+        {name: "idClient", "targets": 4},
+        {name: "added", "targets": 5}
+      ],
+      order: [[0, 'desc']],
+      ajax: '/transferts/preteurs_attributes',
+      language: {
+        url: '<?= $this->lurl ?>/oneui/js/plugins/datatables/localisation/fr_FR.json'
+      },
+      createdRow: function ( row, data, index ) {
+        var $row = $(row)
+        var receptionId = data[0]
+        var comment = data[7]
+        var line = data[8]
+        var amount = data[2]
+        var negative = (amount.replace(',', '.').replace(/[^\d\-\.]/g, '') < 0) ? true : false
 
-            $.post(add_url + '/transferts/annuler_attribution_preteur', val).done(function(data) {
-                if (data != 'nok') {
-                    $(".statut_operation_" + id_reception).parent('tr').fadeOut();
-                }
-            });
+        var addCommentBtn = '<a class="add-comment table-action" data-reception-id=' + receptionId + '" data-comment="' + comment + '" title="Commenter l\'opération">' +
+          '<span class="fa fa-pencil"></span>' +
+          '</a>'
+        var showReceptionBtn = '<a class="show-reception table-action" data-reception-id="' + receptionId + '" data-line="' + line + '" title="Afficher l\'opération">' +
+          '<span class="fa fa-eye"></span>' +
+          '</a>'
+
+        if (negative) {
+          $row.css('background', '#f9adb3')
         }
-    }
 
-    $(function() {
-        $('#receptions-table').DataTable({
-            order: [[0, 'desc']],
-            pageLength: <?= $this->nb_lignes ?>,
-            bLengthChange: false,
-            columnDefs: [
-                {orderable: false, targets: [0, 1, 6]},
-                {searchable: false, targets: 6}
-            ],
-            language: {
-                url: '<?= $this->lurl ?>/oneui/js/plugins/datatables/localisation/fr_FR.json'
-            }
-        })
+        if (comment !== null) {
+          addCommentBtn = '<a class="add-comment modify-comment table-action" data-reception-id=' + receptionId + '" data-comment="' + comment + '" title="Modifier le commentaire">' +
+            '<span class="fa fa-pencil-square"></span>' +
+            '</a>'
+          if (!negative)
+            $row.css('background', '#fdeec6')
+        }
+        $row.find('td:last-child').append(showReceptionBtn + addCommentBtn)
+      }
+    })
+    dt.on('preDraw', function() {
+      var $filter = $('#receptions-table_filter input')
+      $filter.attr('placeholder', 'ID client ou reception')
+    })
+    dt.on('draw', function() {
+      $('.table-action').tooltip({
+        position: {my: 'left top', at: 'right top'},
+        content: function () {
+          return $(this).prop('title')
+        }
+      })
+    })
 
-        $('.reception-line').tooltip({
-            position: {my: 'left top', at: 'right top'},
-            content: function () {
-                return $(this).prop('title')
-            }
-        })
-
-        $('.inline').tooltip({disabled: true})
-        $('.inline').colorbox({inline: true})
-    });
+    $(document).on('click', '.table-action', function(){
+      var $modal
+      if ($(this).is('.add-comment') || $(this).is('.modify-comment')) {
+        $modal = $('#modal-comment')
+        var receptionId = $(this).data('reception-id')
+        var comment = $(this).data('comment')
+        $modal.find('[name=reception]').val(receptionId)
+        $modal.find('[name=comment]').html(comment)
+        if ($(this).is('.modify-comment')) {
+          $modal.find('h1').text('Modifier le commentaire')
+        } else {
+          $modal.find('h1').text('Ajouter un commentaire')
+        }
+      }
+      if ($(this).is('.show-reception')) {
+        $modal = $('#modal-line')
+        $modal.find('.line').html($(this).data('line'))
+      }
+      $.colorbox({html:$modal.html(), width: '50%'});
+    })
+  });
 </script>
 <div id="contenu">
     <div class="row">
@@ -69,65 +116,51 @@
     </div>
     <table id="receptions-table" class="table table-bordered table-striped">
         <thead>
-            <tr>
-                <th style="width:50px">ID</th>
-                <th>Motif</th>
-                <th style="width:150px">Montant</th>
-                <th style="width:150px">Attribution</th>
-                <th style="width:100px">ID client</th>
-                <th style="width:100px">Date</th>
-                <th style="width:100px">&nbsp;</th>
-            </tr>
+        <tr>
+            <th style="width:50px">ID</th>
+            <th>Motif</th>
+            <th style="width:150px">Montant</th>
+            <th style="width:150px">Attribution</th>
+            <th style="width:100px">ID client</th>
+            <th style="width:100px">Date</th>
+            <th style="width:100px">&nbsp;</th>
+        </tr>
         </thead>
-        <tbody>
-            <?php use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions; ?>
-            <?php /** @var Receptions $reception */ ?>
-            <?php foreach ($this->receptions as $reception) : ?>
-                <tr class="reception-line" title="<?= htmlspecialchars(nl2br($reception->getComment()), ENT_QUOTES) ?>">
-                    <td><?= $reception->getIdReception() ?></td>
-                    <td><?= $reception->getMotif() ?></td>
-                    <td style="text-align:right" data-order="<?= $reception->getMontant() ?>" data-search="<?= $reception->getMontant() ?>"><?= $this->ficelle->formatNumber($reception->getMontant() / 100) ?> €</td>
-                    <td class="statut_operation_<?= $reception->getIdReception() ?>">
-                        <?php if (Receptions::STATUS_ASSIGNED_MANUAL == $reception->getstatusBo() && $reception->getIdUser()): ?>
-                            <?= $reception->getIdUser()->getFirstname() . ' ' . $reception->getIdUser()->getName() ?><br>
-                            <?= $reception->getAssignmentDate()->format('d/m/Y H:i:s') ?>
-                        <?php else: ?>
-                            <?= $this->statusOperations[$reception->getstatusBo()] ?>
-                        <?php endif; ?>
-                    </td>
-                    <td class="num_client_<?= $reception->getIdReception() ?>"><a href="<?= $this->lurl ?>/preteurs/edit/<?= $reception->getIdClient()->getIdClient() ?>"><?= $reception->getIdClient()->getIdClient() ?></a></td>
-                    <td data-order="<?= $reception->getAdded()->getTimestamp() ?>"><?= $reception->getAdded()->format('d/m/Y') ?></td>
-                    <td align="center">
-                        <img class="annuler_<?= $reception->getIdReception() ?>" style="cursor:pointer;" onclick="annulerAttribution(<?= $reception->getIdClient()->getIdClient() ?>, <?= $reception->getIdReception() ?>)" src="<?= $this->surl ?>/images/admin/delete.png" alt="Annuler">
-                        <a class="inline" href="#comment-line-<?= $reception->getIdReception() ?>"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Commenter l'opération"></a>
-                        <a class="inline" href="#inline-content-<?= $reception->getIdReception() ?>" title="Ligne de réception">
-                            <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Afficher l'opération">
-                        </a>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
+        <tfoot>
+        <tr>
+            <th style="width:50px">ID</th>
+            <th>Motif</th>
+            <th style="width:150px">Montant</th>
+            <th style="width:150px">Attribution</th>
+            <th style="width:100px">ID client</th>
+            <th style="width:100px">Date</th>
+            <th style="width:100px">&nbsp;</th>
+        </tr>
+        </tfoot>
     </table>
     <div class="hidden">
-        <?php foreach ($this->receptions as $reception) : ?>
-            <div id="inline-content-<?= $reception->getIdReception() ?>" style="white-space: nowrap; padding: 10px; background: #fff;"><?= $reception->getLigne() ?></div>
-            <div id="comment-line-<?= $reception->getIdReception() ?>" style="padding: 10px; min-width: 500px;">
-                <form id="comment-line-form-<?= $reception->getIdReception() ?>" class="comment-line-form" method="POST" action="<?= $this->lurl ?>/transferts/comment">
-                    <input type="hidden" name="reception" value="<?= $reception->getIdReception() ?>">
-                    <input type="hidden" name="referer" value="<?= $_SERVER['REQUEST_URI'] ?>">
-                    <h1>Commenter une opération</h1>
-                    <div class="form-group">
-                        <label for="comment-line-comment-<?= $reception->getIdReception() ?>" class="sr-only">Commentaire</label>
-                        <textarea id="comment-line-comment-<?= $reception->getIdReception() ?>" name="comment" rows="5" class="form-control"><?= $reception->getComment() ?></textarea>
-                    </div>
-                    <div class="text-right">
-                        <button type="button" class="btn-default" onclick="$.fn.colorbox.close()">Annuler</button>
-                        <button type="submit" class="btn-primary">Valider</button>
-                    </div>
-                </form>
+        <div id="modal-line" style="padding: 10px; min-width: 500px;">
+            <div class="line"></div>
+            <div class="text-right">
+                <button type="button" class="btn-default" onclick="$.fn.colorbox.close()">OK</button>
             </div>
-        <?php endforeach; ?>
+        </div>
+    </div>
+    <div class="hidden">
+        <div id="modal-comment" style="padding: 10px; min-width: 500px;">
+            <form method="POST" action="<?= $this->lurl ?>/transferts/comment">
+                <input type="hidden" name="reception">
+                <input type="hidden" name="referer" value="<?= $_SERVER['REQUEST_URI'] ?>">
+                <h1>Commenter l'opération</h1>
+                <div class="form-group">
+                    <label class="sr-only">Commentaire</label>
+                    <textarea name="comment" rows="5" class="form-control"></textarea>
+                </div>
+                <div class="text-right">
+                    <button type="button" class="btn-default" onclick="$.fn.colorbox.close()">Annuler</button>
+                    <button type="submit" class="btn-primary">Valider</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
-<script src="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
-<link type="text/css" rel="stylesheet" href="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.css">

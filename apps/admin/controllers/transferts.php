@@ -42,11 +42,80 @@ class transfertsController extends bootstrap
 
     public function _preteurs()
     {
-        $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->getLenderAttributions();
         if (isset($this->params[0]) && 'csv' === $this->params[0]) {
+            $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->getLenderAttributions();
             $this->hideDecoration();
             $this->view = 'csv';
         }
+    }
+
+    public function _preteurs_attributes()
+    {
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var NumberFormatter $currencyFormatter */
+        $currencyFormatter = $this->get('currency_formatter');
+
+        $receptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+
+        $query  = $this->handleDataTablesRequest($this->request->query->all());
+        $start  = $query['start'];
+        $limit  = $query['length'];
+        $draw   = $query['draw'];
+        $search = $query['search'];
+        $sort   = $query['sort'];
+
+        $error              = '';
+        $receptionsCount    = 0;
+        $receptionsCountFiltered    = 0;
+        $affectedReceptions = [];
+
+        try {
+            $receptionsCount = $receptionRepository->getLenderAttributionsCount();
+            $receptionsCountFiltered = $receptionRepository->getLenderAttributionsCount($search);
+            $receptions      = $receptionRepository->getLenderAttributions($limit, $start, $sort, $search);
+
+            foreach ($receptions as $reception) {
+                if (Receptions::STATUS_ASSIGNED_MANUAL == $reception->getStatusBo() && null !== $reception->getIdUser()) {
+                    $attribution = $reception->getIdUser()->getFirstname() . ' ' . $reception->getIdUser()->getName() . '<br>' . $reception->getAssignmentDate()->format('d/m/Y H:i:s');
+                } else {
+                    $attribution = $this->statusOperations[$reception->getStatusBo()];
+                }
+                $affectedReceptions[] = [
+                    $reception->getIdReception(),
+                    $reception->getMotif(),
+                    $currencyFormatter->formatCurrency(round(bcdiv($reception->getMontant(), 100, 4), 2), 'EUR'),
+                    $attribution,
+                    $reception->getIdClient()->getIdClient(),
+                    $reception->getAdded()->format('d/m/Y'),
+                    '',
+                    $reception->getComment(),
+                    $reception->getLigne()
+                ];
+            }
+        } catch (Exception $exception) {
+            $error = $exception->getMessage();
+        }
+
+        if (empty($error)) {
+            $result = [
+                'draw'            => $draw,
+                'recordsTotal'    => $receptionsCount,
+                'recordsFiltered' => $receptionsCountFiltered,
+                'data'            => $affectedReceptions
+            ];
+        } else {
+            $result = [
+                'draw'            => $draw,
+                'recordsTotal'    => $receptionsCount,
+                'recordsFiltered' => $receptionsCount,
+                'data'            => $receptionsCountFiltered,
+                'error'           => $error,
+            ];
+        }
+
+        echo json_encode($result);
+        die;
     }
 
     public function _emprunteurs()
@@ -67,25 +136,21 @@ class transfertsController extends bootstrap
 
         $receptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
 
-        $query  = $this->request->query->all();
+        $query  = $this->handleDataTablesRequest($this->request->query->all());
         $start  = $query['start'];
         $limit  = $query['length'];
         $draw   = $query['draw'];
-        $search = $query['search']['value'];
-        $sort   = [];
-
-        $orders = $this->request->query->get('order');
-        foreach ($orders as $order) {
-            $columnName        = $query['columns'][$order['column']]['name'];
-            $sort[$columnName] = $order['dir'];
-        }
+        $search = $query['search'];
+        $sort   = $query['sort'];
 
         $error              = '';
         $receptionsCount    = 0;
+        $receptionsCountFiltered    = 0;
         $affectedReceptions = [];
 
         try {
             $receptionsCount = $receptionRepository->getBorrowerAttributionsCount();
+            $receptionsCountFiltered = $receptionRepository->getBorrowerAttributionsCount($search);
             $receptions      = $receptionRepository->getBorrowerAttributions($limit, $start, $sort, $search);
 
             foreach ($receptions as $reception) {
@@ -114,14 +179,14 @@ class transfertsController extends bootstrap
             $result = [
                 'draw'            => $draw,
                 'recordsTotal'    => $receptionsCount,
-                'recordsFiltered' => $receptionsCount,
+                'recordsFiltered' => $receptionsCountFiltered,
                 'data'            => $affectedReceptions
             ];
         } else {
             $result = [
                 'draw'            => $draw,
                 'recordsTotal'    => $receptionsCount,
-                'recordsFiltered' => $receptionsCount,
+                'recordsFiltered' => $receptionsCountFiltered,
                 'data'            => $affectedReceptions,
                 'error'           => $error,
             ];
@@ -129,6 +194,32 @@ class transfertsController extends bootstrap
 
         echo json_encode($result);
         die;
+    }
+
+    private function handleDataTablesRequest($query)
+    {
+        $search = [];
+        if ('' !== $query['search']['value']) {
+            foreach ($query['columns'] as $column) {
+                if ('' !== $column['name'] && 'true' === $column['searchable']) {
+                    $search[$column['name']] = $query['search']['value'];
+                }
+            }
+        }
+
+        $sort = [];
+        foreach ($query['order'] as $order) {
+            $columnName        = $query['columns'][$order['column']]['name'];
+            $sort[$columnName] = $order['dir'];
+        }
+
+        return [
+            'start'  => $query['start'],
+            'length' => $query['length'],
+            'draw'   => $query['draw'],
+            'search' => $search,
+            'sort'   => $sort
+        ];
     }
 
     public function _non_attribues()

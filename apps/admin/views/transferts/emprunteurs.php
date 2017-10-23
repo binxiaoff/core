@@ -1,5 +1,6 @@
 <link href="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.css" type="text/css" rel="stylesheet">
 <link href="<?= $this->lurl ?>/oneui/css/font-awesome.css" type="text/css" rel="stylesheet">
+<script src="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
 <style>
     @font-face {
         font-family: 'FontAwesome';
@@ -13,7 +14,6 @@
         font-style: normal;
     }
 </style>
-<script src="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
 <script>
     $(function() {
         var dt = $('#receptions-table').DataTable({
@@ -21,7 +21,7 @@
             processing: true,
             columnDefs: [
                 {orderable: false, targets: [1, 3, 6]},
-                {searchable: false, targets: [1, 2, 3, 5, 6]},
+                {searchable: false, targets: [1, 2, 3, 5, 6, 7, 8]},
                 {visible: false, targets: [7, 8]},
                 {name: "idReception", "targets": 0},
                 {name: "motif", "targets": 1},
@@ -36,7 +36,6 @@
                 url: '<?= $this->lurl ?>/oneui/js/plugins/datatables/localisation/fr_FR.json'
             },
             createdRow: function ( row, data, index ) {
-                var surl = '<?= $this->surl ?>'
                 var $row = $(row)
                 var receptionId = data[0]
                 var comment = data[7]
@@ -119,7 +118,6 @@
             <th style="width:100px">ID projet</th>
             <th style="width:100px">Date</th>
             <th style="width:100px">&nbsp;</th>
-            <th style="width:100px">&nbsp;</th>
         </tr>
         </thead>
         <tfoot>
@@ -130,7 +128,6 @@
             <th style="width:150px">Attribution</th>
             <th style="width:100px">ID projet</th>
             <th style="width:100px">Date</th>
-            <th style="width:100px">&nbsp;</th>
             <th style="width:100px">&nbsp;</th>
         </tr>
         </tfoot>
