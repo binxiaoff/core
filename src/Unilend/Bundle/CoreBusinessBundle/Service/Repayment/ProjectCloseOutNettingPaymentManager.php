@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
@@ -187,7 +188,14 @@ class ProjectCloseOutNettingPaymentManager
         $project = $wireTransferIn->getIdProject();
 
         $projectRepaymentTaskToCancel = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
-            ->findOneBy(['idProject' => $project, 'idWireTransferIn' => $wireTransferIn]);
+            ->findOneBy([
+                'idProject'        => $project,
+                'idWireTransferIn' => $wireTransferIn,
+                'status'           => [
+                    ProjectRepaymentTask::STATUS_PENDING,
+                    ProjectRepaymentTask::STATUS_READY
+                ]
+            ]);
 
         $this->entityManager->getConnection()->beginTransaction();
         try {
