@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
@@ -237,8 +238,30 @@ class ProjectPaymentManager
 
         $project = $wireTransferIn->getIdProject();
 
+        $projectRepaymentTasks = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
+            ->findBy([
+                'idProject'        => $project,
+                'idWireTransferIn' => $wireTransferIn,
+                'status'           => [
+                    ProjectRepaymentTask::STATUS_IN_PROGRESS,
+                    ProjectRepaymentTask::STATUS_ERROR,
+                    ProjectRepaymentTask::STATUS_REPAID
+                ]
+            ]);
+
+        if (count($projectRepaymentTasks) > 0) {
+            throw new \Exception('You can not cancel the payment, because one of the repayment task has been done.');
+        }
+
         $projectRepaymentTasksToCancel = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
-            ->findBy(['idProject' => $project, 'idWireTransferIn' => $wireTransferIn]);
+            ->findBy([
+                'idProject'        => $project,
+                'idWireTransferIn' => $wireTransferIn,
+                'status'           => [
+                    ProjectRepaymentTask::STATUS_PENDING,
+                    ProjectRepaymentTask::STATUS_READY
+                ]
+            ]);
 
         $this->entityManager->getConnection()->beginTransaction();
         try {

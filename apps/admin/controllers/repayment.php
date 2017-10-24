@@ -192,7 +192,13 @@ class repaymentController extends bootstrap
         }
 
         $projectRepaymentTaskRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask');
-        $projectRepaymentTasks          = $projectRepaymentTaskRepository->findBy(['idWireTransferIn' => $reception]);
+        $projectRepaymentTasks          = $projectRepaymentTaskRepository->findBy(['idWireTransferIn' => $reception, 'status' => [
+            ProjectRepaymentTask::STATUS_PENDING,
+            ProjectRepaymentTask::STATUS_READY,
+            ProjectRepaymentTask::STATUS_IN_PROGRESS,
+            ProjectRepaymentTask::STATUS_ERROR,
+            ProjectRepaymentTask::STATUS_REPAID
+        ]]);
 
         if (0 === count($projectRepaymentTasks)) {
             header('Location: ' . $this->url);

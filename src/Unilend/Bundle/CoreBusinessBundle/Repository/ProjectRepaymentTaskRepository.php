@@ -39,7 +39,9 @@ class ProjectRepaymentTaskRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('prt');
         $queryBuilder->select('SUM(prt.commissionUnilend)')
             ->where('prt.idWireTransferIn = :wireTransferIn')
-            ->setParameter('wireTransferIn', $wireTransferIn);
+            ->andWhere('prt.status != :cancelled')
+            ->setParameter('wireTransferIn', $wireTransferIn)
+            ->setParameter('cancelled', ProjectRepaymentTask::STATUS_CANCELLED);
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }
@@ -54,7 +56,9 @@ class ProjectRepaymentTaskRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('prt');
         $queryBuilder->select('SUM(prt.capital + prt.interest)')
             ->where('prt.idWireTransferIn = :wireTransferIn')
-            ->setParameter('wireTransferIn', $wireTransferIn);
+            ->andWhere('prt.status != :cancelled')
+            ->setParameter('wireTransferIn', $wireTransferIn)
+            ->setParameter('cancelled', ProjectRepaymentTask::STATUS_CANCELLED);
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }
