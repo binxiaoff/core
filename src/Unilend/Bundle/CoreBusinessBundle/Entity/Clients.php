@@ -4,8 +4,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Clients
@@ -1379,6 +1379,15 @@ class Clients
         if (is_null($this->hash)) {
             $this->setHashValue();
         }
-        $this->sponsorCode = substr($this->hash, 0, 6) . $this->nom;
+
+        if (
+            false === empty($this->nom)
+            && in_array($this->type, [self::TYPE_PERSON, self::TYPE_PERSON_FOREIGNER, self::TYPE_LEGAL_ENTITY, self::TYPE_LEGAL_ENTITY_FOREIGNER])
+        ) {
+            $lastName = \URLify::filter($this->nom);
+            $lastName = str_replace('-', '', $lastName);
+
+            $this->sponsorCode = substr($this->hash, 0, 6) . ucfirst(strtolower($lastName));
+        }
     }
 }

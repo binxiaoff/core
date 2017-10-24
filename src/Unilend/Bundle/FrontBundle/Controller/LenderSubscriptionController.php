@@ -20,6 +20,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
@@ -35,7 +36,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
@@ -824,9 +824,9 @@ class LenderSubscriptionController extends Controller
      */
     public function sponsorshipLandingPageAction(Request $request)
     {
-        $clientRepository            = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+        $sponsorshipManager          = $this->get('unilend.service.sponsorship_manager');
         $template['isSponsorship']   = false;
-        $template['currentCampaign'] = $this->get('unilend.service.sponsorship_manager')->getCurrentSponsorshipCampaign();
+        $template['currentCampaign'] = $sponsorshipManager->getCurrentSponsorshipCampaign();
 
         if (null === $template['currentCampaign']) {
             return $this->redirectToRoute('lender_landing_page');
@@ -836,7 +836,7 @@ class LenderSubscriptionController extends Controller
             SponsorshipManager::UTM_SOURCE === $request->query->get('utm_source')
             && SponsorshipManager::UTM_MEDIUM === $request->query->get('utm_medium')
             && SponsorshipManager::UTM_CAMPAIGN === $request->query->get('utm_campaign')
-            && null !== $clientRepository->findOneBy(['sponsorCode' => $request->query->get('sponsor')])
+            && null !== $sponsorshipManager->getSponsorBySponsorCode($request->query->get('sponsor'))
             && null !== $template['currentCampaign']
         ) {
             $template['isSponsorship']    = true;
