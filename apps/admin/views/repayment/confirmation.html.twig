@@ -102,7 +102,7 @@
                                         {% endif %}
                                     </td>
                                     <td class="borrower">
-                                        {% if isDebtCollectionFeeDueToBorrowerand and feeOnLoan.amountTaxIncl > 0 %}
+                                        {% if isDebtCollectionFeeDueToBorrower and feeOnLoan.amountTaxIncl > 0 %}
                                             - {{ feeOnLoan.amountTaxIncl|localizedcurrency('EUR') }}
                                         {% endif %}
                                     </td>
