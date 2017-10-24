@@ -24,7 +24,7 @@ class StatisticsManager
      * Day we started saving front statistics. Before that data there is no data.
      */
     const START_FRONT_STATISTICS_HISTORY = '2016-11-17';
-    const START_FPF_STATISTIC_HISTORY    = '2017-10-10'; //TODO change to put in production date
+    const START_FPF_STATISTIC_HISTORY    = '2017-10-30';
 
     /** Constants to make method calls more readable */
     const GROUP_FIRST_YEAR_COHORT = false;
