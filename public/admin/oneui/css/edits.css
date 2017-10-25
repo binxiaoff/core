@@ -113,6 +113,11 @@
     color: #353847;
 }
 
+/* Buttons and Icons */
+.btn-sm .fa {
+    font-size: 10px;
+}
+
 /* Forms */
 .form-inline > .form-group > button[type=submit] {
     margin-top: 23px;
@@ -133,6 +138,13 @@ table.dataTable thead .sorting:after, table.dataTable thead .sorting_asc:after, 
 }
 .table-vertical-center tbody tr td {
     vertical-align: middle;
+}
+[data-table-actionscolumn], [data-table-editor] tbody tr td:last-child, .table-with-actions tbody tr td:last-child {
+    text-align: center;
+}
+[data-table-actionscolumn] {
+    padding-left: 15px!important;
+    padding-right: 15px!important;
 }
 .dataTable > tbody > tr.even.flash-bg {
     -webkit-animation-name: flash-bg-even;

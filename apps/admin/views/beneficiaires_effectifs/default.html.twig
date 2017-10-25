@@ -10,28 +10,46 @@
     <script src="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
 {% endblock %}
 
+{% set owner = {
+id: 3032,
+lastName: 'Dupont',
+firstName: 'Rene',
+type: 1,
+percentage: 25,
+birthDate: '18/12/1986',
+birthPlace: 'Paris',
+birthCountry: 1,
+country: 1,
+idAttachmentUrl: '/path/to/file/',
+} %}
+
 {% block pageScripts %}
     <script>
         $(function() {
             App.initHelpers(['validation', 'datepicker', 'datatables']);
             var $table = $('#beneficial-owners table')
             var $wrapper // The wrapper element will be stored here after DT init
-            function appendPreviewBtn($wrapper) {
-                var $btn = '<a id="declaration-preview-btn" class="btn btn-primary pull-right" href="{{ app.adminUrl }}/beneficiaires_effectifs/declaration/{{ company.idCompany }}" target="_blank"><span class="si si-eye font-w600"></span> Prévisualiser</a>'
-                if (!$wrapper.find('#declaration-preview-btn').length && $table.find('tbody tr[data-id]').length) {
-                    $wrapper.find('.col-sm-6:eq(1)').append($btn)
-                }
-            }
+            var $previewBlock = $('#preview-declaration')
             // Initialise DT
             $table.DT({
                 // After init callback
                 after: function() {
                     $wrapper = $table.closest('.dataTables_wrapper')
-                    appendPreviewBtn($wrapper)
+                    if ($table.find('.dataTables_empty').length) {
+                        $wrapper.find('.add-btn').html('<span class="fa fa-plus"></span> Ajouter le dirigeant')
+                    } else {
+                        $previewBlock.removeClass('hide')
+                    }
                 },
                 // After row added callback
                 updated: function() {
-                    appendPreviewBtn($wrapper)
+                    if (!$table.find('.dataTables_empty').length) {
+                        $wrapper.find('.add-btn').html('<span class="fa fa-plus"></span> Ajouter')
+                        $previewBlock.removeClass('hide')
+                    } else {
+                        if (!$previewBlock.is('.hide'))
+                            $previewBlock.addClass('hide')
+                    }
                 },
                 // Modal open callback
                 modal: function($modal) {
@@ -40,19 +58,21 @@
                     // Set the datepicker to Year view
                     $modal.find('[name=birthdate]').datepicker('remove').datepicker({
                         startView: 'decade',
-                        autoclose: true
+                        autoclose: true,
+                        language: 'fr'
                     })
                     // When creating new owner
                     if ($modal.find('[name=action]').val() === 'create') {
                         // Append autocomplete ID field
                         $modal.find('.block-content').prepend(
-                            '<div class="form-group">' +
-                                '<label>Rechercher par nom</label>' +
-                                '<small class="text-muted"> <em class="push-5-l">Commencez par rechercher le client dans la base existante.</em></small>' +
-                                '<input type="text" class="form-control" id="search-client-autocomplete">' +
+                            '<div class="form-group content-mini content-mini-full bg-warning">' +
+                                '<label>Rechercher le client dans la base existante.</label>' +
+                                '<div class="input-group">' +
+                                '<span class="input-group-addon"><i class="fa fa-search"></i></span>' +
+                                '<input type="text" class="form-control" id="search-client-autocomplete" placeholder="Nom ou prénom">' +
+                                '</div>' +
                             '</div>' +
-                            '<hr>'
-                        )
+                            '<hr>')
                         var $autocomplete = $modal.find('#search-client-autocomplete')
                         $autocomplete.autoComplete({
                             minChars: 2,
@@ -71,13 +91,56 @@
                             },
                             onSelect: function(e, term, item){
                                 // Populate fields on select
-                                $modal.find('[name=last_name]').val(item.data('last-name'))
-                                $modal.find('[name=first_name]').val(item.data('first-name'))
-                                $modal.find('[name=id]').val(item.data('id'))
+                                $.each(item[0].dataset, function(key, value) {
+                                    var key = key.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase() // Convert camelCase to lower dash
+                                    $modal.find('[name=' + key + ']').val(value)
+                                })
                                 $modal.find('.autocomplete-suggestions').hide()
-                                $autocomplete.val(item.data('id'))
+                                $autocomplete.val(item.data('first-name') + ' ' + item.data('last-name'))
                             },
                         })
+                    }
+                    // Prefill modal form for owner
+                    if ($table.find('.dataTables_empty').length) {
+                        {% if owner.firstName is defined and owner.lastName is defined %}
+                        $modal.find('#search-client-autocomplete').val('{{ owner.firstName }} {{ owner.lastName }}')
+                        {% endif %}
+                        {% if owner.id is defined %}
+                        $modal.find('[name=id]').val('{{ owner.id }}')
+                        {% endif %}
+                        {% if owner.lastName is defined %}
+                        $modal.find('[name=last_name]').val('{{ owner.lastName }}')
+                        {% endif %}
+                        {% if owner.firstName is defined %}
+                        $modal.find('[name=first_name]').val('{{ owner.firstName }}')
+                        {% endif %}
+                        {% if owner.type is defined %}
+                        $modal.find('[name=type]').val('{{ owner.type }}')
+                        {% endif %}
+                        {% if owner.percentage is defined %}
+                        $modal.find('[name=percentage]').val('{{ owner.percentage }}')
+                        {% endif %}
+                        {% if owner.birthdate is defined %}
+                        $modal.find('[name=birthdate]').val('{{ owner.birthDate }}')
+                        {% endif %}
+                        {% if owner.birthplace is defined %}
+                        $modal.find('[name=birthplace]').val('{{ owner.birthPlace }}')
+                        {% endif %}
+                        {% if owner.birthcountry is defined %}
+                        $modal.find('[name=birth_country]').val('{{ owner.birthcountry }}')
+                        {% endif %}
+                        {% if owner.country is defined %}
+                        $modal.find('[name=country]').val('{{ owner.country }}')
+                        {% endif %}
+                        {% if owner.idAttachmentUrl is defined %}
+                            var $file =  $modal.find('[name=id_card_passport]')
+                            var fileHtml = '<div class="clearfix"><div class="pull-left">' +
+                                    '<div class="file">{{ owner.idAttachmentUrl }}</div>' +
+                                    '<input type="hidden" name="id_card_passport" value="no_change"></div>' +
+                                    '<div class="pull-left push-15-l"><a class="btn btn-xs btn-default file-edit-btn edit">Modifier</a></div></div>'
+                            $file.parent().append(fileHtml)
+                            $file.remove()
+                        {% endif %}
                     }
                     // When deleting an owner from the table
                     if ($modal.find('[name=action]').val() === 'delete') {
@@ -115,13 +178,17 @@
     </script>
 {% endblock %}
 
-{% block modals %}
-{% endblock %}
-
 {% block pageHeader %}
-    <h1 class="page-heading push">
-        <a href="{{ app.adminUrl }}/emprunteurs/edit/{{ company.idClientOwner }}">{{ company.name }} </a> - Bénéficiaires Effectifs
-    </h1>
+    <div class="row push">
+        <div class="col-md-6">
+            <h1 class="page-heading">
+                {{ company.name }}
+            </h1>
+        </div>
+        <div class="col-md-6 text-right">
+            <a class="btn btn-default btn-sm" href="{{ app.adminUrl }}/emprunteurs/edit/{{ company.idClientOwner }}">Page emprunteur <span class="fa fa-chevron-right push-5-l"></span></a>
+        </div>
+    </div>
 {% endblock %}
 
 {% block content %}
@@ -161,46 +228,46 @@
                     {% endfor %}
                     </tbody>
                 </table>
+
+                <div id="preview-declaration" class="hide">
+                    <hr>
+                    <a id="declaration-preview-btn" class="btn btn-primary" href="{{ app.adminUrl }}/beneficiaires_effectifs/declaration/{{ company.idCompany }}" target="_blank">Prévisualiser la déclaration</a>
+                </div>
             </div>
         </div>
+
         <div id="declarations" class="block block-bordered">
             <div class="block-header">
-                <h3 class="block-title">Déclarations</h3>
+                <h3 class="block-title">Déclarations à signer / signées</h3>
             </div>
             <div class="block-content block-content-full">
-                <div class="content-mini content-mini-full bg-info">
-                    <div class="clearfix">
-                        <span class="si si-info font-s36 pull-left"></span>
-                        <ul class="font-s12 remove-margin-b push-30-l">
-                            <li>La déclaration est créée au moment de l'envoi du document à l'emprunteur pour signature. La bouton "Prévisualiser" ci-dessus sert à vérifier le contenu de la déclaration qui sera envoyé à l'emprunteur.</li>
-                            <li>Une déclaration peut être utilisée dans plusieurs projets.</li>
-                            <li>Si une déclaration est archivée, le document signé électroniquement au moment du transfer des fonds sera toujours valide.</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="push-20"></div>
-                {% if emailStatusErrors is defined and emailStatusErrors is not empty %}
-                    <div class="alert">
-                        {% for error in emailStatusErrors %}
-                            {% if error is iterable %}
-                                <ul class="hide">
-                                    {% for technicalError in error %}
-                                        <li>{{ technicalError }}</li>
-                                    {% endfor %}
-                                </ul>
-                            {% else %}
-                                <p>{{ error }}</p>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                {% endif %}
-                {% if emailStatusSuccess is defined and emailStatusSuccess is not empty %}
-                    <div class="alert alert-success">
-                        <p>{{ emailStatusSuccess }}</p>
-                    </div>
-                {% endif %}
                 {% if projectDeclarations is defined and projectDeclarations is not empty %}
-                    <table class="table table-hover table-bordered table-header-bg">
+                    <div class="content-mini content-mini-full bg-warning push">
+                        <p class="push-5">Une déclaration peut être utilisée dans plusieurs projets.</p>
+                        <p class="remove-margin">Si une déclaration est archivée, le document signé électroniquement au moment du transfer des fonds sera toujours valide.</p>
+                    </div>
+
+                    {% if emailStatusErrors is defined and emailStatusErrors is not empty %}
+                        <div class="alert">
+                            {% for error in emailStatusErrors %}
+                                {% if error is iterable %}
+                                    <ul class="hide">
+                                        {% for technicalError in error %}
+                                            <li>{{ technicalError }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <p>{{ error }}</p>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    {% if emailStatusSuccess is defined and emailStatusSuccess is not empty %}
+                        <div class="alert alert-success">
+                            <p>{{ emailStatusSuccess }}</p>
+                        </div>
+                    {% endif %}
+                    <table class="table table-hover table-bordered table-header-bg push">
                         <thead>
                         <tr>
                             <th>ID projet</th>
@@ -232,7 +299,7 @@
                         </tbody>
                     </table>
                 {% else %}
-                    <p>Aucun document à signer/signé.</p>
+                    <p class="remove-margin">Aucune déclaration à signer / signée.</p>
                 {% endif %}
             </div>
         </div>
