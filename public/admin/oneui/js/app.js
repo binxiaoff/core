@@ -1299,6 +1299,7 @@ var App = function() {
             var $form = self.$modal.find('form')
             if (!$form.find('.has-error').length) {
                 self.$modal.find('.block').addClass('block-opt-refresh')
+                self.$modal.find('[type=submit]').prop('disabled', true)
                 $.ajax({
                     url: $form.attr('action'),
                     type: 'POST',
@@ -1320,6 +1321,7 @@ var App = function() {
                     },
                     complete: function() {
                         self.$modal.find('.block').removeClass('block-opt-refresh')
+                        self.$modal.find('[type=submit]').prop('disabled', false)
                     }
                 })
             }
