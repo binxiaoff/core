@@ -255,8 +255,14 @@ class MailerManager
      */
     public function sendFundedAndFinishedToBorrower($project)
     {
+        if ($project instanceof Projects) {
+            $projectData = $this->entityManagerSimulator->getRepository('projects');
+            $projectData->get($project->getIdProject());
+        }
+
         if ($project instanceof \projects) {
-            $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+            $projectData = clone $project;
+            $project     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectData->id_project);
         }
 
         /** @var \clients $borrower */
@@ -274,23 +280,24 @@ class MailerManager
             ->findOneBy(['idProject' => $project, 'status' => UniversignEntityInterface::STATUS_SIGNED], ['added' => 'DESC']);
         $proxy                      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')
             ->findOneBy(['idProject' => $project, 'status' => UniversignEntityInterface::STATUS_SIGNED], ['added' => 'DESC']);
-        $beneficialOwnerDeclaration = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')
-            ->findOneBy(['idProject' => $project, 'status' => UniversignEntityInterface::STATUS_SIGNED], ['added' => 'DESC']);
 
         $documents = '';
         if (null === $mandate) {
             $documents .= $this->translator->trans('universign_mandate-description-for-email');
         }
 
-        if (null === $beneficialOwnerDeclaration) {
-            $documents .= $this->translator->trans('universign_beneficial-owner-description-for-email');
-        }
-
         if (null === $proxy) {
             $documents .= $this->translator->trans('universign_proxy-description-for-email');
         }
 
-        $interestRate = empty($project->getInterestRate()) ? $project->getAverageInterestRate() : $project->getInterestRate();
+        if (false === in_array($project->getIdCompany()->getLegalFormCode(), BeneficialOwnerManager::BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES)) {
+            $beneficialOwnerDeclaration = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')
+                ->findOneBy(['idProject' => $project, 'status' => UniversignEntityInterface::STATUS_SIGNED], ['added' => 'DESC']);
+            if (null === $beneficialOwnerDeclaration) {
+                $documents .= $this->translator->trans('universign_beneficial-owner-description-for-email');
+            }
+        }
+
         $varMail = [
             'surl'                   => $this->sSUrl,
             'url'                    => $this->sFUrl,
@@ -298,7 +305,7 @@ class MailerManager
             'nom_e'                  => $project->getIdCompany()->getName(),
             'mensualite'             => $this->oFicelle->formatNumber($monthlyPayment),
             'montant'                => $this->oFicelle->formatNumber($project->getAmount(), 0),
-            'taux_moyen'             => $this->oFicelle->formatNumber($interestRate, 1),
+            'taux_moyen'             => $this->oFicelle->formatNumber($projectData->getAverageInterestRate(), 1),
             'link_compte_emprunteur' => $this->sFUrl . '/projects/detail/' . $project->getIdProject(),
             'link_signature'         => $this->sFUrl . '/pdf/projet/' . $borrower->hash . '/' . $project->getIdProject(),
             'document_list'          => $documents,

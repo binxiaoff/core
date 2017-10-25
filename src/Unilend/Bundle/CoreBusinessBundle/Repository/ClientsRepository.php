@@ -7,6 +7,7 @@ use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use PDO;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -736,7 +737,19 @@ class ClientsRepository extends EntityRepository
     public function findBeneficialOwnerByName($name)
     {
         $queryBuilder = $this->createQueryBuilder('c');
-        $queryBuilder->where('c.nom LIKE :name')
+        $queryBuilder->select('c.idClient,
+                               c.nom,
+                               c.prenom,
+                               c.naissance,
+                               c.villeNaissance,
+                               c.idPaysNaissance,
+                               ca.idPaysFiscal,
+                               a.id AS attachmentId,
+                               a.originalName AS attachmentOriginalName,
+                               a.path AS attachmentPath')
+            ->leftJoin('UnilendCoreBusinessBundle:Attachment', 'a', Join::WITH, 'a.idClient = c.idClient AND a.idType = ' . AttachmentType::CNI_PASSPORTE)
+            ->leftJoin('UnilendCoreBusinessBundle:ClientsAdresses', 'ca', Join::WITH, 'c.idClient = ca.idClient')
+            ->where('c.nom LIKE :name')
             ->andWhere('c.type NOT IN (:lenderTypes)')
             ->setParameter('name', '%' . $name . '%')
             ->setParameter('lenderTypes', [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER, Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER]);

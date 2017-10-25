@@ -335,6 +335,13 @@ class BeneficialOwnerManager
         $this->entityManager->flush([$declaration, $owner, $ownerAddress, $beneficialOwner]);
 
         $attachmentType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::CNI_PASSPORTE);
+        if (false === is_file($passport)) {
+            $existingFile = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($owner, $attachmentType);
+            if (null === $existingFile || $existingFile->getOriginalName() == $passport) {
+                throw new \Exception('Beneficial owner passport/id could not be uploaded as it is no file');
+            }
+        }
+
         if ($attachmentType) {
             $this->attachmentManager->upload($owner, $attachmentType, $passport);
         }

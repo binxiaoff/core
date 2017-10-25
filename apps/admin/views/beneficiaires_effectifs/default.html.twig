@@ -10,19 +10,6 @@
     <script src="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
 {% endblock %}
 
-{% set owner = {
-id: 3032,
-lastName: 'Dupont',
-firstName: 'Rene',
-type: 1,
-percentage: 25,
-birthDate: '18/12/1986',
-birthPlace: 'Paris',
-birthCountry: 1,
-country: 1,
-idAttachmentUrl: '/path/to/file/',
-} %}
-
 {% block pageScripts %}
     <script>
         $(function() {
@@ -56,7 +43,7 @@ idAttachmentUrl: '/path/to/file/',
                     // Owner status and validation should not be editable
                     $modal.find('[name=status], [name=validation_type]').attr('type', 'hidden').siblings().hide()
                     // Set the datepicker to Year view
-                    $modal.find('[name=birthdate]').datepicker('remove').datepicker({
+                    $modal.find('[name=birth_date]').datepicker('remove').datepicker({
                         startView: 'decade',
                         autoclose: true,
                         language: 'fr'
@@ -69,7 +56,7 @@ idAttachmentUrl: '/path/to/file/',
                                 '<label>Rechercher le client dans la base existante.</label>' +
                                 '<div class="input-group">' +
                                 '<span class="input-group-addon"><i class="fa fa-search"></i></span>' +
-                                '<input type="text" class="form-control" id="search-client-autocomplete" placeholder="Nom ou prénom">' +
+                                '<input type="text" class="form-control" id="search-client-autocomplete" placeholder="Nom">' +
                                 '</div>' +
                             '</div>' +
                             '<hr>')
@@ -84,9 +71,20 @@ idAttachmentUrl: '/path/to/file/',
                                 })
                             },
                             renderItem: function (item, search, section) {
-                                var html = '<div class="autocomplete-suggestion" data-id="' + item.id + '" data-first-name="' + item.firstName + '" data-last-name="' + item.lastName + '">' +
-                                        '<p>' + item.firstName + ' ' + item.lastName + ' <span class="id">' + item.id + ' </span></p>' +
-                                        '</div>'
+                                var html = '<div class="autocomplete-suggestion" ' +
+                                            'data-id="' + item.id +
+                                            '" data-first-name="' + item.firstName +
+                                            '" data-last-name="' + item.lastName +
+                                            '" data-birth-date="' + item.birthDate +
+                                            '" data-birth-place="' + item.birthPlace +
+                                            '" data-birth-country="' + item.birthCountry +
+                                            '" data-country="' + item.country + '"'
+                                if (item.idCardPassportName) {
+                                    html += 'data-id-card-passport="' + item.idCardPassportName + '"'
+                                }
+                                            html += '>' +
+                                            '<p>' + item.firstName + ' ' + item.lastName + ' <span class="id">' + item.id + ' </span></p>' +
+                                            '</div>'
                                 return html
                             },
                             onSelect: function(e, term, item){
@@ -102,40 +100,34 @@ idAttachmentUrl: '/path/to/file/',
                     }
                     // Prefill modal form for owner
                     if ($table.find('.dataTables_empty').length) {
-                        {% if owner.firstName is defined and owner.lastName is defined %}
-                        $modal.find('#search-client-autocomplete').val('{{ owner.firstName }} {{ owner.lastName }}')
+                        {% if companyOwner.prenom is defined and companyOwner.nom is defined %}
+                        $modal.find('#search-client-autocomplete').val('{{ companyOwner.prenom }} {{ companyOwner.nom }}')
                         {% endif %}
-                        {% if owner.id is defined %}
-                        $modal.find('[name=id]').val('{{ owner.id }}')
+                        {% if companyOwner.idClient is defined %}
+                        $modal.find('[name=id]').val('{{ companyOwner.idClient }}')
                         {% endif %}
-                        {% if owner.lastName is defined %}
-                        $modal.find('[name=last_name]').val('{{ owner.lastName }}')
+                        {% if companyOwner.nom is defined %}
+                        $modal.find('[name=last_name]').val('{{ companyOwner.nom }}')
                         {% endif %}
-                        {% if owner.firstName is defined %}
-                        $modal.find('[name=first_name]').val('{{ owner.firstName }}')
+                        {% if companyOwner.prenom is defined %}
+                        $modal.find('[name=first_name]').val('{{ companyOwner.prenom }}')
                         {% endif %}
-                        {% if owner.type is defined %}
-                        $modal.find('[name=type]').val('{{ owner.type }}')
+                        {% if companyOwner.naissance is defined %}
+                        $modal.find('[name=birth_date]').val('{{ companyOwner.naissance|date("d/m/Y") }}')
                         {% endif %}
-                        {% if owner.percentage is defined %}
-                        $modal.find('[name=percentage]').val('{{ owner.percentage }}')
+                        {% if companyOwner.lieuNaissance is defined %}
+                        $modal.find('[name=birth_place]').val('{{ companyOwner.lieuNaissance }}')
                         {% endif %}
-                        {% if owner.birthdate is defined %}
-                        $modal.find('[name=birthdate]').val('{{ owner.birthDate }}')
+                        {% if companyOwner.paysNaissance is defined %}
+                        $modal.find('[name=birth_country]').val('{{ companyOwner.paysNaissance }}')
                         {% endif %}
-                        {% if owner.birthplace is defined %}
-                        $modal.find('[name=birthplace]').val('{{ owner.birthPlace }}')
+                        {% if companyOwnerAddress.idPaysFiscal is defined %}
+                        $modal.find('[name=country]').val('{{ companyOwnerAddress.idPaysFiscal }}')
                         {% endif %}
-                        {% if owner.birthcountry is defined %}
-                        $modal.find('[name=birth_country]').val('{{ owner.birthcountry }}')
-                        {% endif %}
-                        {% if owner.country is defined %}
-                        $modal.find('[name=country]').val('{{ owner.country }}')
-                        {% endif %}
-                        {% if owner.idAttachmentUrl is defined %}
+                        {% if companyOwnerPassport is defined and companyOwnerPassport is not empty %}
                             var $file =  $modal.find('[name=id_card_passport]')
                             var fileHtml = '<div class="clearfix"><div class="pull-left">' +
-                                    '<div class="file">{{ owner.idAttachmentUrl }}</div>' +
+                                    '<div class="file">{{ companyOwnerPassport }}</div>' +
                                     '<input type="hidden" name="id_card_passport" value="no_change"></div>' +
                                     '<div class="pull-left push-15-l"><a class="btn btn-xs btn-default file-edit-btn edit">Modifier</a></div></div>'
                             $file.parent().append(fileHtml)
@@ -206,8 +198,8 @@ idAttachmentUrl: '/path/to/file/',
                         <th data-editor-name="first_name" data-editor-type="text">Prénom</th>
                         <th data-editor-name="type" data-editor-type="select" data-editor-options="{% for id, type in types %}{{ type|trim }}:{{ id|trim }}{% if loop.index < types|length %}, {% endif %}{% endfor %}" data-editor-optional>Type de bénéficiaire</th>
                         <th data-editor-name="percentage" data-editor-type="numerical" data-editor-optional>% détenu</th>
-                        <th data-editor-name="birthdate" data-editor-type="date">Date de naissance</th>
-                        <th data-editor-name="birthplace" data-editor-type="text">Ville de naissance</th>
+                        <th data-editor-name="birth_date" data-editor-type="date">Date de naissance</th>
+                        <th data-editor-name="birth_place" data-editor-type="text">Ville de naissance</th>
                         <th data-editor-name="birth_country" data-editor-type="select" data-editor-options="{% for id, country in countries %}{{ country|trim }}:{{ id|trim }}{% if loop.index < countries|length %}, {% endif %}{% endfor %}">Pays de naissance</th>
                         <th data-editor-name="country" data-editor-type="select" data-editor-options="{% for id, country in countries %}{{ country|trim }}:{{ id|trim }}{% if loop.index < countries|length %}, {% endif %}{% endfor %}">Pays de résidence</th>
                         <th data-editor-name="id_card_passport" data-editor-type="file">Pièce d'identité</th>
@@ -220,8 +212,8 @@ idAttachmentUrl: '/path/to/file/',
                             <td>{{ owner.first_name }}</td>
                             <td>{{ owner.type }}</td>
                             <td>{% if owner.percentage is not empty %}{{ owner.percentage|localizednumber }}{% endif %}</td>
-                            <td>{{ owner.birthdate }}</td>
-                            <td>{{ owner.birthplace }}</td>
+                            <td>{{ owner.birth_date }}</td>
+                            <td>{{ owner.birth_place }}</td>
                             <td>{{ owner.birth_country }}</td>
                             <td>{{ owner.country }}</td>
                             <td>{{ owner.id_card_passport }}</td>
@@ -242,32 +234,37 @@ idAttachmentUrl: '/path/to/file/',
                 <h3 class="block-title">Déclarations à signer / signées</h3>
             </div>
             <div class="block-content block-content-full">
-                {% if projectDeclarations is defined and projectDeclarations is not empty %}
+                {% if beneficial_owners is defined and beneficial_owners is not empty %}
                     <div class="content-mini content-mini-full bg-warning push">
-                        <p class="push-5">Une déclaration peut être utilisée dans plusieurs projets.</p>
-                        <p class="remove-margin">Si une déclaration est archivée, le document signé électroniquement au moment du transfer des fonds sera toujours valide.</p>
+                        {% if projectDeclarations is defined and projectDeclarations is not empty %}
+                            <p class="push-5">Une déclaration peut être utilisée dans plusieurs projets.</p>
+                            <p class="remove-margin">Si une déclaration est archivée, le document signé électroniquement au moment du transfer des fonds sera toujours valide.</p>
+                        {% else %}
+                            <p class="push-5">La déclaration est créée au moment de l'envoi du document à l'emprunteur pour signature. La bouton "Prévisualiser" ci-dessus sert à vérifier le contenu de la déclaration qui sera envoyé à l'emprunteur</p>
+                        {% endif %}
                     </div>
-
-                    {% if emailStatusErrors is defined and emailStatusErrors is not empty %}
-                        <div class="alert">
-                            {% for error in emailStatusErrors %}
-                                {% if error is iterable %}
-                                    <ul class="hide">
-                                        {% for technicalError in error %}
-                                            <li>{{ technicalError }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                {% else %}
-                                    <p>{{ error }}</p>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                    {% if emailStatusSuccess is defined and emailStatusSuccess is not empty %}
-                        <div class="alert alert-success">
-                            <p>{{ emailStatusSuccess }}</p>
-                        </div>
-                    {% endif %}
+                {% endif %}
+                {% if emailStatusErrors is defined and emailStatusErrors is not empty %}
+                    <div class="alert">
+                        {% for error in emailStatusErrors %}
+                            {% if error is iterable %}
+                                <ul class="hide">
+                                    {% for technicalError in error %}
+                                        <li>{{ technicalError }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p>{{ error }}</p>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% if emailStatusSuccess is defined and emailStatusSuccess is not empty %}
+                    <div class="alert alert-success">
+                        <p>{{ emailStatusSuccess }}</p>
+                    </div>
+                {% endif %}
+                {% if projectDeclarations is defined and projectDeclarations is not empty %}
                     <table class="table table-hover table-bordered table-header-bg push">
                         <thead>
                         <tr>

@@ -58,15 +58,21 @@ class beneficiaires_effectifsController extends bootstrap
             unset($_SESSION['email_status']);
         }
 
+        $passportType = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::CNI_PASSPORTE);
+        $passport     = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($company->getIdClientOwner(), $passportType);
+
         $this->render(null, [
-            'beneficial_owners'   => $currentOwners,
-            'countries'           => $countryList,
-            'types'               => $ownerTypes,
-            'currentDeclaration'  => $currentDeclaration,
-            'company'             => $company,
-            'projectDeclarations' => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findAllDeclarationsForCompany($company),
-            'emailStatusErrors'   => empty($emailStatusErrors) ? null : $emailStatusErrors,
-            'emailStatusSuccess'  => empty($emailStatusSuccess) ? null : $emailStatusSuccess,
+            'companyOwner'         => $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner()),
+            'companyOwnerAddress'  => $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findBy(['idClient' => $company->getIdClientOwner()]),
+            'companyOwnerPassport' => null === $passport ? '' : '<a href="' . $this->lurl . '/attachment/download/id/' . $passport->getId() . '/file/' . urlencode($passport->getPath()) . '" target="_blank">' . $passport->getOriginalName() . '</a>',
+            'beneficial_owners'    => $currentOwners,
+            'countries'            => $countryList,
+            'types'                => $ownerTypes,
+            'currentDeclaration'   => $currentDeclaration,
+            'company'              => $company,
+            'projectDeclarations'  => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findAllDeclarationsForCompany($company),
+            'emailStatusErrors'    => empty($emailStatusErrors) ? null : $emailStatusErrors,
+            'emailStatusSuccess'   => empty($emailStatusSuccess) ? null : $emailStatusSuccess,
         ]);
     }
 
@@ -141,8 +147,8 @@ class beneficiaires_effectifsController extends bootstrap
         $clientId           = $request->request->getInt('id');
         $lastName           = $request->request->filter('last_name', FILTER_SANITIZE_STRING);
         $firstName          = $request->request->filter('first_name', FILTER_SANITIZE_STRING);
-        $birthDate          = $request->request->filter('birthdate', FILTER_SANITIZE_STRING);
-        $birthPlace         = $request->request->filter('birthplace', FILTER_SANITIZE_STRING);
+        $birthDate          = $request->request->filter('birth_date', FILTER_SANITIZE_STRING);
+        $birthPlace         = $request->request->filter('birth_place', FILTER_SANITIZE_STRING);
         $birthCountryId     = $request->request->getInt('birth_country');
         $countryOfResidence = $request->request->getInt('country');
         $type               = 0 === $request->request->getInt('type') ? null : $request->request->getInt('type');
@@ -333,8 +339,8 @@ class beneficiaires_effectifsController extends bootstrap
 
         $lastName     = $request->request->filter('last_name', FILTER_SANITIZE_STRING);
         $firstName    = $request->request->filter('first_name', FILTER_SANITIZE_STRING);
-        $birthDate    = $request->request->filter('birthdate', FILTER_SANITIZE_STRING);
-        $birthPlace   = $request->request->filter('birthplace', FILTER_SANITIZE_STRING);
+        $birthDate    = $request->request->filter('birth_date', FILTER_SANITIZE_STRING);
+        $birthPlace   = $request->request->filter('birth_place', FILTER_SANITIZE_STRING);
         $birthCountry = $request->request->getInt('birth_country');
 
         if (CompanyBeneficialOwnerDeclaration::STATUS_PENDING !== $owner->getIdDeclaration()->getStatus()) {
@@ -512,8 +518,8 @@ class beneficiaires_effectifsController extends bootstrap
             'first_name'       => $owner->getIdClient()->getPrenom(),
             'type'             => null === $owner->getIdType() ? null : $owner->getIdType()->getId(),
             'percentage'       => $owner->getPercentageDetained(),
-            'birthdate'        => $owner->getIdClient()->getNaissance()->format('d/m/Y'),
-            'birthplace'       => $owner->getIdClient()->getVilleNaissance(),
+            'birth_date'        => $owner->getIdClient()->getNaissance()->format('d/m/Y'),
+            'birth_place'       => $owner->getIdClient()->getVilleNaissance(),
             'birth_country'    => $owner->getIdClient()->getIdPaysNaissance(),
             'country'          => $clientAddress->getIdPaysFiscal(),
             'id_card_passport' => '<a href="' . $this->lurl . '/attachment/download/id/' . $passport->getId() . '/file/' . urlencode($passport->getPath()) . '" target="_blank">' . $passport->getOriginalName() . '</a>'
@@ -627,13 +633,18 @@ class beneficiaires_effectifsController extends bootstrap
             $result            = $clientsRepository->findBeneficialOwnerByName($search);
 
             foreach ($result as $client) {
+                $ownerPassportUrl = empty($client['attachmentId']) ? '' : '<a href="' . $this->lurl . '/attachment/download/id/' . $client['attachmentId'] . '/file/' . urlencode($client['attachmentPath']) . '" target="_blank">' . $client['attachmentOriginalName'] . '</a>';
+
                 $clients[] = [
-                    'firstName'     => $client->getPrenom(),
-                    'lastName'      => $client->getNom(),
-                    'id'            => $client->getIdClient(),
-                    'birthdate'     => $client->getNaissance()->format('d/m/Y'),
-                    'birthplace'    => $client->getVilleNaissance(),
-                    'birth_country' => $client->getIdPaysNaissance()
+                    'firstName'          => $client['prenom'],
+                    'lastName'           => $client['nom'],
+                    'id'                 => $client['idClient'],
+                    'birthDate'          => $client['naissance']->format('d/m/Y'),
+                    'birthPlace'         => $client['villeNaissance'],
+                    'birthCountry'       => $client['idPaysNaissance'],
+                    'country'            => $client['idPaysFiscal'],
+                    'idCardPassportUrl'  => $ownerPassportUrl,
+                    'idCardPassportName' => $client['attachmentOriginalName']
                 ];
             }
         }
