@@ -21,6 +21,8 @@ class DevMongoDBTestCommand extends ContainerAwareCommand
         $connection      = $this->getContainer()->get('doctrine_mongodb')->getConnection();
 
         $documentManager->getRepository('UnilendStoreBundle:WsCall')->findOneBy(['provider' => 'altares']);
+        $output->writeln('MongoDB data retrieved');
         $connection->close();
+        $output->writeln('MongoDB connection closed');
     }
 }
