@@ -149,7 +149,7 @@ idAttachmentUrl: '/path/to/file/',
                             e.preventDefault()
                             $.ajax({
                                 url: $form.attr('action'),
-                                type: 'POST',
+                                type: $form.attr('method'),
                                 data: $form.serialize(),
                                 dataType: 'json',
                                 success: function(response) {
@@ -159,15 +159,16 @@ idAttachmentUrl: '/path/to/file/',
                                         App.blocks('#beneficial-owners', 'state_loading')
                                         location.reload()
                                     } else {
-                                        var errors = ''
+                                        var errors = '<div class="alert">'
                                         $.each(response.error, function(i, val) {
                                             errors += '<p>' + val + '</p>'
                                         })
-                                        $wrapper.find('.messages').html(errors)
+                                        errors += '</div>'
+                                        $modal.find('.messages').html(errors)
                                     }
                                 },
                                 error: function() {
-                                    $wrapper.find('.messages').html('Une erreur s\'est produite.')
+                                    $modal.find('.messages').html('<div class="alert">Une erreur s\'est produite.</div>')
                                 }
                             })
                         })

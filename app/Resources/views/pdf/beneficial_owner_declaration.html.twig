@@ -44,12 +44,7 @@
             </td>
         </tr>
         {% for owner in owners %}
-            {% if (loop.index is odd) %}
-                {% set backgroundClass = 'bg-bg3' %}
-            {% else %}
-                {% set backgroundClass = '' %}
-            {% endif %}
-            <tr class="{{ backgroundClass }}">
+            <tr{% if loop.index is odd %} class="bg-bg3"{% endif %}>
                 <td><span class="text-uppercase">{{ owner.idClient.nom }}</span> {{ owner.idClient.prenom }}</td>
                 <td>{% trans with {'%birthday%': owner.idClient.naissance|date('d/m/Y'), '%birthplace%': owner.idClient.villeNaissance, '%country%': owner.idClient.idPaysNaissance|countryLabel} %} beneficial-owner_pdf-declaration-birthday-text {% endtrans %}</td>
             </tr>
