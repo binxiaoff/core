@@ -167,8 +167,6 @@ class IRRManager
         $lenderStat->setValue($lenderIRR);
         $this->entityManager->persist($lenderStat);
         $this->entityManager->flush($lenderStat);
-
-        var_dump($wallet->getIdClient()->getIdClient(), $lenderIRR);
     }
 
     /**
