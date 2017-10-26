@@ -283,8 +283,8 @@ class LenderOperationsManager
                 return array_merge(self::PROVISION_TYPES, self::WITHDRAW_TYPES);
             case self::FILTER_PROVISION:
                 return self::PROVISION_TYPES;
-            case self::FILTER_PROVISION_WITHDRAW:
-                return self::PROVISION_TYPES;
+            case self::FILTER_WITHDRAW:
+                return self::WITHDRAW_TYPES;
             case self::FILTER_OFFERS:
                 return self::OFFER_TYPES;
             case self::FILTER_REPAYMENT:
