@@ -147,7 +147,7 @@ class ProjectPaymentManager
         $unpaidPaymentSchedules = $paymentScheduleRepository->findBy([
             'idProject'        => $project,
             'statusEmprunteur' => [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]
-        ]);
+        ], ['ordre' => 'ASC']);
 
         $this->entityManager->getConnection()->beginTransaction();
         try {
