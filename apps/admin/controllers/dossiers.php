@@ -1335,6 +1335,9 @@ class dossiersController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $entityManager->getConnection()->beginTransaction();
         try {
+            $clientEntity->setIdLangue('fr')
+                ->setStatus(Clients::STATUS_ONLINE);
+
             $entityManager->persist($clientEntity);
             $entityManager->flush($clientEntity);
 
@@ -2547,40 +2550,24 @@ class dossiersController extends bootstrap
                     }
                     break;
                 case 'create':
-                    /** @var \clients $client */
-                    $client            = $this->loadData('clients');
-                    $client->id_langue = 'fr';
-                    $client->status    = Clients::STATUS_ONLINE;
-                    $client->create();
-
-                    /** @var \clients_adresses $clientAddress */
-                    $clientAddress            = $this->loadData('clients_adresses');
-                    $clientAddress->id_client = $client->id_client;
-                    $clientAddress->create();
-
-                    /** @var \companies $company */
-                    $company                                = $this->loadData('companies');
-                    $company->id_client_owner               = $client->id_client;
-                    $company->siren                         = filter_var($_POST['siren'], FILTER_SANITIZE_NUMBER_INT);
-                    $company->status_adresse_correspondance = 1;
-                    $company->create();
-
                     /** @var \Doctrine\ORM\EntityManager $entityManager */
-                    $entityManager        = $this->get('doctrine.orm.entity_manager');
+                    $entityManager = $this->get('doctrine.orm.entity_manager');
+                    $company       = $this->createBlankCompany(filter_var($_POST['siren'], FILTER_SANITIZE_NUMBER_INT));
+
                     $companyStatusInBonis = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
                         ->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus::STATUS_IN_BONIS]);
-                    $companyRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
-                    $userRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+
+                    $userRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
 
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
                     $companyManager = $this->get('unilend.service.company_manager');
                     $companyManager->addCompanyStatus(
-                        $companyRepository->find($company->id_company),
+                        $company,
                         $companyStatusInBonis,
                         $userRepository->find($_SESSION['user']['id_user'])
                     );
 
-                    $this->projects->id_target_company = $company->id_company;
+                    $this->projects->id_target_company = $company->getIdCompany();
                     $this->projects->update();
 
                     $this->checkTargetCompanyRisk();
