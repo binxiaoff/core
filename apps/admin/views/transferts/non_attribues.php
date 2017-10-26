@@ -16,7 +16,7 @@
 </style>
 <script>
     $(function () {
-        $('#receptions-table').DataTable({
+        var dt = $('#receptions-table').DataTable({
             serverSide: true,
             processing: true,
             columnDefs: [
@@ -35,40 +35,47 @@
                 url: '<?= $this->lurl ?>/oneui/js/plugins/datatables/localisation/fr_FR.json'
             },
             createdRow: function (row, data, index) {
-                console.log(data)
                 var $row = $(row)
                 var receptionId = data[0]
                 var comment = data[7]
                 var line = data[6]
 
-                var attachReceptionBtn = '<a class="attach-reception thickbox" href="<?= $this->lurl ?>/transferts/attribution/' + receptionId + '" title="Attribuer l\'operation">' +
+                var attachReceptionBtn = '<a class="attach-reception thickbox" title="Attribuer l\'operation" href="<?= $this->lurl ?>/transferts/attribution/' + receptionId + '">' +
                     '<span class="fa fa-check"></span>' +
                     '</a>'
-                var ignoreReceptionBtn = '<a class="ignore-reception table-action" data-reception-id="' + receptionId + '" title="Ignorer l\'operation">' +
+                var ignoreReceptionBtn = '<a class="ignore-reception table-action" title="Ignorer l\'operation">' +
                     '<span class="fa fa-close"></span>' +
                     '</a>'
-                var showReceptionBtn = '<a class="show-reception table-action" data-reception-id="' + receptionId + '" data-line="' + line + '" title="Afficher l\'opération">' +
+                var showReceptionBtn = '<a class="show-reception table-action" data-line="' + line + '" title="Afficher l\'opération">' +
                     '<span class="fa fa-eye"></span>' +
                     '</a>'
-                var addCommentBtn = '<a class="add-comment table-action" data-reception-id="' + receptionId + '" data-comment="' + comment + '" title="Commenter l\'opération">' +
+                var addCommentBtn = '<a class="add-comment table-action" data-comment="' + comment + '" title="Commenter l\'opération">' +
                     '<span class="fa fa-pencil"></span>' +
                     '</a>'
 
                 if (comment !== null && comment !== '') {
-                    addCommentBtn = '<a class="add-comment modify-comment table-action" data-reception-id="' + receptionId + '" data-comment="' + comment + '" title="Modifier le commentaire">' +
+                    addCommentBtn = '<a class="add-comment modify-comment table-action" data-comment="' + comment + '" title="Modifier le commentaire">' +
                         '<span class="fa fa-pencil-square"></span>' +
                         '</a>'
                     $row.css('background', '#fdeec6')
                 }
-                $row.attr('data-reception-id', receptionId)
                 $row.find('td:last-child').append(attachReceptionBtn + ignoreReceptionBtn + showReceptionBtn + addCommentBtn)
+                $row.attr('data-reception-id', receptionId)
                 $row.find('.thickbox').colorbox()
             }
+        })
+        dt.on('draw', function() {
+            $('.table-action, .attach-reception').tooltip({
+                position: {my: 'left top', at: 'right top'},
+                content: function () {
+                    return $(this).prop('title')
+                }
+            })
         })
 
         $(document).on('click', '.table-action', function () {
             var $modal
-            var receptionId = $(this).data('reception-id')
+            var receptionId = $(this).closest('tr').data('reception-id')
 
             if ($(this).is('.ignore-reception')) {
                 $modal = $('#modal-ignore-reception')
@@ -106,7 +113,8 @@
                 success: function (response) {
                     $.colorbox.close()
                     if (response === 'ok') {
-                        $('tr[data-reception-id=' + $reception.val() + ']').fadeOut()
+                        var $row = $('[data-reception-id="' + $reception.val() + '"]')
+                        $row.fadeOut()
                     } else {
                         alert('Une erreur est survenue')
                     }
@@ -129,16 +137,14 @@
                 dataType: 'json',
                 success: function (response) {
                     $.colorbox.close()
-                    repose = response.success
-                    if (response.success === true) {
-                        if (response.data.comment !== '') {
-                            $("a.add-comment[data-reception-id='" + $reception.val() + "']")
-                                .addClass('modify-comment')
-                                .attr('title', 'Modifier le commentaire')
-                                .data('comment', response.data.comment)
-                                .html('<span class="fa fa-pencil-square"></span>')
-                            $('tr[data-reception-id=' + $reception.val() + ']').css('background', '#fdeec6')
-                        }
+                    if (response.success) {
+                        var $row = $('[data-reception-id="' + $reception.val() + '"]')
+                        $row.find('.add-comment')
+                            .removeClass('.add-comment').addClass('modify-comment')
+                            .attr('title', 'Modifier le commentaire')
+                            .data('comment', response.data.comment)
+                            .html('<span class="fa fa-pencil-square"></span>')
+                        $row.css('background', '#fdeec6')
                     } else {
                         alert('Une erreur est survenue')
                     }
@@ -149,7 +155,6 @@
                 }
             })
         })
-
     })
 </script>
 <div id="contenu">

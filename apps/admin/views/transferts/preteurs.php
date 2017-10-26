@@ -43,10 +43,10 @@
                 var amount = data[2]
                 var negative = (amount.replace(',', '.').replace(/[^\d\-\.]/g, '') < 0) ? true : false
 
-                var addCommentBtn = '<a class="add-comment table-action" data-reception-id=' + receptionId + '" data-comment="' + comment + '" title="Commenter l\'opération">' +
+                var addCommentBtn = '<a class="add-comment table-action" data-comment="' + comment + '" title="Commenter l\'opération">' +
                     '<span class="fa fa-pencil"></span>' +
                     '</a>'
-                var showReceptionBtn = '<a class="show-reception table-action" data-reception-id="' + receptionId + '" data-line="' + line + '" title="Afficher l\'opération">' +
+                var showReceptionBtn = '<a class="show-reception table-action" data-line="' + line + '" title="Afficher l\'opération">' +
                     '<span class="fa fa-eye"></span>' +
                     '</a>'
 
@@ -55,7 +55,7 @@
                 }
 
                 if (comment !== null) {
-                    addCommentBtn = '<a class="add-comment modify-comment table-action" data-reception-id=' + receptionId + '" data-comment="' + comment + '" title="Modifier le commentaire">' +
+                    addCommentBtn = '<a class="add-comment modify-comment table-action" data-comment="' + comment + '" title="Modifier le commentaire">' +
                         '<span class="fa fa-pencil-square"></span>' +
                         '</a>'
                     if (!negative)
@@ -82,7 +82,7 @@
             var $modal
             if ($(this).is('.add-comment') || $(this).is('.modify-comment')) {
                 $modal = $('#modal-comment')
-                var receptionId = $(this).data('reception-id')
+                var receptionId = $(this).closest('tr').data('reception-id')
                 var comment = $(this).data('comment')
                 $modal.find('[name=reception]').val(receptionId)
                 $modal.find('[name=comment]').html(comment)
@@ -96,7 +96,7 @@
                 $modal = $('#modal-line')
                 $modal.find('.line').html($(this).data('line'))
             }
-            $.colorbox({html: $modal.html(), width: '50%'});
+            $.colorbox({html: $modal.html(), width: '50%'})
         })
 
         $(document).on('submit', '#modal-add-modify-comment-form', function (e) {
@@ -110,16 +110,14 @@
                 dataType: 'json',
                 success: function (response) {
                     $.colorbox.close()
-                    repose = response.success
-                    if (response.success === true) {
-                        if (response.data.comment !== '') {
-                            $("a.add-comment[data-reception-id='" + $reception.val() + "']")
-                                .addClass('modify-comment')
-                                .attr('title', 'Modifier le commentaire')
-                                .data('comment', response.data.comment)
-                                .html('<span class="fa fa-pencil-square"></span>')
-                            $('tr[data-reception-id=' + $reception.val() + ']').css('background', '#fdeec6')
-                        }
+                    if (response.success) {
+                        var $row = $('[data-reception-id="' + $reception.val() + '"]')
+                        $row.find('.add-comment')
+                            .removeClass('.add-comment').addClass('modify-comment')
+                            .attr('title', 'Modifier le commentaire')
+                            .data('comment', response.data.comment)
+                            .html('<span class="fa fa-pencil-square"></span>')
+                        $row.css('background', '#fdeec6')
                     } else {
                         alert('Une erreur est survenue')
                     }
