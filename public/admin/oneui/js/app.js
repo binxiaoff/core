@@ -1438,7 +1438,7 @@ var App = function() {
                 html += '</div>'
                 $target.html(html)
             } else {
-                $target.html(errors)
+                $target.html('<div class="alert">' + errors + '</div>')
             }
         }
         DT.prototype.events = function() {

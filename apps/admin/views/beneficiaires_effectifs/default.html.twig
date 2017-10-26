@@ -12,11 +12,21 @@
 
 {% block pageScripts %}
     <script>
+
         $(function() {
             App.initHelpers(['validation', 'datepicker', 'datatables']);
             var $table = $('#beneficial-owners table')
             var $wrapper // The wrapper element will be stored here after DT init
             var $previewBlock = $('#preview-declaration')
+            var setExistingFile = function($modal, fileName) {
+                var $file =  $modal.find('[name=id_card_passport]')
+                var fileHtml = '<div class="clearfix"><div class="pull-left">' +
+                        '<div class="file">' + fileName + '</div>' +
+                        '<input type="hidden" name="id_card_passport" value="no_change"></div>' +
+                        '<div class="pull-left push-15-l"><a class="btn btn-xs btn-default file-edit-btn edit">Modifier</a></div></div>'
+                $file.parent().append(fileHtml)
+                $file.remove()
+            }
             // Initialise DT
             $table.DT({
                 // After init callback
@@ -29,13 +39,17 @@
                     }
                 },
                 // After row added callback
-                updated: function() {
+                updated: function(id) {
                     if (!$table.find('.dataTables_empty').length) {
                         $wrapper.find('.add-btn').html('<span class="fa fa-plus"></span> Ajouter')
                         $previewBlock.removeClass('hide')
                     } else {
                         if (!$previewBlock.is('.hide'))
                             $previewBlock.addClass('hide')
+                    }
+                    var $percentage = $table.find('[data-id="' + id + '"] td:nth-child(4)')
+                    if ($percentage.text() === '') {
+                        $percentage.text('0')
                     }
                 },
                 // Modal open callback
@@ -78,11 +92,8 @@
                                             '" data-birth-date="' + item.birthDate +
                                             '" data-birth-place="' + item.birthPlace +
                                             '" data-birth-country="' + item.birthCountry +
-                                            '" data-country="' + item.country + '"'
-                                if (item.idCardPassportName) {
-                                    html += 'data-id-card-passport="' + item.idCardPassportName + '"'
-                                }
-                                            html += '>' +
+                                            '" data-country="' + item.country +
+                                            '" data-id-card-passport="' + item.idCardPassportName + '">' +
                                             '<p>' + item.firstName + ' ' + item.lastName + ' <span class="id">' + item.id + ' </span></p>' +
                                             '</div>'
                                 return html
@@ -91,7 +102,13 @@
                                 // Populate fields on select
                                 $.each(item[0].dataset, function(key, value) {
                                     var key = key.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase() // Convert camelCase to lower dash
-                                    $modal.find('[name=' + key + ']').val(value)
+                                    if (value !== 'null' && value !== '') {
+                                        if (key === 'id_card_passport') {
+                                            setExistingFile($modal, value)
+                                        } else {
+                                            $modal.find('[name=' + key + ']').val(value)
+                                        }
+                                    }
                                 })
                                 $modal.find('.autocomplete-suggestions').hide()
                                 $autocomplete.val(item.data('first-name') + ' ' + item.data('last-name'))
@@ -125,13 +142,7 @@
                         $modal.find('[name=country]').val('{{ companyOwnerAddress.idPaysFiscal }}')
                         {% endif %}
                         {% if companyOwnerPassport is defined and companyOwnerPassport is not empty %}
-                            var $file =  $modal.find('[name=id_card_passport]')
-                            var fileHtml = '<div class="clearfix"><div class="pull-left">' +
-                                    '<div class="file">{{ companyOwnerPassport }}</div>' +
-                                    '<input type="hidden" name="id_card_passport" value="no_change"></div>' +
-                                    '<div class="pull-left push-15-l"><a class="btn btn-xs btn-default file-edit-btn edit">Modifier</a></div></div>'
-                            $file.parent().append(fileHtml)
-                            $file.remove()
+                            setExistingFile($modal, '{{ companyOwnerPassport }}')
                         {% endif %}
                     }
                     // When deleting an owner from the table
