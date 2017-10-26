@@ -16,13 +16,13 @@
 </style>
 <script>
     $(function () {
-        var dt = $('#receptions-table').DataTable({
+        $('#receptions-table').DataTable({
             serverSide: true,
             processing: true,
             columnDefs: [
                 {orderable: false, targets: [1, 4, 5]},
-                {searchable: false, targets: [1, 2, 3, 4, 5, 6]},
-                {visible: false, targets: [6]},
+                {searchable: false, targets: [1, 2, 3, 4, 5, 6, 7]},
+                {visible: false, targets: [6, 7]},
                 {name: "idReception", "targets": 0},
                 {name: "motif", "targets": 1},
                 {name: "montant", "targets": 2},
@@ -38,12 +38,10 @@
                 console.log(data)
                 var $row = $(row)
                 var receptionId = data[0]
-                var comment = data[5]
+                var comment = data[7]
                 var line = data[6]
-                var amount = data[2]
-                var negative = (amount.replace(',', '.').replace(/[^\d\-\.]/g, '') < 0) ? true : false
 
-                var attachReceptionBtn = '<a class="attach-reception thickbox" href="<?= $this->lurl ?>/transferts/attribution/'+ receptionId +'" title="Attribuer l\'operation">' +
+                var attachReceptionBtn = '<a class="attach-reception thickbox" href="<?= $this->lurl ?>/transferts/attribution/' + receptionId + '" title="Attribuer l\'operation">' +
                     '<span class="fa fa-check"></span>' +
                     '</a>'
                 var ignoreReceptionBtn = '<a class="ignore-reception table-action" data-reception-id="' + receptionId + '" title="Ignorer l\'operation">' +
@@ -56,15 +54,11 @@
                     '<span class="fa fa-pencil"></span>' +
                     '</a>'
 
-                if (negative) {
-                    $row.css('background', '#f9adb3')
-                }
                 if (comment !== null && comment !== '') {
                     addCommentBtn = '<a class="add-comment modify-comment table-action" data-reception-id="' + receptionId + '" data-comment="' + comment + '" title="Modifier le commentaire">' +
                         '<span class="fa fa-pencil-square"></span>' +
                         '</a>'
-                    if (!negative)
-                        $row.css('background', '#fdeec6')
+                    $row.css('background', '#fdeec6')
                 }
                 $row.attr('data-reception-id', receptionId)
                 $row.find('td:last-child').append(attachReceptionBtn + ignoreReceptionBtn + showReceptionBtn + addCommentBtn)
@@ -72,7 +66,7 @@
             }
         })
 
-        $(document).on('click', '.table-action', function(){
+        $(document).on('click', '.table-action', function () {
             var $modal
             var receptionId = $(this).data('reception-id')
 
@@ -98,10 +92,10 @@
                 $modal.find('.line').html($(this).data('line'))
             }
 
-            $.colorbox({html:$modal.html(), width: '50%'})
+            $.colorbox({html: $modal.html(), width: '50%'})
         })
 
-        $(document).on('submit', '#modal-ignore-reception-form', function(e){
+        $(document).on('submit', '#modal-ignore-reception-form', function (e) {
             e.preventDefault()
             var $form = $(this)
             var $reception = $form.find('[name=reception]')
@@ -123,6 +117,39 @@
                 }
             })
         })
+
+        $(document).on('submit', '#modal-add-modify-comment-form', function (e) {
+            e.preventDefault()
+            var $form = $(this)
+            var $reception = $form.find('[name=reception]')
+            $.ajax({
+                url: $form.attr('action'),
+                method: $form.attr('method'),
+                data: $form.serialize(),
+                dataType: 'json',
+                success: function (response) {
+                    $.colorbox.close()
+                    repose = response.success
+                    if (response.success === true) {
+                        if (response.data.comment !== '') {
+                            $("a.add-comment[data-reception-id='" + $reception.val() + "']")
+                                .addClass('modify-comment')
+                                .attr('title', 'Modifier le commentaire')
+                                .data('comment', response.data.comment)
+                                .html('<span class="fa fa-pencil-square"></span>')
+                            $('tr[data-reception-id=' + $reception.val() + ']').css('background', '#fdeec6')
+                        }
+                    } else {
+                        alert('Une erreur est survenue')
+                    }
+                },
+                error: function () {
+                    $.colorbox.close()
+                    alert('Une erreur est survenue')
+                }
+            })
+        })
+
     })
 </script>
 <div id="contenu">
@@ -157,9 +184,8 @@
             </div>
         </div>
         <div id="modal-add-modify-comment" style="padding: 10px; min-width: 500px;">
-            <form method="POST" action="<?= $this->lurl ?>/transferts/comment">
+            <form id="modal-add-modify-comment-form" method="POST" action="<?= $this->lurl ?>/transferts/comment">
                 <input type="hidden" name="reception">
-                <input type="hidden" name="referer" value="<?= $_SERVER['REQUEST_URI'] ?>">
                 <h1>Commenter l'opération</h1>
                 <div class="form-group">
                     <label class="sr-only">Commentaire</label>

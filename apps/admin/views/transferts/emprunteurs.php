@@ -61,6 +61,7 @@
                     if (!negative)
                         $row.css('background', '#fdeec6')
                 }
+                $row.attr('data-reception-id', receptionId)
                 $row.find('td:last-child').append(showReceptionBtn + addCommentBtn)
             }
         })
@@ -95,6 +96,38 @@
                 $modal.find('.line').html($(this).data('line'))
             }
             $.colorbox({html:$modal.html(), width: '50%'});
+        })
+
+        $(document).on('submit', '#modal-add-modify-comment-form', function (e) {
+            e.preventDefault()
+            var $form = $(this)
+            var $reception = $form.find('[name=reception]')
+            $.ajax({
+                url: $form.attr('action'),
+                method: $form.attr('method'),
+                data: $form.serialize(),
+                dataType: 'json',
+                success: function (response) {
+                    $.colorbox.close()
+                    repose = response.success
+                    if (response.success === true) {
+                        if (response.data.comment !== '') {
+                            $("a.add-comment[data-reception-id='" + $reception.val() + "']")
+                                .addClass('modify-comment')
+                                .attr('title', 'Modifier le commentaire')
+                                .data('comment', response.data.comment)
+                                .html('<span class="fa fa-pencil-square"></span>')
+                            $('tr[data-reception-id=' + $reception.val() + ']').css('background', '#fdeec6')
+                        }
+                    } else {
+                        alert('Une erreur est survenue')
+                    }
+                },
+                error: function () {
+                    $.colorbox.close()
+                    alert('Une erreur est survenue')
+                }
+            })
         })
     })
 </script>
@@ -142,9 +175,8 @@
     </div>
     <div class="hidden">
         <div id="modal-comment" style="padding: 10px; min-width: 500px;">
-            <form method="POST" action="<?= $this->lurl ?>/transferts/comment">
+            <form id="modal-add-modify-comment-form" method="POST" action="<?= $this->lurl ?>/transferts/comment">
                 <input type="hidden" name="reception">
-                <input type="hidden" name="referer" value="<?= $_SERVER['REQUEST_URI'] ?>">
                 <h1>Commenter l'opération</h1>
                 <div class="form-group">
                     <label class="sr-only">Commentaire</label>

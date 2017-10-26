@@ -307,7 +307,8 @@ class transfertsController extends bootstrap
                     $reception->getAdded()->format('d/m/Y'),
                     substr($reception->getLigne(), 32, 2),
                     '',
-                    $reception->getLigne()
+                    $reception->getLigne(),
+                    $reception->getComment()
                 ];
             }
         } catch (Exception $exception) {
@@ -562,18 +563,19 @@ class transfertsController extends bootstrap
 
     public function _comment()
     {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
         if ($receptionId = $this->request->request->getInt('reception')) {
             /** @var EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($receptionId)->setComment($this->request->request->get('comment'));
             $entityManager->flush();
 
-            header('Location: ' . $this->request->request->get('referer'));
-            exit;
+            echo json_encode(['error' => [], 'success' => true, 'data' => ['comment' => $this->request->request->get('comment')]]);
+        } else {
+            echo json_encode(['error' => ['id reception not found'], 'success' => false]);
         }
-
-        header('Location: /');
-        exit;
     }
 
     public function _deblocage()
