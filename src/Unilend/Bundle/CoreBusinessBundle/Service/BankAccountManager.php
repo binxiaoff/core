@@ -53,7 +53,6 @@ class BankAccountManager
         $this->validator              = $validator;
     }
 
-
     /**
      * When we save a different IBAN (or no bank information) for a client, we archive the old one, and create the new on.
      * Otherwise (if IBAN is the same), we update the existing bank information, and if the bic is modified, we put the bank information in "pending".
@@ -106,9 +105,9 @@ class BankAccountManager
                 }
                 $bankAccount = new BankAccount();
                 $bankAccount->setIdClient($client)
-                            ->setIban($iban)
-                            ->setBic($bic)
-                            ->setAttachment($attachment);
+                    ->setIban($iban)
+                    ->setBic($bic)
+                    ->setAttachment($attachment);
                 $this->entityManager->persist($bankAccount);
                 $this->entityManager->flush($bankAccount);
             }
@@ -122,23 +121,23 @@ class BankAccountManager
     }
 
     /**
-     * @param BankAccount $bankAccount
+     * @param BankAccount $bankAccountToValidate
      *
      * @throws \Exception
      */
-    public function validateBankAccount(BankAccount $bankAccount)
+    public function validateBankAccount(BankAccount $bankAccountToValidate)
     {
         $this->entityManager->getConnection()->beginTransaction();
         try {
-            $currentlyValidBankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($bankAccount->getIdClient());
-            if ($currentlyValidBankAccount !== $bankAccount) {
+            $currentlyValidBankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($bankAccountToValidate->getIdClient());
+            if ($currentlyValidBankAccount !== $bankAccountToValidate) {
                 if ($currentlyValidBankAccount) {
                     $currentlyValidBankAccount->setDateArchived(new \DateTime());
                     $this->entityManager->flush($currentlyValidBankAccount);
                 }
-                $bankAccount->setDateValidated(new \DateTime());
-                $bankAccount->setDateArchived(null);
-                $this->entityManager->flush($bankAccount);
+                $bankAccountToValidate->setDateValidated(new \DateTime());
+                $bankAccountToValidate->setDateArchived(null);
+                $this->entityManager->flush($bankAccountToValidate);
             }
             $this->entityManager->getConnection()->commit();
         } catch (\Exception $exception) {
