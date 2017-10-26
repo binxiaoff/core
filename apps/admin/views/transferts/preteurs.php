@@ -102,33 +102,37 @@
         $(document).on('submit', '#modal-add-modify-comment-form', function (e) {
             e.preventDefault()
             var $form = $(this)
-            var $reception = $form.find('[name=reception]')
-            $.ajax({
-                url: $form.attr('action'),
-                method: $form.attr('method'),
-                data: $form.serialize(),
-                dataType: 'json',
-                success: function (response) {
-                    $.colorbox.close()
-                    if (response.success) {
-                        var $row = $('[data-reception-id="' + $reception.val() + '"]')
-                        $row.find('.add-comment')
-                            .removeClass('.add-comment').addClass('modify-comment')
-                            .attr('title', 'Modifier le commentaire')
-                            .data('comment', response.data.comment)
-                            .html('<span class="fa fa-pencil-square"></span>')
-                        $row.css('background', '#fdeec6')
-                    } else {
+            if ($form.find('[name=comment]').val() !== '') {
+                var $reception = $form.find('[name=reception]')
+                $.ajax({
+                    url: $form.attr('action'),
+                    method: $form.attr('method'),
+                    data: $form.serialize(),
+                    dataType: 'json',
+                    success: function (response) {
+                        $.colorbox.close()
+                        if (response.success) {
+                            var $row = $('[data-reception-id="' + $reception.val() + '"]')
+                            $row.find('.add-comment')
+                                .removeClass('.add-comment').addClass('modify-comment')
+                                .attr('title', 'Modifier le commentaire')
+                                .data('comment', response.data.comment)
+                                .html('<span class="fa fa-pencil-square"></span>')
+                            $row.css('background', '#fdeec6')
+                        } else {
+                            alert('Une erreur est survenue')
+                        }
+                    },
+                    error: function () {
+                        $.colorbox.close()
                         alert('Une erreur est survenue')
                     }
-                },
-                error: function () {
-                    $.colorbox.close()
-                    alert('Une erreur est survenue')
-                }
-            })
+                })
+            } else {
+                $form.find('[name=comment]').css('border-color', 'red')
+            }
         })
-    });
+    })
 </script>
 <div id="contenu">
     <div class="row">
