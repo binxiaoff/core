@@ -1683,6 +1683,7 @@ class MailerManager
                             $oLoan = $this->entityManagerSimulator->getRepository('loans');
 
                             $fRepaymentCapital              = $amount;
+                            $fRepaymentAmount               = $amount;
                             $fRepaymentInterestsTaxIncluded = 0;
                             $fRepaymentTax                  = 0;
 
