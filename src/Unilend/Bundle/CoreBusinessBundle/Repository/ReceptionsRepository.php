@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
@@ -154,6 +155,8 @@ class ReceptionsRepository extends EntityRepository
     }
 
     /**
+     * Get al receipts that didn't have a repayment task yet
+     *
      * @param Projects $project
      *
      * @return array
@@ -175,6 +178,27 @@ class ReceptionsRepository extends EntityRepository
             ->setParameter('wireTransferRejected', Receptions::WIRE_TRANSFER_STATUS_REJECTED)
             ->andWhere('NOT EXISTS (' . $qbRejected->getDQL() . ')')
             ->andWhere('prt.id IS NULL');
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * Get all receipts having a pending repayment task
+     *
+     * @return array
+     */
+    public function findReceptionsWithPendingRepaymentTasks()
+    {
+        $qbRejected = $this->createQueryBuilder('r_rejected')
+            ->select('r_rejected.idReception')
+            ->where('r_rejected.idReceptionRejected = r.idReception');
+
+        $queryBuilder = $this->createQueryBuilder('r')
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectRepaymentTask', 'prt', Join::WITH, 'prt.idWireTransferIn = r.idReception')
+            ->where('prt.status = :pendingTask')
+            ->setParameter('pendingTask', ProjectRepaymentTask::STATUS_PENDING)
+            ->andWhere('NOT EXISTS (' . $qbRejected->getDQL() . ')')
+            ->groupBy('r.idReception');
 
         return $queryBuilder->getQuery()->getResult();
     }

@@ -5,6 +5,6 @@
     </p>
     <div id="tab_memos_memo" style="margin-top: 0"></div>
     <div id="table_memo">
-        <?php $this->fireView('memo/list'); ?>
+        <?php $this->fireView('memos'); ?>
     </div>
 </div>

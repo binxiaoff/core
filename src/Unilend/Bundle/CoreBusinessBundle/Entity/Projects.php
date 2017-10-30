@@ -423,7 +423,7 @@ class Projects
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="close_out_netting_date", type="datetime", nullable=true)
+     * @ORM\Column(name="close_out_netting_date", type="date", nullable=true)
      */
     private $closeOutNettingDate;
 
@@ -1670,6 +1670,10 @@ class Projects
      */
     public function getCloseOutNettingDate()
     {
+        /** @todo to be removed when projects is fully under doctrine */
+        if (null !== $this->closeOutNettingDate && $this->closeOutNettingDate->getTimestamp() < 0) {
+            return null;
+        }
         return $this->closeOutNettingDate;
     }
 

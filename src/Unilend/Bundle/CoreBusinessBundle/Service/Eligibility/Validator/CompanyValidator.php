@@ -553,6 +553,10 @@ class CompanyValidator
         }
 
         $incidentAnnouncements = $this->externalDataManager->getExecutiveAnnouncements($executiveId);
+        if (empty($incidentAnnouncements)) {
+            return false;
+        }
+
         foreach ($incidentAnnouncements as $announcement) {
             if (
                 false === isset($executivePeriod[$announcement->getSiren()])

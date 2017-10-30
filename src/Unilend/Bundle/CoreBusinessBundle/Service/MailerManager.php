@@ -1661,13 +1661,13 @@ class MailerManager
         }
 
         foreach (array_chunk($aCustomerId, 100) as $aPartialCustomerId) {
-            $aCustomerMailNotifications = array();
+            $aCustomerMailNotifications = [];
             foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, \clients_gestion_type_notif::TYPE_REPAYMENT) as $aMailNotifications) {
                 $aCustomerMailNotifications[$aMailNotifications['id_client']][] = $aMailNotifications;
             }
 
             if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->debug('Customer IDs in mail notifications: ' . json_encode(array_keys($aCustomerMailNotifications)), array('class' => __CLASS__, 'function' => __FUNCTION__));
+                $this->oLogger->debug('Customer IDs in mail notifications: ' . json_encode(array_keys($aCustomerMailNotifications)), ['class' => __CLASS__, 'function' => __FUNCTION__]);
             }
 
             foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
@@ -1706,7 +1706,7 @@ class MailerManager
                             }
                             $amount              = $operation->getAmount();
                             $loanId              = $operation->getLoan()->getIdLoan();
-                            $repaymentScheduleId = $operation->getRepaymentSchedule()->getIdEcheancier();
+                            $repaymentScheduleId = null !== $operation->getRepaymentSchedule() ? $operation->getRepaymentSchedule()->getIdEcheancier() : null;
                         }
 
                         if ($isEarlyRepayment) {
@@ -1718,6 +1718,7 @@ class MailerManager
                             $oLoan = $this->entityManagerSimulator->getRepository('loans');
 
                             $fRepaymentCapital              = $amount;
+                            $fRepaymentAmount               = $amount;
                             $fRepaymentInterestsTaxIncluded = 0;
                             $fRepaymentTax                  = 0;
 
