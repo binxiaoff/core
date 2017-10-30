@@ -891,6 +891,9 @@ class dossiersController extends bootstrap
                 ->setSubject('Remboursement en retard')
                 ->setContent($_POST['site_content'])
                 ->setIdUser($user);
+
+            $entityManager->persist($projectNotification);
+            $entityManager->flush($projectNotification);
         }
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
