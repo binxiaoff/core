@@ -43,7 +43,7 @@ class CompanyManager
     {
         $companyStatus = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus');
 
-        switch ($company->getIdStatus()) {
+        switch ($company->getIdStatus()->getLabel()) {
             case CompanyStatus::STATUS_PRECAUTIONARY_PROCESS:
                 $possibleStatus = [CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION];
                 break;

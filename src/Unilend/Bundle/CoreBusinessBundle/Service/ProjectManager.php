@@ -1280,6 +1280,25 @@ class ProjectManager
     /**
      * @param Projects $project
      *
+     * @return bool
+     */
+    public function isHealthy(Projects $project)
+    {
+        if (
+            null === $project->getCloseOutNettingDate()
+            && 0 === count($project->getDebtCollectionMissions())
+            && CompanyStatus::STATUS_IN_BONIS === $project->getIdCompany()->getIdStatus()->getLabel()
+            && 0 === $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getOverdueScheduleCount($project)
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Projects $project
+     *
      * @return float
      */
     public function getRemainingAmount(Projects $project)

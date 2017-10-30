@@ -121,7 +121,7 @@ class echeanciers extends echeanciers_crud
             'id_project'       => $projectId,
             'loan_status'      => \loans::STATUS_ACCEPTED,
             'repayment_status' => array(self::STATUS_PENDING, self::STATUS_PARTIALLY_REPAID),
-            'date_echeance'    => $endDate->format('Y-m-d H:i:s')
+            'date_echeance'    => $endDate->format('Y-m-d 23:59:59')
         ];
         $bindType = [
             'id_project'       => \PDO::PARAM_INT,
@@ -136,7 +136,7 @@ class echeanciers extends echeanciers_crud
             WHERE l.status = :loan_status
               AND e.id_project = :id_project
               AND e.status IN (:repayment_status)
-              AND e.date_echeance < :date_echeance';
+              AND e.date_echeance <= :date_echeance';
         return bcdiv($this->bdd->executeQuery($query, $bind, $bindType)
             ->fetchColumn(0), 100, 2);
     }

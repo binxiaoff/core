@@ -69,7 +69,7 @@
                             $settingsCount += count($periodSettings);
                         }
                     ?>
-                    <?php if (false === in_array($settingsCount, [0, 25])) : ?>
+                    <?php if (false === in_array($settingsCount, [0, \Unilend\Bundle\CoreBusinessBundle\Entity\Autobid::REGULAR_SETTINGS_COUNT])) : ?>
                         <p style="background-color: #f9babe; padding: 10px; font-weight: bold;">La configuration Autolend de ce client n'est pas correcte. Veuillez vous rapprocher du service informatique, ce cas nécessitant des investigations.</p>
                     <?php else : ?>
                         <table class="autobid-param-advanced-table">

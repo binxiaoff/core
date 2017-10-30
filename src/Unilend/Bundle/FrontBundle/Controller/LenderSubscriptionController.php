@@ -20,7 +20,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
@@ -35,7 +35,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
@@ -508,8 +507,6 @@ class LenderSubscriptionController extends Controller
 
 
     /**
-     * @param Clients         $client
-     * @param BankAccount     $bankAccount
      * @param ClientsAdresses $clientAddress
      * @param FormInterface   $form
      * @param FileBag         $fileBag

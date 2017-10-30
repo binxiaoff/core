@@ -1194,7 +1194,7 @@ class projects extends projects_crud
           'M' AS repayment_frequency,
           (SELECT csh.changed_on FROM company_status_history csh WHERE csh.id = (
             SELECT MIN(csh_min.id) FROM company_status_history csh_min
-            INNER JOIN company_status cs_min ON cs_min.id = csh_min.id_status AND cs_min.label IN (:collectiveProceeding) WHERE csh.id_company = p.id_company)
+            INNER JOIN company_status cs_min ON cs_min.id = csh_min.id_status AND cs_min.label IN (:collectiveProceeding) WHERE csh_min.id_company = p.id_company)
           ) AS judgement_date,
           CASE
             WHEN p.close_out_netting_date IS NOT NULL AND p.close_out_netting_date != '0000-00-00' THEN p.close_out_netting_date

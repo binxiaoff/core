@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\core\Loader;
 
@@ -259,7 +259,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
             $amount = bcadd($repayment->getUnpaidAmountAtDate($data['id_project'], $date), $repayment->getTotalComingCapitalByProject($data['id_project'], $date), 2);
             $amount = bcsub($amount, $data['debt_collection_repayment'], 2);
             $return = ['unpaid_amount' => $amount, 'owed_capital' => $amount];
-        } elseif (false === empty($data['judgement_date'])) {
+        } elseif (false === empty($data['judgement_date']) && CompanyStatus::STATUS_COMPULSORY_LIQUIDATION === $data['companyStatusLabel']) {
             /** @var \DateTime $date */
             $date   = \DateTime::createFromFormat('Y-m-d', $data['judgement_date']);
             $amount = bcadd($repayment->getUnpaidAmountAtDate($data['id_project'], $date), $repayment->getTotalComingCapitalByProject($data['id_project'], $date), 2);
