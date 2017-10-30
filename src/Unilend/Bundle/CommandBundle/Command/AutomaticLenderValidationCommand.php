@@ -27,12 +27,12 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         $lenderValidationManager = $this->getContainer()->get('unilend.service.lender_validation_manager');
 
         /** @var \clients $clientData */
-        $clientData       = $entityManagerSimulator->getRepository('clients');
+        $clientDataClass  = $entityManagerSimulator->getRepository('clients');
         $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         $userRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
 
         try {
-            $clientsToValidate = $clientData->getClientsToAutoValidate(
+            $clientsToValidate = $clientDataClass->getClientsToAutoValidate(
                 [ClientsStatus::TO_BE_CHECKED, ClientsStatus::COMPLETENESS_REPLY, ClientsStatus::MODIFICATION],
                 [VigilanceRule::VIGILANCE_STATUS_HIGH, VigilanceRule::VIGILANCE_STATUS_REFUSE]
             );
