@@ -43,13 +43,32 @@ class partenairesController extends bootstrap
             return;
         }
 
+        $success = isset($_SESSION['forms']['partner']['success']) ? $_SESSION['forms']['partner']['success'] : [];
+        $errors  = isset($_SESSION['forms']['partner']['errors']) ? $_SESSION['forms']['partner']['errors'] : [];
+
+        unset($_SESSION['forms']['partner']['success']);
+        unset($_SESSION['forms']['partner']['errors']);
+
         $agencies = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['idParentCompany' => $partner->getIdCompany()->getIdCompany()]);
         $users    = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findBy(['idCompany' => $agencies]);
 
+        /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
+        $translator                  = $this->get('translator');
+        $descriptionTranslationLabel = 'partner-project-details_description-instructions-' . $partner->getLabel();
+        $documentsTranslationLabel   = 'partner-project-details_documents-instructions-' . $partner->getLabel();
+        $descriptionTranslation      = $descriptionTranslationLabel === $translator->trans($descriptionTranslationLabel) ? '' : $translator->trans($descriptionTranslationLabel);
+        $documentsTranslation        = $documentsTranslationLabel === $translator->trans($documentsTranslationLabel) ? '' : $translator->trans($documentsTranslationLabel);
+
         $this->render(null, [
-            'partner'  => $partner,
-            'agencies' => $agencies,
-            'users'    => $users
+            'formSuccess'  => $success,
+            'formErrors'   => $errors,
+            'partner'      => $partner,
+            'agencies'     => $agencies,
+            'users'        => $users,
+            'instructions' => [
+                'description' => $descriptionTranslation,
+                'documents'   => $documentsTranslation
+            ]
         ]);
     }
 
@@ -417,6 +436,49 @@ class partenairesController extends bootstrap
         }
 
         return $errors;
+    }
+
+    public function _instructions()
+    {
+        /** @var Doctrine\ORM\EntityManager $entityManager = */
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
+
+        if (
+            false === $this->request->isMethod(Request::METHOD_POST)
+            || empty($this->params[0])
+            || false === filter_var($this->params[0], FILTER_VALIDATE_INT)
+            || null === ($partner = $partnerRepository->find($this->params[0]))
+        ) {
+            header('Location: ' . $this->lurl . '/partenaires');
+            return;
+        }
+
+        $instructions = $this->request->request->get('instructions');
+
+        if (false === is_array($instructions)) {
+            $_SESSION['forms']['partner']['errors']['instructions'] = ['Veuillez saisir les instructions de dépôt de dossier'];
+        }
+
+        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
+        $translationManager          = $this->get('unilend.service.translation_manager');
+        $descriptionTranslationLabel = 'description-instructions-' . $partner->getLabel();
+        $documentsTranslationLabel   = 'documents-instructions-' . $partner->getLabel();
+        $description                 = isset($instructions['description']) ? filter_var($instructions['description'], FILTER_SANITIZE_STRING) : '';
+        $documents                   = isset($instructions['documents']) ? filter_var($instructions['documents'], FILTER_SANITIZE_STRING) : '';
+
+        $translationManager->deleteTranslation('partner-project-details', $descriptionTranslationLabel);
+        $translationManager->deleteTranslation('partner-project-details', $documentsTranslationLabel);
+
+        $translationManager->addTranslation('partner-project-details', $descriptionTranslationLabel, $description);
+        $translationManager->addTranslation('partner-project-details', $documentsTranslationLabel, $documents);
+
+        $translationManager->flush();
+
+        $_SESSION['forms']['partner']['success']['instructions'] = ['Instructions modifiées avec succès'];
+
+        header('Location: ' . $this->lurl . '/partenaires/edit/' . $partner->getId() . '#instructions');
+        return;
     }
 
     public function _tiers()

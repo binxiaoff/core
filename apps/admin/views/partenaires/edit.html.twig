@@ -220,10 +220,10 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="css-input css-radio css-radio-default push-10-r">
-                                        <input type="radio" name="mandatory" value="true" class="form-control required"><span></span> Yes
+                                        <input type="radio" name="mandatory" value="true" class="form-control required"><span></span> Oui
                                     </label>
                                     <label class="css-input css-radio css-radio-default">
-                                        <input type="radio" name="mandatory" value="false" class="form-control required"><span></span> No
+                                        <input type="radio" name="mandatory" value="false" class="form-control required"><span></span> Non
                                     </label>
                                 </div>
                             </div>
@@ -304,13 +304,12 @@
 {% set formErrors = {
     settings: ['Error 1', 'Error 2'],
     products:  ['Error 1', 'Error 2'],
-    instructions:  ['Error 1', 'Error 2'],
     documents:  ['Error 1', 'Error 2']
 } %}
+
 {% set formSuccess = {
     settings: ['Success message'],
     products:  ['Success message'],
-    instructions:  ['Success message'],
     documents:  ['Error 1', 'Error 2']
 } %}
 
@@ -318,9 +317,6 @@
     {id: 1, label: 'Product 1', rateFunds: '4.00', rateRepayment: '1.00'},
     {id: 2, label: 'Product 2', rateFunds: '5.00', rateRepayment: '1.00'}
 ] %}
-
-{% set instructionsProjectSubmissions = '<p>Je pense donc <b>je suis</b>.</p>' %}
-{% set instructionsDocuments = '<p>C\'est pas vrai !</p>' %}
 
 {% set documentTypes = [
     { id: 1, label: 'CNI' }, { id: 2, label: 'Passport' }, { id: 3, label: 'RIB' } ]
@@ -394,7 +390,7 @@
                         <th data-editor-name="agency" data-editor-type="select" data-editor-options="{% for agency in agencies %}{{ agency.name|e('html_attr') }}:{{ agency.idCompany }}{% if not loop.last %}, {% endif %}{% endfor %}">Agence</th>
                         <th data-editor-name="phone" data-editor-type="text" data-editor-optional>Téléphone</th>
                         <th data-editor-name="role" data-editor-type="select" data-editor-options="Administrateur:admin, Agent:agent">Rôle</th>
-                        <th data-editor-disabled data-editor-name="lastlogin" data-editor-type="date" data-editor-optional data-type="date-fr">Dernière connexion</th>
+                        <th data-editor-name="lastlogin" data-editor-type="date" data-editor-disabled data-type="date-fr">Dernière connexion</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -420,7 +416,7 @@
                         <h3 class="block-title">Instructions</h3>
                     </div>
                     <div class="block-content block-content-full">
-                        <form action="/partnerEdit/instructionsSubmissions/" method="post">
+                        <form action="{{ app.adminUrl }}/partenaires/instructions/{{ partner.id }}" method="post">
                             {%  if formErrors.instructions is defined and formErrors.instructions is not empty %}
                                 <div class="alert alert-error">
                                     {% for error in formErrors.instructions %}
@@ -435,24 +431,10 @@
                                     {% endfor %}
                                 </div>
                             {% endif %}
-                            {%  if formErrors.instructionsSubmissions is defined and formErrors.instructionsSubmissions is not empty %}
-                                <div class="alert alert-error">
-                                    {% for error in formErrors.instructionsSubmissions %}
-                                        <p>{{ error }}</p>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                            {%  if formSuccess.instructionsSubmissions is defined %}
-                                <div class="alert alert-success">
-                                    {% for success in formSuccess.instructionsSubmissions %}
-                                        <p>{{ success }}</p>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
                             <label for="instructions-description">Description du projet</label>
-                            <textarea id="instructions-description" name="instructions[description]" class="js-summernote-simple">{{ instructionsProjectSubmissions }}</textarea>
+                            <textarea id="instructions-description" name="instructions[description]" class="js-summernote-simple">{{ instructions.description }}</textarea>
                             <label for="instructions-documents">Pièces à fournir</label>
-                            <textarea id="instructions-documents" name="instructions[documents]" class="js-summernote-simple">{{ instructionsDocuments }}</textarea>
+                            <textarea id="instructions-documents" name="instructions[documents]" class="js-summernote-simple">{{ instructions.documents }}</textarea>
                             <button type="submit" class="btn btn-primary">Mettre à jour</button>
                         </form>
                     </div>
