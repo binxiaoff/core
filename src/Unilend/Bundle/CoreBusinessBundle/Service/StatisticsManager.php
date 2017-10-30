@@ -396,6 +396,7 @@ class StatisticsManager
         $lateCapitalRepaymentsProblematicProjects    = $this->formatCohortQueryResult($borrowerPaymentSchedule->getLateCapitalRepaymentsProblematicProjects(self::GROUP_FIRST_YEAR_COHORT), $years);
         $debtCollectionRepaymentProblematicProjects  = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionRepaymentByCohort(self::PROBLEMATIC_PROJECTS, self::GROUP_FIRST_YEAR_COHORT), $years);
         $debtCollectionCommissionProblematicProjects = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionLenderCommissionByCohort(self::PROBLEMATIC_PROJECTS, self::GROUP_FIRST_YEAR_COHORT), $years);
+        $futureCapitalProblematicProjects            = $this->formatCohortQueryResult($borrowerPaymentSchedule->getFutureOwedCapitalOfProblematicProjectsByCohort(self::GROUP_FIRST_YEAR_COHORT), $years);
 
         $data = [];
         foreach ($years as $year) {
@@ -439,7 +440,7 @@ class StatisticsManager
                 'volume' => round(bcmul(bcdiv($data['late-owed-capital-healthy'][$year], $data['borrowed-capital'][$year], 6), 100, 3), 2),
                 'number' => round(bcdiv($numberLateHealthyProjects[$year], $data['number-of-projects'][$year], 6), 2)
             ];
-            $data['late-owed-capital-problematic'][$year]       = round(bcsub($lateCapitalRepaymentsProblematicProjects[$year], bcsub($debtCollectionRepaymentProblematicProjects[$year], $debtCollectionCommissionProblematicProjects[$year], 4), 4));
+            $data['late-owed-capital-problematic'][$year]       = round(bcadd($futureCapitalProblematicProjects[$year],bcsub($lateCapitalRepaymentsProblematicProjects[$year],bcsub($debtCollectionRepaymentProblematicProjects[$year], $debtCollectionCommissionProblematicProjects[$year], 4), 4), 4));
 
             $data['late-problematic-capital-percentage'][$year] = [
                 'volume' => round(bcmul(bcdiv($data['late-owed-capital-problematic'][$year], $data['borrowed-capital'][$year], 6), 100, 3), 2),
