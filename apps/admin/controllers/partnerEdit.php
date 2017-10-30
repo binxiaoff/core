@@ -16,24 +16,6 @@ class partnerEditController extends bootstrap
         $this->render();
     }
 
-    public function _organisation() {
-        $this->autoFireView = false;
-        $this->hideDecoration();
-
-        // Structure
-        $structure = $_POST['structure'];
-
-        // New items can be an array or single element
-        if (isset($_POST['newItems'])){
-            if (is_array($_POST['newItems']))
-                $newItems = implode(", ", noescape($_POST['newItems']));
-            else
-                $newItems = $_POST['newItems'];
-        }
-        // header("Location: /partnerEdit");
-        // die;
-    }
-
     public function _documents()
     {
         $this->autoFireView = false;

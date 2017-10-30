@@ -120,7 +120,8 @@ class Partner
     /**
      * Projects constructor.
      */
-    public function __construct() {
+    public function __construct()
+    {
         $this->attachmentTypes     = new ArrayCollection();
         $this->partnerThirdParties = new ArrayCollection();
     }

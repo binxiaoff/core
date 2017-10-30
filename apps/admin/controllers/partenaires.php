@@ -481,6 +481,31 @@ class partenairesController extends bootstrap
         return;
     }
 
+    public function _parametres()
+    {
+        /** @var Doctrine\ORM\EntityManager $entityManager = */
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
+
+        if (
+            false === $this->request->isMethod(Request::METHOD_POST)
+            || empty($this->params[0])
+            || false === filter_var($this->params[0], FILTER_VALIDATE_INT)
+            || null === ($partner = $partnerRepository->find($this->params[0]))
+        ) {
+            header('Location: ' . $this->lurl . '/partenaires');
+            return;
+        }
+
+        $partner->setProspect('on' === $this->request->request->get('prospect'));
+        $entityManager->flush($partner);
+
+        $_SESSION['forms']['partner']['success']['settings'] = ['Paramètres modifiés avec succès'];
+
+        header('Location: ' . $this->lurl . '/partenaires/edit/' . $partner->getId() . '#settings');
+        return;
+    }
+
     public function _tiers()
     {
         /** @var Doctrine\ORM\EntityManager $entityManager = */

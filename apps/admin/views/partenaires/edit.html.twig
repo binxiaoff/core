@@ -321,6 +321,7 @@
 {% set documentTypes = [
     { id: 1, label: 'CNI' }, { id: 2, label: 'Passport' }, { id: 3, label: 'RIB' } ]
 %}
+
 {% set documents = [
     { id: 1, label: 'CNI', mandatory: 'true' }
 ] %}
@@ -532,10 +533,10 @@
             <div class="col-md-6">
                 <div id="settings" class="block block-bordered">
                     <div class="block-header">
-                        <h3 class="block-title">Paramètres partenaire</h3>
+                        <h3 class="block-title">Paramètres</h3>
                     </div>
                     <div class="block-content block-content-full">
-                        <form action="/partnerEdit/settings/" method="post">
+                        <form action="{{ app.adminUrl }}/partenaires/parametres/{{ partner.id }}" method="post">
                             {%  if formErrors.settings is defined and formErrors.settings is not empty %}
                                 <div class="alert alert-error">
                                     {% for error in formErrors.settings %}
@@ -553,17 +554,9 @@
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <p style="margin-bottom: 5px">Statut du partenaire</p>
+                                        <p style="margin-bottom: 5px">Prospect</p>
                                         <label class="css-input switch switch-primary">
-                                            <input type="checkbox" name="status" checked><span></span>
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <p style="margin-bottom: 5px">Prospections</p>
-                                        <label class="css-input switch switch-primary">
-                                            <input type="checkbox" name="prospections" checked><span></span>
+                                            <input type="checkbox" name="prospect"{% if partner.prospect %} checked{% endif %}><span></span>
                                         </label>
                                     </div>
                                 </div>
