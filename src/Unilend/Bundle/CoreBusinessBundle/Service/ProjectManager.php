@@ -3,25 +3,26 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
+use PhpXmlRpc\Client as soapClient;
+use PhpXmlRpc\Request as soapRequest;
+use PhpXmlRpc\Value as documentId;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
-use Unilend\core\Loader;
+use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use PhpXmlRpc\Client as soapClient;
-use PhpXmlRpc\Request as soapRequest;
-use PhpXmlRpc\Value as documentId;
+use Unilend\core\Loader;
 
 class ProjectManager
 {
@@ -57,6 +58,8 @@ class ProjectManager
     private $logger;
     /** @var SponsorshipManager */
     private $sponsorshipManager;
+    /** @var ProjectRepaymentTaskManager */
+    private $projectRepaymentTaskManager;
 
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -71,7 +74,8 @@ class ProjectManager
         SlackManager $slackManager,
         RiskDataMonitoringManager $riskDataMonitoringManager,
         SponsorshipManager $sponsorshipManager,
-        $universignUrl
+        $universignUrl,
+        ProjectRepaymentTaskManager $projectRepaymentTaskManager
     )
     {
         $this->entityManagerSimulator     = $entityManagerSimulator;
@@ -87,6 +91,7 @@ class ProjectManager
         $this->riskDataMonitoringManger   = $riskDataMonitoringManager;
         $this->sponsorshipManager         = $sponsorshipManager;
         $this->universignUrl              = $universignUrl;
+        $this->projectRepaymentTaskManager = $projectRepaymentTaskManager;
 
         $this->datesManager = Loader::loadLib('dates');
         $this->workingDay   = Loader::loadLib('jours_ouvres');
@@ -973,10 +978,10 @@ class ProjectManager
                 break;
             case ProjectsStatus::REMBOURSE:
             case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
-            case ProjectsStatus::LIQUIDATION_JUDICIAIRE:
-            case ProjectsStatus::REDRESSEMENT_JUDICIAIRE:
-            case ProjectsStatus::PROCEDURE_SAUVEGARDE:
                 $this->riskDataMonitoringManger->stopMonitoringForSiren($project->getIdCompany()->getSiren());
+                break;
+            case ProjectsStatus::PROBLEME:
+                $this->projectRepaymentTaskManager->disableAutomaticRepayment($project);
                 break;
         }
     }
@@ -1268,5 +1273,33 @@ class ProjectManager
     {
         $project->interest_rate = $project->getAverageInterestRate(false);
         $project->update();
+    }
+
+    /**
+     * @todo This is a temporary method to be removed once the new table of closed out loans is created
+     * Calculate the remaining amount and payments count on a project depending on close out netting date if any
+     *
+     * @param Projects $project
+     *
+     * @return array [amount, paymentsCount]
+     */
+    public function getPendingAmountAndPaymentsCountOnProject(Projects $project)
+    {
+        $paymentRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        $closeOutNettingDate = $project->getCloseOutNettingDate();
+
+        if (null !== $closeOutNettingDate) {
+            $dayBefore              = $closeOutNettingDate->sub((new \DateInterval('P1D')));
+            $pastFullPayments       = $paymentRepository->getPendingAmountAndPaymentsCountOnProjectAtDate($project, $dayBefore);
+            $dueCapitalPayments     = $paymentRepository->getPendingCapitalAndPaymentsCountOnProjectFromDate($project, $project->getCloseOutNettingDate());
+            $remainingAmount        = round(bcadd($pastFullPayments['amount'], $dueCapitalPayments['amount'], 4), 2);
+            $remainingPaymentsCount = round(bcadd($pastFullPayments['paymentsCount'], $dueCapitalPayments['paymentsCount'], 2), 1);
+        } else {
+            $pastFullPayments       = $paymentRepository->getPendingAmountAndPaymentsCountOnProjectAtDate($project, new \DateTime('yesterday'));
+            $remainingAmount        = $pastFullPayments['amount'];
+            $remainingPaymentsCount = $pastFullPayments['paymentsCount'];
+        }
+
+        return ['amount' => $remainingAmount, 'paymentsCount' => $remainingPaymentsCount];
     }
 }

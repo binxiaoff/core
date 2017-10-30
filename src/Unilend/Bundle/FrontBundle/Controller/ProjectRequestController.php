@@ -14,6 +14,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
@@ -184,7 +185,8 @@ class ProjectRequestController extends Controller
             ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))
             ->setSlugOrigine($sourceManager->getSource(SourceManager::ENTRY_SLUG));
 
-        $siret         = $sirenLength === 14 ? str_replace(' ', '', $request->request->get('siren')) : '';
+        $siret = $sirenLength === 14 ? str_replace(' ', '', $request->request->get('siren')) : '';
+
         $this->company = new Companies();
         $this->company->setSiren($siren)
             ->setSiret($siret)
@@ -204,6 +206,15 @@ class ProjectRequestController extends Controller
             $this->company->setIdClientOwner($this->client->getIdClient());
             $entityManager->persist($this->company);
             $entityManager->flush($this->company);
+
+            $companyManager       = $this->get('unilend.service.company_manager');
+            $companyStatusInBonis = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
+                ->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
+            $companyManager->addCompanyStatus(
+                $this->company,
+                $companyStatusInBonis,
+                $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT)
+            );
 
             $this->get('unilend.service.wallet_creation_manager')->createWallet($this->client, WalletType::BORROWER);
 

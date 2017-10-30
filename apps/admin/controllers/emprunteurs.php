@@ -1,6 +1,8 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class emprunteursController extends bootstrap
@@ -41,15 +43,15 @@ class emprunteursController extends bootstrap
 
     public function _edit()
     {
-        $this->clients           = $this->loadData('clients');
-        $this->clients_adresses  = $this->loadData('clients_adresses');
-        $this->companies         = $this->loadData('companies');
-        $this->companies_bilans  = $this->loadData('companies_bilans');
-        $this->projects          = $this->loadData('projects');
-        $this->projects_status   = $this->loadData('projects_status');
-        $this->clients_mandats   = $this->loadData('clients_mandats');
-        $this->projects_pouvoir  = $this->loadData('projects_pouvoir');
-        $this->settings          = $this->loadData('settings');
+        $this->clients          = $this->loadData('clients');
+        $this->clients_adresses = $this->loadData('clients_adresses');
+        $this->companies        = $this->loadData('companies');
+        $this->companies_bilans = $this->loadData('companies_bilans');
+        $this->projects         = $this->loadData('projects');
+        $this->projects_status  = $this->loadData('projects_status');
+        $this->clients_mandats  = $this->loadData('clients_mandats');
+        $this->projects_pouvoir = $this->loadData('projects_pouvoir');
+        $this->settings         = $this->loadData('settings');
         /** @var \company_sector $companySector */
         $companySector = $this->loadData('company_sector');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
@@ -128,12 +130,23 @@ class emprunteursController extends bootstrap
                 header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
                 die;
             }
+            $this->companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
+
+            if (false === empty($_POST['problematic_status']) && $_POST['problematic_status'] != $this->companyEntity->getIdStatus()->getId()) {
+                $this->updateCompanyStatus($this->companyEntity);
+            }
+
             $this->aMoneyOrders = $this->clients_mandats->getMoneyOrderHistory($this->companies->id_company);
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerOperationsManager $borrowerOperationsManager */
             $borrowerOperationsManager = $this->get('unilend.service.borrower_operations_manager');
             $start                     = new \DateTime('First day of january this year');
             $end                       = new \DateTime('NOW');
             $this->operations          = $borrowerOperationsManager->getBorrowerOperations($this->clients, $start, $end);
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager companyManager */
+            $this->companyManager = $this->get('unilend.service.company_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus[] possibleCompanyStatus */
+            $this->possibleCompanyStatus = $this->companyManager->getPossibleStatus($this->companyEntity);
+            $this->companyStatusInBonis  = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
         } else {
             header('Location: ' . $this->lurl . '/emprunteurs/gestion/');
             die;
@@ -219,5 +232,138 @@ class emprunteursController extends bootstrap
             $this->operations = $borrowerOperationsManager->getBorrowerOperations($clientData, $start, $end);
         }
         $this->setView('../emprunteurs/operations');
+    }
+
+    /**
+     * @param Companies $company
+     */
+    private function updateCompanyStatus(Companies $company)
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
+        $user        = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+        $changedOn   = isset($_POST['decision_date']) ? \DateTime::createFromFormat('d/m/Y', $_POST['decision_date']) : null;
+        $receiver    = isset($_POST['receiver']) ? $_POST['receiver'] : null;
+        $siteContent = isset($_POST['site_content']) ? $_POST['site_content'] : null;
+        $mailContent = isset($_POST['mail_content']) ? $_POST['mail_content'] : null;
+        $status      = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')->find($_POST['problematic_status']);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
+        $companyManager = $this->get('unilend.service.company_manager');
+        $companyManager->addCompanyStatus($company, $status, $user, $changedOn, $receiver, $siteContent, $mailContent);
+
+        if (in_array($company->getIdStatus()->getLabel(), [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION])) {
+            $projectsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $companyProjects    = $projectsRepository->findFundedButNotRepaidProjectsByCompany($company);
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+            $projectStatusManager = $this->get('unilend.service.project_status_manager');
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+
+            foreach ($companyProjects as $project) {
+                if (false === empty($_POST['send_email'])) {
+                    try {
+                        $projectStatusManager->sendCollectiveProceedingStatusNotificationsToLenders($project);
+                    } catch (\Exception $exception) {
+                        $logger->warning(
+                            'Collective proceeding email was not sent to lenders. Error : ' . $exception->getMessage(),
+                            ['id_project' => $project->getIdProject(), 'method' => __METHOD__]
+                        );
+                    }
+                }
+                if (false === empty($_POST['send_email_borrower']) && 1 == $_POST['send_email_borrower']) {
+                    try {
+                        $projectStatusManager->sendCollectiveProceedingStatusEmailToBorrower($project);
+                    } catch (\Exception $exception) {
+                        $logger->warning(
+                            'Collective proceeding email was not sent to borrower. Error : ' . $exception->getMessage(),
+                            ['id_project' => $project->getIdProject(), 'method' => __METHOD__]
+                        );
+                    }
+                }
+            }
+        }
+
+        header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $company->getIdClientOwner());
+        die;
+    }
+
+    public function _projets_avec_retard()
+    {
+        /** @var \users $user */
+        $user = $this->loadData('users');
+        $user->get($_SESSION['user']['id_user']);
+
+        if (\users_types::TYPE_RISK == $user->id_user_type
+            || $user->id_user == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_ALAIN_ELKAIM
+            || isset($this->params[0]) && 'risk' == $this->params[0] && in_array($user->id_user_type, [\users_types::TYPE_ADMIN, \users_types::TYPE_IT])
+        ) {
+            $projectData = $this->getLatePaymentsInformation();
+            $this->render(null, $projectData);
+        } else {
+            header('Location: ' . $this->lurl . '/emprunteurs/gestion/');
+            die;
+        }
+    }
+
+    /**
+     * @return array
+     */
+    private function getLatePaymentsInformation()
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+        $projectManager = $this->get('unilend.service.project_manager');
+
+        $projectsRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $receptionsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+
+        $totalPendingReceiptAmount  = 0;
+        $totalRemainingAmount       = 0;
+        $projectsWithDebtCollection = 0;
+        $projectData                = [];
+
+        foreach ($projectsRepository->getProjectsWithLateRepayments() as $lateRepayment) {
+            $project              = $projectsRepository->find($lateRepayment['idProject']);
+            $overDuePaymentInfo   = $projectManager->getPendingAmountAndPaymentsCountOnProject($project);
+            $debtCollectionAmount = 0;
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission $mission */
+            foreach ($project->getDebtCollectionMissions() as $mission) {
+                $entrustedAmount      = bcadd(bcadd($mission->getCapital(), $mission->getInterest(), 4), $mission->getCommissionVatIncl(), 4);
+                $debtCollectionAmount = bcadd($debtCollectionAmount, $entrustedAmount, 4);
+            }
+
+            if ($project->getDebtCollectionMissions()->count() > 0) {
+                $projectsWithDebtCollection++;
+            }
+
+            $pendingReceipt                        = $receptionsRepository->getPendingReceipt($project);
+            $projectData[$project->getIdProject()] = [
+                'projectId'                => $project->getIdProject(),
+                'companyName'              => $project->getIdCompany()->getName(),
+                'siren'                    => $project->getIdCompany()->getSiren(),
+                'companyActivity'          => $project->getIdCompany()->getActivite(),
+                'projectTitle'             => $project->getTitle(),
+                'projectStatusLabel'       => $lateRepayment['projectStatusLabel'],
+                'projectStatus'            => $project->getStatus(),
+                'remainingAmount'          => $overDuePaymentInfo['amount'],
+                'entrustedToDebtCollector' => round($debtCollectionAmount, 2),
+                'remainingPaymentsCount'   => $overDuePaymentInfo['paymentsCount'],
+                'pendingReceiptAmount'     => round(bcdiv(array_sum(array_column($pendingReceipt, 'amount')), 100, 4), 2),
+                'pendingReceiptCount'      => count($pendingReceipt),
+            ];
+            $totalRemainingAmount                  = bcadd($totalRemainingAmount, $overDuePaymentInfo['amount'], 4);
+            $totalPendingReceiptAmount             = bcadd($totalPendingReceiptAmount, $projectData[$project->getIdProject()]['pendingReceiptAmount'], 2);
+        }
+
+        return [
+            'remainingAmountToCollect'     => round($totalRemainingAmount, 2),
+            'pendingReceiptAmount'         => $totalPendingReceiptAmount,
+            'nbProjectsWithDeptCollection' => $projectsWithDebtCollection,
+            'nbProjectsWithLateRepayments' => count($projectData) - $projectsWithDebtCollection,
+            'projectWithPaymentProblems'   => $projectData
+        ];
     }
 }

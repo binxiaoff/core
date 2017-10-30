@@ -3,7 +3,9 @@
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Elements;
+use \Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
@@ -889,8 +891,6 @@ class pdfController extends bootstrap
         $this->pays = $this->loadData('pays_v2');
         /** @var \echeanciers echeanciers */
         $this->echeanciers = $this->loadData('echeanciers');
-        /** @var \companies companiesEmpr */
-        $this->companiesEmpr = $this->loadData('companies');
         /** @var \projects_status_history projects_status_history */
         $this->projects_status_history = $this->loadData('projects_status_history');
         /** @var \projects_status_history_details projects_status_history_details */
@@ -903,17 +903,18 @@ class pdfController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
         $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($this->oLoans->id_lender);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies borrowerCompany */
+        $this->borrowerCompany = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')
+            ->find($this->projects->id_company);
 
         $status = [
-            \projects_status::PROCEDURE_SAUVEGARDE,
-            \projects_status::REDRESSEMENT_JUDICIAIRE,
-            \projects_status::LIQUIDATION_JUDICIAIRE
+            CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
+            CompanyStatus::STATUS_RECEIVERSHIP,
+            CompanyStatus::STATUS_COMPULSORY_LIQUIDATION
         ];
 
-        if (in_array($this->projects->status, $status)
+        if (in_array($this->borrowerCompany->getIdStatus()->getLabel(), $status)
         ) {
-            $this->companiesEmpr->get($this->projects->id_company, 'id_company');
-
             if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
                 $this->clients_adresses->get($this->clients->id_client, 'id_client');
                 $countryId = $this->clients_adresses->id_pays_fiscal;
@@ -929,59 +930,40 @@ class pdfController extends bootstrap
             $this->pays->get($countryId, 'id_pays');
             $this->pays_fiscal = $this->pays->fr;
 
-            /** @var \projects_status_history $projectStatusHistory */
-            $projectStatusHistory = $this->loadData('projects_status_history');
-            $projectStatusHistory->loadStatusForJudgementDate($this->projects->id_project, $status);
+            $companyStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory');
+            $companyStatusHistory           = $companyStatusHistoryRepository->findFirstHistoryByCompanyAndStatus($this->borrowerCompany->getIdCompany(), $status);
 
-            $projectStatusHistoryDetails = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistoryDetails')
-                ->findOneBy(['idProjectStatusHistory' => $projectStatusHistory->id_project_status_history]);
+            $this->date            = $companyStatusHistory->getChangedOn();
+            $this->mandataires_var = $companyStatusHistory->getReceiver();
 
-            $this->date            = $projectStatusHistoryDetails->getDate();
-            $this->mandataires_var = $projectStatusHistoryDetails->getReceiver();
-
-            /** @var projects_status $projectStatusType */
-            $projectStatusType = $this->loadData('projects_status');
-            $projectStatusType->get(\projects_status::RECOUVREMENT, 'status');
-
-            $debtCollectionStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
-                ->findOneBy(['idProject' => $this->projects->id_project, 'idProjectStatus' => $projectStatusType->id_project_status]);
-            if ($debtCollectionStatus) {
-                $expiration = $debtCollectionStatus->getAdded();
+            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
+            if ($project->getCloseOutNettingDate() instanceof \DateTime && (new \DateTime()) > $project->getCloseOutNettingDate()) {
+                $expiration = $project->getCloseOutNettingDate();
             } else {
                 $expiration = $this->date;
             }
 
-            $projectStatusType->get($projectStatusHistory->id_project_status);
-            // @todo intl
-            $this->nature_var = '';
-            switch ($projectStatusType->status) {
-                case \projects_status::PROCEDURE_SAUVEGARDE:
-                    $this->nature_var = 'Procédure de sauvegarde';
-                    break;
-                case \projects_status::REDRESSEMENT_JUDICIAIRE:
-                    $this->nature_var = 'Redressement judiciaire';
-                    break;
-                case \projects_status::LIQUIDATION_JUDICIAIRE:
-                    $this->nature_var = 'Liquidation judiciaire';
-                    break;
-            }
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
+            $companyManager   = $this->get('unilend.service.company_manager');
+            $this->nature_var = $companyManager->getCompanyStatusNameByLabel($companyStatusHistory->getIdStatus()->getLabel());
 
             /** @var \echeanciers $repaymentSchedule */
             $repaymentSchedule = $this->loadData('echeanciers');
             $this->echu        = $repaymentSchedule->getNonRepaidAmountInDateRange($wallet->getId(), new \DateTime($this->oLoans->added), $expiration, $this->oLoans->id_loan);
             $this->echoir      = $repaymentSchedule->getTotalComingCapital($wallet->getId(), $this->oLoans->id_loan, $expiration);
 
-            if ($debtCollectionStatus) {
-                $clients = [$wallet->getIdClient()];
+            $clients = [$wallet->getIdClient()];
 
-                if (false === empty($this->oLoans->id_transfer)) {
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager $loanManager */
-                    $loanManager = $this->get('unilend.service.loan_manager');
-                    $clients[]   = $loanManager->getFirstOwner($this->oLoans);
-                }
+            if (false === empty($this->oLoans->id_transfer)) {
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager $loanManager */
+                $loanManager = $this->get('unilend.service.loan_manager');
+                $clients[]   = $loanManager->getFirstOwner($this->oLoans);
+            }
+            $totalGrossDebtCollectionRepayment = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getTotalGrossDebtCollectionRepayment($this->projects->id_project, $clients);
+
+            if (0 < $totalGrossDebtCollectionRepayment) {
 
                 $loanRepository                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
-                $totalGrossDebtCollectionRepayment = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getTotalGrossDebtCollectionRepayment($this->projects->id_project, $clients);
                 $allLoans                          = $loanRepository->findLoansByClients($this->projects->id_project, $clients);
                 $totalLoans                        = $loanRepository->getLoansSumByClients($this->projects->id_project, $clients);
 
@@ -1070,9 +1052,8 @@ class pdfController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
-        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clientId, WalletType::LENDER);
-
-
+        $wallet            = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clientId, WalletType::LENDER);
+        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
         $this->aProjectsInDebt = $this->projects->getProjectsInDebt();
         $this->lSumLoans       = $this->loans->getSumLoansByProject($wallet->getId(), 'debut DESC, p.title ASC');
@@ -1085,39 +1066,13 @@ class pdfController extends bootstrap
             'default'               => 0,
             'refund-finished'       => 0,
         ];
+        /** @var LenderOperationsManager $lenderOperationManager */
+        $lenderOperationManager = $this->get('unilend.service.lender_operations_manager');
 
         foreach ($this->lSumLoans as $iLoandIndex => $aProjectLoans) {
-            switch ($aProjectLoans['project_status']) {
-                case \projects_status::PROBLEME:
-                case \projects_status::PROBLEME_J_X:
-                    $this->lSumLoans[$iLoandIndex]['status-color'] = 'warning';
-                    ++$this->aLoansStatuses['late-repayment'];
-                    break;
-                case \projects_status::RECOUVREMENT:
-                    $this->lSumLoans[$iLoandIndex]['status-color'] = 'problem';
-                    ++$this->aLoansStatuses['recovery'];
-                    break;
-                case \projects_status::PROCEDURE_SAUVEGARDE:
-                case \projects_status::REDRESSEMENT_JUDICIAIRE:
-                case \projects_status::LIQUIDATION_JUDICIAIRE:
-                    $this->lSumLoans[$iLoandIndex]['status-color'] = 'problem';
-                    ++$this->aLoansStatuses['collective-proceeding'];
-                    break;
-                case \projects_status::DEFAUT:
-                    $this->lSumLoans[$iLoandIndex]['status-color'] = 'default';
-                    ++$this->aLoansStatuses['default'];
-                    break;
-                case \projects_status::REMBOURSE:
-                case \projects_status::REMBOURSEMENT_ANTICIPE:
-                    $this->lSumLoans[$iLoandIndex]['status-color'] = '';
-                    ++$this->aLoansStatuses['refund-finished'];
-                    break;
-                case \projects_status::REMBOURSEMENT:
-                default:
-                    $this->lSumLoans[$iLoandIndex]['status-color'] = '';
-                    ++$this->aLoansStatuses['no-problem'];
-                    break;
-            }
+            $loanStatus = $lenderOperationManager->getLenderLoanStatusToDisplay($projectRepository->find($aProjectLoans['id_project']));
+            $this->lSumLoans[$iLoandIndex]['statusLabel'] = $loanStatus['statusLabel'];
+            $this->lSumLoans[$iLoandIndex]['loanStatus']  = $loanStatus;
         }
 
         $this->setDisplay('loans');

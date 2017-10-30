@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
 class FeedsBPICommand extends ContainerAwareCommand
 {
@@ -45,19 +46,14 @@ class FeedsBPICommand extends ContainerAwareCommand
         $userPath = $this->getContainer()->getParameter('path.user');
 
         $projectStatuses = [
-            \projects_status::EN_FUNDING,
-            \projects_status::FUNDE,
-            \projects_status::FUNDING_KO,
-            \projects_status::REMBOURSEMENT,
-            \projects_status::REMBOURSE,
-            \projects_status::REMBOURSEMENT_ANTICIPE,
-            \projects_status::PROBLEME,
-            \projects_status::PROBLEME_J_X,
-            \projects_status::RECOUVREMENT,
-            \projects_status::PROCEDURE_SAUVEGARDE,
-            \projects_status::REDRESSEMENT_JUDICIAIRE,
-            \projects_status::LIQUIDATION_JUDICIAIRE,
-            \projects_status::DEFAUT
+            ProjectsStatus::EN_FUNDING,
+            ProjectsStatus::FUNDE,
+            ProjectsStatus::FUNDING_KO,
+            ProjectsStatus::REMBOURSEMENT,
+            ProjectsStatus::REMBOURSE,
+            ProjectsStatus::REMBOURSEMENT_ANTICIPE,
+            ProjectsStatus::PROBLEME,
+            ProjectsStatus::LOSS
         ];
 
         $partner    = strtolower($input->getArgument('partner'));
@@ -83,7 +79,7 @@ class FeedsBPICommand extends ContainerAwareCommand
                 continue;
             }
 
-            if ($project->status == \projects_status::EN_FUNDING) {
+            if ($project->status == ProjectsStatus::EN_FUNDING) {
                 $totalBids = $bids->sum('id_project = ' . $project->id_project . ' AND status = ' . \bids::STATUS_BID_PENDING, 'amount') / 100;
             } else {
                 $totalBids = $bids->sum('id_project = ' . $project->id_project . ' AND status = ' . \bids::STATUS_BID_ACCEPTED, 'amount') / 100;
@@ -202,20 +198,15 @@ class FeedsBPICommand extends ContainerAwareCommand
     private function getBPISuccess($status)
     {
         switch ($status) {
-            case \projects_status::EN_FUNDING:
-            case \projects_status::PROBLEME:
-            case \projects_status::REMBOURSEMENT:
-            case \projects_status::REMBOURSE:
-            case \projects_status::REMBOURSEMENT_ANTICIPE:
-            case \projects_status::FUNDE:
-            case \projects_status::PROBLEME_J_X:
-            case \projects_status::RECOUVREMENT:
-            case \projects_status::PROCEDURE_SAUVEGARDE:
-            case \projects_status::REDRESSEMENT_JUDICIAIRE:
-            case \projects_status::LIQUIDATION_JUDICIAIRE:
-            case \projects_status::DEFAUT:
+            case ProjectsStatus::EN_FUNDING:
+            case ProjectsStatus::PROBLEME:
+            case ProjectsStatus::REMBOURSEMENT:
+            case ProjectsStatus::REMBOURSE:
+            case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
+            case ProjectsStatus::FUNDE:
+            case ProjectsStatus::LOSS:
                 return 'OUI';
-            case \projects_status::FUNDING_KO:
+            case ProjectsStatus::FUNDING_KO:
                 return 'NON';
             default:
                 return '';

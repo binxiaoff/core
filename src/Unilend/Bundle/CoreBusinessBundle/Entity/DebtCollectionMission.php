@@ -9,16 +9,13 @@ use Doctrine\ORM\Mapping as ORM;
  * DebtCollectionMission
  *
  * @ORM\Table(name="debt_collection_mission", indexes={@ORM\Index(name="idx_dc_mission_id_user_creation", columns={"id_user_creation"}), @ORM\Index(name="idx_dc_mission_id_user_archiving", columns={"id_user_archiving"}), @ORM\Index(name="idx_dc_mission_id_project", columns={"id_project"}), @ORM\Index(name="idx_dc_mission_id_client", columns={"id_client_debt_collector"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\DebtCollectionMissionRepository")
  * @ORM\HasLifecycleCallbacks
  */
 class DebtCollectionMission
 {
-    const STATUS_ONGOING  = 0;
-    const STATUS_ARCHIVED = 1;
-
-    const TYPE_AMICABLE   = 0;
     const TYPE_LITIGATION = 1;
+    const TYPE_AMICABLE   = 2;
 
     /**
      * @var integer
@@ -30,7 +27,7 @@ class DebtCollectionMission
     /**
      * @var string
      *
-     * @ORM\Column(name="fees_rate", type="decimal", precision=4, scale=2, nullable=true)
+     * @ORM\Column(name="fees_rate", type="decimal", precision=4, scale=4, nullable=false)
      */
     private $feesRate;
 
@@ -111,6 +108,34 @@ class DebtCollectionMission
      *
      */
     private $debtCollectionMissionPaymentSchedules;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="archived", type="datetime", nullable=true)
+     */
+    private $archived;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="capital", type="decimal", precision=11, scale=2, nullable=false)
+     */
+    private $capital;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="interest", type="decimal", precision=11, scale=2, nullable=false)
+     */
+    private $interest;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="commission_vat_incl", type="decimal", precision=11, scale=2, nullable=false)
+     */
+    private $commissionVatIncl;
 
     public function __construct()
     {
@@ -383,5 +408,97 @@ class DebtCollectionMission
     public function getIdUserArchiving()
     {
         return $this->idUserArchiving;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getArchived()
+    {
+        return $this->archived;
+    }
+
+    /**
+     * @param \DateTime|null $archived
+     *
+     * @return DebtCollectionMission
+     */
+    public function setArchived(\DateTime $archived = null)
+    {
+        $this->archived = $archived;
+
+        return $this;
+    }
+
+    /**
+     * get entrusted capital
+     *
+     * @return string
+     */
+    public function getCapital()
+    {
+        return $this->capital;
+    }
+
+    /**
+     * set entrusted capital amount
+     *
+     * @param string $capital
+     *
+     * @return DebtCollectionMission
+     */
+    public function setCapital($capital)
+    {
+        $this->capital = $capital;
+
+        return $this;
+    }
+
+    /**
+     * get entrusted interest amount
+     *
+     * @return string
+     */
+    public function getInterest()
+    {
+        return $this->interest;
+    }
+
+    /**
+     * set entrusted interests amount
+     *
+     * @param string $interest
+     *
+     * @return DebtCollectionMission
+     */
+    public function setInterest($interest)
+    {
+        $this->interest = $interest;
+
+        return $this;
+    }
+
+    /**
+     * get entrusted commission VAT included amount
+     *
+     * @return string
+     */
+    public function getCommissionVatIncl()
+    {
+        return $this->commissionVatIncl;
+    }
+
+    /**
+     * set entrusted commission VAT included amount
+     *
+     * @param string $commissionVatIncl
+     *
+     * @return DebtCollectionMission
+     */
+    public function setCommissionVatIncl($commissionVatIncl)
+    {
+        $this->commissionVatIncl = $commissionVatIncl;
+
+        return $this;
     }
 }

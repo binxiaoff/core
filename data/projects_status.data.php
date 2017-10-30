@@ -1,7 +1,5 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-
 class projects_status extends projects_status_crud
 {
     const IMPOSSIBLE_AUTO_EVALUATION = 1;
@@ -29,43 +27,6 @@ class projects_status extends projects_status_crud
     const REMBOURSE                  = 90;
     const REMBOURSEMENT_ANTICIPE     = 95;
     const PROBLEME                   = 100;
-    const PROBLEME_J_X               = 110;
-    const RECOUVREMENT               = 120;
-    const PROCEDURE_SAUVEGARDE       = 130;
-    const REDRESSEMENT_JUDICIAIRE    = 140;
-    const LIQUIDATION_JUDICIAIRE     = 150;
-    const DEFAUT                     = 160;
-
-    /**
-     * List of projects with pending repayments
-     * @var array $runningRepayment
-     */
-    public static $runningRepayment = [
-        ProjectsStatus::REMBOURSEMENT,
-        ProjectsStatus::PROBLEME,
-        ProjectsStatus::PROBLEME_J_X,
-        ProjectsStatus::RECOUVREMENT,
-        ProjectsStatus::PROCEDURE_SAUVEGARDE,
-        ProjectsStatus::REDRESSEMENT_JUDICIAIRE,
-        ProjectsStatus::LIQUIDATION_JUDICIAIRE
-    ];
-
-    /**
-     * List of project status after repayment
-     * @var array
-     */
-    public static $afterRepayment = [
-        ProjectsStatus::REMBOURSEMENT,
-        ProjectsStatus::REMBOURSE,
-        ProjectsStatus::REMBOURSEMENT_ANTICIPE,
-        ProjectsStatus::PROBLEME,
-        ProjectsStatus::PROBLEME_J_X,
-        ProjectsStatus::RECOUVREMENT,
-        ProjectsStatus::PROCEDURE_SAUVEGARDE,
-        ProjectsStatus::REDRESSEMENT_JUDICIAIRE,
-        ProjectsStatus::LIQUIDATION_JUDICIAIRE,
-        ProjectsStatus::DEFAUT
-    ];
 
     public function __construct($bdd, $params = '')
     {

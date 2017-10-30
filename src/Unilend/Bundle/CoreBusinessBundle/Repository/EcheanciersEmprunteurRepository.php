@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
@@ -103,17 +104,27 @@ class EcheanciersEmprunteurRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('ee');
         $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'ee.idProject = p.idProject')
+            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'c.idCompany = p.idCompany')
+            ->innerJoin('UnilendCoreBusinessBundle:CompanyStatus', 'cs', Join::WITH, 'cs.id = c.idStatus')
             ->leftJoin('UnilendCoreBusinessBundle:Factures', 'f', Join::WITH, 'ee.idProject = f.idProject AND f.ordre = ee.ordre')
             ->where('DATE(ee.dateEcheanceEmprunteur) <= :today')
             ->andWhere('p.status in (:status)')
+            ->andWhere('p.closeOutNettingDate IS NULL')
+            ->andWhere('cs.label = :inBonis')
             ->andWhere('f.idFacture IS NULL')
             ->setParameter('today', (new \DateTime())->format('Y-m-d'))
-            ->setParameter('status', [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME, ProjectsStatus::PROBLEME_J_X])
+            ->setParameter('status', [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME])
+            ->setParameter('inBonis', CompanyStatus::STATUS_IN_BONIS)
             ->setMaxResults($limit);
 
         return $queryBuilder->getQuery()->getResult();
     }
 
+    /**
+     * @param $project
+     *
+     * @return mixed
+     */
     public function getTotalOverdueAmounts($project)
     {
         $queryBuilder = $this->createQueryBuilder('ee');
@@ -128,5 +139,133 @@ class EcheanciersEmprunteurRepository extends EntityRepository
             ->setParameter('today', (new \DateTime())->format('Y-m-d 00:00:00'));
 
         return $queryBuilder->getQuery()->getSingleResult();
+    }
+
+    /**
+     * @param bool           $groupFirstYears
+     * @param \DateTime|null $date
+     *
+     * @return array
+     */
+    public function getTotalInterestToBePaidByCohortUntil($groupFirstYears = true, \DateTime $date = null)
+    {
+        if ($groupFirstYears) {
+            $cohortSelect = 'CASE LEFT(projects_status_history.added, 4)
+                                WHEN 2013 THEN "2013-2014"
+                                WHEN 2014 THEN "2013-2014"
+                                ELSE LEFT(projects_status_history.added, 4)
+                            END';
+        } else {
+            $cohortSelect = 'LEFT(projects_status_history.added, 4)';
+        }
+
+        $bind = ['repayment' => ProjectsStatus::REMBOURSEMENT];
+
+        $query = 'SELECT SUM(echeanciers_emprunteur.interets)/100 AS amount,
+                  (
+                    SELECT ' . $cohortSelect . ' AS date_range
+                    FROM projects_status_history
+                      INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
+                    WHERE  projects_status.status = :repayment
+                           AND echeanciers_emprunteur.id_project = projects_status_history.id_project
+                    ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
+                  ) AS cohort
+                FROM echeanciers_emprunteur
+                  INNER JOIN projects ON echeanciers_emprunteur.id_project = projects.id_project AND projects.status >= :repayment';
+
+        if (null !== $date) {
+            $date->setTime(23, 59, 59);
+            $bind  = array_merge($bind, ['end' => $date->format('Y-m-d H:i:s')]);
+            $query .= 'WHERE
+                   (
+                        SELECT added
+                        FROM projects_status_history psh
+                          INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                        WHERE ps.status = :repayment
+                          AND psh.id_project = projects.id_project
+                        ORDER BY added ASC
+                        LIMIT 1
+                   ) <= :end';
+        }
+
+        $query .= ' GROUP BY cohort';
+
+        $statement = $this->getEntityManager()->getConnection()->executeQuery($query, $bind);
+        $result    = $statement->fetchAll();
+        $statement->closeCursor();
+
+        return $result;
+    }
+
+    /**
+     * @param int|Projects $projectId
+     *
+     * @return null|EcheanciersEmprunteur
+     */
+    public function getNextPaymentSchedule($projectId)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee')
+            ->where('ee.idProject = :projectId')
+            ->setParameter('projectId', $projectId)
+            ->andWhere('DATE(ee.dateEcheanceEmprunteur) > :now')
+            ->setParameter('now', (new \DateTime())->format('Y-m-d'))
+            ->orderBy('ee.dateEcheanceEmprunteur', 'ASC')
+            ->setMaxResults(1);
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * @param int|Projects $project
+     * @param \DateTime    $endDate
+     *
+     * @return array
+     */
+    public function getPendingAmountAndPaymentsCountOnProjectAtDate($project, \DateTime $endDate)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee')
+            ->select('ROUND(SUM(ee.capital - ee.paidCapital + ee.interets - ee.paidInterest + ee.commission + ee.tva - ee.paidCommissionVatIncl) / 100, 2) AS amount,
+            SUM(ROUND((ee.capital - ee.paidCapital + ee.interets - ee.paidInterest + ee.commission - ee.paidCommissionVatIncl) / (ee.capital + ee.interets + ee.commission), 1)) AS paymentsCount')
+            ->where('ee.idProject = :projectId')
+            ->setParameter('projectId', $project)
+            ->andWhere('ee.dateEcheanceEmprunteur <= :endDate')
+            ->setParameter('endDate', $endDate->format('Y-m-d 23:59:59'))
+            ->groupBy('ee.idProject');
+
+        return $queryBuilder->getQuery()->getSingleResult();
+    }
+
+    /**
+     * @param int|Projects $project
+     * @param \DateTime    $startDate
+     *
+     * @return array
+     */
+    public function getPendingCapitalAndPaymentsCountOnProjectFromDate($project, \DateTime $startDate)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee')
+            ->select('ROUND(SUM(ee.capital - ee.paidCapital) / 100, 2) AS amount, SUM(ROUND((ee.capital - ee.paidCapital) / ee.capital, 1)) AS paymentsCount')
+            ->where('ee.idProject = :projectId')
+            ->setParameter('projectId', $project)
+            ->andWhere('ee.dateEcheanceEmprunteur > :startDate')
+            ->setParameter('startDate', $startDate->format('Y-m-d 00:00:00'))
+            ->groupBy('ee.idProject');
+
+        return $queryBuilder->getQuery()->getSingleResult();
+    }
+
+    /**
+     * @param int|Projects $project
+     *
+     * @return mixed
+     */
+    public function getTotalAmountToRepayOnProject($project)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee')
+            ->select('ROUND(SUM(ee.capital + ee.interets + ee.commission + ee.tva) / 100, 2) AS totalAmountToRepay')
+            ->where('ee.idProject = :project')
+            ->setParameter('project', $project);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }

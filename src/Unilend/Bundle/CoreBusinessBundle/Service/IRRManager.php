@@ -4,7 +4,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
@@ -24,6 +26,17 @@ class IRRManager
     const IRR_UNILEND_RISK_PERIOD_3_START = '2015-09-01';
     const IRR_UNILEND_RISK_PERIOD_3_END   = '2016-08-31';
     const IRR_UNILEND_RISK_PERIOD_4_START = '2016-09-01';
+
+    const PROJECT_STATUS_TRIGGERING_CHANGE = [
+        ProjectsStatus::REMBOURSEMENT,
+        ProjectsStatus::PROBLEME,
+        ProjectsStatus::LOSS
+    ];
+    const COMPANY_STATUS_TRIGGERING_CHANGE = [
+        CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
+        CompanyStatus::STATUS_RECEIVERSHIP,
+        CompanyStatus::STATUS_COMPULSORY_LIQUIDATION
+    ];
 
     /** @var LoggerInterface */
     private $logger;
@@ -123,23 +136,14 @@ class IRRManager
     {
         /** @var WalletRepository $walletRepository */
         $walletRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        /** @var \projects_status_history $projectStatusHistory */
-        $projectStatusHistory = $this->entityManagerSimulator->getRepository('projects_status_history');
-        $projectStatusTriggeringChange = [
-            \projects_status::REMBOURSEMENT,
-            \projects_status::PROBLEME,
-            \projects_status::PROBLEME_J_X,
-            \projects_status::RECOUVREMENT,
-            \projects_status::PROCEDURE_SAUVEGARDE,
-            \projects_status::REDRESSEMENT_JUDICIAIRE,
-            \projects_status::LIQUIDATION_JUDICIAIRE,
-            \projects_status::DEFAUT
-        ];
 
         $lendersWithLatePayments   = $walletRepository->getLendersWalletsWithLatePaymentsForIRR();
-        $countProjectStatusChanges = $projectStatusHistory->countProjectStatusChangesOnDate($date->format('Y-m-d'), $projectStatusTriggeringChange);
+        $projectStatusChanges = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+            ->getProjectStatusChangesOnDate($date, self::PROJECT_STATUS_TRIGGERING_CHANGE);
+        $companyStatusChanges      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')
+            ->getCompanyStatusChangesOnDate($date, self::COMPANY_STATUS_TRIGGERING_CHANGE);
 
-        return count($countProjectStatusChanges) > 0 || count($lendersWithLatePayments) > 0 ;
+        return count($projectStatusChanges) > 0 || count($lendersWithLatePayments) > 0 || count($companyStatusChanges) > 0;
     }
 
     /**
@@ -171,6 +175,7 @@ class IRRManager
     public function getLastUnilendIRR()
     {
         $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+
         return $unilendStatsRepository->findOneBy(['typeStat' => UnilendStats::TYPE_STAT_IRR], ['added' => 'DESC']);
     }
 
@@ -209,9 +214,84 @@ class IRRManager
 
         $cohort4 = new UnilendStats();
         $cohort4->setValue($this->getUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_4_START, date('Y-m-d')));
-        $cohort4->setTypeStat('IRR_cohort_' . 'IRR_cohort_' . self::IRR_UNILEND_RISK_PERIOD_4_START . '_' . date('Y-m-d'));
+        $cohort4->setTypeStat('IRR_cohort_' . self::IRR_UNILEND_RISK_PERIOD_4_START . '_' . date('Y-m-d'));
         $this->entityManager->persist($cohort4);
 
         $this->entityManager->flush();
+    }
+
+    /**
+     * @param string $cohortStartDate
+     * @param string $cohortEndDate
+     *
+     * @return string
+     */
+    public function getOptimisticUnilendIRRByCohort($cohortStartDate, $cohortEndDate)
+    {
+        set_time_limit(1000);
+
+        $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+        $valuesIRR              = $unilendStatsRepository->getOptimisticIRRValuesByCohort($cohortStartDate, $cohortEndDate);
+
+        return $this->calculateIRR($valuesIRR);
+    }
+
+    /**
+     * @return string
+     */
+    public function getOptimisticUnilendIRR()
+    {
+        set_time_limit(1000);
+
+        $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+        $valuesIRR              = $unilendStatsRepository->getOptimisticIRRValuesUntilDateLimit(new \DateTime('NOW'));
+
+        return $this->calculateIRR($valuesIRR);
+    }
+
+    public function addOptimisticUnilendIRRAllRiskPeriodCohort()
+    {
+        $cohort1 = new UnilendStats();
+        $cohort1->setValue($this->getOptimisticUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_1_START, self::IRR_UNILEND_RISK_PERIOD_1_END))
+            ->setTypeStat(UnilendStats::TYPE_STAT_MAX_IRR . '_cohort_' . self::IRR_UNILEND_RISK_PERIOD_1_START . '_' . self::IRR_UNILEND_RISK_PERIOD_1_END);
+        $this->entityManager->persist($cohort1);
+
+        $cohort2 = new UnilendStats();
+        $cohort2->setValue($this->getOptimisticUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_2_START, self::IRR_UNILEND_RISK_PERIOD_2_END))
+            ->setTypeStat(UnilendStats::TYPE_STAT_MAX_IRR . '_cohort_' . self::IRR_UNILEND_RISK_PERIOD_2_START . '_' . self::IRR_UNILEND_RISK_PERIOD_2_END);
+        $this->entityManager->persist($cohort2);
+
+        $cohort3 = new UnilendStats();
+        $cohort3->setValue($this->getOptimisticUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_3_START, self::IRR_UNILEND_RISK_PERIOD_3_END))
+            ->setTypeStat(UnilendStats::TYPE_STAT_MAX_IRR . '_cohort_' . self::IRR_UNILEND_RISK_PERIOD_3_START . '_' . self::IRR_UNILEND_RISK_PERIOD_3_END);
+        $this->entityManager->persist($cohort3);
+
+        $cohort4 = new UnilendStats();
+        $cohort4->setValue($this->getOptimisticUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_4_START, date('Y-m-d')))
+            ->setTypeStat(UnilendStats::TYPE_STAT_MAX_IRR . '_cohort_' . self::IRR_UNILEND_RISK_PERIOD_4_START . '_' . date('Y-m-d'));
+        $this->entityManager->persist($cohort4);
+
+        $this->entityManager->flush();
+    }
+
+    public function addOptimisticUnilendIRR()
+    {
+        $unilendMaxIrr = new UnilendStats();
+        $unilendMaxIrr->setValue($this->getOptimisticUnilendIRR())
+            ->setTypeStat(UnilendStats::TYPE_STAT_MAX_IRR);
+
+        $this->entityManager->persist($unilendMaxIrr);
+
+        $this->entityManager->flush($unilendMaxIrr);
+    }
+
+    /**
+     * @return null|UnilendStats
+     */
+    public function getLastOptimisticUnilendIRR()
+    {
+        $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+
+        return $unilendStatsRepository->findOneBy(['typeStat' => UnilendStats::TYPE_STAT_MAX_IRR], ['added' => 'DESC']);
     }
 }

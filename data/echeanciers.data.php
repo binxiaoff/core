@@ -26,10 +26,6 @@
 //
 // **************************************************************************************************** //
 
-use \Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
-
 class echeanciers extends echeanciers_crud
 {
     const STATUS_PENDING                  = 0;
@@ -143,7 +139,7 @@ class echeanciers extends echeanciers_crud
             'id_project'       => $projectId,
             'loan_status'      => \loans::STATUS_ACCEPTED,
             'repayment_status' => array(self::STATUS_PENDING, self::STATUS_PARTIALLY_REPAID),
-            'date_echeance'    => $endDate->format('Y-m-d H:i:s')
+            'date_echeance'    => $endDate->format('Y-m-d 23:59:59')
         ];
         $bindType = [
             'id_project'       => \PDO::PARAM_INT,
@@ -158,7 +154,7 @@ class echeanciers extends echeanciers_crud
             WHERE l.status = :loan_status
               AND e.id_project = :id_project
               AND e.status IN (:repayment_status)
-              AND e.date_echeance < :date_echeance';
+              AND e.date_echeance <= :date_echeance';
         return bcdiv($this->bdd->executeQuery($query, $bind, $bindType)
             ->fetchColumn(0), 100, 2);
     }
@@ -515,6 +511,7 @@ class echeanciers extends echeanciers_crud
 
     /**
      * @param int $lenderId
+     *
      * @return array
      */
     public function getProblematicProjects($lenderId)
@@ -525,14 +522,15 @@ class echeanciers extends echeanciers_crud
               IFNULL(ROUND(SUM(e.interets - e.interets_rembourses) / 100, 2), 0) AS interests,
               COUNT(DISTINCT(e.id_project)) AS projects
             FROM echeanciers e
-            LEFT JOIN echeanciers unpaid ON unpaid.id_echeancier = e.id_echeancier AND unpaid.status = ' . self::STATUS_PENDING . ' AND DATEDIFF(NOW(), unpaid.date_echeance) > 180
+            LEFT JOIN echeanciers unpaid ON unpaid.id_echeancier = e.id_echeancier AND unpaid.status = ' . self::STATUS_PENDING . ' 
+              AND DATEDIFF(NOW(), unpaid.date_echeance) > ' . \Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '
             INNER JOIN loans l ON l.id_lender = e.id_lender AND l.id_loan = e.id_loan
+            INNER JOIN projects p ON p.id_project = e.id_project
+            INNER JOIN companies c ON c.id_company = p.id_company
+            INNER JOIN company_status cs ON cs.id = c.id_status
             WHERE e.status IN(' . self::STATUS_PENDING . ', ' . self::STATUS_PARTIALLY_REPAID . ')
                 AND l.status = 0
-                AND (
-                    (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = e.id_project ORDER BY psh.added DESC, psh.id_project_status_history DESC LIMIT 1) >= ' . \projects_status::PROCEDURE_SAUVEGARDE . '
-                    OR unpaid.date_echeance IS NOT NULL
-                )
+                AND (cs.label != \'' . \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus::STATUS_IN_BONIS . '\' OR unpaid.date_echeance IS NOT NULL)
                 AND e.id_lender = :id_lender';
 
         return $this->bdd->executeQuery($sql, ['id_lender' => $lenderId])->fetch(\PDO::FETCH_ASSOC);
@@ -695,17 +693,27 @@ class echeanciers extends echeanciers_crud
         return $statement->fetch(\PDO::FETCH_ASSOC);
     }
 
-    public function getTotalRepaidInterestByCohort()
+    /**
+     * @param bool $groupFirstYears
+     *
+     * @return mixed
+     */
+    public function getTotalRepaidInterestByCohort($groupFirstYears = true)
     {
+        if ($groupFirstYears) {
+            $cohortSelect = 'CASE LEFT(projects_status_history.added, 4)
+                               WHEN 2013 THEN "2013-2014"
+                               WHEN 2014 THEN "2013-2014"
+                               ELSE LEFT(projects_status_history.added, 4)
+                             END';
+        } else {
+            $cohortSelect = 'LEFT(projects_status_history.added, 4)';
+        }
+
         $query = 'SELECT
                       SUM(interets_rembourses)/100 AS amount,
                       (
-                        SELECT
-                          CASE LEFT(projects_status_history.added, 4)
-                            WHEN 2013 THEN "2013-2014"
-                            WHEN 2014 THEN "2013-2014"
-                            ELSE LEFT(projects_status_history.added, 4)
-                          END AS date_range
+                        SELECT ' . $cohortSelect . ' AS date_range
                         FROM projects_status_history
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
@@ -717,9 +725,16 @@ class echeanciers extends echeanciers_crud
                     GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery($query);
+
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * @param string $contractType
+     * @param int    $delay
+     *
+     * @return mixed
+     */
     public function getProblematicOwedCapitalByProjects($contractType, $delay)
     {
         $query = '  SELECT l.id_project, SUM(e.capital - e.capital_rembourse) / 100 AS amount

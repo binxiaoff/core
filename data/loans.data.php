@@ -215,11 +215,10 @@ class loans extends loans_crud
      * @param int         $idLender
      * @param string|null $order
      * @param int|null    $year
-     * @param array|null  $projectStatus
      *
      * @return array
      */
-    public function getSumLoansByProject($idLender, $order = null, $year = null, array $projectStatus = null)
+    public function getSumLoansByProject($idLender, $order = null, $year = null)
     {
         $query = '
             SELECT
@@ -252,20 +251,17 @@ class loans extends loans_crud
             WHERE l.id_lender = :idLender
                 AND l.status = ' . self::STATUS_ACCEPTED . '
                 ' . (null === $year ? '' : 'AND YEAR(l.added) = :year') . '
-                ' . (null === $projectStatus ? '' : 'AND p.status IN (:projectStatus)') . '
             GROUP BY l.id_project
             ORDER BY ' . (null === $order ? 'l.added DESC' : $order);
 
         $statement = $this->bdd->executeQuery($query, [
                 'repaidStatus'  => [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE],
                 'idLender'      => $idLender,
-                'year'          => $year,
-                'projectStatus' => $projectStatus
+                'year'          => $year
             ], [
                 'repaidStatus'  => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
                 'idLender'      => PDO::PARAM_INT,
-                'year'          => PDO::PARAM_INT,
-                'projectStatus' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY
+                'year'          => PDO::PARAM_INT
             ]
         );
 
@@ -423,16 +419,26 @@ class loans extends loans_crud
         return $this->bdd->executeQuery($sql, ['lenderId' => $lenderId], ['lenderId' => \PDO::PARAM_INT] )->fetchColumn(0);
     }
 
-    public function sumLoansByCohort()
+    /**
+     * @param bool $groupFirstYears
+     *
+     * @return mixed
+     */
+    public function sumLoansByCohort($groupFirstYears = true)
     {
+        if ($groupFirstYears) {
+            $cohortSelect = 'CASE LEFT(projects_status_history.added, 4)
+                                WHEN 2013 THEN "2013-2014"
+                                WHEN 2014 THEN "2013-2014"
+                                ELSE LEFT(projects_status_history.added, 4)
+                            END';
+        } else {
+            $cohortSelect = 'LEFT(projects_status_history.added, 4)';
+        }
+
         $query = 'SELECT SUM(loans.amount)/100 AS amount,
                     (
-                        SELECT
-                          CASE LEFT(projects_status_history.added, 4)
-                            WHEN 2013 THEN "2013-2014"
-                            WHEN 2014 THEN "2013-2014"
-                            ELSE LEFT(projects_status_history.added, 4)
-                          END AS date_range
+                        SELECT ' . $cohortSelect . ' AS date_range
                         FROM projects_status_history
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
@@ -444,6 +450,7 @@ class loans extends loans_crud
                     GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery($query);
+
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
