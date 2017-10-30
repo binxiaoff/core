@@ -1444,8 +1444,6 @@ class dossiersController extends bootstrap
 
         /** @var \tax_type $taxType */
         $taxType = $this->loadData('tax_type');
-        /** @var \Psr\Log\LoggerInterface $oLogger */
-        $oLogger = $this->get('logger');
 
         $taxRate   = $taxType->getTaxRateByCountry('fr');
         $this->tva = $taxRate[\Unilend\Bundle\CoreBusinessBundle\Entity\TaxType::TYPE_VAT] / 100;
@@ -1530,6 +1528,13 @@ class dossiersController extends bootstrap
                         $projectRepaymentTask->setType(ProjectRepaymentTask::TYPE_LATE);
                     }
                     $entityManager->flush($projectRepaymentTask);
+
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+                    $projectManager = $this->get('unilend.service.project_manager');
+                    if ($projectManager->isHealthy($project)) {
+                        $projectRepaymentTaskManager->enableAutomaticRepayment($project);
+                        $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::REMBOURSEMENT, $project);
+                    }
 
                     $_SESSION['freeow']['title']   = 'Remboursement prêteur';
                     $_SESSION['freeow']['message'] = "Le remboursement a été bien pris en compte !";

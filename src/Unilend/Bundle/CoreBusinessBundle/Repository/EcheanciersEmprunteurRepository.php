@@ -87,12 +87,12 @@ class EcheanciersEmprunteurRepository extends EntityRepository
         $queryBuilder->select('count(ee)')
             ->where('ee.idProject = :project')
             ->andWhere('ee.statusEmprunteur in (:unfinished)')
-            ->andWhere('DATE(ee.dateEcheanceEmprunteur) <= :today')
+            ->andWhere('DATE(ee.dateEcheanceEmprunteur) < :today')
             ->setParameter('project', $project)
             ->setParameter('today', (new \DateTime())->format('Y-m-d'))
             ->setParameter('unfinished', [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]);
 
-        return $queryBuilder->getQuery()->getSingleScalarResult();
+        return (int) $queryBuilder->getQuery()->getSingleScalarResult();
     }
 
     /**
