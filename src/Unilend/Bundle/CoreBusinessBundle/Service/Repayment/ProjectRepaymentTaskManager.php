@@ -79,7 +79,7 @@ class ProjectRepaymentTaskManager
             throw new \Exception('The repayment amount of project (id: ' . $project->getIdProject() . ') sequence ' . $repaymentSchedule->getOrdre() . ' is 0. Please check the data consistency.');
         }
 
-        if (null === $repayOn) {
+        if (null === $repayOn || $repayOn < $repaymentSchedule->getDateEcheance()) {
             $repayOn = $repaymentSchedule->getDateEcheance();
         }
 
