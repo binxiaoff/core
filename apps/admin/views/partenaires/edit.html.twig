@@ -114,7 +114,7 @@
                         $modal.find('.messages').html('<div class="alert"><p>Le document est déjà dans la liste.</p></div>')
                         return false
                     }
-                    var item = '<li class="dd-item dd-item-document dd-item-new closable" data-id="' + id + '">' +
+                    var item = '<li class="dd-item dd-item-document dd-item-new closable" data-id="' + id + '" data-mandatory="' + ($mandatory.val() === 'true' ? 1 : 0) + '">' +
                             '<div class="dd-handle">' + label + ' ' + mandatory + '</div>' +
                             '<a role="button" class="closable-icon">' +
                             '<span class="fa fa-close"></span>' +
@@ -207,11 +207,12 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <select name="document" class="form-control required">
+                                    <label for="document-type">Type</label>
+                                    <select id="document-type" name="document" class="form-control required">
                                         <option value="0">Sélectionner</option>
-                                        {% for type in documentTypes %}
-                                            <option value="{{ type.id }}">
-                                                {{ type.label }}
+                                        {% for documentType in documentTypes %}
+                                            <option value="{{ documentType.id }}">
+                                                {{ documentType.label }}
                                             </option>
                                         {% endfor %}
                                     </select>
@@ -219,12 +220,15 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="css-input css-radio css-radio-default push-10-r">
-                                        <input type="radio" name="mandatory" value="true" class="form-control required"><span></span> Oui
-                                    </label>
-                                    <label class="css-input css-radio css-radio-default">
-                                        <input type="radio" name="mandatory" value="false" class="form-control required"><span></span> Non
-                                    </label>
+                                    <label class="col-xs-12">Obligatoire</label>
+                                    <div class="col-xs-12">
+                                        <label class="css-input css-radio css-radio-default push-10-r">
+                                            <input type="radio" name="mandatory" value="true" class="form-control required"><span></span> Oui
+                                        </label>
+                                        <label class="css-input css-radio css-radio-default">
+                                            <input type="radio" name="mandatory" value="false" class="form-control required"><span></span> Non
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -302,28 +306,16 @@
 {% endblock %}
 
 {% set formErrors = {
-    settings: ['Error 1', 'Error 2'],
-    products:  ['Error 1', 'Error 2'],
-    documents:  ['Error 1', 'Error 2']
+    products:  ['Error 1', 'Error 2']
 } %}
 
 {% set formSuccess = {
-    settings: ['Success message'],
-    products:  ['Success message'],
-    documents:  ['Error 1', 'Error 2']
+    products:  ['Success message']
 } %}
 
 {% set products = [
     {id: 1, label: 'Product 1', rateFunds: '4.00', rateRepayment: '1.00'},
     {id: 2, label: 'Product 2', rateFunds: '5.00', rateRepayment: '1.00'}
-] %}
-
-{% set documentTypes = [
-    { id: 1, label: 'CNI' }, { id: 2, label: 'Passport' }, { id: 3, label: 'RIB' } ]
-%}
-
-{% set documents = [
-    { id: 1, label: 'CNI', mandatory: 'true' }
 ] %}
 
 {% block pageHeader %}
@@ -448,7 +440,7 @@
                     </div>
 
                     <div class="block-content block-content-full">
-                        <form action="/partnerEdit/documents/" method="post" class="tree-js">
+                        <form action="{{ app.adminUrl }}/partenaires/documents/{{ partner.id }}" method="post" class="tree-js">
                             {%  if formErrors.documents is defined and formErrors.documents is not empty %}
                                 <div class="alert alert-error">
                                     {% for error in formErrors.documents %}
@@ -468,8 +460,11 @@
                                 <div class="dd">
                                     <ol class="dd-list">
                                         {% for document in documents %}
-                                            <li class="dd-item dd-item-document closable" data-id="{{ document.id }}">
-                                                <div class="dd-handle">{{ document.label }}{% if document.mandatory %} <small class="text-primary pull-right">* champ obligatoire</small>{% endif %}</div>
+                                            <li class="dd-item dd-item-document closable" data-id="{{ document.attachmentType.id }}" data-mandatory="{% if document.mandatory %}1{% else %}0{% endif %}">
+                                                <div class="dd-handle">
+                                                    {{ document.attachmentType.label }}
+                                                    {% if document.mandatory %}<small class="text-primary pull-right">* champ obligatoire</small>{% endif %}
+                                                </div>
                                                 <a role="button" class="closable-icon"><span class="fa fa-close"></span></a>
                                             </li>
                                         {% endfor %}

@@ -5,6 +5,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyClient;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProjectAttachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PartnerThirdParty;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
@@ -60,12 +61,14 @@ class partenairesController extends bootstrap
         $documentsTranslation        = $documentsTranslationLabel === $translator->trans($documentsTranslationLabel) ? '' : $translator->trans($documentsTranslationLabel);
 
         $this->render(null, [
-            'formSuccess'  => $success,
-            'formErrors'   => $errors,
-            'partner'      => $partner,
-            'agencies'     => $agencies,
-            'users'        => $users,
-            'instructions' => [
+            'formSuccess'   => $success,
+            'formErrors'    => $errors,
+            'partner'       => $partner,
+            'agencies'      => $agencies,
+            'users'         => $users,
+            'documentTypes' => $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->findBy([], ['label' => 'ASC']),
+            'documents'     => $partner->getAttachmentTypes(),
+            'instructions'  => [
                 'description' => $descriptionTranslation,
                 'documents'   => $documentsTranslation
             ]
@@ -478,6 +481,74 @@ class partenairesController extends bootstrap
         $_SESSION['forms']['partner']['success']['instructions'] = ['Instructions modifiées avec succès'];
 
         header('Location: ' . $this->lurl . '/partenaires/edit/' . $partner->getId() . '#instructions');
+        return;
+    }
+
+    public function _documents()
+    {
+        /** @var Doctrine\ORM\EntityManager $entityManager = */
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
+
+        if (
+            false === $this->request->isMethod(Request::METHOD_POST)
+            || empty($this->params[0])
+            || false === filter_var($this->params[0], FILTER_VALIDATE_INT)
+            || null === ($partner = $partnerRepository->find($this->params[0]))
+        ) {
+            header('Location: ' . $this->lurl . '/partenaires');
+            return;
+        }
+
+        $newDocuments = json_decode($this->request->request->get('new_order'), true);
+
+        if (null === $newDocuments) {
+            $_SESSION['forms']['partner']['errors']['documents'] = ['Impossible de récupérer la liste des pièces'];
+        }
+
+        $newOrder                           = array_column($newDocuments, 'id');
+        $attachmentTypeRepository           = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
+        $partnerProjectAttachmentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProjectAttachment');
+        $currentDocuments                   = $partnerProjectAttachmentRepository->findBy(['idPartner' => $partner], ['rank' => 'ASC']);
+
+        foreach ($currentDocuments as $currentDocument) {
+            $index = array_search($currentDocument->getAttachmentType()->getId(), $newOrder);
+
+            if (false === $index) {
+                $entityManager->remove($currentDocument);
+                continue;
+            }
+
+            $newRank   = $index + 1;
+            $mandatory = (bool) $newDocuments[$index]['mandatory'];
+
+            if ($newRank !== $currentDocument->getRank()) {
+                $currentDocument->setRank($newRank);
+            }
+
+            if ($mandatory !== $currentDocument->getMandatory()) {
+                $currentDocument->setMandatory($mandatory);
+            }
+
+            unset($newDocuments[$index]);
+        }
+
+        // Documents previously available have been unset
+        foreach ($newDocuments as $index => $newDocument) {
+            $document = new PartnerProjectAttachment();
+            $document->setPartner($partner);
+            $document->setAttachmentType($attachmentTypeRepository->find($newDocument['id']));
+            $document->setMandatory((bool) $newDocument['mandatory']);
+            $document->setRank($index + 1);
+
+            $entityManager->persist($document);
+        }
+
+        $entityManager->flush();
+
+        $_SESSION['forms']['partner']['success']['documents'] = ['Liste des pièces à fournir modifiée avec succès'];
+
+        header('Location: ' . $this->lurl . '/partenaires/edit/' . $partner->getId() . '#documents');
         return;
     }
 

@@ -23,7 +23,7 @@ class Partner
     const PARTNER_U_CAR_LABEL    = 'u_car';
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies
+     * @var Companies
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Companies")
      * @ORM\JoinColumns({
@@ -61,7 +61,7 @@ class Partner
     private $status;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users
+     * @var Users
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
      * @ORM\JoinColumns({
@@ -94,7 +94,7 @@ class Partner
     private $id;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\PartnerType
+     * @var PartnerType
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\PartnerType")
      * @ORM\JoinColumns({
@@ -107,6 +107,7 @@ class Partner
      * @var PartnerProjectAttachment[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProjectAttachment", mappedBy="idPartner")
+     * @ORM\OrderBy({"rank" = "ASC"})
      */
     private $attachmentTypes;
 
@@ -129,11 +130,11 @@ class Partner
     /**
      * Set idCompany
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Companies $idCompany
+     * @param Companies $idCompany
      *
      * @return Partner
      */
-    public function setIdCompany(\Unilend\Bundle\CoreBusinessBundle\Entity\Companies $idCompany)
+    public function setIdCompany(Companies $idCompany)
     {
         $this->idCompany = $idCompany;
 
@@ -143,7 +144,7 @@ class Partner
     /**
      * Get idUserCreation
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Companies
+     * @return Companies
      */
     public function getIdCompany()
     {
@@ -249,11 +250,11 @@ class Partner
     /**
      * Set idUserCreation
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Users $idUserCreation
+     * @param Users $idUserCreation
      *
      * @return Partner
      */
-    public function setIdUserCreation(\Unilend\Bundle\CoreBusinessBundle\Entity\Users $idUserCreation)
+    public function setIdUserCreation(Users $idUserCreation)
     {
         $this->idUserCreation = $idUserCreation;
 
@@ -263,7 +264,7 @@ class Partner
     /**
      * Get idUserCreation
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Users
+     * @return Users
      */
     public function getIdUserCreation()
     {
@@ -331,11 +332,11 @@ class Partner
     /**
      * Set type
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\PartnerType $type
+     * @param PartnerType $type
      *
      * @return Partner
      */
-    public function setType(\Unilend\Bundle\CoreBusinessBundle\Entity\PartnerType $type = null)
+    public function setType(PartnerType $type = null)
     {
         $this->type = $type;
 
@@ -345,7 +346,7 @@ class Partner
     /**
      * Get type
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\PartnerType
+     * @return PartnerType
      */
     public function getType()
     {
