@@ -3,18 +3,18 @@
 namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 
 use Psr\Log\InvalidArgumentException;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProduct;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
@@ -67,6 +67,7 @@ class ProjectRequestController extends Controller
         $translator     = $this->get('translator');
         $projectManager = $this->get('unilend.service.project_manager');
         $entityManager  = $this->get('doctrine.orm.entity_manager');
+        $companyManager = $this->get('unilend.service.company_manager');
 
         $amount   = null;
         $motive   = null;
@@ -173,6 +174,18 @@ class ProjectRequestController extends Controller
             $entityManager->flush($company);
 
             $this->get('unilend.service.wallet_creation_manager')->createWallet($client, WalletType::BORROWER);
+
+            /** @var CompanyStatus $statusInBonis */
+            $statusInBonis = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
+                ->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
+            /** @var Users $user */
+            $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
+
+            $companyManager->addCompanyStatus(
+                $company,
+                $statusInBonis,
+                $user
+            );
 
             $entityManager->commit();
         } catch (\Exception $exception) {
