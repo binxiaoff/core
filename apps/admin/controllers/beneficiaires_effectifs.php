@@ -265,6 +265,7 @@ class beneficiaires_effectifsController extends bootstrap
             }
         }
 
+        $clientAttachment = null;
         if (false === empty($clientId)) {
             $owner = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
             if (null === $owner) {
@@ -283,12 +284,28 @@ class beneficiaires_effectifsController extends bootstrap
                 $errors[] = 'Le pays de naissance du client enregistré en base et le pays de naissance saisi ne correspondent pas';
             }
 
+            if (null === $request->files->all()) {
+                $attachmentName = $request->request->filter('id_card_passport', FILTER_SANITIZE_STRING);
+                if (null !== $attachmentName) {
+                    $clientAttachment = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($owner, AttachmentType::CNI_PASSPORTE);
+                    if ($clientAttachment->getOriginalName() !== $clientAttachment) {
+                        $errors[] = 'Le nom de la pièce d\'identité transmis et le nom du document enregistré en base pour ce client ne correspondent pas.';
+                    }
+                } else {
+                    $errors[] = 'Un pièce d\'identité doit être téléchargé.';
+                }
+            }
+
             if (false === empty($errors)) {
                 return [
                     'owner'  => null,
                     'errors' => $errors
                 ];
             }
+        }
+
+        if (null === $clientAttachment) {
+            $clientAttachment = $request->files->get('id_card_passport');
         }
 
         try {
@@ -300,7 +317,7 @@ class beneficiaires_effectifsController extends bootstrap
                 $birthPlace,
                 $birthCountryId,
                 $countryOfResidence,
-                $request->files->get('id_card_passport'),
+                $clientAttachment,
                 $ownerType,
                 $percentage,
                 $clientId

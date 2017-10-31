@@ -8,6 +8,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\RouterInterface;
 use Twig_Environment;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BeneficialOwner;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BeneficialOwnerType;
@@ -28,8 +29,6 @@ class BeneficialOwnerManager
     const MAX_NUMBER_BENEFICIAL_OWNERS_TYPE_LEGAL_MANAGER = 1;
 
     const BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES = [1100, 1200, 1300, 1500, 1600, 1700, 1900];
-
-    const VALIDATION_TYPE_UNIVERSIGN   = 'Universign';
 
     /** @var EntityManager */
     private $entityManager;
@@ -249,7 +248,7 @@ class BeneficialOwnerManager
      * @param string                            $birthPlace
      * @param int                               $idBirthCountry
      * @param int                               $countryOfResidence
-     * @param UploadedFile                      $passport
+     * @param UploadedFile|Attachment           $passport
      * @param BeneficialOwnerType|null          $type
      * @param string|null                       $percentage
      * @param int|null                          $idClient
@@ -266,7 +265,7 @@ class BeneficialOwnerManager
         $birthPlace,
         $idBirthCountry,
         $countryOfResidence,
-        UploadedFile $passport,
+        $passport,
         BeneficialOwnerType $type = null,
         $percentage = null,
         $idClient = null
@@ -335,14 +334,7 @@ class BeneficialOwnerManager
         $this->entityManager->flush([$declaration, $owner, $ownerAddress, $beneficialOwner]);
 
         $attachmentType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::CNI_PASSPORTE);
-        if (false === is_file($passport)) {
-            $existingFile = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($owner, $attachmentType);
-            if (null === $existingFile || $existingFile->getOriginalName() == $passport) {
-                throw new \Exception('Beneficial owner passport/id could not be uploaded as it is no file');
-            }
-        }
-
-        if ($attachmentType) {
+        if ($passport instanceof UploadedFile && $attachmentType) {
             $this->attachmentManager->upload($owner, $attachmentType, $passport);
         }
 
