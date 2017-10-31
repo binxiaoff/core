@@ -30,7 +30,7 @@ class ProductRepository extends EntityRepository
 
         $queryBuilder = $this->createQueryBuilder('p');
 
-        if (null === $client) {
+        if (null === $client || empty($client->getType())) {
             $queryBuilder
                 ->where($queryBuilder->expr()->notIn('p.idProduct', $subQueryBuilder->getDQL()));
         } else {
