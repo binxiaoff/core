@@ -62,9 +62,11 @@
             <div class="list">
                 <ul>
                     <li><?= $this->lng['pdf-pouvoir']['adresse'] ?></li>
-                    <li>
-                        <h5>pour signer en mon nom et pour mon compte l'intégralité des bons de caisse et contrats de prêt récapitulés ci-après et correspondant au total du financement recueilli sur Unilend.fr dont les caractéristiques sont les suivantes&nbsp;:</h5>
-                    </li>
+                </ul>
+            </div>
+            <h5>pour signer en mon nom et pour mon compte l'intégralité des bons de caisse et contrats de prêt récapitulés ci-après et correspondant au total du financement recueilli sur Unilend.fr dont les caractéristiques sont les suivantes&nbsp;:</h5>
+            <div class="list">
+                <ul>
                     <li>
                         <div class="col-long">Montant total</div>
                         <div class="col-small"><?= $this->ficelle->formatNumber($this->montantPrete, 0) ?> &euro;</div>
@@ -84,7 +86,7 @@
                     <?php endif; ?>
                     <?php if ($this->nbLoansIFP > 0) : ?>
                         <li>
-                            <div class="col-long">Nombre de contrat de prêt</div>
+                            <div class="col-long">Nombre de contrats de prêt</div>
                             <div class="col-small"><?= $this->nbLoansIFP ?></div>
                             <div class="cl">&nbsp;</div>
                         </li>
@@ -110,11 +112,9 @@
                     </li>
                 </ul>
             </div>
+            <h5>Les bons de caisse émis sont nominatifs. Le Bon de caisse est cessible à la condition pour le cessionnaire d’avoir préalablement ouvert un compte Unilend prêteur.</h5>
             <div class="list">
                 <ul>
-                    <li>
-                        <h5>Les bons de caisse émis sont nominatifs. Le Bon de caisse est cessible à la condition pour le cessionnaire d’avoir préalablement ouvert un compte Unilend prêteur.</h5>
-                    </li>
                     <li>Le Bénéficiaire certifie avoir inscrit la liste de prêteurs telle que récapitulée ci-dessous dans le Registre des Bons de caisse</li>
                     <li>La signature des bons de caisse et contrats de prêt par Unilend engage l'Emetteur, en contrepartie des sommes remises ce jour</li>
                     <li>
