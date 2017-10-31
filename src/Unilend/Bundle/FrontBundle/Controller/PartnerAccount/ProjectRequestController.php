@@ -181,11 +181,7 @@ class ProjectRequestController extends Controller
             /** @var Users $user */
             $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
 
-            $companyManager->addCompanyStatus(
-                $company,
-                $statusInBonis,
-                $user
-            );
+            $companyManager->addCompanyStatus($company, $statusInBonis, $user);
 
             $entityManager->commit();
         } catch (\Exception $exception) {
