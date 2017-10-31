@@ -770,15 +770,15 @@ class LenderProfileController extends Controller
      */
     public function lenderCompletenessAction()
     {
-        $entityManager     = $this->get('unilend.service.entity_manager');
-        $attachmentManager = $this->get('unilend.service.attachment_manager');
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        $attachmentManager      = $this->get('unilend.service.attachment_manager');
 
         /** @var \clients $client */
         $client = $this->getClient();
         /** @var \clients_status_history $clientStatusHistory */
-        $clientStatusHistory = $entityManager->getRepository('clients_status_history');
+        $clientStatusHistory = $entityManagerSimulator->getRepository('clients_status_history');
 
-        $completenessRequestContent  = $clientStatusHistory->getCompletnessRequestContent($client);
+        $completenessRequestContent  = $clientStatusHistory->getCompletenessRequestContent($client);
         $template['attachmentTypes'] = $attachmentManager->getAllTypesForLender();
         $template['attachmentsList'] = '';
 

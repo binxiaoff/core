@@ -8,6 +8,7 @@ use PhpXmlRpc\Request as soapRequest;
 use PhpXmlRpc\Value as documentId;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
@@ -1273,6 +1274,25 @@ class ProjectManager
     {
         $project->interest_rate = $project->getAverageInterestRate(false);
         $project->update();
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @return bool
+     */
+    public function isHealthy(Projects $project)
+    {
+        if (
+            null === $project->getCloseOutNettingDate()
+            && 0 === count($project->getDebtCollectionMissions())
+            && CompanyStatus::STATUS_IN_BONIS === $project->getIdCompany()->getIdStatus()->getLabel()
+            && 0 === $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getOverdueScheduleCount($project)
+        ) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

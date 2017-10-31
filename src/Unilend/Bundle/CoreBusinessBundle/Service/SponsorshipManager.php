@@ -102,6 +102,7 @@ class SponsorshipManager
     {
         $today = new \DateTime('NOW');
         $today->setTime(0, 0, 0);
+        $start->setTime(0, 0, 0);
 
         $this->entityManager->getConnection()->beginTransaction();
         try {
@@ -115,10 +116,10 @@ class SponsorshipManager
                     ->setEnd($today);
                 $this->entityManager->flush($campaign);
 
-                $start = $today->getTimestamp() < $start->getTimestamp() ? $today : $start;
+                $start = $today > $start ? $today : $start;
             }
 
-            if ($today->getTimestamp() > $start->getTimestamp()) {
+            if ($today > $start) {
                 throw new \Exception('Campaign start can not be in the past', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
             }
 

@@ -7,7 +7,6 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
@@ -255,8 +254,8 @@ class ProjectStatusManager
         $mailType = 'emprunteur-projet-statut-recouvrement';
         /** @var \echeanciers $lenderRepaymentSchedule */
         $lenderRepaymentSchedule              = $this->entityManagerSimulator->getRepository('echeanciers');
-        $replacements['mensualites_impayees'] = $this->numberFormatter->format($lenderRepaymentSchedule->getUnpaidAmountAtDate($project->getIdProject(), new \DateTime()), 2);
-        $replacements['CRD']                  = $this->numberFormatter->format($lenderRepaymentSchedule->getOwedCapital(['id_project' => $project->getIdProject()]), 2);
+        $replacements['mensualites_impayees'] = $this->numberFormatter->format($lenderRepaymentSchedule->getUnpaidAmountAtDate($project->getIdProject(), new \DateTime()));
+        $replacements['CRD']                  = $this->numberFormatter->format($lenderRepaymentSchedule->getOwedCapital(['id_project' => $project->getIdProject()]));
 
         $this->sendBorrowerEmail($project, $mailType, $replacements);
     }
@@ -309,7 +308,7 @@ class ProjectStatusManager
         }
         /** @var \echeanciers $lenderRepaymentSchedule */
         $lenderRepaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
-        $replacements['CRD']     = $this->numberFormatter->format($lenderRepaymentSchedule->getOwedCapital(['id_project' => $project->getIdProject()]), 2);
+        $replacements['CRD']     = $this->numberFormatter->format($lenderRepaymentSchedule->getOwedCapital(['id_project' => $project->getIdProject()]));
 
         $this->sendBorrowerEmail($project, $mailType, $replacements);
     }
@@ -360,7 +359,7 @@ class ProjectStatusManager
                 'prenom_e'             => $clientOwner->getPrenom(),
                 'entreprise'           => $company->getName(),
                 'montant_emprunt'      => $this->numberFormatter->format($project->getAmount()),
-                'mensualite_e'         => $this->numberFormatter->format(round(bcdiv($paymentScheduleAmount, 100, 4), 2), 2),
+                'mensualite_e'         => $this->numberFormatter->format(round(bcdiv($paymentScheduleAmount, 100, 4), 2)),
                 'num_dossier'          => $project->getIdProject(),
                 'nb_preteurs'          => $loans->getNbPreteurs($project->getIdProject()),
                 'date_financement'     => htmlentities(strftime('%B %G', $iFundingTime), null, 'UTF-8'),

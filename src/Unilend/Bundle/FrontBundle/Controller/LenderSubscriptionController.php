@@ -508,8 +508,6 @@ class LenderSubscriptionController extends Controller
 
 
     /**
-     * @param Clients         $client
-     * @param BankAccount     $bankAccount
      * @param ClientsAdresses $clientAddress
      * @param FormInterface   $form
      * @param FileBag         $fileBag

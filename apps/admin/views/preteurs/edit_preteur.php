@@ -1,6 +1,8 @@
 <?php
+
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+
 ?>
 <script type="text/javascript">
     $(function() {
@@ -665,7 +667,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                                 case \clients_status::VALIDATED: ?>
                                     <tr>
                                         <td>
-                                            <?php if (empty($historyEntry['content'])) : ?>
+                                            <?php if ($this->users->id_user > 0) : ?>
                                                 Compte validé le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br />par <?= $this->users->name ?></td>
                                             <?php else : ?>
                                                 <?= $historyEntry['content'] . ' le ' . date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?>
