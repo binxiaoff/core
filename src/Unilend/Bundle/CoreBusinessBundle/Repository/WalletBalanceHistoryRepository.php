@@ -176,18 +176,34 @@ class WalletBalanceHistoryRepository extends EntityRepository
     {
         $qb = $this->getClientWalletOperationsQuery($idWallet, $startDate, $endDate);
         $qb->addSelect('
+                CASE 
+                    WHEN(o.idWalletDebtor = wbh.idWallet)  
+                    THEN -SUM(o.amount) 
+                    ELSE SUM(o.amount)
+                END AS amount,
                 IDENTITY(o.idPaymentSchedule) AS idPaymentSchedule, 
                 -ROUND((f.montantHt/100), 2) AS netCommission,
                 -ROUND((f.tva/100), 2) AS vat,
                 e.ordre,
                 IDENTITY(r.rejectionIsoCode) AS rejectionIsoCode,
-                srr.label as rejectionReasonLabel'
+                srr.label as rejectionReasonLabel,
+                CASE WHEN ot.label in (:repaymentTypes) THEN prt.id WHEN ot.label = :loan THEN CONCAT(\'loan_\', IDENTITY(o.idProject)) ELSE o.id END AS HIDDEN forGroupBy
+                '
         )
             ->leftJoin('UnilendCoreBusinessBundle:Receptions', 'r', Join::WITH, 'o.idWireTransferIn = r.idReception')
             ->leftJoin('UnilendCoreBusinessBundle:SepaRejectionReason', 'srr', Join::WITH, 'r.rejectionIsoCode = srr.isoCode')
             ->leftJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'o.idPaymentSchedule = ee.idEcheancierEmprunteur')
             ->leftJoin('UnilendCoreBusinessBundle:Factures', 'f', Join::WITH, 'ee.ordre = f.ordre AND ee.idProject = f.idProject')
-            ->leftJoin('UnilendCoreBusinessBundle:Echeanciers', 'e', Join::WITH, 'o.idRepaymentSchedule = e.idEcheancier');
+            ->leftJoin('UnilendCoreBusinessBundle:Echeanciers', 'e', Join::WITH, 'o.idRepaymentSchedule = e.idEcheancier')
+            ->leftJoin('UnilendCoreBusinessBundle:ProjectRepaymentTask', 'prt', Join::WITH, 'prt.idProject = e.idProject AND prt.sequence = e.ordre')
+            ->addGroupBy('forGroupBy')
+            ->setParameter('repaymentTypes', [
+                OperationType::CAPITAL_REPAYMENT,
+                OperationType::CAPITAL_REPAYMENT_REGULARIZATION,
+                OperationType::GROSS_INTEREST_REPAYMENT,
+                OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION
+            ])
+            ->setParameter('loan', OperationType::LENDER_LOAN);
 
         if (false === empty($idProjects)) {
             $qb->andWhere('o.idProject IN (:idProjects)')
@@ -211,6 +227,20 @@ class WalletBalanceHistoryRepository extends EntityRepository
     public function getDebtCollectorWalletOperations($idWallet, \DateTime $startDate, \DateTime $endDate)
     {
         $queryBuilder = $this->getClientWalletOperationsQuery($idWallet, $startDate, $endDate);
+        $queryBuilder->addSelect('
+            CASE 
+                WHEN(o.idWalletDebtor = wbh.idWallet)  
+                THEN -SUM(o.amount) 
+                ELSE SUM(o.amount)
+            END AS amount,
+            CASE WHEN ot.label in (:feePayment) THEN CONCAT(ot.label, IDENTITY(o.idWireTransferIn)) ELSE o.id END AS HIDDEN forGroupBy
+            ')
+            ->addGroupBy('forGroupBy')
+            ->setParameter('feePayment', [
+                OperationType::COLLECTION_COMMISSION_LENDER,
+                OperationType::COLLECTION_COMMISSION_BORROWER,
+                OperationType::COLLECTION_COMMISSION_UNILEND,
+            ]);
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -231,11 +261,6 @@ class WalletBalanceHistoryRepository extends EntityRepository
             ->select('
                 o.id,
                 CASE 
-                    WHEN(o.idWalletDebtor = wbh.idWallet)  
-                    THEN -SUM(o.amount) 
-                    ELSE SUM(o.amount)
-                END AS amount, 
-                CASE 
                     WHEN o.idSubType IS NULL
                     THEN ot.label
                     ELSE ost.label
@@ -251,10 +276,6 @@ class WalletBalanceHistoryRepository extends EntityRepository
             ->setParameter('idWallet', $idWallet)
             ->setParameter('startDate', $startDate->format('Y-m-d H:i:s'))
             ->setParameter('endDate', $endDate->format('Y-m-d H:i:s'))
-            ->groupBy('o.idProject')
-            ->addGroupBy('o.idType')
-            ->addGroupBy('date')
-            ->addGroupBy('o.idWireTransferIn')
             ->orderBy('wbh.id', 'DESC');
 
         return $queryBuilder;

@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\Translator;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
@@ -58,25 +59,14 @@ class BorrowerOperationsManager
         $operationRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $walletHistory                  = $walletBalanceHistoryRepository->getBorrowerWalletOperations($wallet, $start, $end, $projectsIds);
         $borrowerOperations             = [];
-        $lenderRepayment                = [];
         $recoveryCommissionKeys         = array_keys(array_column($walletHistory, 'label'), OperationType::COLLECTION_COMMISSION_PROVISION);
 
         foreach ($walletHistory as $index => $operation) {
-            if (
-                in_array($operation['label'], [OperationType::CAPITAL_REPAYMENT, OperationType::GROSS_INTEREST_REPAYMENT])
-                && null !== $operation['ordre']
-            ) {
-                if (false === empty($lenderRepayment[$operation['idProject']][$operation['ordre']]['amount'])) {
-                    $operation['label']  = self::OP_LENDER_MONTHLY_REPAYMENT;
-                    $operation['amount'] = bcadd($lenderRepayment[$operation['idProject']][$operation['ordre']]['amount'], $operation['amount'], 2);
-                    $operationEntity     = $operationRepository->find($operation['id']);
-                    if (Echeanciers::IS_EARLY_REPAID === $operationEntity->getRepaymentSchedule()->getStatusRa()) {
-                        $operation['label'] = self::OP_LENDER_EARLY_REPAYMENT;
-                    }
-                } else {
-                    $lenderRepayment[$operation['idProject']][$operation['ordre']]['amount'] = $operation['amount'];
-                    continue;
-                }
+            if (in_array($operation['label'], [OperationType::CAPITAL_REPAYMENT, OperationType::GROSS_INTEREST_REPAYMENT])) {
+                $operation['label'] = self::OP_LENDER_MONTHLY_REPAYMENT;
+            }
+            if (OperationSubType::CAPITAL_REPAYMENT_EARLY === $operation['label']) {
+                $operation['label'] = self::OP_LENDER_EARLY_REPAYMENT;
             }
 
             if (OperationType::BORROWER_PROVISION === $operation['label']) {
