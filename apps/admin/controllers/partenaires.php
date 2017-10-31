@@ -5,8 +5,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyClient;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProduct;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProjectAttachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PartnerThirdParty;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
@@ -54,7 +56,23 @@ class partenairesController extends bootstrap
         $users    = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findBy(['idCompany' => $agencies]);
 
         /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
-        $translator                  = $this->get('translator');
+        $translator        = $this->get('translator');
+        $productRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Product');
+        $productTypes      = $productRepository->findBy(['status' => [Product::STATUS_OFFLINE, Product::STATUS_ONLINE]]);
+        foreach ($productTypes as $productType) {
+            $productType->setLabel($translator->trans('product_label_' . $productType->getLabel()));
+        }
+        usort($productTypes, function($first, $second) {
+            return strcmp($first->getLabel(), $second->getLabel());
+        });
+
+        $products = $partner->getProducts();
+        $iterator = $products->getIterator();
+        $iterator->uasort(function ($first, $second) {
+            return strcmp($first->getIdProduct()->getLabel(), $second->getIdProduct()->getLabel());
+        });
+        $products = new \Doctrine\Common\Collections\ArrayCollection(iterator_to_array($iterator));
+
         $descriptionTranslationLabel = 'partner-project-details_description-instructions-' . $partner->getLabel();
         $documentsTranslationLabel   = 'partner-project-details_documents-instructions-' . $partner->getLabel();
         $descriptionTranslation      = $descriptionTranslationLabel === $translator->trans($descriptionTranslationLabel) ? '' : $translator->trans($descriptionTranslationLabel);
@@ -68,6 +86,8 @@ class partenairesController extends bootstrap
             'users'         => $users,
             'documentTypes' => $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->findBy([], ['label' => 'ASC']),
             'documents'     => $partner->getAttachmentTypes(),
+            'productTypes'  => $productTypes,
+            'products'      => $products,
             'instructions'  => [
                 'description' => $descriptionTranslation,
                 'documents'   => $documentsTranslation
@@ -460,7 +480,10 @@ class partenairesController extends bootstrap
         $instructions = $this->request->request->get('instructions');
 
         if (false === is_array($instructions)) {
-            $_SESSION['forms']['partner']['errors']['instructions'] = ['Veuillez saisir les instructions de dépôt de dossier'];
+            $_SESSION['forms']['partner']['errors']['instructions'] = ['Veuillez saisir les instructions de dépôt de dossier.'];
+
+            header('Location: ' . $this->lurl . '/partenaires/edit/' . $partner->getId() . '#instructions');
+            return;
         }
 
         /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
@@ -478,7 +501,7 @@ class partenairesController extends bootstrap
 
         $translationManager->flush();
 
-        $_SESSION['forms']['partner']['success']['instructions'] = ['Instructions modifiées avec succès'];
+        $_SESSION['forms']['partner']['success']['instructions'] = ['Instructions modifiées avec succès.'];
 
         header('Location: ' . $this->lurl . '/partenaires/edit/' . $partner->getId() . '#instructions');
         return;
@@ -503,7 +526,10 @@ class partenairesController extends bootstrap
         $newDocuments = json_decode($this->request->request->get('new_order'), true);
 
         if (null === $newDocuments) {
-            $_SESSION['forms']['partner']['errors']['documents'] = ['Impossible de récupérer la liste des pièces'];
+            $_SESSION['forms']['partner']['errors']['documents'] = ['Impossible de récupérer la liste des pièces à fournir.'];
+
+            header('Location: ' . $this->lurl . '/partenaires/edit/' . $partner->getId() . '#documents');
+            return;
         }
 
         $newOrder                           = array_column($newDocuments, 'id');
@@ -546,9 +572,96 @@ class partenairesController extends bootstrap
 
         $entityManager->flush();
 
-        $_SESSION['forms']['partner']['success']['documents'] = ['Liste des pièces à fournir modifiée avec succès'];
+        $_SESSION['forms']['partner']['success']['documents'] = ['Liste des pièces à fournir modifiée avec succès.'];
 
         header('Location: ' . $this->lurl . '/partenaires/edit/' . $partner->getId() . '#documents');
+        return;
+    }
+
+    public function _produits()
+    {
+        /** @var Doctrine\ORM\EntityManager $entityManager = */
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
+
+        if (
+            false === $this->request->isMethod(Request::METHOD_POST)
+            || empty($this->params[0])
+            || false === filter_var($this->params[0], FILTER_VALIDATE_INT)
+            || null === ($partner = $partnerRepository->find($this->params[0]))
+        ) {
+            header('Location: ' . $this->lurl . '/partenaires');
+            return;
+        }
+
+        $productId         = $this->request->request->getInt('product');
+        $productRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Product');
+
+        if (empty($productId) || null === ($product = $productRepository->find($productId))) {
+            $_SESSION['forms']['partner']['errors']['products'] = ['Produit inconnu.'];
+
+            header('Location: ' . $this->lurl . '/partenaires/edit/' . $partner->getId() . '#products');
+            return;
+        }
+
+        $partnerProductRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct');
+        $partnerProducts          = $partnerProductRepository->findBy(['idPartner' => $partner]);
+
+        if (($action = $this->request->request->get('action')) && 'delete' === $action) {
+            foreach ($partnerProducts as $partnerProduct) {
+                if ($product === $partnerProduct->getIdProduct()) {
+                    $entityManager->remove($partnerProduct);
+                    $entityManager->flush($partnerProduct);
+
+                    $_SESSION['forms']['partner']['success']['products'] = ['Le produit a été supprimé avec succès.'];
+
+                    header('Location: ' . $this->lurl . '/partenaires/edit/' . $partner->getId() . '#products');
+                    return;
+                }
+            }
+
+            $_SESSION['forms']['partner']['errors']['products'] = ['Impossible de retirer le produit, il ne fait pas partie des produits associés au partenaire.'];
+
+            header('Location: ' . $this->lurl . '/partenaires/edit/' . $partner->getId() . '#products');
+            return;
+        } else {
+            foreach ($partnerProducts as $partnerProduct) {
+                if ($product === $partnerProduct->getIdProduct()) {
+                    $_SESSION['forms']['partner']['errors']['products'] = ['Le produit est déjà associé au partenaire. Vous devez d\'abord le supprimer avant de le rajouter pour modifier les taux de commmission.'];
+
+                    header('Location: ' . $this->lurl . '/partenaires/edit/' . $partner->getId() . '#products');
+                    return;
+                }
+            }
+
+            $fundsCommissionRate     = (float) str_replace(',', '.', $this->request->request->get('funds_commission_rate', -1));
+            $repaymentCommissionRate = (float) str_replace(',', '.', $this->request->request->get('repayment_commission_rate', -1));
+
+            if (
+                $fundsCommissionRate < 0
+                || $fundsCommissionRate > 100
+                || $repaymentCommissionRate < 0
+                || $repaymentCommissionRate > 100
+            ) {
+                $_SESSION['forms']['partner']['errors']['products'] = ['Les taux de commission doivent se situer entre 0 et 100&nbsp;%.'];
+
+                header('Location: ' . $this->lurl . '/partenaires/edit/' . $partner->getId() . '#products');
+                return;
+            }
+
+            $partnerProduct = new PartnerProduct();
+            $partnerProduct->setIdPartner($partner);
+            $partnerProduct->setIdProduct($product);
+            $partnerProduct->setCommissionRateFunds($fundsCommissionRate);
+            $partnerProduct->setCommissionRateRepayment($repaymentCommissionRate);
+
+            $entityManager->persist($partnerProduct);
+            $entityManager->flush($partnerProduct);
+
+            $_SESSION['forms']['partner']['success']['products'] = ['Le produit a été associé au partenaire avec succès.'];
+        }
+
+        header('Location: ' . $this->lurl . '/partenaires/edit/' . $partner->getId() . '#products');
         return;
     }
 
@@ -571,7 +684,7 @@ class partenairesController extends bootstrap
         $partner->setProspect('on' === $this->request->request->get('prospect'));
         $entityManager->flush($partner);
 
-        $_SESSION['forms']['partner']['success']['settings'] = ['Paramètres modifiés avec succès'];
+        $_SESSION['forms']['partner']['success']['settings'] = ['Paramètres modifiés avec succès.'];
 
         header('Location: ' . $this->lurl . '/partenaires/edit/' . $partner->getId() . '#settings');
         return;

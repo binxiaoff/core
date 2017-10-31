@@ -119,12 +119,20 @@ class Partner
     private $partnerThirdParties;
 
     /**
+     * @var PartnerProduct[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProduct", mappedBy="idPartner")
+     */
+    private $products;
+
+    /**
      * Projects constructor.
      */
     public function __construct()
     {
         $this->attachmentTypes     = new ArrayCollection();
         $this->partnerThirdParties = new ArrayCollection();
+        $this->products            = new ArrayCollection();
     }
 
     /**
@@ -376,8 +384,19 @@ class Partner
         return $this->attachmentTypes;
     }
 
+    /**
+     * @return ArrayCollection|PartnerThirdParty[]
+     */
     public function getPartnerThirdParties()
     {
         return $this->partnerThirdParties;
+    }
+
+    /**
+     * @return ArrayCollection|PartnerProduct[]
+     */
+    public function getProducts()
+    {
+        return $this->products;
     }
 }
