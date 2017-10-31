@@ -284,7 +284,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
                     $this->addBalanceLine($activeSheet, $balanceHistory, $specificRows['totalMonth'], $specificRows);
                     continue;
                 }
-                $balanceHistory = $detailedDailyStateBalanceRepository->findOneBy(['date' => $lastDayOfMonth->format('Y-m-d')]);
+                $balanceHistory = $detailedDailyStateBalanceRepository->findOneBy(['date' => $lastDayOfMonth]);
                 if (null === $balanceHistory) {
                     $balanceHistory = $this->newDailyStateBalanceHistory($lastDayOfMonth);
                 }
