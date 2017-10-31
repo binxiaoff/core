@@ -560,7 +560,6 @@ class CompanyValidator
         foreach ($incidentAnnouncements as $announcement) {
             if (
                 false === isset($executivePeriod[$announcement->getSiren()])
-                || false === in_array($announcement->getEventCode(), DirectorAnnouncement::PEJORATIVE_EVENT_CODE)
             ) {
                 continue;
             }
