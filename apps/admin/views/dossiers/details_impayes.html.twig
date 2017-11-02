@@ -131,11 +131,11 @@
                         </div>
                         <div class="form-group">
                             <label>Contenu de l'email</label>
-                            <textarea name="mail_content" class="form-control required" rows="4">{{ mailContentMessage }}</textarea>
+                            <textarea name="mail_content" class="form-control required" rows="4">{{ 'projet_mail-info-passage-statut-probleme'|trans }}</textarea>
                         </div>
                         <div class="form-group">
                             <label>Message d'information aux prêteurs (site)</label>
-                            <textarea name="site_content" class="form-control required" rows="4">{{ siteContentMessage }}</textarea>
+                            <textarea name="site_content" class="form-control required" rows="4">{{ 'projet_info-passage-statut-probleme'|trans }}</textarea>
                         </div>
                         <div class="form-group">
                             <label>Envoyer un email d'information aux emprunteurs</label> <br>
@@ -251,7 +251,7 @@
 {% if haseAccessRight %}
     {% block pageHeader %}
         <div class="pull-left">
-            <a href="/emprunteurs/projets_avec_retard" class="text-muted"><span class="fa fa-arrow-left"></span>&nbsp;Projets avec retard</a>
+            <a href="/dossiers/projets_avec_retard" class="text-muted"><span class="fa fa-arrow-left"></span>&nbsp;Projets avec retard</a>
         </div>
         <div class="pull-right">
             <small>SIREN : {{ projectData.siren }}</small>
