@@ -27,20 +27,6 @@
             }
         });
 
-        $('#enterprise1_etape2').click(function () {
-            if ($(this).prop('checked')) {
-                $('.statut_dirigeant_etape2').hide('slow');
-                $('.identification_prescripteur').hide('slow');
-            }
-        });
-
-        $('#enterprise3_etape2').click(function () {
-            if ($(this).prop('checked')) {
-                $('.statut_dirigeant_etape2').show('slow');
-                $('.identification_prescripteur').show('slow');
-            }
-        });
-
         // STREETVIEW
 
         // Avoid re-initialisation
@@ -310,19 +296,6 @@
                 <td><input type="text" name="phone_correspondance_etape2" id="phone_correspondance_etape2" class="input_moy" value="<?= $this->clients_adresses->telephone ?>"></td>
             </tr>
             <tr>
-                <th colspan="4" style="text-align:left;"><br>Vous êtes</th>
-            </tr>
-            <tr>
-                <td colspan="4" style="text-align:left;">
-                    <input<?= $this->bHasAdvisor ? '' : ' checked'?> type="radio" name="enterprise_etape2" id="enterprise1_etape2" value="1"><label for="enterprise1_etape2"> Je suis le dirigeant de l'entreprise </label>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="4" style="text-align:left;">
-                    <input<?= $this->bHasAdvisor ? ' checked' : '' ?> type="radio" name="enterprise_etape2" id="enterprise3_etape2" value="3"><label for="enterprise3_etape2"> Je suis un conseil externe de l'entreprise </label>
-                </td>
-            </tr>
-            <tr>
                 <th colspan="4" style="text-align:left;"><br><h2>Identification du dirigeant</h2></th>
             </tr>
             <tr>
@@ -352,43 +325,32 @@
                 <th><label for="date_naissance_gerant">Date de naissance</label></th>
                 <td><input type="text" name="date_naissance_gerant" id="date_naissance_gerant" class="input_dp" value="<?= empty($this->clients->naissance) || $this->clients->naissance === '0000-00-00' ? '' : $this->dates->formatDate($this->clients->naissance, 'd/m/Y') ?>"></td>
             </tr>
-            <tr<?= $this->bHasAdvisor ? '' : ' style="display:none;"' ?> class="statut_dirigeant_etape2">
-                <th colspan="4" style="text-align:left;"><br>Prescripteur</th>
-            </tr>
-            <tr<?= $this->bHasAdvisor ? '' : ' style="display:none;"' ?> class="identification_prescripteur">
-                <th>Civilité</th>
-                <td colspan="3" id="civilite_prescripteur"><?= $this->clients_prescripteurs->civilite ?></td>
-            </tr>
-            <tr<?= $this->bHasAdvisor ? '' : ' style="display:none;"' ?> class="identification_prescripteur">
-                <th>Nom</th>
-                <td id="nom_prescripteur"><?= $this->clients_prescripteurs->nom ?></td>
-                <th>Prénom</th>
-                <td id="prenom_prescripteur"><?= $this->clients_prescripteurs->prenom ?></td>
-            </tr>
-            <tr<?= $this->bHasAdvisor ? '' : ' style="display:none;"' ?> class="identification_prescripteur">
-                <th>Téléphone</th>
-                <td id="telephone_prescripteur"><?= $this->clients_prescripteurs->telephone ?></td>
-                <th>Email</th>
-                <td id="email_prescripteur"><?= $this->clients_prescripteurs->email ?></td>
-            </tr>
-            <tr<?= $this->bHasAdvisor ? '' : ' style="display:none;"' ?> class="identification_prescripteur">
-                <th>Raison sociale</th>
-                <td id="company_prescripteur"><?= $this->companies_prescripteurs->name ?></td>
-                <th>SIREN</th>
-                <td id="siren_prescripteur"><?= $this->companies_prescripteurs->siren ?></td>
-            </tr>
-            <tr<?= $this->bHasAdvisor ? '' : ' style="display:none;"' ?> class="statut_dirigeant_etape2">
-                <td colspan="4">
-                    <input class="input_large" name="search_prescripteur" id="search_prescripteur" placeholder="nom, prenom ou email du prescripteur" >
-                    <a id="btn_search_prescripteur" class="btn_link thickbox cboxElement" href="<?= $this->lurl ?>/prescripteurs/search_ajax/" onclick="$(this).attr('href', '<?= $this->lurl ?>/prescripteurs/search_ajax/<?= $this->projects->id_project ?>/' + $('#search_prescripteur').val());">Rechercher un prescripteur existant</a>
-                </td>
-            </tr>
-            <tr<?= $this->bHasAdvisor ? '' : ' style="display:none;"' ?> class="statut_dirigeant_etape2">
-                <td colspan="4">
-                    <input type="hidden" id="id_prescripteur" name="id_prescripteur" value="<?= $this->prescripteurs->id_prescripteur ?>">
-                    <a id="btn_add_prescripteur" class="btn_link thickbox cboxElement" href="<?= $this->lurl ?>/prescripteurs/add_client/<?= $this->projects->id_project ?>" target="_blank">Créer un prescripteur</a>
-                </td>
-            </tr>
+            <?php if ($this->bHasAdvisor) : ?>
+                <tr style="background-color: #ececec;">
+                    <td colspan="4"><h3>Prescripteur</h3></td>
+                </tr>
+                <tr style="background-color: #ececec; padding: 5px;">
+                    <th>Civilité</th>
+                    <td><?= $this->clients_prescripteurs->civilite ?></td>
+                    <th>Téléphone</th>
+                    <td><?= $this->clients_prescripteurs->telephone ?></td>
+                </tr>
+                <tr style="background-color: #ececec;">
+                    <th>Prénom</th>
+                    <td><?= $this->clients_prescripteurs->prenom ?></td>
+                    <th>Email</th>
+                    <td><?= $this->clients_prescripteurs->email ?></td>
+                </tr>
+                <tr style="background-color: #ececec;">
+                    <th>Nom</th>
+                    <td><?= $this->clients_prescripteurs->nom ?></td>
+                    <th>Raison sociale</th>
+                    <td><?= $this->companies_prescripteurs->name ?> <?= empty($this->companies_prescripteurs->siren) ? '' : '(' . $this->companies_prescripteurs->siren ?></td>
+                </tr>
+                <tr style="background-color: #ececec;">
+                    <td colspan="4" style="color: #c84747;">La notion de prescripteur est maintenant remplacée par celle de partenaire, il n'est plus possible de modifier ces informations.</td>
+                </tr>
+            <?php endif; ?>
 
             <?php // @TODO replace phone numbers
                 $submitter_phone = '+33 6 13 08 87 90';

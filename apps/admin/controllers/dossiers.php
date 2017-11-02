@@ -509,7 +509,7 @@ class dossiersController extends bootstrap
                         $publicationDate->format('Y-m-d H:i:s') !== $this->projects->date_publication
                         && ($publicationDate <= $publicationLimitationDate || $endOfPublicationDate <= $endOfPublicationLimitationDate)
                     ) {
-                        $_SESSION['public_dates_error'] = 'La date de publication du dossier doit être au minimum dans 5 minutes et la date de retrait dans plus d\'une heure';
+                        $_SESSION['public_dates_error'] = 'La date de publication du projet doit être au minimum dans 5 minutes et la date de retrait dans plus d\'une heure';
 
                         header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                         die;

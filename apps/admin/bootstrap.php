@@ -124,7 +124,7 @@ class bootstrap extends Controller
                     'uri'   => 'stats/requete_crs_dac'
                 ],
                 [
-                    'title' => 'Éligibilité des dossiers',
+                    'title' => 'Éligibilité des projets',
                     'uri'   => 'stats/projects_eligibility'
                 ],
                 [
@@ -197,7 +197,7 @@ class bootstrap extends Controller
                     'uri'   => 'prescripteurs/gestion'
                 ],
                 [
-                    'title' => 'Dossiers en funding',
+                    'title' => 'Projets en funding',
                     'uri'   => 'dossiers/funding '
                 ],
                 [
