@@ -48,7 +48,8 @@
     "beberlei/DoctrineExtensions": "^1.0",
     "jms/serializer-bundle": "^1.1",
     "eightpoints/guzzle-bundle": "^5.2",
-    "box/spout": "^2.7"
+    "box/spout": "^2.7",
+    "hashids/hashids": "^2.0"
   },
   "require-dev": {
     "sensio/generator-bundle": "^3.0"
