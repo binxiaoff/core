@@ -12,7 +12,6 @@
 
 {% block pageScripts %}
     <script>
-
         $(function() {
             App.initHelpers(['validation', 'datepicker', 'datatables']);
             var $table = $('#beneficial-owners table')
@@ -218,7 +217,7 @@
                     </thead>
                     <tbody>
                     {% for owner in beneficial_owners %}
-                        <tr data-id="{{ owner.id }}" data-state="{{ owner.status }}">
+                        <tr data-id="{{ owner.id }}">
                             <td>{{ owner.last_name }}</td>
                             <td>{{ owner.first_name }}</td>
                             <td>{{ owner.type }}</td>
