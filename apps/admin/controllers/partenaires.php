@@ -757,4 +757,94 @@ class partenairesController extends bootstrap
             $this->thirdPartyTypes = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerThirdPartyType')->findAll();
         }
     }
+
+    public function _agences()
+    {
+        if (
+            false === $this->request->isXmlHttpRequest()
+            || empty($this->request->request->getInt('partner'))
+        ) {
+            header('Location: ' . $this->lurl . '/partenaires');
+            return;
+        }
+
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        header('Content-Type: application/json');
+
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $partner       = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->request->request->getInt('partner'));
+
+        if (null === $partner) {
+            echo json_encode([
+                'success' => false,
+                'error'   => ['Partenaire inconnu']
+            ]);
+            return;
+        }
+
+        $agencies = [['id' => $partner->getIdCompany()->getIdCompany(), 'name' => 'Siège']];
+        foreach ($entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['idParentCompany' => $partner->getIdCompany()]) as $agency) {
+            $agencies[] = [
+                'id'   => $agency->getIdCompany(),
+                'name' => $agency->getName()
+            ];
+        }
+        usort($agencies, function($first, $second) {
+            return strcmp($first['name'], $second['name']);
+        });
+
+        echo json_encode([
+            'success' => true,
+            'error'   => [],
+            'data'    => $agencies
+        ]);
+    }
+
+    public function _utilisateurs()
+    {
+        if (
+            false === $this->request->isXmlHttpRequest()
+            || empty($this->request->request->getInt('agency'))
+        ) {
+            header('Location: ' . $this->lurl . '/partenaires');
+            return;
+        }
+
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        header('Content-Type: application/json');
+
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $agency        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->request->request->getInt('agency'));
+
+        if (null === $agency) {
+            echo json_encode([
+                'success' => false,
+                'error'   => ['Agence inconnue']
+            ]);
+            return;
+        }
+
+        $users = [];
+        foreach ($entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findBy(['idCompany' => $agency->getIdCompany()]) as $user) {
+            $users[] = [
+                'id'   => $user->getIdClient()->getIdClient(),
+                'name' => $user->getIdClient()->getPrenom() . ' ' . $user->getIdClient()->getNom()
+            ];
+        }
+        usort($users, function($first, $second) {
+            return strcmp($first['name'], $second['name']);
+        });
+
+        echo json_encode([
+            'success' => true,
+            'error'   => [],
+            'data'    => $users
+        ]);
+    }
 }

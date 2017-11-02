@@ -425,73 +425,38 @@ use \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
             }
         })
 
-        // Partner Agency & Submitter
-        /// @TODO this is fake data
-            var selectPartnerUrl = '/dossiers/edit/'
-            var selectAgencyUrl = '/dossiers/edit/'
-            var selectPartnerResponse = {
-                success: true,
-                error: ['Error 1', 'Error 2'],
-                data: [
-                    {name: 'Axa Paris', id: 10, children: [
-                        {name: 'Paris 16ème', id: 101, children: [
-                            {name: 'Victor Hugo', id: 1011}
-                        ]}
-                    ]},
-                    {name: 'Axa Marseille', id: 11, children: [
-                        {name: 'La Pleine', id: 111}
-                    ]}
-                ]
-            }
-            var selectAgencyResponse = {
-                success: true,
-                error: ['Error 1', 'Error 2'],
-                data: [
-                    {name: 'Pierre Dupont', id: 10},
-                    {name: 'Alain Dupont', id: 10},
-                    {name: 'Pascal Dupont', id: 10}
-                ]
-            }
-        /// END FAKE DATA
-
-        var level = 0
         var $partnerSelect = $('select#partner')
-        var $agencySelect = $('select#partner-agency')
-        var $submitterSelect = $('select#partner-submitter')
+        var $companySubmitterSelect = $('select#company-submitter-select')
+        var $clientSubmitterSelect = $('select#client-submitter-select')
+        var $companySubmitterRow = $('#company-submitter')
+        var $clientSubmitterRow = $('#client-submitter')
         var $partnerMessages = $('.project-partner .messages')
 
-        function recursivePartnerAgencies(data) {
-            var html = ''
-            for (var i in data) {
-                html += '<option value="' + data[i].id + '">' + new Array(level + 1).join('&nbsp;&nbsp;') +  data[i].name + '</option>'
-                if (typeof data[i].children !== 'undefined') {
-                    level ++
-                    html += recursivePartnerAgencies(data[i].children)
-                    level --
-                }
-            }
-            return html
-        }
         $partnerSelect.change(function() {
+            $companySubmitterRow.hide()
+            $clientSubmitterRow.hide()
+            $companySubmitterSelect.val('').html('<option value="0"></option>')
+            $clientSubmitterSelect.val('').html('<option value="0"></option>')
+
             var $select = $(this)
-            var name = $select.attr('name')
-            if ($select.val() == 1) // Unilend
+            if ($select.val() === '<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Partner::PARTNER_UNILEND_ID ?>') {
                 return false
-            $select.siblings('.select').each(function(){
-                if ($(this).is(':visible'))
-                    $(this).hide().val('').html('')
-            })
+            }
+
             $.ajax({
-                url: selectPartnerUrl,
+                url: '<?= $this->lurl ?>/partenaires/agences',
                 type: 'POST',
-                data: {name: $select.val()},
+                data: {partner: $select.val()},
                 dataType:'json',
-                complete: function(response) { /// @TODO change to success: function(response)
-                    var response = selectPartnerResponse
+                success: function(response) {
                     if (response.success) {
+                        var agencies = response.data
                         var options = '<option value="0"></option>'
-                        options += recursivePartnerAgencies(response.data)
-                        $agencySelect.html(options).removeClass('hide')
+                        for (var i in agencies) {
+                            options += '<option value="' + agencies[i].id + '">' + agencies[i].name + '</option>'
+                        }
+                        $companySubmitterRow.show()
+                        $companySubmitterSelect.html(options)
                     } else {
                         var html = ''
                         for (var i in response.error) {
@@ -502,29 +467,30 @@ use \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
                 }
             })
         })
-        $agencySelect.change(function() {
+
+        $companySubmitterSelect.change(function() {
+            $clientSubmitterRow.hide()
+            $clientSubmitterSelect.val('').html('<option value=""></option>')
+
             var $select = $(this)
-            var name = $select.attr('name')
-            if ($select.val() === 0)
+            if ($select.val() === '0') {
                 return false
-            if ($select.next().is('.select')) {
-                if ($select.next().is(':visible'))
-                    $select.next().hide().val('').html('')
             }
+
             $.ajax({
-                url: selectAgencyUrl,
+                url: '<?= $this->lurl ?>/partenaires/utilisateurs',
                 type: 'POST',
-                data: {name: $select.val()},
+                data: {agency: $select.val()},
                 dataType:'json',
-                complete: function(response) { /// @TODO change to success: function(response)
-                    var response = selectAgencyResponse
+                success: function(response) {
                     if (response.success) {
                         var users = response.data
                         var options = '<option value="0"></option>'
                         for (var i in users) {
                             options += '<option value="' + users[i].id + '">' + users[i].name + '</option>'
                         }
-                        $submitterSelect.html(options).show()
+                        $clientSubmitterRow.show()
+                        $clientSubmitterSelect.html(options)
                     } else {
                         var html = ''
                         for (var i in response.error) {
@@ -535,7 +501,7 @@ use \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
                 }
             })
     })
-    })
+})
 </script>
 <script type="text/javascript" src="<?= $this->url ?>/ckeditor/ckeditor.js"></script>
 <div id="contenu">
@@ -728,42 +694,42 @@ use \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
                             <th><label for="partner">Partenaire *</label></th>
                             <td>
                                 <div class="messages"></div>
-                                <select name="partner" id="partner" class="select"<?php if ($this->projects->status >= ProjectsStatus::PREP_FUNDING) : ?> disabled<?php endif; ?>>
-                                    <?php if (empty($this->projects->id_partner)) : ?>
-                                        <option value="" selected></option>
-                                    <?php endif; ?>
-                                    <?php foreach ($this->partnerList as $partner) : ?>
-                                        <option value="<?= $partner->getId() ?>"<?= $this->projects->id_partner == $partner->getId() ? ' selected' : '' ?>><?= $partner->getIdCompany()->getName() ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-
-                                <?php // @TODO these are fake conditions ?>
-                                <?php $partner_agency = false; $partner_agency_options = ''; $partner_submitter = false; $partner_submitter_options = ''; ?>
-                                <select id="partner-agency" class="select" name="partner_agency"<?php if (!$partner_submitter) { echo ' style="display: none;"'; } ?>>
-                                    <?php if ($partner_agency_options !== '') : foreach ($partner_agency_options as $option) : ?>
-                                        <option><?= $option ?></option>
-                                    <?php endforeach; endif; ?>
-                                </select>
-                                <select id="partner-submitter" class="select" name="partner_submitter"<?php if (!$partner_submitter) { echo ' style="display: none;"'; } ?>>
-                                    <?php if ($partner_submitter_options !== '') : foreach ($partner_submitter_options as $option) : ?>
-                                        <option><?= $option ?></option>
-                                    <?php endforeach; endif; ?>
-                                </select>
-                                <?php // endif ?>
+                                <?php if (null === $this->projectEntity->getIdPartner() || $this->isUnilendPartner) : ?>
+                                    <select name="partner" id="partner" class="select"<?php if ($this->projects->status >= ProjectsStatus::PREP_FUNDING) : ?> disabled<?php endif; ?>>
+                                        <?php if (null === $this->projectEntity->getIdPartner()->getId()) : ?>
+                                            <option value=""></option>
+                                        <?php endif; ?>
+                                        <?php foreach ($this->partnerList as $partner) : ?>
+                                            <option value="<?= $partner->getId() ?>"<?= $this->projectEntity->getIdPartner()->getId() == $partner->getId() ? ' selected' : '' ?>><?= $partner->getIdCompany()->getName() ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                <?php else : ?>
+                                    <?= $this->projectEntity->getIdPartner()->getIdCompany()->getName() ?>
+                                <?php endif; ?>
                             </td>
                         </tr>
-                        <?php if (false === empty($this->projectEntity->getIdCompanySubmitter()) && false === empty($this->projectEntity->getIdCompanySubmitter()->getIdCompany())) : ?>
-                            <tr>
-                                <th><label>Agence</label></th>
-                                <td><?= $this->projectEntity->getIdCompanySubmitter()->getName() ?></td>
-                            </tr>
-                        <?php endif; ?>
-                        <?php if (false === empty($this->projectEntity->getIdClientSubmitter()) && false === empty($this->projectEntity->getIdClientSubmitter()->getIdClient())) : ?>
-                            <tr>
-                                <th><label>Déposant</label></th>
-                                <td><?= $this->projectEntity->getIdClientSubmitter()->getPrenom() ?> <?= $this->projectEntity->getIdClientSubmitter()->getNom() ?></td>
-                            </tr>
-                        <?php endif; ?>
+                        <tr id="company-submitter"<?php if ($this->isUnilendPartner) : ?> style="display: none;"<?php endif; ?>>
+                            <th><label for="company-submitter-select">Agence</label></th>
+                            <td>
+                                <select id="company-submitter-select" class="select" name="company_submitter">
+                                    <option value="0"></option>
+                                    <?php foreach ($this->agencies as $agency) : ?>
+                                        <option value="<?= $agency->getIdCompany() ?>"<?php if ($agency === $this->projectEntity->getIdCompanySubmitter()) : ?> selected<?php endif; ?>><?= $agency->getName() ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr id="client-submitter"<?php if ($this->isUnilendPartner) : ?> style="display: none;"<?php endif; ?>>
+                            <th><label for="client-submitter-select">Déposant</label></th>
+                            <td>
+                                <select id="client-submitter-select" class="select" name="client_submitter">
+                                    <option value="0"></option>
+                                    <?php foreach ($this->submitters as $submitter) : ?>
+                                        <option value="<?= $submitter->getIdClient() ?>"<?php if ($submitter === $this->projectEntity->getIdClientSubmitter()) : ?> selected<?php endif; ?>><?= $submitter->getPrenom() ?> <?= $submitter->getNom() ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </td>
+                        </tr>
                     </table>
                     <br><br>
                     <h2>Produit</h2>

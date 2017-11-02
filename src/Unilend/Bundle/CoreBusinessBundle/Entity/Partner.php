@@ -17,6 +17,7 @@ class Partner
     const STATUS_VALIDATED = 2;
     const STATUS_DISABLED  = 3;
 
+    const PARTNER_UNILEND_ID     = 1;
     const PARTNER_AXA_LABEL      = 'axa';
     const PARTNER_MEDILEND_LABEL = 'medilend';
     const PARTNER_UNILEND_LABEL  = 'unilend';
