@@ -425,7 +425,7 @@ use \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
             }
         })
 
-        var $partnerSelect = $('select#partner')
+        var $partnerSelect = $('select#partner-select')
         var $companySubmitterSelect = $('select#company-submitter-select')
         var $clientSubmitterSelect = $('select#client-submitter-select')
         var $companySubmitterRow = $('#company-submitter')
@@ -695,9 +695,9 @@ use \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
                             <td>
                                 <div class="messages"></div>
                                 <?php if (null === $this->projectEntity->getIdPartner() || $this->isUnilendPartner) : ?>
-                                    <select name="partner" id="partner" class="select"<?php if ($this->projects->status >= ProjectsStatus::PREP_FUNDING) : ?> disabled<?php endif; ?>>
+                                    <select name="partner" id="partner-select" class="select"<?php if ($this->projects->status >= ProjectsStatus::PREP_FUNDING) : ?> disabled<?php endif; ?>>
                                         <?php if (null === $this->projectEntity->getIdPartner()->getId()) : ?>
-                                            <option value=""></option>
+                                            <option value="0"></option>
                                         <?php endif; ?>
                                         <?php foreach ($this->partnerList as $partner) : ?>
                                             <option value="<?= $partner->getId() ?>"<?= $this->projectEntity->getIdPartner()->getId() == $partner->getId() ? ' selected' : '' ?>><?= $partner->getIdCompany()->getName() ?></option>
