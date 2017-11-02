@@ -43,7 +43,8 @@ class ProjectChargeManager
             foreach ($projectCharges as $projectCharge) {
                 if ($projectCharge instanceof ProjectCharge) {
                     $totalAppliedCharges = round(bcadd($totalAppliedCharges, $projectCharge->getAmountInclVat(), 4), 2);
-                    $projectCharge->setIdWireTransferIn($wireTransferIn);
+                    $projectCharge->setIdWireTransferIn($wireTransferIn)
+                        ->setRepaymentDate(new \DateTime());
 
                     $this->entityManager->flush($projectCharge);
                 } else {
@@ -62,7 +63,8 @@ class ProjectChargeManager
     {
         $appliedProjectCharges = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCharge')->findBy(['idWireTransferIn' => $wireTransferIn]);
         foreach ($appliedProjectCharges as $projectCharge) {
-            $projectCharge->setIdWireTransferIn(null);
+            $projectCharge->setIdWireTransferIn(null)
+                ->setRepaymentDate(null);
             $this->entityManager->flush($projectCharge);
         }
     }
