@@ -2,8 +2,10 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
+use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
-use \Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 
@@ -29,9 +31,9 @@ class BidsRepository extends EntityRepository
     }
 
     /**
-     * @param \DateTime $from
-     * @param \DateTime $to
-     * @param int       $clientId
+     * @param \DateTime   $from
+     * @param \DateTime   $to
+     * @param int|Clients $clientId
      *
      * @return mixed
      */
@@ -44,7 +46,7 @@ class BidsRepository extends EntityRepository
             ->andWhere('w.idClient = :idClient')
             ->setParameters(['fromDate' => $from, 'toDate' => $to, 'idClient' => $clientId]);
 
-        $bidCount =  $qb->getQuery()->getScalarResult();
+        $bidCount = $qb->getQuery()->getScalarResult();
 
         return $bidCount;
     }
@@ -63,7 +65,7 @@ class BidsRepository extends EntityRepository
             ->setParameter('walletId', $wallet->getId())
             ->setParameter('date', $date);
 
-        return $queryBuilder->getQuery()->getOneOrNullResult();
+        return $queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_ARRAY);
     }
 
     /**
