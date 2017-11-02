@@ -181,9 +181,6 @@ class WalletBalanceHistoryRepository extends EntityRepository
                     THEN -SUM(o.amount) 
                     ELSE SUM(o.amount)
                 END AS amount,
-                IDENTITY(o.idPaymentSchedule) AS idPaymentSchedule, 
-                -ROUND((f.montantHt/100), 2) AS netCommission,
-                -ROUND((f.tva/100), 2) AS vat,
                 e.ordre,
                 IDENTITY(r.rejectionIsoCode) AS rejectionIsoCode,
                 srr.label as rejectionReasonLabel,
@@ -192,10 +189,9 @@ class WalletBalanceHistoryRepository extends EntityRepository
         )
             ->leftJoin('UnilendCoreBusinessBundle:Receptions', 'r', Join::WITH, 'o.idWireTransferIn = r.idReception')
             ->leftJoin('UnilendCoreBusinessBundle:SepaRejectionReason', 'srr', Join::WITH, 'r.rejectionIsoCode = srr.isoCode')
-            ->leftJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'o.idPaymentSchedule = ee.idEcheancierEmprunteur')
-            ->leftJoin('UnilendCoreBusinessBundle:Factures', 'f', Join::WITH, 'ee.ordre = f.ordre AND ee.idProject = f.idProject')
             ->leftJoin('UnilendCoreBusinessBundle:Echeanciers', 'e', Join::WITH, 'o.idRepaymentSchedule = e.idEcheancier')
-            ->leftJoin('UnilendCoreBusinessBundle:ProjectRepaymentTask', 'prt', Join::WITH, 'prt.idProject = e.idProject AND prt.sequence = e.ordre')
+            ->leftJoin('UnilendCoreBusinessBundle:ProjectRepaymentTaskLog', 'prtl', Join::WITH, 'o.idRepaymentTaskLog = prtl.id')
+            ->leftJoin('UnilendCoreBusinessBundle:ProjectRepaymentTask', 'prt', Join::WITH, 'prt.id = prtl.idTask')
             ->addGroupBy('forGroupBy')
             ->setParameter('repaymentTypes', [
                 OperationType::CAPITAL_REPAYMENT,
