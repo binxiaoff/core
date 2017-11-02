@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Hashids\Hashids;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 use Ramsey\Uuid\Uuid;
 
@@ -1372,22 +1373,32 @@ class Clients
     }
 
     /**
-     * @ORM\PrePersist
+     * @ORM\PreUpdate()
      */
     public function setSponsorCodeValue()
     {
-        if (is_null($this->hash)) {
-            $this->setHashValue();
-        }
-
         if (
-            false === empty($this->nom)
+            empty($this->sponsorCode)
             && in_array($this->type, [self::TYPE_PERSON, self::TYPE_PERSON_FOREIGNER, self::TYPE_LEGAL_ENTITY, self::TYPE_LEGAL_ENTITY_FOREIGNER])
         ) {
+            $this->sponsorCode = $this->createSponsorCode();
+        }
+    }
+
+    //@todo once sponsor codes are repaired this method should be private
+    /**
+     * @return null|string
+     */
+    public function createSponsorCode()
+    {
+        if (false === empty($this->nom)) {
             $lastName = \URLify::filter($this->nom);
             $lastName = str_replace('-', '', $lastName);
+            $hashId   = new Hashids('', 6);
 
-            $this->sponsorCode = substr($this->hash, 0, 6) . ucfirst(strtolower($lastName));
+            return $hashId->encode($this->idClient) . ucfirst(strtolower($lastName));
         }
+
+        return null;
     }
 }

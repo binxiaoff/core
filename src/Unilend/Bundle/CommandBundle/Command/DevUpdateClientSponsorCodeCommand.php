@@ -8,6 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 
+//@todo delete once the codes are repaired (an also change public method in private in client Entity)
 class DevUpdateClientSponsorCodeCommand extends ContainerAwareCommand
 {
     protected function configure()
@@ -28,7 +29,7 @@ class DevUpdateClientSponsorCodeCommand extends ContainerAwareCommand
 
         /** @var Clients $client */
         foreach ($clients as $client) {
-            $client->setSponsorCodeValue();
+            $client->setSponsorCode($client->createSponsorCode());
             $count ++;
 
             if (0 === $count % 50) {
