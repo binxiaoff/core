@@ -124,7 +124,7 @@ class Partner
      *
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProduct", mappedBy="idPartner")
      */
-    private $products;
+    private $productAssociations;
 
     /**
      * Projects constructor.
@@ -133,7 +133,7 @@ class Partner
     {
         $this->attachmentTypes     = new ArrayCollection();
         $this->partnerThirdParties = new ArrayCollection();
-        $this->products            = new ArrayCollection();
+        $this->productAssociations = new ArrayCollection();
     }
 
     /**
@@ -394,10 +394,24 @@ class Partner
     }
 
     /**
-     * @return ArrayCollection|PartnerProduct[]
+     * @param array|null $status
+     *
+     * @return PartnerProduct[]
      */
-    public function getProducts()
+    public function getProductAssociations(array $status = null)
     {
-        return $this->products;
+        if (null === $status) {
+            return iterator_to_array($this->productAssociations);
+        }
+
+        $productAssociations = [];
+
+        foreach ($this->productAssociations as $association) {
+            if (in_array($association->getIdProduct()->getStatus(), $status)) {
+                $productAssociations[] = $association;
+            }
+        }
+
+        return $productAssociations;
     }
 }

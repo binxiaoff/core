@@ -71,12 +71,10 @@ class partenairesController extends bootstrap
             return strcmp($first->getLabel(), $second->getLabel());
         });
 
-        $products = $partner->getProducts();
-        $iterator = $products->getIterator();
-        $iterator->uasort(function ($first, $second) {
+        $products = $partner->getProductAssociations([Product::STATUS_OFFLINE, Product::STATUS_ONLINE]);
+        usort($products, function ($first, $second) {
             return strcmp($first->getIdProduct()->getLabel(), $second->getIdProduct()->getLabel());
         });
-        $products = new \Doctrine\Common\Collections\ArrayCollection(iterator_to_array($iterator));
 
         $descriptionTranslationLabel = 'partner-project-details_description-instructions-' . $partner->getLabel();
         $documentsTranslationLabel   = 'partner-project-details_documents-instructions-' . $partner->getLabel();
