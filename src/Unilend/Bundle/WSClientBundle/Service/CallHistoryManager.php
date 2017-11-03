@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
+use CL\Slack\Payload\PayloadResponseInterface;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ODM\MongoDB\Query\Builder;
 use Doctrine\ORM\EntityManager;
@@ -178,7 +179,7 @@ class CallHistoryManager
         try {
             $response = $this->slackManager->sendMessage($slackMessage, $this->alertChannel);
 
-            if (false == $response->isOk()) {
+            if (false === ($response instanceof PayloadResponseInterface) || false === $response->isOk()) {
                 $this->logger->warning('Could not send slack notification for ' . $wsResource->getProviderName() . '. Error: ' . $response->getError(), $logContext);
             }
         } catch (\Exception $exception) {
