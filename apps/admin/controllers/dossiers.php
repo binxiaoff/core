@@ -206,7 +206,7 @@ class dossiersController extends bootstrap
             $projectStatusManager = $this->get('unilend.service.project_status_manager');
 
             $this->rejectionReasonMessage = $projectStatusManager->getRejectionReasonTranslation($this->projects_status_history->content);
-            $this->bHasAdvisor            = false;
+            $this->hasAdvisor             = false;
 
             if ($this->projects->status == ProjectsStatus::FUNDE) {
                 $proxy       = $this->projects_pouvoir->select('id_project = ' . $this->projects->id_project);
@@ -223,7 +223,7 @@ class dossiersController extends bootstrap
             if ($this->projects->id_prescripteur > 0 && $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur')) {
                 $this->clients_prescripteurs->get($this->prescripteurs->id_client, 'id_client');
                 $this->companies_prescripteurs->get($this->prescripteurs->id_entite, 'id_company');
-                $this->bHasAdvisor = true;
+                $this->hasAdvisor = true;
             }
 
             $this->latitude  = (float) $this->companies->latitude;
