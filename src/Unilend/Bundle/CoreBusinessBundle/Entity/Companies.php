@@ -660,6 +660,10 @@ class Companies
      */
     public function getDateCreation()
     {
+        /** @todo to be removed when projects is fully under doctrine */
+        if (null !== $this->dateCreation && $this->dateCreation->getTimestamp() < 0) {
+            return null;
+        }
         return $this->dateCreation;
     }
 
