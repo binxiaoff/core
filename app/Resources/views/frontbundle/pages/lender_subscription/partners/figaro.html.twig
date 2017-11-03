@@ -1,6 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr">
 <head>
+    {{ google_tag_manager_head() }}
     <!-- !!! NE PAS OUBLIER DE MODIFIER TITLE - DESCRIPTION - KEYWORDS -->
     <title>Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois</title>
     <link rel="shortcut icon" type="image/x-icon" href="http://www.lefigaro.fr/icones/favicon.ico" />
@@ -29,7 +30,7 @@
 </head>
 <body>
 
-{{ google_tag_manager() }}
+{{ google_tag_manager_body() }}
 
 <!-- Header NoScript --><noscript><div id="headerNoJS"><h1><a href="http://www.lefigaro.fr/">LeFigaro.fr</a></h1><ul><li><a href="http://www.lefigaro.fr/">Actualite</a></li><li><a href="http://www.lefigaro.fr/economie/">Economie</a></li><li><a href="http://www.lefigaro.fr/culture/">Culture</a></li><li><a href="http://madame.lefigaro.fr/">Madame</a></li><li><a href="http://www.lefigaro.fr/sport/">Sport</a></li><li><a href="http://www.lefigaro.fr/services/">Services</a></li></ul></div></noscript><!-- /Header NoScript -->
 
@@ -55,5 +56,6 @@
 <script type="text/javascript">ffw_addStat();</script>
 <noscript><img width="1" height="1" alt="" src="http://www.lefigaro.fr/components/for_stat.php?id=165" /></noscript>
 <!-- /Stat -->
+{{ google_tag_manager_body_end() }}
 </body>
 </html>
