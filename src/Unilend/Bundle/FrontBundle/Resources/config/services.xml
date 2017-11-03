@@ -125,5 +125,10 @@
             <argument>%path.gulp_rev_manifest%</argument>
             <argument type="service" id="logger"/>
         </service>
+
+        <service id="unilend.frontbundle.service.redirection_handler" class="Unilend\Bundle\FrontBundle\Service\RedirectionHandler">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="cache"/>
+        </service>
     </services>
 </container>

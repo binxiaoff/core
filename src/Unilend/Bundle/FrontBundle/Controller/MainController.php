@@ -274,14 +274,8 @@ class MainController extends Controller
     {
         /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \redirections $redirection */
-        $redirection = $entityManager->getRepository('redirections');
 
         $slug = substr($request->attributes->get('routeDocument')->getPath(), 1);
-
-        if ($redirection->get(['from_slug' => $slug, 'status' => 1])) {
-            return new RedirectResponse($redirection->to_slug, $redirection->type);
-        }
 
         /** @var \tree $tree */
         $tree = $entityManager->getRepository('tree');
