@@ -500,7 +500,7 @@ class parrainageController extends bootstrap
             $sponsorship->setIdCampaign($campaign)
                 ->setStatus($status);
             $entityManager->flush($sponsorship);
-            $_SESSION['create_sponsorship']['success'] = 'Le parrainage entre parrain ' . $sponsor->getIdClient() . ') et filleul ' . $sponsee->getIdClient() . ') a été crée';
+            $_SESSION['create_sponsorship']['success'] = 'Le parrainage entre parrain (' . $sponsor->getIdClient() . ') et filleul (' . $sponsee->getIdClient() . ') a été crée';
         }
 
         header('Location: ' . $this->lurl . '/parrainage');

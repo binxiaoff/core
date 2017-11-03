@@ -289,8 +289,8 @@
                                 <td>{{ campaignData.campaign.maxNumberSponsee|localizednumber }}</td>
                                 <td>{{ campaignData.numberSponsor|localizednumber }}</td>
                                 <td>{{ campaignData.numberSponsee|localizednumber }}</td>
-                                <td>{{ campaignData.paidOutRewardSponsee|localizedcurrency('EUR') }}</td>
                                 <td>{{ campaignData.paidOutRewardSponsor|localizedcurrency('EUR') }}</td>
+                                <td>{{ campaignData.paidOutRewardSponsee|localizedcurrency('EUR') }}</td>
                                 <td>
                                     <button class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modal-parrainage-list" data-campaign-id="{{ campaignData.campaign.id }}"><span class="fa fa-pencil"></span></button>
                                 </td>
@@ -333,8 +333,8 @@
                             <td>{{ campaignData.campaign.maxNumberSponsee|localizednumber }}</td>
                             <td>{{ campaignData.numberSponsor|localizednumber }}</td>
                             <td>{{ campaignData.numberSponsee|localizednumber }}</td>
-                            <td>{{ campaignData.paidOutRewardSponsee|localizedcurrency('EUR') }}</td>
                             <td>{{ campaignData.paidOutRewardSponsor|localizedcurrency('EUR') }}</td>
+                            <td>{{ campaignData.paidOutRewardSponsee|localizedcurrency('EUR') }}</td>
                         </tr>
                     {%  endfor %}
                     </tbody>
@@ -439,7 +439,7 @@
                         <p class="text-center pull-right" style="width: 50%; color: #b20066"><b>Parrain</b></p>
                     </div>
                 </p>
-                <table class="table table-bordered table-striped table-hover table-header-bg js-dataTable-simple differentiate">
+                <table class="table table-bordered table-striped table-hover table-header-bg dataTable differentiate" data-table>
                     <thead>
                     <tr>
                         <th style="width: 100px;">Code parrain</th>

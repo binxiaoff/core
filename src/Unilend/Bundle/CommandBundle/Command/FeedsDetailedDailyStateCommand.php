@@ -274,7 +274,8 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $this->addBalanceLine($activeSheet, $previousMonthBalanceHistory, $specificRows['previousYear'], $specificRows);
 
         foreach ($specificRows['coordinatesMonth'] as $month => $row) {
-            $lastDayOfMonth = \DateTime::createFromFormat('n-Y', $month . '-' . $requestedDate->format('Y'));
+            $monthObject    = \DateTime::createFromFormat('Y-n-d', $requestedDate->format('Y') . '-' . $month . '-01');
+            $lastDayOfMonth = new \DateTime('Last day of ' . $monthObject->format('F Y'));
 
             if ($month <= $requestedDate->format('n')) {
                 if ($month == $requestedDate->format('n')) {

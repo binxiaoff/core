@@ -107,9 +107,10 @@ class clients_status_history extends clients_status_history_crud
 
     /**
      * @param clients $oClient
+     *
      * @return string
      */
-    public function getCompletnessRequestContent(\clients $oClient)
+    public function getCompletenessRequestContent(\clients $oClient)
     {
         $sQuery = ' SELECT content FROM `clients_status_history` where id_client = ' . $oClient->id_client . ' and id_client_status = 2 order by added desc limit 1 ';
         $rQuery = $this->bdd->query($sQuery);

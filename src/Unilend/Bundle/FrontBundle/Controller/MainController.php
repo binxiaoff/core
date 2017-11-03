@@ -20,6 +20,7 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
@@ -205,11 +206,13 @@ class MainController extends Controller
     {
         $formData = $request->request->get('esim');
         $session  = $request->getSession();
+        $user     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Users')
+            ->find(Users::USER_ID_FRONT);
 
         try {
             /** @var ProjectRequestManager $projectRequestManager */
             $projectRequestManager = $this->get('unilend.service.project_request_manager');
-            $project               = $projectRequestManager->saveSimulatorRequest($formData);
+            $project               = $projectRequestManager->saveSimulatorRequest($formData, $user);
 
             $session->remove('esim');
 
@@ -789,12 +792,24 @@ class MainController extends Controller
 
     /**
      * @Route("/indicateurs-de-performance", name="statistics_fpf")
-     * @Route("/indicateurs-de-performance/{requestedDate}", name="historic_statistics_fpf", requirements={"requestedDate": "[0-9]{2}-[0-9]{2}-20[0-9]{2}"})
+     * @Method("GET")
      *
      * @return Response
      */
     public function statisticsFpfAction(Request $request)
     {
+        $now         = new \DateTime('NOW');
+        $publishDate = new \DateTime('First day of November 2017');
+        $publishDate->setTime(0, 0, 0);
+
+        if (
+            $this->getParameter('kernel.environment') === 'prod'
+            && $now < $publishDate
+            && $request->getClientIp() != '92.154.10.41'
+        ) {
+            return $this->render('/pages/exception/error.html.twig');
+        }
+
         $date = $request->query->filter('date', FILTER_SANITIZE_STRING);
 
         if (
@@ -807,7 +822,7 @@ class MainController extends Controller
                 return $this->redirectToRoute('statistics_fpf');
             }
         } else {
-            $requestedDate  = new \DateTime('NOW');
+            $requestedDate  = $now;
         }
 
         $statisticsManager = $this->get('unilend.service.statistics_manager');

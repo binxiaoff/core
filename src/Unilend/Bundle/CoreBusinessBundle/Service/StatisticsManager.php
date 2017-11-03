@@ -24,7 +24,7 @@ class StatisticsManager
      * Day we started saving front statistics. Before that data there is no data.
      */
     const START_FRONT_STATISTICS_HISTORY = '2016-11-17';
-    const START_FPF_STATISTIC_HISTORY    = '2017-10-10'; //TODO change to put in production date
+    const START_FPF_STATISTIC_HISTORY    = '2017-10-30';
 
     /** Constants to make method calls more readable */
     const GROUP_FIRST_YEAR_COHORT = false;
@@ -396,6 +396,7 @@ class StatisticsManager
         $lateCapitalRepaymentsProblematicProjects    = $this->formatCohortQueryResult($borrowerPaymentSchedule->getLateCapitalRepaymentsProblematicProjects(self::GROUP_FIRST_YEAR_COHORT), $years);
         $debtCollectionRepaymentProblematicProjects  = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionRepaymentByCohort(self::PROBLEMATIC_PROJECTS, self::GROUP_FIRST_YEAR_COHORT), $years);
         $debtCollectionCommissionProblematicProjects = $this->formatCohortQueryResult($operationRepository->getTotalDebtCollectionLenderCommissionByCohort(self::PROBLEMATIC_PROJECTS, self::GROUP_FIRST_YEAR_COHORT), $years);
+        $futureCapitalProblematicProjects            = $this->formatCohortQueryResult($borrowerPaymentSchedule->getFutureOwedCapitalOfProblematicProjectsByCohort(self::GROUP_FIRST_YEAR_COHORT), $years);
 
         $data = [];
         foreach ($years as $year) {
@@ -439,11 +440,11 @@ class StatisticsManager
                 'volume' => round(bcmul(bcdiv($data['late-owed-capital-healthy'][$year], $data['borrowed-capital'][$year], 6), 100, 3), 2),
                 'number' => round(bcdiv($numberLateHealthyProjects[$year], $data['number-of-projects'][$year], 6), 2)
             ];
-            $data['late-owed-capital-problematic'][$year]       = round(bcsub($lateCapitalRepaymentsProblematicProjects[$year], bcsub($debtCollectionRepaymentProblematicProjects[$year], $debtCollectionCommissionProblematicProjects[$year], 4), 4));
+            $data['late-owed-capital-problematic'][$year]       = round(bcadd($futureCapitalProblematicProjects[$year],bcsub($lateCapitalRepaymentsProblematicProjects[$year],bcsub($debtCollectionRepaymentProblematicProjects[$year], $debtCollectionCommissionProblematicProjects[$year], 4), 4), 4));
 
             $data['late-problematic-capital-percentage'][$year] = [
                 'volume' => round(bcmul(bcdiv($data['late-owed-capital-problematic'][$year], $data['borrowed-capital'][$year], 6), 100, 3), 2),
-                'number' => round(bcdiv($numberLateProblematicProjects[$year], $data['number-of-projects'][$year], 6), 2)
+                'number' => round(bcmul(bcdiv($numberLateProblematicProjects[$year], $data['number-of-projects'][$year], 6), 100, 3), 2)
             ];
         }
 
@@ -465,11 +466,11 @@ class StatisticsManager
         ];
         $data['late-capital-percentage']['total']             = [
             'volume' => round(bcmul(bcdiv($data['late-owed-capital-healthy']['total'], $data['borrowed-capital']['total'], 6), 100, 3), 2),
-            'number' => round(bcdiv(array_sum($numberLateHealthyProjects), $data['number-of-projects']['total'], 6), 2)
+            'number' => round(bcmul(bcdiv(array_sum($numberLateHealthyProjects), $data['number-of-projects']['total'], 6), 100, 3), 2)
         ];
         $data['late-problematic-capital-percentage']['total'] = [
             'volume' => round(bcmul(bcdiv($data['late-owed-capital-problematic']['total'], $data['borrowed-capital']['total'], 6), 100, 3), 2),
-            'number' => round(bcdiv(array_sum($numberLateProblematicProjects), $data['number-of-projects']['total'], 6), 2)
+            'number' => round(bcmul(bcdiv(array_sum($numberLateProblematicProjects), $data['number-of-projects']['total'], 6),100, 3), 2)
         ];
         $data['average-loan-age']['total']                    = [
             'volume' => $projectRepository->getAverageLoanAgeUntil(true),

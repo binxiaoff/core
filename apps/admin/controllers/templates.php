@@ -32,9 +32,8 @@ class templatesController extends bootstrap
 
     public function _default()
     {
-        $this->templates       = $this->loadData('templates');
-        $this->blocs_templates = $this->loadData('blocs_templates');
-        $this->elements        = $this->loadData('elements');
+        $this->templates = $this->loadData('templates');
+        $this->elements  = $this->loadData('elements');
 
         $this->lTemplate = $this->templates->select('type = 0', 'name ASC');
 

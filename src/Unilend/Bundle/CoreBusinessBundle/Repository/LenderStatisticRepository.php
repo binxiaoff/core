@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
@@ -58,6 +59,23 @@ class LenderStatisticRepository extends EntityRepository
         UNION ALL
 
             SELECT
+              e.date_echeance AS date,
+              CASE WHEN e.date_echeance < NOW() THEN "0" ELSE e.capital + e.interets END AS amount
+            FROM echeanciers e
+              INNER JOIN projects p ON e.id_project = p.id_project
+              INNER JOIN loans l ON e.id_loan = l.id_loan
+              INNER JOIN companies com ON com.id_company = p.id_company
+              INNER JOIN company_status cs ON cs.id = com.id_status
+            WHERE
+              l.id_lender = :idWallet
+              AND e.status = ' . Echeanciers::STATUS_PENDING . '
+              AND p.status = ' . ProjectsStatus::PROBLEME . '
+              AND (p.close_out_netting_date IS NULL OR p.close_out_netting_date = \'0000-00-00\')
+              AND cs.label = :inBonis
+        
+        UNION ALL
+
+            SELECT
                 e.date_echeance AS date,
                 CASE WHEN e.date_echeance < NOW() THEN "0" ELSE
                 CASE WHEN DATEDIFF(NOW(),
@@ -77,12 +95,13 @@ class LenderStatisticRepository extends EntityRepository
               INNER JOIN projects p ON e.id_project = p.id_project
               INNER JOIN loans l ON e.id_loan = l.id_loan
               INNER JOIN companies com ON p.id_company = com.id_company
-              INNER JOIN company_status cs2 ON cs2.id = com.id_status
+              INNER JOIN company_status cs ON cs.id = com.id_status
             WHERE
                 l.id_lender = :idWallet
                 AND e.status = ' . Echeanciers::STATUS_PENDING . '
                 AND p.status = ' . ProjectsStatus::PROBLEME . '
-                AND cs2.label = \'' . CompanyStatus::STATUS_IN_BONIS . '\'
+                AND (p.close_out_netting_date IS NOT NULL AND p.close_out_netting_date != \'0000-00-00\')
+                AND cs.label = :inBonis
 
         UNION ALL
 
@@ -98,11 +117,7 @@ class LenderStatisticRepository extends EntityRepository
                 l.id_lender = :idWallet
                 AND e.status = ' . Echeanciers::STATUS_PENDING . '
                 AND p.status >= ' . ProjectsStatus::REMBOURSEMENT . '
-                AND cs.label IN (\'' . implode('\',\'', [
-                CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
-                CompanyStatus::STATUS_RECEIVERSHIP,
-                CompanyStatus::STATUS_COMPULSORY_LIQUIDATION,
-            ]) . '\')
+                AND cs.label IN (:companyStatusInProceeding)
 
         UNION ALL
         
@@ -145,8 +160,21 @@ class LenderStatisticRepository extends EntityRepository
               )
             GROUP BY DATE(o_collection_capital.added);
         ';
-
-        $values = $this->getEntityManager()->getConnection()->executeQuery($query, ['idWallet' => $idWallet])->fetchAll(\PDO::FETCH_ASSOC);
+        $params = [
+            'idWallet'                  => $idWallet,
+            'inBonis'                   => CompanyStatus::STATUS_IN_BONIS,
+            'companyStatusInProceeding' => [
+                CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
+                CompanyStatus::STATUS_RECEIVERSHIP,
+                CompanyStatus::STATUS_COMPULSORY_LIQUIDATION
+            ]
+        ];
+        $types = [
+            'idWallet'                  => \PDO::PARAM_INT,
+            'inBonis'                   => \PDO::PARAM_STR,
+            'companyStatusInProceeding' => Connection::PARAM_STR_ARRAY
+        ];
+        $values = $this->getEntityManager()->getConnection()->executeQuery($query, $params, $types)->fetchAll(\PDO::FETCH_ASSOC);
 
         return $values;
     }

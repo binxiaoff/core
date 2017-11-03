@@ -331,31 +331,46 @@ class ExternalDataManager
     /**
      * @param string $siren
      *
-     * @return Executive[]
+     * @return Executive[]|array
      */
     public function getExecutives($siren)
     {
-        return $this->infolegaleManager->getExecutives($siren)->getExecutives();
+        $executives = $this->infolegaleManager->getExecutives($siren);
+        if (null !== $executives) {
+            return $executives->getExecutives();
+        }
+
+        return [];
     }
 
     /**
      * @param int $executiveId
      *
-     * @return Mandate[]
+     * @return Mandate[]|array
      */
     public function getExecutiveMandates($executiveId)
     {
-        return $this->infolegaleManager->getMandates($executiveId)->getMandates();
+        $mandates = $this->infolegaleManager->getMandates($executiveId);
+        if (null !== $mandates) {
+            return $mandates->getMandates();
+        }
+
+        return [];
     }
 
     /**
      * @param int $executiveId
      *
-     * @return DirectorAnnouncement[]
+     * @return DirectorAnnouncement[]|array
      */
     public function getExecutiveAnnouncements($executiveId)
     {
-        return $this->infolegaleManager->getDirectorAnnouncements($executiveId)->getAnnouncements();
+        $executiveAnnouncements = $this->infolegaleManager->getDirectorAnnouncements($executiveId);
+        if (null !== $executiveAnnouncements) {
+            return $executiveAnnouncements->getAnnouncements();
+        }
+
+        return [];
     }
 
     /**
