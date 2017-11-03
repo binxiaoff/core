@@ -44,7 +44,7 @@ class RedirectionHandler
         $cachedItem    = $this->cacheItemPool->getItem(md5('redirection_handler.handle.' . $requestedPath));
         if (false === $cachedItem->isHit()) {
             $redirection = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Redirections')->findOneBy([
-                'fromSlug' => trim($requestedPath, '/'),
+                'fromSlug' => $requestedPath,
                 'status'   => Redirections::STATUS_ENABLED
             ]);
 
