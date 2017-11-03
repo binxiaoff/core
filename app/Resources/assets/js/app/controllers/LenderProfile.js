@@ -250,4 +250,19 @@ $doc.on('ready', function () {
     }
 
     updateNotificationSettings()
+
+    $doc.on('change', 'select[name="files[file]"]', function () {
+        console.log('selected: ' + $(this).val())
+        if (3 == $(this).val()) {
+            var bankAccount = $('#completeness-bank-account')
+            bankAccount.collapse('show')
+            bankAccount.removeClass('disabled')
+        } else {
+            var extraFiles = $('.form-extrafiles-list');
+            extraFiles.find('select[name="files[file]"]').each(function () {
+                console.log($(this))
+            })
+            // check if there is no selected option with value 3 (file type RIB), then add class disabled to the above div and hide it using .collapse('hide')
+        }
+    })
 })

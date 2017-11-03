@@ -8,17 +8,16 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\FileBag;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -33,14 +32,14 @@ use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\BankAccountType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\ClientEmailType;
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\CompanyAddressType;
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\CompanyIdentityType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\LegalEntityProfileType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\OriginOfFundsType;
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonFiscalAddressType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonPhoneType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonProfileType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PostalAddressType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\CompanyAddressType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\CompanyIdentityType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonFiscalAddressType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\SecurityQuestionType;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\core\Loader;
@@ -772,6 +771,7 @@ class LenderProfileController extends Controller
     {
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         $attachmentManager      = $this->get('unilend.service.attachment_manager');
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
 
         /** @var \clients $client */
         $client = $this->getClient();
@@ -781,6 +781,24 @@ class LenderProfileController extends Controller
         $completenessRequestContent  = $clientStatusHistory->getCompletenessRequestContent($client);
         $template['attachmentTypes'] = $attachmentManager->getAllTypesForLender();
         $template['attachmentsList'] = '';
+        $template['bankForm']        = null;
+
+        $ribAttachment = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($client->id_client, AttachmentType::RIB);
+//        if (
+//            $ribAttachment instanceof Attachment
+//            && $ribAttachment->getGreenpointAttachment() instanceof GreenpointAttachment
+//            && $ribAttachment->getGreenpointAttachment()->getValidationStatus() < 8
+//        ) {
+            /** @var BankAccount $bankAccount */
+            $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client->id_client);
+            $bankAccountForm = $this->createFormBuilder()
+                ->add('bankAccount', BankAccountType::class)
+                ->getForm();
+
+            $bankAccountForm->get('bankAccount')->get('iban')->setData($bankAccount->getIban());
+            $bankAccountForm->get('bankAccount')->get('bic')->setData($bankAccount->getBic());
+            $template['bankForm'] = $bankAccountForm->createView();
+//        }
 
         if (false === empty($completenessRequestContent)) {
             $oDOMElement = new \DOMDocument();
@@ -789,6 +807,8 @@ class LenderProfileController extends Controller
             if ($oList->length > 0 && $oList->item(0)->childNodes->length > 0) {
                 $template['attachmentsList'] = $oList->item(0)->C14N();
             }
+        } elseif (null !== $ribAttachment) {
+            $template['attachmentsList'] = '<ul><li>' . $ribAttachment->getType()->getLabel() . '</li></ul>';
         }
 
         return $this->render('pages/lender_profile/lender_completeness.html.twig', $template);
@@ -811,7 +831,15 @@ class LenderProfileController extends Controller
         foreach ($request->files->all() as $fileName => $file) {
             if ($file instanceof UploadedFile && false === empty($files[$fileName])) {
                 try {
-                    $this->upload($clientEntity, $files[$fileName], $file);
+                    $document = $this->upload($clientEntity, $files[$fileName], $file);
+
+                    if (AttachmentType::RIB === $document->getType()->getId()) {
+                        $form               = $request->request->get('form', ['bankAccount' => ['bic' => '', 'iban' => '']]);
+                        $iban               = $form['bankAccount']['iban'];
+                        $bic                = $form['bankAccount']['bic'];
+                        $bankAccountManager = $this->get('unilend.service.bank_account_manager');
+                        $bankAccountManager->saveBankInformation($clientEntity, $bic, $iban, $document);
+                    }
                     $uploadSuccess[] = $translator->trans('projet_document-type-' . $request->request->get('files')[$fileName]);
                 } catch (\Exception $exception) {
                     $uploadError[] = $translator->trans('projet_document-type-' . $request->request->get('files')[$fileName]);
