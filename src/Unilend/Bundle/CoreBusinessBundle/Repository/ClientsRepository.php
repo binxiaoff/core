@@ -613,7 +613,7 @@ class ClientsRepository extends EntityRepository
         $queryBuilder
             ->select('c.idClient')
             ->addSelect('c.type')
-            ->addSelect('IFNULL (CASE WHEN c.type IN (:companyType) THEN co.name ELSE c.nom END, \' \') AS name')
+            ->addSelect('IFNULL (CASE WHEN c.type IN (:companyType) THEN co.name ELSE CONCAT(c.nom, \', \', c.prenom) END, \' \') AS name')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType= wt.id AND wt.label = :lenderWalletType')
             ->leftJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'c.idClient = co.idClientOwner AND c.type IN (:companyType)')
