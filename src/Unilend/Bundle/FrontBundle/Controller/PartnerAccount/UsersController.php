@@ -353,6 +353,10 @@ class UsersController extends Controller
             $tree = $this->getCompanyTree($company, $tree);
         }
 
+        usort($tree, function ($first, $second) {
+            return strcmp($first->getName(), $second->getName());
+        });
+
         return $tree;
     }
 }

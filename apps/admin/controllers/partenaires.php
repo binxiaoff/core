@@ -52,8 +52,13 @@ class partenairesController extends bootstrap
         unset($_SESSION['forms']['partner']['success']);
         unset($_SESSION['forms']['partner']['errors']);
 
-        $agencies = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['idParentCompany' => $partner->getIdCompany()->getIdCompany()]);
-        $users    = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findBy(['idCompany' => $agencies]);
+        $agencies   = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['idParentCompany' => $partner->getIdCompany()->getIdCompany()]);
+        $agencies[] = $partner->getIdCompany();
+        usort($agencies, function($first, $second) {
+            return strcmp($first->getName(), $second->getName());
+        });
+
+        $users = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findBy(['idCompany' => $agencies]);
 
         /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
         $translator        = $this->get('translator');
