@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\FrontBundle\Security\User;
 
 class UserLender extends BaseUser
@@ -48,7 +49,7 @@ class UserLender extends BaseUser
         $this->balance                 = $balance;
         $this->initials                = $initials;
         $this->firstName               = $firstName;
-        $this->lastName               = $lastName;
+        $this->lastName                = $lastName;
         $this->clientStatus            = $clientStatus;
         $this->hasAcceptedCurrentTerms = $hasAcceptedCurrentTerms;
         $this->notifications           = $notifications;

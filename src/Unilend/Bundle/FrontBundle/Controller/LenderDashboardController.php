@@ -6,17 +6,15 @@ use Doctrine\ORM\EntityManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
-use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
-use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager;
 
@@ -34,14 +32,8 @@ class LenderDashboardController extends Controller
      */
     public function indexAction()
     {
-        /** @var LenderStatisticRepository $lenderStatisticsRepository */
-        $lenderStatisticsRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:LenderStatistic');
         /** @var WalletRepository $walletRepository */
         $walletRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
-        /** @var ProjectsRepository $projectsRepository */
-        $projectsRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects');
-        /** @var LenderManager $lenderManager */
-        $lenderManager = $this->get('unilend.service.lender_manager');
         /** @var EntityManagerSimulator $entityManager */
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var EntityManager $entityManager */
@@ -64,7 +56,6 @@ class LenderDashboardController extends Controller
 
         $client->get($this->getUser()->getClientId());
         $wallet          = $walletRepository->getWalletByType($client->id_client, WalletType::LENDER);
-        $balance         = $wallet->getAvailableBalance();
         $products        = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient($wallet->getIdClient());
         $productIds      = array_map(function (Product $product) {
             return $product->getIdProduct();
@@ -79,28 +70,6 @@ class LenderDashboardController extends Controller
         $problematicProjects    = $lenderRepayment->getProblematicProjects($wallet->getId());
         $upcomingGrossInterests = $lenderRepayment->getOwedInterests(['id_lender' => $wallet->getId()]);
         $repaidGrossInterests   = $lenderRepayment->getRepaidInterests(['id_lender' => $wallet->getId()]);
-        $irr                    = 0;
-        $irrTranslationType     = '';
-        $hasIRR                 = false;
-
-        if ($this->getUser()->getLevel() > 0) {
-            /** @var LenderStatistic $lastIRR */
-            $lastIRR = $lenderStatisticsRepository->findOneBy(['idWallet' => $wallet, 'typeStat' => LenderStatistic::TYPE_STAT_IRR], ['added' => 'DESC']);
-            if (null !== $lastIRR && LenderStatistic::STAT_VALID_OK === $lastIRR->getStatus()) {
-                $irr                = $lastIRR->getValue();
-                $irrTranslationType = ($irr >= 0 ? 'positive-' : 'negative-');
-                $hasIRR             = true;
-            } else {
-                $lossRate = $lenderManager->getLossRate($wallet->getIdClient());
-
-                if ($lossRate > 0) {
-                    $irr                = -$lossRate;
-                    $irrTranslationType = 'not-calculable';
-                } else {
-                    $irrTranslationType = 'not-calculated-yet';
-                }
-            }
-        }
 
         $ongoingBidsByProject = [];
         $publishedProjects    = [];
@@ -156,70 +125,71 @@ class LenderDashboardController extends Controller
         $quarterAxisData        = $this->getQuarterAxis($lenderRepaymentsData);
         $yearAxisData           = $this->getYearAxis($repaymentDateRange);
 
-        $depositedAmount = bcsub($operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::LENDER_PROVISION]), $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::LENDER_WITHDRAW]), 2);
+        $depositedAmount  = bcsub($operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::LENDER_PROVISION]), $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::LENDER_WITHDRAW]), 2);
+        $irrData          = $this->getIRRDetailsForUserLevelWidget();
+        $hasBids          = 0 < $bid->counter('id_lender_account = ' . $wallet->getId());
+        $hasAcceptedLoans = 0 < $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumDebitOperationsByTypeSince($wallet, [OperationType::LENDER_LOAN]);
+
         $loansRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
 
         return $this->render(
             '/pages/lender_dashboard/lender_dashboard.html.twig',
             [
-                'dashboardPanels'    => $this->getDashboardPreferences(),
-                'lenderDetails'      => [
-                    'balance'                   => (float)$balance,
-                    'level'                     => $this->getUser()->getLevel(),
-                    'hasIRR'                    => $hasIRR,
-                    'irr'                       => $irr,
-                    'irrTranslation'            => $irrTranslationType,
-                    'initials'                  => $this->getUser()->getInitials(),
-                    'companiesLenderInvestedIn' => $projectsRepository->countCompaniesLenderInvestedIn($wallet->getId()),
-                    'numberOfLoans'             => $loansRepository->getDefinitelyAcceptedLoansCount($wallet)
+                'dashboardPanels'   => $this->getDashboardPreferences(),
+                'lenderDetails' => [
+                    'numberOfLoans'             => $loansRepository->getDefinitelyAcceptedLoansCount($wallet),
+                    'companiesLenderInvestedIn' => $irrData['companiesLenderInvestedIn'],
+                    'hasBids'                   => $hasBids,
+                    'hasAcceptedLoans'          => $hasAcceptedLoans
                 ],
-                'walletData'         => [
+                'irrData'           => $irrData,
+                'walletData'        => [
                     'by_sector' => $lenderDisplayManager->getLenderLoansAllocationByCompanySector($wallet->getIdClient()),
                     'by_region' => $lenderDisplayManager->getLenderLoansAllocationByRegion($wallet->getIdClient()),
                 ],
-                'amountDetails'      => [
+                'amountDetails'     => [
                     'loaned_amount'     => round($loan->sumPrets($wallet->getId()), 2),
                     'blocked_amount'    => round($wallet->getCommittedBalance(), 2),
                     'expected_earnings' => round($repaidGrossInterests + $upcomingGrossInterests - $problematicProjects['interests'], 2),
                     'deposited_amount'  => $depositedAmount
                 ],
-                'capitalDetails'     => [
+                'capitalDetails'    => [
                     'repaid_capital'        => round($lenderRepayment->getRepaidCapital(['id_lender' => $wallet->getId()]), 2),
                     'owed_capital'          => round($lenderRepayment->getOwedCapital(['id_lender' => $wallet->getId()]) - $problematicProjects['capital'], 2),
                     'capital_in_difficulty' => round($problematicProjects['capital'], 2)
                 ],
-                'interestsDetails'   => [
+                'interestsDetails'  => [
                     'received_interests'      => round($repaidGrossInterests, 2),
                     'upcoming_interests'      => round($upcomingGrossInterests - $problematicProjects['interests'], 2),
                     'interests_in_difficulty' => round($problematicProjects['interests'], 2)
                 ],
-                'ongoingBids'        => $bid->counter('id_lender_account = ' . $wallet->getId() . ' AND status = ' . \bids::STATUS_BID_PENDING),
-                'ongoingProjects'    => $ongoingBidsByProject,
-                'publishedProjects'  => $publishedProjects,
-                'timeAxis'           => [
+                'ongoingBids'       => $bid->counter('id_lender_account = ' . $wallet->getId() . ' AND status = ' . \bids::STATUS_BID_PENDING),
+                'ongoingProjects'   => $ongoingBidsByProject,
+                'publishedProjects' => $publishedProjects,
+                'timeAxis'          => [
                     'month'   => $monthAxisData['monthAxis'],
                     'quarter' => $quarterAxisData['quarterAxis'],
                     'year'    => $yearAxisData['yearAxis']
                 ],
-                'monthSum'           => [
+                'monthSum'          => [
                     'capital'   => array_column($lenderRepaymentsData, 'capital'),
                     'interests' => array_column($lenderRepaymentsData, 'netInterests'),
                     'tax'       => array_column($lenderRepaymentsData, 'taxes'),
                     'max'       => $repaymentScheduleRepository->getMaxRepaymentAmountForLender($wallet->getId(), self::REPAYMENT_TIME_FRAME_MONTH)
                 ],
-                'quarterSum'         => [
+                'quarterSum'        => [
                     'capital'   => $repaymentDataPerPeriod['quarterCapital'],
                     'interests' => $repaymentDataPerPeriod['quarterInterests'],
                     'tax'       => $repaymentDataPerPeriod['quarterTax'],
                     'max'       => $repaymentScheduleRepository->getMaxRepaymentAmountForLender($wallet->getId(), self::REPAYMENT_TIME_FRAME_QUARTER)
                 ],
-                'yearSum'            => [
+                'yearSum'           => [
                     'capital'   => $repaymentDataPerPeriod['yearCapital'],
                     'interests' => $repaymentDataPerPeriod['yearInterests'],
                     'tax'       => $repaymentDataPerPeriod['yearTax'],
                     'max'       => $repaymentScheduleRepository->getMaxRepaymentAmountForLender($wallet->getId(), self::REPAYMENT_TIME_FRAME_YEAR)
                 ],
-                'bandOrigin'         => [
+                'bandOrigin'        => [
                     'month'   => $monthAxisData['monthBandOrigin'],
                     'quarter' => $quarterAxisData['quarterBandOrigin'],
                     'year'    => $yearAxisData['yearBandOrigin']
@@ -523,6 +493,52 @@ class LenderDashboardController extends Controller
             'yearCapital'      => array_values($yearCapital),
             'yearInterests'    => array_values($yearInterests),
             'yearTax'          => array_values($yearTax),
+        ];
+    }
+
+    private function getIRRDetailsForUserLevelWidget()
+    {
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $lenderManager = $this->get('unilend.service.lender_manager');
+
+        /** @var Wallet $wallet */
+        $wallet                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $hasLossRate               = false;
+        $widgetValue               = 0;
+        $irrHasBeenCalculated      = false;
+        $irrTranslationType        = '';
+        $companiesLenderInvestedIn = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->countCompaniesLenderInvestedIn($wallet->getId());
+
+        if (0 < $companiesLenderInvestedIn) {
+            /** @var LenderStatistic $lastIRR */
+            $lastIRR = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderStatistic')->findOneBy(['idWallet' => $wallet, 'typeStat' => LenderStatistic::TYPE_STAT_IRR], ['added' => 'DESC']);
+            if (null !== $lastIRR) {
+                $irrHasBeenCalculated  = true;
+                switch ($lastIRR->getStatus()) {
+                    case LenderStatistic::STAT_VALID_OK:
+                        $widgetValue        = $lastIRR->getValue();
+                        $irrTranslationType = $lastIRR->getValue() >= 0 ? 'positive-' : 'negative-';
+                        break;
+                    case LenderStatistic::STAT_VALID_NOK:
+                        $lossRate           = $lenderManager->getLossRate($wallet->getIdClient());
+                        $hasLossRate        = true;
+                        if ($lossRate > 0) {
+                            $widgetValue = -$lossRate;
+                        }
+                        break;
+                    default:
+                        //should not happen, there are only 2 status
+                        break;
+                }
+            }
+        }
+
+        return [
+            'widgetValue'               => $widgetValue,
+            'irrTranslation'            => $irrTranslationType,
+            'companiesLenderInvestedIn' => $companiesLenderInvestedIn,
+            'hasLossRate'               => $hasLossRate,
+            'irrHasBeenCalculated'      => $irrHasBeenCalculated
         ];
     }
 
