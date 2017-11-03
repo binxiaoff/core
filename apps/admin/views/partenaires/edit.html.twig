@@ -12,12 +12,23 @@
     <script src="{{ adminUrl }}/oneui/js/plugins/summernote/summernote.min.js"></script>
     <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
     <script src="{{ adminUrl }}/oneui/js/plugins/nestable/jquery.nestable.js"></script>
+    <script src="{{ adminUrl }}/oneui/js/plugins/masonry/masonry.pkgd.min.js"></script>
 {% endblock %}
 
 {% block pageScripts %}
     <script>
         $(function(){
             App.initHelpers(['validation', 'datatables', 'summernote', 'datepicker'])
+
+            /*
+             * Masonry blocks
+             */
+
+            $('.masonry-grid').masonry({
+                itemSelector: '.masonry-grid-item',
+                columnWidth: '.masonry-grid-sizer',
+                percentPosition: true
+            });
 
             /*
              * Extend dataTable actions
@@ -162,10 +173,17 @@
                 App.blocks('#modal-delete-product .block', 'state_loading')
             })
             // Submit new product
-            $(document).on('submit', '#modal-add-product form', function() {
+            $(document).on('submit', '#modal-add-product form', function(e) {
                 var $form = $(this)
                 if (!$form.find('.has-error').length) {
-                    App.blocks('#modal-add-product .block', 'state_loading')
+                    var id = $form.find('[name=product]').val()
+                    if (!$('#products').find('[data-product-id='+ id +']').length) {
+                        $form.find('.messages').html('')
+                        App.blocks('#modal-add-product .block', 'state_loading')
+                    } else {
+                        e.preventDefault()
+                        $form.find('.messages').html('<div class="alert">Le produit est déjà dans la liste.</div>')
+                    }
                 }
             })
         })
@@ -390,8 +408,8 @@
                 </table>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-6">
+        <div class="row masonry-grid">
+            <div class="col-md-6 masonry-grid-sizer">
                 <div id="instructions" class="block block-bordered">
                     <div class="block-header">
                         <h3 class="block-title">Instructions</h3>
@@ -421,7 +439,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 masonry-grid-item">
                 <div id="documents" class="block block-bordered">
                     <div class="block-header">
                         <h3 class="block-title">Pièces à fournir</h3>
@@ -468,9 +486,7 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-6 masonry-grid-item">
                 <div id="products" class="block block-bordered">
                     <div class="block-header">
                         <h3 class="block-title">Produits</h3>
@@ -491,26 +507,30 @@
                                     {% endfor %}
                                 </div>
                             {% endif %}
-                            <button class="btn btn-default add-btn push-5" type="button" data-toggle="modal" data-target="#modal-add-product"><span class="fa fa-plus"></span> Ajouter</button>
-                            <div class="row push">
+                            <button class="btn btn-default add-btn push-10" type="button" data-toggle="modal" data-target="#modal-add-product"><span class="fa fa-plus"></span> Ajouter</button>
+                            <div class="row">
                                 {% for product in products %}
-                                    <div class="col-md-4" data-product data-product-id="{{ product.idProduct.idProduct }}" data-product-rate-funds="{{ product.commissionRateFunds }}" data-product-rate-repayment="{{ product.commissionRateRepayment }}">
-                                        <div class="closable content-mini content-mini-full bg-gray-lighter">
-                                            <a role="button" class="closable-icon" data-toggle="modal" data-target="#modal-delete-product">
-                                                <span class="fa fa-close"></span>
-                                            </a>
-                                            <p class="push-5"><b>{{ product.idProduct.label|trans }}</b></p>
-                                            <p class="push-5">Com. déblocage <br> <span class="text-primary">{{ product.commissionRateFunds|localizednumber }}&nbsp;%</span> </p>
-                                            <p class="push-5">Com. remboursement <br> <span class="text-primary">{{ product.commissionRateRepayment|localizednumber }}&nbsp;%</span></p>
+                                    <div class="col-md-6 push" data-product data-product-id="{{ product.idProduct.idProduct }}" data-product-rate-funds="{{ product.commissionRateFunds }}" data-product-rate-repayment="{{ product.commissionRateRepayment }}">
+                                            <div class="closable content-mini content-mini-full bg-gray-lighter">
+                                                <a role="button" class="closable-icon" data-toggle="modal" data-target="#modal-delete-product">
+                                                    <span class="fa fa-close"></span>
+                                                </a>
+                                                <p class="push-5"><b>{{ product.idProduct.label|trans }}</b></p>
+                                                <p class="push-5">Com. déblocage <br> <span class="text-primary">{{ product.commissionRateFunds|localizednumber }}&nbsp;%</span> </p>
+                                                <p class="push-5">Com. remboursement <br> <span class="text-primary">{{ product.commissionRateRepayment|localizednumber }}&nbsp;%</span></p>
+                                            </div>
                                         </div>
-                                    </div>
+                                    {% if loop.index is divisible by(2) %}
+                                        </div>
+                                        <div class="row">
+                                    {% endif %}
                                 {% endfor %}
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 masonry-grid-item">
                 <div id="settings" class="block block-bordered">
                     <div class="block-header">
                         <h3 class="block-title">Paramètres</h3>
