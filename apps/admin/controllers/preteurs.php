@@ -1290,8 +1290,8 @@ class preteursController extends bootstrap
             'surl'    => $this->surl,
             'url'     => $this->furl,
             'prenom'  => $client->getPrenom(),
-            'lien_fb' => $entityManager->getRepository('Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
-            'lien_tw' => $entityManager->getRepository('Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
+            'lien_fb' => $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
+            'lien_tw' => $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
