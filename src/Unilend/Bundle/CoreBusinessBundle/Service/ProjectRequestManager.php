@@ -8,6 +8,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRating;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
@@ -43,6 +44,8 @@ class ProjectRequestManager
     private $logger;
     /** @var  PartnerProductManager */
     private $partnerProductManager;
+    /** @var CompanyManager */
+    private $companyManager;
 
     /**
      * @param EntityManagerSimulator $entityManagerSimulator
@@ -54,6 +57,7 @@ class ProjectRequestManager
      * @param EligibilityManager     $eligibilityManager
      * @param LoggerInterface        $logger
      * @param PartnerProductManager  $partnerProductManager
+     * @param CompanyManager         $companyManager
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -64,7 +68,8 @@ class ProjectRequestManager
         PartnerManager $partnerManager,
         EligibilityManager $eligibilityManager,
         LoggerInterface $logger,
-        PartnerProductManager $partnerProductManager
+        PartnerProductManager $partnerProductManager,
+        CompanyManager $companyManager
     )
     {
         $this->entityManagerSimulator = $entityManagerSimulator;
@@ -76,6 +81,7 @@ class ProjectRequestManager
         $this->eligibilityManager     = $eligibilityManager;
         $this->logger                 = $logger;
         $this->partnerProductManager  = $partnerProductManager;
+        $this->companyManager         = $companyManager;
     }
 
     /**
@@ -114,12 +120,13 @@ class ProjectRequestManager
 
     /**
      * @param array $formData
+     * @param Users $user
      *
      * @return \projects
      *
      * @throws \Exception
      */
-    public function saveSimulatorRequest($formData)
+    public function saveSimulatorRequest($formData, Users $user)
     {
         /** @var \projects $project */
         $project = $this->entityManagerSimulator->getRepository('projects');
@@ -184,6 +191,11 @@ class ProjectRequestManager
             $this->entityManager->persist($company);
             $this->entityManager->flush($company);
             $this->walletCreationManager->createWallet($client, WalletType::BORROWER);
+
+            $statusInBonis = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
+                ->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
+            $this->companyManager->addCompanyStatus($company, $statusInBonis, $user);
+
             $this->entityManager->commit();
         } catch (\Exception $exception) {
             $this->entityManager->getConnection()->rollBack();

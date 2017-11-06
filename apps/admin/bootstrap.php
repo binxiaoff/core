@@ -240,6 +240,27 @@ class bootstrap extends Controller
             ]
         ],
         [
+            'title' => 'Remboursements',
+            'uri'   => 'repayment/validation',
+            'zone'  => Zones::ZONE_LABEL_REPAYMENT,
+            'children' => [
+                [
+                    'title' => 'Remboursements à valider',
+                    'uri'   => 'repayment/validation'
+                ]
+            ]
+        ],
+        [
+            'title'    => 'Recouvreurs',
+            'uri'      => 'recouvreur/liste',
+            'zone'     => Zones::ZONE_LABEL_DEBT_COLLECTOR,
+            'children' => [
+                [
+                    'title' => 'Recouvreurs',
+                    'uri'   => 'recouvreur/liste',
+                ],
+            ]
+        ],[
             'title'    => 'Dépôt de fonds',
             'uri'      => 'transferts',
             'zone'     => Zones::ZONE_LABEL_TRANSFERS,
@@ -317,6 +338,10 @@ class bootstrap extends Controller
                 [
                     'title' => 'Transferts de fonds emprunteurs',
                     'uri'   => 'sfpmei/transferts/emprunteurs',
+                ],
+                [
+                    'title' => 'Opérations non attribuées',
+                    'uri'   => 'sfpmei/transferts/non_attribues',
                 ],
                 [
                     'title' => 'Exports',

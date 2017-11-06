@@ -1,10 +1,12 @@
 <?php
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
+
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+
 ?>
 <style type="text/css">
     table.tablesorter tbody td.grisfonceBG, .grisfonceBG {
@@ -419,6 +421,11 @@ use \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 </script>
 <script type="text/javascript" src="<?= $this->url ?>/ckeditor/ckeditor.js"></script>
 <div id="contenu">
+    <?php if (false === empty($this->projectStatusHeader)) : ?>
+        <div class="attention">
+            <?= $this->projectStatusHeader ?>
+        </div>
+    <?php endif; ?>
     <?php if (false === empty($this->projects->title)) : ?><h1><?= $this->projects->title ?></h1><?php endif; ?>
     <form method="post" name="dossier_resume" id="dossier_resume" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
         <table class="project-main">
