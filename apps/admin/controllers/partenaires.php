@@ -18,7 +18,7 @@ class partenairesController extends bootstrap
     {
         parent::initialize();
 
-        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
+        $this->users->checkAccess(Zones::ZONE_LABEL_CONFIGURATION);
         $this->menu_admin = Zones::ZONE_LABEL_BORROWERS;
     }
 
@@ -112,18 +112,12 @@ class partenairesController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        header('Content-Type: application/json');
-
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $partner       = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->params[0]);
 
         if (null === $partner) {
-            echo json_encode([
-                'success' => false,
-                'error'   => ['Partenaire inconnu']
-            ]);
-            return;
+            $this->sendAjaxResponse(false, null, ['Partenaire inconnu']);
         }
 
         /** @var Companies $agency */
@@ -133,7 +127,7 @@ class partenairesController extends bootstrap
         switch ($this->request->request->get('action')) {
             case 'create':
                 $agency       = new Companies();
-                $agencyErrors = $this->setAngecyData($this->request, $agency);
+                $agencyErrors = $this->setAgencyData($this->request, $agency);
                 $errors       = array_merge($errors, $agencyErrors);
 
                 if (empty($agencyErrors)) {
@@ -145,20 +139,22 @@ class partenairesController extends bootstrap
                 }
                 break;
             case 'modify':
-                if (empty($this->request->request->getInt('id'))) {
+                $id = $this->request->request->getInt('id');
+
+                if (empty($id)) {
                     $errors[] = 'Agence inconnue';
                     break;
                 }
 
                 $companiesRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
-                $agency              = $companiesRepository->find($this->request->request->getInt('id'));
+                $agency              = $companiesRepository->find($id);
 
                 if (null === $agency) {
                     $errors[] = 'Agence inconnue';
                     break;
                 }
 
-                $agencyErrors = $this->setAngecyData($this->request, $agency);
+                $agencyErrors = $this->setAgencyData($this->request, $agency);
                 $errors       = array_merge($errors, $agencyErrors);
 
                 if (empty($agencyErrors)) {
@@ -170,19 +166,19 @@ class partenairesController extends bootstrap
                 break;
         }
 
-        echo json_encode([
-            'success' => empty($errors),
-            'error'   => $errors,
-            'id'      => $agency instanceof Companies ? $agency->getIdCompany() : '',
-            'data'    => $agency instanceof Companies ? [
+        $this->sendAjaxResponse(
+            empty($errors),
+            $agency instanceof Companies ? [
                 $agency->getName(),
                 $agency->getSiren(),
                 $agency->getPhone(),
                 $agency->getAdresse1(),
                 $agency->getZip(),
                 $agency->getCity(),
-            ] : []
-        ]);
+            ] : [],
+            $errors,
+            $agency instanceof Companies ? $agency->getIdCompany() : null
+        );
     }
 
     /**
@@ -191,7 +187,7 @@ class partenairesController extends bootstrap
      *
      * @return array
      */
-    private function setAngecyData(Request $request, Companies $agency)
+    private function setAgencyData(Request $request, Companies $agency)
     {
         $errors   = [];
         $name     = $request->request->filter('name', FILTER_SANITIZE_STRING);
@@ -234,18 +230,12 @@ class partenairesController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        header('Content-Type: application/json');
-
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $partner       = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->params[0]);
 
         if (null === $partner) {
-            echo json_encode([
-                'success' => false,
-                'error'   => ['Partenaire inconnu']
-            ]);
-            return;
+            $this->sendAjaxResponse(false, null, ['Partenaire inconnu']);
         }
 
         /** @var CompanyClient $companyClient */
@@ -255,114 +245,17 @@ class partenairesController extends bootstrap
 
         switch ($action) {
             case 'create':
-                $companyClient       = new CompanyClient();
-                $companyClientErrors = $this->setCompanyClientData($this->request, $companyClient);
-                $errors              = array_merge($errors, $companyClientErrors);
-
-                if (empty($companyClientErrors)) {
-                    $entityManager->beginTransaction();
-
-                    try {
-                        $entityManager->persist($companyClient->getIdClient());
-                        $entityManager->persist($companyClient);
-                        $entityManager->flush([$companyClient->getIdClient(), $companyClient]);
-
-                        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WalletCreationManager $walletCreationManager */
-                        $walletCreationManager = $this->get('unilend.service.wallet_creation_manager');
-                        $walletCreationManager->createWallet($companyClient->getIdClient(), WalletType::PARTNER);
-
-                        $entityManager->commit();
-
-                        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
-                        $mailerManager = $this->get('unilend.service.email_manager');
-                        $mailerManager->sendPartnerAccountActivation($companyClient->getIdClient());
-                    } catch (\Exception $exception) {
-                        $entityManager->getConnection()->rollBack();
-                        $this->get('logger')->error('An error occurred while creating client: ' . $exception->getMessage(), [['class' => __CLASS__, 'function' => __FUNCTION__]]);
-                    }
-                }
+                $errors = $this->createUser($this->request, $companyClient, $errors);
                 break;
             case 'modify':
-                if (empty($this->request->request->getInt('id'))) {
-                    $errors[] = 'Utilisateur inconnu';
-                    break;
-                }
-
-                $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
-                $companyClient           = $companyClientRepository->find($this->request->request->getInt('id'));
-
-                if (null === $companyClient) {
-                    $errors[] = 'Utilisateur inconnu';
-                    break;
-                }
-
-                $agencyErrors = $this->setCompanyClientData($this->request, $companyClient);
-                $errors       = array_merge($errors, $agencyErrors);
-
-                if (empty($agencyErrors)) {
-                    $entityManager->flush([$companyClient->getIdClient(), $companyClient]);
-                }
+                $errors = $this->updateUser($this->request, $companyClient, $errors);
                 break;
             case 'activate':
             case 'deactivate':
-                if (empty($this->request->request->getInt('id'))) {
-                    $errors[] = 'Utilisateur inconnu';
-                    break;
-                }
-
-                $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
-                $companyClient           = $companyClientRepository->find($this->request->request->getInt('id'));
-
-                if (null === $companyClient) {
-                    $errors[] = 'Utilisateur inconnu';
-                    break;
-                }
-
-                $status = 'activate' === $action ? Clients::STATUS_ONLINE : Clients::STATUS_OFFLINE;
-                $companyClient->getIdClient()->setStatus($status);
-                $entityManager->flush($companyClient->getIdClient());
+                $errors = $this->toggleUserStatus($this->request, $companyClient, $errors);
                 break;
             case 'password':
-                if (empty($this->request->request->getInt('id'))) {
-                    $errors[] = 'Utilisateur inconnu';
-                    break;
-                }
-
-                $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
-                $companyClient           = $companyClientRepository->find($this->request->request->getInt('id'));
-
-                if (null === $companyClient) {
-                    $errors[] = 'Utilisateur inconnu';
-                    break;
-                }
-
-                /** @var \temporary_links_login $temporaryLink */
-                $temporaryLink      = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
-                $settingsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
-                $token              = $temporaryLink->generateTemporaryLink($companyClient->getIdClient()->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_MEDIUM);
-                $keywords           = [
-                    'surl'          => $this->surl,
-                    'url'           => $this->furl,
-                    'prenom'        => $companyClient->getIdClient()->getPrenom(),
-                    'login'         => $companyClient->getIdClient()->getEmail(),
-                    'link_password' => $this->furl . '/partenaire/securite/' . $token,
-                    'lien_fb'       => $settingsRepository->findOneBy(['type' => 'Facebook'])->getValue(),
-                    'lien_tw'       => $settingsRepository->findOneBy(['type' => 'Twitter'])->getValue()
-                ];
-
-                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $keywords);
-
-                try {
-                    $message->setTo($companyClient->getIdClient()->getEmail());
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
-                } catch (\Exception $exception) {
-                    $this->get('logger')->warning(
-                        'Could not send email "mot-de-passe-oublie" - Exception: ' . $exception->getMessage(),
-                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $companyClient->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-                    );
-                }
+                $errors = $this->sendUserPassword($this->request, $companyClient, $errors);
                 break;
             default:
                 $errors[] = 'Action inconnue';
@@ -386,12 +279,179 @@ class partenairesController extends bootstrap
             }
         }
 
-        echo json_encode([
-            'success' => empty($errors),
-            'error'   => $errors,
-            'id'      => $companyClient instanceof CompanyClient && $companyClient->getId() ? $companyClient->getId() : '',
-            'data'    => $data
-        ]);
+        $this->sendAjaxResponse(
+            empty($errors),
+            $data,
+            $errors,
+            $companyClient instanceof CompanyClient && $companyClient->getId() ? $companyClient->getId() : null
+        );
+    }
+
+    /**
+     * @param Request            $request
+     * @param CompanyClient|null $companyClient
+     * @param array              $errors
+     *
+     * @return array
+     */
+    private function createUser(Request $request, &$companyClient, array $errors)
+    {
+        $companyClient       = new CompanyClient();
+        $companyClientErrors = $this->setCompanyClientData($request, $companyClient);
+        $errors              = array_merge($errors, $companyClientErrors);
+
+        if (empty($companyClientErrors)) {
+            /** @var EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            $entityManager->getConnection()->beginTransaction();
+
+            try {
+                $entityManager->persist($companyClient->getIdClient());
+                $entityManager->persist($companyClient);
+                $entityManager->flush([$companyClient->getIdClient(), $companyClient]);
+
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WalletCreationManager $walletCreationManager */
+                $walletCreationManager = $this->get('unilend.service.wallet_creation_manager');
+                $walletCreationManager->createWallet($companyClient->getIdClient(), WalletType::PARTNER);
+
+                $entityManager->getConnection()->commit();
+
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
+                $mailerManager = $this->get('unilend.service.email_manager');
+                $mailerManager->sendPartnerAccountActivation($companyClient->getIdClient());
+            } catch (\Exception $exception) {
+                $entityManager->getConnection()->rollBack();
+                $this->get('logger')->error('An error occurred while creating client: ' . $exception->getMessage(), [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * @param Request            $request
+     * @param CompanyClient|null $companyClient
+     * @param array              $errors
+     *
+     * @return array
+     */
+    private function updateUser(Request $request, &$companyClient, array $errors)
+    {
+        $id = $request->request->getInt('id');
+
+        if (empty($id)) {
+            $errors[] = 'Utilisateur inconnu';
+            return $errors;
+        }
+
+        /** @var EntityManager $entityManager */
+        $entityManager           = $this->get('doctrine.orm.entity_manager');
+        $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
+        $companyClient           = $companyClientRepository->find($id);
+
+        if (null === $companyClient) {
+            $errors[] = 'Utilisateur inconnu';
+            return $errors;
+        }
+
+        $agencyErrors = $this->setCompanyClientData($request, $companyClient);
+        $errors       = array_merge($errors, $agencyErrors);
+
+        if (empty($agencyErrors)) {
+            $entityManager->flush([$companyClient->getIdClient(), $companyClient]);
+        }
+
+        return $errors;
+    }
+
+    /**
+     * @param Request            $request
+     * @param CompanyClient|null $companyClient
+     * @param array              $errors
+     *
+     * @return array
+     */
+    private function toggleUserStatus(Request $request, &$companyClient, array $errors)
+    {
+        $id = $request->request->getInt('id');
+
+        if (empty($id)) {
+            $errors[] = 'Utilisateur inconnu';
+            return $errors;
+        }
+
+        /** @var EntityManager $entityManager */
+        $entityManager           = $this->get('doctrine.orm.entity_manager');
+        $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
+        $companyClient           = $companyClientRepository->find($id);
+
+        if (null === $companyClient) {
+            $errors[] = 'Utilisateur inconnu';
+            return $errors;
+        }
+
+        $status = 'activate' === $request->request->get('action') ? Clients::STATUS_ONLINE : Clients::STATUS_OFFLINE;
+        $companyClient->getIdClient()->setStatus($status);
+        $entityManager->flush($companyClient->getIdClient());
+
+        return $errors;
+    }
+
+    /**
+     * @param Request            $request
+     * @param CompanyClient|null $companyClient
+     * @param array              $errors
+     *
+     * @return array
+     */
+    private function sendUserPassword(Request $request, &$companyClient, array $errors)
+    {
+        $id = $request->request->getInt('id');
+
+        if (empty($id)) {
+            $errors[] = 'Utilisateur inconnu';
+            return $errors;
+        }
+
+        /** @var EntityManager $entityManager */
+        $entityManager           = $this->get('doctrine.orm.entity_manager');
+        $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
+        $companyClient           = $companyClientRepository->find($id);
+
+        if (null === $companyClient) {
+            $errors[] = 'Utilisateur inconnu';
+            return $errors;
+        }
+
+        /** @var \temporary_links_login $temporaryLink */
+        $temporaryLink      = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
+        $settingsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+        $token              = $temporaryLink->generateTemporaryLink($companyClient->getIdClient()->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_MEDIUM);
+        $keywords           = [
+            'surl'          => $this->surl,
+            'url'           => $this->furl,
+            'prenom'        => $companyClient->getIdClient()->getPrenom(),
+            'login'         => $companyClient->getIdClient()->getEmail(),
+            'link_password' => $this->furl . '/partenaire/securite/' . $token,
+            'lien_fb'       => $settingsRepository->findOneBy(['type' => 'Facebook'])->getValue(),
+            'lien_tw'       => $settingsRepository->findOneBy(['type' => 'Twitter'])->getValue()
+        ];
+
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $keywords);
+
+        try {
+            $message->setTo($companyClient->getIdClient()->getEmail());
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->get('logger')->warning(
+                'Could not send email "mot-de-passe-oublie" - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $companyClient->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+        }
+
+        return $errors;
     }
 
     /**
@@ -405,17 +465,17 @@ class partenairesController extends bootstrap
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $errors        = [];
-        $lastname      = $request->request->filter('lastname', FILTER_SANITIZE_STRING);
-        $firstname     = $request->request->filter('firstname', FILTER_SANITIZE_STRING);
+        $lastName      = $request->request->filter('lastname', FILTER_SANITIZE_STRING);
+        $firstName     = $request->request->filter('firstname', FILTER_SANITIZE_STRING);
         $email         = $request->request->filter('email', FILTER_VALIDATE_EMAIL);
         $agency        = $request->request->getInt('agency');
         $phone         = $request->request->filter('phone', FILTER_SANITIZE_STRING);
         $role          = $request->request->filter('role', FILTER_SANITIZE_STRING);
 
-        if (empty($lastname)) {
+        if (empty($lastName)) {
             $errors[] = 'Vous devez renseigner un nom';
         }
-        if (empty($firstname)) {
+        if (empty($firstName)) {
             $errors[] = 'Vous devez renseigner un prénom';
         }
         if (empty($email)) {
@@ -448,13 +508,13 @@ class partenairesController extends bootstrap
                 $client = new Clients();
                 $client
                     ->setIdLangue('fr')
-                    ->setSlug($this->ficelle->generateSlug($firstname . '-' . $lastname))
+                    ->setSlug($this->ficelle->generateSlug($firstName . '-' . $lastName))
                     ->setStatus(Clients::STATUS_ONLINE);
 
                 $companyClient->setIdClient($client);
             }
-            $companyClient->getIdClient()->setNom($lastname);
-            $companyClient->getIdClient()->setPrenom($firstname);
+            $companyClient->getIdClient()->setNom($lastName);
+            $companyClient->getIdClient()->setPrenom($firstName);
             $companyClient->getIdClient()->setEmail($email);
             $companyClient->getIdClient()->setTelephone($phone);
             $companyClient->setIdCompany($agency);
@@ -562,7 +622,7 @@ class partenairesController extends bootstrap
             unset($newDocuments[$index]);
         }
 
-        // Documents previously available have been unset
+        // Documents left in $newDocuments correspond to documents not yet existing in DB
         foreach ($newDocuments as $index => $newDocument) {
             $document = new PartnerProjectAttachment();
             $document->setPartner($partner);
@@ -750,7 +810,11 @@ class partenairesController extends bootstrap
 
         $this->hideDecoration();
 
-        if (false === empty($this->params[0]) && false === empty($this->params[1])) {
+        if (
+            isset($this->params[0], $this->params[1])
+            && false !== filter_var($this->params[0], FILTER_VALIDATE_INT)
+            && 1 === preg_match('/^[0-9]{9}$/', $this->params[1])
+        ) {
             /** @var Doctrine\ORM\EntityManager $entityManager = */
             $entityManager         = $this->get('doctrine.orm.entity_manager');
             $this->translator      = $this->get('translator');
@@ -774,21 +838,17 @@ class partenairesController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        header('Content-Type: application/json');
-
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $partner       = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->request->request->getInt('partner'));
 
         if (null === $partner) {
-            echo json_encode([
-                'success' => false,
-                'error'   => ['Partenaire inconnu']
-            ]);
-            return;
+            $this->sendAjaxResponse(false, null, ['Partenaire inconnu']);
         }
 
-        $agencies = [['id' => $partner->getIdCompany()->getIdCompany(), 'name' => 'Siège']];
+        $agencies = [
+            ['id' => $partner->getIdCompany()->getIdCompany(), 'name' => 'Siège']
+        ];
         foreach ($entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['idParentCompany' => $partner->getIdCompany()]) as $agency) {
             $agencies[] = [
                 'id'   => $agency->getIdCompany(),
@@ -799,11 +859,7 @@ class partenairesController extends bootstrap
             return strcmp($first['name'], $second['name']);
         });
 
-        echo json_encode([
-            'success' => true,
-            'error'   => [],
-            'data'    => $agencies
-        ]);
+        $this->sendAjaxResponse(true, $agencies);
     }
 
     public function _utilisateurs()
@@ -819,18 +875,12 @@ class partenairesController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        header('Content-Type: application/json');
-
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $agency        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->request->request->getInt('agency'));
 
         if (null === $agency) {
-            echo json_encode([
-                'success' => false,
-                'error'   => ['Agence inconnue']
-            ]);
-            return;
+            $this->sendAjaxResponse(false, null, ['Agence inconnue']);
         }
 
         $users = [];
@@ -844,10 +894,6 @@ class partenairesController extends bootstrap
             return strcmp($first['name'], $second['name']);
         });
 
-        echo json_encode([
-            'success' => true,
-            'error'   => [],
-            'data'    => $users
-        ]);
+        $this->sendAjaxResponse(true, $users);
     }
 }

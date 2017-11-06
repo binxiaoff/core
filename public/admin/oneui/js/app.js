@@ -750,14 +750,13 @@ var App = function() {
     var uiHelperDataTables = function() {
         // DataTables Bootstrap integration
         var $DataTable = $.fn.dataTable
-        $.extend( true, $DataTable.defaults, {
+        $.extend(true, $DataTable.defaults, {
             dom:
             "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
             "<'row'<'col-sm-12'tr>>" +
             "<'row'<'col-sm-6'i><'col-sm-6'p>>",
             renderer: 'bootstrap',
             oLanguage: {
-                sLengthMenu: "_MENU_",
                 sProcessing:     "Traitement en cours...",
                 sSearch:         "Rechercher&nbsp;:",
                 sLengthMenu:     "Afficher _MENU_ &eacute;l&eacute;ments",
@@ -770,13 +769,9 @@ var App = function() {
                 sEmptyTable:     "Aucune donn&eacute;e disponible dans le tableau",
                 oPaginate: {
                     sFirst:      "Premier",
-                    sPrevious:   "Pr&eacute;c&eacute;dent",
-                    sNext:       "Suivant",
+                    sPrevious:   '<i class="fa fa-angle-left"></i>',
+                    sNext:       '<i class="fa fa-angle-right"></i>',
                     sLast:       "Dernier"
-                },
-                oPaginate: {
-                    sPrevious: '<i class="fa fa-angle-left"></i>',
-                    sNext: '<i class="fa fa-angle-right"></i>'
                 }
             }
         })
@@ -1082,8 +1077,8 @@ var App = function() {
                 var name = $th.data('editor-name')
                 var type = $th.data('editor-type')
                 var options = $th.data('editor-options')
-                var required = (typeof $th.data('editor-optional') === 'undefined') ? true : false
-                var disabled = (typeof $th.data('editor-disabled') !== 'undefined') ? true : false
+                var required = (typeof $th.data('editor-optional') === 'undefined')
+                var disabled = (typeof $th.data('editor-disabled') !== 'undefined')
                 var label = $th.text()
                 if (typeof name === 'undefined' || typeof type === 'undefined') {
                     if (!$th.is('[data-table-actionscolumn]')) {
@@ -1109,9 +1104,9 @@ var App = function() {
         }
         DT.prototype.form = function(fields) {
             var self = this
-            var fields = (typeof fields === 'undefined') ? self.fields() : fields
             var html = ''
-            for (var $i=0; $i < fields.length; $i++) {
+            fields = (typeof fields === 'undefined') ? self.fields() : fields
+            for (var $i = 0; $i < fields.length; $i++) {
                 var field         = fields[$i]
                 var name          = field.name
                 var label         = field.label
@@ -1502,7 +1497,7 @@ var App = function() {
                 var $input = $(this)
                 var file = this.files[0];
                 if (file.size > 5*1024) {
-                    $input.closest('form-group').addClass('has-error').append('<p class="text-danger">Taille max 5 Mb.</p>')
+                    $input.closest('form-group').addClass('has-error').append('<p class="text-danger">Taille max 5 Mo.</p>')
 
                 } else {
                     $input.closest('form-group').removeClass('has-error').find('.text-danger').remove()
