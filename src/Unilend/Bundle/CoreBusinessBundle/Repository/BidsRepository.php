@@ -57,7 +57,7 @@ class BidsRepository extends EntityRepository
     public function getManualBidCountByDateAndWallet(Wallet $wallet, \DateTime $date)
     {
         $queryBuilder = $this->createQueryBuilder('b');
-        $queryBuilder->select('SUM(b.idBid)')
+        $queryBuilder->select('COUNT(b.idBid)')
             ->where('b.idLenderAccount = :walletId')
             ->andWhere('b.idAutobid IS NULL')
             ->andWhere('b.added > :date')
