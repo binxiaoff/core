@@ -69,6 +69,11 @@
             {% endblock %}
         {% endif %}
 
+        {# As long as lender menu is rendered using LenderAccount:lenderMenu, we need this trick before refactoring menu here and there #}
+        {% if app.user is defined and app.user is not empty and false == is_granted('ROLE_LENDER') %}
+            {% include 'partials/site/user-mobile-menu.html.twig' %}
+        {% endif %}
+
         <div class="modal-spinner">
             <div id="floatingCirclesG">
                 <div class="f_circleG" id="frotateG_01"></div>
@@ -81,11 +86,6 @@
                 <div class="f_circleG" id="frotateG_08"></div>
             </div>
         </div>
-
-        {# As long as lender menu is rendered using LenderAccount:lenderMenu, we need this trick before refactoring menu here and there #}
-        {% if app.user is defined and app.user is not empty and false == is_granted('ROLE_LENDER') %}
-            {% include 'partials/site/user-mobile-menu.html.twig' %}
-        {% endif %}
 
         <div rel="templates" style="display:none" aria-hidden="true">
             {% block modals %}
