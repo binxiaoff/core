@@ -155,7 +155,7 @@ class parrainageController extends bootstrap
             }
 
             if ($end < $start) {
-                $_SESSION['create_sponsorship_campaign']['errors'][] = 'La date de fin est antérieur à la date de début';
+                $_SESSION['create_sponsorship_campaign']['errors'][] = 'La date de fin est antérieure à la date de début';
             }
 
             $amountSponsee = $this->request->request->getInt('amount_sponsee');
@@ -170,7 +170,7 @@ class parrainageController extends bootstrap
 
             $maxNumberSponsee = $this->request->request->getInt('max_number_sponsee');
             if (empty($maxNumberSponsee)) {
-                $_SESSION['create_sponsorship_campaign']['errors'][] = 'Le nombre maximal de filleuls n\'est pas valide';
+                $_SESSION['create_sponsorship_campaign']['errors'][] = 'Le nombre maximum de filleuls n\'est pas valide';
             }
 
             $validityDays = $this->request->request->getInt('validity_days');
@@ -191,9 +191,9 @@ class parrainageController extends bootstrap
                 $newCampaignCreated = $sponsorshipManager->saveSponsorshipCampaign($start, $end, $amountSponsee, $amountSponsor, $maxNumberSponsee, $validityDays, $idCampaign);
 
                 if ($newCampaignCreated && null !== $this->request->request->get('create_new_campaign')) {
-                    $_SESSION['create_sponsorship_campaign']['success'] = 'La nouvelle campagne a été crée';
+                    $_SESSION['create_sponsorship_campaign']['success'] = 'La nouvelle campagne a été créée';
                 } elseif ($newCampaignCreated && null !== $this->request->request->get('modify_campaign')) {
-                    $_SESSION['modify_sponsorship_campaign']['success'] = 'La campagne a été modifié.';
+                    $_SESSION['modify_sponsorship_campaign']['success'] = 'La campagne a été modifiée.';
                 }
             } catch (\Exception $exception) {
                 $_SESSION['create_sponsorship_campaign']['errors'][] = 'Une erreur est survenue lors de l\'enregistrement de la campagne.';
@@ -269,7 +269,7 @@ class parrainageController extends bootstrap
             if (0 < $idCampaign) {
                 $campaign = $entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->find($idCampaign);
                 if (null === $campaign) {
-                    $_SESSION['sponsorship_blacklist']['errors'][] = 'La campagne choisi n\'existe pas';
+                    $_SESSION['sponsorship_blacklist']['errors'][] = 'La campagne choisie n\'existe pas';
                     header('Location: ' . $this->lurl . '/parrainage');
                     die;
                 }
@@ -366,7 +366,7 @@ class parrainageController extends bootstrap
             }
 
             if (empty($sponsorship)) {
-                $this->sendAjaxResponse(false, null, ['Il n\'y a pas de lien parrain - filleul pour ce client .']);
+                $this->sendAjaxResponse(false, null, ['Il n\'y a pas de lien parrain - filleul pour ce client.']);
             }
 
             $this->sendAjaxResponse(true, $sponsorship);
@@ -500,7 +500,7 @@ class parrainageController extends bootstrap
             $sponsorship->setIdCampaign($campaign)
                 ->setStatus($status);
             $entityManager->flush($sponsorship);
-            $_SESSION['create_sponsorship']['success'] = 'Le parrainage entre parrain (' . $sponsor->getIdClient() . ') et filleul (' . $sponsee->getIdClient() . ') a été crée';
+            $_SESSION['create_sponsorship']['success'] = 'Le parrainage entre parrain (' . $sponsor->getIdClient() . ') et filleul (' . $sponsee->getIdClient() . ') a été créé';
         }
 
         header('Location: ' . $this->lurl . '/parrainage');
