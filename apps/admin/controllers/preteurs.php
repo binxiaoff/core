@@ -1284,7 +1284,7 @@ class preteursController extends bootstrap
     private function sendEmailClosedAccount(Clients $client)
     {
         /** @var \Doctrine\ORM\EntityRepository $settingsRepository */
-        $settingsRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Settings')
+        $settingsRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Settings');
 
         $keyWords = [
             'surl'    => $this->surl,
