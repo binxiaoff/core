@@ -186,3 +186,53 @@ table.dataTable thead .sorting:after, table.dataTable thead .sorting_asc:after, 
     font-size: 12px;
     color: #999;
 }
+
+/* Project Status UI */
+
+.ui-status-ko-text { color: #b6babe } /* same as .text-muted */
+.ui-status-ko-bg { background-color: #b6babe } /* same as .bg-muted */
+
+.ui-application-text { color: #d0f5d0 }
+.ui-application-bg { background-color: #d0f5d0 }
+
+.ui-application-complete-text { color: #aae3c9 }
+.ui-application-complete-bg { background-color: #aae3c9 }
+
+.ui-abandon-text { color: #eccd81 }
+.ui-abandon-bg { background-color: #eccd81 }
+
+.ui-commercial-text { color: #98d9d4 }
+.ui-commercial-bg { background-color: #98d9d4 }
+
+.ui-analyst-text { color: #91c8d9 }
+.ui-analyst-bg { background-color: #91c8d9 }
+
+.ui-comity-text { color: #80b5d9 }
+.ui-comity-bg { background-color: #80b5d9 }
+
+.ui-prep-funding-text { color: #6ea8dc }
+.ui-prep-funding-bg { background-color: #6ea8dc }
+
+.ui-conditions-text { color: #b995c7 }
+.ui-conditions-bg { background-color: #b995c7 }
+
+.ui-funding-text { color: #5293de }
+.ui-funding-bg { background-color: #5293de }
+
+.ui-inprogress-text { color: #1b88db }
+.ui-inprogress-bg { background-color: #1b88db }
+
+.ui-completed-text { color: #4fa8b0 }
+.ui-completed-bg { background-color: #4fa8b0 }
+
+.ui-problem-text { color: #ffca2c }
+.ui-problem-bg { background-color: #ffca2c }
+
+.ui-debt-collection-text { color: #f2980c }
+.ui-debt-collection-bg { background-color: #f2980c }
+
+.ui-procedure-text { color: #f2610c }
+.ui-procedure-bg { background-color: #f2610c }
+
+.ui-loss-text { color: #787679 }
+.ui-loss-bg { background-color: #787679 }

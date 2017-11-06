@@ -137,19 +137,19 @@
 .table-myloans-item, .table-myloans-view-details {
   &.ui-loan-status-in-progress {
     td:first-child {
-      border-color: $c-chart-teal-d;
+      border-color: $c-chart-blue;
     }
   }
 
   &.ui-loan-status-completed {
     td:first-child {
-      border-color: $c-chart-blue;
+      border-color: $c-chart-teal-d;
     }
   }
 
   &.ui-loan-status-late {
     td:first-child {
-      border-color: $c-chart-teal;
+      border-color: $c-chart-yellow;
     }
   }
 
@@ -157,7 +157,7 @@
   &.ui-loan-status-litigation-dc,
   &.ui-loan-status-recovery {
     td:first-child {
-      border-color: $c-chart-yellow;
+      border-color: $c-chart-orange;
     }
   }
 
