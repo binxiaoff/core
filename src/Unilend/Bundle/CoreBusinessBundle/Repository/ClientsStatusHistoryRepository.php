@@ -76,13 +76,12 @@ class ClientsStatusHistoryRepository extends EntityRepository
     }
 
     /**
-     * @param $client
+     * @param int $client
      *
      * @return array|ClientsStatusHistory[]
      */
     public function findLastTwoClientStatus($client)
     {
-        // $aLastTwoStatus = $oClientsStatusHistory->select('id_client =  ' . $oClient->id_client, 'id_client_status_history DESC', null, 2);
         $queryBuilder = $this->createQueryBuilder('csh');
         $queryBuilder->where('csh.idClient = :clientId')
             ->setParameter('clientId', $client)

@@ -1234,8 +1234,8 @@ class preteursController extends bootstrap
 
     /**
      * @param Clients|\clients $client
-     * @param $status
-     * @param $origin
+     * @param int              $status
+     * @param int              $origin
      */
     private function changeClientOnlineOfflineStatus($client, $status, $origin)
     {
@@ -1283,15 +1283,15 @@ class preteursController extends bootstrap
      */
     private function sendEmailClosedAccount(Clients $client)
     {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Doctrine\ORM\EntityRepository $settingsRepository */
+        $settingsRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Settings')
 
         $keyWords = [
             'surl'    => $this->surl,
             'url'     => $this->furl,
             'prenom'  => $client->getPrenom(),
-            'lien_fb' => $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
-            'lien_tw' => $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
+            'lien_fb' => $settingsRepository->findOneBy(['type' => 'Facebook'])->getValue(),
+            'lien_tw' => $settingsRepository->findOneBy(['type' => 'Twitter'])->getValue(),
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
@@ -1486,7 +1486,7 @@ class preteursController extends bootstrap
             die;
         }
         $clientId = empty($this->params[1]) ? null : filter_var($this->params[1], FILTER_SANITIZE_NUMBER_INT);
-        if (false === $clientId) {
+        if (empty($clientId)) {
             header('Location: ' . $this->lurl . '/preteurs/search');
             die;
         }
@@ -1500,7 +1500,7 @@ class preteursController extends bootstrap
             die;
         }
 
-        if (isset($this->params[0]) && $this->params[0] == 'status' ) {
+        if ($this->params[0] == 'status' ) {
             $this->changeClientOnlineOfflineStatus($client, $this->params[2], 1);
             switch ($this->params[2]) {
                 case Clients::STATUS_OFFLINE:
@@ -1523,7 +1523,7 @@ class preteursController extends bootstrap
             }
         }
 
-        if (isset($this->params[0]) && $this->params[0] == 'deactivate' ) {
+        if ($this->params[0] == 'deactivate' ) {
             $this->changeClientOnlineOfflineStatus($client, $this->params[2], 1);
             $this->sendEmailClosedAccount($client);
             $clientStatusManager->addClientStatus($client, $_SESSION['user']['id_user'], ClientsStatus::CLOSED_LENDER_REQUEST);
