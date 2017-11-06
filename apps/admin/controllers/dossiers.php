@@ -798,6 +798,18 @@ class dossiersController extends bootstrap
             $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Tree');
             $this->legalDocuments = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
 
+            $this->companyManager      = $this->get('unilend.service.company_manager');
+            $this->projectStatusHeader = '';
+            if (null !== $this->projectEntity->getCloseOutNettingDate()) {
+                $this->projectStatusHeader = 'Terme déchu le ' . $this->projectEntity->getCloseOutNettingDate()->format('d/m/Y');
+            }
+            if ($this->projectEntity->getIdCompany()->getIdStatus()
+                && \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus::STATUS_IN_BONIS !== $this->projectEntity->getIdCompany()->getIdStatus()->getLabel()
+            ) {
+                $this->projectStatusHeader .= $this->projectStatusHeader !== '' ? ' - ' : '';
+                $this->projectStatusHeader .= 'Société en ' . $this->companyManager->getCompanyStatusNameByLabel($this->projectEntity->getIdCompany()->getIdStatus()->getLabel());
+            }
+
             $this->transferFunds($this->projectEntity);
         } else {
             header('Location: ' . $this->lurl . '/dossiers');

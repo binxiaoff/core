@@ -507,18 +507,15 @@ class SponsorshipManager
      */
     public function createSponsorship(Clients $sponsee, $sponsorCode, SponsorshipCampaign $campaign = null)
     {
-        $sponsor = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['sponsorCode' => $sponsorCode]);
+        $sponsor = $this->getSponsorBySponsorCode($sponsorCode);
 
-        if ($this->clientStatusManager->hasBeenValidatedAtLeastOnce($sponsor)) {
+        if (null !== $sponsor && $this->clientStatusManager->hasBeenValidatedAtLeastOnce($sponsor)) {
             if (null === $campaign) {
                 $campaign = $this->getCurrentSponsorshipCampaign();
             }
 
             $sponsorship = new Sponsorship();
-            $sponsorship->setIdClientSponsor($sponsor)
-                ->setIdClientSponsee($sponsee)
-                ->setIdCampaign($campaign)
-                ->setStatus(Sponsorship::STATUS_ONGOING);
+            $sponsorship->setIdClientSponsor($sponsor)->setIdClientSponsee($sponsee)->setIdCampaign($campaign)->setStatus(Sponsorship::STATUS_ONGOING);
 
             $this->entityManager->persist($sponsorship);
             $this->entityManager->flush($sponsorship);
@@ -708,5 +705,25 @@ class SponsorshipManager
         }
 
         return $unusedAmount;
+    }
+
+    /**
+     * @param string $sponsorCode
+     *
+     * @return null|Clients
+     */
+    public function getSponsorBySponsorCode($sponsorCode)
+    {
+        $sponsor = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['sponsorCode' => $sponsorCode]);
+        if (null !== $sponsor) {
+            return $sponsor;
+        }
+
+        $sponsor = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findClientByOldSponsorCode(str_pad($sponsorCode, 6, STR_PAD_LEFT));
+        if (null !== $sponsor && $sponsorCode == substr($sponsor->getHash(), 0, 6) . $sponsor->getNom()) {
+            return $sponsor;
+        }
+
+        return null;
     }
 }

@@ -935,6 +935,19 @@ var App = function() {
                 return b - a
             }
         })
+        // French date sorting
+        $.extend($DataTable.ext.oSort, {
+            'date-fr-pre': function (a) {
+                a = (a === '-' || a === '') ? 0 : a.replace(/([\d]{2})\/([\d]{2})\/([\d]{4})/g, '')
+                return parseFloat(a)
+            },
+            'date-fr-asc': function (a, b) {
+                return a - b
+            },
+            'date-fr-desc': function (a, b) {
+                return b - a
+            }
+        })
         // Show page of row
         $DataTable.Api.register('row().show()', function() {
             var page_info = this.table().page.info()
