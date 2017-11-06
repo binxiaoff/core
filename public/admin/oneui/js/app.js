@@ -65,15 +65,26 @@ var App = function() {
 
         if ($lMain.length) {
             uiHandleMain();
-
-            jQuery(window).on('resize orientationchange', function(){
-                clearTimeout($resizeTimeout);
-
-                $resizeTimeout = setTimeout(function(){
-                    uiHandleMain();
-                }, 150);
-            });
         }
+
+        if (jQuery('[data-equal-height]').length) {
+            uiEqualHeights();
+        }
+
+        jQuery(window).on('resize orientationchange', function(){
+            clearTimeout($resizeTimeout);
+
+            $resizeTimeout = setTimeout(function(){
+                if ($lMain.length) {
+                    uiHandleMain();
+                }
+
+                if (jQuery('[data-equal-height]').length) {
+                    uiEqualHeights();
+                    console.log('ss')
+                }
+            }, 150);
+        });
 
         // Init sidebar and side overlay custom scrolling
         uiHandleScroll('init');
@@ -568,74 +579,35 @@ var App = function() {
         }
     };
 
-    // Set active color themes functionality
-    var uiHandleTheme = function() {
-        var $cssTheme = jQuery('#css-theme');
-        var $cookies  = $lPage.hasClass('enable-cookies') ? true : false;
+    // Set equal heights
+    var uiEqualHeights = function () {
+        var equalHeights = {}
 
-        // If cookies are enabled
-        if ($cookies) {
-            var $theme  = Cookies.get('colorTheme') ? Cookies.get('colorTheme') : false;
+        // Iterate over items with [data-equal-height] attribute
+        $('[data-equal-height]').each(function (i, elem) {
+            var $elem = $(elem)
 
-            // Update color theme
-            if ($theme) {
-                if ($theme === 'default') {
-                    if ($cssTheme.length) {
-                        $cssTheme.remove();
-                    }
-                } else {
-                    if ($cssTheme.length) {
-                        $cssTheme.attr('href', $theme);
-                    } else {
-                        jQuery('#css-main')
-                            .after('<link rel="stylesheet" id="css-theme" href="' + $theme + '">');
-                    }
-                }
-            }
+            // Equal height by group
+            var groupName = $elem.attr('data-equal-height-group') || 'default'
 
-            $cssTheme = jQuery('#css-theme');
-        }
+            // Reset inline css height
+            $elem.css('height', '')
 
-        // Set the active color theme link as active
-        jQuery('[data-toggle="theme"][data-theme="' + ($cssTheme.length ? $cssTheme.attr('href') : 'default') + '"]')
-            .parent('li')
-            .addClass('active');
+            // Calc eleme's height
+            var elemHeight = $elem.outerHeight()
 
-        // When a color theme link is clicked
-        jQuery('[data-toggle="theme"]').on('click', function(){
-            var $this   = jQuery(this);
-            var $theme  = $this.data('theme');
+            // Create value to save max height to
+            if (!equalHeights.hasOwnProperty(groupName)) equalHeights[groupName] = 0
 
-            // Set this color theme link as active
-            jQuery('[data-toggle="theme"]')
-                .parent('li')
-                .removeClass('active');
+            // Set max height
+            if (elemHeight > equalHeights[groupName]) equalHeights[groupName] = elemHeight
 
-            jQuery('[data-toggle="theme"][data-theme="' + $theme + '"]')
-                .parent('li')
-                .addClass('active');
+        }).each(function (i, elem) {
+            var $elem = $(elem)
+            var groupName = $elem.attr('data-equal-height-group') || 'default'
 
-            // Update color theme
-            if ($theme === 'default') {
-                if ($cssTheme.length) {
-                    $cssTheme.remove();
-                }
-            } else {
-                if ($cssTheme.length) {
-                    $cssTheme.attr('href', $theme);
-                } else {
-                    jQuery('#css-main')
-                        .after('<link rel="stylesheet" id="css-theme" href="' + $theme + '">');
-                }
-            }
-
-            $cssTheme = jQuery('#css-theme');
-
-            // If cookies are enabled, save the new active color theme
-            if ($cookies) {
-                Cookies.set('colorTheme', $theme, { expires: 7 });
-            }
-        });
+            $elem.height(equalHeights[groupName])
+        })
     };
 
     // Scroll to element animation helper
@@ -1017,7 +989,6 @@ var App = function() {
             columnIndexes = []
             $firstRow.children('td').each(function () {
                 if (datePattern.test($(this).text())) {
-                    console.log($(this).index())
                     columnIndexes.push($(this).index())
                 }
             })
@@ -2220,9 +2191,6 @@ var App = function() {
                 case 'uiBlocks':
                     uiBlocks();
                     break;
-                case 'uiHandleTheme':
-                    uiHandleTheme();
-                    break;
                 case 'uiToggleClass':
                     uiToggleClass();
                     break;
@@ -2245,7 +2213,6 @@ var App = function() {
                     uiNav();
                     uiQuickSearch();
                     uiBlocks();
-                    uiHandleTheme();
                     uiToggleClass();
                     uiScrollTo();
                     uiYearCopy();
