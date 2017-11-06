@@ -195,7 +195,7 @@ class LenderOperationsManager
                 $previousHistoryLineIndex !== null
                 && in_array($lenderOperations[$previousHistoryLineIndex]['label'], [self::OP_BID, self::OP_AUTOBID, self::OP_REFUSED_BID, self::OP_REFUSED_AUTOBID])
             ) {
-                $lenderOperations[$previousHistoryLineIndex]['amount'] = $historyLine['committed_balance'] - $walletHistory[$previousHistoryLineIndex]['committed_balance'];
+                $lenderOperations[$previousHistoryLineIndex]['amount'] = round(bcsub($historyLine['committed_balance'], $walletHistory[$previousHistoryLineIndex]['committed_balance'], 4), 2);
             }
 
             $lenderOperations[$index] = $historyLine;
