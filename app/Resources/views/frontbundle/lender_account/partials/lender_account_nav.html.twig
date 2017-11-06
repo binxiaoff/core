@@ -57,6 +57,4 @@
     {% endblock %}
 </nav>
 
-{% if app.user is defined and app.user is not empty %}
-    {% include 'partials/site/user-mobile-menu.html.twig' %}
-{% endif %}
+{% include 'partials/site/user-mobile-menu.html.twig' %}
