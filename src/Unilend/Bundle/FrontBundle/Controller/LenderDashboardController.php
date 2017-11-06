@@ -127,7 +127,7 @@ class LenderDashboardController extends Controller
 
         $depositedAmount  = bcsub($operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::LENDER_PROVISION]), $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::LENDER_WITHDRAW]), 2);
         $irrData          = $this->getIRRDetailsForUserLevelWidget();
-        $hasBids          = 0 < $bid->counter('id_lender_account = ' . $wallet->getId());
+        $hasBids          = 0 < $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countByClientInPeriod($wallet->getAdded(), new \DateTime('NOW'), $wallet->getIdClient()->getIdClient());
         $hasAcceptedLoans = 0 < $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumDebitOperationsByTypeSince($wallet, [OperationType::LENDER_LOAN]);
 
         $loansRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
