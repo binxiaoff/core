@@ -801,13 +801,13 @@ class ajaxController extends bootstrap
 
         if ($projectRating->getNoteComite() >= 8.5 && $projectRating->getNoteComite() <= 10) {
             $riskRating = 'A';
-        } elseif ($projectRating->getNoteComite() >= 7.5 && $projectRating->getNoteComite() < 8.5) {
+        } elseif ($projectRating->getNoteComite() >= 7.1 && $projectRating->getNoteComite() < 8.5) {
             $riskRating = 'B';
-        } elseif ($projectRating->getNoteComite() >= 6.5 && $projectRating->getNoteComite() < 7.5) {
+        } elseif ($projectRating->getNoteComite() >= 6.1 && $projectRating->getNoteComite() < 7.1) {
             $riskRating = 'C';
-        } elseif ($projectRating->getNoteComite() >= 5.5 && $projectRating->getNoteComite() < 6.5) {
+        } elseif ($projectRating->getNoteComite() >= 5.1 && $projectRating->getNoteComite() < 6.1) {
             $riskRating = 'D';
-        } elseif ($projectRating->getNoteComite() >= 4 && $projectRating->getNoteComite() < 5.5) {
+        } elseif ($projectRating->getNoteComite() >= 4 && $projectRating->getNoteComite() < 5.1) {
             $riskRating = 'E';
         } elseif ($projectRating->getNoteComite() >= 2 && $projectRating->getNoteComite() < 4) {
             $riskRating = 'G';
