@@ -7,45 +7,49 @@
     {% block panelContent %}
             <div class="dashboard-panel-overview">
                 <div class="label">
-                    {% if lenderDetails.hasIRR or lenderDetails.companiesLenderInvestedIn == 0 %}
-                        {% trans %} lender-dashboard-user-level_irr-title {% endtrans %}
-                    {% else %}
+                    {% if irrData.hasLossRate %}
                         {% trans %} lender-dashboard-user-level_loss-rate-title {% endtrans %}
+                    {% else %}
+                        {% trans %} lender-dashboard-user-level_irr-title {% endtrans %}
                     {% endif %}
                 </div>
-                <div class="value">{% if lenderDetails.irr > 0 %}+ {% endif %}{{ lenderDetails.irr|localizednumber }}<sup>%</sup></div>
+                <div class="value">{% if irrData.widgetValue > 0 %}+ {% endif %}{{ irrData.widgetValue|localizednumber }}<sup>%</sup></div>
             </div>
             <div class="dashboard-panel-chart">
                 <div class="user-avatar">
                     <div class="user-avatar-level"></div>
-                    <div class="user-avatar-initials">{{ lenderDetails.initials }}</div>
+                    <div class="user-avatar-initials">{{ app.user.initials }}</div>
                     <div class="user-avatar-stars">
                         {% for i in 1..5 %}<span class="icon fa-star ui-user-level-star-{{ i }}"></span>{% endfor %}
                     </div>
                 </div>
             </div>
             <div class="dashboard-panel-summary">
-                {% if lenderDetails.companiesLenderInvestedIn != 0 %}
+                {% if irrData.companiesLenderInvestedIn > 0 %}
                     <h3>
                         <span class="label">{% trans %} lender-dashboard-user-level_diversification-level-title {% endtrans %}</span>
-                        <span class="value">{{ "lender-dashboard_level-#{ lenderDetails.level }"|trans }}</span>
+                        <span class="value">{{ "lender-dashboard_level-#{ app.user.level }"|trans }}</span>
                     </h3>
                 {% endif %}
                 <p class="message">
-                    {% if lenderDetails.hasIRR or lenderDetails.companiesLenderInvestedIn == 0 %}
-                        {{ "lender-dashboard_irr-#{ lenderDetails.irrTranslation }level-#{ lenderDetails.level }"|trans({'%url%': app.request.getSchemeAndHttpHost()})|raw }}
+                    {% if irrData.hasLossRate %}
+                        {{ "lender-dashboard_irr-not-calculable"|trans|raw }}
+                    {% elseif app.user.level == 0 and lenderDetails.hasBids %}
+                        {{ "lender-dashboard_irr-not-calculated-yet"|trans|raw }}
+                    {% elseif app.user.level == 0 %}
+                        {{ "lender-dashboard_irr-level-0"|trans|raw }}}
                     {% else %}
-                        {{ "lender-dashboard_irr-#{ lenderDetails.irrTranslation }"|trans|raw }}
+                        {{ "lender-dashboard_irr-#{ irrData.irrTranslation }level-#{ app.user.level }"|trans({'%url%': app.request.getSchemeAndHttpHost()})|raw }}
                     {% endif %}
                 </p>
                 <p class="secondary">{% trans with {'%unilendIRR%' : getStatistic('unilendIRR')|localizednumber} %} lender-dashboard-user-level_unilend-irr {% endtrans %}</p>
             </div>
     {% endblock %}
     {% block panelFooter %}
-        {% if lenderDetails.hasIRR or lenderDetails.companiesLenderInvestedIn == 0 %}
-            {{ 'lender-dashboard-user-level_irr-explanation-link'|trans|raw }}
-        {% else %}
+        {% if irrData.hasLossRate %}
             {{ 'lender-dashboard-user-level_loss-rate-explanation-link'|trans|raw }}
+        {% else %}
+            {{ 'lender-dashboard-user-level_irr-explanation-link'|trans|raw }}
         {% endif %}
     {% endblock %}
 {% endembed %}
