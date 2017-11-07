@@ -632,7 +632,7 @@ class dossiersController extends bootstrap
                     }
                 }
 
-                if ($this->projects->status >= ProjectsStatus::PREP_FUNDING) {
+                if ($this->projects->status == ProjectsStatus::PREP_FUNDING) {
                     if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
                         try {
                             $this->projects->id_rate = $oProjectManager->getProjectRateRangeId($this->projectEntity);
