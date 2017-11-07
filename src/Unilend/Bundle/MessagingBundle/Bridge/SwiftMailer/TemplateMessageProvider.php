@@ -10,6 +10,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Translations;
 
 class TemplateMessageProvider
 {
+    const KEYWORDS_PREFIX = '[EMV DYN]';
+    const KEYWORDS_SUFFIX = '[EMV /DYN]';
+
     /** @var EntityManager */
     private $entityManager;
     /** @var string */
@@ -68,17 +71,8 @@ class TemplateMessageProvider
             throw new \InvalidArgumentException('The mail template ' . $template . ' for the language ' . $this->defaultLanguage . ' is not found.');
         }
 
-        $body   = $mailTemplate->getContent();
-        $header = $mailTemplate->getIdHeader();
-        $footer = $mailTemplate->getIdFooter();
-
-        if ($header) {
-            $body               = $header->getContent() . $body;
+        if ($mailTemplate->getIdHeader()) {
             $variables['title'] = $this->translator->trans(Translations::SECTION_MAIL_TITLE . '_' . $mailTemplate->getType());
-        }
-
-        if ($footer) {
-            $body = $body . $footer->getContent();
         }
 
         if ($wrapVariables) {
@@ -86,9 +80,8 @@ class TemplateMessageProvider
         }
 
         $subject  = strtr($mailTemplate->getSubject(), $variables);
-        $body     = strtr($body, $variables);
+        $body     = strtr($mailTemplate->getCompiledContent(), $variables);
         $fromName = strtr($mailTemplate->getSenderName(), $variables);
-
 
         /** @var TemplateMessage $message */
         $message = new $this->templateMessageClass($mailTemplate->getIdMailTemplate());
@@ -113,7 +106,7 @@ class TemplateMessageProvider
      *
      * @return array
      */
-    private function wrapVariables($variables, $prefix = '[EMV DYN]', $suffix = '[EMV /DYN]')
+    private function wrapVariables($variables, $prefix = self::KEYWORDS_PREFIX, $suffix = self::KEYWORDS_SUFFIX)
     {
         $wrappedVars = [];
         foreach ($variables as $key => $value) {
