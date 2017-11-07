@@ -293,7 +293,7 @@ EOF
                                 $sAutobidInsufficientBalance = '
                                     <table width=\'100%\' border=\'1\' cellspacing=\'0\' cellpadding=\'5\' bgcolor="d8b5ce" bordercolor="b20066">
                                         <tr>
-                                            <td align="center" style="color: #b20066">' . $insufficientBalance . '</td>
+                                            <td align="center" class="text-primary">' . $insufficientBalance . '</td>
                                         </tr>
                                     </table>';
                             }

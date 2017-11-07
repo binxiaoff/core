@@ -332,7 +332,7 @@ class LenderCIPController extends Controller
             'url'                  => $this->get('assets.packages')->getUrl(''),
             'prenom'               => $client->getPrenom(),
             'email_p'              => $client->getEmail(),
-            'advice'               => str_replace('h5', 'h3', $this->getFormatedAdvice($client)),
+            'advice'               => str_replace('h5', 'p', $this->getFormatedAdvice($client)),
             'advice_pdf_link'      => $this->generateUrl('pdf_cip', ['clientHash' => $client->getHash()], UrlGeneratorInterface::ABSOLUTE_URL),
             'motif_virement'       => $wallet->getWireTransferPattern(),
             'lien_fb'              => $fbLink,
