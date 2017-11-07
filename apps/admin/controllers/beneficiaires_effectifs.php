@@ -48,8 +48,17 @@ class beneficiaires_effectifsController extends bootstrap
 
         $companyBeneficialOwnerDeclarationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration');
         $currentDeclaration                          = $companyBeneficialOwnerDeclarationRepository->findCurrentDeclarationByCompany($company);
+        $existingDeclarations                        = [];
+
         if (null !== $currentDeclaration) {
-            $currentOwners = $this->formatOwnerList($currentDeclaration->getBeneficialOwner());
+            $currentOwners        = $this->formatOwnerList($currentDeclaration->getBeneficialOwner());
+            $existingDeclarations = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findAllDeclarationsForCompany($company);
+
+            if (empty($existingDeclarations)) {
+                foreach ($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['status' => \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::FUNDE, 'idCompany' => $company->getIdCompany()]) as $project) {
+                    $existingDeclarations[] = $this->get('unilend.service.beneficial_owner_manager')->addProjectBeneficialOwnerDeclaration($currentDeclaration, $project);
+                }
+            }
         }
 
         if (isset($_SESSION['email_status'])) {
@@ -70,9 +79,9 @@ class beneficiaires_effectifsController extends bootstrap
             'types'                => $ownerTypes,
             'currentDeclaration'   => $currentDeclaration,
             'company'              => $company,
-            'projectDeclarations'  => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findAllDeclarationsForCompany($company),
+            'projectDeclarations'  => $existingDeclarations,
             'emailStatusErrors'    => empty($emailStatusErrors) ? null : $emailStatusErrors,
-            'emailStatusSuccess'   => empty($emailStatusSuccess) ? null : $emailStatusSuccess,
+            'emailStatusSuccess'   => empty($emailStatusSuccess) ? null : $emailStatusSuccess
         ]);
     }
 
@@ -97,7 +106,6 @@ class beneficiaires_effectifsController extends bootstrap
 
         if ($this->request->isXmlHttpRequest()) {
             $action       = $this->request->request->filter('action', FILTER_SANITIZE_STRING);
-            $state        = '';
             $responseData = [];
 
             switch ($action) {
@@ -118,15 +126,8 @@ class beneficiaires_effectifsController extends bootstrap
                 $responseData = $this->formatOwnerData($return['owner']);
             }
 
-            header('Content-Type: application/json');
-
-            echo json_encode([
-                'success' => empty($return['errors']),
-                'error'   => $return['errors'],
-                'id'      => $return['owner'] instanceof BeneficialOwner ? $return['owner']->getId() : null,
-                'state'   => $state, // State must be separate from the data in the response
-                'data'    => array_values($responseData) // Values must be in the same order as in the request
-            ]);
+            $this->sendAjaxResponse(empty($return['errors']), array_values($responseData), $return['errors'], $return['owner'] instanceof BeneficialOwner ? $return['owner']->getId() : null);
+            return;
         }
     }
 

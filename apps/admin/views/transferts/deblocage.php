@@ -59,13 +59,17 @@
                     </td>
                     <td>
                         <?php if ($aProject['needsBeneficialOwnerDeclaration']) : ?>
-                            <?php if (\Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED == $aProject['beneficial_owner_declaration_status']) : ?>
+                            <?php if (
+                                    false === empty($aProject['beneficial_owner_declaration_status'])
+                                    && \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED == $aProject['beneficial_owner_declaration_status']
+                                     ) : ?>
                                 <a href="<?= $this->lurl ?>/protected/beneficiaires_effectifs/<?= $aProject['beneficial_owner_declaration'] ?>">
                                     <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Bénéficiaires effectifs">
                                 </a>
                             <?php else: ?>
                                 <p>Déclaration pas encore signée</p>
                             <?endif; ?>
+                        <?php else : ?>
                             <p>Non demandé pour ce type d'entrepise</p>
                         <?php endif; ?>
                     </td>
