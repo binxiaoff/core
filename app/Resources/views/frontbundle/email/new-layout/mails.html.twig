@@ -3,7 +3,7 @@
 name: 'synthese-quotidienne-remboursements, hebdomadaire, mensuelle',
 header: 'minimal',
 footer: 'lender',
-comment: ' Add condensed table styles.',
+comment: '',
 content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 <p>[EMV DYN]contenu[EMV /DYN]</p>
 <table class="table">
@@ -401,7 +401,7 @@ content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 name: 'preteur-projet-statut-probleme',
 header: 'minimal',
 footer: 'lender',
-comment: 'Double check variables in ProjectStatusManager.php',
+comment: 'Double check [EMV DYN]contenu_mail[EMV /DYN] in ProjectStatusManager.php',
 content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 <p>Le paiement de la dernière échéance de votre prêt à <span class="text-primary">[EMV DYN]entreprise[EMV /DYN]</span> ne nous est pas parvenu à la date prévue (pour rappel vous lui avez prêté <span class="text-primary">[EMV DYN]montant_pret[EMV /DYN] euros</span>).</p>
 <p>[EMV DYN]contenu_mail[EMV /DYN]</p>
@@ -493,32 +493,8 @@ content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 <th class="th text-right">Taux d\'intérêt</th>
 <th class="th text-right">Document</th>
 </tr>
-<tr>
-	<td class="td text-left">Some text description</td>
-	<td class="td text-right">100$</td>
-	<td class="td text-right">200$</td>
-	<td class="td text-right">4560$</td>
-</tr>
-<tr>
-	<td class="td text-left">Some text description</td>
-	<td class="td text-right">100$</td>
-	<td class="td text-right">200$</td>
-	<td class="td text-right">4560$</td>
-</tr>
-<tr>
-	<td class="td text-left">Some text description</td>
-	<td class="td text-right">100$</td>
-	<td class="td text-right">200$</td>
-	<td class="td text-right">4560$</td>
-</tr>
-<tr>
-    <td class="tf text-left">&nbsp;</td>
-    <td class="tf text-right">Total</td>
-    <td class="tf text-right">10000$</td>
-    <td class="tf text-right">&nbsp;</td>
-</tr>
-</table>
 [EMV DYN]liste_offres[EMV /DYN]
+</table>
 <p> </p>
 <p>Vos documents et le détail de vos remboursements sont disponibles sur <a href="[EMV DYN]url[EMV /DYN]/operations">votre espace</a>.</p>
 <p>[EMV DYN]link_explication[EMV /DYN]</p>
@@ -545,12 +521,24 @@ content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 name: 'confirmation-inscription-preteur',
 header: 'full',
 footer: 'lender',
-comment: 'Check if more precise link for documents completion can be added.',
+comment: '',
 content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 <p>Vous avez commencé votre inscription sur Unilend et nous vous en remercions.</p>
-<p>Votre compte Unilend n \'est pas encore ouvert mais vous pouvez dès maintenant vous <a href="[EMV DYN]url[EMV /DYN]/login" class="text-primary">connecter à votre compte.</a></p>
+<p>Votre compte Unilend n\'est pas encore ouvert mais vous pouvez dès maintenant vous connecter à votre compte.</p>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td class="cta" align="center">
+            <!--[if mso]>
+            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]url[EMV /DYN]/login" style="height:50px;v-text-anchor:middle;width:160px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
+                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Se connecter</center>
+            </v:roundrect>
+            <![endif]-->
+            <a href="[EMV DYN]url[EMV /DYN]/login" class="btn-primary">Se connecter</a>
+        </td>
+    </tr>
+</table>
 <p><b class="text-primary">Comment finaliser votre inscription pour prêter ?</b></p>
-<p>Si vous ne l\'avez pas encore fait, nous vous invitons à vous <a href="[EMV DYN]url[EMV /DYN]/login" class="text-primary">connecter sur votre compte pour compléter votre dossier</a> avec vos pièces justificatives puis à alimenter votre compte.</p>
+<p>Si vous ne l\'avez pas encore fait, nous vous invitons à vous <a href="[EMV DYN]url[EMV /DYN]/profile" class="text-primary">connecter sur votre compte pour compléter votre dossier</a> avec vos pièces justificatives puis à alimenter votre compte.</p>
 <p>Pour vous connecter à votre compte, votre identifiant est votre adresse e-mail.</p>
 <p> </p>
 <p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
@@ -623,7 +611,7 @@ content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN],</p>
         </td>
     </tr>
 </table>
-<p>L \'équipe Unilend est à votre disposition pour toutes vos questions à cette adresse : <a href="mailto:contact@unilend.fr" target="_blank">contact@unilend.fr</a>. </p>
+<p>L\'équipe Unilend est à votre disposition pour toutes vos questions à cette adresse : <a href="mailto:contact@unilend.fr" target="_blank">contact@unilend.fr</a>. </p>
 <p> </p>
 <p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
 },
@@ -661,7 +649,7 @@ content: '<p>Madame, Monsieur,</p>
 <p>Le [EMV DYN]datedelafacture[EMV /DYN], <span class="text-primary">[EMV DYN]entreprise[EMV /DYN]</span> a emprunté <span class="text-primary">[EMV DYN]pret[EMV /DYN]  euros</span> auprès de la communauté de prêteurs d\'Unilend.</p>
 <p>Le remboursement de votre échéance de [EMV DYN]montantRemb[EMV /DYN] euros a bien été effectué auprès des prêteurs. Pour télécharger la facture du mois de <span class="text-primary">[EMV DYN]mois[EMV /DYN]</span> <span class="text-primary">[EMV DYN]annee[EMV /DYN]</span>, veuillez <a href="[EMV DYN]link_facture[EMV /DYN]">cliquer ici.</a></p>
 <p>Pour mémoire, le règlement est prélevé automatiquement selon l\'échéancier convenu.</p>
-<p>L \'équipe Unilend est à votre disposition pour toutes vos questions à cette adresse : <a href="mailto:contact@unilend.fr">contact@unilend.fr</a>.</p>
+<p>L\'équipe Unilend est à votre disposition pour toutes vos questions à cette adresse : <a href="mailto:contact@unilend.fr">contact@unilend.fr</a>.</p>
 <p> </p>
 <p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
 },
@@ -674,7 +662,7 @@ content: '<p>Bonjour [EMV DYN]prenom_e[EMV /DYN],</p>
 <p>[EMV DYN]nom_entreprise[EMV /DYN] a emprunté [EMV DYN]montant[EMV /DYN] euros auprès de la communauté de prêteurs d\'Unilend.</p>
 <p>La prochaine échéance de [EMV DYN]echeance[EMV /DYN] euros sera prélevée sur votre compte le [EMV DYN]prochaine_echeance[EMV /DYN].</p>
 <p>Nous vous invitons à vous assurer que votre compte bancaire sera suffisamment provisionné à cette date, afin d\'assurer un remboursement sans incident des [EMV DYN]nb_emprunteurs[EMV /DYN] prêteurs qui vous ont fait confiance.</p>
-<p>N \'hésitez pas à nous contacter au <a href="tel:+33182836655">01 82 83 66 55</a> ou par mail sur <a href="mailto:emprunteurs@unilend.fr">emprunteurs@unilend.fr</a> pour toute question.</p>
+<p>N\'hésitez pas à nous contacter au <a href="tel:+33182836655">01 82 83 66 55</a> ou par mail sur <a href="mailto:emprunteurs@unilend.fr">emprunteurs@unilend.fr</a> pour toute question.</p>
 <p> </p>
 <p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
 },
@@ -716,7 +704,7 @@ comment: '',
 content: '<p>Bonjour [EMV DYN]sponsor_first_name[EMV /DYN],</p>
 <p>Grâce à votre parrainage, [EMV DYN]sponsee_first_name[EMV /DYN] [EMV DYN]sponsee_last_name[EMV /DYN] a réalisé son premier prêt à une entreprise sur Unilend !</p>
 <p>Pour vous remercier, nous avons le plaisir de vous verser votre prime de parrainage d\'un montant de [EMV DYN]amount[EMV /DYN] € à prêter aux projets présentés sur Unilend.</p>
-<p>Rappel des conditions : cette somme ne peut servir qu \'à la réalisation d\'une opération de prêt à l\'entreprise de votre choix sur le site Unilend.</p>
+<p>Rappel des conditions : cette somme ne peut servir qu\'à la réalisation d\'une opération de prêt à l\'entreprise de votre choix sur le site Unilend.</p>
 <p>Le montant des primes ne peut en aucun cas être retiré du compte prêteur Unilend du parrain et du filleul. Les primes ne peuvent être utilisées que pour faire un ou plusieurs prêts sur Unilend.</p>
 <p> </p>
 <p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
@@ -729,7 +717,7 @@ comment: '',
 content: '<p>Bonjour [EMV DYN]sponsee_first_name[EMV /DYN],</p>
 <p>Félicitations : votre prime de bienvenue d\'un montant de [EMV DYN]amount[EMV /DYN] € a été créditée sur votre compte Unilend.</p>
 <p>Vous pouvez dès maintenant prêter cette somme à des entreprises de toute la France et recevoir des intérêts chaque mois.</p>
-<p>Rappel des conditions : cette somme ne peut servir qu \'à la réalisation d\'une opération de prêt à l\'entreprise de votre choix sur le site Unilend. Si aucun prêt d\'un montant au moins équivalant à la prime du parrain n \'est validé dans un délai de 100 jours, le montant de la prime sera retiré du compte Unilend du filleul.</p>
+<p>Rappel des conditions : cette somme ne peut servir qu\'à la réalisation d\'une opération de prêt à l\'entreprise de votre choix sur le site Unilend. Si aucun prêt d\'un montant au moins équivalant à la prime du parrain n\'est validé dans un délai de 100 jours, le montant de la prime sera retiré du compte Unilend du filleul.</p>
 <p>Le montant des primes ne peut en aucun cas être retiré du compte prêteur Unilend du parrain et du filleul. Les primes ne peuvent être utilisées que pour faire un ou plusieurs prêts sur Unilend.</p>
 <p>Le prêteur qui vous a parrainé recevra une prime de parrainage quand vous aurez prêté un montant supérieur à celui de votre prime de bienvenue.</p>
 <p> </p>
@@ -754,7 +742,7 @@ footer: 'lender',
 comment: '',
 content: '<p>Bonjour [EMV DYN]sponsor_first_name[EMV /DYN],</p>
 <p>Grâce à vous, [EMV DYN]sponsee_first_name[EMV /DYN] [EMV DYN]sponsee_last_name[EMV /DYN] a créé son compte sur Unilend !</p>
-<p>Nous vous remercions de votre soutien. Votre prime de parrain vous sera versée dès que votre filleul aura prêté un montant supérieur à sa prime de parrainage. N \'hésitez pas à le faire profiter de votre expérience de prêteur !</p><p>Cordialement, <br>L \'équipe Unilend</p>
+<p>Nous vous remercions de votre soutien. Votre prime de parrain vous sera versée dès que votre filleul aura prêté un montant supérieur à sa prime de parrainage. N\'hésitez pas à le faire profiter de votre expérience de prêteur !</p><p>Cordialement, <br>L\'équipe Unilend</p>
 <p> </p>
 <p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
 },
@@ -801,7 +789,7 @@ content: ' <p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 <p>Vous avez reçu un remboursement de <span class="text-primary">[EMV DYN]crdpreteur[EMV /DYN]</span> sur votre compte Unilend.</p>
 <p>Il s\'agit du remboursement total du capital restant dû de votre prêt à <span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN]</span>. Comme le prévoient les règles d\'Unilend, <span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN]</span> a choisi de rembourser son emprunt par anticipation sans frais.</p>
 <p>Depuis l\'origine, il vous a versé <span class="text-primary">[EMV DYN]interetsdejaverses[EMV /DYN]</span> euros d\'intérêts soit un taux d\'intérêt annualisé de <span class="text-primary">[EMV DYN]taux_bid[EMV /DYN]%</span>.</p>
-<p>Il s\'agit d\'un remboursement composé exclusivement de capital : aucun prélèvement fiscal n \'a donc été réalisé.</p>
+<p>Il s\'agit d\'un remboursement composé exclusivement de capital : aucun prélèvement fiscal n\'a donc été réalisé.</p>
 <p>Vous avez maintenant <span class="text-primary">[EMV DYN]solde_p[EMV /DYN]</span> disponibles pour prêter à de nouvelles entreprises. Profitez-en pour diversifier vos prêts.</p>
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
     <tr>
@@ -863,7 +851,7 @@ header: 'minimal',
 footer: 'lender',
 comment: '',
 content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
-<p>Vous avez proposé via Autolend une offre de prêt  sur le projet <span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN]</span>. Entre-temps d\'autres prêteurs ont offert de meilleures propositions et votre offre n \'est plus susceptible d\'être retenue.</p>
+<p>Vous avez proposé via Autolend une offre de prêt  sur le projet <span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN]</span>. Entre-temps d\'autres prêteurs ont offert de meilleures propositions et votre offre n\'est plus susceptible d\'être retenue.</p>
 <p>Autolend continuera de proposer des offres de prêt selon les critères que vous avez définis.</p>
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
     <tr>
@@ -919,7 +907,7 @@ content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN],</p>
     <li>Sans fournir de garantie ou caution personnelle</li>
     <li>Sans pénalité en cas de remboursement anticipé</li>
 </ul>
-<p>Nos équipes vous donneront <span class="text-primary">une réponse sous deux jours ouvrés</span> alors n \'attendez plus pour obtenir votre emprunt.</p>
+<p>Nos équipes vous donneront <span class="text-primary">une réponse sous deux jours ouvrés</span> alors n\'attendez plus pour obtenir votre emprunt.</p>
 <p><a href="[EMV DYN]lien_reprise_dossier[EMV /DYN]">Cliquez ici pour terminer la présentation de votre projet.</a> <br>
 <i>Vous verrez, cela ne prend que quelques minutes</i>.</p>
 <p> </p>
@@ -939,7 +927,7 @@ content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN],</p>
     <li>Sans fournir de garantie ou caution personnelle</li>
     <li>Sans pénalité en cas de remboursement anticipé</li>
 </ul>
-<p>Nos équipes vous donneront <span class="text-primary">une réponse sous deux jours ouvrés</span> alors n \'attendez plus pour obtenir votre emprunt.</p>
+<p>Nos équipes vous donneront <span class="text-primary">une réponse sous deux jours ouvrés</span> alors n\'attendez plus pour obtenir votre emprunt.</p>
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
     <tr>
         <td class="cta" align="center">
@@ -962,7 +950,7 @@ header: 'full',
 footer: 'borrower-uncompleted',
 comment: 'Double check with Marketing the differences b/w each reminder',
 content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN],</p>
-<p>Le <span class="text-primary">[EMV DYN]date_demande[EMV /DYN]</span>, vous avez entamé une demande de financement de <span class="text-primary">[EMV DYN]montant[EMV /DYN] €</span> sans finaliser votre dossier. Nous n \'avons donc pas pu étudier votre dossier et devons annuler votre demande.</p>
+<p>Le <span class="text-primary">[EMV DYN]date_demande[EMV /DYN]</span>, vous avez entamé une demande de financement de <span class="text-primary">[EMV DYN]montant[EMV /DYN] €</span> sans finaliser votre dossier. Nous n\'avons donc pas pu étudier votre dossier et devons annuler votre demande.</p>
 <p>Vous pourrez à tout moment déposer un nouveau dossier sur <a href="[EMV DYN]furl[EMV /DYN]">Unilend.fr</a> si votre besoin redevenait déactualité.</p>
 <p> </p>
 <p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
@@ -971,7 +959,7 @@ content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN],</p>
 name: 'depot-dossier-relance-status-10-1',
 header: 'full',
 footer: 'borrower-uncompleted',
-comment: 'Double check footer links. Double check we have prenom',
+comment: '',
 content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN],</p>
 <p>Le [EMV DYN]date_demande[EMV /DYN], vous nous avez présenté une demande d\'emprunt pour un projet de votre entreprise <span class="text-primary">[EMV DYN]raison_sociale[EMV /DYN]</span> sur Unilend.</p>
 <p>Pour que nous étudions votre demande, il ne manque que la présentation de votre entreprise.</p>
@@ -994,7 +982,7 @@ content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN],</p>
         </td>
     </tr>
 </table>
-<p><i>Vous verrez, cela ne prend que quelques clics et <b>l\'étude de votre demande est totalement gratuite</b> alors n \'attendez plus</i>.</p>
+<p><i>Vous verrez, cela ne prend que quelques clics et <b>l\'étude de votre demande est totalement gratuite</b> alors n\'attendez plus</i>.</p>
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
     <tr>
         <td class="alert">
@@ -1102,7 +1090,7 @@ footer: 'lender',
 comment: '',
 content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 <p>Vous avez proposé de prêter <span class="text-primary">[EMV DYN]valeur_bid[EMV /DYN]€</span> à <span class="text-primary">[EMV DYN]taux_bid[EMV /DYN] %</span> à l\'entreprise <span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN]</span> le <span class="text-primary">[EMV DYN]date_bid[EMV /DYN]</span> à <span class="text-primary">[EMV DYN]heure_bid[EMV /DYN]</span>.</p>
-<p>Entre-temps d\'autres prêteurs ont offert de meilleures propositions et votre offre n \'est plus susceptible d\'être retenue.</p>
+<p>Entre-temps d\'autres prêteurs ont offert de meilleures propositions et votre offre n\'est plus susceptible d\'être retenue.</p>
 <p>De nouveaux projets à financer seront bientôt mis en ligne sur <a href="[EMV DYN]projet-p[EMV /DYN]">Unilend</a>.</p>
 <p> </p>
 <p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>
@@ -1115,7 +1103,7 @@ footer: 'borrower',
 comment: '',
 content: '<p>Bienvenue sur Unilend !</p>
 <p>Votre espace emprunteur est désormais totalement activé et votre dossier sera prochainement en ligne.</p>
-<p>Vous avez précédement reçu un mail pour initialiser votre accès. Si vous n \'avez pas encore effectué cette étape, vous pouvez encore réaliser l\'opération en vous connectant ici :</p>
+<p>Vous avez précédement reçu un mail pour initialiser votre accès. Si vous n\'avez pas encore effectué cette étape, vous pouvez encore réaliser l\'opération en vous connectant ici :</p>
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
     <tr>
         <td class="cta" align="center">
@@ -1143,7 +1131,7 @@ content: '<p>Bonjour [EMV DYN]prenom_e[EMV /DYN]</p>
 <p>Votre campagne de financement pour [EMV DYN]nom_entreprise[EMV /DYN] va débuter dans quelques instants. La communauté de prêteurs d\'Unilend va être en compétition pendant [EMV DYN]duree[EMV /DYN] pour financer les [EMV DYN]montant[EMV /DYN] euros de votre projet.</p>
 <p>Vous pouvez découvrir dès [EMV DYN]heure_debut[EMV /DYN] la page dédiée à votre projet grâce au lien ci-dessous:</p>
 <p><a href="[EMV DYN]projet_p[EMV /DYN]" class="text-primary">[EMV DYN]projet_p[EMV /DYN]</a></p>
-<p>N \'hésitez pas à prévenir tous vos contacts, partenaires et amis de la mise en ligne de [EMV DYN]nom_entreprise[EMV /DYN] pour donner le maximum d\'écho à votre financement.
+<p>N\'hésitez pas à prévenir tous vos contacts, partenaires et amis de la mise en ligne de [EMV DYN]nom_entreprise[EMV /DYN] pour donner le maximum d\'écho à votre financement.
 <p>Pour prêter, ils peuvent s\'inscrire sur Unilend <b>directement sur la page de votre projet (bouton « s\'inscrire » )</b> en quelques minutes, munis de :</p>
 <ul>
     <li>Leur pièce d\'identité en cours de validité</li>
@@ -1211,7 +1199,7 @@ content: '<p>Félicitations [EMV DYN]prenom_e[EMV /DYN],</p>
 name: 'ouverture-espace-partenaire',
 header: 'full',
 footer: 'partner',
-comment: 'Create footer. Changed variables ofr social and static url so that they are the same as in the other controllers.',
+comment: 'Create footer-partner - Not sure what links should have.',
 content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN]</p>
 <p>Vous disposez à présent  d\'un accès privilégié pour déposer et suivre les demandes de financement de vos clients. <br>Pour initialiser votre espace partenaire Unilend, cliquez sur le lien suivant :</p>
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -1462,22 +1450,12 @@ content: '<p>Bonjour [EMV DYN]civilite_e[EMV /DYN] [EMV DYN]nom_e[EMV /DYN],</p>
     body {
         background: #666!important;
     }
-    div.container {
-        max-width: 1290px;
-        margin: 0 auto;
-    }
-    div.col {
+    div.wrapper {
         width: 600px;
-        float: left;
-    }
-    div.col:first-child {
-        margin-right: 90px;
+        margin: 100px auto 0;
     }
     div.block {
-        border: 1px solid #ccc;
         margin-bottom: 60px;
-        padding: 30px 45px;
-        background: #f8f6f8;
     }
     .email-name {
         color: #fff;
@@ -1487,363 +1465,33 @@ content: '<p>Bonjour [EMV DYN]civilite_e[EMV /DYN] [EMV DYN]nom_e[EMV /DYN],</p>
         color: #fff;
     }
 </style>
-<style type="text/css">
-    body,#body{
-        height:100%;
-        margin:0;
-        padding:0;
-        width:100%;
-    }
-    p{
-        margin-top:18px;
-        margin-bottom:18px;
-        padding:0;
-    }
-    table{
-        border-collapse:collapse;
-        mso-table-lspace:0;
-        mso-table-rspace:0;
-    }
-    h1,h2{
-        display:block;
-        margin:0;
-        padding:0;
-    }
-    img{
-        -ms-interpolation-mode:bicubic;
-    }
-    img,a img{
-        border:0;
-        height:auto;
-        outline:none;
-        text-decoration:none;
-        margin:0 !important;
-    }
-    #outlook a{
-        padding:0;
-    }
-    a{
-        color:#b20066;
-        font-weight:normal;
-        text-decoration:none;
-    }
-    a:hover{
-        text-decoration:underline;
-    }
-    p,a,td{
-        -ms-text-size-adjust:100%;
-        -webkit-text-size-adjust:100%;
-    }
-    body,#body{
-        background:#f8f6f8;
-        color:#302a32;
-        font-family:'Cabin',Trebuchet MS,Helvetica,sans-serif;
-        font-size:16px;
-        line-height:27px;
-        -webkit-font-smoothing:antialiased;
-        -moz-osx-font-smoothing:grayscale;
-    }
-    p{
-        color:#302a32;
-        font-size:16px;
-        line-height:27px;
-        -webkit-font-smoothing:antialiased;
-        -moz-osx-font-smoothing:grayscale;
-    }
-    h1,h2{
-        color:#b20066;
-        font-weight:normal;
-    }
-    h1{
-        font-size:22px;
-        line-height:1.25em;
-    }
-    h2{
-        font-size:20px;
-        line-height:1.15em;
-    }
-    .text-primary {
-        color: #b20066;
-    }
-    .text-left {
-        text-align: left;
-    }
-    .text-right {
-        text-align: right;
-    }
-    .text-center {
-        text-align: center;
-    }
-    b, strong {
-        font-weight: 500;
-    }
-    #container{
-        width:600px;
-        max-width:600px;
-    }
-    .image{
-        height:auto;
-        max-width:510px;
-    }
-    #header,#title,#content,#footer,#under,#above,#motive{
-        padding-right:45px;
-        padding-left:45px;
-    }
-    #header,#content{
-        background:#fff;
-    }
-    #header,#header-full{
-        border-top:6px solid #b20066;
-    }
-    #header{
-        padding-top:36px;
-        padding-bottom:12px;
-    }
-    #header-full{
-        background:#fafafa;
-    }
-    #logo{
-        padding-right:8px;
-    }
-    #header-full #logo{
-        width:50%;
-        padding-left:45px;
-    }
-    #header-image{
-        width:50%;
-        text-align:right;
-    }
-    #title{
-        padding-top:36px;
-        background:#fff;
-    }
-    #title hr{
-        padding:0;
-        margin:18px 0;
-        display:block;
-        clear:both;
-        border:0 none;
-        width:60px;
-        height:2px;
-        background-color:#b20066;
-    }
-    #content{
-        padding-bottom:18px;
-    }
-    .c-p1{
-        color:#b20066;
-    }
-    .c-t2{
-        color:#787679;
-    }
-    .c-t3{
-        color:#9f9d9f;
-    }
-    .c-white{
-        color: #fff;
-    }
-    .underline{
-        text-decoration:underline;
-    }
-    #above{
-        background:#b9b8bA;
-    }
-    #above p{
-        text-align:center;
-    }
-    #above p,#under p,.alert p{
-        font-size:16px;
-        line-height:24px;
-    }
-    #motive{
-        background:#eceaed;
-    }
-    #motive p{
-        font-size:14px !important;
-        line-height:20px !important;
-        margin:10px 0 !important;
-    }
-    #motive b{
-        float:right;
-    }
-    #footer{
-        padding-top:36px;
-        padding-bottom:36px;
-        background:#b20066;
-    }
-    #footer .left,#footer .right{
-        width:50%;
-    }
-    #footer .right{
-        text-align:right;
-    }
-    #footer .right p{
-        color:#e49dc0;
-        font-size:14px;
-        margin-bottom:0;
-    }
-    #footer .left a{
-        color:#fff;
-    }
-    #footer .left a:hover{
-        text-decoration:underline;
-    }
-    #footer .right img{
-        display:inline-block;
-        margin-left:4px;
-    }
-    #under p{
-        text-align:center;
-    }
-    .cta{
-        text-align:center;
-        padding-top:18px;
-        padding-bottom:18px;
-    }
-    .btn-primary,.btn-outline{
-        mso-hide:all;
-        display:inline-block;
-        border-radius:4px;
-        border-width:2px;
-        border-style:solid;
-        min-width:120px;
-        padding-left:30px;
-        padding-right:30px;
-        padding-top:11px;
-        padding-bottom:11px;
-        font-size:18px;
-        text-decoration:none;
-    }
-    .btn-primary{
-        border-color:#b20066;
-        background:#b20066;
-        color:#fff;
-    }
-    .btn-primary:hover{
-        border-color:#9a1d5a;
-        background:#9a1d5a;
-        text-decoration:none;
-    }
-    .btn-primary:active{
-        border-color:#85194d;
-        background:#85194d;
-    }
-    .btn-outline{
-        border-color:#b20066;
-        color:#b20066;
-    }
-    .btn-outline:hover{
-        border-color:#9a1d5a;
-        color:#9a1d5a;
-        text-decoration:none;
-    }
-    .btn-outline:active{
-        border-color:#85194d;
-        color:#85194d;
-    }
-    .alert{
-        padding-left:20px;
-        padding-right:20px;
-        margin-top:18px;
-        margin-bottom:18px;
-        background:#FDF4FA;
-    }
-    .alert .left{
-        padding-top:18px;
-        padding-right:20px;
-    }
-    .table {
-        width: 100%;
-        margin-bottom: 18px;
-    }
-    .td {
-        padding: 6px 3px;
-        font-size: 14px;
-    }
-    .th {
-        font-weight: 500;
-        font-size: 14px;
-        padding: 6px 3px 9px 3px;
-    }
-    .tf {
-        font-size: 14px;
-        border-top: 1px dotted #ccc;
-        padding: 9px 3px 6px 3px;
-    }
-    @media only screen and (max-width: 670px){
-        .left,.right{
-            width:100% !important;
-            float:left !important;
-        }
-        #container{
-            width:100% !important;
-            max-width:100% !important;
-        }
-        #header,#title,#content,#footer,#under,#above,#motive{
-            padding-right:20px !important;
-            padding-left:20px !important;
-        }
-        #header-full #logo{
-            padding-top:25px !important;
-            padding-left:20px !important;
-        }
-        #header-full #logo img{
-            width:150px !important;
-        }
-        #header-image img{
-            width:175px !important;
-        }
-        #title{
-            padding-top:18px;
-        }
-        .alert .left{
-            text-align:center !important;
-        }
-        #footer .right{
-            padding-top:18px;
-            text-align:left !important;
-        }
-        h1{
-            font-size:22px !important;
-        }
-        h2,h3{
-            font-size:20px !important;
-        }
-        #footer .right img{
-            margin-left:0 !important;
-            margin-right:4px;
-        }
-        #motive b{
-            float:none !important;
-            display:block;
-        }
-    }
-</style>
-<div class="container">
-    <div class="col">
-        {% for mail in emails %}
-            {% if loop.index is not even %}
-                <h3 class="email-name">{{ mail.name }}</h3>
-                {% if mail.comment != '' %}
-                    <p><small class="email-comment"><span style="color: #b20066">*</span> {{ mail.comment }}</small></p>
-                {% endif %}
-                <div class="block">
-                    {{ mail.content|raw }}
-                </div>
+<div class="wrapper">
+    {% for mail in emails %}
+        <h3 class="email-name">{{ mail.name }}</h3>
+        {% if mail.comment != '' %}
+            <p><small class="email-comment"><span style="color: #b20066">*</span> {{ mail.comment }}</small></p>
+        {% endif %}
+        <div class="block">
+            {{ include('/email/new-layout/partials/head.html') }}
+            {% if mail.header == 'full' %}
+                {{ include('/email/new-layout/partials/header-full.html') }}
+            {% elseif mail.header == 'minimal' %}
+                {{ include('/email/new-layout/partials/header-minimal.html') }}
             {% endif %}
-        {% endfor %}
-    </div>
-    <div class="col">
-        {% for mail in emails %}
-            {% if loop.index is even %}
-                <h3 class="email-name">{{ mail.name }}</h3>
-                {% if mail.comment != '' %}
-                    <p><small class="email-comment"><span style="color: #b20066">*</span> {{ mail.comment }}</small></p>
-                {% endif %}
-                <div class="block">
-                    {{ mail.content|raw }}
-                </div>
+
+            {{ mail.content|raw }}
+
+            {% if mail.footer == 'lender' %}
+                {{ include('/email/new-layout/partials/footer-lender.html') }}
+            {% elseif mail.footer == 'borrower' %}
+                {{ include('/email/new-layout/partials/footer-borrower.html') }}
+            {% elseif mail.footer == 'borrower-uncompleted' %}
+                {{ include('/email/new-layout/partials/footer-borrower-uncompleted.html') }}
+            {% elseif mail.footer == 'sponsee' %}
+                {{ include('/email/new-layout/partials/footer-sponsee-invitation.html') }}
+            {% elseif mail.footer == 'partner' %}
+                {{ include('/email/new-layout/partials/footer-partner.html') }}
             {% endif %}
-        {% endfor %}
-    </div>
+        </div>
+    {% endfor %}
 </div>
