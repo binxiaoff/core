@@ -249,8 +249,7 @@ class ajaxController extends bootstrap
                 ]);
                 return;
             } elseif ($_POST['etape'] == 2) {
-                $project->id_prescripteur = ('true' === $_POST['has_prescripteur']) ? $_POST['id_prescripteur'] : 0;
-                $project->balance_count   = empty($project->balance_count) && false === empty($_POST['creation_date_etape2']) ? \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2'])->diff(new \DateTime())->y : $project->balance_count;
+                $project->balance_count = empty($project->balance_count) && false === empty($_POST['creation_date_etape2']) ? \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2'])->diff(new \DateTime())->y : $project->balance_count;
                 $project->update();
 
                 /** @var \companies $company */
@@ -265,7 +264,6 @@ class ajaxController extends bootstrap
                 $company->zip                           = $_POST['postal_etape2'];
                 $company->phone                         = $_POST['phone_etape2'];
                 $company->status_adresse_correspondance = isset($_POST['same_address_etape2']) && 'on' === $_POST['same_address_etape2'] ? 1 : 0;
-                $company->status_client                 = $_POST['enterprise_etape2'];
                 $company->latitude                      = (float) str_replace(',', '.', $_POST['latitude']);
                 $company->longitude                     = (float) str_replace(',', '.', $_POST['longitude']);
                 $company->update();

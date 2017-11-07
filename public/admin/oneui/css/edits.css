@@ -112,6 +112,14 @@
 .text-darker {
     color: #353847;
 }
+.box-shadow {
+    box-shadow: 0 0 5px #d3d3d3;
+}
+.img-responsive-vertical {
+    max-width: 120px;
+    max-height: 60px;
+    width: auto;
+}
 
 /* Forms */
 .form-inline > .form-group > button[type=submit] {
@@ -181,10 +189,30 @@ table.dataTable thead .sorting:after, table.dataTable thead .sorting_asc:after, 
 }
 
 /* Modals */
+.modal-footer {
+    border-top: 0;
+    padding-top: 10px; padding-bottom: 10px;
+}
+
 .modal label + .optional {
     font-weight: normal;
     font-size: 12px;
     color: #999;
+}
+
+/* Extra UI Elements */
+.closable {
+    position: relative;
+}
+.closable-icon {
+    padding: 10px 15px;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+.closable-icon-left {
+    right: auto;
+    left: 0;
 }
 
 /* Project Status UI */

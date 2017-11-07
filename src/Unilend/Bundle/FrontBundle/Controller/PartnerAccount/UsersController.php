@@ -83,7 +83,7 @@ class UsersController extends Controller
                         'lien_tw'       => $settingsRepository->findOneBy(['type' => 'Twitter'])->getValue()
                     ];
 
-                    $message       = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $keywords);
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $keywords);
                     try {
                         $message->setTo($client->getEmail());
                         $mailer = $this->get('mailer');
@@ -352,6 +352,10 @@ class UsersController extends Controller
             $tree[] = $company;
             $tree = $this->getCompanyTree($company, $tree);
         }
+
+        usort($tree, function ($first, $second) {
+            return strcmp($first->getName(), $second->getName());
+        });
 
         return $tree;
     }
