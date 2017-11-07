@@ -193,29 +193,6 @@ class prescripteursController extends bootstrap
         }
     }
 
-    public function _search_ajax()
-    {
-        $this->hideDecoration();
-        $this->aClients = array();
-
-        if (isset($this->params[1])) {
-            $sSearch = $this->params[1];
-            $this->clients  = $this->loadData('clients');
-            $this->aClients = $this->clients->searchPrescripteur('', $sSearch, $sSearch, $sSearch, $sSearch, $sSearch, 0, 30, 'OR');
-        }
-
-        if (isset($_POST['valider_search_prescripteur'])) {
-            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
-            $iProjectId = $_POST['project'];
-            $iAdvisorId = $_POST['prescripteur'];
-
-            $this->addAdvisorToProject($iProjectId, $iAdvisorId);
-
-            $this->autoFireView = false;
-            echo json_encode(array('result' => 'OK', 'id_prescripteur' => $iAdvisorId));
-        }
-    }
-
     private function addAdvisorToProject($iProjectId, $iAdvisorId)
     {
         $oProject = $this->loadData('projects');
