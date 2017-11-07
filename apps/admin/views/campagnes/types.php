@@ -13,7 +13,7 @@
             <h1>Liste des types de campagnes</h1>
         </div>
         <div class="col-md-6">
-            <a href="<?= $this->lurl ?>/partenaires/addType" class="btn-primary pull-right thickbox">Ajouter un type de campagne</a>
+            <a href="<?= $this->lurl ?>/campagnes/addType" class="btn-primary pull-right thickbox">Ajouter un type de campagne</a>
         </div>
     </div>
     <?php if (count($this->lTypes) > 0) : ?>
@@ -30,13 +30,13 @@
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                         <td><?= $t['nom'] ?></td>
                         <td align="center">
-                            <a href="<?= $this->lurl ?>/partenaires/types/status/<?= $t['id_type'] ?>/<?= $t['status'] ?>" title="<?= ($t['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>">
+                            <a href="<?= $this->lurl ?>/campagnes/types/status/<?= $t['id_type'] ?>/<?= $t['status'] ?>" title="<?= ($t['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>">
                                 <img src="<?= $this->surl ?>/images/admin/<?= ($t['status'] == 1 ? 'offline' : 'online') ?>.png" alt="<?= ($t['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>"/>
                             </a>
-                            <a href="<?= $this->lurl ?>/partenaires/editType/<?= $t['id_type'] ?>" class="thickbox">
+                            <a href="<?= $this->lurl ?>/campagnes/editType/<?= $t['id_type'] ?>" class="thickbox">
                                 <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $t['nom'] ?>"/>
                             </a>
-                            <a href="<?= $this->lurl ?>/partenaires/types/delete/<?= $t['id_type'] ?>" title="Supprimer <?= $t['nom'] ?>" onclick="return confirm('Etes vous sur de vouloir supprimer <?= $t['nom'] ?> ?')">
+                            <a href="<?= $this->lurl ?>/campagnes/types/delete/<?= $t['id_type'] ?>" title="Supprimer <?= $t['nom'] ?>" onclick="return confirm('Etes vous sur de vouloir supprimer <?= $t['nom'] ?> ?')">
                                 <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer <?= $t['nom'] ?>"/>
                             </a>
                         </td>

@@ -13,7 +13,7 @@
             <h1>Liste des campagnes</h1>
         </div>
         <div class="col-md-6">
-            <a href="<?= $this->lurl ?>/partenaires/add" class="btn-primary pull-right thickbox">Ajouter une campagne</a>
+            <a href="<?= $this->lurl ?>/campagnes/add" class="btn-primary pull-right thickbox">Ajouter une campagne</a>
         </div>
     </div>
     <?php if (count($this->lPartenaires) > 0) : ?>
@@ -40,10 +40,10 @@
                     <td><?= $this->partenaires_types->nom ?></td>
                     <td><?= $nbclic ?></td>
                     <td align="center">
-                        <a href="<?= $this->lurl ?>/partenaires/status/<?= $p['id_partenaire'] ?>/<?= $p['status'] ?>" title="<?= ($p['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>">
+                        <a href="<?= $this->lurl ?>/campagnes/status/<?= $p['id_partenaire'] ?>/<?= $p['status'] ?>" title="<?= ($p['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>">
                             <img src="<?= $this->surl ?>/images/admin/<?= ($p['status'] == 1 ? 'offline' : 'online') ?>.png" alt="<?= ($p['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>"/>
                         </a>
-                        <a href="<?= $this->lurl ?>/partenaires/edit/<?= $p['id_partenaire'] ?>" class="thickbox">
+                        <a href="<?= $this->lurl ?>/campagnes/edit/<?= $p['id_partenaire'] ?>" class="thickbox">
                             <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['nom'] ?>"/>
                         </a>
                         <form method="post" id="formQuery<?= $p['id_partenaire'] ?>" action="<?= $this->lurl ?>/queries/excel/1" target="_blank" style="margin:0; padding:0; border:0; display:inline;">
@@ -52,7 +52,7 @@
                         <a onclick="document.getElementById('formQuery<?= $p['id_partenaire'] ?>').submit();return false;" title="Exporter les commandes de la campagne">
                             <img src="<?= $this->surl ?>/images/admin/xls.png" alt="Exporter les commandes de la campagne"/>
                         </a>
-                        <a href="<?= $this->lurl ?>/partenaires/delete/<?= $p['id_partenaire'] ?>" title="Supprimer <?= $p['nom'] ?>" onclick="return confirm('Etes vous sur de vouloir supprimer <?= $p['nom'] ?> ?')">
+                        <a href="<?= $this->lurl ?>/campagnes/delete/<?= $p['id_partenaire'] ?>" title="Supprimer <?= $p['nom'] ?>" onclick="return confirm('Etes vous sur de vouloir supprimer <?= $p['nom'] ?> ?')">
                             <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer <?= $p['nom'] ?>"/>
                         </a>
                       </td>
