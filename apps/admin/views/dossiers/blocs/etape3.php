@@ -7,6 +7,11 @@
             <tr>
                 <th><label for="photo_projet">Photo projet<br>(798 x 528)</label></th>
                 <td>
+                    <div class="pull-right" style="margin-right: 90px">
+                        <a href="<?= $this->lurl ?>/ckeditor/plugins/pgrfilemanager/PGRFileManager.php?type=Image&CKEditor=avis&CKEditorFuncNum=1&langCode=fr" target="_blank">
+                            <img src="<?= $this->surl ?>/images/admin/down.png" alt="Télécharger une image">
+                        </a>
+                    </div>
                     <input type="file" name="photo_projet" id="photo_projet">
                     <?php if (false === empty($this->projects->photo_projet)) : ?>
                         <br>

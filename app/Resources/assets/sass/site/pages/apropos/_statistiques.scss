@@ -544,3 +544,133 @@
     @include table-row-alt;
   }
 }
+
+// Statistics FPF Table
+.table-stats-fpf {
+  border-top: 0;
+  min-width: 900px!important;
+  tr {
+    > th {
+      font-size: 14px;
+      padding-top: 15px;
+      padding-bottom: 15px;
+      &:first-child {
+        width: 300px;
+      }
+      &:not(:first-child) {
+        text-align: right;
+      }
+    }
+    > td {
+      vertical-align: top;
+      &:not(:first-child) {
+        text-align: right;
+        white-space: nowrap;
+      }
+      .volume, .number {
+        display: none;
+      }
+    }
+  }
+  &.ui-display-volume {
+    .volume {
+      display: block;
+    }
+  }
+  &.ui-display-number {
+    .number {
+      display: block;
+    }
+  }
+  sup {
+    font-size: 12px;
+  }
+}
+// Statistics FPF Controls
+.table-stats-fpf-controls {
+  margin-bottom: 20px;
+  .input-field {
+    background: #fff;
+    border-color: #dedcdf;
+  }
+  label, .nav, .form-field {
+    display: inline-block;
+  }
+  label {
+    line-height: 40px;
+    margin-right: 10px;
+  }
+}
+.table-stats-fpf-filter {
+  label {
+    position: relative;
+    top: 2px;
+  }
+  @include devices('xs', 'sm') {
+    margin-bottom: 10px;
+  }
+}
+.table-stats-fpf-date {
+  .input-field {
+    width: 240px;
+  }
+}
+// Statistics FPF Legend
+.table-stats-fpf-legend {
+  padding: 30px;
+  margin-top: 60px;
+  margin-bottom: 60px;
+  background-color: #fff;
+}
+.table-stats-fpf-legend {
+  p {
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .number {
+    margin-right: 10px;
+  }
+}
+[data-sup-index], [data-legend-index] {
+  cursor: pointer;
+}
+@include devices('xs', 'sm') {
+  .table-stats-fpf {
+    tr {
+      > th {
+        padding: 10px 15px;
+        &:first-child {
+          width: 200px;
+        }
+      }
+      > td {
+        padding: 10px 15px;
+        font-size: 14px;
+        &:first-child {
+          padding-right: 25px;
+          position: relative;
+        }
+      }
+    }
+  }
+  [data-sup-index], [data-legend-index] {
+    display: inline-block;
+    border: 2px solid $c-grey-l2;
+    width: 25px;
+    height: 25px;
+    text-align: center;
+    box-sizing: border-box;
+    background: $c-purple-l2;
+  }
+  [data-sup-index] {
+    padding: 4px 2px 0;
+    position: absolute;
+    top: 7px;
+    right: 0;
+  }
+}
+@include devices('md', 'lg') {
+  .table-stats-fpf-date {
+    text-align: right;
+  }
+}

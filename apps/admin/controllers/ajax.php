@@ -249,8 +249,7 @@ class ajaxController extends bootstrap
                 ]);
                 return;
             } elseif ($_POST['etape'] == 2) {
-                $project->id_prescripteur = ('true' === $_POST['has_prescripteur']) ? $_POST['id_prescripteur'] : 0;
-                $project->balance_count   = empty($project->balance_count) && false === empty($_POST['creation_date_etape2']) ? \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2'])->diff(new \DateTime())->y : $project->balance_count;
+                $project->balance_count = empty($project->balance_count) && false === empty($_POST['creation_date_etape2']) ? \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2'])->diff(new \DateTime())->y : $project->balance_count;
                 $project->update();
 
                 /** @var \companies $company */
@@ -265,7 +264,6 @@ class ajaxController extends bootstrap
                 $company->zip                           = $_POST['postal_etape2'];
                 $company->phone                         = $_POST['phone_etape2'];
                 $company->status_adresse_correspondance = isset($_POST['same_address_etape2']) && 'on' === $_POST['same_address_etape2'] ? 1 : 0;
-                $company->status_client                 = $_POST['enterprise_etape2'];
                 $company->latitude                      = (float) str_replace(',', '.', $_POST['latitude']);
                 $company->longitude                     = (float) str_replace(',', '.', $_POST['longitude']);
                 $company->update();
@@ -638,6 +636,17 @@ class ajaxController extends bootstrap
             return;
         }
 
+        if (
+            $project->getStatus() !== ProjectsStatus::ANALYSIS_REVIEW
+            || $this->userEntity->getIdUser() !== $project->getIdAnalyste()
+        ) {
+            echo json_encode([
+                'success' => false,
+                'error'   => 'Vous ne disposez pas des droits nécessaires'
+            ]);
+            return;
+        }
+
         $projectRating = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project]);
 
         if (null === $projectRating) {
@@ -758,6 +767,17 @@ class ajaxController extends bootstrap
             return;
         }
 
+        if (
+            $project->getStatus() !== ProjectsStatus::COMITY_REVIEW
+            || $this->userEntity->getIdUserType()->getIdUserType() != \users_types::TYPE_DIRECTION
+        ) {
+            echo json_encode([
+                'success' => false,
+                'error'   => 'Vous ne disposez pas des droits nécessaires'
+            ]);
+            return;
+        }
+
         $projectRating = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project]);
 
         $projectRating->setStructureComite(round(str_replace(',', '.', $_POST['structure_comite']), 1));
@@ -779,13 +799,13 @@ class ajaxController extends bootstrap
 
         if ($projectRating->getNoteComite() >= 8.5 && $projectRating->getNoteComite() <= 10) {
             $riskRating = 'A';
-        } elseif ($projectRating->getNoteComite() >= 7.5 && $projectRating->getNoteComite() < 8.5) {
+        } elseif ($projectRating->getNoteComite() >= 7.1 && $projectRating->getNoteComite() < 8.5) {
             $riskRating = 'B';
-        } elseif ($projectRating->getNoteComite() >= 6.5 && $projectRating->getNoteComite() < 7.5) {
+        } elseif ($projectRating->getNoteComite() >= 6.1 && $projectRating->getNoteComite() < 7.1) {
             $riskRating = 'C';
-        } elseif ($projectRating->getNoteComite() >= 5.5 && $projectRating->getNoteComite() < 6.5) {
+        } elseif ($projectRating->getNoteComite() >= 5.1 && $projectRating->getNoteComite() < 6.1) {
             $riskRating = 'D';
-        } elseif ($projectRating->getNoteComite() >= 4 && $projectRating->getNoteComite() < 5.5) {
+        } elseif ($projectRating->getNoteComite() >= 4 && $projectRating->getNoteComite() < 5.1) {
             $riskRating = 'E';
         } elseif ($projectRating->getNoteComite() >= 2 && $projectRating->getNoteComite() < 4) {
             $riskRating = 'G';

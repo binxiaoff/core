@@ -20,12 +20,13 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\ContentManager;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
@@ -205,11 +206,13 @@ class MainController extends Controller
     {
         $formData = $request->request->get('esim');
         $session  = $request->getSession();
+        $user     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Users')
+            ->find(Users::USER_ID_FRONT);
 
         try {
             /** @var ProjectRequestManager $projectRequestManager */
             $projectRequestManager = $this->get('unilend.service.project_request_manager');
-            $project               = $projectRequestManager->saveSimulatorRequest($formData);
+            $project               = $projectRequestManager->saveSimulatorRequest($formData, $user);
 
             $session->remove('esim');
 
@@ -785,6 +788,68 @@ class MainController extends Controller
         ];
 
         return $this->renderCmsNav($tree, $finalElements, $entityManagerSimulator, 'apropos-statistiques');
+    }
+
+    /**
+     * @Route("/indicateurs-de-performance", name="statistics_fpf")
+     * @Method("GET")
+     *
+     * @return Response
+     */
+    public function statisticsFpfAction(Request $request)
+    {
+        $now         = new \DateTime('NOW');
+        $publishDate = new \DateTime('First day of November 2017');
+        $publishDate->setTime(0, 0, 0);
+
+        if (
+            $this->getParameter('kernel.environment') === 'prod'
+            && $now < $publishDate
+            && $request->getClientIp() != '92.154.10.41'
+        ) {
+            return $this->render('/pages/exception/error.html.twig');
+        }
+
+        $date = $request->query->filter('date', FILTER_SANITIZE_STRING);
+
+        if (
+            false === empty($date)
+            && preg_match("/^(0[1-9]|[1-2][0-9]|3[0-1])-(0[1-9]|1[0-2])-[0-9]{4}$/", $date)
+        ) {
+            $requestedDate    = \DateTime::createFromFormat('d-m-Y', $date);
+            $firstHistoryDate = new \DateTime(StatisticsManager::START_FPF_STATISTIC_HISTORY);
+            if ($requestedDate < $firstHistoryDate) {
+                return $this->redirectToRoute('statistics_fpf');
+            }
+        } else {
+            $requestedDate  = $now;
+        }
+
+        $statisticsManager = $this->get('unilend.service.statistics_manager');
+        $years             = range(2013, $requestedDate->format('Y'));
+        $data              = $statisticsManager->getPerformanceIndicatorAtDate($requestedDate);
+
+        $template = [
+            'data'           => $data,
+            'years'          => $years,
+            'date'           => $requestedDate,
+            'availableDates' => $statisticsManager->getAvailableDatesForFPFStatistics()
+        ];
+        $response = $this->render('pages/static_pages/statistics-fpf.html.twig', $template);
+
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        /** @var \tree $tree */
+        $tree = $entityManagerSimulator->getRepository('tree');
+        $tree->get(['slug' => 'indicateurs-de-performance']);
+        $this->setCmsSeoData($tree);
+
+        $finalElements = [
+            'contenu'      => $response->getContent(),
+            'complement'   => '',
+            'image-header' => '1682x400_0005_Statistiques.jpg',
+        ];
+
+        return $this->renderCmsNav($tree, $finalElements, $entityManagerSimulator, 'apropos-statistiques-fpf');
     }
 
     /**

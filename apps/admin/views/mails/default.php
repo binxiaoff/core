@@ -59,6 +59,7 @@
                         </thead>
                         <tbody>
                         <?php foreach ($section['emails'] as $mailTemplate) : ?>
+                            <?php $updateDate = $mailTemplate->getUpdated() ? $mailTemplate->getUpdated() : $mailTemplate->getAdded(); ?>
                             <tr>
                                 <td><?= $mailTemplate->getType() ?></td>
                                 <td><?= $mailTemplate->getSubject() ?></td>
@@ -66,7 +67,7 @@
                                     <?= $mailTemplate->getSenderName() ?><br>
                                     <em><?= $mailTemplate->getSenderEmail() ?></em>
                                 </td>
-                                <td><?= $mailTemplate->getAdded()->format('d/m/Y H:i') ?></td>
+                                <td data-order="<?= $updateDate->getTimestamp() ?>"><?= $updateDate->format('d/m/Y H:i') ?></td>
                                 <td><?= $section['stats'][$mailTemplate->getType()]['day'] ?></td>
                                 <td><?= $section['stats'][$mailTemplate->getType()]['week'] ?></td>
                                 <td><?= $section['stats'][$mailTemplate->getType()]['month'] ?></td>
@@ -102,9 +103,10 @@
                     </thead>
                     <tbody>
                     <?php foreach ($this->headers as $mailTemplate) : ?>
+                        <?php $updateDate = $mailTemplate->getUpdated() ? $mailTemplate->getUpdated() : $mailTemplate->getAdded(); ?>
                         <tr>
                             <td><?= $mailTemplate->getType() ?></td>
-                            <td><?= $mailTemplate->getAdded()->format('d/m/Y H:i') ?></td>
+                            <td data-order="<?= $updateDate->getTimestamp() ?>"><?= $updateDate->format('d/m/Y H:i') ?></td>
                             <td align="center">
                                 <a href="<?= $this->lurl ?>/mails/edit/<?= $mailTemplate->getType() ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates::PART_TYPE_HEADER ?>" title="Modifier <?= $mailTemplate->getType() ?>">
                                     <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $mailTemplate->getType() ?>"/>
@@ -131,9 +133,10 @@
                     </thead>
                     <tbody>
                     <?php foreach ($this->footers as $mailTemplate) : ?>
+                        <?php $updateDate = $mailTemplate->getUpdated() ? $mailTemplate->getUpdated() : $mailTemplate->getAdded(); ?>
                         <tr>
                             <td><?= $mailTemplate->getType() ?></td>
-                            <td><?= $mailTemplate->getUpdated() ? $mailTemplate->getUpdated()->format('d/m/Y H:i') : $mailTemplate->getAdded()->format('d/m/Y H:i') ?></td>
+                            <td data-order="<?= $updateDate->getTimestamp() ?>"><?= $updateDate->format('d/m/Y H:i') ?></td>
                             <td align="center">
                                 <a href="<?= $this->lurl ?>/mails/edit/<?= $mailTemplate->getType() ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates::PART_TYPE_FOOTER ?>" title="Modifier <?= $mailTemplate->getType() ?>">
                                     <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $mailTemplate->getType() ?>"/>

@@ -2,6 +2,7 @@
     $this->projects->status >= \projects_status::ANALYSIS_REVIEW
     || $this->projects_status_history->projectHasHadStatus($this->projects->id_project, \projects_status::ANALYSIS_REVIEW)
 ) : ?>
+    <?php $isEditable = $this->projects->status == \projects_status::ANALYSIS_REVIEW && $this->userEntity->getIdUser() == $this->projects->id_analyste; ?>
     <div id="content_etape6">
         <?php $moyenne  = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->dirigeance * 0.2 + $this->projects_notes->indicateur_risque_dynamique * 0.4, 1); ?>
         <a class="tab_title" id="section-risk-analysis" href="#section-risk-analysis">6. Analyse risque</a>
@@ -14,7 +15,7 @@
                     <td><span id="marche_opere"><?= $this->projects_notes->marche_opere ?></span> / 10</td>
                     <th><label for="dirigeance">Dirigeance</label></th>
                     <td>
-                        <?php if ($this->projects->status == \projects_status::ANALYSIS_REVIEW) : ?>
+                        <?php if ($isEditable) : ?>
                             <input id="dirigeance" name="dirigeance" value="<?= $this->projects_notes->dirigeance ?>" type="text" maxlength="4" tabindex="6" class="input_court cal_moyen" onkeyup="nodizaines(this.value, this.id);"> / 10
                         <?php else : ?>
                             <?= $this->projects_notes->dirigeance ?> / 10
@@ -22,7 +23,7 @@
                     </td>
                     <th><label for="indicateur_risque_dynamique">Indicateur risque dynamique</label></th>
                     <td>
-                        <?php if ($this->projects->status == \projects_status::ANALYSIS_REVIEW) : ?>
+                        <?php if ($isEditable) : ?>
                             <input id="indicateur_risque_dynamique" name="indicateur_risque_dynamique" value="<?= $this->projects_notes->indicateur_risque_dynamique ?>" type="text" maxlength="4" tabindex="7" class="input_court cal_moyen" onkeyup="nodizaines(this.value, this.id);"> / 10
                         <?php else : ?>
                             <?= $this->projects_notes->indicateur_risque_dynamique ?> / 10
@@ -32,7 +33,7 @@
                 <tr>
                     <th><label for="structure">Structure</label></th>
                     <td>
-                        <?php if ($this->projects->status == \projects_status::ANALYSIS_REVIEW) : ?>
+                        <?php if ($isEditable) : ?>
                             <input id="structure" name="structure" value="<?= $this->projects_notes->structure ?>" type="text" maxlength="4" tabindex="1" class="input_court cal_moyen" onkeyup="nodizaines(this.value, this.id);"> / 10
                         <?php else : ?>
                             <?= $this->projects_notes->structure ?> / 10
@@ -40,7 +41,7 @@
                     </td>
                     <th><label for="global">Global</label></th>
                     <td colspan="5">
-                        <?php if ($this->projects->status == \projects_status::ANALYSIS_REVIEW) : ?>
+                        <?php if ($isEditable) : ?>
                             <input id="global" name="global" value="<?= $this->projects_notes->global ?>" type="text" maxlength="4" tabindex="4" class="input_court cal_moyen" onkeyup="nodizaines(this.value, this.id);"> / 10
                         <?php else : ?>
                             <?= $this->projects_notes->global ?> / 10
@@ -50,7 +51,7 @@
                 <tr>
                     <th><label for="rentabilite">Rentabilité</label></th>
                     <td>
-                        <?php if ($this->projects->status == \projects_status::ANALYSIS_REVIEW) : ?>
+                        <?php if ($isEditable) : ?>
                             <input id="rentabilite" name="rentabilite" value="<?= $this->projects_notes->rentabilite ?>" type="text" maxlength="4" tabindex="2" class="input_court cal_moyen" onkeyup="nodizaines(this.value, this.id);"> / 10
                         <?php else : ?>
                             <?= $this->projects_notes->rentabilite ?> / 10
@@ -58,7 +59,7 @@
                     </td>
                     <th><label for="individuel">Individuel</label></th>
                     <td>
-                        <?php if ($this->projects->status == \projects_status::ANALYSIS_REVIEW) : ?>
+                        <?php if ($isEditable) : ?>
                             <input id="individuel" name="individuel" value="<?= $this->projects_notes->individuel ?>" type="text" maxlength="4" tabindex="5" class="input_court cal_moyen" onkeyup="nodizaines(this.value, this.id);"> / 10
                         <?php else : ?>
                             <?= $this->projects_notes->individuel ?> / 10
@@ -68,7 +69,7 @@
                 <tr>
                     <th><label for="tresorerie">Trésorerie</label></th>
                     <td colspan="7">
-                        <?php if ($this->projects->status == \projects_status::ANALYSIS_REVIEW) : ?>
+                        <?php if ($isEditable) : ?>
                             <input id="tresorerie" name="tresorerie" value="<?= $this->projects_notes->tresorerie ?>" type="text" maxlength="4" tabindex="3" class="input_court cal_moyen" onkeyup="nodizaines(this.value, this.id);"> / 10
                         <?php else : ?>
                             <?= $this->projects_notes->tresorerie ?> / 10
@@ -80,7 +81,7 @@
                 </tr>
                 <tr>
                     <td colspan="8">
-                        <?php if ($this->projects->status == \projects_status::ANALYSIS_REVIEW) : ?>
+                        <?php if ($isEditable) : ?>
                             <label for="avis" style="text-align:left;display: block;">Avis</label><br>
                             <textarea tabindex="8" name="avis" style="height:700px;" id="avis" class="textarea_large avis"><?= $this->projects_notes->avis ?></textarea>
                             <script type="text/javascript">var ckedAvis = CKEDITOR.replace('avis', {height: 700});</script>
@@ -91,7 +92,7 @@
                 </tr>
             </table>
             <div id="valid_etape6" class="valid_etape"><br><br>Données sauvegardées</div>
-            <?php if ($this->projects->status == \projects_status::ANALYSIS_REVIEW) : ?>
+            <?php if ($isEditable) : ?>
                 <div class="btnDroite listBtn_etape6">
                     <input type="button" onclick="valid_rejete_etape6(3, <?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
                     <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/6/<?= $this->projects->id_project ?>" class="btn btnValid_rejet_etape6 btn_link thickbox" style="background:#CC0000;border-color:#CC0000;">Rejeter</a>

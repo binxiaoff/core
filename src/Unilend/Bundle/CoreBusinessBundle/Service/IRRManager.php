@@ -69,16 +69,18 @@ class IRRManager
     public function addIRRUnilend()
     {
         $unilendIrr = new UnilendStats();
-        $unilendIrr->setValue($this->calculateIRRUnilend());
-        $unilendIrr->setTypeStat(UnilendStats::TYPE_STAT_IRR);
+        $unilendIrr->setValue($this->calculateIRRUnilend())
+            ->setTypeStat(UnilendStats::TYPE_STAT_IRR);
+
         $this->entityManager->persist($unilendIrr);
+
         $this->entityManager->flush($unilendIrr);
     }
 
-
     /**
-     * @param $valuesIRR
-     * @return string
+     * @param array $valuesIRR
+     *
+     * @return float
      * @throws \Exception
      */
     private function calculateIRR($valuesIRR)
@@ -161,11 +163,13 @@ class IRRManager
         }
 
         $lenderStat = new LenderStatistic();
-        $lenderStat->setIdWallet($wallet);
-        $lenderStat->setTypeStat(LenderStatistic::TYPE_STAT_IRR);
-        $lenderStat->setStatus($status);
-        $lenderStat->setValue($lenderIRR);
+        $lenderStat->setIdWallet($wallet)
+            ->setTypeStat(LenderStatistic::TYPE_STAT_IRR)
+            ->setStatus($status)
+            ->setValue($lenderIRR);
+
         $this->entityManager->persist($lenderStat);
+
         $this->entityManager->flush($lenderStat);
     }
 
@@ -175,6 +179,7 @@ class IRRManager
     public function getLastUnilendIRR()
     {
         $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+
         return $unilendStatsRepository->findOneBy(['typeStat' => UnilendStats::TYPE_STAT_IRR], ['added' => 'DESC']);
     }
 
@@ -189,7 +194,7 @@ class IRRManager
         set_time_limit(1000);
 
         $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
-        $valuesIRR = $unilendStatsRepository->getIRRValuesByCohort($cohortStartDate, $cohortEndDate);
+        $valuesIRR              = $unilendStatsRepository->getIRRValuesByCohort($cohortStartDate, $cohortEndDate);
 
         return $this->calculateIRR($valuesIRR);
     }
@@ -197,25 +202,108 @@ class IRRManager
     public function addIRRForAllRiskPeriodCohort()
     {
         $cohort1 = new UnilendStats();
-        $cohort1->setValue($this->getUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_1_START, self::IRR_UNILEND_RISK_PERIOD_1_END));
-        $cohort1->setTypeStat('IRR_cohort_' . self::IRR_UNILEND_RISK_PERIOD_1_START . '_' . self::IRR_UNILEND_RISK_PERIOD_1_END);
+        $cohort1->setValue($this->getUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_1_START, self::IRR_UNILEND_RISK_PERIOD_1_END))
+            ->setTypeStat('IRR_cohort_' . self::IRR_UNILEND_RISK_PERIOD_1_START . '_' . self::IRR_UNILEND_RISK_PERIOD_1_END);
+
         $this->entityManager->persist($cohort1);
 
         $cohort2 = new UnilendStats();
-        $cohort2->setValue($this->getUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_2_START, self::IRR_UNILEND_RISK_PERIOD_2_END));
-        $cohort2->setTypeStat('IRR_cohort_' . self::IRR_UNILEND_RISK_PERIOD_2_START . '_' . self::IRR_UNILEND_RISK_PERIOD_2_END);
+        $cohort2->setValue($this->getUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_2_START, self::IRR_UNILEND_RISK_PERIOD_2_END))
+            ->setTypeStat('IRR_cohort_' . self::IRR_UNILEND_RISK_PERIOD_2_START . '_' . self::IRR_UNILEND_RISK_PERIOD_2_END);
+
         $this->entityManager->persist($cohort2);
 
         $cohort3 = new UnilendStats();
-        $cohort3->setValue($this->getUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_3_START, self::IRR_UNILEND_RISK_PERIOD_3_END));
-        $cohort3->setTypeStat('IRR_cohort_' . self::IRR_UNILEND_RISK_PERIOD_3_START . '_' . self::IRR_UNILEND_RISK_PERIOD_3_END);
+        $cohort3->setValue($this->getUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_3_START, self::IRR_UNILEND_RISK_PERIOD_3_END))
+            ->setTypeStat('IRR_cohort_' . self::IRR_UNILEND_RISK_PERIOD_3_START . '_' . self::IRR_UNILEND_RISK_PERIOD_3_END);
+
         $this->entityManager->persist($cohort3);
 
         $cohort4 = new UnilendStats();
-        $cohort4->setValue($this->getUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_4_START, date('Y-m-d')));
-        $cohort4->setTypeStat('IRR_cohort_' . self::IRR_UNILEND_RISK_PERIOD_4_START . '_' . date('Y-m-d'));
+        $cohort4->setValue($this->getUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_4_START, date('Y-m-d')))
+            ->setTypeStat('IRR_cohort_' . self::IRR_UNILEND_RISK_PERIOD_4_START . '_' . date('Y-m-d'));
+
         $this->entityManager->persist($cohort4);
 
         $this->entityManager->flush();
+    }
+
+    /**
+     * @param string $cohortStartDate
+     * @param string $cohortEndDate
+     *
+     * @return string
+     */
+    public function getOptimisticUnilendIRRByCohort($cohortStartDate, $cohortEndDate)
+    {
+        set_time_limit(1000);
+
+        $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+        $valuesIRR              = $unilendStatsRepository->getOptimisticIRRValuesByCohort($cohortStartDate, $cohortEndDate);
+
+        return $this->calculateIRR($valuesIRR);
+    }
+
+    /**
+     * @return string
+     */
+    public function getOptimisticUnilendIRR()
+    {
+        set_time_limit(1000);
+
+        $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+        $valuesIRR              = $unilendStatsRepository->getOptimisticIRRValuesUntilDateLimit(new \DateTime('NOW'));
+
+        return $this->calculateIRR($valuesIRR);
+    }
+
+    public function addOptimisticUnilendIRRAllRiskPeriodCohort()
+    {
+        $cohort1 = new UnilendStats();
+        $cohort1->setValue($this->getOptimisticUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_1_START, self::IRR_UNILEND_RISK_PERIOD_1_END))
+            ->setTypeStat(UnilendStats::TYPE_STAT_MAX_IRR . '_cohort_' . self::IRR_UNILEND_RISK_PERIOD_1_START . '_' . self::IRR_UNILEND_RISK_PERIOD_1_END);
+
+        $this->entityManager->persist($cohort1);
+
+        $cohort2 = new UnilendStats();
+        $cohort2->setValue($this->getOptimisticUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_2_START, self::IRR_UNILEND_RISK_PERIOD_2_END))
+            ->setTypeStat(UnilendStats::TYPE_STAT_MAX_IRR . '_cohort_' . self::IRR_UNILEND_RISK_PERIOD_2_START . '_' . self::IRR_UNILEND_RISK_PERIOD_2_END);
+
+        $this->entityManager->persist($cohort2);
+
+        $cohort3 = new UnilendStats();
+        $cohort3->setValue($this->getOptimisticUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_3_START, self::IRR_UNILEND_RISK_PERIOD_3_END))
+            ->setTypeStat(UnilendStats::TYPE_STAT_MAX_IRR . '_cohort_' . self::IRR_UNILEND_RISK_PERIOD_3_START . '_' . self::IRR_UNILEND_RISK_PERIOD_3_END);
+
+        $this->entityManager->persist($cohort3);
+
+        $cohort4 = new UnilendStats();
+        $cohort4->setValue($this->getOptimisticUnilendIRRByCohort(self::IRR_UNILEND_RISK_PERIOD_4_START, date('Y-m-d')))
+            ->setTypeStat(UnilendStats::TYPE_STAT_MAX_IRR . '_cohort_' . self::IRR_UNILEND_RISK_PERIOD_4_START . '_' . date('Y-m-d'));
+
+        $this->entityManager->persist($cohort4);
+
+        $this->entityManager->flush();
+    }
+
+    public function addOptimisticUnilendIRR()
+    {
+        $unilendMaxIrr = new UnilendStats();
+        $unilendMaxIrr->setValue($this->getOptimisticUnilendIRR())
+            ->setTypeStat(UnilendStats::TYPE_STAT_MAX_IRR);
+
+        $this->entityManager->persist($unilendMaxIrr);
+
+        $this->entityManager->flush($unilendMaxIrr);
+    }
+
+    /**
+     * @return null|UnilendStats
+     */
+    public function getLastOptimisticUnilendIRR()
+    {
+        $unilendStatsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+
+        return $unilendStatsRepository->findOneBy(['typeStat' => UnilendStats::TYPE_STAT_MAX_IRR], ['added' => 'DESC']);
     }
 }

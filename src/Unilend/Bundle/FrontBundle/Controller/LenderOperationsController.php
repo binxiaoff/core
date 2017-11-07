@@ -177,13 +177,16 @@ class LenderOperationsController extends Controller
         $wallet     = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
         $filters    = $session->get('lenderOperationsFilters');
         $operations = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
-        $fileName   = 'operations_' . date('Y-m-d_H:i:s') . '.xlsx';
+        $fileName   = 'operations_' . date('Y-m-d_His') . '.xlsx';
         $writer     = $lenderOperationsManager->getOperationsExcelFile($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations, $fileName);
 
         return new StreamedResponse(
             function () use ($writer) {
                 $writer->close();
-            }, Response::HTTP_OK
+            }, Response::HTTP_OK, [
+                'Content-Type' => 'application/force-download; charset=utf-8',
+                'Expires'      => 0
+            ]
         );
     }
 
@@ -449,11 +452,11 @@ class LenderOperationsController extends Controller
 
         $seriesData  = [];
         $chartColors = [
-            'late-repayment' => '#5FC4D0',
+            'late-repayment' => '#FFCA2C',
             'incidents'      => '#F2980C',
-            'repaid'         => '#1B88DB',
-            'repayment'      => '#428890',
-            'loss'           => '#787679'
+            'repaid'         => '#4FA8B0',
+            'repayment'      => '#1B88DB',
+            'loss'           => '#F76965'
         ];
 
         foreach ($loanStatus as $status => $count) {

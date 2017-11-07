@@ -109,8 +109,10 @@ class VigilanceRuleManager
                 $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $client->getNaissance()->diff($client->getAdded())->y, null, $comment);
                 $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);
             } catch (\Exception $exception) {
-                $this->logger->error('Could not process the detection: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $client->getIdClient() .
-                    ' - Error: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
+                $this->logger->error(
+                    'Could not process the detection: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $client->getIdClient() . ' - Error: ' . $exception->getMessage(),
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                );
             }
         }
     }
@@ -129,8 +131,10 @@ class VigilanceRuleManager
                 $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $operation['depositAmount'], $operation['operation'], $comment, $checkPendingDuplicate);
                 $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);
             } catch (\Exception $exception) {
-                $this->logger->error('Could not process the detected operation: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $operation['idClient'] .
-                    ' - Error: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $operation['idClient']]);
+                $this->logger->error(
+                    'Could not process the detected operation: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $operation['idClient'] . ' - Error: ' . $exception->getMessage(),
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $operation['idClient'], 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                );
             }
         }
     }
@@ -150,24 +154,30 @@ class VigilanceRuleManager
             $withdrawOperations = $operationRepository->getWithdrawOperationByWallet($depositOperation->getWalletCreditor(), self::VIGILANCE_DEPOSIT_FOLLOWED_BY_WITHDRAW_AMOUNT, $depositOperation->getAdded());
 
             foreach ($withdrawOperations as $withdrawOperation) {
-
-                if (0 == $bidRepository->countByClientInPeriod($depositOperation->getAdded(), $withdrawOperation->getAdded(), $wallet->getIdClient()->getIdClient())) {
-                    $comment           = 'le client a déposé ' . number_format($depositOperation->getAmount(), 2, ',', ' ') . ' € suivi d\'un retrait de ' . number_format($withdrawOperation->getAmount(), 2, ',', ' ') . ' € sans bid entre ' .
-                        'le ' . $depositOperation->getAdded()->format('d/m/y H:i') . ' et le ' . $withdrawOperation->getAdded()->format('d/m/y H:i');
-                    $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation(
-                        $vigilanceRule,
-                        $wallet->getIdClient(),
-                        $depositOperation->getAmount() . '€/' . $withdrawOperation->getAmount() . '€',
-                        $depositOperation->getId() . ',' . $withdrawOperation->getId(),
-                        $comment,
-                        true
-                    );
-                    $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory(
-                        $wallet->getIdClient(),
-                        $vigilanceRule->getVigilanceStatus(),
-                        Users::USER_ID_CRON,
-                        $atypicalOperation,
-                        $comment
+                try {
+                    if (0 === $bidRepository->countByClientInPeriod($depositOperation->getAdded(), $withdrawOperation->getAdded(), $wallet->getIdClient())) {
+                        $comment           = 'le client a déposé ' . number_format($depositOperation->getAmount(), 2, ',', ' ') . ' € suivi d\'un retrait de ' . number_format($withdrawOperation->getAmount(), 2, ',', ' ') . ' € sans bid entre ' .
+                            'le ' . $depositOperation->getAdded()->format('d/m/y H:i') . ' et le ' . $withdrawOperation->getAdded()->format('d/m/y H:i');
+                        $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation(
+                            $vigilanceRule,
+                            $wallet->getIdClient(),
+                            $depositOperation->getAmount() . '€/' . $withdrawOperation->getAmount() . '€',
+                            $depositOperation->getId() . ',' . $withdrawOperation->getId(),
+                            $comment,
+                            true
+                        );
+                        $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory(
+                            $wallet->getIdClient(),
+                            $vigilanceRule->getVigilanceStatus(),
+                            Users::USER_ID_CRON,
+                            $atypicalOperation,
+                            $comment
+                        );
+                    }
+                } catch (\Exception $exception) {
+                    $this->logger->error(
+                        'Could not process the detection: ' . $vigilanceRule->getLabel() . ' - Error: ' . $exception->getMessage(),
+                        ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_wallet' => $wallet->getId(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
                     );
                 }
             }
@@ -192,8 +202,8 @@ class VigilanceRuleManager
 
                 if (
                     null !== $atypicalOperation
-                    && true === empty($operationRepository->getWithdrawAndProvisionOperationByDateAndWallet($lenderWallet, $atypicalOperation->getAdded()))
-                    && true === empty($bidsRepository->getManualBidByDateAndWallet($lenderWallet, $atypicalOperation->getAdded()))
+                    && 0 === $operationRepository->getWithdrawAndProvisionOperationByDateAndWallet($lenderWallet, $atypicalOperation->getAdded())
+                    && 0 === $bidsRepository->getManualBidCountByDateAndWallet($lenderWallet, $atypicalOperation->getAdded())
                 ) {
                     continue;
                 }
@@ -201,8 +211,10 @@ class VigilanceRuleManager
                 $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $lenderWallet->getIdClient(), $wallet['availableBalance'], null, $comment);
                 $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($lenderWallet->getIdClient(), $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);
             } catch (\Exception $exception) {
-                $this->logger->error('Could not process the detection: ' . $vigilanceRule->getLabel() .
-                    ' - Error: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_wallet' => $wallet['walletId']]);
+                $this->logger->error(
+                    'Could not process the detection: ' . $vigilanceRule->getLabel() . ' - Error: ' . $exception->getMessage(),
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_wallet' => $wallet['walletId'], 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                );
             }
         }
     }
@@ -220,8 +232,10 @@ class VigilanceRuleManager
                 $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $clientRow['nbRibChange'], null, $comment, true);
                 $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);
             } catch (\Exception $exception) {
-                $this->logger->error('Could not process the detection: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $clientRow['idClient'] .
-                    ' - Error: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $clientRow['idClient']]);
+                $this->logger->error(
+                    'Could not process the detection: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $clientRow['idClient'] . ' - Error: ' . $exception->getMessage(),
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $clientRow['idClient'], 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                );
             }
         }
     }
@@ -235,8 +249,10 @@ class VigilanceRuleManager
                 $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, 'nombre d\'opérations: ' . $deposit['nb_transactions'] . ' | nombre de CB: ' . $deposit['nb_cards'], $deposit['idTransactionList'], $comment);
                 $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);
             } catch (\Exception $exception) {
-                $this->logger->error('Could not process the detection: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $deposit['id_client'] .
-                    ' - Error: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $deposit['id_client']]);
+                $this->logger->error(
+                    'Could not process the detection: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $deposit['id_client'] . ' - Error: ' . $exception->getMessage(),
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $deposit['id_client'], 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                );
             }
         }
     }
@@ -250,8 +266,10 @@ class VigilanceRuleManager
                 $atypicalOperation = $this->clientVigilanceStatusManager->addClientAtypicalOperation($vigilanceRule, $client, $clientRow['countryLabel'], null, $comment);
                 $this->clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory($client, $vigilanceRule->getVigilanceStatus(), Users::USER_ID_CRON, $atypicalOperation, $comment);
             } catch (\Exception $exception) {
-                $this->logger->error('Could not process the detection: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $clientRow['idClient'] .
-                    ' - Error: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $clientRow['idClient']]);
+                $this->logger->error(
+                    'Could not process the detection: ' . $vigilanceRule->getLabel() . ' - id_client = ' . $clientRow['idClient'] . ' - Error: ' . $exception->getMessage(),
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $clientRow['idClient'], 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                );
             }
         }
     }

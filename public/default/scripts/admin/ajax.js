@@ -170,54 +170,6 @@ function loadTradTexte(nom, section) {
     }
 }
 
-function editMemo(projectId, commentId) {
-    $.ajax({
-        url: add_url + '/dossiers/memo',
-        method: 'POST',
-        dataType: 'html',
-        data: {
-            projectId: projectId,
-            commentId: commentId,
-            content: CKEDITOR.instances['content_memo'].getData(),
-            public: $('[name="public_memo"]:checked').val()
-        },
-        success: function(response) {
-            $('#table_memo').html(response)
-            $.fn.colorbox.close()
-        }
-    });
-}
-
-function deleteMemo(projectId, commentId) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer le mémo ?')) {
-        var memoRows = $('#table_memo .tablesorter tbody tr'),
-            targetedMemoRow = event.target
-
-        $.ajax({
-            url: add_url + '/dossiers/memo/' + projectId + '/' + commentId,
-            method: 'DELETE',
-            dataType: 'json',
-            success: function(response) {
-                if (response.success != undefined && response.success) {
-                    if (memoRows.length == 1) {
-                        $('#table_memo *').remove()
-                    } else {
-                        $(targetedMemoRow).closest('tr').remove()
-                    }
-                } else {
-                    if (response.error != undefined && response.error) {
-                        if (response.message != undefined) {
-                            alert(response.message)
-                        } else {
-                            alert('Erreur inconnue')
-                        }
-                    }
-                }
-            }
-        })
-    }
-}
-
 /* Activer un utilisateur sur une zone */
 function activeUserZone(id_user, id_zone, zone) {
     xhr_object = AjaxObject();
@@ -266,16 +218,7 @@ function valid_etape1(id_project) {
 }
 
 function valid_etape2(id_project) {
-    var has_prescripteur = $('#enterprise3_etape2').prop('checked'),
-        val = 'id_project=' + id_project + '&etape=2&has_prescripteur=' + has_prescripteur + '&' + $('#dossier_etape2').serialize();
-
-    if (false === has_prescripteur) {
-        $("#civilite_prescripteur").html('');
-        $("#prenom_prescripteur").html('');
-        $("#nom_prescripteur").html('');
-        $("#email_prescripteur").html('');
-        $("#telephone_prescripteur").html('');
-    }
+    var val = 'id_project=' + id_project + '&etape=2&' + $('#dossier_etape2').serialize();
 
     $.post(add_url + '/ajax/valid_etapes', val).done(function(data) {
         $("#societe").val($("#raison_sociale_etape2").val());
