@@ -232,10 +232,12 @@
                     </tbody>
                 </table>
 
+                {% if app.environment == 'prod' or app.environment == 'preprod' %}
                 <div id="preview-declaration" class="hide">
                     <hr>
                     <a id="declaration-preview-btn" class="btn btn-primary" href="{{ app.adminUrl }}/beneficiaires_effectifs/declaration/{{ company.idCompany }}" target="_blank">Prévisualiser la déclaration</a>
                 </div>
+                {% endif %}
             </div>
         </div>
 
