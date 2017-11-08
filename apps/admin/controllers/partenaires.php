@@ -303,7 +303,6 @@ class partenairesController extends bootstrap
         if (empty($companyClientErrors)) {
             /** @var EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            $entityManager->getConnection()->beginTransaction();
 
             try {
                 $entityManager->persist($companyClient->getIdClient());
@@ -314,13 +313,10 @@ class partenairesController extends bootstrap
                 $walletCreationManager = $this->get('unilend.service.wallet_creation_manager');
                 $walletCreationManager->createWallet($companyClient->getIdClient(), WalletType::PARTNER);
 
-                $entityManager->getConnection()->commit();
-
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
                 $mailerManager = $this->get('unilend.service.email_manager');
                 $mailerManager->sendPartnerAccountActivation($companyClient->getIdClient());
             } catch (\Exception $exception) {
-                $entityManager->getConnection()->rollBack();
                 $this->get('logger')->error('An error occurred while creating client: ' . $exception->getMessage(), [['class' => __CLASS__, 'function' => __FUNCTION__]]);
             }
         }
