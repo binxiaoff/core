@@ -470,7 +470,7 @@ class StatisticsManager
         ];
         $data['late-problematic-capital-percentage']['total'] = [
             'volume' => round(bcmul(bcdiv($data['late-owed-capital-problematic']['total'], $data['borrowed-capital']['total'], 6), 100, 3), 2),
-            'number' => round(bcmul(bcdiv(array_sum($numberLateProblematicProjects), $data['number-of-projects']['total'], 6),100, 3), 2)
+            'number' => round(bcmul(bcdiv(array_sum($numberLateProblematicProjects), $data['number-of-projects']['total'], 6), 100, 3), 2)
         ];
         $data['average-loan-age']['total']                    = [
             'volume' => $projectRepository->getAverageLoanAgeUntil(true),
