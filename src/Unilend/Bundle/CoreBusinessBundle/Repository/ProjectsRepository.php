@@ -893,7 +893,7 @@ class ProjectsRepository extends EntityRepository
     {
         $query = '
             SELECT
-              COUNT(p.id_project) AS amount,
+              COUNT(DISTINCT p.id_project) AS amount,
               (' . $this->getCohortQuery($groupFirstYears) . ') AS cohort
             FROM projects p
               INNER JOIN echeanciers_emprunteur ON echeanciers_emprunteur.id_project = p.id_project 
