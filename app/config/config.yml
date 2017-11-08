@@ -209,7 +209,7 @@ monolog:
 swiftmailer:
     transport: '%mailer_transport%'
     host: '%mailer_host%'
-    port: '%mailer_port'
+    port: '%mailer_port%'
 
 unilend_translation:
     parameters:
