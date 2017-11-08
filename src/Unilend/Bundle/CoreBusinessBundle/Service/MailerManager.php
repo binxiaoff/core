@@ -392,23 +392,23 @@ class MailerManager
                     $numberOfBidsInLoanIFP = $acceptedBid->counter('id_loan = ' . $loanIFP[0]['id_loan']);
 
                     if ($numberOfBidsInLoanIFP > 1) {
-                        $contractText = '<br>L&rsquo;ensemble de vos offres &agrave; concurrence de 1 000 euros seront regroup&eacute;es sous la forme d&rsquo;un seul contrat de pr&ecirc;t. Son taux d&rsquo;int&eacute;r&ecirc;t correspondra donc &agrave; la moyenne pond&eacute;r&eacute;e de vos <span style="color:#b20066;">' . $numberOfBidsInLoanIFP . ' offres de pr&ecirc;t</span>. ';
+                        $contractText = '<br>L\`ensemble de vos offres à concurrence de 1 000 euros seront regroupées sous la forme d\`un seul contrat de prêt. Son taux d\`intérêt correspondra donc à la moyenne pondérée de vos <span class="text-primary">' . $numberOfBidsInLoanIFP . ' offres de prêt</span>. ';
 
-                        $linkExplication = 'Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t, vous pouvez consulter <a href="' . $this->sSUrl . '/document-de-pret">cette page</a>.';
+                        $linkExplication = 'Pour en savoir plus sur les règles de regroupement des offres de prêt, vous pouvez consulter <a href="' . $this->sSUrl . '/document-de-pret">cette page</a>.';
                     }
                 }
 
                 if ($numberOfAcceptedBids > 1) {
-                    $selectedOffers = 'vos offres ont &eacute;t&eacute; s&eacute;lectionn&eacute;es';
+                    $selectedOffers = 'vos offres ont été sélectionnées';
                     $offers         = 'vos offres';
                     $does           = 'font';
                 } else {
-                    $selectedOffers = 'votre offre a &eacute;t&eacute; s&eacute;lectionn&eacute;e';
+                    $selectedOffers = 'votre offre a été sélectionnée';
                     $offers         = 'votre offre';
                     $does           = 'fait';
                 }
 
-                $loansText = ($numberOfLoansForLender > 1) ? 'vos pr&ecirc;ts' : 'votre pr&ecirc;t';
+                $loansText = ($numberOfLoansForLender > 1) ? 'vos prêts' : 'votre prêt';
 
                 foreach ($loansOfLender as $loan) {
                     $firstPayment = $repaymentSchedule->getPremiereEcheancePreteurByLoans($loan['id_project'], $loan['id_lender'], $loan['id_loan']);
@@ -417,10 +417,10 @@ class MailerManager
                         $contractType = $contractLabel[$loan['id_type_contract']];
                     }
                     $loansDetails .= '<tr>
-                                           <td class="td text-center">' . $this->oFicelle->formatNumber($loan['amount'] / 100) . ' &euro;</td>
+                                           <td class="td text-center">' . $this->oFicelle->formatNumber($loan['amount'] / 100) . ' €</td>
                                            <td class="td text-center">' . $this->oFicelle->formatNumber($loan['rate']) . ' %</td>
                                            <td class="td text-center">' . $project->period . ' mois</td>
-                                           <td class="td text-center">' . $this->oFicelle->formatNumber($firstPayment['montant'] / 100) . ' &euro;</td>
+                                           <td class="td text-center">' . $this->oFicelle->formatNumber($firstPayment['montant'] / 100) . ' €</td>
                                            <td class="td text-center">' . $contractType . '</td>
                                       </tr>';
                 }
@@ -863,25 +863,25 @@ class MailerManager
                     $numberOfBidsInLoanIFP = $acceptedBids->counter('id_loan = ' . $loanIFP[0]['id_loan']);
 
                     if ($numberOfBidsInLoanIFP > 1) {
-                        $sContract        = 'L&rsquo;ensemble de vos offres &agrave; concurrence de 1 000 euros sont regroup&eacute;es sous la forme d&rsquo;un seul contrat de pr&ecirc;t. Son taux d&rsquo;int&eacute;r&ecirc;t correspond donc &agrave; la moyenne pond&eacute;r&eacute;e de vos <span class="text-primary">' . $numberOfBidsInLoanIFP . ' offres de pr&ecirc;t</span>. ';
-                        $sLinkExplication = 'Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t, vous pouvez consulter <a href="' . $this->sSUrl . '/document-de-pret">cette page</a>.';
+                        $sContract        = 'L\`ensemble de vos offres à concurrence de 1 000 euros sont regroupées sous la forme d\`un seul contrat de prêt. Son taux d\`intérêt correspond donc à la moyenne pondérée de vos <span class="text-primary">' . $numberOfBidsInLoanIFP . ' offres de prêt</span>. ';
+                        $sLinkExplication = 'Pour en savoir plus sur les règles de regroupement des offres de prêt, vous pouvez consulter <a href="' . $this->sSUrl . '/document-de-pret">cette page</a>.';
                     }
                 }
 
                 if ($acceptedBids->getDistinctBidsForLenderAndProject($loan->getIdLender()->getId(), $project->getIdProject()) > 1) {
-                    $sAcceptedOffers = 'vos offres ont &eacute;t&eacute; accept&eacute;es';
+                    $sAcceptedOffers = 'vos offres ont été acceptées';
                     $sOffers         = 'vos offres';
                 } else {
-                    $sAcceptedOffers = 'votre offre a &eacute;t&eacute; accept&eacute;e';
+                    $sAcceptedOffers = 'votre offre a été acceptée';
                     $sOffers         = 'votre offre';
                 }
 
                 if (count($lenderLoans) > 1) {
                     $sContracts = 'Vos contrats sont disponibles';
-                    $sLoans     = 'vos pr&ecirc;ts';
+                    $sLoans     = 'vos prêts';
                 } else {
                     $sContracts = 'Votre contrat est disponible';
-                    $sLoans     = 'votre pr&ecirc;t';
+                    $sLoans     = 'votre prêt';
                 }
 
                 foreach ($lenderLoans as $aLoan) {
@@ -1017,8 +1017,7 @@ class MailerManager
                 $sMail = 'nouveaux-projets-du-jour';
                 break;
             case 'hebdomadaire':
-                $sMail = '
-                ';
+                $sMail = 'nouveaux-projets-de-la-semaine';
                 break;
             default:
                 trigger_error('Unknown frequency for new projects summary email: ' . $sFrequency, E_USER_WARNING);
@@ -1049,8 +1048,8 @@ class MailerManager
                                     <td class="td">
                                        <a href="' . $this->sFUrl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a>
                                     </td>
-                                    <td class="td text-right">' . $this->oFicelle->formatNumber($oProject->amount, 0) . '&nbsp;&euro;</td>
-                                    <td align="td text-right">' . $oProject->period . ' mois</td>
+                                    <td class="td text-right">' . $this->oFicelle->formatNumber($oProject->amount, 0) . ' €</td>
+                                    <td class="td text-right">' . $oProject->period . ' mois</td>
                                 </tr>';
                             $iProjectsCount += 1;
                         }
@@ -1196,7 +1195,7 @@ class MailerManager
                             <tr>
                                 <td class="td">' . $sSpanAutobid . '</td>
                                 <td class="td"><a href="' . $this->sFUrl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
-                                <td class="td text-right">' . $this->oFicelle->formatNumber($oBid->amount / 100, 0) . '&nbsp;&euro;</td>
+                                <td class="td text-right">' . $this->oFicelle->formatNumber($oBid->amount / 100, 0) . ' €</td>
                                 <td class="td text-right">' . $this->oFicelle->formatNumber($oBid->rate, 1) . ' %</td>
                             </tr>';
                     }
@@ -1205,7 +1204,7 @@ class MailerManager
                         <tr>
                             <td class="tf">&nbsp;</td>
                             <td class="tf">Total</td>
-                            <td class="tf text-right">' . $this->oFicelle->formatNumber($iSumBidsPlaced, 0) . '&nbsp;&euro;</td>
+                            <td class="tf text-right">' . $this->oFicelle->formatNumber($iSumBidsPlaced, 0) . ' €</td>
                             <td class="tf">&nbsp;</td>
                         </tr>';
 
@@ -1336,7 +1335,7 @@ class MailerManager
                             <tr>
                                 <td class="td">' . $sSpanAutobid . '</td>
                                 <td class="td"><a href="' . $this->sFUrl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
-                                <td class="td text-right">' . $this->oFicelle->formatNumber($oNotification->amount / 100, 0) . '&nbsp;&euro;</td>
+                                <td class="td text-right">' . $this->oFicelle->formatNumber($oNotification->amount / 100, 0) . ' €</td>
                                 <td class="td text-right">' . $this->oFicelle->formatNumber($oBid->rate, 1) . ' %</td>
                             </tr>';
                     }
@@ -1345,7 +1344,7 @@ class MailerManager
                         <tr>
                             <td class="td"></td>
                             <td class="td">Total de vos offres</td>
-                            <td class="td text-right">' . $this->oFicelle->formatNumber($iSumRejectedBids, 0) . '&nbsp;&euro;</td>
+                            <td class="td text-right">' . $this->oFicelle->formatNumber($iSumRejectedBids, 0) . ' €</td>
                             <td class="td"></td>
                         </tr>';
 
@@ -1491,7 +1490,7 @@ class MailerManager
                         $sLoansListHTML .= '
                             <tr>
                                 <td class="td"><a href="' . $this->sFUrl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
-                                <td class="td text-right">' . $this->oFicelle->formatNumber($oLoan->amount / 100, 0) . '&nbsp;&euro;</td>
+                                <td class="td text-right">' . $this->oFicelle->formatNumber($oLoan->amount / 100, 0) . ' €</td>
                                 <td class="td text-right">' . $this->oFicelle->formatNumber($oLoan->rate, 1) . ' %</td>
                                 <td class="td text-right">' . $sContractType . '</td>
                             </tr>';
@@ -1500,7 +1499,7 @@ class MailerManager
                     $sLoansListHTML .= '
                         <tr>
                             <td class="tf">Total de vos offres</td>
-                            <td align="right" class="tf">' . $this->oFicelle->formatNumber($iSumAcceptedLoans, 0) . '&nbsp;&euro;</td>
+                            <td class="tf text-right">' . $this->oFicelle->formatNumber($iSumAcceptedLoans, 0) . ' €</td>
                             <td class="tf">&nbsp;</td>
                             <td class="tf">&nbsp;</td>
                         </tr>';
@@ -1539,7 +1538,7 @@ class MailerManager
                         'url'              => $this->sFUrl,
                         'prenom_p'         => $wallet->getIdClient()->getPrenom(),
                         'liste_offres'     => $sLoansListHTML,
-                        'link_explication' => in_array($wallet->getIdClient()->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 'Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t, vous pouvez consulter <a href="' . $this->sSUrl . '/document-de-pret">cette page</a>. ' : '',
+                        'link_explication' => in_array($wallet->getIdClient()->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 'Pour en savoir plus sur les règles de regroupement des offres de prêt, vous pouvez consulter <a href="' . $this->sSUrl . '/document-de-pret">cette page</a>. ' : '',
                         'motif_virement'   => $wallet->getWireTransferPattern(),
                         'gestion_alertes'  => $this->sFUrl . '/profile',
                         'contenu'          => $sContent,
@@ -1685,9 +1684,9 @@ class MailerManager
                             $fRepaymentTax                  = 0;
 
                             $sEarlyRepaymentContent = "
-                                Le remboursement de <span class=\"text-primary\">" . $this->oFicelle->formatNumber($amount) . "&nbsp;&euro;</span> correspond au remboursement total du capital restant d&ucirc; de votre pr&egrave;t &agrave; <span class=\"text-primary\">" . htmlentities($oCompanies->name) . "</span>.
-                                Comme le pr&eacute;voient les r&egrave;gles d'Unilend, <span class=\"text-primary\">" . htmlentities($oCompanies->name) . "</span> a choisi de rembourser son emprunt par anticipation sans frais.<br/>
-                                Depuis l'origine, il vous a vers&eacute; <span class=\"text-primary\">" . $this->oFicelle->formatNumber($oLenderRepayment->getRepaidInterests(['id_loan' => $loanId])) . "&nbsp;&euro;</span> d'int&eacute;r&ecirc;ts soit un taux d'int&eacute;r&ecirc;t annualis&eacute; moyen de <span class=\"text-primary\">" . $this->oFicelle->formatNumber($oLoan->getWeightedAverageInterestRateForLender($wallet->getId(), $oProject->id_project), 1) . " %.</span>";
+                                Le remboursement de <span class=\"text-primary\">" . $this->oFicelle->formatNumber($amount) . " €</span> correspond au remboursement total du capital restant dû de votre prêt à <span class=\"text-primary\">" . htmlentities($oCompanies->name) . "</span>.
+                                Comme le prévoient les règles d'Unilend, <span class=\"text-primary\">" . htmlentities($oCompanies->name) . "</span> a choisi de rembourser son emprunt par anticipation sans frais.<br/>
+                                Depuis l'origine, il vous a versé <span class=\"text-primary\">" . $this->oFicelle->formatNumber($oLenderRepayment->getRepaidInterests(['id_loan' => $loanId])) . " €</span> d'intérêts soit un taux d'intérêt annualisé moyen de <span class=\"text-primary\">" . $this->oFicelle->formatNumber($oLoan->getWeightedAverageInterestRateForLender($wallet->getId(), $oProject->id_project), 1) . " %.</span>";
                         } else {
                             $oLenderRepayment->get($repaymentScheduleId);
 
@@ -1709,20 +1708,20 @@ class MailerManager
                         $sRepaymentsListHTML .= '
                             <tr>
                                 <td class="td"><a href="' . $this->sFUrl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
-                                <td class="td text-right">' . $this->oFicelle->formatNumber($fRepaymentAmount) . '&nbsp;&euro;</td>
-                                <td class="td text-right">' . $this->oFicelle->formatNumber($fRepaymentCapital) . '&nbsp;&euro;</td>
-                                <td class="td text-right">' . $this->oFicelle->formatNumber($fRepaymentInterestsTaxIncluded) . '&nbsp;&euro;</td>
-                                <td class="td text-right">' . $this->oFicelle->formatNumber($fRepaymentInterestsTaxIncluded - $fRepaymentTax) . '&nbsp;&euro;</td>
+                                <td class="td text-right">' . $this->oFicelle->formatNumber($fRepaymentAmount) . ' €</td>
+                                <td class="td text-right">' . $this->oFicelle->formatNumber($fRepaymentCapital) . ' €</td>
+                                <td class="td text-right">' . $this->oFicelle->formatNumber($fRepaymentInterestsTaxIncluded) . ' €</td>
+                                <td class="td text-right">' . $this->oFicelle->formatNumber($fRepaymentInterestsTaxIncluded - $fRepaymentTax) . ' €</td>
                             </tr>';
                     }
 
                     $sRepaymentsListHTML .= '
                         <tr>
                             <td class="tf">Total</td>
-                            <td class="tf text-right">' . $this->oFicelle->formatNumber($fTotalAmount) . '&nbsp;&euro;</td>
-                            <td class="tf text-right">' . $this->oFicelle->formatNumber($fTotalCapital) . '&nbsp;&euro;</td>
-                            <td class="tf text-right">' . $this->oFicelle->formatNumber($fTotalInterestsTaxIncluded) . '&nbsp;&euro;</td>
-                            <td class="tf text-right">' . $this->oFicelle->formatNumber($fTotalInterestsTaxFree) . '&nbsp;&euro;</td>
+                            <td class="tf text-right">' . $this->oFicelle->formatNumber($fTotalAmount) . ' €</td>
+                            <td class="tf text-right">' . $this->oFicelle->formatNumber($fTotalCapital) . ' €</td>
+                            <td class="tf text-right">' . $this->oFicelle->formatNumber($fTotalInterestsTaxIncluded) . ' €</td>
+                            <td class="tf text-right">' . $this->oFicelle->formatNumber($fTotalInterestsTaxFree) . ' €</td>
                         </tr>';
 
                     if (1 === $iRepaymentsCount && 'quotidienne' === $sFrequency) {

@@ -583,7 +583,7 @@ class ProjectStatusManager
                             'prenom_p'                    => $wallet->getIdClient()->getPrenom(),
                             'entreprise'                  => $project->getIdCompany()->getName(),
                             'montant_pret'                => $this->numberFormatter->format($loansAmount),
-                            'montant_rembourse'           => '<span class=\"text-primary\">' . $this->numberFormatter->format($netRepayment) . '&nbsp;euros</span> vous ont d&eacute;j&agrave; &eacute;t&eacute; rembours&eacute;s.',
+                            'montant_rembourse'           => '<span class="text-primary">' . $this->numberFormatter->format($netRepayment) . ' €</span> vous ont déjà été remboursés.',
                             'nombre_prets'                => $loansCount . ' ' . (($loansCount > 1) ? 'pr&ecirc;ts' : 'pr&ecirc;t'), // @todo intl
                             'date_prochain_remboursement' => $nextRepayment->getDateEcheance()->format('d/m/Y'),
                             'CRD'                         => $this->numberFormatter->format(round(bcsub($loansAmount, $repaidCapital, 4), 2))
