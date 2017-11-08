@@ -70,8 +70,8 @@
             {% endblock %}
         {% endif %}
 
-        {# Site User Mobile Menu #}
-        {% if app.user is defined and app.user is not empty %}
+        {# As long as lender menu is rendered using LenderAccount:lenderMenu, we need this trick before refactoring menu here and there #}
+        {% if app.user is defined and app.user is not empty and false == is_granted('ROLE_LENDER') %}
             {% include 'partials/site/user-mobile-menu.html.twig' %}
         {% endif %}
 
@@ -127,8 +127,6 @@
                 {% endif %}
 
                 var USERNOTIFICATIONS = JSON.parse('{{ notifications|json_encode|escape('js')|raw }}')
-
-
 
                 var UTILITY_LANG = JSON.parse('{{ dictionary('utility')|json_encode|escape('js')|raw }}')
                 var AUTOCOMPLETE_LANG = JSON.parse('{{ dictionary('auto-complete')|json_encode|escape('js')|raw }}')

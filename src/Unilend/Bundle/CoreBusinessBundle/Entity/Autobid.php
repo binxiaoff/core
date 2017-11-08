@@ -82,8 +82,6 @@ class Autobid
      */
     private $idLender;
 
-
-
     /**
      * Set status
      *

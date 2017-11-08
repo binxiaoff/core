@@ -1,6 +1,6 @@
 <div id="popup">
     <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"/></a>
-    <form method="post" name="edit_part" id="edit_part" enctype="multipart/form-data" action="<?= $this->lurl ?>/partenaires/<?= $this->partenaires->id_partenaire ?>" target="_parent">
+    <form method="post" name="edit_part" id="edit_part" enctype="multipart/form-data" action="<?= $this->lurl ?>/campagnes/<?= $this->partenaires->id_partenaire ?>" target="_parent">
         <h1>Modifier <?= $this->partenaires->nom ?></h1>
         <fieldset>
             <table class="formColor">

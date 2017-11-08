@@ -305,17 +305,19 @@ abstract class Controller implements ContainerAwareInterface
 
     /**
      * @param bool       $success
-     * @param array|null $data
+     * @param mixed|null $data
      * @param array|null $errors
+     * @param mixed|null $id
      */
-    protected function sendAjaxResponse($success, array $data = null, array $errors = null)
+    protected function sendAjaxResponse($success, $data = null, array $errors = null, $id = null)
     {
         header('Content-Type: application/json');
 
         echo json_encode([
             'success' => $success,
-            'data'    => $data,
-            'error'   => $errors
+            'error'   => $errors,
+            'id'      => $id,
+            'data'    => $data
         ]);
 
         exit;

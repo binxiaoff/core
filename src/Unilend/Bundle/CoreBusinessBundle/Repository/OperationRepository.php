@@ -5,7 +5,6 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
@@ -69,11 +68,12 @@ class OperationRepository extends EntityRepository
      * @param Wallet    $wallet
      * @param \DateTime $date
      *
-     * @return Operation[]
+     * @return integer
      */
     public function getWithdrawAndProvisionOperationByDateAndWallet(Wallet $wallet, \DateTime $date)
     {
         $qb = $this->createQueryBuilder('o')
+            ->select('COUNT(o.id)')
             ->where('o.idType IN (:walletType)')
             ->setParameter('walletType', [
                 $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_WITHDRAW])->getId(),
@@ -84,7 +84,7 @@ class OperationRepository extends EntityRepository
             ->andWhere('o.added >= :added')
             ->setParameter('added', $date);
 
-        return $qb->getQuery()->getResult(AbstractQuery::HYDRATE_SCALAR);
+        return $qb->getQuery()->getSingleScalarResult();
     }
 
     /**

@@ -218,16 +218,7 @@ function valid_etape1(id_project) {
 }
 
 function valid_etape2(id_project) {
-    var has_prescripteur = $('#enterprise3_etape2').prop('checked'),
-        val = 'id_project=' + id_project + '&etape=2&has_prescripteur=' + has_prescripteur + '&' + $('#dossier_etape2').serialize();
-
-    if (false === has_prescripteur) {
-        $("#civilite_prescripteur").html('');
-        $("#prenom_prescripteur").html('');
-        $("#nom_prescripteur").html('');
-        $("#email_prescripteur").html('');
-        $("#telephone_prescripteur").html('');
-    }
+    var val = 'id_project=' + id_project + '&etape=2&' + $('#dossier_etape2').serialize();
 
     $.post(add_url + '/ajax/valid_etapes', val).done(function(data) {
         $("#societe").val($("#raison_sociale_etape2").val());
