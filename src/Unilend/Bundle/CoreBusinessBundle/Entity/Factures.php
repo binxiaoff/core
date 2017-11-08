@@ -42,7 +42,7 @@ class Factures
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="factures")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects", inversedBy="invoices")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
      * })
