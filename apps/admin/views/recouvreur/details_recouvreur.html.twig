@@ -105,14 +105,14 @@
                             <tbody>
                             {% for repaymentFee in repaymentFees %}
                                 <tr>
-                                    <td>{{ repaymentFee.wireTransferIn.idReception }}</td>
+                                    <td>{{ repaymentFee.idWireTransferIn }}</td>
                                     <td>{{ repaymentFee.added|localizeddate('short', 'none') }}</td>
                                     <td class="text-right">{{ repaymentFee.amount|localizedcurrency('EUR') }}</td>
                                     <td>
-                                        {% if repaymentFee.added.format('Y-m-d') < constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\DebtCollectionMissionManager::FEES_DETAILS_AVAILABILITY_DATE') %}
+                                        {% if repaymentFee.added < constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\DebtCollectionMissionManager::FEES_DETAILS_AVAILABILITY_DATE') %}
                                             Détails indisponibles pour ce remboursement
                                         {% else %}
-                                            <a href="/recouvreur/downloadFeesFile/{{ repaymentFee.wireTransferIn.idReception }}/{{ address.idClient.idClient }}" class="btn btn-xs btn-default">
+                                            <a href="/recouvreur/downloadFeesFile/{{ repaymentFee.idWireTransferIn }}/{{ address.idClient.idClient }}" class="btn btn-xs btn-default">
                                                 Télécharger le fichier détailé<span class="fa fa-chevron-right push-5-l"></span>
                                             </a>
                                         {% endif %}

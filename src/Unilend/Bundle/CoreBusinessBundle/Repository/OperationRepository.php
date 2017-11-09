@@ -1306,10 +1306,12 @@ class OperationRepository extends EntityRepository
     public function getFeesPaymentOperations($wallet)
     {
         $queryBuilder = $this->createQueryBuilder('o');
-        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+        $queryBuilder->select('SUM(o.amount) AS amount, DATE(o.added) AS added, IDENTITY(o.idWireTransferIn) AS idWireTransferIn')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
             ->where('o.idWalletCreditor = :wallet')
             ->andWhere('ot.label IN (:feePayment)')
             ->groupBy('o.idWireTransferIn')
+            ->orderBy('o.added',  'DESC')
             ->setParameter('wallet', $wallet)
             ->setParameter('feePayment', [
                 OperationType::COLLECTION_COMMISSION_LENDER,
