@@ -151,13 +151,8 @@ class bank_accountController extends bootstrap
                     if (null === $paymentSchedule) {
                         continue;
                     }
-                    $monthlyPayment = round(bcdiv($paymentSchedule->getMontant() + $paymentSchedule->getCommission() + $paymentSchedule->getTva(), 100, 4), 2);
-                    $this->settings->get('Facebook', 'type');
-                    $lien_fb = $this->settings->value;
 
-                    $this->settings->get('Twitter', 'type');
-                    $lien_tw = $this->settings->value;
-
+                    $monthlyPayment  = round(bcdiv($paymentSchedule->getMontant() + $paymentSchedule->getCommission() + $paymentSchedule->getTva(), 100, 4), 2);
                     $nextDirectDebit = $entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements')->findOneBy(
                         ['idProject' => $project, 'status' => Prelevements::STATUS_PENDING],
                         ['dateEcheanceEmprunteur' => 'ASC']
@@ -167,24 +162,17 @@ class bank_accountController extends bootstrap
                         continue;
                     }
 
-                    $varMail = array(
-                        'surl'                   => $this->surl,
-                        'url'                    => $this->lurl,
-                        'prenom_e'               => $client->getPrenom(),
-                        'nom_e'                  => $company->getName(),
-                        'mensualite'             => $this->ficelle->formatNumber($monthlyPayment),
-                        'montant'                => $this->ficelle->formatNumber($project->getAmount(), 0),
-                        'link_compte_emprunteur' => $this->lurl . '/projects/detail/' . $project->getIdProject(),
-                        'link_mandat'            => $this->furl . '/pdf/mandat/' . $client->getHash() . '/' . $project->getIdProject(),
-                        'link_pouvoir'           => $this->furl . '/pdf/pouvoir/' . $client->getHash() . '/' . $project->getIdProject(),
-                        'projet'                 => $project->getTitle(),
-                        'lien_fb'                => $lien_fb,
-                        'lien_tw'                => $lien_tw,
-                        'date_echeance'          => $nextDirectDebit->getDateEcheanceEmprunteur()->format('d/m/Y')
-                    );
+                    $keywords = [
+                        'firstName'         => $client->getPrenom(),
+                        'monthlyAmount'     => $this->ficelle->formatNumber($monthlyPayment),
+                        'companyName'       => $company->getName(),
+                        'mandateLink'       => $this->furl . '/pdf/mandat/' . $client->getHash() . '/' . $project->getIdProject(),
+                        'nextRepaymentDate' => $nextDirectDebit->getDateEcheanceEmprunteur()->format('d/m/Y')
+                    ];
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('changement-de-rib', $varMail);
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('changement-de-rib', $keywords);
+
                     try {
                         $message->setTo($client->getEmail());
                         $mailer = $this->get('mailer');

@@ -1,5 +1,153 @@
 {% set emails = [
 {
+    name: 'generation-mot-de-passe',
+    header: 'minimal',
+    footer: 'lender',
+    comment: '',
+    content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
+<p>Votre mot de passe a bien été modifié.</p>
+<p><span class="text-primary">[EMV DYN]password[EMV /DYN]</span></p>
+<table class="alert">
+    <tr>
+        <td class="left" valign="top">
+            <img src="[EMV DYN]staticUrl[EMV /DYN]/images/emails/alert.png" width="36" height="36" alt="Important">
+        </td>
+        <td class="right" valign="top">
+            <p>
+                Veuillez respecter la casse (majuscules et minuscules) lorsque vous saisirez votre nouveau mot de passe. Si vous souhaitez le copier-coller, prenez garde à ne pas sélectionner les espaces avant et après. En cas de non respect de ces règles, ce nouveau mot de passe ne fonctionnera pas.
+            </p>
+        </td>
+    </tr>
+</table>
+<p>Vous pouvez vérifier ou modifier vos paramètres de sécurité <a href="[EMV DYN]frontUrl[EMV /DYN]/profile/securite" class="text-primary">sur votre espace personnel</a>.</p>
+<p> </p>
+<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
+},
+{
+    name: 'emprunteur-dossier-rejete',
+    header: 'full',
+    footer: 'borrower',
+    comment: '',
+    content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
+<p>Nous avons consacré du temps à étudier votre projet. Malheureusement il ne nous semble pas adapté à ce que recherchent les prêteurs inscrits sur Unilend.</p>
+<p>Nous souhaitons vivement que vous trouviez le  moyen de réaliser votre projet.</p>
+<p>En espérant rester en contact avec vous,  toute l\'équipe d\'Unilend vous assure de sa parfaite considération.</p>'
+},
+{
+    name: 'changement-de-rib',
+    header: 'full',
+    footer: 'borrower',
+    comment: '',
+    content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
+<p>Vous avez demandé à changer vos coordonnées bancaires pour le prélèvement de votre échéance mensuelle de <span class="text-primary">[EMV DYN]monthlyAmount[EMV /DYN]&nbsp;€</span> pour la société <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span>.</p>
+<p>Pour finaliser ce changement, il ne vous reste plus qu\'à signer le mandat de prélèvement pour votre nouveau compte bancaire&nbsp;:</p>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td class="cta" align="center">
+            <!--[if mso]>
+            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]mandateLink[EMV /DYN]" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
+                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Signer le mandat</center>
+            </v:roundrect>
+            <![endif]-->
+            <a href="[EMV DYN]mandateLink[EMV /DYN]" class="btn-primary">Signer les mandat</a>
+        </td>
+    </tr>
+</table>
+<p>Dès que ce sera fait, votre nouveau compte sera prélevé à partir de l\'échéance du <span class="text-primary">[EMV DYN]nextRepaymentDate[EMV /DYN]</span>.</p>
+<p>Nous vous remercions pour votre confiance.</p>
+<p></p>
+<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
+},
+{
+    name: 'preteur-pret-refuse',
+    header: 'minimal',
+    footer: 'lender',
+    comment: 'Check if contenu_mail has A tres bientot sur Unilend',
+    content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
+<p>Vous avez proposé de prêter la somme de <span class="text-primary">[EMV DYN]bidAmount[EMV /DYN]&nbsp;€</span> à <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span></p>
+<p>Toutefois, <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span> a finalement décidé de ne pas accepter les offres qui lui ont été faites par vous et <span class="text-primary">[EMV DYN]otherLendersCount[EMV /DYN]</span> autres prêteurs.</p>
+<p>Votre argent ne lui sera donc pas versé et devient à nouveau disponible pour prêter à d\'autres projets.</p>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td class="cta" align="center">
+            <!--[if mso]>
+            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]frontUrl[EMV /DYN]/projets-a-financer/" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
+                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Voir les projets</center>
+            </v:roundrect>
+            <![endif]-->
+            <a href="[EMV DYN]frontUrl[EMV /DYN]/projets-a-financer/" class="btn-primary">Voir les projets</a>
+        </td>
+    </tr>
+</table>
+<p> </p>
+<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
+},
+{
+    name: 'mot-de-passe-oublie',
+    header: 'minimal',
+    footer: 'lender',
+    comment: '',
+    content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
+<p>Nous avons reçu une demande de réinitialisation de mot de passe de votre identifiant Unilend (<span class="text-primary">[EMV DYN]login[EMV /DYN]</span>).</p>
+<p>Pour le réinitialiser, veuillez suivre le lien ci-dessous</p>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td class="cta" align="center">
+            <!--[if mso]>
+            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]passwordLink[EMV /DYN]" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
+                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Mot de passe</center>
+            </v:roundrect>
+            <![endif]-->
+            <a href="[EMV DYN]passwordLink[EMV /DYN]" class="btn-primary">Mot de passe</a>
+        </td>
+    </tr>
+</table>
+<p>L\'équipe Unilend est à votre disposition pour toutes vos questions à cette adresse&nbsp;: <a href="mailto:contact@unilend.fr" target="_blank">contact@unilend.fr</a>.</p>
+<p> </p>
+<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
+},
+{
+    name: 'confirmation-fermeture-compte-preteur',
+    header: 'full',
+    footer: 'lender-uncompleted',
+    comment: '',
+    content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
+<p>Nous avons bien reçu votre demande de désinscription et les documents nécessaires pour clôturer votre compte, conformément aux dispositions des Conditions Générales de Vente.</p>
+<p>Nous vous confirmons que votre compte est désormais clôturé.</p>
+<p>En espérant vous retrouver prochainement sur Unilend, toute l\'équipe vous assure de sa parfaite considération et se tient à votre disposition pour toute question.</p>
+<p> </p>
+<p>Cordialement,</p>
+<p>L\'équipe d\'<a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
+},
+{
+    name: 'completude',
+    header: 'full',
+    footer: 'lender',
+    comment: '',
+    content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
+<p>En vérifiant les informations que vous nous avez transmises le <span class="text-primary">[EMV DYN]modificationDate[EMV /DYN]</span>, nous avons remarqué que les pièces suivantes sont manquantes, illisibles ou non valides&nbsp;:</p>
+<p>[EMV DYN]content[EMV /DYN]</p>
+<p><b class="text-primary">Comment nous faire parvenir ces documents&nbsp;?</b></p>
+<p>Pour nous faire parvenir ces documents, nous vous invitons à les télécharger dans votre profil.</p>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td class="cta" align="center">
+            <!--[if mso]>
+            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]uploadLink[EMV /DYN]" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
+                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Espace Personnel</center>
+            </v:roundrect>
+            <![endif]-->
+            <a href="[EMV DYN]uploadLink[EMV /DYN]" class="btn-primary">Espace Personnel</a>
+        </td>
+    </tr>
+</table>
+<p>Conformément aux dispositions légales, nous devons suspendre temporairement votre capacité à prêter, ajouter ou retirer de l\'argent de votre compte et à accéder aux comptes financiers des entreprises.</p>
+<p>En attendant que vous régularisiez votre situation, l\'équipe d\'Unilend se tient à votre disposition par téléphone au <span class="text-primary">01 82 28 51 20</span> ou par mail : <a href="mailto:contact@unilend.fr" class="text-primary">contact@unilend.fr</a></span>.</p>
+<p>Dès que nous aurons reçu ces documents, vous pourrez prêter aux entreprises et recevoir des intérêts. </p>
+<p> </p>
+<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
+},
+{
 name: 'synthese-quotidienne-remboursements, hebdomadaire, mensuelle',
 header: 'minimal',
 footer: 'lender',
@@ -363,30 +511,6 @@ content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 <p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
 },
 {
-name: 'preteur-pret-refuse',
-header: 'minimal',
-footer: 'lender',
-comment: ' Check if contenu_mail has A tres bientot sur Unilend',
-content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
-<p>Vous avez proposé de prêter la somme de <span class="text-primary">[EMV DYN]valeur_bid[EMV /DYN] €</span> à <span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN]</span></p>
-<p>Toutefois, <span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN]</span> a finalement décidé de ne pas accepter les offres qui lui ont été faites par vous et <span class="text-primary">[EMV DYN]nb_preteurMoinsUn[EMV /DYN]</span> autres prêteurs.</p>
-<p>Votre argent ne lui sera donc pas versé et devient à nouveau disponible pour prêter à d\'autres projets.</p>
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-    <tr>
-        <td class="cta" align="center">
-            <!--[if mso]>
-            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]url[EMV /DYN]/projets-a-financer/" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
-                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Voir les projets</center>
-            </v:roundrect>
-            <![endif]-->
-            <a href="[EMV DYN]url[EMV /DYN]/projets-a-financer/" class="btn-primary">Voir les projets</a>
-        </td>
-    </tr>
-</table>
-<p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
-},
-{
 name: 'confirmation-bid',
 header: 'minimal',
 footer: 'lender',
@@ -556,34 +680,6 @@ content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 <p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
 },
 {
-name: 'completude',
-header: 'full',
-footer: 'lender',
-comment: '',
-content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
-<p>En vérifiant les informations que vous nous avez transmises le <span class="text-primary">[EMV DYN]date_creation[EMV /DYN]</span>, nous avons remarqué que les pièces suivantes sont manquantes, illisibles ou non valides :</p>
-<p>[EMV DYN]content[EMV /DYN]</p>
-<p><b class="text-primary">Comment nous faire parvenir ces documents ?</b></p>
-<p>Pour nous faire parvenir ces documents, nous vous invitons à les télécharger dans votre profil.</p>
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-    <tr>
-        <td class="cta" align="center">
-            <!--[if mso]>
-            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]lien_upload[EMV /DYN]" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
-                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Espace Personnel</center>
-            </v:roundrect>
-            <![endif]-->
-            <a href="[EMV DYN]lien_upload[EMV /DYN]" class="btn-primary">Espace Personnel</a>
-        </td>
-    </tr>
-</table>
-<p>Conformément aux dispositions légales, nous devons suspendre temporairement votre capacité à prêter, ajouter ou retirer de l\'argent de votre compte et à accéder aux comptes financiers des entreprises.</p>
-<p>En attendant que vous régularisiez votre situation, l\'équipe d\'Unilend se tient à votre disposition par téléphone au <span class="text-primary" >01 82 28 51 20</span> ou par mail : <a href="mailto:contact@unilend.fr" class="text-primary">contact@unilend.fr</a></span>.</p>
-<p>Dès que nous aurons reçu ces documents, vous pourrez prêter aux entreprises et recevoir des intérêts. </p>
-<p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
-},
-{
 name: 'preteur-projet-statut-liquidation-judiciaire-post-procedure',
 header: 'minimal',
 footer: 'lender',
@@ -612,30 +708,6 @@ content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN],</p>
 <p>Vous avez modifié une ou plusieurs informations sur votre profil.</p>
 <p>Nous allons vérifier les informations transmises au plus vite. Pour des raisons de sécurité, le retrait et la possibilité de prêter sont momentanément suspendus pendant cette vérification.</p>
 <p>Dès que nous aurons pu vérifier les informations reçues, vous recevrez un e-mail de confirmation et pourrez à nouveau prêter sur Unilend.</p>
-<p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
-},
-{
-name: 'mot-de-passe-oublie',
-header: 'minimal',
-footer: 'lender',
-comment: '',
-content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN],</p>
-<p>Nous avons reçu une demande de réinitialisation de mot de passe de votre identifiant Unilend (<span class="text-primary">[EMV DYN]login[EMV /DYN]</span>). </p>
-<p>Pour le réinitialiser, veuillez suivre le lien ci-dessous</p>
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-    <tr>
-        <td class="cta" align="center">
-            <!--[if mso]>
-            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]link_password[EMV /DYN]" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
-                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Mot de passe</center>
-            </v:roundrect>
-            <![endif]-->
-            <a href="[EMV DYN]link_password[EMV /DYN]" class="btn-primary">Mot de passe</a>
-        </td>
-    </tr>
-</table>
-<p>L\'équipe Unilend est à votre disposition pour toutes vos questions à cette adresse : <a href="mailto:contact@unilend.fr" target="_blank">contact@unilend.fr</a>. </p>
 <p> </p>
 <p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
 },
@@ -693,7 +765,7 @@ content: '<p>Bonjour [EMV DYN]prenom_e[EMV /DYN],</p>
 {
 name: 'parrainage-invitation-filleul',
 header: 'full',
-footer: 'sponsee',
+footer: 'lender-uncompleted',
 comment: '',
 content: '<p>Bonjour [EMV DYN]sponsee_names[EMV /DYN],</p>
 <p>Rejoins-moi sur Unilend, je t\'offre ton premier prêt ! Voici ton lien d\'inscription personnalisé :</p>
@@ -769,40 +841,6 @@ content: '<p>Bonjour [EMV DYN]sponsor_first_name[EMV /DYN],</p>
 <p>Nous vous remercions de votre soutien. Votre prime de parrain vous sera versée dès que votre filleul aura prêté un montant supérieur à sa prime de parrainage. N\'hésitez pas à le faire profiter de votre expérience de prêteur !</p><p>Cordialement, <br>L\'équipe Unilend</p>
 <p> </p>
 <p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
-},
-{
-name: 'generation-mot-de-passe',
-header: 'minimal',
-footer: 'lender',
-comment: '',
-content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
-<p>Votre mot de passe a bien été modifié :</p>
-<p><span class="text-primary">[EMV DYN]mdp[EMV /DYN]</span></p>
-<table class="alert">
-    <tr>
-        <td class="left" valign="top">
-            <img src="https://www.local.unilend.fr/images/emails/alert.png" width="36" height="36" alt="Important">
-        </td>
-        <td class="right" valign="top">
-            <p>
-                Veuillez respecter la casse (majuscules et minuscules) lorsque vous saisirez ce nouveau mot de passe. Si vous souhaitez le copier-coller, prenez garde à ne pas sélectionner les espaces avant et après. En cas de non respect de ces règles, ce nouveau mot de passe ne fonctionnera pas.
-            </p>
-        </td>
-    </tr>
-</table>
-<p>Vous pouvez vérifiez ou modifiez vos paramètres de sécurité <a href="https://www.unilend.fr/profile/securite" class="text-primary">sur votre espace personnel</a>.</p>
-<p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
-},
-{
-name: 'emprunteur-dossier-rejete',
-header: 'full',
-footer: 'borrower',
-comment: '',
-content: '<p>Bonjour [EMV DYN]prenom_e[EMV /DYN],</p>
-<p>Nous avons consacré du temps à étudier votre projet. Malheureusement il ne nous semble pas adapté à ce que recherchent les prêteurs inscrits sur Unilend.</p>
-<p>Nous souhaitons vivement que vous trouviez le  moyen de réaliser votre projet.</p>
-<p>En espérant rester en contact avec vous,  toute l\'équipe d\'Unilend vous assure de sa parfaite considération.</p>'
 },
 {
 name: 'preteur-remboursement-anticipe',
@@ -1387,19 +1425,6 @@ content: '<p>Bonjour,</p>
 <p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
 },
 {
-name: 'confirmation-fermeture-compte-preteur',
-header: 'full',
-footer: 'lender',
-comment: '',
-content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN],</p>
-<p>Nous avons bien reçu votre demande de désinscription et les documents nécessaires pour clôturer votre compte, conformément aux dispositions des Conditions Générales de Vente.</p>
-<p>Nous vous confirmons que votre compte est désormais clôturé.</p>
-<p>En espérant vous retrouver prochainement sur Unilend, toute l\'équipe vous assure de sa parfaite considération et se tient à votre disposition pour toute question.</p>
-<p> </p>
-<p>Cordialement,</p>
-<p>L\'équipe d\'<a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
-},
-{
 name: 'emprunteur-remboursement-anticipe',
 header: 'minimal',
 footer: 'borrower',
@@ -1410,31 +1435,6 @@ content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN],</p>
 <p>Tous les bons de caisse et contrats de prêt émis par [EMV DYN]raison_sociale[EMV /DYN] lors de son financement ont été soldés. Cette opération est totalement gratuite, conformément à nos engagements.</p>
 <p>L\'équipe d\'Unilend reste à votre disposition à cette adresse : <a href="mailto:emprunteurs@unilend.fr">emprunteurs@unilend.fr</a>.</p>
 <p>Nous espérons que vous ferez à nouveau appel à notre communauté de prêteurs pour vos futurs besoins de financement.</p>
-<p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
-},
-{
-name: 'changement-de-rib',
-header: 'full',
-footer: 'lender',
-comment: '',
-content: '<p>Bonjour [EMV DYN]prenom_e[EMV /DYN],</p>
-<p>Vous avez demandé à changer vos coordonnées bancaires pour le prélèvement de votre échéance mensuelle de <span class="text-primary">[EMV DYN]mensualite[EMV /DYN]  €</span> correspondant au projet <span class="text-primary">[EMV DYN]nom_e[EMV /DYN]</span>.</p>
-<p>Pour finaliser ce changement, il ne vous reste plus qu\'à signer le mandat de prélèvement pour votre nouveau compte bancaire :</p>
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-    <tr>
-        <td class="cta" align="center">
-            <!--[if mso]>
-            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]link_mandat[EMV /DYN]" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
-                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Signer le mandat</center>
-            </v:roundrect>
-            <![endif]-->
-            <a href="[EMV DYN]link_mandat[EMV /DYN]" class="btn-primary">Signer les mandat</a>
-        </td>
-    </tr>
-</table>
-<p>Dès que ce sera fait, votre nouveau compte sera prélevé à partir de l\'échéance du  <span class="text-primary">[EMV DYN]date_echeance[EMV /DYN]</span>.</p>
-<p>Nous vous remercions pour votre confiance.</p>
 <p> </p>
 <p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
 },
@@ -1502,7 +1502,7 @@ content: '<p>Bonjour [EMV DYN]civilite_e[EMV /DYN] [EMV DYN]nom_e[EMV /DYN],</p>
                 {{ include('/email/new-layout/partials/footer-borrower.html') }}
             {% elseif mail.footer == 'borrower-uncompleted' %}
                 {{ include('/email/new-layout/partials/footer-borrower-uncompleted.html') }}
-            {% elseif mail.footer == 'sponsee' %}
+            {% elseif mail.footer == 'lender-uncompleted' %}
                 {{ include('/email/new-layout/partials/footer-sponsee-invitation.html') }}
             {% elseif mail.footer == 'partner' %}
                 {{ include('/email/new-layout/partials/footer-partner.html') }}

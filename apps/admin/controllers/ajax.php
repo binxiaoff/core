@@ -439,31 +439,20 @@ class ajaxController extends bootstrap
         $this->autoFireView = false;
 
         $this->clients = $this->loadData('clients');
-        /** @var \settings $oSettings */
-        $oSettings = $this->loadData('settings');
 
         if (isset($_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
             $pass = $this->ficelle->generatePassword(8);
             $this->clients->changePassword($this->clients->email, $pass);
 
-            $oSettings->get('Facebook', 'type');
-            $lien_fb = $oSettings->value;
-
-            $oSettings->get('Twitter', 'type');
-            $lien_tw = $oSettings->value;
-
-            $varMail = array(
-                'surl'     => $this->surl,
-                'url'      => $this->furl,
-                'login'    => $this->clients->email,
-                'prenom_p' => $this->clients->prenom,
-                'mdp'      => 'Mot de passe : ' . $pass,
-                'lien_fb'  => $lien_fb,
-                'lien_tw'  => $lien_tw
-            );
+            $keywords = [
+                'firstName'     => $this->clients->prenom,
+                'password'      => 'Mot de passe : ' . $pass,
+                'lenderPattern' => $this->clients->getLenderPattern($this->clients->id_client)
+            ];
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $varMail);
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $keywords);
+
             try {
                 $message->setTo($this->clients->email);
                 $mailer = $this->get('mailer');
@@ -573,25 +562,13 @@ class ajaxController extends bootstrap
             $historyDetails->create();
 
             if (false === empty($client->email)) {
-                /** @var \settings $settings */
-                $settings = $this->loadData('settings');
-                $settings->get('Facebook', 'type');
-                $facebookLink = $settings->value;
-
-                $settings->get('Twitter', 'type');
-                $twitterLink = $settings->value;
-
-                $keywords = array(
-                    'surl'                   => $this->surl,
-                    'url'                    => $this->furl,
-                    'prenom_e'               => $client->prenom,
-                    'link_compte_emprunteur' => $this->furl,
-                    'lien_fb'                => $facebookLink,
-                    'lien_tw'                => $twitterLink
-                );
+                $keywords = [
+                    'firstName' => $client->prenom
+                ];
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
+
                 try {
                     $message->setTo($client->email);
                     $mailer = $this->get('mailer');
@@ -702,25 +679,13 @@ class ajaxController extends bootstrap
             $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
 
             if ($client instanceof Clients && false === empty($client->getEmail())) {
-                /** @var \settings $settings */
-                $settings = $this->loadData('settings');
-                $settings->get('Facebook', 'type');
-                $facebookLink = $settings->value;
-
-                $settings->get('Twitter', 'type');
-                $twitterLink = $settings->value;
-
-                $keywords = array(
-                    'surl'                   => $this->surl,
-                    'url'                    => $this->furl,
-                    'prenom_e'               => $client->getPrenom(),
-                    'link_compte_emprunteur' => $this->furl,
-                    'lien_fb'                => $facebookLink,
-                    'lien_tw'                => $twitterLink
-                );
+                $keywords = [
+                    'firstName' => $client->getPrenom()
+                ];
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
+
                 try {
                     $message->setTo($client->getEmail());
                     $mailer = $this->get('mailer');
@@ -853,25 +818,13 @@ class ajaxController extends bootstrap
             $historyDetails->create();
 
             if (false === empty($client->email)) {
-                /** @var \settings $settings */
-                $settings = $this->loadData('settings');
-                $settings->get('Facebook', 'type');
-                $facebookLink = $settings->value;
-
-                $settings->get('Twitter', 'type');
-                $twitterLink = $settings->value;
-
-                $keywords = array(
-                    'surl'                   => $this->surl,
-                    'url'                    => $this->furl,
-                    'prenom_e'               => $client->prenom,
-                    'link_compte_emprunteur' => $this->furl,
-                    'lien_fb'                => $facebookLink,
-                    'lien_tw'                => $twitterLink
-                );
+                $keywords = [
+                    'firstName' => $client->prenom
+                ];
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
+
                 try {
                     $message->setTo($client->email);
                     $mailer = $this->get('mailer');
@@ -921,7 +874,7 @@ class ajaxController extends bootstrap
         $this->autoFireView = false;
 
         if (isset($_POST['id_client']) && isset($_POST['content']) && isset($_POST['liste'])) {
-            $_SESSION['content_email_completude'][$_POST['id_client']] = '<ul>' . $this->ficelle->speChar2HtmlEntities($_POST['liste']) . '</ul>' . ($_POST['content'] != '' ? '<br>' : '') . nl2br(htmlentities($_POST['content']));
+            $_SESSION['content_email_completude'][$_POST['id_client']] = '<ul>' . $this->ficelle->speChar2HtmlEntities($_POST['liste']) . '</ul>' . nl2br(htmlentities($_POST['content']));
             echo 'ok';
         } else {
             echo 'nok';

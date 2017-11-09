@@ -424,21 +424,16 @@ class partenairesController extends bootstrap
         }
 
         /** @var \temporary_links_login $temporaryLink */
-        $temporaryLink      = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
-        $settingsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
-        $token              = $temporaryLink->generateTemporaryLink($companyClient->getIdClient()->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_MEDIUM);
-        $keywords           = [
-            'surl'          => $this->surl,
-            'url'           => $this->furl,
-            'prenom'        => $companyClient->getIdClient()->getPrenom(),
-            'login'         => $companyClient->getIdClient()->getEmail(),
-            'link_password' => $this->furl . '/partenaire/securite/' . $token,
-            'lien_fb'       => $settingsRepository->findOneBy(['type' => 'Facebook'])->getValue(),
-            'lien_tw'       => $settingsRepository->findOneBy(['type' => 'Twitter'])->getValue()
+        $temporaryLink = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
+        $token         = $temporaryLink->generateTemporaryLink($companyClient->getIdClient()->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_MEDIUM);
+        $keywords      = [
+            'firstName'    => $companyClient->getIdClient()->getPrenom(),
+            'login'        => $companyClient->getIdClient()->getEmail(),
+            'passwordLink' => $this->furl . '/partenaire/securite/' . $token
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $keywords);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie-partenaire', $keywords);
 
         try {
             $message->setTo($companyClient->getIdClient()->getEmail());
@@ -446,7 +441,7 @@ class partenairesController extends bootstrap
             $mailer->send($message);
         } catch (\Exception $exception) {
             $this->get('logger')->warning(
-                'Could not send email "mot-de-passe-oublie" - Exception: ' . $exception->getMessage(),
+                'Could not send email "mot-de-passe-oublie-partenaire" - Exception: ' . $exception->getMessage(),
                 ['id_mail_template' => $message->getTemplateId(), 'id_client' => $companyClient->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
             );
         }

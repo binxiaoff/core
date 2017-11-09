@@ -374,27 +374,20 @@ class dossiersController extends bootstrap
                 }
             } elseif (isset($_POST['pret_refuse']) && $_POST['pret_refuse'] == 1) {
                 if ($this->projects->status < ProjectsStatus::PRET_REFUSE) {
-                    $loanRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
-                    /** @var \echeanciers $echeanciers */
-                    $echeanciers = $this->loadData('echeanciers');
                     /** @var LoggerInterface $logger */
                     $logger = $this->get('logger');
-
-                    $this->settings->get('Facebook', 'type');
-                    $facebookLink = $this->settings->value;
-
-                    $this->settings->get('Twitter', 'type');
-                    $twitterLink = $this->settings->value;
-
-                    $lendersCount = $loanRepository->getLenderNumber($this->projects->id_project);
 
                     $entityManager->getConnection()->beginTransaction();
                     try {
                         $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::PRET_REFUSE, $this->projects);
 
+                        /** @var \echeanciers $echeanciers */
+                        $echeanciers = $this->loadData('echeanciers');
                         $echeanciers->delete($this->projects->id_project, 'id_project');
 
-                        $loans = $loanRepository->findBy(['idProject' => $this->projects->id_project, 'status' => Loans::STATUS_ACCEPTED]);
+                        $loanRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
+                        $lendersCount   = $loanRepository->getLenderNumber($this->projects->id_project);
+                        $loans          = $loanRepository->findBy(['idProject' => $this->projects->id_project, 'status' => Loans::STATUS_ACCEPTED]);
 
                         foreach ($loans as $loan) {
                             $loan->setStatus(Loans::STATUS_REJECTED);
@@ -402,21 +395,18 @@ class dossiersController extends bootstrap
 
                             $this->get('unilend.service.operation_manager')->refuseLoan($loan);
                             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
-                            $wallet  = $loan->getIdLender();
-                            $varMail = [
-                                'surl'              => $this->surl,
-                                'url'               => $this->furl,
-                                'prenom_p'          => $wallet->getIdClient()->getPrenom(),
-                                'valeur_bid'        => $this->ficelle->formatNumber($loan->getAmount() / 100, 0),
-                                'nom_entreprise'    => $this->companies->name,
-                                'nb_preteurMoinsUn' => $lendersCount - 1,
-                                'motif_virement'    => $wallet->getWireTransferPattern(),
-                                'lien_fb'           => $facebookLink,
-                                'lien_tw'           => $twitterLink
+                            $wallet   = $loan->getIdLender();
+                            $keywords = [
+                                'firstName'         => $wallet->getIdClient()->getPrenom(),
+                                'bidAmount'         => $this->ficelle->formatNumber($loan->getAmount() / 100, 0),
+                                'companyName'       => $this->companies->name,
+                                'otherLendersCount' => $lendersCount - 1,
+                                'lenderPattern'     => $wallet->getWireTransferPattern()
                             ];
 
                             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-pret-refuse', $varMail);
+                            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-pret-refuse', $keywords);
+
                             try {
                                 $message->setTo($wallet->getIdClient()->getEmail());
                                 $mailer = $this->get('mailer');
@@ -2495,25 +2485,13 @@ class dossiersController extends bootstrap
         $historyDetails->create();
 
         if (false === empty($client->email)) {
-            /** @var \settings $settings */
-            $settings = $this->loadData('settings');
-            $settings->get('Facebook', 'type');
-            $facebookLink = $settings->value;
-
-            $settings->get('Twitter', 'type');
-            $twitterLink = $settings->value;
-
             $keywords = [
-                'surl'                   => $this->surl,
-                'url'                    => $this->furl,
-                'prenom_e'               => $client->prenom,
-                'link_compte_emprunteur' => $this->furl,
-                'lien_fb'                => $facebookLink,
-                'lien_tw'                => $twitterLink
+                'firstName' => $client->prenom
             ];
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
+
             try {
                 $message->setTo($client->email);
                 $mailer = $this->get('mailer');

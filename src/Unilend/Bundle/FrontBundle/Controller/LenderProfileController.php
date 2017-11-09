@@ -1108,14 +1108,15 @@ class LenderProfileController extends Controller
      */
     private function sendPasswordModificationEmail(\clients $client)
     {
-        $varMail = array_merge($this->getCommonEmailVariables(), [
-            'login'    => $client->email,
-            'prenom_p' => $client->prenom,
-            'mdp'      => ''
-        ]);
+        $keywords = [
+            'firstName'     => $client->prenom,
+            'password'      => '',
+            'lenderPattern' => $client->getLenderPattern($client->id_client)
+        ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $varMail);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $keywords);
+
         try {
             $message->setTo($client->email);
             $mailer = $this->get('mailer');

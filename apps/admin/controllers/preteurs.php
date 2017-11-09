@@ -322,8 +322,6 @@ class preteursController extends bootstrap
 
         $this->settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
         $this->conseil_externe = json_decode($this->settings->value, true);
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users $user */
-        $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
         if (
             $this->params[0]
@@ -764,48 +762,51 @@ class preteursController extends bootstrap
 
         $_SESSION['request_url'] = $this->url;
 
-        $this->clients                = $this->loadData('clients');
         $this->clients_status_history = $this->loadData('clients_status_history');
-        $this->settings               = $this->loadData('settings');
-
+        $this->clients                = $this->loadData('clients');
         $this->clients->get($this->params[0], 'id_client');
-
-        $this->settings->get('Facebook', 'type');
-        $lien_fb = $this->settings->value;
-
-        $this->settings->get('Twitter', 'type');
-        $lien_tw = $this->settings->value;
 
         $this->lActions = $this->clients_status_history->select('id_client = ' . $this->clients->id_client, 'added DESC');
         $timeCreate     = (false === empty($this->lActions[0]['added'])) ? strtotime($this->lActions[0]['added']) : strtotime($this->clients->added);
         $month          = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
 
-        $varMail = [
-            'furl'          => $this->furl,
-            'surl'          => $this->surl,
-            'prenom_p'      => $this->clients->prenom,
-            'date_creation' => date('d', $timeCreate) . ' ' . $month . ' ' . date('Y', $timeCreate),
-            'content'       => utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]),
-            'lien_upload'   => $this->furl . '/profile/documents',
-            'lien_fb'       => $lien_fb,
-            'lien_tw'       => $lien_tw
+        $keywords = [
+            'firstName'        => $this->clients->prenom,
+            'modificationDate' => date('d', $timeCreate) . ' ' . $month . ' ' . date('Y', $timeCreate),
+            'content'          => utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]),
+            'uploadLink'       => $this->furl . '/profile/documents',
+            'lenderPattern'    => $this->clients->getLenderPattern($this->clients->id_client),
+            'frontUrl'         => $this->furl,
+            'staticUrl'        => $this->surl,
+            'year'             => date('Y')
         ];
 
         $tabVars = [];
-        foreach ($varMail as $key => $value) {
+        foreach ($keywords as $key => $value) {
             $tabVars['[EMV DYN]' . $key . '[EMV /DYN]'] = $value;
         }
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        $mailTemplate  = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
+        $mailTemplateRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
+        $mailTemplate           = $mailTemplateRepository->findOneBy([
             'type'   => 'completude',
             'locale' => $this->getParameter('locale'),
             'status' => MailTemplates::STATUS_ACTIVE,
             'part'   => MailTemplates::PART_TYPE_CONTENT
         ]);
 
-        echo strtr($mailTemplate->getContent(), $tabVars);
+        $content = $mailTemplate->getContent();
+
+        if ($mailTemplate->getIdHeader()) {
+            $content = $mailTemplate->getIdHeader()->getContent() . $content;
+        }
+
+        if ($mailTemplate->getIdFooter()) {
+            $content = $content . $mailTemplate->getIdFooter()->getContent();
+        }
+
+        echo strtr($content, $tabVars);
     }
 
     public function _offres_de_bienvenue()
@@ -1266,64 +1267,45 @@ class preteursController extends bootstrap
         }
     }
 
-    private function sendEmailClosedAccount(\clients $oClient)
+    /**
+     * @param \clients $client
+     */
+    private function sendEmailClosedAccount(\clients $client)
     {
-        $oSettings = $this->loadData('settings');
-        $oSettings->get('Facebook', 'type');
-        $sFB = $oSettings->value;
-        $oSettings->get('Twitter', 'type');
-        $sTW = $oSettings->value;
-
-        $aVariablesMail = [
-            'surl'    => $this->surl,
-            'url'     => $this->furl,
-            'prenom'  => $oClient->prenom,
-            'lien_fb' => $sFB,
-            'lien_tw' => $sTW
+        $keywords = [
+            'firstName' => $client->prenom
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-fermeture-compte-preteur', $aVariablesMail);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-fermeture-compte-preteur', $keywords);
+
         try {
-            $message->setTo($oClient->email);
+            $message->setTo($client->email);
             $mailer = $this->get('mailer');
             $mailer->send($message);
         } catch (\Exception $exception) {
             $this->get('logger')->warning(
                 'Could not send email: confirmation-fermeture-compte-preteur - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $oClient->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
             );
         }
     }
 
     private function sendCompletenessRequest()
     {
-        $oSettings = $this->loadData('settings');
-
-        $oSettings->get('Facebook', 'type');
-        $lien_fb = $oSettings->value;
-
-        $oSettings->get('Twitter', 'type');
-        $lien_tw = $oSettings->value;
-
-        $lapage = (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) ? 'particulier_doc' : 'societe_doc';
-
-        $timeCreate = (false === empty($this->lActions[0]['added'])) ? strtotime($this->lActions[0]['added']) : strtotime($this->clients->added);
-        $month      = $this->dates->tableauMois['fr'][ date('n', $timeCreate) ];
-
-        $varMail = [
-            'furl'          => $this->furl,
-            'surl'          => $this->surl,
-            'prenom_p'      => $this->clients->prenom,
-            'date_creation' => date('d', $timeCreate) . ' ' . $month . ' ' . date('Y', $timeCreate),
-            'content'       => utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]),
-            'lien_upload'   => $this->furl . '/profile/' . $lapage,
-            'lien_fb'       => $lien_fb,
-            'lien_tw'       => $lien_tw
+        $timeCreate = empty($this->lActions[0]['added']) ? strtotime($this->clients->added) : strtotime($this->lActions[0]['added']);
+        $month      = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
+        $keywords   = [
+            'firstName'        => $this->clients->prenom,
+            'modificationDate' => date('d', $timeCreate) . ' ' . $month . ' ' . date('Y', $timeCreate),
+            'content'          => utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]),
+            'uploadLink'       => $this->furl . '/profile/documents',
+            'lenderPattern'    => $this->clients->getLenderPattern($this->clients->id_client)
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('completude', $varMail);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('completude', $keywords);
+
         try {
             $message->setTo($this->clients->email);
             $mailer = $this->get('mailer');
@@ -1493,7 +1475,7 @@ class preteursController extends bootstrap
             $this->changeClientStatus($oClient, $this->params[2], 1);
             $this->sendEmailClosedAccount($oClient);
             $clientStatusManager->addClientStatus($oClient, $_SESSION['user']['id_user'], \clients_status::CLOSED_LENDER_REQUEST);
-            header('Location:  ' . $this->lurl . '/preteurs/edit_preteur/' . $oClient->id_client);
+            header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $oClient->id_client);
             die;
         }
     }

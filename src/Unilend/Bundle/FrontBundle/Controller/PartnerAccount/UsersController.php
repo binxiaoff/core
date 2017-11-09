@@ -61,11 +61,10 @@ class UsersController extends Controller
      */
     public function userFormAction(Request $request)
     {
-        $entityManager      = $this->get('doctrine.orm.entity_manager');
-        $clientRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        $settingsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
-        $clientHash         = $request->request->get('user');
-        $action             = $request->request->get('action');
+        $entityManager    = $this->get('doctrine.orm.entity_manager');
+        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $clientHash       = $request->request->get('user');
+        $action           = $request->request->get('action');
 
         if (false === empty($clientHash) && false === empty($action) && ($client = $clientRepository->findOneBy(['hash' => $clientHash]))) {
             switch ($action) {
@@ -74,23 +73,20 @@ class UsersController extends Controller
                     $temporaryLink = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
                     $token         = $temporaryLink->generateTemporaryLink($client->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_MEDIUM);
                     $keywords      = [
-                        'surl'          => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
-                        'url'           => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
-                        'prenom'        => $client->getPrenom(),
-                        'login'         => $client->getEmail(),
-                        'link_password' => $this->generateUrl('partner_security', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
-                        'lien_fb'       => $settingsRepository->findOneBy(['type' => 'Facebook'])->getValue(),
-                        'lien_tw'       => $settingsRepository->findOneBy(['type' => 'Twitter'])->getValue()
+                        'firstName'    => $client->getPrenom(),
+                        'login'        => $client->getEmail(),
+                        'passwordLink' => $this->generateUrl('partner_security', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL)
                     ];
 
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $keywords);
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie-partenaire', $keywords);
+
                     try {
                         $message->setTo($client->getEmail());
                         $mailer = $this->get('mailer');
                         $mailer->send($message);
                     } catch (\Exception $exception) {
                         $this->get('logger')->warning(
-                            'Could not send email : mot-de-passe-oublie - Exception: ' . $exception->getMessage(),
+                            'Could not send email : mot-de-passe-oublie-partenaire - Exception: ' . $exception->getMessage(),
                             ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
                         );
                     }

@@ -277,25 +277,14 @@ class SecurityController extends Controller
 
     private function sendPasswordModificationEmail(\clients $client)
     {
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('Facebook', 'type');
-        $lien_fb = $settings->value;
-        $settings->get('Twitter', 'type');
-        $lien_tw = $settings->value;
-
-        $varMail = [
-            'surl'     => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
-            'url'      => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
-            'lien_fb'  => $lien_fb,
-            'lien_tw'  => $lien_tw,
-            'login'    => $client->email,
-            'prenom_p' => $client->prenom,
-            'mdp'      => ''
+        $keywords = [
+            'firstName'     => $client->prenom,
+            'password'      => '',
+            'lenderPattern' => $client->getLenderPattern($client->id_client)
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $varMail);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $keywords);
         $message->setTo($client->email);
         $mailer = $this->get('mailer');
         $mailer->send($message);
