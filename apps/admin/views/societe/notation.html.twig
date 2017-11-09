@@ -1,0 +1,445 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/css/pages/tool-scores-project-status.css">
+{% endblock %}
+
+{% block pluginsJS %}
+    <script src="{{ adminUrl }}/oneui/js/plugins/highcharts/highcharts.js"></script>
+    <script src="{{ adminUrl }}/oneui/js/plugins/highcharts/modules/xrange.js"></script>
+{% endblock %}
+
+{#{% set projects = [#}
+     {#{#}
+         {#id: '586753',#}
+         {#statuses: [#}
+             {#{ start: '2015, 01, 12', end: '2015, 01, 20', color: '#d0f5d0', label: 'Demande en cours', type: 'Recrutement', amount: '10000' },#}
+             {#{ start: '2015, 01, 20', end: '2015, 01, 25', color: '#aae3c9', label: 'Demande Complète', type: 'Recrutement', amount: '10000' },#}
+             {#{ start: '2015, 01, 25', end: '2015, 02, 01', color: '#98d9d4', label: 'Traitement Commercial', type: 'Recrutement', amount: '10000' },#}
+             {#{ start: '2015, 02, 01', end: '2015, 02, 12', color: '#91c8d9', label: 'Analyse risque', type: 'Recrutement', amount: '10000' },#}
+             {#{ start: '2015, 02, 12', end: '2015, 02, 13', color: '#eccd81', label: 'Abandon', type: 'Recrutement', amount: '10000' }#}
+         {#]#}
+     {#},#}
+     {#{#}
+         {#id: '32323',#}
+         {#statuses: [#}
+             {#{ start: '2015, 01, 08', end: '2015, 01, 18', color: '#d0f5d0', label: 'Demande en cours', type: 'IT', amount: '20000' },#}
+             {#{ start: '2015, 01, 18', end: '2015, 01, 23', color: '#aae3c9', label: 'Demande Complète', type: 'IT', amount: '20000' },#}
+             {#{ start: '2015, 01, 23', end: '2015, 02, 02', color: '#98d9d4', label: 'Traitement Commercial', type: 'IT', amount: '20000' },#}
+             {#{ start: '2015, 02, 02', end: '2015, 02, 10', color: '#91c8d9', label: 'Analyse risque', type: 'IT', amount: '20000' },#}
+             {#{ start: '2015, 02, 10', end: '2015, 02, 13', color: '#80b5d9', label: 'Comité', type: 'IT', amount: '20000' },#}
+         {#]#}
+     {#},#}
+     {#{#}
+         {#id: '18327',#}
+         {#statuses: [#}
+             {#{ start: '2015, 01, 08', end: '2015, 01, 18', color: '#d0f5d0', label: 'Demande en cours', type: 'IT', amount: '20000' },#}
+             {#{ start: '2015, 01, 18', end: '2015, 01, 23', color: '#aae3c9', label: 'Demande Complète', type: 'IT', amount: '20000' },#}
+             {#{ start: '2015, 01, 23', end: '2015, 02, 02', color: '#98d9d4', label: 'Traitement Commercial', type: 'IT', amount: '20000' },#}
+             {#{ start: '2015, 02, 02', end: '2015, 02, 10', color: '#91c8d9', label: 'Analyse risque', type: 'IT', amount: '20000' },#}
+             {#{ start: '2015, 02, 10', end: '2015, 02, 13', color: '#80b5d9', label: 'Comité', type: 'IT', amount: '20000' },#}
+             {#{ start: '2015, 02, 12', end: '2015, 02, 13', color: '#b6babe', label: 'Rejet Comité', type: 'IT', amount: '20000' }#}
+         {#]#}
+     {#},#}
+     {#{#}
+         {#id: '87988',#}
+         {#statuses: [#}
+             {#{ start: '2017, 01, 08', end: '2017, 01, 18', color: '#d0f5d0', label: 'Demande en cours', type: 'Transport', amount: '40000' },#}
+             {#{ start: '2017, 01, 18', end: '2017, 01, 23', color: '#aae3c9', label: 'Demande Complète', type: 'Transport', amount: '40000' },#}
+             {#{ start: '2017, 01, 23', end: '2017, 02, 02', color: '#98d9d4', label: 'Traitement Commercial', type: 'Transport', amount: '40000' },#}
+             {#{ start: '2017, 02, 02', end: '2017, 02, 10', color: '#91c8d9', label: 'Analyse risque', type: 'Transport', amount: '40000' },#}
+             {#{ start: '2017, 02, 10', end: '2017, 02, 13', color: '#80b5d9', label: 'Comité', type: 'Transport', amount: '40000' },#}
+             {#{ start: '2017, 02, 13', end: '2017, 02, 16', color: '#6ea8dc', label: 'Prep funding', type: 'Transport', amount: '40000' },#}
+             {#{ start: '2017, 02, 16', end: '2017, 02, 18', color: '#5293de', label: 'Funding', type: 'Transport', amount: '40000' },#}
+             {#{ start: '2017, 02, 18', end: '2017, 02, 19', color: '#5293de', label: 'Fundé', type: 'Transport', amount: '40000' },#}
+             {#{ start: '2017, 02, 19', end: '2017, 08, 20', color: '#1b88db', label: 'Remboursement', type: 'Transport', amount: '40000' }#}
+         {#]#}
+     {#}#}
+{#] %}#}
+
+
+{% block pageScripts %}
+    <script>
+        $(function(){
+            App.initHelpers();
+
+            /*
+             * Company scores table
+             */
+            var $scoresTable = $('.scores-table')
+            var columnWidth = 120
+            var columns = $scoresTable.find('tr:eq(0) td').length
+            var tableWidth = columns * columnWidth
+            var blockWidth = $scoresTable.parent().width()
+            var bordersWidth = columns * 2
+            // Fix table width if parent block isn't large enough
+            if (tableWidth > blockWidth) {
+                $scoresTable.width(columns * columnWidth + bordersWidth)
+            // Insert empty cell to fill the parent block
+            } else {
+                var emptyWidth = blockWidth - tableWidth
+                var $bgColumn = '<td style="width: ' + emptyWidth + 'px"></td>'
+                $scoresTable.find('tr').append($bgColumn)
+                $scoresTable.unwrap()
+            }
+
+            /*
+            * Project Status Chart
+            */
+            // Chart Data
+            var chartData = [
+                {% for project in projects %}
+                    {% set projectIndex = loop.index - 1 %}
+                    {
+                        name: 'Projet N°{{ project.id }}',
+                        dataLabels: {
+                            enabled: true,
+                            align: 'left',
+                            verticalAlign: 'middle',
+                            style: {
+                                fontSize: 12
+                            },
+                            formatter: function () {
+                                var last = this.series.data[this.series.data.length - 1]
+                                if (this.point.status === last.status) {
+                                    return this.point.status
+                                }
+                            }
+                        },
+                        data: [
+                            {% for status in project.statuses %}
+                                {
+                                    x: Date.UTC({{ status.start }}),
+                                    x2: Date.UTC({{ status.end }}),
+                                    y: {{ projectIndex }},
+                                    color: '{{ status.color }}',
+                                    status: '{{ status.label }}',
+                                    type: '{{ status.type }}',
+                                    amount: '{{ status.amount|localizedcurrency('EUR') }}'
+                                },
+                            {% endfor %}
+                        ]
+                    },
+                {% endfor %}
+            ]
+            // Y-axis labels
+            var categoriesData = [{% for project in projects %}'N°{{ project.id }}',{% endfor %}]
+            // Update the length of the x-axis when series are hidden
+            function updateXaxisMax(chart) {
+                var series = chart.series
+                var maxDate = 0
+                for (var i = 0; i < series.length; i++) {
+                    if (series[i].visible) {
+                        for (var l = 0; l < series[i].data.length; l++) {
+                            var x2 = series[i].data[l].x2
+                            if (x2 > maxDate) {
+                                maxDate = x2
+                            }
+                        }
+                    }
+                }
+                chart.xAxis[0].update({
+                    max: maxDate
+                })
+            }
+            // Translate dates
+            Highcharts.setOptions({
+                lang: {
+                    months: ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'],
+                    weekdays: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'],
+                    shortMonths: ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aout', 'Sept', 'Oct', 'Nov', 'Déc']
+                },
+            })
+            // Initialise chart
+            Highcharts.chart('project-status-highcharts', {
+                chart: {
+                    type: 'xrange',
+                    zoomType: 'x',
+                },
+
+                title: {
+                    text: ''
+                },
+                credits: {
+                    enabled: false
+                },
+                xAxis: {
+                    type: 'datetime',
+                    dateTimeLabelFormats: {
+                        day: '%e %b %y'
+                    }
+                },
+                yAxis: {
+                    title: '',
+                    categories: categoriesData
+                },
+                legend: {
+                    layout: 'horizontal',
+                    verticalAlign: 'top',
+                    backgroundColor: '#FFFFFF',
+                    align: 'left',
+                    x: 40,
+                },
+                plotOptions: {
+                    series: {
+                        cursor: 'pointer',
+                        events: {
+                            hide: function () {
+                                updateXaxisMax(this.chart)
+                            },
+                            show: function() {
+                                updateXaxisMax(this.chart)
+                            }
+                        }
+                    }
+                },
+                exporting: { enabled: false },
+                tooltip: {
+                    formatter: function () {
+                        var start = Highcharts.dateFormat('%e %b %y', this.x, true),
+                            end = Highcharts.dateFormat('%e %b %y', this.x2, true),
+                            status = this.point.status,
+                            type = this.point.type,
+                            amount = this.point.amount
+
+                        var html = '<b>' + status + ' : ' + start + ' - ' + end + '</b><br>' +
+                                amount + ' | ' + type
+                        return html
+                    }
+                },
+                series: chartData
+            })
+        })
+    </script>
+{% endblock %}
+
+ {% block modals %}
+ {% endblock %}
+
+{% block pageHeader %}
+    <h1 class="page-heading push">
+        {{ company.name }}
+    </h1>
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <div id="block-kpi" class="block">
+            <div id="block-kpi" class="block-content">
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="content-mini content-mini-full push" style="background: #f5f5f5;">
+                            <div class="font-s12 font-w600 text-uppercase">Projets en cours</div>
+                            <a class="h2 font-w300 text-primary">{{ numberOngoingProjects }}</a>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="content-mini content-mini-full push" style="background: #f5f5f5;">
+                            <div class="font-s12 font-w600 text-uppercase">Remboursés</div>
+                            <a class="h2 font-w300 text-primary">{{ numberRepaidProjects }}</a>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="content-mini content-mini-full push" style="background: #f5f5f5;">
+                            <div class="font-s12 font-w600 text-uppercase">Abandons</div>
+                            <a class="h2 font-w300 text-primary">{{ numberAbandonedProjects }}</a>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="content-mini content-mini-full push" style="background: #f5f5f5;">
+                            <div class="font-s12 font-w600 text-uppercase">Rejets</div>
+                            <a class="h2 font-w300 text-primary">{{ numberRejectedProjects }}</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="block-scores" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Scoring de la société</h3>
+            </div>
+            <div class="block-content block-content-full">
+                <div class="scores-container">
+                    <table class="table table-bordered scores-fixed-column">
+                        <tbody>
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <th>Euler Hermes Grade</th>
+                            </tr>
+                            <tr>
+                                <th>Euler Hermes (Traffic Light)</th>
+                            </tr>
+                            <tr>
+                                <th>Score Altares</th>
+                            </tr>
+                            <tr>
+                                <th>Score Altares (Sectoriel)</th>
+                            </tr>
+                            <tr>
+                                <th>Infolegale</th>
+                            </tr>
+                            <tr>
+                                <th>Xerfi</th>
+                            </tr>
+                            <tr>
+                                <th>Xerfi Unilend</th>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="scores-table-overscroll">
+                        <table class="table table-bordered scores-table">
+                            <tbody>
+                                <tr>
+                                    {% for date in dates %}
+                                        <td class="score-item-header">{{ date }}</td>
+                                    {% endfor %}
+                                </tr>
+                                <tr>
+                                    {% for ratingInfo in ratings[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyRating::TYPE_EULER_HERMES_GRADE')] %}
+                                            <td {% if ratingInfo.change %}class="score-change"{% endif %}>
+                                                {% if ratingInfo.value is not empty %}
+                                                    {%  if ratingInfo.change %}
+                                                        <span class="{{ 'fa fa-arrow-' ~ ratingInfo.direction }} {{'text-' ~ ratingInfo.class }}"></span>
+                                                    {% endif %}
+                                                    {{ratingInfo.value  }}
+                                                {% endif %}
+                                            </td>
+                                    {% endfor %}
+                                </tr>
+                                <tr>
+                                    {% for ratingInfo in ratings[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyRating::TYPE_EULER_HERMES_TRAFFIC_LIGHT')] %}
+                                        <td {% if ratingInfo.change %}class="score-change"{% endif %}>
+                                            {% if ratingInfo.value is not empty %}
+                                                {%  if ratingInfo.change %}
+                                                    <span class="{{ 'fa fa-arrow-' ~ ratingInfo.direction }} {{'text-' ~ ratingInfo.class }}"></span>
+                                                {% endif %}
+                                                {{ratingInfo.value  }}
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                                <tr>
+                                    {% for ratingInfo in ratings[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyRating::TYPE_ALTARES_SCORE_20')] %}
+                                        <td {% if ratingInfo.change %}class="score-change"{% endif %}>
+                                            {% if ratingInfo.value is not empty %}
+                                                {%  if ratingInfo.change %}
+                                                    <span class="{{ 'fa fa-arrow-' ~ ratingInfo.direction }} {{'text-' ~ ratingInfo.class }}"></span>
+                                                {% endif %}
+                                                {{ratingInfo.value  }}
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                                <tr>
+                                    {% for ratingInfo in ratings[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_100')] %}
+                                        <td {% if ratingInfo.change %}class="score-change"{% endif %}>
+                                            {% if ratingInfo.value is not empty %}
+                                                {%  if ratingInfo.change %}
+                                                    <span class="{{ 'fa fa-arrow-' ~ ratingInfo.direction }} {{'text-' ~ ratingInfo.class }}"></span>
+                                                {% endif %}
+                                                {{ratingInfo.value  }}
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                                <tr>
+                                    {% for ratingInfo in ratings[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyRating::TYPE_INFOLEGALE_SCORE')] %}
+                                        <td {% if ratingInfo.change %}class="score-change"{% endif %}>
+                                            {% if ratingInfo.value is not empty %}
+                                                {%  if ratingInfo.change %}
+                                                    <span class="{{ 'fa fa-arrow-' ~ ratingInfo.direction }} {{'text-' ~ ratingInfo.class }}"></span>
+                                                {% endif %}
+                                                {{ratingInfo.value  }}
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                                <tr>
+                                    {% for ratingInfo in ratings[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyRating::TYPE_XERFI_RISK_SCORE')] %}
+                                        <td {% if ratingInfo.change %}class="score-change"{% endif %}>
+                                            {% if ratingInfo.value is not empty %}
+                                                {%  if ratingInfo.change %}
+                                                    <span class="{{ 'fa fa-arrow-' ~ ratingInfo.direction }} {{'text-' ~ ratingInfo.class }}"></span>
+                                                {% endif %}
+                                                {{ratingInfo.value  }}
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                                <tr>
+                                    {% for ratingInfo in ratings[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyRating::TYPE_UNILEND_XERFI_RISK')] %}
+                                        <td {% if ratingInfo.change %}class="score-change"{% endif %}>
+                                            {% if ratingInfo.value is not empty %}
+                                                {%  if ratingInfo.change %}
+                                                    <span class="{{ 'fa fa-arrow-' ~ ratingInfo.direction }} {{'text-' ~ ratingInfo.class }}"></span>
+                                                {% endif %}
+                                                {{ratingInfo.value  }}
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                                <tr>
+                                    {% for interval in ratings.intervals %}
+                                        <td class="score-item-footer"><span>{{ interval.days }} jours</span></td>
+                                    {% endfor %}
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="block-projects-offline" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Projets en cours</h3>
+            </div>
+            <div class="block-content block-content-full">
+                <div class="project-status-chart">
+                    <div class="row">
+                        <div class="col-left">
+                            <div id="project-status-highcharts" class="project-status-chart-chart"></div>
+                        </div>
+                        <div class="col-right">
+                            <div class="project-status-chart-legend">
+                                <h5 class="push-20 font-w400 text-center">Légende des statuts</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <ul>
+                                            <li><span class="ui-application-bg"></span> Demande en cours</li>
+                                            <li><span class="ui-application-complete-bg"></span> Demande complète</li>
+                                            <li><span class="ui-commercial-bg"></span> Commercial</li>
+                                            <li><span class="ui-analyst-bg"></span> Analyste</li>
+                                            <li><span class="ui-comity-bg"></span> Comité</li>
+                                            <li><span class="ui-prep-funding-bg"></span>Funding process</li>
+                                            <li>&nbsp;</li>
+                                            <li><span class="ui-status-ko-bg"></span> Rejet</li>
+                                            <li><span class="ui-conditions-bg"></span> Conditions suspensives</li>
+                                            <li><span class="ui-abandon-bg"></span> Abandon</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <ul>
+                                            <li><span class="ui-inprogress-bg"></span> Remboursement</li>
+                                            <li><span class="ui-completed-bg"></span> Remboursé</li>
+                                            <li><span class="ui-problem-bg"></span> Problème</li>
+                                            <li><span class="ui-loss-bg"></span> Défaut</li>
+                                            <li>&nbsp;</li>
+                                            <li>&nbsp;</li>
+                                            <li>&nbsp;</li>
+                                            <li><span class="ui-debt-collection-bg"></span> Funding KO/Prêt refusé</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -87,6 +87,9 @@
                 <br>
             <?php endif; ?>
             <h1>Notes externes</h1>
+            <?php if ($this->userEntity->getIdUserType()->getIdUserType() == \users_types::TYPE_RISK) : ?>
+                <a class="btn-primary pull-right" href="<?= $this->lurl ?>/societe/notation/<?= $this->companies->id_company ?>" target="_blank">Accèder au suivi <br>des notations pour ce SIREN</a>
+            <?php endif; ?>
             <table class="form" style="width: auto">
                 <?php if (isset($this->targetRatings)) : ?>
                     <thead>

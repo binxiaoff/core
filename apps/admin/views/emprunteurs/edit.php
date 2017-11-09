@@ -1,6 +1,6 @@
 <?php
 
-use \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 
 ?>
 <script>
@@ -174,6 +174,9 @@ use \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
             </td>
         </tr>
     </table>
+    <?php if ($this->userEntity->getIdUserType()->getIdUserType() == \users_types::TYPE_RISK) : ?>
+        <a class="btn-primary pull-right" href="<?= $this->lurl ?>/societe/notation/<?= $this->companyEntity->getIdCompany() ?>">Suivi des notations</a>
+    <?php endif; ?>
     <br/><br/>
 
     <?php $this->fireView('../bank_account/blocks/validated_bank_account'); ?>
