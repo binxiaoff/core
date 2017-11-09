@@ -167,9 +167,14 @@ class ReceptionsRepository extends EntityRepository
             ->select('r_rejected.idReception')
             ->where('r_rejected.idReceptionRejected = r.idReception');
 
+        $qbTreatedReception = $this->createQueryBuilder('r_treated')
+            ->select('IDENTITY(prt.idWireTransferIn)')
+            ->from('UnilendCoreBusinessBundle:ProjectRepaymentTask', 'prt')
+            ->where('prt.idProject = :projectId')
+            ->andWhere('prt.status != :cancelled');
+
         $queryBuilder = $this->createQueryBuilder('r')
-            ->select('r.idReception, r.montant AS amount, IDENTITY(r.idProject) AS idProejct, r.added as date')
-            ->leftJoin('UnilendCoreBusinessBundle:ProjectRepaymentTask', 'prt', Join::WITH, 'prt.idWireTransferIn = r.idReception')
+            ->select('r.idReception, r.montant AS amount, r.added as date')
             ->where('r.idProject = :projectId')
             ->setParameter('projectId', $project)
             ->andWhere('r.statusPrelevement != :directDebitRejected')
@@ -177,7 +182,7 @@ class ReceptionsRepository extends EntityRepository
             ->andWhere('r.statusVirement != :wireTransferRejected')
             ->setParameter('wireTransferRejected', Receptions::WIRE_TRANSFER_STATUS_REJECTED)
             ->andWhere('NOT EXISTS (' . $qbRejected->getDQL() . ')')
-            ->andWhere('prt.id IS NULL OR prt.status = :cancelled')
+            ->andWhere('r.idReception NOT IN (' . $qbTreatedReception->getDQL() . ')')
             ->setParameter('cancelled', ProjectRepaymentTask::STATUS_CANCELLED);
 
         return $queryBuilder->getQuery()->getResult();
