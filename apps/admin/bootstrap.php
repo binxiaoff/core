@@ -205,10 +205,6 @@ class bootstrap extends Controller
                     'uri'   => 'dossiers/remboursements'
                 ],
                 [
-                    'title' => 'Projets avec retard',
-                    'uri'   => 'dossiers/projets_avec_retard'
-                ],
-                [
                     'title' => 'Erreurs remboursements',
                     'uri'   => 'dossiers/no_remb'
                 ],
@@ -244,6 +240,10 @@ class bootstrap extends Controller
             'uri'   => 'repayment/validation',
             'zone'  => Zones::ZONE_LABEL_REPAYMENT,
             'children' => [
+                [
+                    'title' => 'Projets avec retard',
+                    'uri'   => 'dossiers/projets_avec_retard'
+                ],
                 [
                     'title' => 'Remboursements à valider',
                     'uri'   => 'repayment/validation'
