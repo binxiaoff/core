@@ -1307,7 +1307,7 @@ class OperationRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('o');
         $queryBuilder->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
-            ->where('o.idWalletDebtor = :wallet OR o.idWalletCreditor = :wallet')
+            ->where('o.idWalletCreditor = :wallet')
             ->andWhere('ot.label IN (:feePayment)')
             ->groupBy('o.idWireTransferIn')
             ->setParameter('wallet', $wallet)
