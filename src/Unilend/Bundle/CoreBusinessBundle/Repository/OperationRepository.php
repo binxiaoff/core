@@ -1297,4 +1297,26 @@ class OperationRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }
+
+    /**
+     * @param Wallet|integer $wallet
+     *
+     * @return array
+     */
+    public function getFeesPaymentOperations($wallet)
+    {
+        $queryBuilder = $this->createQueryBuilder('o');
+        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('o.idWalletCreditor = :wallet')
+            ->andWhere('ot.label IN (:feePayment)')
+            ->groupBy('o.idWireTransferIn')
+            ->setParameter('wallet', $wallet)
+            ->setParameter('feePayment', [
+                OperationType::COLLECTION_COMMISSION_LENDER,
+                OperationType::COLLECTION_COMMISSION_BORROWER,
+                OperationType::COLLECTION_COMMISSION_UNILEND,
+            ]);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
 }
