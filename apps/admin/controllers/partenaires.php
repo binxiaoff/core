@@ -18,7 +18,7 @@ class partenairesController extends bootstrap
     {
         parent::initialize();
 
-        $this->users->checkAccess(Zones::ZONE_LABEL_CONFIGURATION);
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
         $this->menu_admin = Zones::ZONE_LABEL_BORROWERS;
     }
 

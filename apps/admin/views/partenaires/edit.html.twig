@@ -427,64 +427,66 @@
                         </form>
                     </div>
                 </div>
-                <div id="products" class="block block-bordered">
-                    <div class="block-header">
-                        <h3 class="block-title">Produits</h3>
-                    </div>
-                    <div class="block-content block-content-full">
-                        <form action="{{ app.adminUrl }}/partenaires/produits/{{ partner.id }}" method="post">
-                            {%  if formErrors.products is defined and formErrors.products is not empty %}
-                                <div class="alert alert-error">
-                                    {% for error in formErrors.products %}
-                                        <p>{{ error }}</p>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                            {%  if formSuccess.products is defined %}
-                                <div class="alert alert-success">
-                                    {% for success in formSuccess.products %}
-                                        <p>{{ success }}</p>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                            <button class="btn btn-default add-btn push-10" type="button" data-toggle="modal" data-target="#modal-add-product"><span class="fa fa-plus"></span> Ajouter</button>
-                            <div class="row">
-                                {% for product in products %}
-                                <div class="col-md-6 push" data-product data-product-id="{{ product.idProduct.idProduct }}" data-product-rate-funds="{{ product.commissionRateFunds }}" data-product-rate-repayment="{{ product.commissionRateRepayment }}">
-                                    <div class="closable content-mini content-mini-full bg-gray-lighter">
-                                        <a role="button" class="closable-icon" data-toggle="modal" data-target="#modal-delete-product">
-                                            <span class="fa fa-close"></span>
-                                        </a>
-                                        <p class="push-5" data-equal-height data-equal-height-group="productTitle"><b>{{ product.idProduct.label|trans }}</b></p>
-                                        <table class="table-condensed" style="margin: 0 -8px; width: 100%;">
-                                            <tr>
-                                                <td style="width: 50%; vertical-align: top;">
-                                                    <small>Déblocage</small>
-                                                </td>
-                                                <td style="width: 50%; vertical-align: top;">
-                                                    <small>Remboursement</small>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <span class="text-primary">{{ product.commissionRateFunds|localizednumber }}&nbsp;%</span>
-                                                </td>
-                                                <td>
-                                                    <span class="text-primary">{{ product.commissionRateRepayment|localizednumber }}&nbsp;%</span>
-                                                </td>
-                                            </tr>
-                                        </table>
+                {%  if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Zones::ZONE_LABEL_CONFIGURATION') in app.userZones %}
+                    <div id="products" class="block block-bordered">
+                        <div class="block-header">
+                            <h3 class="block-title">Produits</h3>
+                        </div>
+                        <div class="block-content block-content-full">
+                            <form action="{{ app.adminUrl }}/partenaires/produits/{{ partner.id }}" method="post">
+                                {%  if formErrors.products is defined and formErrors.products is not empty %}
+                                    <div class="alert alert-error">
+                                        {% for error in formErrors.products %}
+                                            <p>{{ error }}</p>
+                                        {% endfor %}
                                     </div>
-                                </div>
-                                {% if loop.index is divisible by(2) %}
-                            </div>
-                            <div class="row">
                                 {% endif %}
-                                {% endfor %}
-                            </div>
-                        </form>
+                                {%  if formSuccess.products is defined %}
+                                    <div class="alert alert-success">
+                                        {% for success in formSuccess.products %}
+                                            <p>{{ success }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <button class="btn btn-default add-btn push-10" type="button" data-toggle="modal" data-target="#modal-add-product"><span class="fa fa-plus"></span> Ajouter</button>
+                                <div class="row">
+                                    {% for product in products %}
+                                    <div class="col-md-6 push" data-product data-product-id="{{ product.idProduct.idProduct }}" data-product-rate-funds="{{ product.commissionRateFunds }}" data-product-rate-repayment="{{ product.commissionRateRepayment }}">
+                                        <div class="closable content-mini content-mini-full bg-gray-lighter">
+                                            <a role="button" class="closable-icon" data-toggle="modal" data-target="#modal-delete-product">
+                                                <span class="fa fa-close"></span>
+                                            </a>
+                                            <p class="push-5" data-equal-height data-equal-height-group="productTitle"><b>{{ product.idProduct.label|trans }}</b></p>
+                                            <table class="table-condensed" style="margin: 0 -8px; width: 100%;">
+                                                <tr>
+                                                    <td style="width: 50%; vertical-align: top;">
+                                                        <small>Déblocage</small>
+                                                    </td>
+                                                    <td style="width: 50%; vertical-align: top;">
+                                                        <small>Remboursement</small>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <span class="text-primary">{{ product.commissionRateFunds|localizednumber }}&nbsp;%</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="text-primary">{{ product.commissionRateRepayment|localizednumber }}&nbsp;%</span>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    {% if loop.index is divisible by(2) %}
+                                </div>
+                                <div class="row">
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </div>
+                {% endif %}
             </div>
             <div class="col-md-6">
                 <div id="documents" class="block block-bordered">
