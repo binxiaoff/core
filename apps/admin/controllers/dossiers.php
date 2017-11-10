@@ -1919,43 +1919,50 @@ class dossiersController extends bootstrap
     {
         $this->hideDecoration();
 
-        /** @var \projects $oProjects */
-        $oProjects = $this->loadData('projects');
-        /** @var \clients $oClients */
-        $oClients = $this->loadData('clients');
+        /** @var \projects $project */
+        $project = $this->loadData('projects');
 
-        if (false === isset($this->params[0]) || false === $oProjects->get($this->params[0])) {
+        if (false === isset($this->params[0]) || false === $project->get($this->params[0])) {
             $this->error = 'no projects found';
             return;
         }
-        /** @var \companies $oCompanies */
-        $oCompanies = $this->loadData('companies');
-        if (false === $oCompanies->get($oProjects->id_company)) {
+
+        /** @var \companies $company */
+        $company = $this->loadData('companies');
+        if (false === $company->get($project->id_company)) {
             $this->error = 'no company found';
             return;
         }
 
-        $iClientId = null;
-        if ($oProjects->id_prescripteur) {
-            /** @var \prescripteurs $oPrescripteurs */
-            $oPrescripteurs = $this->loadData('prescripteurs');
-            if ($oPrescripteurs->get($oProjects->id_prescripteur)) {
-                $iClientId = $oPrescripteurs->id_client;
+        $clientId = null;
+        if ($project->id_prescripteur) {
+            /** @var \prescripteurs $advisor */
+            $advisor = $this->loadData('prescripteurs');
+            if ($advisor->get($project->id_prescripteur)) {
+                $clientId = $advisor->id_client;
             }
         } else {
-            $iClientId = $oCompanies->id_client_owner;
+            $clientId = $company->id_client_owner;
         }
 
-        if ($iClientId && $oClients->get($iClientId) && $oClients->email) {
-            $this->sRecipient = $oClients->email;
+        /** @var \clients $client */
+        $client = $this->loadData('clients');
+        if ($clientId && $client->get($clientId)) {
+            $this->sRecipient = $client->email;
         } else {
-            $this->error = 'no client email found';
+            $this->error = 'Emprunteur inconnu';
             return;
         }
-        $this->iClientId  = $iClientId;
-        $this->iProjectId = $oProjects->id_project;
 
-        $sTypeEmail = $this->selectEmailCompleteness($iClientId);
+        if (empty($client->email)) {
+            $this->error = 'Veuillez saisir l\'email de l\'emprunteur.';
+            return;
+        }
+
+        $this->iClientId  = $clientId;
+        $this->iProjectId = $project->id_project;
+
+        $sTypeEmail = $this->selectEmailCompleteness($clientId);
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager      = $this->get('doctrine.orm.entity_manager');
@@ -2049,6 +2056,7 @@ class dossiersController extends bootstrap
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeEmail, $varMail);
+
             try {
                 $message->setTo($sRecipientEmail);
                 $mailer = $this->get('mailer');
