@@ -12,6 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Autobid
 {
+    const REGULAR_SETTINGS_COUNT = 30;
+
     /**
      * @var integer
      *
@@ -79,8 +81,6 @@ class Autobid
      * })
      */
     private $idLender;
-
-
 
     /**
      * Set status

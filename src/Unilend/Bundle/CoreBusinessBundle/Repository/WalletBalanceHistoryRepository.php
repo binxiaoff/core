@@ -251,7 +251,10 @@ class WalletBalanceHistoryRepository extends EntityRepository
             ->setParameter('idWallet', $idWallet)
             ->setParameter('startDate', $startDate->format('Y-m-d H:i:s'))
             ->setParameter('endDate', $endDate->format('Y-m-d H:i:s'))
-            ->groupBy('o.idProject, o.idType, date')
+            ->groupBy('o.idProject')
+            ->addGroupBy('o.idType')
+            ->addGroupBy('date')
+            ->addGroupBy('o.idWireTransferIn')
             ->orderBy('wbh.id', 'DESC');
 
         return $queryBuilder;

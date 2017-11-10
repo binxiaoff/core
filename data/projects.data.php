@@ -500,7 +500,7 @@ class projects extends projects_crud
             FROM projects
             INNER JOIN companies c ON c.id_company = projects.id_company
             INNER JOIN unilend.company_status cs ON cs.id = c.id_status
-            WHERE cs.label IN ("' . implode('", " ', [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]) . '")'
+            WHERE cs.label IN ("' . implode('", "', [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]) . '")'
         );
 
         if ($this->bdd->num_rows($rResult) > 0) {
@@ -621,13 +621,19 @@ class projects extends projects_crud
         return $aLoansAndLenders;
     }
 
-    public function getDuePaymentsAndLenders($iProjectId = null, $iOrder = null)
+    /**
+     * @param null|int $projectId
+     * @param null|int $order
+     *
+     * @return array
+     */
+    public function getDuePaymentsAndLenders($projectId = null, $order = null)
     {
-        if ($iProjectId === null) {
-            $iProjectId = $this->id_project;
+        if ($projectId === null) {
+            $projectId = $this->id_project;
         }
 
-        $sOrder = (isset($iOrder)) ? ' AND ordre = ' . $iOrder : null;
+        $orderQuery = (isset($order)) ? ' AND ordre = ' . $order : null;
 
         $sql = '
             SELECT
@@ -638,21 +644,21 @@ class projects extends projects_crud
                 e.montant,
                 e.capital,
                 e.interets,
-                e.date_echeance_emprunteur_reel as date
+                e.date_echeance_reel as date
             FROM echeanciers e
                 LEFT JOIN wallet w ON w.id = e.id_lender
                 LEFT JOIN clients c ON w.id_client = c.id_client
                 LEFT JOIN companies com ON com.id_client_owner = c.id_client
-            WHERE id_project = ' . $iProjectId . $sOrder;
+            WHERE id_project = ' . $projectId . $orderQuery;
 
         $result                 = $this->bdd->query($sql);
-        $aDuePaymentsAndLenders = array();
+        $duePaymentsAndLenders = [];
 
         while ($record = $this->bdd->fetch_assoc($result)) {
-            $aDuePaymentsAndLenders[] = $record;
+            $duePaymentsAndLenders[] = $record;
         }
 
-        return $aDuePaymentsAndLenders;
+        return $duePaymentsAndLenders;
     }
 
     public function getProblematicProjectsWithUpcomingRepayment()
@@ -1214,7 +1220,7 @@ class projects extends projects_crud
           'M' AS repayment_frequency,
           (SELECT csh.changed_on FROM company_status_history csh WHERE csh.id = (
             SELECT MIN(csh_min.id) FROM company_status_history csh_min
-            INNER JOIN company_status cs_min ON cs_min.id = csh_min.id_status AND cs_min.label IN (:collectiveProceeding) WHERE csh.id_company = p.id_company)
+            INNER JOIN company_status cs_min ON cs_min.id = csh_min.id_status AND cs_min.label IN (:collectiveProceeding) WHERE csh_min.id_company = p.id_company)
           ) AS judgement_date,
           CASE
             WHEN p.close_out_netting_date IS NOT NULL AND p.close_out_netting_date != '0000-00-00' THEN p.close_out_netting_date

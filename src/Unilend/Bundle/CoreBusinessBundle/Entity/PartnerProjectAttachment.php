@@ -8,7 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
  * PartnerProjectAttachment
  *
  * @ORM\Table(name="partner_project_attachment", uniqueConstraints={@ORM\UniqueConstraint(name="uc_id_partner_id_attachment_type", columns={"id_partner", "id_attachment_type"})}, indexes={@ORM\Index(name="fk_partner_project_attachment_attachment_type", columns={"id_attachment_type"}), @ORM\Index(name="IDX_E130D16DEFB69766", columns={"id_partner"})})
- * @ORM\Entity()
+ * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class PartnerProjectAttachment
 {
@@ -43,7 +44,7 @@ class PartnerProjectAttachment
     private $id;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType
+     * @var AttachmentType
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType")
      * @ORM\JoinColumns({
@@ -53,7 +54,7 @@ class PartnerProjectAttachment
     private $idAttachmentType;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Partner
+     * @var Partner
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Partner", inversedBy="attachmentTypes")
      * @ORM\JoinColumns({
@@ -149,7 +150,7 @@ class PartnerProjectAttachment
     /**
      * Set idAttachmentType
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $idAttachmentType
+     * @param AttachmentType $idAttachmentType
      *
      * @return PartnerProjectAttachment
      */
@@ -163,7 +164,7 @@ class PartnerProjectAttachment
     /**
      * Get idAttachmentType
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType
+     * @return AttachmentType
      */
     public function getAttachmentType()
     {
@@ -173,7 +174,7 @@ class PartnerProjectAttachment
     /**
      * Set idPartner
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Partner $idPartner
+     * @param Partner $idPartner
      *
      * @return PartnerProjectAttachment
      */
@@ -187,10 +188,20 @@ class PartnerProjectAttachment
     /**
      * Get idPartner
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Partner
+     * @return Partner
      */
     public function getPartner()
     {
         return $this->idPartner;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
     }
 }

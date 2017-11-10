@@ -6,6 +6,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\Query\ResultSetMapping;
 use PDO;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
@@ -612,7 +613,7 @@ class ClientsRepository extends EntityRepository
         $queryBuilder
             ->select('c.idClient')
             ->addSelect('c.type')
-            ->addSelect('IFNULL (CASE WHEN c.type IN (:companyType) THEN co.name ELSE c.nom END, \' \') AS name')
+            ->addSelect('IFNULL (CASE WHEN c.type IN (:companyType) THEN co.name ELSE CONCAT(c.nom, \', \', c.prenom) END, \' \') AS name')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType= wt.id AND wt.label = :lenderWalletType')
             ->leftJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'c.idClient = co.idClientOwner AND c.type IN (:companyType)')
@@ -726,5 +727,40 @@ class ClientsRepository extends EntityRepository
             ->getConnection()
             ->executeQuery($query, $parameters)
             ->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param string $hashSegment
+     *
+     * @return null|Clients
+     */
+    public function findClientByOldSponsorCode($hashSegment)
+    {
+        $queryBuilder = $this->createQueryBuilder('c');
+        $queryBuilder->where('c.hash LIKE :hashSegment')
+            ->setParameter('hashSegment', $hashSegment . '%');
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * Method to be deleted once the query does not return any results
+     *
+     * @param int $limit
+     *
+     * @return array
+     */
+    public function findClientsWithSponsorCodeToRepair($limit)
+    {
+        $resultSetMapping = new ResultSetMapping();
+        $resultSetMapping->addEntityResult('UnilendCoreBusinessBundle:Clients', 'c')
+            ->addFieldResult('c', 'id_client', 'idClient')
+            ->addFieldResult('c', 'sponsor_code', 'sponsorCode')
+            ->addFieldResult('c', 'nom', 'nom');
+
+        $query = $this->_em->createNativeQuery('SELECT id_client, sponsor_code, nom FROM clients WHERE sponsor_code REGEXP "[^a-zA-Z0-9]" LIMIT :limit ', $resultSetMapping);
+        $query->setParameter('limit', $limit);
+
+        return $query->getResult();
     }
 }

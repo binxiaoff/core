@@ -5,7 +5,7 @@
         <a href="/company/add/<?= $this->siren ?>" class="btn_link" target="_blank">Créer la société</a>
     <?php else : ?>
         <h1>Sélectionnez une société attacher à <?= $this->partner->getIdCompany()->getName() ?></h1>
-        <form method="post" action="<?= $this->lurl ?>/partner/third_party_add/<?= $this->partner->getId() ?>">
+        <form method="post" action="<?= $this->lurl ?>/partenaires/ajout_tiers/<?= $this->partner->getId() ?>">
             <fieldset>
                 <?php
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies $company */
