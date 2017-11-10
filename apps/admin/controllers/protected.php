@@ -152,7 +152,7 @@ class protectedController extends bootstrap
         $this->autoFireView   = true;
     }
 
-    public function _beneficial_owner()
+    public function _beneficiaires_effectifs()
     {
         $path = $this->path . 'protected/pdf/beneficial_owner/' . $this->params[0];
 
@@ -163,7 +163,7 @@ class protectedController extends bootstrap
 
         header('Content-Description: File Transfer');
         header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename="' . basename($path) . '"');
+        header('Content-Disposition: attachment; filename="' . basename($this->params[0]) . '"');
         @readfile($path);
         die;
     }
