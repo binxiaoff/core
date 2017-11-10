@@ -223,7 +223,6 @@ class repaymentController extends bootstrap
         if ($this->request->request->get('validate')) {
             foreach ($projectRepaymentTasks as $projectRepaymentTask) {
                 $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_READY)
-                    ->setRepayAt(new DateTime())
                     ->setIdUserValidation($user);
 
                 $entityManager->flush($projectRepaymentTask);
