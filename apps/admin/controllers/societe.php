@@ -20,7 +20,7 @@ class societeController extends bootstrap
             false === isset($this->params[0])
             || false === filter_var($this->params[0], FILTER_VALIDATE_INT)
         ) {
-            header('Location: ' . $this->lurl . '/dashboard');
+            header('Location: ' . $this->lurl);
             return;
         }
 
@@ -126,6 +126,7 @@ class societeController extends bootstrap
 
             $date = $rating['date'];
             unset($rating['date']);
+
             foreach ($rating as $type => $value) {
                 $data                                = ['value' => $value, 'date' => $date];
                 $formattedRating[$type][$date]       = array_merge($data, $this->checkRatingChangeClass($ratings[$previousIndex][$type], $value, $type));
@@ -236,11 +237,6 @@ class societeController extends bootstrap
             }
         }
 
-//        if ($ratingType == CompanyRating::TYPE_EULER_HERMES_GRADE) {
-//            var_dump($firstRating, $secondRating, $change);
-//
-//        }
-
         return $change;
     }
 
@@ -346,7 +342,7 @@ class societeController extends bootstrap
                 return '#1b88db';
             case ProjectsStatus::REMBOURSE:
             case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
-            return '#4fa8b0';
+                return '#4fa8b0';
             case ProjectsStatus::PROBLEME:
                 break;
             case ProjectsStatus::LOSS:
