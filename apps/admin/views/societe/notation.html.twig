@@ -296,7 +296,7 @@
                             <tbody>
                                 <tr>
                                     {% for date in dates %}
-                                        <td class="score-item-header">{{ date }}</td>
+                                        <td class="score-item-header">{{ date|date('d/m/Y') }}</td>
                                     {% endfor %}
                                 </tr>
                                 <tr>

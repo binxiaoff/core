@@ -116,21 +116,26 @@ class societeController extends bootstrap
                 && $ratings[$previousIndex][CompanyRating::TYPE_XERFI_RISK_SCORE] === $ratings[$index][CompanyRating::TYPE_XERFI_RISK_SCORE]
                 && $ratings[$previousIndex][CompanyRating::TYPE_UNILEND_XERFI_RISK] === $ratings[$index][CompanyRating::TYPE_UNILEND_XERFI_RISK]
             ) {
-                unset($ratings[$index]);
-            } else {
-                $date = $rating['date'];
-                unset($rating['date']);
-                foreach ($rating as $type => $value) {
-                    $data                                = ['value' => $value, 'date' => $date];
-                    $formattedRating[$type][$date]       = array_merge($data, $this->checkRatingChangeClass($ratings[$previousIndex][$type], $value, $type));
-                    $formattedRating['dates'][$date]     = $date;
-                    $previousDate                        = \DateTime::createFromFormat('Y-m-d', $ratings[$previousIndex]['date']);
-                    $currentDate                         = \DateTime::createFromFormat('Y-m-d', $ratings[$index]['date']);
-                    $interval                            = $previousDate->diff($currentDate);
-                    $formattedRating['intervals'][$date] = $interval;
-                }
-                $previousIndex = $index;
+                continue;
             }
+
+            $nextIndex = $index + 1;
+            if ($index > 0 && $ratings[$nextIndex]['date'] == $ratings[$index]['date']) {
+                continue;
+            }
+
+            $date = $rating['date'];
+            unset($rating['date']);
+            foreach ($rating as $type => $value) {
+                $data                                = ['value' => $value, 'date' => $date];
+                $formattedRating[$type][$date]       = array_merge($data, $this->checkRatingChangeClass($ratings[$previousIndex][$type], $value, $type));
+                $formattedRating['dates'][$date]     = $date;
+                $previousDate                        = \DateTime::createFromFormat('Y-m-d', $ratings[$previousIndex]['date']);
+                $currentDate                         = \DateTime::createFromFormat('Y-m-d', $ratings[$index]['date']);
+                $interval                            = $previousDate->diff($currentDate);
+                $formattedRating['intervals'][$date] = $interval;
+            }
+            $previousIndex = $index;
         }
 
         return $formattedRating;
@@ -178,7 +183,7 @@ class societeController extends bootstrap
                     break;
                 case CompanyRating::TYPE_EULER_HERMES_GRADE:
                 case CompanyRating::TYPE_XERFI_RISK_SCORE:
-                    if (empty($firstRating) || empty($secondValue)) {
+                    if (empty($firstRating) || empty($secondRating)) {
                         $change = [
                             'change'    => true,
                             'class'     => 'warning',
@@ -230,6 +235,11 @@ class societeController extends bootstrap
                     break;
             }
         }
+
+//        if ($ratingType == CompanyRating::TYPE_EULER_HERMES_GRADE) {
+//            var_dump($firstRating, $secondRating, $change);
+//
+//        }
 
         return $change;
     }
