@@ -1141,7 +1141,8 @@ class dossiersController extends bootstrap
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SlackManager $slackManager */
                 $slackManager      = $this->get('unilend.service.slack_manager');
-                $slackNotification = 'Mémo ajouté par *' . $projectCommentEntity->getIdUser()->getFirstname() . ' ' . $projectCommentEntity->getIdUser()->getName() . '* sur le projet ' . $slackManager->getProjectName($projectEntity);
+                $slackNotification = 'Mémo ajouté par *' . $projectCommentEntity->getIdUser()->getFirstname() . ' ' . $projectCommentEntity->getIdUser()
+                        ->getName() . '* sur le projet ' . $slackManager->getProjectName($projectEntity);
                 $userRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
 
                 if (
@@ -3084,6 +3085,7 @@ class dossiersController extends bootstrap
                     }
 
                     $debtCollectionMissions = $project->getDebtCollectionMissions(true, ['id' => 'DESC']);
+                    $pendingWireTransferIn  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->findPendingWireTransferIn($project);
 
                     $templateData = [
                         'projectData'                => $projectData,
@@ -3091,7 +3093,7 @@ class dossiersController extends bootstrap
                         'debtCollector'              => $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')
                             ->findOneBy(['hash' => \Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager::CLIENT_HASH_PROGERIS]),
                         'debtCollectionMissionsData' => $debtCollectionMissions,
-                        'pendingReceiptData'         => $this->getPendingReceiptData($project),
+                        'pendingWireTransferIn'      => $pendingWireTransferIn,
                         'projectCharges'             => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCharge')->findBy(['idProject' => $project]),
                         'projectChargeTypes'         => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectChargeType')->findAll()
                     ];
@@ -3150,28 +3152,6 @@ class dossiersController extends bootstrap
         return $latePaymentData;
     }
 
-    /**
-     * @param Projects $project
-     *
-     * @return array
-     */
-    private function getPendingReceiptData(Projects $project)
-    {
-        $pendingReceipt     = $this->get('doctrine.orm.entity_manager')
-            ->getRepository('UnilendCoreBusinessBundle:Receptions')
-            ->getPendingReceipt($project);
-        $pendingReceiptData = [];
-
-        foreach ($pendingReceipt as $receipt) {
-            $pendingReceiptData[$receipt['idReception']] = [
-                'date'   => $receipt['date'],
-                'amount' => round(bcdiv($receipt['amount'], 100, 4), 2)
-            ];
-        }
-
-        return $pendingReceiptData;
-    }
-
     public function _dechoir_terme()
     {
         $projectId = filter_var($this->request->request->get('id_project'), FILTER_VALIDATE_INT);
@@ -3227,10 +3207,10 @@ class dossiersController extends bootstrap
             $projectsRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
             $receptionsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
 
-            $totalPendingReceiptAmount  = 0;
-            $totalRemainingAmount       = 0;
-            $projectsWithDebtCollection = 0;
-            $projectData                = [];
+            $totalPendingWireTransferInAmount = 0;
+            $totalRemainingAmount             = 0;
+            $projectsWithDebtCollection       = 0;
+            $projectData                      = [];
 
             foreach ($projectsRepository->getProjectsWithLateRepayments() as $lateRepayment) {
                 $project              = $projectsRepository->find($lateRepayment['idProject']);
@@ -3239,34 +3219,33 @@ class dossiersController extends bootstrap
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission $mission */
                 foreach ($project->getDebtCollectionMissions() as $mission) {
-                    $entrustedAmount      = bcadd(bcadd($mission->getCapital(), $mission->getInterest(), 4), $mission->getCommissionVatIncl(), 4);
-                    $debtCollectionAmount = bcadd($debtCollectionAmount, $entrustedAmount, 4);
+                    $entrustedAmount      = round(bcadd(bcadd($mission->getCapital(), $mission->getInterest(), 4), $mission->getCommissionVatIncl(), 4), 2);
+                    $debtCollectionAmount = round(bcadd($debtCollectionAmount, $entrustedAmount, 4), 2);
                 }
 
                 if ($project->getDebtCollectionMissions()->count() > 0) {
                     $projectsWithDebtCollection++;
                 }
 
-                $pendingReceipt                        = $receptionsRepository->getPendingReceipt($project);
+                $pendingWireTransferInAmount           = $receptionsRepository->getTotalPendingWireTransferIn($project);
                 $projectData[$project->getIdProject()] = [
-                    'projectId'                => $project->getIdProject(),
-                    'companyName'              => $project->getIdCompany()->getName(),
-                    'siren'                    => $project->getIdCompany()->getSiren(),
-                    'companyActivity'          => $project->getIdCompany()->getActivite(),
-                    'projectTitle'             => $project->getTitle(),
-                    'projectStatusLabel'       => $lateRepayment['projectStatusLabel'],
-                    'projectStatus'            => $project->getStatus(),
-                    'remainingAmount'          => $remainingAmount,
-                    'entrustedToDebtCollector' => round($debtCollectionAmount, 2),
-                    'pendingReceiptAmount'     => round(bcdiv(array_sum(array_column($pendingReceipt, 'amount')), 100, 4), 2),
-                    'pendingReceiptCount'      => count($pendingReceipt),
+                    'projectId'                   => $project->getIdProject(),
+                    'companyName'                 => $project->getIdCompany()->getName(),
+                    'siren'                       => $project->getIdCompany()->getSiren(),
+                    'companyActivity'             => $project->getIdCompany()->getActivite(),
+                    'projectTitle'                => $project->getTitle(),
+                    'projectStatusLabel'          => $lateRepayment['projectStatusLabel'],
+                    'projectStatus'               => $project->getStatus(),
+                    'remainingAmount'             => $remainingAmount,
+                    'entrustedToDebtCollector'    => $debtCollectionAmount,
+                    'pendingWireTransferInAmount' => $pendingWireTransferInAmount,
                 ];
-                $totalRemainingAmount                  = bcadd($totalRemainingAmount, $remainingAmount, 4);
-                $totalPendingReceiptAmount             = bcadd($totalPendingReceiptAmount, $projectData[$project->getIdProject()]['pendingReceiptAmount'], 2);
+                $totalRemainingAmount                  = round(bcadd($totalRemainingAmount, $remainingAmount, 4), 2);
+                $totalPendingWireTransferInAmount      = round(bcadd($totalPendingWireTransferInAmount, $projectData[$project->getIdProject()]['pendingWireTransferInAmount'], 4), 2);
             }
             $this->render(null, [
-                'remainingAmountToCollect'     => round($totalRemainingAmount, 2),
-                'pendingReceiptAmount'         => $totalPendingReceiptAmount,
+                'remainingAmountToCollect'     => $totalRemainingAmount,
+                'pendingWireTransferInAmount'  => $totalPendingWireTransferInAmount,
                 'nbProjectsWithDeptCollection' => $projectsWithDebtCollection,
                 'nbProjectsWithLateRepayments' => count($projectData) - $projectsWithDebtCollection,
                 'projectWithPaymentProblems'   => $projectData

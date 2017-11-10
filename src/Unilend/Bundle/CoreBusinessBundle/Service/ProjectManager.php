@@ -1303,11 +1303,15 @@ class ProjectManager
      */
     public function getRemainingAmount(Projects $project)
     {
+        $remainingAmount = 0;
         if (null === $project->getCloseOutNettingDate()) {
             $remainingAmounts = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getTotalOverdueAmounts($project);
             $remainingAmount  = round(bcadd($remainingAmounts['commission'], bcadd($remainingAmounts['capital'], $remainingAmounts['interest'], 4), 4), 2);
         } else {
             $closeOutNettingPayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $project]);
+            if ($closeOutNettingPayment) {
+
+
             $totalAmount = round(bcadd(
                 $closeOutNettingPayment->getCommissionTaxIncl(),
                 bcadd($closeOutNettingPayment->getCapital(), $closeOutNettingPayment->getInterest(), 4),
@@ -1320,6 +1324,7 @@ class ProjectManager
             ), 2);
 
             $remainingAmount = round(bcsub($totalAmount, $paidAmount, 4), 2);
+            }
         }
 
         return $remainingAmount;

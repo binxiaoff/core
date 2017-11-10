@@ -71,7 +71,7 @@
         {% endif %}
 
         {% if projectData.totalRemainingAmount > 0 and constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::PROBLEME') == projectData.projectStatus %}
-            {% if pendingReceiptData|length > 0 %}
+            {% if pendingWireTransferIn|length > 0 %}
                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-debt-collection" disabled>Missionner un recouvreur ({{ projectData.totalRemainingAmount|localizedcurrency('EUR') }})</button>
                 <div class="text-muted">
                     <small><em style="display: inline-block; max-width: 300px; margin-top: 3px;">Merci de traiter les derniers remboursements avant de créer une nouvelle mission.</em></small>

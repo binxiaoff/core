@@ -41,7 +41,7 @@
                     </div>
                     <div class="col-md-3">
                         <div class="font-s12 font-w600 text-uppercase">Réceptions à traiter</div>
-                        <a class="h2 font-w300 text-primary">{{ pendingReceiptAmount|localizedcurrency('EUR') }}</a>
+                        <a class="h2 font-w300 text-primary">{{ pendingWireTransferInAmount|localizedcurrency('EUR') }}</a>
                     </div>
                     <div class="col-md-3">
                         <div class="font-s12 font-w600 text-uppercase">Projets en retard</div>
@@ -105,7 +105,7 @@
                                 {{ project.entrustedToDebtCollector > 0 ? project.entrustedToDebtCollector|localizedcurrency('EUR') : '0 €' }}
                             </td>
                             <td>
-                                {{ project.pendingReceiptAmount > 0 ? project.pendingReceiptAmount|localizedcurrency('EUR') : '0 €' }}
+                                {{ project.pendingWireTransferInAmount > 0 ? project.pendingWireTransferInAmount|localizedcurrency('EUR') : '0 €' }}
                             </td>
                             <!-- @todo use real ID from the future tables -->
                             <td class="text-center">

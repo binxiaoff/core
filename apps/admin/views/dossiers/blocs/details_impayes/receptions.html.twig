@@ -1,6 +1,6 @@
 <div class="block-content block-content-full">
     <h3 class="h4 push-20">Réceptions à traiter</h3>
-    {% if pendingReceiptData|length > 0 %}
+    {% if pendingWireTransferIn|length > 0 %}
         <table class="table table-bordered table-hover table-header-bg">
             <thead>
             <tr>
@@ -19,19 +19,19 @@
             </tr>
             </thead>
             <tbody>
-            {% for idWireTransfer, receipt in pendingReceiptData %}
+            {% for wireTransferIn in pendingWireTransferIn %}
                 <tr>
                     <td>
-                        {{ receipt.date|localizeddate('short', 'none') }}
+                        {{ wireTransferIn.date|localizeddate('short', 'none') }}
                     </td>
                     <td>
-                        {{ idWireTransfer }}
+                        {{ wireTransferIn.idReception }}
                     </td>
                     <td>
-                        {{ receipt.amount|localizedcurrency('EUR') }}
+                        {{ (wireTransferIn.montant / 100)|localizedcurrency('EUR') }}
                     </td>
                     <td class="text-center">
-                        <a class="btn btn-xs btn-primary" data-toggle="tooltip" data-original-title="Planifier le remboursement" href="/repayment/create/{{ idWireTransfer }}">
+                        <a class="btn btn-xs btn-primary" data-toggle="tooltip" data-original-title="Planifier le remboursement" href="/repayment/create/{{ wireTransferIn.idReception }}">
                             <i class="fa fa-arrow-right"></i>
                         </a>
                     </td>
