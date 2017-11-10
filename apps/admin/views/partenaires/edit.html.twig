@@ -401,7 +401,7 @@
             <div class="col-md-6">
                 <div id="instructions" class="block block-bordered">
                     <div class="block-header">
-                        <h3 class="block-title">Instructions</h3>
+                        <h3 class="block-title">Instructions <small>Texte explicatif à destination du déposant</small></h3>
                     </div>
                     <div class="block-content block-content-full">
                         <form action="{{ app.adminUrl }}/partenaires/instructions/{{ partner.id }}" method="post">
@@ -419,10 +419,17 @@
                                     {% endfor %}
                                 </div>
                             {% endif %}
-                            <label for="instructions-description">Description du projet</label>
-                            <textarea id="instructions-description" name="instructions[description]" class="js-summernote-simple">{{ instructions.description }}</textarea>
-                            <label for="instructions-documents">Pièces à fournir</label>
-                            <textarea id="instructions-documents" name="instructions[documents]" class="js-summernote-simple">{{ instructions.documents }}</textarea>
+
+                            <div class="form-group">
+                                <label for="instructions-description">Description du projet</label>
+                                <textarea id="instructions-description" name="instructions[description]" class="js-summernote-simple">{{ instructions.description }}</textarea>
+                                <div class="help-block text-right pull-t">Situé sur la page «&nbsp;Déposer un dossier&nbsp;» de l'espace partenaire, sous la catégorie «&nbsp;Quel est le projet ?&nbsp;».</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="instructions-documents">Pièces à fournir</label>
+                                <textarea id="instructions-documents" name="instructions[documents]" class="js-summernote-simple">{{ instructions.documents }}</textarea>
+                                <div class="help-block text-right pull-t">Situé sur la page «&nbsp;Déposer un dossier&nbsp;» de l'espace partenaire, sous la catégorie «&nbsp;Pièces à fournir&nbsp;».</div>
+                            </div>
                             <button type="submit" class="btn btn-primary">Mettre à jour</button>
                         </form>
                     </div>
