@@ -925,7 +925,7 @@ class ProjectsRepository extends EntityRepository
                                             WHERE ps2.status = ' . ProjectsStatus::PROBLEME . '
                                               AND psh2.id_project = echeanciers_emprunteur.id_project
                                             ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
-                                            LIMIT 1)) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '), TRUE, FALSE) = :healthy
+                                            LIMIT 1)) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '), FALSE, TRUE) = :healthy
             GROUP BY cohort';
 
         $statement = $this->getEntityManager()->getConnection()->executeQuery(
