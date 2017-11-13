@@ -83,18 +83,8 @@
                 alert('An error has occurred');
             },
             success: function(data) {
-
                 if (data.result && data.result == 'OK') {
-                    $("#popup-content").html('le prescripteur a &eacute;t&eacute; cr&eacute;&eacute; !');
-                    $("#id_prescripteur").val(data.id_prescripteur);
-                    $("#civilite_prescripteur").html(values.civilite);
-                    $("#prenom_prescripteur").html(values.prenom);
-                    $("#nom_prescripteur").html(values.nom);
-                    $("#email_prescripteur").html(values.email);
-                    $("#telephone_prescripteur").html(values.telephone);
-                    $("#company_prescripteur").html(values.company_name);
-                    $("#siren_prescripteur").html(values.siren);
-                    $('.identification_prescripteur').show('slow');
+                    alert('Le prescripteur a été créé');
                     parent.$.fn.colorbox.close();
                 } else {
                     alert('An error has occurred');
