@@ -62,22 +62,7 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
         $settings->get('Téléphone emprunteur', 'type');
         $sBorrowerPhoneNumber = $settings->value;
 
-        $settings->get('Facebook', 'type');
-        $sFB = $settings->value;
-
-        $settings->get('Twitter', 'type');
-        $sTwitter = $settings->value;
-
-        $sUrl = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-
-        $aReplacements = array(
-            'adresse_emprunteur'   => $sBorrowerEmail,
-            'telephone_emprunteur' => $sBorrowerPhoneNumber,
-            'furl'                 => $sUrl,
-            'surl'                 => $sUrl,
-            'lien_fb'              => $sFB,
-            'lien_tw'              => $sTwitter
-        );
+        $sUrl            = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
         $oProjectManager = $this->getContainer()->get('unilend.service.project_manager');
 
         foreach ($aReminderIntervals as $sStatus => $aIntervals) {
@@ -116,26 +101,31 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                                     }
                                 }
 
+                                $keywords = [
+                                    'firstName'                  => $client->prenom,
+                                    'requestDate'                => strftime('%d %B %Y', $oSubmissionDate->getTimestamp()),
+                                    'companyName'                => $company->name,
+                                    'continueRequestLink'        => $sUrl . '/depot_de_dossier/reprise/' . $project->hash,
+                                    'stopReminderEmails'         => $sUrl . '/depot_de_dossier/emails/' . $project->hash,
+                                    'fundingPercentage'          => $iDaysInterval > $iAverageFundingDuration ? 100 : round(100 - ($iAverageFundingDuration - $iDaysInterval) / $iAverageFundingDuration * 100),
+                                    'borrowerServicePhoneNumber' => $sBorrowerPhoneNumber,
+                                    'borrowerServicePhoneEmail'  => $sBorrowerEmail,
+                                    'amount'       => $ficelle->formatNumber($project->amount, 0),
+
+                                    'liste_pieces'  => $projectStatusHistory->content,
+                                    'delai_demande' => $iDaysInterval,
+                                ];
+
                                 if (in_array($iStatus, [\projects_status::INCOMPLETE_REQUEST, \projects_status::COMPLETE_REQUEST])) {
                                     $oCompletenessDate                       = $projectStatusHistory->getDateProjectStatus($project->id_project, \projects_status::INCOMPLETE_REQUEST, true);
-                                    $aReplacements['date_demande'] = strftime('%d %B %Y', $oCompletenessDate->getTimestamp());
+                                    $keywords['date_demande'] = strftime('%d %B %Y', $oCompletenessDate->getTimestamp());
                                 }
-
-                                $aReplacements['liste_pieces']            = $projectStatusHistory->content;
-                                $aReplacements['raison_sociale']          = $company->name;
-                                $aReplacements['prenom']                  = $client->prenom;
-                                $aReplacements['montant']                 = $ficelle->formatNumber($project->amount, 0);
-                                $aReplacements['delai_demande']           = $iDaysInterval;
-                                $aReplacements['lien_reprise_dossier']    = $sUrl . '/depot_de_dossier/reprise/' . $project->hash;
-                                $aReplacements['lien_stop_relance']       = $sUrl . '/depot_de_dossier/emails/' . $project->hash;
-                                $aReplacements['date_demande']            = strftime('%d %B %Y', $oSubmissionDate->getTimestamp());
-                                $aReplacements['pourcentage_financement'] = $iDaysInterval > $iAverageFundingDuration ? 100 : round(100 - ($iAverageFundingDuration - $iDaysInterval) / $iAverageFundingDuration * 100);
-                                $aReplacements['annee']                   = date('Y');
 
                                 $sRecipientEmail = preg_replace('/^(.+)-[0-9]+$/', '$1', trim($client->email));
 
                                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                                $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex, $aReplacements);
+                                $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex, $keywords);
+
                                 try {
                                     $message->setTo($sRecipientEmail);
                                     $mailer = $this->getContainer()->get('mailer');
