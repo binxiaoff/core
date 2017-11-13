@@ -477,6 +477,9 @@ class partenairesController extends bootstrap
         if (empty($email)) {
             $errors[] = 'Vous devez renseigner une adresse email';
         }
+        if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Vous devez renseigner une adresse email valide';
+        }
         $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         if (
             (null === $companyClient->getIdClient() || $companyClient->getIdClient()->getEmail() !== $email)
