@@ -184,7 +184,7 @@
                         <div class="form-group">
                             <label>Type de mission</label>
                             <select class="form-control required" name="debt-collection-type">
-                                <option value="">Selectionner</option>
+                                <option value="">Sélectionner</option>
                                 <option value="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\DebtCollectionMission::TYPE_AMICABLE') }}">Amiable</option>
                                 <option value="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\DebtCollectionMission::TYPE_LITIGATION') }}">Contentieux</option>
                             </select>
@@ -214,7 +214,7 @@
                         <div class="form-group">
                             <label>Type de frais</label>
                             <select class="form-control required" name="fee-type">
-                                <option value="0">Selectionner</option>
+                                <option value="0">Sélectionner</option>
                                 {% for chargeType in projectChargeTypes %}
                                     <option value="{{ chargeType.id }}">{{ ('project-charge-type_' ~ chargeType.label|replace('_', '-')) | trans }}</option>
                                 {% endfor %}

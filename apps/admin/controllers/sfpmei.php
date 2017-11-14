@@ -441,14 +441,22 @@ class sfpmeiController extends bootstrap
             die;
         }
 
+        /** @var EntityManager $entityManager */
+        $entityManager        = $this->get('doctrine.orm.entity_manager');
+        $receptionsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+
         switch ($this->params[0]) {
             case 'preteurs':
-                $method = 'getLenderAttributions';
+                $this->receptions = $receptionsRepository->getLenderAttributions();
                 $this->setView('transferts/preteurs');
                 break;
             case 'emprunteurs':
-                $method = 'getBorrowerAttributions';
+                $this->receptions = $receptionsRepository->getBorrowerAttributions();
                 $this->setView('transferts/emprunteurs');
+                break;
+            case 'non_attribues':
+                $this->receptions = $receptionsRepository->findBy(['statusBo' => Receptions::STATUS_PENDING], ['added' => 'DESC', 'idReception' => 'DESC']);
+                $this->setView('transferts/non_attribues');
                 break;
             default:
                 header('Location: ' . $this->lurl . '/sfpmei/default');
@@ -456,7 +464,6 @@ class sfpmeiController extends bootstrap
         }
 
         $this->type             = $this->params[0];
-        $this->receptions       = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->{$method}();
         $this->statusOperations = [
             Receptions::STATUS_PENDING         => 'Reçu',
             Receptions::STATUS_ASSIGNED_MANUAL => 'Manu',
@@ -595,26 +602,28 @@ class sfpmeiController extends bootstrap
         $activeSheet->setCellValueByColumnAndRow(5, 1, 'Date');
 
         foreach ($this->receptions as $index => $reception) {
-            $colIndex = 0;
-            $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getIdReception());
-            $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getMotif());
-            $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, str_replace('.', ',', bcdiv($reception->getMontant(), 100, 2)));
+            $activeSheet->setCellValueByColumnAndRow(0, $index + 2, $reception->getIdReception());
+            $activeSheet->setCellValueByColumnAndRow(1, $index + 2, str_replace('<br>', "\n", $reception->getMotif()));
+            $activeSheet->setCellValueByColumnAndRow(2, $index + 2, str_replace('.', ',', bcdiv($reception->getMontant(), 100, 2)));
 
             if (1 == $reception->getStatusBo() && $reception->getIdUser()) {
-                $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getIdUser()->getFirstname() . ' ' . $reception->getIdUser()->getName() . ' - ' . $reception->getAssignmentDate()->format('d/m/Y à H:i:s'));
+                $activeSheet->setCellValueByColumnAndRow(3, $index + 2, $reception->getIdUser()->getFirstname() . ' ' . $reception->getIdUser()->getName() . ' - ' . $reception->getAssignmentDate()->format('d/m/Y à H:i:s'));
             } else {
-                $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $this->statusOperations[$reception->getStatusBo()]);
+                $activeSheet->setCellValueByColumnAndRow(3, $index + 2, $this->statusOperations[$reception->getStatusBo()]);
             }
 
-            if (null === $reception->getIdProject()) {
-                $activeSheet->setCellValueByColumnAndRow(4, 1, 'ID client');
-                $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getIdClient()->getIdClient());
-            } else {
+            if ($reception->getIdProject()) {
                 $activeSheet->setCellValueByColumnAndRow(4, 1, 'ID projet');
-                $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getIdProject()->getIdProject());
+                $activeSheet->setCellValueByColumnAndRow(4, $index + 2, $reception->getIdProject()->getIdProject());
+            } elseif ($reception->getIdClient()) {
+                $activeSheet->setCellValueByColumnAndRow(4, 1, 'ID client');
+                $activeSheet->setCellValueByColumnAndRow(4, $index + 2, $reception->getIdClient()->getIdClient());
+            } else {
+                $activeSheet->setCellValueByColumnAndRow(4, 1, 'Code SEPA');
+                $activeSheet->setCellValueByColumnAndRow(4, $index + 2, substr($reception->getLigne(), 32, 2));
             }
 
-            $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getAdded()->format('d/m/Y'));
+            $activeSheet->setCellValueByColumnAndRow(5, $index + 2, $reception->getAdded()->format('d/m/Y'));
         }
         return $document;
     }

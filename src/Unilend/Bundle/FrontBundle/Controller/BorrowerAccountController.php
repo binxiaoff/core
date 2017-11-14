@@ -530,9 +530,10 @@ class BorrowerAccountController extends Controller
      *     name="borrower_account_export_lender_details_csv"
      * )
      *
-     * @param $type
-     * @param $projectId
-     * @param $repaymentOrder
+     * @param string   $type
+     * @param int      $projectId
+     * @param int|null $repaymentOrder
+     *
      * @return StreamedResponse
      */
     public function exportCsvWithLenderDetailsAction($type, $projectId, $repaymentOrder)

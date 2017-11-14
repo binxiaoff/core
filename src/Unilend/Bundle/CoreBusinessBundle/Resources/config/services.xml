@@ -154,6 +154,7 @@
             <argument type="service" id="unilend.service.eligibility.eligibility_manager"/>
             <argument type="service" id="logger"/>
             <argument type="service" id="unilend.service_product.product_manager"/>
+            <argument type="service" id="unilend.service.company_manager"/>
         </service>
 
         <service id="unilend.service.external_data_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager">
@@ -297,6 +298,7 @@
             <argument>%url.host_admin%</argument>
             <argument>%slack.default_channel%</argument>
             <argument>%kernel.environment%</argument>
+            <argument type="service" id="logger"/>
         </service>
 
         <service id="unilend.service.attachment_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager">

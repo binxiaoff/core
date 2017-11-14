@@ -601,13 +601,19 @@ class projects extends projects_crud
         return $aLoansAndLenders;
     }
 
-    public function getDuePaymentsAndLenders($iProjectId = null, $iOrder = null)
+    /**
+     * @param null|int $projectId
+     * @param null|int $order
+     *
+     * @return array
+     */
+    public function getDuePaymentsAndLenders($projectId = null, $order = null)
     {
-        if ($iProjectId === null) {
-            $iProjectId = $this->id_project;
+        if ($projectId === null) {
+            $projectId = $this->id_project;
         }
 
-        $sOrder = (isset($iOrder)) ? ' AND ordre = ' . $iOrder : null;
+        $orderQuery = (isset($order)) ? ' AND ordre = ' . $order : null;
 
         $sql = '
             SELECT
@@ -618,21 +624,21 @@ class projects extends projects_crud
                 e.montant,
                 e.capital,
                 e.interets,
-                e.date_echeance_emprunteur_reel as date
+                e.date_echeance_reel as date
             FROM echeanciers e
                 LEFT JOIN wallet w ON w.id = e.id_lender
                 LEFT JOIN clients c ON w.id_client = c.id_client
                 LEFT JOIN companies com ON com.id_client_owner = c.id_client
-            WHERE id_project = ' . $iProjectId . $sOrder;
+            WHERE id_project = ' . $projectId . $orderQuery;
 
         $result                 = $this->bdd->query($sql);
-        $aDuePaymentsAndLenders = array();
+        $duePaymentsAndLenders = [];
 
         while ($record = $this->bdd->fetch_assoc($result)) {
-            $aDuePaymentsAndLenders[] = $record;
+            $duePaymentsAndLenders[] = $record;
         }
 
-        return $aDuePaymentsAndLenders;
+        return $duePaymentsAndLenders;
     }
 
     public function getProblematicProjectsWithUpcomingRepayment()

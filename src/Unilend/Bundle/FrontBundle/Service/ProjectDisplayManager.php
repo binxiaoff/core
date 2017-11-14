@@ -404,10 +404,10 @@ class ProjectDisplayManager
                 $y           = $duration->s;
                 $translation = 'minute-second';
                 break;
-            case $duration->s > 0:
+            case $duration->s >= 0:
             default:
                 $x           = $duration->i;
-                $y           = $duration->s;
+                $y           = max($duration->s, 1);
                 $translation = 'second';
                 break;
         }
