@@ -92,7 +92,8 @@ class societeController extends bootstrap
             ], $company->getSiren()),
             'ratings'                 => $formattedRatings,
             'dates'                   => $dates,
-            'projects'                => json_encode($formattedProjects)
+            'projects'                => $formattedProjects,
+            'remainingDueCapital'     => $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getRemainingDueCapitalForProjects(new \DateTime('NOW'), array_column($formattedProjects, 'id'))
         ]);
     }
 
@@ -284,8 +285,8 @@ class societeController extends bootstrap
                 $projectStatus                        = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->find($status->getIdProjectStatus());
                 $color                                = $this->getColorForProjectStatus($projectStatus->getStatus());
                 $data                                 = [
-                    'start'  => $start->format('Y,m,d'),
-                    'end'    => $status->getAdded()->format('Y,m,d'),
+                    'start'  => $start,
+                    'end'    => $status->getAdded(),
                     'color'  => $color,
                     'label'  => $projectStatus->getLabel(),
                     'type'   => null === $projectNeed ? 'NA' : $projectNeed->getLabel(),

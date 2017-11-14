@@ -81,6 +81,9 @@
 .score-change .text-error {
     color: #F2610C;
 }
+.score-item-xerfi-unilend span {
+    font-size: 13px;
+}
 
 /* Project Status Charts */
 .project-status-chart-legend {

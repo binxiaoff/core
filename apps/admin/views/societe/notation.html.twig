@@ -1,62 +1,13 @@
 {% extends 'layout.html.twig' %}
 
 {% block pluginsCSS %}
-    <link rel="stylesheet" href="{{ adminUrl }}/oneui/css/pages/tool-scores-project-status.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/css/pages/notation-scores-project-status.css">
 {% endblock %}
 
 {% block pluginsJS %}
     <script src="{{ adminUrl }}/oneui/js/plugins/highcharts/highcharts.js"></script>
     <script src="{{ adminUrl }}/oneui/js/plugins/highcharts/modules/xrange.js"></script>
 {% endblock %}
-
-{#{% set projects = [#}
-     {#{#}
-         {#id: '586753',#}
-         {#statuses: [#}
-             {#{ start: '2015, 01, 12', end: '2015, 01, 20', color: '#d0f5d0', label: 'Demande en cours', type: 'Recrutement', amount: '10000' },#}
-             {#{ start: '2015, 01, 20', end: '2015, 01, 25', color: '#aae3c9', label: 'Demande Complète', type: 'Recrutement', amount: '10000' },#}
-             {#{ start: '2015, 01, 25', end: '2015, 02, 01', color: '#98d9d4', label: 'Traitement Commercial', type: 'Recrutement', amount: '10000' },#}
-             {#{ start: '2015, 02, 01', end: '2015, 02, 12', color: '#91c8d9', label: 'Analyse risque', type: 'Recrutement', amount: '10000' },#}
-             {#{ start: '2015, 02, 12', end: '2015, 02, 13', color: '#eccd81', label: 'Abandon', type: 'Recrutement', amount: '10000' }#}
-         {#]#}
-     {#},#}
-     {#{#}
-         {#id: '32323',#}
-         {#statuses: [#}
-             {#{ start: '2015, 01, 08', end: '2015, 01, 18', color: '#d0f5d0', label: 'Demande en cours', type: 'IT', amount: '20000' },#}
-             {#{ start: '2015, 01, 18', end: '2015, 01, 23', color: '#aae3c9', label: 'Demande Complète', type: 'IT', amount: '20000' },#}
-             {#{ start: '2015, 01, 23', end: '2015, 02, 02', color: '#98d9d4', label: 'Traitement Commercial', type: 'IT', amount: '20000' },#}
-             {#{ start: '2015, 02, 02', end: '2015, 02, 10', color: '#91c8d9', label: 'Analyse risque', type: 'IT', amount: '20000' },#}
-             {#{ start: '2015, 02, 10', end: '2015, 02, 13', color: '#80b5d9', label: 'Comité', type: 'IT', amount: '20000' },#}
-         {#]#}
-     {#},#}
-     {#{#}
-         {#id: '18327',#}
-         {#statuses: [#}
-             {#{ start: '2015, 01, 08', end: '2015, 01, 18', color: '#d0f5d0', label: 'Demande en cours', type: 'IT', amount: '20000' },#}
-             {#{ start: '2015, 01, 18', end: '2015, 01, 23', color: '#aae3c9', label: 'Demande Complète', type: 'IT', amount: '20000' },#}
-             {#{ start: '2015, 01, 23', end: '2015, 02, 02', color: '#98d9d4', label: 'Traitement Commercial', type: 'IT', amount: '20000' },#}
-             {#{ start: '2015, 02, 02', end: '2015, 02, 10', color: '#91c8d9', label: 'Analyse risque', type: 'IT', amount: '20000' },#}
-             {#{ start: '2015, 02, 10', end: '2015, 02, 13', color: '#80b5d9', label: 'Comité', type: 'IT', amount: '20000' },#}
-             {#{ start: '2015, 02, 12', end: '2015, 02, 13', color: '#b6babe', label: 'Rejet Comité', type: 'IT', amount: '20000' }#}
-         {#]#}
-     {#},#}
-     {#{#}
-         {#id: '87988',#}
-         {#statuses: [#}
-             {#{ start: '2017, 01, 08', end: '2017, 01, 18', color: '#d0f5d0', label: 'Demande en cours', type: 'Transport', amount: '40000' },#}
-             {#{ start: '2017, 01, 18', end: '2017, 01, 23', color: '#aae3c9', label: 'Demande Complète', type: 'Transport', amount: '40000' },#}
-             {#{ start: '2017, 01, 23', end: '2017, 02, 02', color: '#98d9d4', label: 'Traitement Commercial', type: 'Transport', amount: '40000' },#}
-             {#{ start: '2017, 02, 02', end: '2017, 02, 10', color: '#91c8d9', label: 'Analyse risque', type: 'Transport', amount: '40000' },#}
-             {#{ start: '2017, 02, 10', end: '2017, 02, 13', color: '#80b5d9', label: 'Comité', type: 'Transport', amount: '40000' },#}
-             {#{ start: '2017, 02, 13', end: '2017, 02, 16', color: '#6ea8dc', label: 'Prep funding', type: 'Transport', amount: '40000' },#}
-             {#{ start: '2017, 02, 16', end: '2017, 02, 18', color: '#5293de', label: 'Funding', type: 'Transport', amount: '40000' },#}
-             {#{ start: '2017, 02, 18', end: '2017, 02, 19', color: '#5293de', label: 'Fundé', type: 'Transport', amount: '40000' },#}
-             {#{ start: '2017, 02, 19', end: '2017, 08, 20', color: '#1b88db', label: 'Remboursement', type: 'Transport', amount: '40000' }#}
-         {#]#}
-     {#}#}
-{#] %}#}
-
 
 {% block pageScripts %}
     <script>
@@ -86,7 +37,6 @@
             /*
             * Project Status Chart
             */
-            // Chart Data
             var chartData = [
                 {% for project in projects %}
                     {% set projectIndex = loop.index - 1 %}
@@ -109,13 +59,13 @@
                         data: [
                             {% for status in project.statuses %}
                                 {
-                                    x: Date.UTC({{ status.start }}),
-                                    x2: Date.UTC({{ status.end }}),
+                                    x: Date.UTC({{ status.start|date('Y, m, d') }}),
+                                    x2: Date.UTC({{ status.end|date('Y, m, d') }}),
                                     y: {{ projectIndex }},
-                                    color: '{{ status.color }}',
-                                    status: '{{ status.label }}',
-                                    type: '{{ status.type }}',
-                                    amount: '{{ status.amount|localizedcurrency('EUR') }}'
+                                    color: "{{ status.color }}",
+                                    status: "{{ status.label }}",
+                                    type: "{{ status.type }}",
+                                    amount: "{{ status.amount|localizedcurrency('EUR') }}"
                                 },
                             {% endfor %}
                         ]
@@ -147,7 +97,7 @@
                 lang: {
                     months: ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'],
                     weekdays: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'],
-                    shortMonths: ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aout', 'Sept', 'Oct', 'Nov', 'Déc']
+                    shortMonths: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.']
                 },
             })
             // Initialise chart
@@ -155,6 +105,7 @@
                 chart: {
                     type: 'xrange',
                     zoomType: 'x',
+                    height: {{ projects|length }} > 10 ? {{ projects|length * 40 }} : 400
                 },
 
                 title: {
@@ -182,7 +133,7 @@
                 },
                 plotOptions: {
                     series: {
-                        cursor: 'pointer',
+                        minPointLength: 10,
                         events: {
                             hide: function () {
                                 updateXaxisMax(this.chart)
@@ -190,7 +141,8 @@
                             show: function() {
                                 updateXaxisMax(this.chart)
                             }
-                        }
+                        },
+                        grouping: false
                     }
                 },
                 exporting: { enabled: false },
@@ -251,6 +203,12 @@
                             <a class="h2 font-w300 text-primary">{{ numberRejectedProjects }}</a>
                         </div>
                     </div>
+                    <div class="col-md-2">
+                        <div class="content-mini content-mini-full push" style="background: #f5f5f5;">
+                            <div class="font-s12 font-w600 text-uppercase">Capital restant dû</div>
+                            <a class="h2 font-w300 text-primary">{{ remainingDueCapital|localizedcurrency('EUR') }}</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -284,7 +242,10 @@
                                 <th>Xerfi</th>
                             </tr>
                             <tr>
-                                <th>Xerfi Unilend</th>
+                                <th>
+                                    Xerfi Unilend<br>
+                                    &nbsp;
+                                </th>
                             </tr>
                             <tr>
                                 <td>&nbsp;</td>
@@ -306,7 +267,7 @@
                                                     {%  if ratingInfo.change %}
                                                         <span class="{{ 'fa fa-arrow-' ~ ratingInfo.direction }} {{'text-' ~ ratingInfo.class }}"></span>
                                                     {% endif %}
-                                                    {{ratingInfo.value  }}
+                                                    {{ ratingInfo.value }}
                                                 {% endif %}
                                             </td>
                                     {% endfor %}
@@ -318,7 +279,7 @@
                                                 {%  if ratingInfo.change %}
                                                     <span class="{{ 'fa fa-arrow-' ~ ratingInfo.direction }} {{'text-' ~ ratingInfo.class }}"></span>
                                                 {% endif %}
-                                                {{ratingInfo.value  }}
+                                                {{ ratingInfo.value }}
                                             {% endif %}
                                         </td>
                                     {% endfor %}
@@ -330,7 +291,7 @@
                                                 {%  if ratingInfo.change %}
                                                     <span class="{{ 'fa fa-arrow-' ~ ratingInfo.direction }} {{'text-' ~ ratingInfo.class }}"></span>
                                                 {% endif %}
-                                                {{ratingInfo.value  }}
+                                                {{ ratingInfo.value }}
                                             {% endif %}
                                         </td>
                                     {% endfor %}
@@ -342,7 +303,7 @@
                                                 {%  if ratingInfo.change %}
                                                     <span class="{{ 'fa fa-arrow-' ~ ratingInfo.direction }} {{'text-' ~ ratingInfo.class }}"></span>
                                                 {% endif %}
-                                                {{ratingInfo.value  }}
+                                                {{ ratingInfo.value }}
                                             {% endif %}
                                         </td>
                                     {% endfor %}
@@ -354,7 +315,7 @@
                                                 {%  if ratingInfo.change %}
                                                     <span class="{{ 'fa fa-arrow-' ~ ratingInfo.direction }} {{'text-' ~ ratingInfo.class }}"></span>
                                                 {% endif %}
-                                                {{ratingInfo.value  }}
+                                                {{ ratingInfo.value }}
                                             {% endif %}
                                         </td>
                                     {% endfor %}
@@ -366,7 +327,7 @@
                                                 {%  if ratingInfo.change %}
                                                     <span class="{{ 'fa fa-arrow-' ~ ratingInfo.direction }} {{'text-' ~ ratingInfo.class }}"></span>
                                                 {% endif %}
-                                                {{ratingInfo.value  }}
+                                                {{ ratingInfo.value }}
                                             {% endif %}
                                         </td>
                                     {% endfor %}
@@ -378,7 +339,7 @@
                                                 {%  if ratingInfo.change %}
                                                     <span class="{{ 'fa fa-arrow-' ~ ratingInfo.direction }} {{'text-' ~ ratingInfo.class }}"></span>
                                                 {% endif %}
-                                                {{ratingInfo.value  }}
+                                                <span class="score-item-xerfi-unilend">{{ ratingInfo.value }}</span>
                                             {% endif %}
                                         </td>
                                     {% endfor %}
@@ -415,23 +376,23 @@
                                             <li><span class="ui-commercial-bg"></span> Commercial</li>
                                             <li><span class="ui-analyst-bg"></span> Analyste</li>
                                             <li><span class="ui-comity-bg"></span> Comité</li>
-                                            <li><span class="ui-prep-funding-bg"></span>Funding process</li>
                                             <li>&nbsp;</li>
                                             <li><span class="ui-status-ko-bg"></span> Rejet</li>
-                                            <li><span class="ui-conditions-bg"></span> Conditions suspensives</li>
                                             <li><span class="ui-abandon-bg"></span> Abandon</li>
+                                            <li><span class="ui-conditions-bg"></span> Conditions suspensives</li>
                                         </ul>
                                     </div>
                                     <div class="col-md-6">
                                         <ul>
+                                            <li><span class="ui-prep-funding-bg"></span>Funding process</li>
                                             <li><span class="ui-inprogress-bg"></span> Remboursement</li>
                                             <li><span class="ui-completed-bg"></span> Remboursé</li>
-                                            <li><span class="ui-problem-bg"></span> Problème</li>
-                                            <li><span class="ui-loss-bg"></span> Défaut</li>
                                             <li>&nbsp;</li>
                                             <li>&nbsp;</li>
                                             <li>&nbsp;</li>
                                             <li><span class="ui-debt-collection-bg"></span> Funding KO/Prêt refusé</li>
+                                            <li><span class="ui-problem-bg"></span> Problème</li>
+                                            <li><span class="ui-loss-bg"></span> Défaut</li>
                                         </ul>
                                     </div>
                                 </div>
