@@ -12,6 +12,7 @@
     text-align: right;
     padding-right: 45px!important;
     line-height: 20px;
+    height: 40px;
 }
 .scores-table-overscroll {
     overflow-x: scroll;
@@ -20,6 +21,10 @@
 .scores-table th, .scores-table td {
     border-left-width: 30px!important;
     text-align: center;
+}
+.scores-table tr {
+    font-weight: 600;
+    height: 40px!important;
 }
 .scores-table td {
     font-weight: 600;
@@ -80,9 +85,6 @@
 }
 .score-change .text-error {
     color: #F2610C;
-}
-.score-item-xerfi-unilend span {
-    font-size: 13px;
 }
 
 /* Project Status Charts */

@@ -18,7 +18,7 @@
              * Company scores table
              */
             var $scoresTable = $('.scores-table')
-            var columnWidth = 120
+            var columnWidth = 100
             var columns = $scoresTable.find('tr:eq(0) td').length
             var tableWidth = columns * columnWidth
             var blockWidth = $scoresTable.parent().width()
@@ -59,8 +59,8 @@
                         data: [
                             {% for status in project.statuses %}
                                 {
-                                    x: Date.UTC({{ status.start|date('Y, m, d') }}),
-                                    x2: Date.UTC({{ status.end|date('Y, m, d') }}),
+                                    x: Date.UTC({{ status.start|date('Y, m, d, H') }}),
+                                    x2: Date.UTC({{ status.end|date('Y, m, d, H') }}),
                                     y: {{ projectIndex }},
                                     color: "{{ status.color }}",
                                     status: "{{ status.label }}",
@@ -169,9 +169,17 @@
  {% endblock %}
 
 {% block pageHeader %}
-    <h1 class="page-heading push">
-        {{ company.name }}
-    </h1>
+    <div class="row push">
+        <div class="col-md-6">
+            <h1 class="page-heading">
+                {{ company.name }}
+            </h1>
+        </div>
+        <div class="col-md-6 text-right">
+            <a class="btn btn-default btn-sm" href="{{ app.adminUrl }}/emprunteurs/edit/{{ company.idClientOwner }}">Page emprunteur
+                <span class="fa fa-chevron-right push-5-l"></span></a>
+        </div>
+    </div>
 {% endblock %}
 
 {% block content %}
@@ -262,7 +270,7 @@
                                 </tr>
                                 <tr>
                                     {% for ratingInfo in ratings[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyRating::TYPE_EULER_HERMES_GRADE')] %}
-                                            <td {% if ratingInfo.change %}class="score-change"{% endif %}>
+                                            <td {% if ratingInfo.change %}class="score-change"{% endif %} style="width: 130px;">
                                                 {% if ratingInfo.value is not empty %}
                                                     {%  if ratingInfo.change %}
                                                         <span class="{{ 'fa fa-arrow-' ~ ratingInfo.direction }} {{'text-' ~ ratingInfo.class }}"></span>
@@ -339,7 +347,7 @@
                                                 {%  if ratingInfo.change %}
                                                     <span class="{{ 'fa fa-arrow-' ~ ratingInfo.direction }} {{'text-' ~ ratingInfo.class }}"></span>
                                                 {% endif %}
-                                                <span class="score-item-xerfi-unilend">{{ ratingInfo.value }}</span>
+                                                {{ ratingInfo.value }}
                                             {% endif %}
                                         </td>
                                     {% endfor %}

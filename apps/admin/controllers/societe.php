@@ -5,13 +5,16 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRating;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatusHistory;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class societeController extends bootstrap
 {
     public function initialize()
     {
         parent::initialize();
-        $this->users->checkAccess();
+        $this->users->checkAccess(Zones::ZONE_LABEL_RISK);
+
+        $this->menu_admin = 'emprunteurs';
     }
 
     public function _notation()
@@ -121,7 +124,7 @@ class societeController extends bootstrap
             }
 
             $nextIndex = $index + 1;
-            if ($index > 0 && $ratings[$nextIndex]['date'] == $ratings[$index]['date']) {
+            if ($index > 0 && isset($ratings[$nextIndex]['date']) && $ratings[$nextIndex]['date'] == $ratings[$index]['date']) {
                 continue;
             }
 
