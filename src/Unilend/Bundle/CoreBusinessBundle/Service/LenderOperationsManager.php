@@ -190,13 +190,12 @@ class LenderOperationsManager
                 }
             }
 
-            // When a bid is partially rejected, as long as we update bid amount, we loose its intial amount. This is a (dirty) workaround to find out initial amount
+            // When a bid is partially rejected, as long as we update bid amount, we loose its initial amount. This is a (dirty) workaround to find out initial amount
             if (
                 $previousHistoryLineIndex !== null
                 && in_array($lenderOperations[$previousHistoryLineIndex]['label'], [self::OP_BID, self::OP_AUTOBID, self::OP_REFUSED_BID, self::OP_REFUSED_AUTOBID])
-                && $lenderOperations[$previousHistoryLineIndex]['available_balance'] - $historyLine['available_balance'] != $lenderOperations[$previousHistoryLineIndex]['amount']
             ) {
-                $lenderOperations[$previousHistoryLineIndex]['amount'] = $walletHistory[$previousHistoryLineIndex]['available_balance'] - $historyLine['available_balance'];
+                $lenderOperations[$previousHistoryLineIndex]['amount'] = round(bcsub($historyLine['committed_balance'], $walletHistory[$previousHistoryLineIndex]['committed_balance'], 4), 2);
             }
 
             $lenderOperations[$index] = $historyLine;
@@ -283,8 +282,8 @@ class LenderOperationsManager
                 return array_merge(self::PROVISION_TYPES, self::WITHDRAW_TYPES);
             case self::FILTER_PROVISION:
                 return self::PROVISION_TYPES;
-            case self::FILTER_PROVISION_WITHDRAW:
-                return self::PROVISION_TYPES;
+            case self::FILTER_WITHDRAW:
+                return self::WITHDRAW_TYPES;
             case self::FILTER_OFFERS:
                 return self::OFFER_TYPES;
             case self::FILTER_REPAYMENT:

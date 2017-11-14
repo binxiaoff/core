@@ -1,11 +1,11 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyIdentityDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 
 class companyController extends bootstrap
 {
@@ -85,7 +85,7 @@ class companyController extends bootstrap
                 if ($altaresEstablishmentIdentity instanceof EstablishmentIdentityDetail) {
                     $companyIdentity['phoneNumber'] = $altaresEstablishmentIdentity->getPhoneNumber();
                 }
-                if (false === empty($infoLegaleIdentity->getDirectors())) {
+                if (false === empty($infoLegaleIdentity->getDirectors()) && 0 < $infoLegaleIdentity->getDirectors()->count()) {
                     $companyIdentity['title']          = $infoLegaleIdentity->getDirectors()->first()->getTitle();
                     $companyIdentity['ownerName']      = $infoLegaleIdentity->getDirectors()->first()->getName();
                     $companyIdentity['ownerFirstName'] = $infoLegaleIdentity->getDirectors()->first()->getFirstName();

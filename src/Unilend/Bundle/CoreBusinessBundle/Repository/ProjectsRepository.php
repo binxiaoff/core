@@ -36,7 +36,7 @@ class ProjectsRepository extends EntityRepository
 
         $statement = $this->getEntityManager()->getConnection()->executeCacheQuery(
             $query,
-            ['lenderId' => $lenderId, 'status' => \projects_status::REMBOURSEMENT],
+            ['lenderId' => $lenderId, 'status' => ProjectsStatus::REMBOURSEMENT],
             ['lenderId' => PDO::PARAM_INT, 'status' => PDO::PARAM_INT],
             new QueryCacheProfile(CacheKeys::SHORT_TIME, md5(__METHOD__))
         );

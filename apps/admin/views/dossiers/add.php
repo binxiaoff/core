@@ -46,7 +46,7 @@
     });
 </script>
 <div id="contenu">
-    <h1>Création Dossier</h1>
+    <h1>Création projet</h1>
     <?php if (isset($this->params[0]) && $this->params[0] == 'create') : ?>
         <form action="<?= $this->lurl ?>/dossiers/add" method="post" onsubmit="$('#link_search').trigger('click'); return false;">
             <div class="choose-client">

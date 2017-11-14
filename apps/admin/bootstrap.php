@@ -61,11 +61,11 @@ class bootstrap extends Controller
                 ],
                 [
                     'title' => 'Campagnes',
-                    'uri'   => 'partenaires'
+                    'uri'   => 'campagnes'
                 ],
                 [
                     'title' => 'Types de campagnes',
-                    'uri'   => 'partenaires/types'
+                    'uri'   => 'campagnes/types'
                 ],
                 [
                     'title' => 'Grille de taux',
@@ -124,7 +124,7 @@ class bootstrap extends Controller
                     'uri'   => 'stats/requete_crs_dac'
                 ],
                 [
-                    'title' => 'Éligibilité des dossiers',
+                    'title' => 'Éligibilité des projets',
                     'uri'   => 'stats/projects_eligibility'
                 ],
                 [
@@ -197,7 +197,7 @@ class bootstrap extends Controller
                     'uri'   => 'prescripteurs/gestion'
                 ],
                 [
-                    'title' => 'Dossiers en funding',
+                    'title' => 'Projets en funding',
                     'uri'   => 'dossiers/funding '
                 ],
                 [
@@ -226,7 +226,7 @@ class bootstrap extends Controller
                 ],
                 [
                     'title' => 'Partenaires',
-                    'uri'   => 'partner'
+                    'uri'   => 'partenaires'
                 ],
                 [
                     'title' => 'Surveillance données risque',
@@ -338,6 +338,10 @@ class bootstrap extends Controller
                 [
                     'title' => 'Transferts de fonds emprunteurs',
                     'uri'   => 'sfpmei/transferts/emprunteurs',
+                ],
+                [
+                    'title' => 'Opérations non attribuées',
+                    'uri'   => 'sfpmei/transferts/non_attribues',
                 ],
                 [
                     'title' => 'Exports',

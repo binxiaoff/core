@@ -205,6 +205,8 @@ EOF
      */
     private function processGreenPointResponse(array $response, array $requests)
     {
+        $bankAccountManager = $this->getContainer()->get('unilend.service.bank_account_manager');
+        $logger             = $this->getContainer()->get('monolog.logger.console');
         /**
          * @var  int                  $requestId
          * @var  GreenpointAttachment $greenPointAttachment
@@ -234,6 +236,15 @@ EOF
                 ->setValidationStatus($greenPointData['greenpoint_attachment']['validation_status'])
                 ->setValidationStatusLabel($greenPointData['greenpoint_attachment']['validation_status_label']);
             $entityManager->flush($greenPointAttachment);
+
+            if (AttachmentType::RIB === $attachment->getType()->getId() && GreenpointAttachment::STATUS_VALIDATION_VALID === $greenPointAttachment->getValidationStatus()) {
+                $bankAccountToValidate = $attachment->getBankAccount();
+                if (null === $bankAccountToValidate) {
+                    $logger->error('Lender has no associated bank account - Client: ' . $attachment->getClient()->getIdClient(), ['methode' => __METHOD__]);
+                } else {
+                    $bankAccountManager->validateBankAccount($bankAccountToValidate);
+                }
+            }
 
             $greenPointAttachmentDetails = new GreenpointAttachmentDetail();
             $greenPointAttachmentDetails->setIdGreenpointAttachment($greenPointAttachment)
