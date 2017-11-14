@@ -298,7 +298,7 @@
                                 <td>{{ "universign_status-label-#{ declaration.status }"|trans }}</td>
                                 <td class="text-center">
                                     {% if declaration.name is not empty %}
-                                        <a href="{{ app.adminUrl }}/protected/beneficial_owner/{{ declaration.name }}" class="btn btn-default btn-xs" data-toggle="tooltip" title="Télécharger la déclaration"><span class="fa fa-download"></span></a>
+                                        <a href="{{ app.adminUrl }}/protected/beneficiaires_effectifs/{{ declaration.name }}" class="btn btn-default btn-xs" data-toggle="tooltip" title="Télécharger la déclaration"><span class="fa fa-download"></span></a>
                                     {% endif %}
                                     {% if declaration.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\UniversignEntityInterface::STATUS_PENDING') %}
                                         <a href="{{ app.adminUrl }}/beneficiaires_effectifs/send_email/{{ declaration.idDeclaration.idCompany.idCompany }}/{{ declaration.idProject.idProject }}" class="btn btn-default btn-xs" data-toggle="tooltip" title="Renvoyer l'email de signature"><span class="fa fa-envelope"></span></a>
