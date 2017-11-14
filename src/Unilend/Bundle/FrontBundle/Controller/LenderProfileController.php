@@ -18,9 +18,11 @@ use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
@@ -783,22 +785,15 @@ class LenderProfileController extends Controller
         $template['attachmentsList'] = '';
         $template['bankForm']        = null;
 
-        $ribAttachment = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($client->id_client, AttachmentType::RIB);
-//        if (
-//            $ribAttachment instanceof Attachment
-//            && $ribAttachment->getGreenpointAttachment() instanceof GreenpointAttachment
-//            && $ribAttachment->getGreenpointAttachment()->getValidationStatus() < 8
-//        ) {
-            /** @var BankAccount $bankAccount */
-            $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client->id_client);
-            $bankAccountForm = $this->createFormBuilder()
-                ->add('bankAccount', BankAccountType::class)
-                ->getForm();
+        $ribAttachment   = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($client->id_client, AttachmentType::RIB);
+        $bankAccount     = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client->id_client);
+        $bankAccountForm = $this->createFormBuilder()
+            ->add('bankAccount', BankAccountType::class)
+            ->getForm();
 
-            $bankAccountForm->get('bankAccount')->get('iban')->setData($bankAccount->getIban());
-            $bankAccountForm->get('bankAccount')->get('bic')->setData($bankAccount->getBic());
-            $template['bankForm'] = $bankAccountForm->createView();
-//        }
+        $bankAccountForm->get('bankAccount')->get('iban')->setData($bankAccount->getIban());
+        $bankAccountForm->get('bankAccount')->get('bic')->setData($bankAccount->getBic());
+        $template['bankForm'] = $bankAccountForm->createView();
 
         if (false === empty($completenessRequestContent)) {
             $oDOMElement = new \DOMDocument();
@@ -807,7 +802,11 @@ class LenderProfileController extends Controller
             if ($oList->length > 0 && $oList->item(0)->childNodes->length > 0) {
                 $template['attachmentsList'] = $oList->item(0)->C14N();
             }
-        } elseif (null !== $ribAttachment) {
+        } elseif (
+            null !== $ribAttachment
+            && $ribAttachment->getGreenpointAttachment() instanceof GreenpointAttachment
+            && $ribAttachment->getGreenpointAttachment()->getValidationStatus() < 8
+        ) {
             $template['attachmentsList'] = '<ul><li>' . $ribAttachment->getType()->getLabel() . '</li></ul>';
         }
 

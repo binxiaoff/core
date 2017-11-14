@@ -251,18 +251,36 @@ $doc.on('ready', function () {
 
     updateNotificationSettings()
 
-    $doc.on('change', 'select[name="files[file]"]', function () {
-        console.log('selected: ' + $(this).val())
-        if (3 == $(this).val()) {
-            var bankAccount = $('#completeness-bank-account')
-            bankAccount.collapse('show')
-            bankAccount.removeClass('disabled')
+    $doc.on('change', '#form-lender-completeness select[name^="files["]', function () {
+        var ribDocumentId = $('#document-id-rib').val()
+        var $bankAccount   = $('#completeness-bank-account')
+
+        if (ribDocumentId === $(this).val()) {
+            $bankAccount.collapse('show')
+            $bankAccount.removeClass('disabled')
         } else {
-            var extraFiles = $('.form-extrafiles-list');
-            extraFiles.find('select[name="files[file]"]').each(function () {
-                console.log($(this))
-            })
-            // check if there is no selected option with value 3 (file type RIB), then add class disabled to the above div and hide it using .collapse('hide')
+            hideBankDetails(ribDocumentId, $bankAccount)
         }
     })
+
+    $doc.on('FileAttach:removed', '.file-upload-extra .ui-fileattach', function (event) {
+        var ribDocumentId = $('#document-id-rib').val()
+        var $bankAccount   = $('#completeness-bank-account')
+        hideBankDetails(ribDocumentId, $bankAccount)
+    })
+
+    function hideBankDetails(ribDocumentId, $bankAccount) {
+        var ribSelected = false
+        var $extraFiles  = $('.form-extrafiles-list');
+        $extraFiles.find('select[name^="files["]').each(function () {
+            if (ribDocumentId === $(this).find(':selected').val()) {
+                ribSelected = true
+                return
+            }
+        })
+        if (false === ribSelected) {
+            $bankAccount.collapse('hide')
+            $bankAccount.addClass('disabled')
+        }
+    }
 })
