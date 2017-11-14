@@ -55,48 +55,22 @@ class societeController extends bootstrap
         $allProjects        = $projectsRepository->findProjectsBySiren($company->getSiren());
         $formattedProjects  = $this->formatProjectData($allProjects);
 
-        $ongoingProjectStatus = [
-            ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION,
-            ProjectsStatus::SIMULATION,
-            ProjectsStatus::INCOMPLETE_REQUEST,
-            ProjectsStatus::COMPLETE_REQUEST,
-            ProjectsStatus::POSTPONED,
-            ProjectsStatus::COMMERCIAL_REVIEW,
-            ProjectsStatus::COMMERCIAL_REJECTION,
-            ProjectsStatus::PENDING_ANALYSIS,
-            ProjectsStatus::ANALYSIS_REVIEW,
-            ProjectsStatus::COMITY_REVIEW,
-            ProjectsStatus::SUSPENSIVE_CONDITIONS,
-            ProjectsStatus::PREP_FUNDING,
-            ProjectsStatus::A_FUNDER,
-            ProjectsStatus::AUTO_BID_PLACED,
-            ProjectsStatus::EN_FUNDING,
-            ProjectsStatus::BID_TERMINATED,
-            ProjectsStatus::FUNDE,
-            ProjectsStatus::FUNDING_KO,
-            ProjectsStatus::PRET_REFUSE,
-            ProjectsStatus::REMBOURSEMENT,
-            ProjectsStatus::LOSS
-        ];
-
         $this->render(null, [
-            'company'                 => $company,
-            'numberOngoingProjects'   => $projectsRepository->getCountProjectsByStatusAndSiren($ongoingProjectStatus, $company->getSiren()),
-            'numberRepaidProjects'    => $projectsRepository->getCountProjectsByStatusAndSiren([
-                ProjectsStatus::REMBOURSE,
-                ProjectsStatus::REMBOURSEMENT_ANTICIPE
-            ], $company->getSiren()),
-            'numberAbandonedProjects' => $projectsRepository->getCountProjectsByStatusAndSiren([ProjectsStatus::ABANDONED], $company->getSiren()),
-            'numberRejectedProjects'  => $projectsRepository->getCountProjectsByStatusAndSiren([
+            'company'                   => $company,
+            'numberOngoingProjects'     => $projectsRepository->getCountProjectsByStatusAndSiren(array_merge(ProjectsStatus::SALES_TEAM, ProjectsStatus::RISK_TEAM), $company->getSiren()),
+            'numberRepaidProjects'      => $projectsRepository->getCountProjectsByStatusAndSiren([ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE], $company->getSiren()),
+            'numberProjectsInRepayment' => $projectsRepository->getCountProjectsByStatusAndSiren([ProjectsStatus::REMBOURSEMENT], $company->getSiren()),
+            'numberAbandonedProjects'   => $projectsRepository->getCountProjectsByStatusAndSiren([ProjectsStatus::ABANDONED], $company->getSiren()),
+            'numberRejectedProjects'    => $projectsRepository->getCountProjectsByStatusAndSiren([
                 ProjectsStatus::NOT_ELIGIBLE,
                 ProjectsStatus::COMITY_REJECTION,
                 ProjectsStatus::ANALYSIS_REJECTION,
                 ProjectsStatus::COMMERCIAL_REJECTION
             ], $company->getSiren()),
-            'ratings'                 => $formattedRatings,
-            'dates'                   => $dates,
-            'projects'                => $formattedProjects,
-            'remainingDueCapital'     => $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getRemainingDueCapitalForProjects(new \DateTime('NOW'), array_column($formattedProjects, 'id'))
+            'ratings'                   => $formattedRatings,
+            'dates'                     => $dates,
+            'projects'                  => $formattedProjects,
+            'remainingDueCapital'       => $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getRemainingDueCapitalForProjects(new \DateTime('NOW'), array_column($formattedProjects, 'id'))
         ]);
     }
 
@@ -276,27 +250,44 @@ class societeController extends bootstrap
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
+        $finalProjectStatus = [
+            ProjectsStatus::NOT_ELIGIBLE,
+            ProjectsStatus::ABANDONED,
+            ProjectsStatus::COMMERCIAL_REJECTION,
+            ProjectsStatus::ANALYSIS_REJECTION,
+            ProjectsStatus::COMITY_REJECTION,
+            ProjectsStatus::REMBOURSE,
+            ProjectsStatus::REMBOURSEMENT_ANTICIPE,
+            ProjectsStatus::LOSS
+        ];
+
         /** @var Projects $project */
         foreach($projects as $index => $project) {
-            $projectStatus                = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->findBy(['idProject' => $project->getIdProject()]);
-            $start                        = $project->getAdded();
+            $projectStatusHistory         = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->findBy(['idProject' => $project->getIdProject()]);
             $projectNeed                  = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectNeed')->find($project->getIdProjectNeed());
             $projectDetails[$index]['id'] = $project->getIdProject();
 
             /** @var ProjectsStatusHistory $status */
-            foreach ($projectStatus as $status){
-                $projectStatus                        = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->find($status->getIdProjectStatus());
-                $color                                = $this->getColorForProjectStatus($projectStatus->getStatus());
+            foreach ($projectStatusHistory as $key => $status) {
+                $nextKey       = $key + 1;
+                $projectStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->find($status->getIdProjectStatus());
+                $color         = $this->getColorForProjectStatus($projectStatus->getStatus());
+
+                if (isset($projectStatusHistory[$nextKey])) {
+                    $end = $projectStatusHistory[$nextKey]->getAdded();
+                } else {
+                    $end = in_array($projectStatus->getStatus(), $finalProjectStatus) ? $status->getAdded() : new \DateTime('NOW');
+                }
+
                 $data                                 = [
-                    'start'  => $start,
-                    'end'    => $status->getAdded(),
+                    'start'  => $status->getAdded(),
+                    'end'    => $end,
                     'color'  => $color,
                     'label'  => $projectStatus->getLabel(),
                     'type'   => null === $projectNeed ? 'NA' : $projectNeed->getLabel(),
                     'amount' => $project->getAmount()
                 ];
                 $projectDetails[$index]['statuses'][] = $data;
-                $start                                = $status->getAdded();
             }
         }
 
