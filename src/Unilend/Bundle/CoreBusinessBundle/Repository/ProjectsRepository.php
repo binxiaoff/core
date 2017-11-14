@@ -36,7 +36,7 @@ class ProjectsRepository extends EntityRepository
 
         $statement = $this->getEntityManager()->getConnection()->executeCacheQuery(
             $query,
-            ['lenderId' => $lenderId, 'status' => \projects_status::REMBOURSEMENT],
+            ['lenderId' => $lenderId, 'status' => ProjectsStatus::REMBOURSEMENT],
             ['lenderId' => PDO::PARAM_INT, 'status' => PDO::PARAM_INT],
             new QueryCacheProfile(CacheKeys::SHORT_TIME, md5(__METHOD__))
         );
@@ -902,7 +902,7 @@ class ProjectsRepository extends EntityRepository
     {
         $query = '
             SELECT
-              COUNT(p.id_project) AS amount,
+              COUNT(DISTINCT p.id_project) AS amount,
               (' . $this->getCohortQuery($groupFirstYears) . ') AS cohort
             FROM projects p
               INNER JOIN echeanciers_emprunteur ON echeanciers_emprunteur.id_project = p.id_project 
@@ -934,7 +934,7 @@ class ProjectsRepository extends EntityRepository
                                             WHERE ps2.status = ' . ProjectsStatus::PROBLEME . '
                                               AND psh2.id_project = echeanciers_emprunteur.id_project
                                             ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
-                                            LIMIT 1)) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '), TRUE, FALSE) = :healthy
+                                            LIMIT 1)) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '), FALSE, TRUE) = :healthy
             GROUP BY cohort';
 
         $statement = $this->getEntityManager()->getConnection()->executeQuery(

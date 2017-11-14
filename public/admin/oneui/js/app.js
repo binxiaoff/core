@@ -65,15 +65,26 @@ var App = function() {
 
         if ($lMain.length) {
             uiHandleMain();
-
-            jQuery(window).on('resize orientationchange', function(){
-                clearTimeout($resizeTimeout);
-
-                $resizeTimeout = setTimeout(function(){
-                    uiHandleMain();
-                }, 150);
-            });
         }
+
+        if (jQuery('[data-equal-height]').length) {
+            uiEqualHeights();
+        }
+
+        jQuery(window).on('resize orientationchange', function(){
+            clearTimeout($resizeTimeout);
+
+            $resizeTimeout = setTimeout(function(){
+                if ($lMain.length) {
+                    uiHandleMain();
+                }
+
+                if (jQuery('[data-equal-height]').length) {
+                    uiEqualHeights();
+                    console.log('ss')
+                }
+            }, 150);
+        });
 
         // Init sidebar and side overlay custom scrolling
         uiHandleScroll('init');
@@ -568,74 +579,35 @@ var App = function() {
         }
     };
 
-    // Set active color themes functionality
-    var uiHandleTheme = function() {
-        var $cssTheme = jQuery('#css-theme');
-        var $cookies  = $lPage.hasClass('enable-cookies') ? true : false;
+    // Set equal heights
+    var uiEqualHeights = function () {
+        var equalHeights = {}
 
-        // If cookies are enabled
-        if ($cookies) {
-            var $theme  = Cookies.get('colorTheme') ? Cookies.get('colorTheme') : false;
+        // Iterate over items with [data-equal-height] attribute
+        $('[data-equal-height]').each(function (i, elem) {
+            var $elem = $(elem)
 
-            // Update color theme
-            if ($theme) {
-                if ($theme === 'default') {
-                    if ($cssTheme.length) {
-                        $cssTheme.remove();
-                    }
-                } else {
-                    if ($cssTheme.length) {
-                        $cssTheme.attr('href', $theme);
-                    } else {
-                        jQuery('#css-main')
-                            .after('<link rel="stylesheet" id="css-theme" href="' + $theme + '">');
-                    }
-                }
-            }
+            // Equal height by group
+            var groupName = $elem.attr('data-equal-height-group') || 'default'
 
-            $cssTheme = jQuery('#css-theme');
-        }
+            // Reset inline css height
+            $elem.css('height', '')
 
-        // Set the active color theme link as active
-        jQuery('[data-toggle="theme"][data-theme="' + ($cssTheme.length ? $cssTheme.attr('href') : 'default') + '"]')
-            .parent('li')
-            .addClass('active');
+            // Calc eleme's height
+            var elemHeight = $elem.outerHeight()
 
-        // When a color theme link is clicked
-        jQuery('[data-toggle="theme"]').on('click', function(){
-            var $this   = jQuery(this);
-            var $theme  = $this.data('theme');
+            // Create value to save max height to
+            if (!equalHeights.hasOwnProperty(groupName)) equalHeights[groupName] = 0
 
-            // Set this color theme link as active
-            jQuery('[data-toggle="theme"]')
-                .parent('li')
-                .removeClass('active');
+            // Set max height
+            if (elemHeight > equalHeights[groupName]) equalHeights[groupName] = elemHeight
 
-            jQuery('[data-toggle="theme"][data-theme="' + $theme + '"]')
-                .parent('li')
-                .addClass('active');
+        }).each(function (i, elem) {
+            var $elem = $(elem)
+            var groupName = $elem.attr('data-equal-height-group') || 'default'
 
-            // Update color theme
-            if ($theme === 'default') {
-                if ($cssTheme.length) {
-                    $cssTheme.remove();
-                }
-            } else {
-                if ($cssTheme.length) {
-                    $cssTheme.attr('href', $theme);
-                } else {
-                    jQuery('#css-main')
-                        .after('<link rel="stylesheet" id="css-theme" href="' + $theme + '">');
-                }
-            }
-
-            $cssTheme = jQuery('#css-theme');
-
-            // If cookies are enabled, save the new active color theme
-            if ($cookies) {
-                Cookies.set('colorTheme', $theme, { expires: 7 });
-            }
-        });
+            $elem.height(equalHeights[groupName])
+        })
     };
 
     // Scroll to element animation helper
@@ -778,14 +750,13 @@ var App = function() {
     var uiHelperDataTables = function() {
         // DataTables Bootstrap integration
         var $DataTable = $.fn.dataTable
-        $.extend( true, $DataTable.defaults, {
+        $.extend(true, $DataTable.defaults, {
             dom:
             "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
             "<'row'<'col-sm-12'tr>>" +
             "<'row'<'col-sm-6'i><'col-sm-6'p>>",
             renderer: 'bootstrap',
             oLanguage: {
-                sLengthMenu: "_MENU_",
                 sProcessing:     "Traitement en cours...",
                 sSearch:         "Rechercher&nbsp;:",
                 sLengthMenu:     "Afficher _MENU_ &eacute;l&eacute;ments",
@@ -798,13 +769,9 @@ var App = function() {
                 sEmptyTable:     "Aucune donn&eacute;e disponible dans le tableau",
                 oPaginate: {
                     sFirst:      "Premier",
-                    sPrevious:   "Pr&eacute;c&eacute;dent",
-                    sNext:       "Suivant",
+                    sPrevious:   '<i class="fa fa-angle-left"></i>',
+                    sNext:       '<i class="fa fa-angle-right"></i>',
                     sLast:       "Dernier"
-                },
-                oPaginate: {
-                    sPrevious: '<i class="fa fa-angle-left"></i>',
-                    sNext: '<i class="fa fa-angle-right"></i>'
                 }
             }
         })
@@ -827,8 +794,10 @@ var App = function() {
                         api.page(e.data.action).draw(false)
                     }
                 }
+
                 for (i = 0, ien = buttons.length; i < ien; i++) {
                     button = buttons[i]
+
                     if ($.isArray(button)) {
                         attach(container, button)
                     }
@@ -935,17 +904,20 @@ var App = function() {
                 return b - a
             }
         })
-        // French date sorting
+        // French date sorting - dd/mm/yy or dd/mm/yyyy
         $.extend($DataTable.ext.oSort, {
             'date-fr-pre': function (a) {
-                a = (a === '-' || a === '') ? 0 : a.replace(/([\d]{2})\/([\d]{2})\/([\d]{4})/g, '')
-                return parseFloat(a)
+                if (a == null || a == '') {
+                    return 0
+                }
+                var date = a.split('/')
+                return (date[2] + date[1] + date[0]) * 1;
             },
             'date-fr-asc': function (a, b) {
-                return a - b
+                return ((a < b) ? -1 : ((a > b) ? 1 : 0));
             },
             'date-fr-desc': function (a, b) {
-                return b - a
+                return ((a < b) ? 1 : ((a > b) ? -1 : 0));
             }
         })
         // Show page of row
@@ -995,17 +967,28 @@ var App = function() {
                     unsortableColumns = {targets: [self.$elem.find('thead td:last-child').index()], orderable: false}
                 }
             }
+            var $firstRow = self.$elem.find('tbody tr:first-child')
+            var columnIndexes = []
             // Sortable currency columns
             var currencyColumns = {}
-            var $tdEuro = self.$elem.find('td:contains(€)')
+            var $tdEuro = $firstRow.find('td:contains(€)')
             if ($tdEuro.length) {
-                var $trEuro = $tdEuro.first().parent()
-                var indexes = []
-                $trEuro.find('td:contains(€)').each(function(){
-                    indexes.push($(this).index())
+                $tdEuro.each(function(){
+                    columnIndexes.push($(this).index())
                 })
-                currencyColumns = {targets: indexes, type: 'formatted-num'}
+                currencyColumns = {targets: columnIndexes, type: 'formatted-num'}
             }
+            // Sortable date columns
+            var dateColumns = {}
+            var datePattern = new RegExp('[0-9]{2}/[0-9]{2}/[0-9]{4}')
+            columnIndexes = []
+            $firstRow.children('td').each(function () {
+                if (datePattern.test($(this).text())) {
+                    columnIndexes.push($(this).index())
+                }
+            })
+            dateColumns = {targets: columnIndexes, type: 'date-fr'}
+
             // Rows per page
             var pageLength = self.$elem.data('table-pagelength')
             if (typeof pageLength === 'undefined')
@@ -1031,7 +1014,7 @@ var App = function() {
             self.dtInstance = self.$elem.DataTable({
                 lengthChange: lengthChange,
                 pageLength: pageLength,
-                columnDefs: [unsortableColumns, currencyColumns],
+                columnDefs: [unsortableColumns, currencyColumns, dateColumns],
                 searching: search
             })
 
@@ -1094,7 +1077,8 @@ var App = function() {
                 var name = $th.data('editor-name')
                 var type = $th.data('editor-type')
                 var options = $th.data('editor-options')
-                var required = (typeof $th.data('editor-optional') === 'undefined') ? true : false
+                var required = (typeof $th.data('editor-optional') === 'undefined')
+                var disabled = (typeof $th.data('editor-disabled') !== 'undefined')
                 var label = $th.text()
                 if (typeof name === 'undefined' || typeof type === 'undefined') {
                     if (!$th.is('[data-table-actionscolumn]')) {
@@ -1113,16 +1097,16 @@ var App = function() {
                         }
                         options = parsedOptions
                     }
-                    fields.push({name: name, type: type, label: label, options: options, required: required})
+                    fields.push({name: name, type: type, label: label, options: options, required: required, disabled: disabled })
                 }
             })
             return fields
         }
         DT.prototype.form = function(fields) {
             var self = this
-            var fields = (typeof fields === 'undefined') ? self.fields() : fields
             var html = ''
-            for (var $i=0; $i < fields.length; $i++) {
+            fields = (typeof fields === 'undefined') ? self.fields() : fields
+            for (var $i = 0; $i < fields.length; $i++) {
                 var field         = fields[$i]
                 var name          = field.name
                 var label         = field.label
@@ -1132,86 +1116,98 @@ var App = function() {
                 var value         = (typeof field.value === 'undefined') ? '' : field.value
                 var options       = field.options
 
-                html += '<div class="form-group push-10"><label>' + label + '</label>' + requiredLabel
-                // Text / Email
-                if (type === 'text' || type === 'email') {
-                    html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '">'
-                // Datepicker
-                } else if (type === 'date') {
-                    html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '" data-date-format="dd/mm/yyyy">'
-                // Numerical - currency, number of days, etc.
-                } else if (type === 'numerical') {
-                    value = (value === '') ? '' : parseFloat(value.replace(',', '.').replace(/[^\d\-\.]/g, ''))
-                    html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '">'
-                // Radio
-                } else if (type === 'radio' || type === 'select' || type == 'checkbox') {
-                    if (type === 'select')
-                        html += '<select class="form-control' + required + '" name="' + name + '"><option value="0">Selectionner</option>'
-                    else
-                        html += '<br>'
-                    for (var $l = 0; $l < options.length; $l++) {
-                        var option = options[$l]
-                        var choice
-                        if (type === 'radio') {
-                            choice = (value === option.text) ? 'checked' : ''
-                            html += '<label class="css-input css-radio css-radio-sm css-radio-default push-10-r">' +
-                                '<input type="radio"  name="' + name + '" value="' + option.id + '" ' + choice + ' class="' + required + '">' +
-                                '<span></span> ' + option.text +
-                                '</label>'
-                        } else if (type === 'select') {
-                            choice = (value === option.text) ? 'selected' : ''
-                            html += '<option value="' + option.id + '" ' + choice + '>' + option.text + '</option>'
-                        } else if (type === 'checkbox') {
-                            choice = (~(value.indexOf(option.text))) ? 'checked' : ''
-                            html += '<label class="css-input css-checkbox css-checkbox-sm css-checkbox-default push-10-r">' +
-                                '<input type="checkbox"  name="' + name + '[]" value="' + option.id + '" ' + choice + ' class="' + required + '">' +
-                                '<span></span> ' + option.text +
-                                '</label>'
-                        }
-                    }
-                    if (type === 'select') {
-                        html += '</select>'
-                    }
-                } else if (type === 'multilevel') {
-                    var optionsHtml = ''
-                    var level = 0
-                    var selectedLevel = 0
-                    function recurseHtml(object) {
-                        for (var i in object) {
-                            var o = object[i]
-                            var selected = (value === o.text) ? 'selected' : ''
-                            var spaces = (selected === 'selected') ? '' : new Array(level + 1).join('&nbsp;&nbsp;')
-                            var id = (typeof o.id !== 'undefined') ? o.id : o.text
-                            optionsHtml += '<option value="' + id + '" ' + selected + ' data-level="' + level + '">' + spaces + o.text + '</option>'
-                            if (selected === 'selected')
-                                selectedLevel = level
-                            if (typeof o.children !== 'undefined') {
-                                level++
-                                recurseHtml(o.children)
-                                level--
+                if (!field.disabled) {
+                    html += '<div class="form-group push-10"><label>' + label + '</label>' + requiredLabel
+                    // Text
+                    if (type === 'text') {
+                        html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '">'
+                    // Email
+                    } else if (type === 'email') {
+                        html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control form-control-email' + required + '">'
+                    // Datepicker
+                    } else if (type === 'date') {
+                        html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '" data-date-format="dd/mm/yyyy">'
+                    // Numerical - currency, number of days, etc.
+                    } else if (type === 'numerical') {
+                        value = (value === '') ? '' : parseFloat(value.replace(',', '.').replace(/[^\d\-\.]/g, ''))
+                        html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '">'
+                    // Radio
+                    } else if (type === 'radio' || type === 'select' || type === 'checkbox') {
+                        if (type === 'select')
+                            html += '<select class="form-control' + required + '" name="' + name + '"><option value="0">Sélectionner</option>'
+                        else
+                            html += '<br>'
+                        for (var $l = 0; $l < options.length; $l++) {
+                            var option = options[$l]
+                            var choice
+                            if (type === 'radio') {
+                                choice = (value === option.text) ? 'checked' : ''
+                                html += '<label class="css-input css-radio css-radio-sm css-radio-default push-10-r">' +
+                                    '<input type="radio"  name="' + name + '" value="' + option.id + '" ' + choice + ' class="' + required + '">' +
+                                    '<span></span> ' + option.text +
+                                    '</label>'
+                            } else if (type === 'select') {
+                                choice = (value === option.text) ? 'selected' : ''
+                                html += '<option value="' + option.id + '" ' + choice + '>' + option.text + '</option>'
+                            } else if (type === 'checkbox') {
+                                choice = (~(value.indexOf(option.text))) ? 'checked' : ''
+                                html += '<label class="css-input css-checkbox css-checkbox-sm css-checkbox-default push-10-r">' +
+                                    '<input type="checkbox"  name="' + name + '[]" value="' + option.id + '" ' + choice + ' class="' + required + '">' +
+                                    '<span></span> ' + option.text +
+                                    '</label>'
                             }
                         }
-                        return optionsHtml
-                    }
-                    html += '<select class="form-control' + required + ' select-multilevel" name="' + name + '"><option value="0">Selectionner</option>'
-                    html += recurseHtml(options)
-                    html += '</select>'
-                // File
-                } else if (type === 'file') {
-                    if (value === '') {
-                        html += '<input type="file" name="' + name + '" value="" class="form-control' + required + '">'
+                        if (type === 'select') {
+                            html += '</select>'
+                        }
+                    } else if (type === 'multilevel') {
+                        var optionsHtml = ''
+                        var level = 0
+                        var selectedLevel = 0
+                        function recurseHtml(object) {
+                            for (var i in object) {
+                                var o = object[i]
+                                var selected = (value === o.text) ? 'selected' : ''
+                                var spaces = (selected === 'selected') ? '' : new Array(level + 1).join('&nbsp;&nbsp;')
+                                var id = (typeof o.id !== 'undefined') ? o.id : o.text
+                                optionsHtml += '<option value="' + id + '" ' + selected + ' data-level="' + level + '">' + spaces + o.text + '</option>'
+                                if (selected === 'selected')
+                                    selectedLevel = level
+                                if (typeof o.children !== 'undefined') {
+                                    level++
+                                    recurseHtml(o.children)
+                                    level--
+                                }
+                            }
+                            return optionsHtml
+                        }
+                        html += '<select class="form-control' + required + ' select-multilevel" name="' + name + '"><option value="0">Sélectionner</option>'
+                        html += recurseHtml(options)
+                        html += '</select>'
+                        // File
+                    } else if (type === 'file') {
+                        if (value === '') {
+                            html += '<input type="file" name="' + name + '" value="" class="form-control' + required + '">'
+                        } else {
+                            html += '<div class="clearfix"><div class="pull-left">' +
+                                '<div class="file">' + value + '</div>' +
+                                '<input type="hidden" name="' + name + '" value="no_change"></div>' +
+                                '<div class="pull-left push-15-l"><a class="btn btn-xs btn-default file-edit-btn edit">Modifier</a></div></div>'
+                        }
+                        // Unknown type
                     } else {
-                        html += '<div class="clearfix"><div class="pull-left">' +
-                            '<div class="file">' + value + '</div>' +
-                            '<input type="hidden" name="' + name + '" value="no_change"></div>' +
-                            '<div class="pull-left push-15-l"><a class="btn btn-xs btn-default file-edit-btn edit">Modifier</a></div></div>'
+                        console.log('Unknown input type')
+                        return false
                     }
-                // Unknown type
-                } else {
-                    console.log('Unknown input type')
-                    return false
+                    html += '</div>'
                 }
-                html += '</div>'
+                else {
+                    if (type === 'file') {
+                        value = value.replace(/"/g, '\'')
+                        console.log(value)
+                    }
+                    html += '<input type="hidden" name="' + name + '" value="' + value + '">'
+                }
             }
             // Add hidden inputs
             html += '<input type="hidden" name="id" value="">'
@@ -1323,7 +1319,7 @@ var App = function() {
                         if (response.success) {
                             self.update(response.id, response.data)
                         } else {
-                            var errors = '<div class="alert alert-danger">'
+                            var errors = '<div class="alert alert-error">'
                             $.each(response.error, function(i, val){
                                 errors += '<p>' + val + '</p>'
                             })
@@ -1344,12 +1340,14 @@ var App = function() {
             if (data === 'delete') {
                 $tr.addClass('animated flash-bg')
                 setTimeout(function(){ tr.remove().draw(false) }, self.delay)
+                self.updatedCallback(id)
                 return false
             }
             // Toggle row state
             if (data === 'active' || data === 'inactive') {
                 $tr.addClass('animated flash-bg').find('td:last-child').html(self.buttons(data))
                 setTimeout(function(){ $tr.removeClass('animated flash-bg') }, self.delay)
+                self.updatedCallback(id)
                 return false
             }
             // Add or modify row
@@ -1394,7 +1392,7 @@ var App = function() {
                             for (var i in options) {
                                 var o = options[i]
                                 var id = o.id
-                                if (id.trim() === value.trim()) {
+                                if (id == value) {
                                     data[$i] = o.text
                                     break
                                 } else {
@@ -1421,8 +1419,10 @@ var App = function() {
             }
             // Go to the page on which the row is
             self.page(tr.index(), id)
-
-            // After update callback
+            self.updatedCallback(id)
+        }
+        DT.prototype.updatedCallback = function(id) {
+            var self = this
             if (typeof self.options !== 'undefined') {
                 if (self.options.updated) {
                     self.options.updated(id)
@@ -1500,7 +1500,7 @@ var App = function() {
                 var $input = $(this)
                 var file = this.files[0];
                 if (file.size > 5*1024) {
-                    $input.closest('form-group').addClass('has-error').append('<p class="text-danger">Taille max 5 Mb.</p>')
+                    $input.closest('form-group').addClass('has-error').append('<p class="text-danger">Taille max 5 Mo.</p>')
 
                 } else {
                     $input.closest('form-group').removeClass('has-error').find('.text-danger').remove()
@@ -1677,7 +1677,31 @@ var App = function() {
      * App.initHelper('summernote');
      *
      */
+
+    // toolbar: [
+    //     ['style', ['style']],
+    //     ['font', ['bold', 'underline', 'clear']],
+    //     ['fontname', ['fontname']],
+    //     ['color', ['color']],
+    //     ['para', ['ul', 'ol', 'paragraph']],
+    //     ['table', ['table']],
+    //     ['insert', ['link', 'picture', 'video']],
+    //     ['view', ['fullscreen', 'codeview', 'help']]
+    // ]
+
     var uiHelperSummernote = function(){
+        // Init text editor in air mode (inline)
+        jQuery('.js-summernote-simple').summernote({
+            height: 100,
+            minHeight: null,
+            maxHeight: null,
+            toolbar: [
+                ['para', ['ul', 'ol']],
+                ['font', ['bold', 'underline', 'clear']],
+                ['view', ['codeview']]
+            ],
+        });
+
         // Init text editor in air mode (inline)
         jQuery('.js-summernote-air').summernote({
             airMode: true
@@ -1728,10 +1752,13 @@ var App = function() {
      */
     var uiHelperDatepicker = function(){
         // Init datepicker (with .js-datepicker and .input-daterange class)
+        $.fn.datepicker.dates.fr= {days:['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'],daysShort:['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'],daysMin:['di','lu','ma','me','je','ve','sa'],months:['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'],monthsShort:['janv.','févr.','mars','avril','mai','juin','juil.','août','sept.','oct.','nov.','déc.'],today:'Aujourd\'hui',monthsTitle:'Mois',clear:'Effacer',weekStart:1,format:'dd/mm/yyyy'};
+
         jQuery('.js-datepicker').add('.input-daterange').datepicker({
             weekStart: 1,
             autoclose: true,
-            todayHighlight: true
+            todayHighlight: true,
+            language: 'fr'
         });
     };
 
@@ -1859,6 +1886,114 @@ var App = function() {
     };
 
     /*
+     * X-editable.js, for more examples you can check out http://vitalets.github.io/x-editable/
+     *
+     * App.initHelper('editable');
+     *
+     */
+    var uiHelperEditable = function(){
+        jQuery('[data-editable]').each(function() {
+            var $this = $(this)
+
+            // Retrieve data settings
+            var requiredAttributes = []
+            var type = $this.data('editable-type') // Text, Numeric, Date, Select
+            var value = $this.data('editable-value') // The value to edit
+            var url = $this.data('editable-url') // Server/Ajax URL
+            var name = $this.data('editable-name') // Field name to be edited
+            var id = $this.data('editable-id') // Client or Project ID
+            var group = $this.data('editable-group') // Group editable fields together
+            var options = $this.data('editable-options') // An array of options for Select editable type
+            var placement = $this.data('editable-placement') // Client or Project ID
+            var display = null // This must change to false if the server returns the newValue (as opposed to what the user typed)
+            var style = $this.data('editable-style')
+
+            // Default values
+            if (typeof type === 'undefined')
+                type = 'text'
+            if (typeof value === 'undefined')
+                value = $this.text()
+            if (typeof options === 'undefined')
+                options = ''
+            if (typeof id === 'undefined')
+                id = ''
+            if (typeof placement === 'undefined')
+                placement = 'top'
+            if (typeof style === 'undefined' || style === '')
+                style = 'popup'
+            $.fn.editable.defaults.mode = style
+
+            // Group - get ID and URL from a parent group element
+            if (typeof group !== 'undefined') {
+                $groupElement = $this.closest(group)
+                if (!$groupElement.length) {
+                    console.log('Missing group element.')
+                    return false
+                } else {
+                    id = $groupElement.data('editable-id')
+                    url = $groupElement.data('editable-url')
+                }
+            }
+
+            // Required attributes
+            requiredAttributes.push(['type', type], ['name', name], ['url', url])
+            for (var i = 0; i < requiredAttributes.length; i++) {
+                var attrKey = requiredAttributes[i][0]
+                var attrValue = requiredAttributes[i][1]
+                if (typeof attrValue === 'undefined' || attrValue === '') {
+                    console.log('Missing attribute data-editable-' + attrKey)
+                    return false
+                }
+            }
+
+            // Handle custom types
+            if (type !== 'text') {
+                if (type === 'numeric') {
+                    type = 'text'
+                    display = false
+                    var initialType = 'numeric'
+                    var value = $this.data('editable-numeric-value')
+                    if (typeof value === 'undefined' || value === '')
+                        value = parseFloat($this.text().replace(/[A-Za-z$-\s+]/g, '').replace(',', '.'))
+                }
+                if (type === 'select') {
+                    var prepareOptions = []
+                    options = options.split(',')
+                    for (var $i = 0; $i < options.length; $i++) {
+                        prepareOptions.push({value: $i + 1, text: options[$i]})
+                        if (options[$i] === $this.text())
+                            value = $i + 1 // Set select to current option
+                    }
+                    options = prepareOptions
+                }
+            }
+
+            // @ Debug
+            // console.log('Editable --- type:' + type + ' name:' + name + ' value:' + value + ' url:' + url + ' id:' + id + ' ajaxOptions:' + ajaxOptions + ' display:' + display)
+
+            // Init
+            $this.editable({
+                type: type,
+                name: name,
+                value: value,
+                url: url,
+                pk: id,
+                placement: placement,
+                source: options,
+                ajaxOptions: {type: 'post', dataType: 'json'},
+                display: display,
+                success: function(response) {
+                    if (!response.success)
+                        return response.error
+                    else
+                        if (initialType === 'numeric')
+                            $this.html(response.newValue)
+                }
+            })
+        })
+    };
+
+    /*
      * Draggable items with jQuery, for more examples you can check out https://jqueryui.com/sortable/
      *
      * App.initHelper('draggable-items');
@@ -1965,48 +2100,66 @@ var App = function() {
      *
      */
     var uiHelperFormValidate = function(){
+        function validate(type, value) {
+            var regex
+            if (type === 'email')
+                regex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+            if (type === 'postcode')
+                regex = /^(([0-8][0-9])|(9[0-5]))[0-9]{3}$/
+            if (type === 'phone')
+                regex = /^(([0-8][0-9])|(9[0-5]))[0-9]{3}$/
+            return regex.test(value);
+        }
+        function addErrorUi($input) {
+            $input.closest('.form-group').removeClass('has-error').addClass('has-error')
+        }
+        function removeErrorUi($input) {
+            $input.closest('.form-group').removeClass('has-error')
+        }
         $('form.validate').submit(function(e){
             var $form = $(this)
             var valid = true
-            $(this).find('.required').each(function(){
+            $(this).find('input, select, textarea').each(function(){
                 var $input = $(this)
-                if ($input.is('input[type=text]') || $input.is('input[type=number]') || $input.is('input[type=email]') || $input.is('textarea') || $input.is('input[type=password]')) {
-                    var attrName = $(this).attr('name');
-                    if (!$input.val() || $input.val() === '') {
-                        if (typeof attrName !== typeof undefined && attrName !== false) {
-                            $input.closest('.form-group').removeClass('has-error').addClass('has-error')
+                removeErrorUi($input)
+                if ($input.is('.required')) {
+                    if ($input.is('input[type=text]') || $input.is('input[type=number]') || $input.is('input[type=email]') || $input.is('textarea') || $input.is('input[type=password]')) {
+                        var attrName = $(this).attr('name');
+                        if (!$input.val() || $input.val() === '') {
+                            if (!$input.val() || $input.val() === '') {
+                                if (typeof attrName !== typeof undefined && attrName !== false) {
+                                    addErrorUi($input)
+                                    valid = false
+                                }
+                            }
+                        }
+                    }
+                    if ($input.is('select')) {
+                        if ($input.val() === '' || $input.val() === '0' || $input.val() === 'Sélectionner') {
+                            addErrorUi($input)
                             valid = false
                         }
-                    } else {
-                        $input.closest('.form-group').removeClass('has-error')
-                        valid = true
+                    }
+                    if ($input.is('input[type=radio]')) {
+                        var oneChecked = false
+                        $input.closest('.form-group').find('input[name=' + $input.attr('name') + ']').each(function () {
+                            if ($(this).is(':checked')) {
+                                oneChecked = true
+                            }
+                        })
+                        if (!oneChecked) {
+                            addErrorUi($input)
+                            valid = false
+                        }
                     }
                 }
-                if ($input.is('select')) {
-                    if ($input.val() === '' || $input.val() === '0' || $input.val() === 'Selectionner') {
-                        $input.closest('.form-group').removeClass('has-error').addClass('has-error')
+                if ($input.is('.form-control-email') && !validate('email', $input.val()) || $input.is('input[type=email]') && !validate('email', $input.val())) {
+                    if (typeof attrName !== typeof undefined && attrName !== false) {
+                        addErrorUi($input)
                         valid = false
-                    } else {
-                        $input.closest('.form-group').removeClass('has-error')
-                        valid = true
-                    }
-                }
-                if ($input.is('input[type=radio]')) {
-                    var oneChecked = false
-                    $input.closest('.form-group').find('input[name='+ $input.attr('name') +']').each(function(){
-                        if ($(this).is(':checked'))
-                            oneChecked = true
-                    })
-                    if (!oneChecked) {
-                        $input.closest('.form-group').removeClass('has-error').addClass('has-error')
-                        valid = false
-                    } else {
-                        $input.closest('.form-group').removeClass('has-error')
-                        valid = true
                     }
                 }
                 if (!valid) {
-                    console.log('has errors')
                     e.preventDefault()
                     $form.addClass('has-errors')
                 } else {
@@ -2018,8 +2171,7 @@ var App = function() {
 
     var utility = {
         currencyToInteger: function(currency) {
-            var number = parseFloat(currency.replace(',', '.').replace('€', '').replace(/\s+/g, ''))
-            return number
+            return parseFloat(currency.replace(',', '.').replace('€', '').replace(/\s+/g, ''))
         }
     };
 
@@ -2035,14 +2187,11 @@ var App = function() {
                 case 'uiNav':
                     uiNav();
                     break;
-                case 'uiNav':
+                case 'uiQuickSearch':
                     uiQuickSearch();
                     break;
                 case 'uiBlocks':
                     uiBlocks();
-                    break;
-                case 'uiHandleTheme':
-                    uiHandleTheme();
                     break;
                 case 'uiToggleClass':
                     uiToggleClass();
@@ -2066,7 +2215,6 @@ var App = function() {
                     uiNav();
                     uiQuickSearch();
                     uiBlocks();
-                    uiHandleTheme();
                     uiToggleClass();
                     uiScrollTo();
                     uiYearCopy();
@@ -2142,6 +2290,9 @@ var App = function() {
                     break;
                 case 'validation':
                     uiHelperFormValidate();
+                    break;
+                case 'editable':
+                    uiHelperEditable();
                     break;
                 default:
                     return false;

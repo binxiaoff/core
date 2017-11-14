@@ -7,6 +7,8 @@
 <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
 <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/summernote/summernote.min.css">
 <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.css">
+<link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap3-editable/css/bootstrap-editable.css">
+
 {% endblock %}
 
 {% block pluginsJS %}
@@ -16,13 +18,14 @@
 <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/summernote/summernote.min.js"></script>
 <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.js"></script>
+<script src="{{ adminUrl }}/oneui/js/plugins/bootstrap3-editable/js/bootstrap-editable.js"></script>
 {% endblock %}
 
 {% block pageScripts %}
 <script>
     $(function(){
         // Page helpers are initialised in app.js and can be called quickly using their name
-        App.initHelpers(['validation', 'select2', 'datepicker', 'masked-inputs', 'summernote', 'table-tools', 'datatables', 'easy-pie-chart']);
+        App.initHelpers(['validation', 'select2', 'datepicker', 'masked-inputs', 'summernote', 'table-tools', 'easy-pie-chart', 'editable', 'datatables', ]);
 
         // jQuery AutoComplete example, for more examples you can check out https://github.com/Pixabay/jQuery-autoComplete
         $('.js-autocomplete').autoComplete({
@@ -481,7 +484,7 @@
                                     <a href="#btabs-static-profile">Profile</a>
                                 </li>
                                 <li class="pull-right">
-                                    <a href="#btabs-static-settings" data-toggle="tooltip" title="" data-original-title="Settings"><i class="si si-settings"></i></a>
+                                    <a href="#btabs-static-settings" data-toggle="tooltip" title="Settings"><i class="si si-settings"></i></a>
                                 </li>
                             </ul>
                             <div class="block-content tab-content">
@@ -578,7 +581,7 @@
                         <h2 class="content-heading">Top</h2>
                         <div class="block">
                             <div class="block-content block-content-full">
-                                <button class="btn btn-default" data-toggle="popover" title="" data-placement="top" data-content="This is example content. You can put a description or more info here." type="button" data-original-title="Top Popover">Show Popover</button>
+                                <button class="btn btn-default" data-toggle="popover" data-placement="top" data-content="This is example content. You can put a description or more info here." type="button" title="Top Popover">Show Popover</button>
                             </div>
                         </div>
                     </div>
@@ -586,7 +589,7 @@
                         <h2 class="content-heading">Right</h2>
                         <div class="block">
                             <div class="block-content block-content-full">
-                                <button class="btn btn-default" data-toggle="popover" title="" data-placement="right" data-content="This is example content. You can put a description or more info here." type="button" data-original-title="Right Popover">Show Popover</button>
+                                <button class="btn btn-default" data-toggle="popover" data-placement="right" data-content="This is example content. You can put a description or more info here." type="button" title="Right Popover">Show Popover</button>
                             </div>
                         </div>
                     </div>
@@ -594,7 +597,7 @@
                         <h2 class="content-heading">Bottom</h2>
                         <div class="block">
                             <div class="block-content block-content-full">
-                                <button class="btn btn-default" data-toggle="popover" title="" data-placement="bottom" data-content="This is example content. You can put a description or more info here." type="button" data-original-title="Bottom Popover">Show Popover</button>
+                                <button class="btn btn-default" data-toggle="popover" data-placement="bottom" data-content="This is example content. You can put a description or more info here." type="button" title="Bottom Popover">Show Popover</button>
                             </div>
                         </div>
                     </div>
@@ -602,7 +605,7 @@
                         <h2 class="content-heading">Left</h2>
                         <div class="block">
                             <div class="block-content block-content-full">
-                                <button class="btn btn-default" data-toggle="popover" title="" data-placement="left" data-content="This is example content. You can put a description or more info here." type="button" data-original-title="Left Popover">Show Popover</button>
+                                <button class="btn btn-default" data-toggle="popover" data-placement="left" data-content="This is example content. You can put a description or more info here." type="button" title="Left Popover">Show Popover</button>
                             </div>
                         </div>
                     </div>
@@ -840,8 +843,8 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
                                             </div>
                                         </td>
                                     </tr>
@@ -853,8 +856,8 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
                                             </div>
                                         </td>
                                     </tr>
@@ -885,8 +888,8 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
                                             </div>
                                         </td>
                                     </tr>
@@ -898,8 +901,8 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
                                             </div>
                                         </td>
                                     </tr>
@@ -930,8 +933,8 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
                                             </div>
                                         </td>
                                     </tr>
@@ -943,8 +946,8 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
                                             </div>
                                         </td>
                                     </tr>
@@ -956,8 +959,8 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Edit Client"><i class="fa fa-pencil"></i></button>
-                                                <button class="btn btn-xs btn-default" type="button" data-toggle="tooltip" title="" data-original-title="Remove Client"><i class="fa fa-times"></i></button>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Modifier"><i class="fa fa-pencil"></i></a>
+                                                <a class="btn btn-xs btn-default" data-toggle="tooltip" title="Supprimer"><i class="fa fa-times"></i></a>
                                             </div>
                                         </td>
                                     </tr>
@@ -1244,6 +1247,79 @@
                 <div class="block">
                     <div class="block-content block-content-full">
                         <div class="js-summernote">Hello Summernote!</div>
+                    </div>
+                </div>
+            </article>
+            <article id="editable">
+                <h4 class="push-20">Editable</h4>
+                <p class="push-10">The only required attributes for each element are:</p>
+                <ul class="remove-margin">
+                    <li>data-editable</li>
+                    <li>data-editable-url</li>
+                    <li>data-editable-name</li>
+                </ul>
+                <div class="row">
+                    <div class="col-md-3">
+                        <h5 class="content-heading">Text</h5>
+                        <div class="block">
+                            <div class="block-content block-content-full">
+                                <a role="editable" data-editable data-editable-name="text" data-editable-url="/oneui/editable/" data-editable-placement="right">Editable Text</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <h5 class="content-heading">Number</h5>
+                        <div class="block">
+                            <div class="block-content block-content-full">
+                                <a role="editable" data-editable data-editable-type="numeric" data-editable-name="numericField" data-editable-url="/oneui/editable/">1 000.00 €</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <h5 class="content-heading">Date</h5>
+                        <div class="block">
+                            <div class="block-content block-content-full">
+                                <a role="editable" data-editable data-editable-type="date" data-editable-name="dateField" data-editable-url="/oneui/editable/">20/04/2017</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <h5 class="content-heading">Select</h5>
+                        <div class="block">
+                            <div class="block-content block-content-full">
+                                <a role="editable" data-editable data-editable-type="select" data-editable-options="Active,Inactive,Deleted" data-editable-name="selectField" data-editable-url="/oneui/editable/">Active</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row editable-group" data-editable-url="/oneui/editable/" data-editable-id="clientId">
+                    <div class="col-md-6">
+                        <h5 class="content-heading">Group</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="block remove-margin">
+                                    <div class="block-content block-content-full">
+                                        <a role="editable" data-editable data-editable-group=".editable-group" data-editable-name="groupField1" data-editable-placement="right">Group member 1</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="block remove-margin">
+                                    <div class="block-content block-content-full">
+                                        <a role="editable" data-editable data-editable-group=".editable-group" data-editable-name="groupField2">Group member 2</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p><small>* Instead of adding the same <span class="text-primary">data-editable-url</span> and <span class="text-primary">data-editable-id</span> to multiple elements, add those attributes to their <span class="text-primary">parent</span>.</small></p>
+                    </div>
+                    <div class="col-md-3 col-md-offset-3">
+                        <h5 class="content-heading">Inline Style</h5>
+                        <div class="block">
+                            <div class="block-content block-content-full">
+                                <a role="editable" data-editable data-editable-style="inline" data-editable-name="inlineField" data-editable-url="/oneui/editable/">Editable Text</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </article>

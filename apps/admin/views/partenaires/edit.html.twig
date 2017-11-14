@@ -1,0 +1,583 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/summernote/summernote.min.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/nestable/nestable.css">
+{% endblock %}
+
+{% block pluginsJS %}
+    <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="{{ adminUrl }}/oneui/js/plugins/summernote/summernote.min.js"></script>
+    <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
+    <script src="{{ adminUrl }}/oneui/js/plugins/nestable/jquery.nestable.js"></script>
+{% endblock %}
+
+{% block pageScripts %}
+    <script>
+        $(function(){
+            App.initHelpers(['validation', 'datatables', 'summernote', 'datepicker'])
+
+            /*
+             * Extend dataTable actions
+             * add "Reset Password" button + modal
+             */
+            var $usersTable = $('#table-users')
+            var $sendPasswordModal = $('#modal-send-password')
+            $usersTable.DT({
+                before: function() {
+                    $usersTable.find('tbody tr').each(function(){
+                        var $tr = $(this)
+                        $tr.find('td:last-child .btn-group').prepend('<a class="btn btn-xs btn-default password-btn" title="Mot de passe"><span class="fa fa-lock"></span></a>')
+                    })
+                },
+                updated: function(id) {
+                    $usersTable.find('tr[data-id=' + id + '] .btn-group').prepend('<a class="btn btn-xs btn-default password-btn" title="Mot de passe"><span class="fa fa-lock"></span></a>')
+                }
+            })
+            $usersTable.on('click', '.password-btn', function(){
+                var id = $(this).closest('tr').data('id')
+                $sendPasswordModal.find('input[name=id]').val(id)
+                $sendPasswordModal.modal('show')
+            })
+            $(document).on('submit', '#modal-send-password form', function(e) {
+                e.preventDefault()
+                var $form = $(this)
+                App.blocks('#modal-send-password .block', 'state_loading')
+                $.ajax({
+                    url: $form.attr('action'),
+                    type: 'POST',
+                    data: $form.serialize(),
+                    dataType:'json',
+                    success: function(response) {
+                        if (response.success) {
+                            $form.find('.messages').html('<div class="alert alert-success"><p>La demande de réinitialisation de mot de passe a bien été envoyée à l\'utilisateur.</p></div>')
+                            $form.find('.hide').removeClass('hide')
+                            $form.find('.show-inline').removeClass('show-inline').addClass('hide')
+                        } else {
+                            var html = '<div class="alert alert-error">'
+                            for (var i in response.error) {
+                                html += '<p>' + response.error[i] + '</p>'
+                            }
+                            html += '</div>'
+                            $form.find('.messages').html(html)
+                        }
+                        App.blocks('#modal-send-password .block', 'state_normal')
+                    }
+                })
+            })
+
+            /*
+             * Draggable tree
+             */
+            var $tree = $('#documents .tree-js')
+            var treeBackupHtml = $tree.html()
+            // Backup initial state
+            $tree.before('<div class="tree-js-backup hide">' + treeBackupHtml + '</div>')
+            // Plugin init
+            $tree.find('.dd').nestable({ maxDepth: 1 })
+            // Show submit and reset buttons on change
+            $(document).on('change', '.dd', function(){
+                $tree.find('.reset-btn, .submit-btn').removeClass('hide')
+            })
+            // Resets the tree to initial state
+            $(document).on('click', '.reset-btn', function(){
+                $tree.html(treeBackupHtml)
+                $tree.find('.dd').nestable({ maxDepth: 1 })
+            })
+            // Reset modals on close
+            $(document).on('hidden.bs.modal', '#modal-add-document, #modal-add-product', function(){
+                var $modal = $(this)
+                $modal.find('.messages').html('')
+                $modal.find('.form-group').removeClass('has-error')
+                $modal.find('select').val(0)
+                if ($modal.is('#modal-add-document')) {
+                    $modal.find(':checked').attr('checked', '').prop('checked', '')
+                }
+                if ($modal.is('#modal-add-product')) {
+                    $modal.find('input').val('')
+                }
+            })
+            // Add new item
+            $(document).on('submit', '#modal-add-document form', function(e){
+                e.preventDefault()
+                var $modal = $(this).closest('.modal')
+                var $form = $(this)
+                if (!$form.find('.has-error').length) {
+                    var $document = $form.find('[name=document]')
+                    var label = $document.find(':selected').text()
+                    var id = $document.val()
+                    var $mandatory = $form.find('[name=mandatory]:checked')
+                    var mandatory = ($mandatory.val() === 'true') ? '<small class="text-primary pull-right">* champ obligatoire</small>' : ''
+                    if ($tree.find('[data-id=' + id + ']').length) {
+                        $modal.find('.messages').html('<div class="alert"><p>Le document est déjà dans la liste.</p></div>')
+                        return false
+                    }
+                    var item = '<li class="dd-item dd-item-document dd-item-new closable" data-id="' + id + '" data-mandatory="' + ($mandatory.val() === 'true' ? 1 : 0) + '">' +
+                            '<div class="dd-handle">' + label + ' ' + mandatory + '</div>' +
+                            '<a role="button" class="closable-icon">' +
+                            '<span class="fa fa-close"></span>' +
+                            '</a>' +
+                            '</li>'
+                    $tree.find('.dd-list').prepend(item)
+                    $tree.find('.dd').trigger('change')
+                    $modal.modal('hide')
+                }
+            })
+            $(document).on('click', '.dd-item .closable-icon, .dd-item-new .closable-icon', function() {
+                var $item = $(this).closest('.dd-item')
+                $item.remove()
+                $tree.find('.dd').trigger('change')
+            })
+            // Prepare form data
+            $(document).on('submit', '#documents form', function(e) {
+                var newOrder = $tree.find('.dd').nestable('serialize')
+                $tree.find('[name=new_order]').val(JSON.stringify(newOrder))
+            })
+            // Pre-fill rates depending on product
+            $(document).on('change', '#modal-add-product [name=product]', function(){
+                var $product = $(this)
+                var $modal = $(this).closest('.modal')
+                var $funds = $modal.find('[name=funds_commission_rate]')
+                var $repayment = $modal.find('[name=repayment_commission_rate]')
+                if ($product.val() !== '0') {
+                    $funds.val($product.find(':selected').data('funds'))
+                    $repayment.val($product.find(':selected').data('repayment'))
+                }
+            })
+            // Pre-fill modal for deleting a product
+            $(document).on('click', '#products .closable-icon', function(){
+                var $product = $(this).closest('[data-product]')
+                var $modal = $('#modal-delete-product')
+                var id = $product.data('product-id')
+                var funds = $product.data('product-rate-funds')
+                var repayment = $product.data('product-rate-repayment')
+                $modal.find('[name=funds_commission_rate]').val(funds)
+                $modal.find('[name=repayment_commission_rate]').val(repayment)
+                $modal.find('[name=product]').val(id)
+            })
+            // Delete product
+            $(document).on('submit', '#modal-delete-product form', function() {
+                App.blocks('#modal-delete-product .block', 'state_loading')
+            })
+            // Submit new product
+            $(document).on('submit', '#modal-add-product form', function(e) {
+                var $form = $(this)
+                if (!$form.find('.has-error').length) {
+                    var id = $form.find('[name=product]').val()
+                    if (!$('#products').find('[data-product-id='+ id +']').length) {
+                        $form.find('.messages').html('')
+                        App.blocks('#modal-add-product .block', 'state_loading')
+                    } else {
+                        e.preventDefault()
+                        $form.find('.messages').html('<div class="alert">Le produit est déjà dans la liste.</div>')
+                    }
+                }
+            })
+        })
+    </script>
+{% endblock %}
+
+{% block modals %}
+    <div class="modal" id="modal-send-password" tabindex="-1" role="dialog" aria-hidden="true">
+        <form class="modal-dialog" action="{{ app.adminUrl }}/partenaires/utilisateur/{{ partner.id }}" method="post">
+            <div class="modal-content">
+                <div class="block block-bordered remove-margin-b">
+                    <div class="block-header">
+                        <h3 class="block-title">Réinitialisation de mot de passe</h3>
+                    </div>
+                    <div class="block-content">
+                        <p>Êtes-vous sûr de vouloir envoyer un email de réinitialisation de mot de passe à l'utilisateur ?</p>
+                        <div class="messages"></div>
+                        <input type="hidden" name="id">
+                        <input type="hidden" name="action" value="password">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-sm btn-default show-inline" type="button" data-dismiss="modal">Annuler</button>
+                    <button class="btn btn-sm btn-primary show-inline" type="submit">Valider</button>
+                    <button class="btn btn-sm btn-primary hide" type="button" data-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal" id="modal-add-document" tabindex="-1" role="dialog" aria-hidden="true">
+        <form class="modal-dialog validate">
+            <div class="modal-content">
+                <div class="block block-bordered remove-margin-b">
+                    <div class="block-header">
+                        <h3 class="block-title">Ajouter un document</h3>
+                    </div>
+                    <div class="block-content">
+                        <div class="messages"></div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="document-type">Type</label>
+                                    <select id="document-type" name="document" class="form-control required">
+                                        <option value="0">Sélectionner</option>
+                                        {% for documentType in documentTypes %}
+                                            <option value="{{ documentType.id }}">
+                                                {{ documentType.label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="col-xs-12">Obligatoire</label>
+                                    <div class="col-xs-12">
+                                        <label class="css-input css-radio css-radio-default push-10-r">
+                                            <input type="radio" name="mandatory" value="true" class="form-control required"><span></span> Oui
+                                        </label>
+                                        <label class="css-input css-radio css-radio-default">
+                                            <input type="radio" name="mandatory" value="false" class="form-control required"><span></span> Non
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                    <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal" id="modal-add-product" tabindex="-1" role="dialog" aria-hidden="true">
+        <form class="modal-dialog validate" action="{{ app.adminUrl }}/partenaires/produits/{{ partner.id }}" method="post">
+            <div class="modal-content">
+                <div class="block block-bordered remove-margin-b">
+                    <div class="block-header">
+                        <h3 class="block-title">Ajouter un produit</h3>
+                    </div>
+                    <div class="block-content">
+                        <div class="messages"></div>
+                        <div class="form-group">
+                            <select name="product" class="form-control required" title="Liste des produits">
+                                <option value="0">Sélectionner un produit</option>
+                                {% for productType in productTypes %}
+                                    <option value="{{ productType.idProduct }}" data-funds="{{ constant('\projects::DEFAULT_COMMISSION_RATE_FUNDS') }}" data-repayment="{{ constant('\projects::DEFAULT_COMMISSION_RATE_REPAYMENT') }}">
+                                        {{ productType.label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <input type="text" class="form-control required" name="funds_commission_rate" placeholder="Taux de déblocage">
+                                <span class="input-group-addon">%</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <input type="text" class="form-control required" name="repayment_commission_rate" placeholder="Taux de remboursement">
+                                <span class="input-group-addon">%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                    <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal" id="modal-delete-product" tabindex="-1" role="dialog" aria-hidden="true">
+        <form class="modal-dialog validate" action="{{ app.adminUrl }}/partenaires/produits/{{ partner.id }}" method="post">
+            <div class="modal-content">
+                <div class="block block-bordered remove-margin-b">
+                    <div class="block-header">
+                        <h3 class="block-title">Supprimer</h3>
+                    </div>
+                    <div class="block-content">
+                        <div class="messages"></div>
+                        <p>Êtes-vous sûr de vouloir supprimer le produit ?</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="hidden" name="product">
+                    <input type="hidden" name="funds_commission_rate">
+                    <input type="hidden" name="repayment_commission_rate">
+                    <input type="hidden" name="action" value="delete">
+                    <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                    <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block pageHeader %}
+    <div class="push-15-r pull-left">
+        <img class="img-responsive-vertical" src="{{ app.staticUrl }}/images/admin/partner/{{ partner.logo }}" alt="{{ partner.idCompany.name|e('html_attr') }}">
+    </div>
+    <div class="push clearfix">
+        <h1 class="h2 push-20-t">{{ partner.idCompany.name }}</h1>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <div id="organisation" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Agences</h3>
+            </div>
+            <div class="block-content block-content-full">
+                <table id="table-agencies" class="table table-bordered table-header-bg table-striped"
+                       data-table
+                       data-table-search="true"
+                       data-table-editor
+                       data-table-editor-url="{{ app.adminUrl }}/partenaires/agence/{{ partner.id }}"
+                       data-table-editor-actions="add, modify">
+                    <thead>
+                        <tr>
+                            <th data-editor-name="name" data-editor-type="text">Nom</th>
+                            <th data-editor-name="siren" data-editor-type="text" data-editor-optional>SIREN</th>
+                            <th data-editor-name="phone" data-editor-type="text">Téléphone</th>
+                            <th data-editor-name="address" data-editor-type="text">Adresse</th>
+                            <th data-editor-name="postcode" data-editor-type="text">Code postal</th>
+                            <th data-editor-name="city" data-editor-type="text">Ville</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for agency in agencies %}
+                        <tr data-id="{{ agency.idCompany }}">
+                            <td>{{ agency.name }}</td>
+                            <td>{{ agency.siren }}</td>
+                            <td>{{ agency.phone }}</td>
+                            <td>{{ agency.adresse1 }}</td>
+                            <td>{{ agency.zip }}</td>
+                            <td>{{ agency.city }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div id="users" class="block block-bordered">
+            <div class="block-header">
+                <h3 class="block-title">Utilisateurs</h3>
+            </div>
+            <div class="block-content block-content-full">
+                <table id="table-users" class="table table-bordered table-header-bg table-striped"
+                       data-table-search="true"
+                       data-table-editor
+                       data-table-editor-url="{{ app.adminUrl }}/partenaires/utilisateur/{{ partner.id }}"
+                       data-table-editor-actions="add, modify, toggle">
+                    <thead>
+                    <tr>
+                        <th data-editor-name="lastname" data-editor-type="text">Nom</th>
+                        <th data-editor-name="firstname" data-editor-type="text">Prénom</th>
+                        <th data-editor-name="email" data-editor-type="email">Email</th>
+                        <th data-editor-name="agency" data-editor-type="select" data-editor-options="{% for agency in agencies %}{{ agency.name|e('html_attr') }}:{{ agency.idCompany }}{% if not loop.last %}, {% endif %}{% endfor %}">Agence</th>
+                        <th data-editor-name="phone" data-editor-type="text">Téléphone</th>
+                        <th data-editor-name="role" data-editor-type="select" data-editor-options="Administrateur:admin, Agent:agent">Rôle</th>
+                        <th data-editor-name="lastlogin" data-editor-type="date" data-editor-disabled data-type="date-fr">Dernière connexion</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for user in users %}
+                        <tr data-id="{{ user.id }}" data-state="{% if user.idClient.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::STATUS_ONLINE') %}active{% else %}inactive{% endif %}">
+                            <td>{{ user.idClient.nom }}</td>
+                            <td>{{ user.idClient.prenom }}</td>
+                            <td>{{ user.idClient.email }}</td>
+                            <td>{{ user.idCompany.name }}</td>
+                            <td>{{ user.idClient.telephone }}</td>
+                            <td>{% if user.role == 'ROLE_PARTNER_ADMIN' %}Administrateur{% else %}Agent{% endif %}</td>
+                            <td>{% if user.idClient.lastlogin is not empty %}{{ user.idClient.lastlogin|date('d/m/Y') }}{% endif %}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div id="instructions" class="block block-bordered">
+                    <div class="block-header">
+                        <h3 class="block-title">Instructions <small>Texte explicatif à destination du déposant</small></h3>
+                    </div>
+                    <div class="block-content block-content-full">
+                        <form action="{{ app.adminUrl }}/partenaires/instructions/{{ partner.id }}" method="post">
+                            {%  if formErrors.instructions is defined and formErrors.instructions is not empty %}
+                                <div class="alert alert-error">
+                                    {% for error in formErrors.instructions %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {%  if formSuccess.instructions is defined %}
+                                <div class="alert alert-success">
+                                    {% for success in formSuccess.instructions %}
+                                        <p>{{ success }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
+                            <div class="form-group">
+                                <label for="instructions-description">Description du projet</label>
+                                <textarea id="instructions-description" name="instructions[description]" class="js-summernote-simple">{{ instructions.description }}</textarea>
+                                <div class="help-block text-right pull-t">Situé sur la page «&nbsp;Déposer un dossier&nbsp;» de l'espace partenaire, sous la catégorie «&nbsp;Quel est le projet ?&nbsp;».</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="instructions-documents">Pièces à fournir</label>
+                                <textarea id="instructions-documents" name="instructions[documents]" class="js-summernote-simple">{{ instructions.documents }}</textarea>
+                                <div class="help-block text-right pull-t">Situé sur la page «&nbsp;Déposer un dossier&nbsp;» de l'espace partenaire, sous la catégorie «&nbsp;Pièces à fournir&nbsp;».</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Mettre à jour</button>
+                        </form>
+                    </div>
+                </div>
+                {%  if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Zones::ZONE_LABEL_CONFIGURATION') in app.userZones %}
+                    <div id="products" class="block block-bordered">
+                        <div class="block-header">
+                            <h3 class="block-title">Produits</h3>
+                        </div>
+                        <div class="block-content block-content-full">
+                            <form action="{{ app.adminUrl }}/partenaires/produits/{{ partner.id }}" method="post">
+                                {%  if formErrors.products is defined and formErrors.products is not empty %}
+                                    <div class="alert alert-error">
+                                        {% for error in formErrors.products %}
+                                            <p>{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                {%  if formSuccess.products is defined %}
+                                    <div class="alert alert-success">
+                                        {% for success in formSuccess.products %}
+                                            <p>{{ success }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <button class="btn btn-default add-btn push-10" type="button" data-toggle="modal" data-target="#modal-add-product"><span class="fa fa-plus"></span> Ajouter</button>
+                                <div class="row">
+                                    {% for product in products %}
+                                    <div class="col-md-6 push" data-product data-product-id="{{ product.idProduct.idProduct }}" data-product-rate-funds="{{ product.commissionRateFunds }}" data-product-rate-repayment="{{ product.commissionRateRepayment }}">
+                                        <div class="closable content-mini content-mini-full bg-gray-lighter">
+                                            <a role="button" class="closable-icon" data-toggle="modal" data-target="#modal-delete-product">
+                                                <span class="fa fa-close"></span>
+                                            </a>
+                                            <p class="push-5" data-equal-height data-equal-height-group="productTitle"><b>{{ product.idProduct.label|trans }}</b></p>
+                                            <table class="table-condensed" style="margin: 0 -8px; width: 100%;">
+                                                <tr>
+                                                    <td style="width: 50%; vertical-align: top;">
+                                                        <small>Déblocage</small>
+                                                    </td>
+                                                    <td style="width: 50%; vertical-align: top;">
+                                                        <small>Remboursement</small>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <span class="text-primary">{{ product.commissionRateFunds|localizednumber }}&nbsp;%</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="text-primary">{{ product.commissionRateRepayment|localizednumber }}&nbsp;%</span>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    {% if loop.index is divisible by(2) %}
+                                </div>
+                                <div class="row">
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                <div id="documents" class="block block-bordered">
+                    <div class="block-header">
+                        <h3 class="block-title">Pièces à fournir</h3>
+                    </div>
+
+                    <div class="block-content block-content-full">
+                        <form action="{{ app.adminUrl }}/partenaires/documents/{{ partner.id }}" method="post" class="tree-js">
+                            {%  if formErrors.documents is defined and formErrors.documents is not empty %}
+                                <div class="alert alert-error">
+                                    {% for error in formErrors.documents %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {%  if formSuccess.documents is defined %}
+                                <div class="alert alert-success">
+                                    {% for success in formSuccess.documents %}
+                                        <p>{{ success }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <button class="btn btn-default add-btn push-5" type="button" data-toggle="modal" data-target="#modal-add-document"><span class="fa fa-plus"></span> Ajouter</button>
+                            <div class="push-15">
+                                <div class="dd">
+                                    <ol class="dd-list">
+                                        {% for document in documents %}
+                                            <li class="dd-item dd-item-document closable" data-id="{{ document.attachmentType.id }}" data-mandatory="{% if document.mandatory %}1{% else %}0{% endif %}">
+                                                <div class="dd-handle">
+                                                    {{ document.attachmentType.label }}
+                                                    {% if document.mandatory %}<small class="text-primary pull-right">* champ obligatoire</small>{% endif %}
+                                                </div>
+                                                <a role="button" class="closable-icon"><span class="fa fa-close"></span></a>
+                                            </li>
+                                        {% endfor %}
+                                    </ol>
+                                </div>
+                            </div>
+                            <div class="text-left">
+                                <input type="hidden" name="new_order">
+                                <button class="btn btn-default reset-btn hide" type="button">Réinitialiser</button>
+                                <button class="btn btn-primary submit-btn hide" type="submit">Mettre à jour</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div id="settings" class="block block-bordered">
+                    <div class="block-header">
+                        <h3 class="block-title">Paramètres</h3>
+                    </div>
+                    <div class="block-content block-content-full">
+                        <form action="{{ app.adminUrl }}/partenaires/parametres/{{ partner.id }}" method="post">
+                            {%  if formErrors.settings is defined and formErrors.settings is not empty %}
+                                <div class="alert alert-error">
+                                    {% for error in formErrors.settings %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {%  if formSuccess.settings is defined %}
+                                <div class="alert alert-success">
+                                    {% for success in formSuccess.settings %}
+                                        <p>{{ success }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <p style="margin-bottom: 5px">Prospect</p>
+                                        <label class="css-input switch switch-primary">
+                                            <input type="checkbox" name="prospect"{% if partner.prospect %} checked{% endif %}><span></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-left">
+                                <button class="btn btn-primary" type="submit">Mettre à jour</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
