@@ -471,7 +471,14 @@ class parrainageController extends bootstrap
                 die;
             }
 
-            $campaign = $entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->findCampaignValidAtDate($sponsee->getAdded());
+            $firstClientStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findOneBy(['idClient' => $sponsee->getIdClient()], ['added' => 'ASC']);
+            if (null === $firstClientStatus) {
+                $_SESSION['create_sponsorship']['errors'][] = 'L\'insciription du filleul n\'est pas terminée';
+                header('Location: ' . $this->lurl . '/parrainage');
+                die;
+            }
+
+            $campaign = $entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->findCampaignValidAtDate($firstClientStatus->getAdded());
             if (null === $campaign) {
                 $_SESSION['create_sponsorship']['errors'][] = 'Il n\'y a pas de campagne active au moment de l\'inscription du filleul';
                 header('Location: ' . $this->lurl . '/parrainage');
