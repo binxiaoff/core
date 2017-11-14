@@ -75,6 +75,8 @@ doctrine:
                     enum: string
                 options:
                     x_reconnect_attempts: 3
+        types:
+          datetime: Unilend\Bridge\Doctrine\DBAL\NotNullDateTimeType
     orm:
         auto_generate_proxy_classes: "%kernel.debug%"
         auto_mapping: true
