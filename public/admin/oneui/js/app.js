@@ -1118,18 +1118,21 @@ var App = function() {
 
                 if (!field.disabled) {
                     html += '<div class="form-group push-10"><label>' + label + '</label>' + requiredLabel
-                    // Text / Email
-                    if (type === 'text' || type === 'email') {
+                    // Text
+                    if (type === 'text') {
                         html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '">'
-                        // Datepicker
+                    // Email
+                    } else if (type === 'email') {
+                        html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control form-control-email' + required + '">'
+                    // Datepicker
                     } else if (type === 'date') {
                         html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '" data-date-format="dd/mm/yyyy">'
-                        // Numerical - currency, number of days, etc.
+                    // Numerical - currency, number of days, etc.
                     } else if (type === 'numerical') {
                         value = (value === '') ? '' : parseFloat(value.replace(',', '.').replace(/[^\d\-\.]/g, ''))
                         html += '<input type="text" name="' + name + '" value="' + value + '" class="form-control' + required + '">'
-                        // Radio
-                    } else if (type === 'radio' || type === 'select' || type == 'checkbox') {
+                    // Radio
+                    } else if (type === 'radio' || type === 'select' || type === 'checkbox') {
                         if (type === 'select')
                             html += '<select class="form-control' + required + '" name="' + name + '"><option value="0">Sélectionner</option>'
                         else
@@ -2097,58 +2100,63 @@ var App = function() {
      *
      */
     var uiHelperFormValidate = function(){
+        function validate(type, value) {
+            var regex
+            if (type === 'email')
+                regex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+            if (type === 'postcode')
+                regex = /^(([0-8][0-9])|(9[0-5]))[0-9]{3}$/
+            if (type === 'phone')
+                regex = /^(([0-8][0-9])|(9[0-5]))[0-9]{3}$/
+            return regex.test(value);
+        }
+        function addErrorUi($input) {
+            $input.closest('.form-group').removeClass('has-error').addClass('has-error')
+        }
+        function removeErrorUi($input) {
+            $input.closest('.form-group').removeClass('has-error')
+        }
         $('form.validate').submit(function(e){
             var $form = $(this)
             var valid = true
-            $(this).find('.required').each(function(){
+            $(this).find('input, select, textarea').each(function(){
                 var $input = $(this)
-                if ($input.is('input[type=text]') || $input.is('input[type=number]') || $input.is('input[type=email]') || $input.is('textarea') || $input.is('input[type=password]')) {
-                    var attrName = $(this).attr('name');
-                    if (!$input.val() || $input.val() === '') {
-                        if (typeof attrName !== typeof undefined && attrName !== false) {
-                            $input.closest('.form-group').removeClass('has-error').addClass('has-error')
+                removeErrorUi($input)
+                if ($input.is('.required')) {
+                    if ($input.is('input[type=text]') || $input.is('input[type=number]') || $input.is('input[type=email]') || $input.is('textarea') || $input.is('input[type=password]')) {
+                        var attrName = $(this).attr('name');
+                        if (!$input.val() || $input.val() === '') {
+                            if (!$input.val() || $input.val() === '') {
+                                if (typeof attrName !== typeof undefined && attrName !== false) {
+                                    addErrorUi($input)
+                                    valid = false
+                                }
+                            }
+                        }
+                    }
+                    if ($input.is('select')) {
+                        if ($input.val() === '' || $input.val() === '0' || $input.val() === 'Sélectionner') {
+                            addErrorUi($input)
                             valid = false
                         }
-                    } else {
-                        $input.closest('.form-group').removeClass('has-error')
-                        valid = true
+                    }
+                    if ($input.is('input[type=radio]')) {
+                        var oneChecked = false
+                        $input.closest('.form-group').find('input[name=' + $input.attr('name') + ']').each(function () {
+                            if ($(this).is(':checked')) {
+                                oneChecked = true
+                            }
+                        })
+                        if (!oneChecked) {
+                            addErrorUi($input)
+                            valid = false
+                        }
                     }
                 }
-                if ($input.is('select')) {
-                    if ($input.val() === '' || $input.val() === '0' || $input.val() === 'Sélectionner') {
-                        $input.closest('.form-group').removeClass('has-error').addClass('has-error')
+                if ($input.is('.form-control-email') && !validate('email', $input.val()) || $input.is('input[type=email]') && !validate('email', $input.val())) {
+                    if (typeof attrName !== typeof undefined && attrName !== false) {
+                        addErrorUi($input)
                         valid = false
-                    } else {
-                        $input.closest('.form-group').removeClass('has-error')
-                        valid = true
-                    }
-                }
-                if ($input.is('input[type=radio]')) {
-                    var oneChecked = false
-                    $input.closest('.form-group').find('input[name='+ $input.attr('name') +']').each(function(){
-                        if ($(this).is(':checked'))
-                            oneChecked = true
-                    })
-                    if (!oneChecked) {
-                        $input.closest('.form-group').removeClass('has-error').addClass('has-error')
-                        valid = false
-                    } else {
-                        $input.closest('.form-group').removeClass('has-error')
-                        valid = true
-                    }
-                }
-                if ($input.is('input[type=radio]')) {
-                    var oneChecked = false
-                    $input.closest('.form-group').find('input[name='+ $input.attr('name') +']').each(function(){
-                       if ($(this).is(':checked'))
-                           oneChecked = true
-                    })
-                    if (!oneChecked) {
-                        $input.closest('.form-group').removeClass('has-error').addClass('has-error')
-                        valid = false
-                    } else {
-                        $input.closest('.form-group').removeClass('has-error')
-                        valid = true
                     }
                 }
                 if (!valid) {
@@ -2163,9 +2171,8 @@ var App = function() {
 
     var utility = {
         currencyToInteger: function(currency) {
-            var number = parseFloat(currency.replace(',', '.').replace('€', '').replace(/\s+/g, ''))
-            return number
-        },
+            return parseFloat(currency.replace(',', '.').replace('€', '').replace(/\s+/g, ''))
+        }
     };
 
     return {
@@ -2180,7 +2187,7 @@ var App = function() {
                 case 'uiNav':
                     uiNav();
                     break;
-                case 'uiNav':
+                case 'uiQuickSearch':
                     uiQuickSearch();
                     break;
                 case 'uiBlocks':

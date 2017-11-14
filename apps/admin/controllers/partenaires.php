@@ -18,7 +18,7 @@ class partenairesController extends bootstrap
     {
         parent::initialize();
 
-        $this->users->checkAccess(Zones::ZONE_LABEL_CONFIGURATION);
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
         $this->menu_admin = Zones::ZONE_LABEL_BORROWERS;
     }
 
@@ -303,7 +303,6 @@ class partenairesController extends bootstrap
         if (empty($companyClientErrors)) {
             /** @var EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            $entityManager->getConnection()->beginTransaction();
 
             try {
                 $entityManager->persist($companyClient->getIdClient());
@@ -314,13 +313,10 @@ class partenairesController extends bootstrap
                 $walletCreationManager = $this->get('unilend.service.wallet_creation_manager');
                 $walletCreationManager->createWallet($companyClient->getIdClient(), WalletType::PARTNER);
 
-                $entityManager->getConnection()->commit();
-
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
                 $mailerManager = $this->get('unilend.service.email_manager');
                 $mailerManager->sendPartnerAccountActivation($companyClient->getIdClient());
             } catch (\Exception $exception) {
-                $entityManager->getConnection()->rollBack();
                 $this->get('logger')->error('An error occurred while creating client: ' . $exception->getMessage(), [['class' => __CLASS__, 'function' => __FUNCTION__]]);
             }
         }
@@ -480,6 +476,9 @@ class partenairesController extends bootstrap
         }
         if (empty($email)) {
             $errors[] = 'Vous devez renseigner une adresse email';
+        }
+        if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Vous devez renseigner une adresse email valide';
         }
         $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         if (

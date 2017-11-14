@@ -2,6 +2,11 @@
 
 {% block pluginsCSS %}
     <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+    <style>
+        #partner-list-table tbody tr {
+            cursor: pointer;
+        }
+    </style>
 {% endblock %}
 
 {% block pluginsJS %}
@@ -12,13 +17,19 @@
     <script>
         $(function(){
             // Page helpers are initialised in app.js and can be called quickly using their name
-            App.initHelpers(['datatables']);
+            App.initHelpers(['datatables'])
 
             $('#partner-list-table').dataTable({
                 order: [[1, 'asc']],
                 columnDefs: [
                     {targets: [0, 4], orderable: false}
                 ]
+            })
+
+            $('#partner-list-table tbody').on('click', 'tr', function (event) {
+                if ($(event.target).is(':not(a)')) {
+                    window.location.href = $(this).data('url')
+                }
             })
         })
     </script>
@@ -46,26 +57,26 @@
                         </thead>
                         <tbody>
                         {% for partner in partners %}
-                        <tr>
-                            <td style="text-align: center">
-                                <img src="{{ app.staticUrl }}/images/admin/partner/{{ partner.logo }}" alt="{{ partner.idCompany.name|e('html_attr') }}" class="img-responsive-vertical box-shadow">
-                            </td>
-                            <td>{{ partner.idCompany.name }}</td>
-                            <td>
-                                {% if partner.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Partner::STATUS_PENDING') %}
-                                    En attente
-                                {% elseif partner.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Partner::STATUS_VALIDATED') %}
-                                    Validé
-                                {% elseif partner.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Partner::STATUS_DISABLED') %}
-                                    Désactivé
-                                {% endif %}
-                            </td>
-                            <td data-order="{{ partner.added|date('U') }}">{{ partner.added|date('d/m/Y') }}</td>
-                            <td>
-                                <a href="{{ app.adminUrl }}/partenaires/edit/{{ partner.id }}" class="btn btn-xs btn-default">Détails <span class="fa fa-chevron-right push-5-l"></span></a>
-                                <a href="{{ app.adminUrl }}/partenaires/tiers/{{ partner.id }}" class="btn btn-xs btn-default">Tiers <span class="fa fa-chevron-right push-5-l"></span></a>
-                            </td>
-                        </tr>
+                            <tr data-url="{{ app.adminUrl }}/partenaires/edit/{{ partner.id }}">
+                                <td style="text-align: center">
+                                    <img src="{{ app.staticUrl }}/images/admin/partner/{{ partner.logo }}" alt="{{ partner.idCompany.name|e('html_attr') }}" class="img-responsive-vertical box-shadow">
+                                </td>
+                                <td>{{ partner.idCompany.name }}</td>
+                                <td>
+                                    {% if partner.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Partner::STATUS_PENDING') %}
+                                        En attente
+                                    {% elseif partner.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Partner::STATUS_VALIDATED') %}
+                                        Validé
+                                    {% elseif partner.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Partner::STATUS_DISABLED') %}
+                                        Désactivé
+                                    {% endif %}
+                                </td>
+                                <td data-order="{{ partner.added|date('U') }}">{{ partner.added|date('d/m/Y') }}</td>
+                                <td>
+                                    <a href="{{ app.adminUrl }}/partenaires/edit/{{ partner.id }}" class="btn btn-xs btn-default">Détails <span class="fa fa-chevron-right push-5-l"></span></a>
+                                    <a href="{{ app.adminUrl }}/partenaires/tiers/{{ partner.id }}" class="btn btn-xs btn-default">Tiers <span class="fa fa-chevron-right push-5-l"></span></a>
+                                </td>
+                            </tr>
                         {% endfor %}
                     </tbody>
                 </table>
