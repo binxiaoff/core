@@ -834,41 +834,41 @@ name: 'preteur-autobid-ko-minimum-rate',
 header: 'minimal',
 footer: 'lender',
 comment: '',
-content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
+content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Vous avez proposé via Autolend une offre de prêt sur le projet</p>
-<p><span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN]</span>. Votre offre n\'a malheureusement pas été retenue.</p>
-<p><em>Deux cas de figure sont possibles :</em></p>
+<p><span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span>. Votre offre n\'a malheureusement pas été retenue.</p>
+<p><b>Deux cas de figure sont possibles :</b></p>
 <ul>
     <li>D\'autres prêteurs ont proposé de meilleures offres.</li>
     <li>Vous avez été trop nombreux à proposer des offres à un taux d\'intérêt identique. Dans ce cas Unilend départage les offres de manière aléatoire. Aucun privilège, tous les prêteurs sont traités de la même façon.</li>
 </ul>
-<p>Autolend continuera de proposer des offres de prêt selon les critères que vous avez définis. Vous pouvez modifier vos critères Autolend à tout moment depuis votre <a href="[EMV DYN]autobid_link[EMV /DYN]">espace personnel sécurisé</a>.</p>
+<p>Autolend continuera de proposer des offres de prêt selon les critères que vous avez définis. Vous pouvez modifier vos critères Autolend à tout moment depuis votre <a href="[EMV DYN]autolendLink[EMV /DYN]">espace personnel sécurisé</a>.</p>
 <p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
+<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
 },
 {
 name: 'preteur-autobid-ko',
 header: 'minimal',
 footer: 'lender',
 comment: '',
-content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
-<p>Vous avez proposé via Autolend une offre de prêt sur le projet <span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN]</span>. Entre-temps d\'autres prêteurs ont offert de meilleures propositions et votre offre n\'a pas été retenue.</p>
-<p>Il vous reste <span class="text-primary">[EMV DYN]fin_chrono[EMV /DYN]</span> pour proposer une nouvelle offre manuelle à un taux d\'intérêt inférieur.</p>
+content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
+<p>Vous avez proposé via Autolend une offre de prêt sur le projet <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span>. Entre-temps d\'autres prêteurs ont offert de meilleures propositions et votre offre n\'a pas été retenue.</p>
+<p>Il vous reste <span class="text-primary">[EMV DYN]bidRemainingTime[EMV /DYN]</span> pour proposer une nouvelle offre manuelle à un taux d\'intérêt inférieur.</p>
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
     <tr>
         <td class="cta align="center">
         <!--[if mso]>
-        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]projet-p[EMV /DYN]" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
+        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]projectLink[EMV /DYN]" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
             <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Nouvelle offre</center>
         </v:roundrect>
         <![endif]-->
-        <a href="[EMV DYN]projet-p[EMV /DYN]" class="btn-primary">Nouvelle offre</a>
+        <a href="[EMV DYN]projectLink[EMV /DYN]" class="btn-primary">Nouvelle offre</a>
         </td>
     </tr>
 </table>
 <p>Autolend continuera de proposer des offres de prêt selon les critères que vous avez définis.</p>
 <p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
+<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
 },
 {
 name: 'preteur-contrat',
@@ -1013,23 +1013,23 @@ name: 'preteur-bid-ko',
 header: 'minimal',
 footer: 'lender',
 comment: '',
-content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
-<p>Vous avez fait une offre de <span class="text-primary">[EMV DYN]valeur_bid[EMV /DYN]€</span> à <span class="text-primary">[EMV DYN]taux_bid[EMV /DYN]% </span> à <span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN]</span>. Entre-temps d\'autres prêteurs ont offert de meilleures propositions et votre offre ne sera pas retenue. </p>
-<p>N \'hésitez pas à proposer une nouvelle offre à un taux d\'intérêt inférieur dès maintenant. Les offres sont sélectionnées exclusivement en fonction de leur taux d\'intérêt, jamais selon leur montant.</p>
+content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
+<p>Vous avez fait une offre de <span class="text-primary">[EMV DYN]bidAmount[EMV /DYN]&nbsp;€</span> à <span class="text-primary">[EMV DYN]bidRate[EMV /DYN]&nbsp;%</span> à <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span>. Entre-temps d\'autres prêteurs ont offert de meilleures propositions et votre offre ne sera pas retenue.</p>
+<p>N\'hésitez pas à proposer une nouvelle offre à un taux d\'intérêt inférieur dès maintenant. Les offres sont sélectionnées exclusivement en fonction de leur taux d\'intérêt, jamais selon leur montant.</p>
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
     <tr>
         <td class="cta" align="center">
             <!--[if mso]>
-            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]projet-p[EMV /DYN]" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
+            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]projectLink[EMV /DYN]" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
                 <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Nouvelle offre</center>
             </v:roundrect>
             <![endif]-->
-            <a href="[EMV DYN]projet-p[EMV /DYN]" class="btn-primary">Nouvelle offre</a>
+            <a href="[EMV DYN]projectLink[EMV /DYN]" class="btn-primary">Nouvelle offre</a>
         </td>
     </tr>
 </table>
 <p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
+<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
 },
 {
 name: 'preteur-alimentation-cb',
@@ -1324,24 +1324,23 @@ name: 'preteur-autobid-ko-apres-fin-de-periode-projet',
 header: 'minimal',
 footer: 'lender',
 comment: '',
-content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
-<p>Vous avez proposé via Autolend une offre de prêt  sur le projet <span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN]</span>. Entre-temps d\'autres prêteurs ont offert de meilleures propositions et votre offre n\'est plus susceptible d\'être retenue.</p>
+content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
+<p>Vous avez proposé via Autolend une offre de prêt  sur le projet <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span>. Entre-temps d\'autres prêteurs ont offert de meilleures propositions et votre offre n\'est plus susceptible d\'être retenue.</p>
 <p>Autolend continuera de proposer des offres de prêt selon les critères que vous avez définis.</p>
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
     <tr>
         <td class="cta" align="center">
             <!--[if mso]>
-            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]projet-p[EMV /DYN]" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
-
+            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]projectLink[EMV /DYN]" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
                 <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Nouvelle offre</center>
             </v:roundrect>
             <![endif]-->
-            <a href="[EMV DYN]projet-p[EMV /DYN]" class="btn-primary">Nouvelle offre</a>
+            <a href="EMV DYN]frontUrl[EMV /DYN][EMV DYN]projectLink[EMV /DYN]" class="btn-primary">Nouvelle offre</a>
         </td>
     </tr>
 </table>
 <p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
+<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
 },
 {
 name: 'confirmation-depot-de-dossier',
@@ -1372,21 +1371,21 @@ name: 'preteur-autobid-activation',
 header: 'minimal',
 footer: 'lender',
 comment: '',
-content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN]</p>
-<p>Vous avez activé <strong>Autolend</strong> aujourd\'hui à [EMV DYN]heure_activation[EMV /DYN].</p>
-<p>À partir de maintenant, dès qu\'un projet est mis en ligne, Autolend propose <strong>automatiquement une offre de prêt</strong> en votre nom. Autolend gèrera votre offre selon  vos critères jusqu\'à la fin de la campagne de souscription. </p>
-<p>Bien évidemment, vous pouvez à tout moment modifier ces critères ou désactiver Autolend. Pour cela <a href="[EMV DYN]url[EMV /DYN]/profile/autolend">cliquez ici</a>.</p>
+content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN]</p>
+<p>Vous avez activé <b>Autolend</b> aujourd\'hui à [EMV DYN]autolendActivationTime[EMV /DYN].</p>
+<p>À partir de maintenant, dès qu\'un projet est mis en ligne, Autolend propose <b>automatiquement une offre de prêt</b> en votre nom. Autolend gèrera votre offre selon  vos critères jusqu\'à la fin de la campagne de souscription.</p>
+<p>Bien évidemment, vous pouvez à tout moment modifier ces critères ou désactiver Autolend. Pour cela <a href="[EMV DYN]frontUrl[EMV /DYN]/profile/autolend">cliquez ici</a>.</p>
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
     <tr>
         <td class="alert">
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
                 <tr>
                     <td class="left" valign="top">
-                        <img src="https://www.local.unilend.fr/images/emails/alert.png" width="36" height="36" alt="Important">
+                        <img src="[EMV DYN]staticUrl[EMV /DYN]/images/emails/alert.png" width="36" height="36" alt="Important">
                     </td>
                     <td class="right" valign="top">
                         <p>
-                            Pour éviter qu\'Autolend soit suspendu, nous vous recommandons de vérifier régulièrement que <a href="[EMV DYN]url[EMV /DYN]/alimentation">votre compte est suffisamment alimenté</a>.
+                            Pour éviter qu\'Autolend soit suspendu, nous vous recommandons de vérifier régulièrement que <a href="[EMV DYN]frontUrl[EMV /DYN]/alimentation">votre compte est suffisamment alimenté</a>.
                         </p>
                     </td>
                 </tr>
@@ -1395,20 +1394,32 @@ content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN]</p>
     </tr>
 </table>
 <p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
+<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
 },
 {
 name: 'preteur-bid-ko-apres-fin-de-periode-projet',
 header: 'minimal',
 footer: 'lender',
 comment: '',
-content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
-<p>Vous avez proposé de prêter <span class="text-primary">[EMV DYN]valeur_bid[EMV /DYN]€</span> à <span class="text-primary">[EMV DYN]taux_bid[EMV /DYN] %</span> à l\'entreprise <span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN]</span> le <span class="text-primary">[EMV DYN]date_bid[EMV /DYN]</span> à <span class="text-primary">[EMV DYN]heure_bid[EMV /DYN]</span>.</p>
+content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
+<p>Vous avez proposé de prêter <span class="text-primary">[EMV DYN]bidAmount[EMV /DYN]&nbsp;€</span> à <span class="text-primary">[EMV DYN]bidRate[EMV /DYN]&nbsp;%</span> à l\'entreprise <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span> le <span class="text-primary">[EMV DYN]bidDate[EMV /DYN]</span> à <span class="text-primary">[EMV DYN]bidTime[EMV /DYN]</span>.</p>
 <p>Entre-temps d\'autres prêteurs ont offert de meilleures propositions et votre offre n\'est plus susceptible d\'être retenue.</p>
-<p>De nouveaux projets à financer seront bientôt mis en ligne sur <a href="[EMV DYN]projet-p[EMV /DYN]">Unilend</a>.</p>
+<p>De nouveaux projets à financer seront bientôt mis en ligne sur <a href="[EMV DYN]projectsListLink[EMV /DYN]">Unilend</a>.</p>
 <p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>
-'
+<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
+},
+{
+name: 'preteur-bid-ko-minimum-rate',
+header: 'minimal',
+footer: 'lender',
+comment: '',
+title: 'Attention, l\'une de vos offres ne sera pas retenue',
+
+content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
+<p>Vous avez proposé de prêter à <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span> la somme de <span class="text-primary">[EMV DYN]bidAmount[EMV /DYN]&nbsp;€</span> au taux d\'intérêt de <span class="text-primary">[EMV DYN]bidRate[EMV /DYN]&nbsp;%</span> le <span class="text-primary">[EMV DYN]bidDate[EMV /DYN]</span> à <span class="text-primary">[EMV DYN]bidTime[EMV /DYN]</span>.</p>
+<p>Entre-temps d\'autres prêteurs ont offert de meilleures propositions et votre offre n\'est plus susceptible d\'être retenue.</p>
+<p> </p>
+<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
 },
 {
 name: 'ouverture-espace-emprunteur-plein',

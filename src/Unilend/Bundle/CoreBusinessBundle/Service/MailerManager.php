@@ -499,44 +499,62 @@ class MailerManager
             $projectRates = $bidManager->getProjectRateRange($project);
 
             if ($bid->getAutobid()) {
-                if ('0000-00-00 00:00:00' != $project->date_fin && $bid->getProject()->getDateFin() <= $now) {
+                $keyWords = [
+                    'lenderPattern' => $bid->getIdLenderAccount()->getWireTransferPattern(),
+                    'firstName'     => $bid->getIdLenderAccount()->getIdClient()->getPrenom(),
+                    'companyName'   => $bid->getProject()->getIdCompany()->getName(),
+                ];
+
+                if ($endDate <= $now) {
                     $mailTemplate = 'preteur-autobid-ko-apres-fin-de-periode-projet';
+                    $keyWords     += [
+                        'projectLink' => $this->sFUrl . '/projects/detail/' . $bid->getProject()->getSlug()
+                    ];
                 } elseif ($bids->getProjectMaxRate($project) > $projectRates['rate_min']) {
                     $mailTemplate = 'preteur-autobid-ko';
+                    $keyWords     += [
+                        'bidRemainingTime' => $interval,
+                        'projectLink'      => $this->sFUrl . '/projects/detail/' . $bid->getProject()->getSlug()
+                    ];
                 } else {
                     $mailTemplate = 'preteur-autobid-ko-minimum-rate';
+                    $keyWords     += [
+                        'autolendLink' => $this->sFUrl . '/profile/autolend#parametrage',
+                    ];
                 }
             } else {
-                if ('0000-00-00 00:00:00' != $project->date_fin && $bid->getProject()->getDateFin() <= $now) {
+                $keyWords = [
+                    'lenderPattern' => $bid->getIdLenderAccount()->getWireTransferPattern(),
+                    'firstName'     => $bid->getIdLenderAccount()->getIdClient()->getPrenom(),
+                    'companyName'   => $bid->getProject()->getIdCompany()->getName(),
+                    'bidAmount'     => $this->oFicelle->formatNumber($bid->getAmount() / 100, 0),
+                    'bidRate'       => $this->oFicelle->formatNumber($bid->getRate(), 1)
+                ];
+
+                if ($endDate <= $now) {
                     $mailTemplate = 'preteur-bid-ko-apres-fin-de-periode-projet';
+                    $keyWords     += [
+                        'bidDate'          => strftime('%d-%B-%G', $bid->getAdded()->getTimestamp()),
+                        'bidTime'          => $bid->getAdded()->format('H\hi'),
+                        'projectLink'      => $this->sFUrl . '/projects/detail/' . $bid->getProject()->getSlug(),
+                        'projectsListLink' => $this->sFUrl . '/projects-a-financer'
+                    ];
                 } elseif ($bids->getProjectMaxRate($project) > $projectRates['rate_min']) {
                     $mailTemplate = 'preteur-bid-ko';
+                    $keyWords     += [
+                        'projectLink' => $this->sFUrl . '/projects/detail/' . $bid->getProject()->getSlug()
+                    ];
                 } else {
                     $mailTemplate = 'preteur-bid-ko-minimum-rate';
+                    $keyWords     += [
+                        'bidDate' => strftime('%d-%B-%G', $bid->getAdded()->getTimestamp()),
+                        'bidTime' => $bid->getAdded()->format('H\hi'),
+                    ];
                 }
             }
 
-            $varMail = [
-                'surl'             => $this->sSUrl,
-                'url'              => $this->sFUrl,
-                'prenom_p'         => $bid->getIdLenderAccount()->getIdClient()->getPrenom(),
-                'valeur_bid'       => $this->oFicelle->formatNumber($bid->getAmount() / 100, 0),
-                'taux_bid'         => $this->oFicelle->formatNumber($bid->getRate(), 1),
-                'autobid_rate_min' => (null !== $bid->getAutobid()) ? $bid->getAutobid()->getRateMin() : '',
-                'nom_entreprise'   => $bid->getProject()->getIdCompany()->getName(),
-                'projet-p'         => $this->sFUrl . '/projects/detail/' . $bid->getProject()->getSlug(),
-                'date_bid'         => strftime('%d-%B-%G', $bid->getAdded()->getTimestamp()),
-                'heure_bid'        => $bid->getAdded()->format('H\hi'),
-                'fin_chrono'       => $interval,
-                'projet-bid'       => $this->sFUrl . '/projects/detail/' . $bid->getProject()->getSlug(),
-                'autobid_link'     => $this->sFUrl . '/profile/autolend#parametrage',
-                'motif_virement'   => $bid->getIdLenderAccount()->getWireTransferPattern(),
-                'lien_fb'          => $this->getFacebookLink(),
-                'lien_tw'          => $this->getTwitterLink()
-            ];
-
             /** @var TemplateMessage $message */
-            $message = $this->messageProvider->newMessage($mailTemplate, $varMail);
+            $message = $this->messageProvider->newMessage($mailTemplate, $keyWords);
             try {
                 $message->setTo($bid->getIdLenderAccount()->getIdClient()->getEmail());
                 $this->mailer->send($message);
@@ -641,23 +659,18 @@ class MailerManager
         $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($notification->id_lender);
 
         if (Clients::STATUS_ONLINE === $wallet->getIdClient()->getStatus()) {
-            $varMail = [
-                'surl'             => $this->sSUrl,
-                'url'              => $this->sFUrl,
-                'prenom_p'         => $wallet->getIdClient()->getPrenom(),
-                'heure_activation' => $this->getActivationTime($wallet->getIdClient()->getIdClient())->format('G\hi'),
-                'motif_virement'   => $wallet->getWireTransferPattern(),
-                'lien_fb'          => $this->getFacebookLink(),
-                'lien_tw'          => $this->getTwitterLink(),
-                'annee'            => date('Y')
+            $keyWords = [
+                'firstName'              => $wallet->getIdClient()->getPrenom(),
+                'autolendActivationTime' => $this->getActivationTime($wallet->getIdClient()->getIdClient())->format('G\hi'),
+                'lenderPattern'          => $wallet->getWireTransferPattern(),
             ];
 
             /** @var TemplateMessage $message */
-            $message = $this->messageProvider->newMessage('preteur-autobid-activation', $varMail);
+            $message = $this->messageProvider->newMessage('preteur-autobid-activation', $keyWords);
             try {
                 $message->setTo($wallet->getIdClient()->getEmail());
                 $this->mailer->send($message);
-            } catch (\Exception $exception){
+            } catch (\Exception $exception) {
                 $this->oLogger->warning(
                     'Could not send email: preteur-autobid-activation - Exception: ' . $exception->getMessage(),
                     ['id_mail_template' => $message->getTemplateId(), 'id_client' => $wallet->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
