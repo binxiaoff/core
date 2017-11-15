@@ -104,36 +104,30 @@ class MailerManager
         $this->oLogger = $oLogger;
     }
 
+    /**
+     * @param \notifications $notification
+     */
     public function sendBidConfirmation(\notifications $notification)
     {
-        /** @var \tree $tree */
-        $tree = $this->entityManagerSimulator->getRepository('tree');
         /** @var Bids $bid */
         $bid = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($notification->id_bid);
 
         if (null !== $bid) {
             $mailTemplate = $bid->getAutobid() ? 'confirmation-autobid' : 'confirmation-bid';
-            $pageProjects = $tree->getSlug(4, substr($this->locale, 0, 2));
-
-            $varMail = [
-                'surl'           => $this->sSUrl,
-                'url'            => $this->sFUrl,
-                'prenom_p'       => $bid->getIdLenderAccount()->getIdClient()->getPrenom(),
-                'nom_entreprise' => $bid->getProject()->getIdCompany()->getName(),
-                'project_name'   => $bid->getProject()->getTitle(),
-                'valeur_bid'     => $this->oFicelle->formatNumber($bid->getAmount() / 100),
-                'taux_bid'       => $this->oFicelle->formatNumber($bid->getRate(), 1),
-                'date_bid'       => strftime('%d-%B-%G', $bid->getAdded()->getTimestamp()),
-                'heure_bid'      => $bid->getAdded()->format('H:i:s'),
-                'projet-p'       => $this->sFUrl . '/' . $pageProjects,
-                'autobid_link'   => $this->sFUrl . '/profile/autolend#parametrage',
-                'motif_virement' => $bid->getIdLenderAccount()->getWireTransferPattern(),
-                'lien_fb'        => $this->getFacebookLink(),
-                'lien_tw'        => $this->getTwitterLink()
+            $keywords     = [
+                'firstName'     => $bid->getIdLenderAccount()->getIdClient()->getPrenom(),
+                'companyName'   => $bid->getProject()->getIdCompany()->getName(),
+                'projectName'   => $bid->getProject()->getTitle(),
+                'bidAmount'     => $this->oFicelle->formatNumber($bid->getAmount() / 100, 0),
+                'bidRate'       => $this->oFicelle->formatNumber($bid->getRate(), 1),
+                'bidDate'       => strftime('%d %B %G', $bid->getAdded()->getTimestamp()),
+                'bidTime'       => $bid->getAdded()->format('H:i:s'),
+                'lenderPattern' => $bid->getIdLenderAccount()->getWireTransferPattern()
             ];
 
             /** @var TemplateMessage $message */
-            $message = $this->messageProvider->newMessage($mailTemplate, $varMail);
+            $message = $this->messageProvider->newMessage($mailTemplate, $keywords);
+
             try {
                 $message->setTo($bid->getIdLenderAccount()->getIdClient()->getEmail());
                 $this->mailer->send($message);
@@ -761,26 +755,23 @@ class MailerManager
 
             $publicationDate = (null === $project->getDatePublication()) ? new \DateTime() : $project->getDatePublication();
             $endDate         = (null === $project->getDateRetrait()) ? new \DateTime() : $project->getDateRetrait();
+            $fundingTime     = $publicationDate->diff($endDate);
+            $fundingDay      = $fundingTime->d + ($fundingTime->h > 0 ? 1 : 0);
 
-            $fundingTime = $publicationDate->diff($endDate);
-            $fundingDay  = $fundingTime->d + ($fundingTime->h > 0 ? 1 : 0);
-
-            $mailVariables = [
-                'surl'           => $this->sSUrl,
-                'url'            => $this->sFUrl,
-                'nom_entreprise' => $company->getName(),
-                'projet_p'       => $this->sFUrl . '/projects/detail/' . $project->getSlug(),
-                'montant'        => $this->oFicelle->formatNumber((float) $project->getAmount(), 0),
-                'heure_debut'    => $publicationDate->format('H\hi'),
-                'duree'          => $fundingDay . ($fundingDay == 1 ? ' jour' : ' jours'),
-                'prenom_e'       => $firstName,
-                'lien_fb'        => $this->getFacebookLink(),
-                'lien_tw'        => $this->getTwitterLink(),
-                'annee'          => date('Y')
+            $keywords = [
+                'firstName'                  => $firstName,
+                'companyName'                => $company->getName(),
+                'fundingDuration'            => $fundingDay . ($fundingDay == 1 ? ' jour' : ' jours'),
+                'projectAmount'              => $this->oFicelle->formatNumber($project->getAmount(), 0),
+                'startingTime'               => $publicationDate->format('H\hi'),
+                'projectLink'                => $this->sFUrl . '/projects/detail/' . $project->getSlug(),
+                'borrowerServicePhoneNumber' => $this->settingsRepository->findOneBy(['type' => 'Téléphone emprunteur'])->getValue(),
+                'borrowerServiceEmail'       => $this->settingsRepository->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
             ];
 
             /** @var TemplateMessage $message */
-            $message = $this->messageProvider->newMessage('annonce-mise-en-ligne-emprunteur', $mailVariables);
+            $message = $this->messageProvider->newMessage('annonce-mise-en-ligne-emprunteur', $keywords);
+
             try {
                 $message->setTo($mailClient);
                 $this->mailer->send($message);
@@ -1821,19 +1812,15 @@ class MailerManager
     /**
      * @param \users $user
      */
-    public function sendPasswordModificationEmail(\users $user)
+    public function sendAdminPasswordModificationEmail(\users $user)
     {
-        $replacements = [
-            'surl'    => $this->sSUrl,
-            'url'     => $this->sFUrl,
-            'email'   => trim($user->email),
-            'lien_fb' => $this->getFacebookLink(),
-            'lien_tw' => $this->getTwitterLink(),
-            'annee'   => date('Y')
+        $keywords = [
+            'firstName' => $user->firstname
         ];
 
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('admin-nouveau-mot-de-passe', $replacements);
+        $message = $this->messageProvider->newMessage('admin-nouveau-mot-de-passe', $keywords);
+
         try {
             $message->setTo(trim($user->email));
 

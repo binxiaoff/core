@@ -143,6 +143,7 @@ class SecurityController extends Controller
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $varMail);
+
                 try {
                     $message->setTo($clients->email);
                     $mailer = $this->get('mailer');
