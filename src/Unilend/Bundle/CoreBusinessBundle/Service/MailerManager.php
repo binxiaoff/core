@@ -216,19 +216,15 @@ class MailerManager
                 $remainingDuration = $inter['secondes'] . ' secondes';
             }
 
-            $keywords = array(
-                'surl'          => $this->sSUrl,
-                'url'           => $this->sFUrl,
-                'prenom_e'      => $oBorrower->prenom,
-                'taux_moyen'    => $this->oFicelle->formatNumber($oProject->getAverageInterestRate(), 1),
-                'temps_restant' => $remainingDuration,
-                'projet'        => $oProject->title,
-                'lien_fb'       => $this->getFacebookLink(),
-                'lien_tw'       => $this->getTwitterLink()
-            );
+            $keywords = [
+                'firstName'         => $oBorrower->prenom,
+                'averageRate'       => $this->oFicelle->formatNumber($oProject->getAverageInterestRate(), 1),
+                'remainingDuration' => $remainingDuration,
+            ];
 
             /** @var TemplateMessage $message */
             $message = $this->messageProvider->newMessage('emprunteur-dossier-funde', $keywords);
+
             try {
                 $message->setTo($oBorrower->email);
                 $this->mailer->send($message);
@@ -260,39 +256,25 @@ class MailerManager
         $monthlyPayment = $borrowerPaymentSchedule->montant + $borrowerPaymentSchedule->commission + $borrowerPaymentSchedule->tva;
         $monthlyPayment = $monthlyPayment / 100;
 
-        $varMail = [
-            'surl'                   => $this->sSUrl,
-            'url'                    => $this->sFUrl,
-            'prenom_e'               => $borrower->prenom,
-            'nom_e'                  => $company->name,
-            'mensualite'             => $this->oFicelle->formatNumber($monthlyPayment),
-            'montant'                => $this->oFicelle->formatNumber($project->amount, 0),
-            'taux_moyen'             => $this->oFicelle->formatNumber($project->getAverageInterestRate(), 1),
-            'link_compte_emprunteur' => $this->sFUrl . '/projects/detail/' . $project->id_project,
-            'link_signature'         => $this->sFUrl . '/pdf/projet/' . $borrower->hash . '/' . $project->id_project,
-            'projet'                 => $project->title,
-            'lien_fb'                => $this->getFacebookLink(),
-            'lien_tw'                => $this->getTwitterLink(),
-            'annee'                  => date('Y')
+        $keywords = [
+            'firstName'      => $borrower->prenom,
+            'companyName'    => $company->name,
+            'projectAmount'  => $this->oFicelle->formatNumber($project->amount, 0),
+            'averageRate'    => $this->oFicelle->formatNumber($project->getAverageInterestRate(), 1),
+            'monthlyPayment' => $this->oFicelle->formatNumber($monthlyPayment),
+            'signatureLink'  => $this->sFUrl . '/pdf/projet/' . $borrower->hash . '/' . $project->id_project
         ];
 
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('emprunteur-dossier-funde-et-termine', $varMail);
+        $message = $this->messageProvider->newMessage('emprunteur-dossier-funde-et-termine', $keywords);
+
         try {
             $message->setTo($borrower->email);
-            $isSent = $this->mailer->send($message);
+            $this->mailer->send($message);
         } catch (\Exception $exception){
             $this->oLogger->warning(
                 'Could not send email: emprunteur-dossier-funde-et-termine - Exception: ' . $exception->getMessage(),
                 ['id_mail_template' => $message->getTemplateId(), 'id_client' => $borrower->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
-            $isSent = 0;
-        }
-
-        if ($isSent > 0) {
-            $this->oLogger->info(
-                'Email emprunteur-dossier-funde-et-termine sent (project ' . $project->id_project . ')',
-                array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project)
             );
         }
     }
@@ -571,33 +553,21 @@ class MailerManager
         $oCompany->get($oProject->id_company, 'id_company');
         $oClient->get($oCompany->id_client_owner, 'id_client');
 
-        if ($oClient->status == 1) {
-            $varMail = [
-                'surl'     => $this->sSUrl,
-                'url'      => $this->sFUrl,
-                'prenom_e' => $oClient->prenom,
-                'projet'   => $oProject->title,
-                'lien_fb'  => $this->getFacebookLink(),
-                'lien_tw'  => $this->getTwitterLink()
+        if ($oClient->status == Clients::STATUS_ONLINE) {
+            $keywords = [
+                'firstName' => $oClient->prenom
             ];
 
             /** @var TemplateMessage $message */
-            $message = $this->messageProvider->newMessage('emprunteur-dossier-funding-ko', $varMail);
+            $message = $this->messageProvider->newMessage('emprunteur-dossier-funding-ko', $keywords);
+
             try {
                 $message->setTo($oClient->email);
-                $isSent = $this->mailer->send($message);
+                $this->mailer->send($message);
             } catch (\Exception $exception){
                 $this->oLogger->warning(
                     'Could not send email: emprunteur-dossier-funding-ko - Exception: ' . $exception->getMessage(),
                     ['id_mail_template' => $message->getTemplateId(), 'id_client' => $oClient->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
-                );
-                $isSent = 0;
-            }
-
-            if ($isSent > 0) {
-                $this->oLogger->info(
-                    'Email emprunteur-dossier-funding-ko sent (project ' . $oProject->id_project . ')',
-                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project]
                 );
             }
         }
@@ -1892,53 +1862,6 @@ class MailerManager
         $this->mailer->send($messageBO);
 
         $this->oLogger->info('Manual repayment, Send preteur-dernier-remboursement-controle. Data to use: ' . var_export($varMail, true), ['class' => __CLASS__, 'function' => __FUNCTION__]);
-    }
-
-    /**
-     * @param Projects $project
-     */
-    public function sendClientNotificationEndOfRepayment(Projects $project)
-    {
-        $company                = $project->getIdCompany();
-        $client                 = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
-        $borrowerWithdrawalType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_WITHDRAW]);
-        $borrowerWithdrawal     = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Operation')
-            ->findOneBy(['idType' => $borrowerWithdrawalType, 'idProject' => $project], ['added' => 'ASC']);
-        $lastRepayment          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->findOneBy(['idProject' => $project], ['added' => 'DESC']);
-
-        /** @var \loans $loans */
-        $loans = $this->entityManagerSimulator->getRepository('loans');
-
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
-
-        $varMail = [
-            'surl'               => $this->sSUrl,
-            'url'                => $this->sFUrl,
-            'prenom'             => $client->getPrenom(),
-            'date_financement'   => $borrowerWithdrawal->getAdded()->format('d/m/Y'),
-            'date_remboursement' => $lastRepayment->getAdded()->format('d/m/Y'),
-            'raison_sociale'     => $company->getName(),
-            'montant'            => $ficelle->formatNumber($project->getAmount(), 0),
-            'duree'              => $project->getPeriod(),
-            'duree_financement'  => $project->getDatePublication()->diff($project->getDateRetrait())->d,
-            'nb_preteurs'        => $loans->getNbPreteurs($project->getIdProject()),
-            'lien_fb'            => $this->getFacebookLink(),
-            'lien_tw'            => $this->getTwitterLink(),
-        ];
-
-        /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('emprunteur-dernier-remboursement', $varMail);
-        try {
-            $message->setTo($client->getEmail());
-            $this->mailer->send($message);
-        } catch (\Exception $exception){
-            $this->oLogger->warning(
-                'Could not send email: emprunteur-dernier-remboursement - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
-        }
     }
 
     /**

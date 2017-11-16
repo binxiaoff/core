@@ -12,6 +12,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\RemboursementAnticipeMailAEnvoyer;
+use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class ProjectRepaymentNotificationSender
@@ -329,28 +330,20 @@ class ProjectRepaymentNotificationSender
             ->findOneBy(['idType' => $borrowerWithdrawalType, 'idProject' => $project], ['added' => 'ASC']);
         $lastRepayment          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->findOneBy(['idProject' => $project], ['added' => 'DESC']);
 
-        /** @var \loans $loans */
-        $loanRepository     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
-        $settingsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
-        $facebook           = $settingsRepository->findOneBy(['type' => 'Facebook'])->getValue();
-        $twitter            = $settingsRepository->findOneBy(['type' => 'Twitter'])->getValue();
-
-        $varMail = [
-            'surl'               => $this->assetsPackages->getUrl(''),
-            'url'                => $this->frontUrl,
-            'prenom'             => $client->getPrenom(),
-            'date_financement'   => $borrowerWithdrawal->getAdded()->format('d/m/Y'),
-            'date_remboursement' => $lastRepayment->getAdded()->format('d/m/Y'),
-            'raison_sociale'     => $company->getName(),
-            'montant'            => $this->numberFormatter->format($project->getAmount(), 0),
-            'duree'              => $project->getPeriod(),
-            'duree_financement'  => $project->getDatePublication()->diff($project->getDateRetrait())->d,
-            'nb_preteurs'        => $loanRepository->getLenderNumber($project),
-            'lien_fb'            => $facebook,
-            'lien_tw'            => $twitter,
+        $keywords = [
+            'firstName'            => $client->getPrenom(),
+            'fundingDate'          => $borrowerWithdrawal->getAdded()->format('d/m/Y'),
+            'companyName'          => $company->getName(),
+            'projectAmount'        => $this->numberFormatter->format($project->getAmount(), 0),
+            'projectDuration'      => $project->getPeriod(),
+            'lendersCount'         => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getLenderNumber($project),
+            'repaymentDate'        => $lastRepayment->getAdded()->format('d/m/Y'),
+            'borrowerServiceEmail' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
         ];
 
-        $message = $this->messageProvider->newMessage('emprunteur-dernier-remboursement', $varMail);
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage('emprunteur-dernier-remboursement', $keywords);
+
         try {
             $message->setTo($client->getEmail());
             $this->mailer->send($message);
@@ -370,16 +363,15 @@ class ProjectRepaymentNotificationSender
         $company  = $project->getIdCompany();
         $settings = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse controle interne']);
 
-        $varMail = [
-            'surl'           => $this->assetsPackages->getUrl(''),
-            'url'            => $this->frontUrl,
-            'nom_entreprise' => $company->getName(),
-            'nom_projet'     => $project->getTitle(),
-            'id_projet'      => $project->getIdProject(),
-            'annee'          => date('Y')
+        $keywords = [
+            'companyName' => $company->getName(),
+            'projectName' => $project->getTitle(),
+            'projectId'   => $project->getIdProject()
         ];
 
-        $message = $this->messageProvider->newMessage('preteur-dernier-remboursement-controle', $varMail);
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage('preteur-dernier-remboursement-controle', $keywords);
+
         try {
             $message->setTo($settings->getValue());
             $this->mailer->send($message);
