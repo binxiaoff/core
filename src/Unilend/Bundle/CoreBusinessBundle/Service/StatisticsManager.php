@@ -415,32 +415,34 @@ class StatisticsManager
                 $data['realistic-unilend-irr'][$year] = self::NOT_APPLICABLE;
             }
 
-            $data['borrowed-capital'][$year]                    = round($borrowedCapital[$year]);
-            $data['number-of-projects'][$year]                  = $fundedProjects[$year];
-            $data['average-borrowed-amount'][$year]             = round(bcdiv($borrowedCapital[$year], $fundedProjects[$year], 4));
-            $data['average-interest-rate'][$year]               = [
+            $data['borrowed-capital'][$year]                 = round($borrowedCapital[$year]);
+            $data['number-of-projects'][$year]               = $fundedProjects[$year];
+            $data['number-late-healthy-projects'][$year]     = $numberLateHealthyProjects[$year];
+            $data['number-late-problematic-projects'][$year] = $numberLateProblematicProjects[$year];
+            $data['average-borrowed-amount'][$year]          = round(bcdiv($borrowedCapital[$year], $fundedProjects[$year], 4));
+            $data['average-interest-rate'][$year]            = [
                 'volume' => $weightedAverageInterestRate[$year],
                 'number' => $notWeightedAverageInterestRate[$year]
             ];
-            $data['average-period'][$year]                      = [
+            $data['average-period'][$year]                   = [
                 'volume' => $weightedAveragePeriod[$year],
                 'number' => $notWeightedAveragePeriod[$year]
             ];
-            $data['average-loan-age'][$year]                    = [
+            $data['average-loan-age'][$year]                 = [
                 'volume' => $weightedAverageLoanAge[$year],
                 'number' => $NotWeightedAverageLoanAge[$year]
             ];
-            $data['repaid-capital'][$year]                      = round(bcsub($repaidCapital[$year], $repaidCapitalRegularized[$year], 4));
-            $data['repaid-capital-ratio'][$year]                = round(bcmul(bcdiv($data['repaid-capital'][$year], $data['borrowed-capital'][$year], 6), 100, 3), 2);
-            $data['repaid-interest'][$year]                     = round(bcsub($repaidInterest[$year], $repaidInterestRegularized[$year], 4), 2);
-            $data['repaid-interest-ratio'][$year]               = round(bcmul(bcdiv($data['repaid-interest'][$year], $totalInterest[$year], 6), 100, 3), 2);
-            $data['annual-cost-of-risk'][$year]                 = self::NOT_APPLICABLE === $data['optimistic-unilend-irr'][$year] ? self::NOT_APPLICABLE : round(bcsub($data['optimistic-unilend-irr'][$year], $data['realistic-unilend-irr'][$year], 4), 2);
-            $data['late-owed-capital-healthy'][$year]           = round(bcsub($lateCapitalRepaymentsHealthyProjects[$year], bcsub($debtCollectionRepaymentHealthyProjects[$year], $debtCollectionCommissionHealthyProjects[$year], 4), 4));
-            $data['late-capital-percentage'][$year]             = [
+            $data['repaid-capital'][$year]                   = round(bcsub($repaidCapital[$year], $repaidCapitalRegularized[$year], 4));
+            $data['repaid-capital-ratio'][$year]             = round(bcmul(bcdiv($data['repaid-capital'][$year], $data['borrowed-capital'][$year], 6), 100, 3), 2);
+            $data['repaid-interest'][$year]                  = round(bcsub($repaidInterest[$year], $repaidInterestRegularized[$year], 4), 2);
+            $data['repaid-interest-ratio'][$year]            = round(bcmul(bcdiv($data['repaid-interest'][$year], $totalInterest[$year], 6), 100, 3), 2);
+            $data['annual-cost-of-risk'][$year]              = self::NOT_APPLICABLE === $data['optimistic-unilend-irr'][$year] ? self::NOT_APPLICABLE : round(bcsub($data['optimistic-unilend-irr'][$year], $data['realistic-unilend-irr'][$year], 4), 2);
+            $data['late-owed-capital-healthy'][$year]        = round(bcsub($lateCapitalRepaymentsHealthyProjects[$year], bcsub($debtCollectionRepaymentHealthyProjects[$year], $debtCollectionCommissionHealthyProjects[$year], 4), 4));
+            $data['late-capital-percentage'][$year]          = [
                 'volume' => round(bcmul(bcdiv($data['late-owed-capital-healthy'][$year], $data['borrowed-capital'][$year], 6), 100, 3), 2),
-                'number' => round(bcdiv($numberLateHealthyProjects[$year], $data['number-of-projects'][$year], 6), 2)
+                'number' => round(bcmul(bcdiv($numberLateHealthyProjects[$year], $data['number-of-projects'][$year], 6), 100, 3), 2)
             ];
-            $data['late-owed-capital-problematic'][$year]       = round(bcadd($futureCapitalProblematicProjects[$year],bcsub($lateCapitalRepaymentsProblematicProjects[$year],bcsub($debtCollectionRepaymentProblematicProjects[$year], $debtCollectionCommissionProblematicProjects[$year], 4), 4), 4));
+            $data['late-owed-capital-problematic'][$year]    = round(bcadd($futureCapitalProblematicProjects[$year], bcsub($lateCapitalRepaymentsProblematicProjects[$year], bcsub($debtCollectionRepaymentProblematicProjects[$year], $debtCollectionCommissionProblematicProjects[$year], 4), 4), 4));
 
             $data['late-problematic-capital-percentage'][$year] = [
                 'volume' => round(bcmul(bcdiv($data['late-owed-capital-problematic'][$year], $data['borrowed-capital'][$year], 6), 100, 3), 2),

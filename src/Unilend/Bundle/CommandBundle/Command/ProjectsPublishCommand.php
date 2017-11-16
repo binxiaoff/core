@@ -58,7 +58,7 @@ EOF
                     $mailerManager->sendFundedToBorrower($oProject);
                 }
 
-                $this->zipProjectAttachments($oProject, $oEntityManager, $oLogger);
+                $this->zipProjectAttachments($oProject, $oEntityManager);
 
                 if (false === $oProjectManager->isRateMinReached($oProject)) {
                     $this->sendNewProjectEmail($oProject, $oEntityManager);
@@ -74,7 +74,7 @@ EOF
     }
 
     /**
-     * @param \projects
+     * @param \projects     $project
      * @param EntityManager $oEntityManager
      */
     private function zipProjectAttachments(\projects $project, EntityManager $oEntityManager)
