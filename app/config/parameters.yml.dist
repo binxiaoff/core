@@ -10,7 +10,9 @@ parameters:
 
     mailjet.api_key:                ~
     mailjet.api_secret:             ~
-    mailer_transport:               mail # mailjet for prod, mail for the rest of the environments
+    mailer_transport:               smtp # mailjet for prod, smtp for the rest of the environments
+    mailer_host:                    localhost
+    mailer_port:                    1025
 
     desk_user:                      equipeit@unilend.fr
     desk_password:                  password
@@ -93,7 +95,6 @@ parameters:
     path.sftp:                      %path.shared%sftp/
     path.protected:                 %path.shared%protected/
     path.payline:                   /data/sites/unilend/librairies/payline/
-    path.gulp_rev_manifest:         %kernel.root_dir%/../public/default/assets/rev-manifest.json
 
     mapbox.token:                   pk.eyJ1IjoidW5pbGVuZCIsImEiOiJjaXJiczA4ejQwMDVvaWZsdzdmMmpnOGRtIn0._IBtG2TUy17m7S6jwVBrcg
 
