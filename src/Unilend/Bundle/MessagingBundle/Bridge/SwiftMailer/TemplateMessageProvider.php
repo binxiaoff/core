@@ -100,7 +100,11 @@ class TemplateMessageProvider
         }
 
         if ($mailTemplate->getIdHeader()) {
-            $keywords['title'] = $this->translator->trans(Translations::SECTION_MAIL_TITLE . '_' . $mailTemplate->getType());
+            $keywords['title'] = strtr($this->translator->trans(Translations::SECTION_MAIL_TITLE . '_' . $mailTemplate->getType()), $keywords);
+
+            if (false !== strpos($keywords['title'], self::KEYWORDS_SUFFIX) && false !== strpos($keywords['title'], self::KEYWORDS_PREFIX)) {
+                $keywords['title'] = str_replace(self::KEYWORDS_SUFFIX, '', str_replace(self::KEYWORDS_PREFIX, '', $keywords['title']));
+            }
         }
 
         $keywords = array_merge($commonKeywords, $keywords);

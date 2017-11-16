@@ -761,59 +761,7 @@
 
 
 
-{
-name: 'synthese-quotidienne-remboursements, hebdomadaire, mensuelle',
-header: 'minimal',
-footer: 'lender',
-comment: '',
-content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
-<p>[EMV DYN]contenu[EMV /DYN]</p>
-<table class="table">
-    <tr>
-        <th class="th text-left">Projet</th>
-        <th class="th text-right">Montant Remboursé</th>
-        <th class="th text-right">Capital</th>
-        <th class="th text-right">Intérêts bruts</th>
-        <th class="th text-right">Intérêts nets</th>
-    </tr>
-    <tbody>
-    [EMV DYN]liste_offres[EMV /DYN]
-    </tbody>
-</table>
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-    <tr>
-        <td class="alert">
-            <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                <tr>
-                    <td class="left" valign="top">
-                        <img src="https://www.local.unilend.fr/images/emails/alert.png" width="36" height="36" alt="Important">
-                    </td>
-                    <td class="right" valign="top">
-                        <p>
-                            [EMV DYN]remboursement_anticipe[EMV /DYN]
-                        </p>
-                    </td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-</table>
-<p>Vous avez maintenant <span style="color: #b20066">[EMV DYN]montant_dispo[EMV /DYN]</span>&nbsp;€ disponibles pour prêter aux entreprises.</p>
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-    <tr>
-        <td class="cta" align="center">
-            <!--[if mso]>
-            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]url[EMV /DYN]/login" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
-                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Se connecter</center>
-            </v:roundrect>
-            <![endif]-->
-            <a href="[EMV DYN]url[EMV /DYN]/login" class="btn-primary">Se connecter</a>
-        </td>
-    </tr>
-</table>
-<p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
-},
+
 {
 name: 'preteur-remboursement',
 header: 'minimal',
@@ -1170,40 +1118,6 @@ content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 <p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
 },
 {
-name: 'synthese-quotidienne-offres-acceptees, hebdomadaire, mensuelle',
-header: 'minimal',
-footer: 'lender',
-comment: '',
-content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
-<p>[EMV DYN]contenu[EMV /DYN]</p>
-<table class="table">
-    <tr>
-        <th class="th text-left">Projet</th>
-        <th class="th text-right">Montant</th>
-        <th class="th text-right">Taux d\'intérêt</th>
-        <th class="th text-right">Document</th>
-    </tr>
-    [EMV DYN]liste_offres[EMV /DYN]
-</table>
-<p>&nbsp;</p>
-<p>Vos documents et le détail de vos remboursements sont disponibles sur votre espace.</p>
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-    <tr>
-        <td class="cta" align="center">
-            <!--[if mso]>
-            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]url[EMV /DYN]/operations" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
-                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Se connecter</center>
-            </v:roundrect>
-            <![endif]-->
-            <a href="[EMV DYN]url[EMV /DYN]/operations" class="btn-primary">Se connecter</a>
-        </td>
-    </tr>
-</table>
-<p>[EMV DYN]link_explication[EMV /DYN]</p>
-<p> </p>
-<p>À très bientôt sur <a href="https://www.unilend.fr" class="text-primary">Unilend</a>.</p>'
-},
-{
 name: 'preteur-projet-statut-recouvrement',
 header: 'minimal',
 footer: 'lender',
@@ -1277,86 +1191,6 @@ content: '<p>Madame, Monsieur,</p>
 <p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
 },
 {
-name: 'parrainage-invitation-filleul',
-header: 'full',
-footer: 'lender-uncompleted',
-comment: '',
-content: '<p>Bonjour [EMV DYN]sponsee_names[EMV /DYN],</p>
-<p>Rejoins-moi sur Unilend, je t\'offre ton premier prêt ! Voici ton lien d\'inscription personnalisé :</p>
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-    <tr>
-        <td class="cta" align="center">
-            <!--[if mso]>
-            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]link[EMV /DYN]" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
-                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Lien personnalisé</center>
-            </v:roundrect>
-            <![endif]-->
-            <a href="[EMV DYN]link[EMV /DYN]" class="btn-primary">Lien personnalisé</a>
-        </td>
-    </tr>
-</table>
-<p>Prête directement à des entreprises à des taux d\'intérêt compris entre 4% et 10%. Grâce à mon parrainage, tu gagnes [EMV DYN]amount[EMV /DYN]&nbsp;€ à prêter aux projets présentés sur Unilend.</p>
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-    <tr>
-        <td class="alert">
-            <p>[EMV DYN]sponsor_message[EMV /DYN]</p>
-        </td>
-    </tr>
-</table>
-<p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
-},
-{
-name: 'parrainage-versement-prime-parrain',
-header: 'minimal',
-footer: 'lender',
-comment: '',
-content: '<p>Bonjour [EMV DYN]sponsor_first_name[EMV /DYN],</p>
-<p>Grâce à votre parrainage, [EMV DYN]sponsee_first_name[EMV /DYN] [EMV DYN]sponsee_last_name[EMV /DYN] a réalisé son premier prêt à une entreprise sur Unilend !</p>
-<p>Pour vous remercier, nous avons le plaisir de vous verser votre prime de parrainage d\'un montant de [EMV DYN]amount[EMV /DYN]&nbsp;€ à prêter aux projets présentés sur Unilend.</p>
-<p>Rappel des conditions : cette somme ne peut servir qu\'à la réalisation d\'une opération de prêt à l\'entreprise de votre choix sur le site Unilend.</p>
-<p>Le montant des primes ne peut en aucun cas être retiré du compte prêteur Unilend du parrain et du filleul. Les primes ne peuvent être utilisées que pour faire un ou plusieurs prêts sur Unilend.</p>
-<p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
-},
-{
-name: 'parrainage-versement-prime-filleul',
-header: 'full',
-footer: 'lender',
-comment: '',
-content: '<p>Bonjour [EMV DYN]sponsee_first_name[EMV /DYN],</p>
-<p>Félicitations : votre prime de bienvenue d\'un montant de [EMV DYN]amount[EMV /DYN]&nbsp;€ a été créditée sur votre compte Unilend.</p>
-<p>Vous pouvez dès maintenant prêter cette somme à des entreprises de toute la France et recevoir des intérêts chaque mois.</p>
-<p>Rappel des conditions : cette somme ne peut servir qu\'à la réalisation d\'une opération de prêt à l\'entreprise de votre choix sur le site Unilend. Si aucun prêt d\'un montant au moins équivalant à la prime du parrain n\'est validé dans un délai de 100 jours, le montant de la prime sera retiré du compte Unilend du filleul.</p>
-<p>Le montant des primes ne peut en aucun cas être retiré du compte prêteur Unilend du parrain et du filleul. Les primes ne peuvent être utilisées que pour faire un ou plusieurs prêts sur Unilend.</p>
-<p>Le prêteur qui vous a parrainé recevra une prime de parrainage quand vous aurez prêté un montant supérieur à celui de votre prime de bienvenue.</p>
-<p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
-},
-{
-name: 'parrainage-plafond-filleuls',
-header: 'minimal',
-footer: 'lender',
-comment: '',
-content: '<p>Bonjour [EMV DYN]sponsor_first_name[EMV /DYN],</p>
-<p>Bravo, vous avez parrainé beaucoup de monde !</p>
-<p>Vous avez atteint le plafond de nouveaux filleuls sur la campagne de parrainage actuelle. Vous pourrez à nouveau parrainer vos amis lors de la prochaine campagne de parrainage.</p>
-<p>Toute l\'équipe Unilend vous remercie de votre fidélité</p>
-<p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
-},
-{
-name: 'parrainage-confirmation-validation-filleul',
-header: 'full',
-footer: 'lender',
-comment: '',
-content: '<p>Bonjour [EMV DYN]sponsor_first_name[EMV /DYN],</p>
-<p>Grâce à vous, [EMV DYN]sponsee_first_name[EMV /DYN] [EMV DYN]sponsee_last_name[EMV /DYN] a créé son compte sur Unilend !</p>
-<p>Nous vous remercions de votre soutien. Votre prime de parrain vous sera versée dès que votre filleul aura prêté un montant supérieur à sa prime de parrainage. N\'hésitez pas à le faire profiter de votre expérience de prêteur !</p><p>Cordialement, <br>L\'équipe Unilend</p>
-<p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
-},
-{
 name: 'preteur-validation-modification-compte',
 header: 'full',
 footer: 'lender',
@@ -1364,33 +1198,6 @@ comment: '',
 content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 <p>Nous avons vérifié les modifications effectuées sur votre profil.</p>
 <p>Nous sommes heureux de vous annoncer que votre compte est à nouveau disponible.</p>
-<p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
-},
-{
-name: 'offre-de-bienvenue',
-header: 'minimal',
-footer: 'lender',
-comment: '',
-content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
-<p>Félicitations : votre offre de bienvenue d\'un montant de <span class="text-primary">[EMV DYN]offre_bienvenue[EMV /DYN]&nbsp;€</span> a été créditée sur votre compte Unilend.</p>
-<p>Vous pouvez dès maintenant <a href="[EMV DYN]projets[EMV /DYN]">prêter cette somme à des entreprises de toute la France</a> et recevoir des intérêts chaque mois.</p>
-<p>Rappel des conditions : cette somme ne peut servir qu\'à la réalisation d\'une opération de prêt à l\'entreprise de votre choix sur le site Unilend</a>. Vous ne pouvez donc pas demander le virement de cette somme vers votre compte bancaire sans l\'avoir préalablement utilisée pour réaliser un prét.</p>
-<p>A défaut d\'utilisation du montant offert dans un délai de trois mois, Unilend se réserve le droit de récupérer cette somme non utilisée.</p>
-<p>Pour vous connecter sur votre <a href="https://www.unilend.fr/synthese">espace client</a>, votre identifiant est votre adresse email. Le mot de passe est celui que vous avez choisi.</p>
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-    <tr>
-        <td class="cta" align="center">
-            <!--[if mso]>
-            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]projets[EMV /DYN]" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
-
-                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Voir les projets</center>
-            </v:roundrect>
-            <![endif]-->
-            <a href="[EMV DYN]projets[EMV /DYN]" class="btn-primary">Voir les projets</a>
-        </td>
-    </tr>
-</table>
 <p> </p>
 <p>À très bientôt sur <a href="[EMV DYN]url[EMV /DYN]">Unilend</a>.</p>'
 },

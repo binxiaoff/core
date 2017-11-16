@@ -1494,8 +1494,8 @@ class MailerManager
                         $sLoansListHTML .= '
                             <tr>
                                 <td class="td"><a href="' . $this->sFUrl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
-                                <td class="td text-right">' . $this->oFicelle->formatNumber($oLoan->amount / 100, 0) . ' €</td>
-                                <td class="td text-right">' . $this->oFicelle->formatNumber($oLoan->rate, 1) . ' %</td>
+                                <td class="td text-right">' . $this->oFicelle->formatNumber($oLoan->amount / 100, 0) . '&nbsp;€</td>
+                                <td class="td text-right">' . $this->oFicelle->formatNumber($oLoan->rate, 1) . '&nbsp;%</td>
                                 <td class="td text-right">' . $sContractType . '</td>
                             </tr>';
                     }
@@ -1503,7 +1503,7 @@ class MailerManager
                     $sLoansListHTML .= '
                         <tr>
                             <td class="tf">Total de vos offres</td>
-                            <td class="tf text-right">' . $this->oFicelle->formatNumber($iSumAcceptedLoans, 0) . ' €</td>
+                            <td class="tf text-right">' . $this->oFicelle->formatNumber($iSumAcceptedLoans, 0) . '&nbsp;€</td>
                             <td class="tf">&nbsp;</td>
                             <td class="tf">&nbsp;</td>
                         </tr>';
@@ -1537,23 +1537,18 @@ class MailerManager
                         continue;
                     }
 
-                    $aReplacements = [
-                        'surl'             => $this->sSUrl,
-                        'url'              => $this->sFUrl,
-                        'prenom_p'         => $wallet->getIdClient()->getPrenom(),
-                        'liste_offres'     => $sLoansListHTML,
-                        'link_explication' => in_array($wallet->getIdClient()->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 'Pour en savoir plus sur les règles de regroupement des offres de prêt, vous pouvez consulter <a href="' . $this->sSUrl . '/document-de-pret">cette page</a>. ' : '',
-                        'motif_virement'   => $wallet->getWireTransferPattern(),
-                        'gestion_alertes'  => $this->sFUrl . '/profile',
-                        'contenu'          => $sContent,
-                        'objet'            => $sObject,
-                        'sujet'            => $sSubject,
-                        'lien_fb'          => $this->getFacebookLink(),
-                        'lien_tw'          => $this->getTwitterLink()
+                    $keyWords = [
+                        'firstName'               => $wallet->getIdClient()->getPrenom(),
+                        'acceptedLoans'           => $sLoansListHTML,
+                        'content'                 => $sContent,
+                        'loanGroupingExplication' => $wallet->getIdClient()->isNaturalPerson() ? 'Pour en savoir plus sur les règles de regroupement des offres de prêt, vous pouvez consulter <a href="' . $this->sSUrl . '/document-de-pret">cette page</a>. ' : '',
+                        'lenderPattern'           => $wallet->getWireTransferPattern(),
+                        'subject'                 => $sSubject,
+                        'title'                   => $sObject
                     ];
 
                     /** @var TemplateMessage $message */
-                    $message = $this->messageProvider->newMessage($sMail, $aReplacements);
+                    $message = $this->messageProvider->newMessage($sMail, $keyWords);
                     try {
                         $message->setTo($wallet->getIdClient()->getEmail());
                         $this->mailer->send($message);
@@ -1639,7 +1634,7 @@ class MailerManager
                 try {
                     $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($iCustomerId, WalletType::LENDER);
 
-                    $sEarlyRepaymentContent     = '';
+                    $earlyRepaymentContent     = '';
                     $sRepaymentsListHTML        = '';
                     $fTotalInterestsTaxFree     = 0;
                     $fTotalInterestsTaxIncluded = 0;
@@ -1687,10 +1682,27 @@ class MailerManager
                             $fRepaymentInterestsTaxIncluded = 0;
                             $fRepaymentTax                  = 0;
 
-                            $sEarlyRepaymentContent = "
-                                Le remboursement de <span class=\"text-primary\">" . $this->oFicelle->formatNumber($amount) . " €</span> correspond au remboursement total du capital restant dû de votre prêt à <span class=\"text-primary\">" . htmlentities($oCompanies->name) . "</span>.
+                            $earlyRepaymentText = "
+                                Le remboursement de <span class=\"text-primary\">" . $this->oFicelle->formatNumber($amount) . "&nbsp;€</span> correspond au remboursement total du capital restant dû de votre prêt à <span class=\"text-primary\">" . htmlentities($oCompanies->name) . "</span>.
                                 Comme le prévoient les règles d'Unilend, <span class=\"text-primary\">" . htmlentities($oCompanies->name) . "</span> a choisi de rembourser son emprunt par anticipation sans frais.<br/>
-                                Depuis l'origine, il vous a versé <span class=\"text-primary\">" . $this->oFicelle->formatNumber($oLenderRepayment->getRepaidInterests(['id_loan' => $loanId])) . " €</span> d'intérêts soit un taux d'intérêt annualisé moyen de <span class=\"text-primary\">" . $this->oFicelle->formatNumber($oLoan->getWeightedAverageInterestRateForLender($wallet->getId(), $oProject->id_project), 1) . " %.</span>";
+                                Depuis l'origine, il vous a versé <span class=\"text-primary\">" . $this->oFicelle->formatNumber($oLenderRepayment->getRepaidInterests(['id_loan' => $loanId])) . "&nbsp;€</span> d'intérêts soit un taux d'intérêt annualisé moyen de <span class=\"text-primary\">" . $this->oFicelle->formatNumber($oLoan->getWeightedAverageInterestRateForLender($wallet->getId(), $oProject->id_project), 1) . "&nbsp;%.</span>";
+
+                            $earlyRepaymentContent ='<table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                        <tr>
+                                                            <td class="alert">
+                                                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                                    <tr>
+                                                                        <td class="left" valign="top">
+                                                                            <img src="https://www.local.unilend.fr/images/emails/alert.png" width="36" height="36" alt="Important">
+                                                                        </td>
+                                                                        <td class="right" valign="top">
+                                                                            <p> ' . $earlyRepaymentText . ' </p>
+                                                                        </td>
+                                                                    </tr>
+                                                                </table>
+                                                            </td>
+                                                        </tr>
+                                                    </table>';
                         } else {
                             $oLenderRepayment->get($repaymentScheduleId);
 
@@ -1709,23 +1721,35 @@ class MailerManager
                         $fTotalInterestsTaxIncluded += $fRepaymentInterestsTaxIncluded;
                         $fTotalInterestsTaxFree     += $fRepaymentInterestsTaxIncluded - $fRepaymentTax;
 
-                        $sRepaymentsListHTML .= '
-                            <tr>
-                                <td class="td"><a href="' . $this->sFUrl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
-                                <td class="td text-right">' . $this->oFicelle->formatNumber($fRepaymentAmount) . ' €</td>
-                                <td class="td text-right">' . $this->oFicelle->formatNumber($fRepaymentCapital) . ' €</td>
-                                <td class="td text-right">' . $this->oFicelle->formatNumber($fRepaymentInterestsTaxIncluded) . ' €</td>
-                                <td class="td text-right">' . $this->oFicelle->formatNumber($fRepaymentInterestsTaxIncluded - $fRepaymentTax) . ' €</td>
-                            </tr>';
+                        if (strlen($oProject->title) > 20) {
+                            $sRepaymentsListHTML .= '
+                                                    <tr><td class="td" colspan="5"><a href="' . $this->sFUrl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td></tr>
+                                                    <tr>
+                                                        <td></td>
+                                                        <td class="td text-right">' . $this->oFicelle->formatNumber($fRepaymentAmount) . '&nbsp;€</td>
+                                                        <td class="td text-right">' . $this->oFicelle->formatNumber($fRepaymentCapital) . '&nbsp;€</td>
+                                                        <td class="td text-right">' . $this->oFicelle->formatNumber($fRepaymentInterestsTaxIncluded) . '&nbsp;€</td>
+                                                        <td class="td text-right">' . $this->oFicelle->formatNumber($fRepaymentInterestsTaxIncluded - $fRepaymentTax) . '&nbsp;€</td>
+                                                    </tr>';
+                        } else {
+                            $sRepaymentsListHTML .= '
+                                                    <tr>
+                                                        <td class="td"><a href="' . $this->sFUrl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
+                                                        <td class="td text-right">' . $this->oFicelle->formatNumber($fRepaymentAmount) . '&nbsp;€</td>
+                                                        <td class="td text-right">' . $this->oFicelle->formatNumber($fRepaymentCapital) . '&nbsp;€</td>
+                                                        <td class="td text-right">' . $this->oFicelle->formatNumber($fRepaymentInterestsTaxIncluded) . '&nbsp;€</td>
+                                                        <td class="td text-right">' . $this->oFicelle->formatNumber($fRepaymentInterestsTaxIncluded - $fRepaymentTax) . '&nbsp;€</td>
+                                                    </tr>';
+                        }
                     }
 
                     $sRepaymentsListHTML .= '
                         <tr>
                             <td class="tf">Total</td>
-                            <td class="tf text-right">' . $this->oFicelle->formatNumber($fTotalAmount) . ' €</td>
-                            <td class="tf text-right">' . $this->oFicelle->formatNumber($fTotalCapital) . ' €</td>
-                            <td class="tf text-right">' . $this->oFicelle->formatNumber($fTotalInterestsTaxIncluded) . ' €</td>
-                            <td class="tf text-right">' . $this->oFicelle->formatNumber($fTotalInterestsTaxFree) . ' €</td>
+                            <td class="tf text-right">' . $this->oFicelle->formatNumber($fTotalAmount) . '&nbsp;€</td>
+                            <td class="tf text-right">' . $this->oFicelle->formatNumber($fTotalCapital) . '&nbsp;€</td>
+                            <td class="tf text-right">' . $this->oFicelle->formatNumber($fTotalInterestsTaxIncluded) . '&nbsp;€</td>
+                            <td class="tf text-right">' . $this->oFicelle->formatNumber($fTotalInterestsTaxFree) . '&nbsp;€</td>
                         </tr>';
 
                     if (1 === $iRepaymentsCount && 'quotidienne' === $sFrequency) {
@@ -1751,24 +1775,18 @@ class MailerManager
                         continue;
                     }
 
-                    $aReplacements = [
-                        'surl'                   => $this->sSUrl,
-                        'url'                    => $this->sFUrl,
-                        'prenom_p'               => $wallet->getIdClient()->getPrenom(),
-                        'liste_offres'           => $sRepaymentsListHTML,
-                        'motif_virement'         => $wallet->getWireTransferPattern(),
-                        'gestion_alertes'        => $this->sFUrl . '/profile',
-                        'montant_dispo'          => $this->oFicelle->formatNumber($wallet->getAvailableBalance()),
-                        'remboursement_anticipe' => $sEarlyRepaymentContent,
-                        'contenu'                => $sContent,
-                        'sujet'                  => $sSubject,
-                        'lien_fb'                => $this->getFacebookLink(),
-                        'lien_tw'                => $this->getTwitterLink(),
-                        'annee'                  => date('Y')
+                    $keywords = [
+                        'firstName'      => $wallet->getIdClient()->getPrenom(),
+                        'content'        => $sContent,
+                        'repayments'     => $sRepaymentsListHTML,
+                        'earlyRepayment' => $earlyRepaymentContent,
+                        'balance'        => $this->oFicelle->formatNumber($wallet->getAvailableBalance()),
+                        'lenderPattern'  => $wallet->getWireTransferPattern(),
+                        'subject'        => $sSubject
                     ];
 
                     /** @var TemplateMessage $message */
-                    $message = $this->messageProvider->newMessage($sMail, $aReplacements);
+                    $message = $this->messageProvider->newMessage($sMail, $keywords);
                     try {
                         $message->setTo($wallet->getIdClient()->getEmail());
                         $this->mailer->send($message);

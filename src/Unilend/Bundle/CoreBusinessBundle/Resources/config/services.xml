@@ -139,9 +139,6 @@
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
             <argument type="service" id="swiftmailer.mailer.default"/>
             <argument type="service" id="logger"/>
-            <argument type="service" id="assets.packages"/>
-            <argument>%router.request_context.scheme%</argument>
-            <argument>%url.host_default%</argument>
         </service>
 
         <service id="unilend.service.project_request_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager">
@@ -382,9 +379,6 @@
             <argument type="service" id="mailer"/>
             <argument type="service" id="logger"/>
             <argument type="service" id="router"/>
-            <argument type="service" id="assets.packages"/>
-            <argument>%router.request_context.scheme%</argument>
-            <argument>%url.host_default%</argument>
         </service>
 
         <service id="unilend.service.lender_validation_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LenderValidationManager">
