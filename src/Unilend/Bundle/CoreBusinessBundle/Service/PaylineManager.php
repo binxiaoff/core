@@ -242,30 +242,15 @@ class PaylineManager
             $clientMailNotification->immediatement = 1;
             $clientMailNotification->update();
 
-            /** @var \settings $settings */
-            $settings = $this->entityManagerSimulator->getRepository('settings');
-            $settings->get('Facebook', 'type');
-            $lien_fb = $settings->value;
-
-            $settings->get('Twitter', 'type');
-            $lien_tw = $settings->value;
-
-            $varMail = [
-                'surl'            => $this->sUrl,
-                'url'             => $this->router->getContext()->getBaseUrl(),
-                'prenom_p'        => $backPayline->getWallet()->getIdClient()->getPrenom(),
-                'fonds_depot'     => $this->numberFormatter->format($amount),
-                'solde_p'         => $this->numberFormatter->format((float) $backPayline->getWallet()->getAvailableBalance()),
-                'link_mandat'     => $this->sUrl . '/images/default/mandat.jpg',
-                'motif_virement'  => $backPayline->getWallet()->getWireTransferPattern(),
-                'projets'         => $this->router->generate('home', ['type' => 'projets-a-financer']),
-                'gestion_alertes' => $this->router->generate('lender_profile'),
-                'lien_fb'         => $lien_fb,
-                'lien_tw'         => $lien_tw
+            $keywords = [
+                'firstName'     => $backPayline->getWallet()->getIdClient()->getPrenom(),
+                'amount'        => $this->numberFormatter->format($amount),
+                'balance'       => $this->numberFormatter->format((float) $backPayline->getWallet()->getAvailableBalance()),
+                'lenderPattern' => $backPayline->getWallet()->getWireTransferPattern()
             ];
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->messageProvider->newMessage('preteur-alimentation-cb', $varMail);
+            $message = $this->messageProvider->newMessage('preteur-alimentation-cb', $keywords);
             try {
                 $message->setTo($backPayline->getWallet()->getIdClient()->getEmail());
                 $this->mailer->send($message);

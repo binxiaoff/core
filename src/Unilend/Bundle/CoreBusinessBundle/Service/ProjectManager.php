@@ -346,10 +346,6 @@ class ProjectManager
                             }
                         }
                     }
-
-                    if ($this->logger instanceof LoggerInterface) {
-                        $this->logger->info('The bid status has been updated to 1' . $bid->getIdBid() . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project]);
-                    }
                 } else {
                     $this->bidManager->reject($bid, true);
                 }

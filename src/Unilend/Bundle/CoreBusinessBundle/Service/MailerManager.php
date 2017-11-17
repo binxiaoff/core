@@ -925,26 +925,16 @@ class MailerManager
     public function sendBorrowerBill(Projects $project)
     {
         $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+        $today  = new \DateTime('NOW');
 
-        $varMail = [
-            'surl'            => $this->sSUrl,
-            'url'             => $this->sFUrl,
-            'prenom'          => $client->getPrenom(),
-            'entreprise'      => $project->getIdCompany()->getName(),
-            'pret'            => $this->oFicelle->formatNumber($project->getAmount()),
-            'projet-title'    => $project->getTitle(),
-            'compte-p'        => $this->sFUrl,
-            'projet-p'        => $this->sFUrl . '/projects/detail/' . $project->getSlug(),
-            'link_facture'    => $this->sFUrl . '/pdf/facture_EF/' . $client->getHash() . '/' . $project->getIdProject() . '/',
-            'datedelafacture' => date('d') . ' ' . $this->oDate->tableauMois['fr'][date('n')] . ' ' . date('Y'),
-            'mois'            => strtolower($this->oDate->tableauMois['fr'][date('n')]),
-            'annee'           => date('Y'),
-            'lien_fb'         => $this->getFacebookLink(),
-            'lien_tw'         => $this->getTwitterLink()
+        $keywords = [
+            'wireTransferOutDate' => strftime('%d %B %G', $today->getTimestamp()),
+            'loanAmount'          => $this->oFicelle->formatNumber($project->getAmount()),
+            'invoiceLink'         => $this->sFUrl . '/pdf/facture_EF/' . $client->getHash() . '/' . $project->getIdProject() . '/'
         ];
 
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('facture-emprunteur', $varMail);
+        $message = $this->messageProvider->newMessage('facture-emprunteur', $keywords);
         try {
             $message->setTo($project->getIdCompany()->getEmailFacture());
             $this->mailer->send($message);
@@ -966,7 +956,7 @@ class MailerManager
     {
         if ($this->oLogger instanceof LoggerInterface) {
             $this->oLogger->debug('New projects notifications start', ['class' => __CLASS__, 'function' => __FUNCTION__]);
-            $this->oLogger->debug('Number of customers to process: ' . count($aCustomerId), array('class' => __CLASS__, 'function' => __FUNCTION__));
+            $this->oLogger->debug('Number of customers to process: ' . count($aCustomerId), ['class' => __CLASS__, 'function' => __FUNCTION__]);
         }
 
         /** @var \clients $oCustomer */
@@ -1053,22 +1043,17 @@ class MailerManager
                             continue;
                         }
 
-                        $aReplacements = [
-                            'surl'            => $this->sSUrl,
-                            'url'             => $this->sFUrl,
-                            'prenom_p'        => $oCustomer->prenom,
-                            'liste_projets'   => $sProjectsListHTML,
-                            'motif_virement'  => $oCustomer->getLenderPattern($oCustomer->id_client),
-                            'gestion_alertes' => $this->sFUrl . '/profile',
-                            'contenu'         => $sContent,
-                            'objet'           => $sObject,
-                            'sujet'           => $sSubject,
-                            'lien_fb'         => $this->getFacebookLink(),
-                            'lien_tw'         => $this->getTwitterLink()
+                        $keywords = [
+                            'subject'       => $sSubject,
+                            'title'         => $sObject,
+                            'firstName'     => $oCustomer->prenom,
+                            'content'       => $sContent,
+                            'projectList'   => $sProjectsListHTML,
+                            'lenderPattern' => $oCustomer->getLenderPattern($oCustomer->id_client)
                         ];
 
                         /** @var TemplateMessage $message */
-                        $message = $this->messageProvider->newMessage($sMail, $aReplacements);
+                        $message = $this->messageProvider->newMessage($sMail, $keywords);
                         try {
                             $message->setTo($oCustomer->email);
                             $this->mailer->send($message);
@@ -1962,16 +1947,10 @@ class MailerManager
     public function sendBorrowerAccount(\clients $client, $email = 'ouverture-espace-emprunteur')
     {
         /** @var \temporary_links_login $temporaryLink */
-        $temporaryLink  = $this->entityManagerSimulator->getRepository('temporary_links_login');
-        $sTemporaryLink = $this->sSUrl . '/espace_emprunteur/securite/' . $temporaryLink->generateTemporaryLink($client->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG);
-        $keywords       = [
-            'surl'                   => $this->sSUrl,
-            'url'                    => $this->sFUrl,
-            'prenom'                 => $client->prenom,
-            'link_compte_emprunteur' => $sTemporaryLink,
-            'lien_fb'                => $this->getFacebookLink(),
-            'lien_tw'                => $this->getTwitterLink(),
-            'year'                   => date('Y')
+        $temporaryLink = $this->entityManagerSimulator->getRepository('temporary_links_login');
+        $keywords      = [
+            'firstName'     => $client->prenom,
+            'temporaryLink' => $temporaryLink->generateTemporaryLink($client->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG),
         ];
 
         /** @var TemplateMessage $message */

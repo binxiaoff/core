@@ -318,25 +318,13 @@ class LenderCIPController extends Controller
      */
     private function sendAdviceEmail(Clients $client)
     {
-        /** @var \settings $settings */
-        $settings =  $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('Facebook', 'type');
-        $fbLink = $settings->value;
-        $settings->get('Twitter', 'type');
-        $twLink = $settings->value;
         /** @var Wallet $wallet */
-        $wallet = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-
+        $wallet  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         $varMail = [
-            'surl'                 => $this->get('assets.packages')->getUrl(''),
-            'url'                  => $this->get('assets.packages')->getUrl(''),
-            'prenom'               => $client->getPrenom(),
-            'email_p'              => $client->getEmail(),
-            'advice'               => str_replace('h5', 'p', $this->getFormatedAdvice($client)),
-            'advice_pdf_link'      => $this->generateUrl('pdf_cip', ['clientHash' => $client->getHash()], UrlGeneratorInterface::ABSOLUTE_URL),
-            'motif_virement'       => $wallet->getWireTransferPattern(),
-            'lien_fb'              => $fbLink,
-            'lien_tw'              => $twLink
+            'firstName'     => $client->getPrenom(),
+            'advice'        => str_replace('h5', 'p', $this->getFormatedAdvice($client)),
+            'adviceLink'    => $this->generateUrl('pdf_cip', ['clientHash' => $client->getHash()], UrlGeneratorInterface::ABSOLUTE_URL),
+            'lenderPattern' => $wallet->getWireTransferPattern()
         ];
 
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-conseil-cip', $varMail);

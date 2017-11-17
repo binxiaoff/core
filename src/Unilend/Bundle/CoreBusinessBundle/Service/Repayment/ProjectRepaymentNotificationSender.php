@@ -202,30 +202,17 @@ class ProjectRepaymentNotificationSender
             ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC']
         );
 
-        $facebook = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue();
-        $twitter  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue();
-
-        $varMail = [
-            'surl'            => $this->assetsPackages->getUrl(''),
-            'url'             => $this->frontUrl,
-            'prenom'          => $borrower->getPrenom(),
-            'pret'            => $this->numberFormatter->format($project->getAmount()),
-            'entreprise'      => stripslashes(trim($company->getName())),
-            'projet-title'    => $project->getTitle(),
-            'compte-p'        => $this->frontUrl,
-            'projet-p'        => $this->frontUrl . $this->router->generate('project_detail', ['projectSlug' => $project->getSlug()]),
-            'link_facture'    => $this->frontUrl . '/pdf/facture_ER/' . $borrower->getHash() . '/' . $project->getIdProject() . '/' . $paymentSchedule->getOrdre(),
-            'datedelafacture' => strftime('%d %B %G', $lastProjectStatus->getAdded()->getTimestamp()),
-            'mois'            => strftime('%B', $paymentSchedule->getDateEcheanceEmprunteur()->getTimestamp()),
-            'annee'           => date('Y'),
-            'lien_fb'         => $facebook,
-            'lien_tw'         => $twitter,
-            'montantRemb'     => $this->numberFormatter->format(round(bcdiv($paymentSchedule->getCapital() + $paymentSchedule->getInterets() + $paymentSchedule->getCommission() + $paymentSchedule->getTva(),
-                100, 4), 2))
+        $keywords = [
+            'wireTransferOutDate' => strftime('%d %B %G', $lastProjectStatus->getAdded()->getTimestamp()),
+            'companyName'         => stripslashes(trim($company->getName())),
+            'loanAmount'          => $this->numberFormatter->format($project->getAmount()),
+            'paymentAmount'       => $this->numberFormatter->format(round(bcdiv($paymentSchedule->getCapital() + $paymentSchedule->getInterets() + $paymentSchedule->getCommission() + $paymentSchedule->getTva(), 100, 4), 2)),
+            'month'               => strftime('%B', $paymentSchedule->getDateEcheanceEmprunteur()->getTimestamp()),
+            'invoiceLink'         => $this->frontUrl . '/pdf/facture_ER/' . $borrower->getHash() . '/' . $project->getIdProject() . '/' . $paymentSchedule->getOrdre()
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('facture-emprunteur-remboursement', $varMail);
+        $message = $this->messageProvider->newMessage('facture-emprunteur-remboursement', $keywords);
         try {
             $message->setTo($borrower->getEmail());
             $this->mailer->send($message);
@@ -243,29 +230,16 @@ class ProjectRepaymentNotificationSender
     public function sendRepaymentMailToLender(Echeanciers $repaymentSchedule)
     {
         $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $settingsRepository  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+        $lenderWallet        = $repaymentSchedule->getIdLoan()->getIdLender();
+        $netRepayment        = $operationRepository->getNetAmountByRepaymentScheduleId($repaymentSchedule);
 
-        $lenderWallet   = $repaymentSchedule->getIdLoan()->getIdLender();
-        $lender         = $lenderWallet->getIdClient();
-        $grossRepayment = $operationRepository->getGrossAmountByRepaymentScheduleId($repaymentSchedule);
-        $netRepayment   = $operationRepository->getNetAmountByRepaymentScheduleId($repaymentSchedule);
-        $facebook       = $settingsRepository->findOneBy(['type' => 'Facebook'])->getValue();
-        $twitter        = $settingsRepository->findOneBy(['type' => 'Twitter'])->getValue();
-
-        $varMail                  = [
-            'surl'                  => $this->assetsPackages->getUrl(''),
-            'url'                   => $this->frontUrl,
-            'prenom_p'              => $lender->getPrenom(),
-            'mensualite_p'          => $this->currencyFormatter->formatCurrency($netRepayment, 'EUR'),
-            'mensualite_avantfisca' => $this->currencyFormatter->formatCurrency($grossRepayment, 'EUR'),
-            'nom_entreprise'        => $repaymentSchedule->getIdLoan()->getProject()->getIdCompany()->getName(),
-            'date_bid_accepte'      => strftime('%d %B %G', $repaymentSchedule->getIdLoan()->getAdded()->getTimestamp()),
-            'solde_p'               => $this->currencyFormatter->formatCurrency($lenderWallet->getAvailableBalance(), 'EUR'),
-            'motif_virement'        => $lenderWallet->getWireTransferPattern(),
-            'lien_fb'               => $facebook,
-            'lien_tw'               => $twitter,
-            'annee'                 => date('Y'),
-            'date_pret'             => strftime('%A %d %B %G', $repaymentSchedule->getIdLoan()->getAdded()->getTimestamp()),
+        $keywords = [
+            'firstName'             => $lenderWallet->getIdClient()->getPrenom(),
+            'netRepayment'          => $this->currencyFormatter->formatCurrency($netRepayment, 'EUR'),
+            'companyName'           => $repaymentSchedule->getIdLoan()->getProject()->getIdCompany()->getName(),
+            'balance'               => $this->currencyFormatter->formatCurrency($lenderWallet->getAvailableBalance(), 'EUR'),
+            'lenderPattern'         => $lenderWallet->getWireTransferPattern(),
+            'loanDate'              => strftime('%A %d %B %G', $repaymentSchedule->getIdLoan()->getAdded()->getTimestamp()),
         ];
         $pendingRepaymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->findOneBy([
             'idLoan' => $repaymentSchedule->getIdLoan(),
@@ -277,14 +251,14 @@ class ProjectRepaymentNotificationSender
         } else {
             $mailTemplate = 'preteur-dernier-remboursement';
         }
-        $message = $this->messageProvider->newMessage($mailTemplate, $varMail);
+        $message = $this->messageProvider->newMessage($mailTemplate, $keywords);
         try {
-            $message->setTo($lender->getEmail());
+            $message->setTo($lenderWallet->getIdClient()->getEmail());
             $this->mailer->send($message);
         } catch (\Exception $exception) {
             $this->logger->warning(
                 'Could not send email: ' . $mailTemplate . ' - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $lender->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $lenderWallet->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
             );
         }
     }

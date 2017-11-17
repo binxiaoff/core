@@ -2,11 +2,12 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,15 +18,13 @@ use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\OperationRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\core\Loader;
@@ -336,34 +335,18 @@ class LenderWalletController extends Controller
      */
     private function sendClientWithdrawalNotification(Clients $client, $amount)
     {
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+        $numberFormatter = $this->get('number_formatter');
+        $wallet          = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
-        $settings->get('Facebook', 'type');
-        $lien_fb = $settings->value;
-        $settings->get('Twitter', 'type');
-        $lien_tw = $settings->value;
-
-        $wallet = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-
-        $varMail = [
-            'surl'            => $this->get('assets.packages')->getUrl(''),
-            'url'             => $this->get('assets.packages')->getUrl(''),
-            'prenom_p'        => $client->getPrenom(),
-            'fonds_retrait'   => $ficelle->formatNumber($amount),
-            'solde_p'         => $ficelle->formatNumber($this->getUser()->getBalance()),
-            'link_mandat'     => $this->get('assets.packages')->getUrl('') . '/images/default/mandat.jpg',
-            'motif_virement'  => $wallet->getWireTransferPattern(),
-            'projets'         => $this->get('assets.packages')->getUrl('') . $this->generateUrl('home', ['type' => 'projets-a-financer']),
-            'gestion_alertes' => $this->get('assets.packages')->getUrl('') . $this->generateUrl('lender_profile'),
-            'lien_fb'         => $lien_fb,
-            'lien_tw'         => $lien_tw
+        $keywords = [
+            'firstName'     => $client->getPrenom(),
+            'amount'        => $numberFormatter->format($amount),
+            'balance'       => $numberFormatter->format($this->getUser()->getBalance()),
+            'lenderPattern' => $wallet->getWireTransferPattern()
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-retrait', $varMail);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-retrait', $keywords);
         try {
             $message->setTo($client->getEmail());
             $mailer = $this->get('mailer');
