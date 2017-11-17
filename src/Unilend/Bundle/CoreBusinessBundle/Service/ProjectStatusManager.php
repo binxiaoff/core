@@ -28,6 +28,9 @@ class ProjectStatusManager
     /** @var \NumberFormatter */
     protected $numberFormatter;
 
+    /** @var \NumberFormatter */
+    protected $currencyFormatter;
+
     /** @var Packages */
     protected $assetsPackages;
 
@@ -50,6 +53,7 @@ class ProjectStatusManager
      * @param TranslatorInterface     $translator
      * @param EntityManager           $entityManager
      * @param \NumberFormatter        $numberFormatter
+     * @param \NumberFormatter        $currencyFormatter
      * @param Packages                $assetsPackage
      * @param TemplateMessageProvider $messageProvider
      * @param \Swift_Mailer           $mailer
@@ -61,6 +65,7 @@ class ProjectStatusManager
         TranslatorInterface $translator,
         EntityManager $entityManager,
         \NumberFormatter $numberFormatter,
+        \NumberFormatter $currencyFormatter,
         Packages $assetsPackage,
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,
@@ -72,6 +77,7 @@ class ProjectStatusManager
         $this->translator             = $translator;
         $this->entityManager          = $entityManager;
         $this->numberFormatter        = $numberFormatter;
+        $this->currencyFormatter      = $currencyFormatter;
         $this->assetsPackages         = $assetsPackage;
         $this->frontUrl               = $frontUrl;
         $this->messageProvider        = $messageProvider;
@@ -248,16 +254,43 @@ class ProjectStatusManager
 
     /**
      * @param Projects $project
+     *
+     * @throws \Exception
      */
     public function sendCloseOutNettingEmailToBorrower(Projects $project)
     {
         $mailType = 'emprunteur-projet-statut-recouvrement';
-        /** @var \echeanciers $lenderRepaymentSchedule */
-        $lenderRepaymentSchedule              = $this->entityManagerSimulator->getRepository('echeanciers');
-        $replacements['mensualites_impayees'] = $this->numberFormatter->format($lenderRepaymentSchedule->getUnpaidAmountAtDate($project->getIdProject(), new \DateTime()));
-        $replacements['CRD']                  = $this->numberFormatter->format($lenderRepaymentSchedule->getOwedCapital(['id_project' => $project->getIdProject()]));
 
-        $this->sendBorrowerEmail($project, $mailType, $replacements);
+        $paymentSchedule      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        $overdueScheduleCount = $paymentSchedule->getOverdueScheduleCount($project);
+        if (0 === $overdueScheduleCount) {
+            throw new \Exception('Cannot send email ' . $mailType . ' total overdue amount is empty on project: ' . $project->getIdProject());
+        }
+
+        $nextPaymentSchedule    = $paymentSchedule->getNextPaymentSchedule($project);
+        $remainingCapitalDue    = $paymentSchedule->getRemainingCapitalFrom($project, $nextPaymentSchedule->getOrdre());
+        $overDueScheduleAmounts = $paymentSchedule->getTotalOverdueAmounts($project);
+
+        $totalOverdueAmount = 0;
+        $totalOverdueAmount = isset($overDueScheduleAmounts['capital']) ? round(bcadd($totalOverdueAmount, $overDueScheduleAmounts['capital'], 4), 2) : $totalOverdueAmount;
+        $totalOverdueAmount = isset($overDueScheduleAmounts['interest']) ? round(bcadd($totalOverdueAmount, $overDueScheduleAmounts['interest'], 4), 2) : $totalOverdueAmount;
+        $totalOverdueAmount = isset($overDueScheduleAmounts['commission']) ? round(bcadd($totalOverdueAmount, $overDueScheduleAmounts['commission'], 4), 2) : $totalOverdueAmount;
+
+        $overdueScheduleCountAndAmount = $this->translator->transChoice(
+            'borrower-close-out-netting-email_payments-count-and-amount',
+            $overdueScheduleCount,
+            [
+                '%overdueScheduleCount%' => $this->numberFormatter->format($overdueScheduleCount),
+                '%totalOverdueAmount%'   => $this->currencyFormatter->formatCurrency($totalOverdueAmount, 'EUR')
+            ]
+        );
+
+        $keyWords = [
+            'overduePaymentsCountAndAmount' => $overdueScheduleCountAndAmount,
+            'remainingCapitalDue'           => $this->currencyFormatter->formatCurrency($remainingCapitalDue, 'EUR')
+        ];
+
+        $this->sendBorrowerEmail($project, $mailType, $keyWords);
     }
 
     /**
@@ -432,10 +465,24 @@ class ProjectStatusManager
 
     /**
      * @param Projects $project
+     *
+     * @throws \Exception
      */
     public function sendCloseOutNettingNotificationsToLenders(Projects $project)
     {
-        $this->sendLenderNotifications($project, Notifications::TYPE_PROJECT_RECOVERY, 'preteur-projet-statut-recouvrement', 'preteur-projet-statut-recouvrement');
+        $repaymentSchedule             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $overdueRepaymentScheduleCount = $repaymentSchedule->getOverdueRepaymentCountByProject($project);
+
+        if (0 === $overdueRepaymentScheduleCount) {
+            throw new \Exception('Could not send email preteur-projet-statut-recouvrement on project ' . $project->getIdProject() . '. No overdue repayment found');
+        }
+
+        $overdueRepaymentCount = (1 === $overdueRepaymentScheduleCount) ? '1 échéance impayée' : $this->numberFormatter->format($overdueRepaymentScheduleCount) . ' échéances impayées';
+        $keyWords              = [
+            'myLoansLink'           => $this->frontUrl . '/operations#loans',
+            'overdueRepaymentCount' => $overdueRepaymentCount
+        ];
+        $this->sendLenderNotifications($project, Notifications::TYPE_PROJECT_RECOVERY, 'preteur-projet-statut-recouvrement', 'preteur-projet-statut-recouvrement', $keyWords);
     }
 
     /**

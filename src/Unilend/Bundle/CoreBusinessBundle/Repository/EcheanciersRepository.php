@@ -722,4 +722,25 @@ class EcheanciersRepository extends EntityRepository
 
         return $remainingAmountsByLoanAndSequence;
     }
+
+    /**
+     * @param Projects|integer $project
+     *
+     * @return int
+     */
+    public function getOverdueRepaymentCountByProject($project)
+    {
+        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder->select('count(e)')
+            ->where('e.idProject = :project')
+            ->andWhere('e.status in (:unfinished)')
+            ->andWhere('DATE(e.dateEcheance) < :today')
+            ->setParameter('project', $project)
+            ->setParameter('today', (new \DateTime())->format('Y-m-d'))
+            ->setParameter('unfinished', [Echeanciers::STATUS_PENDING, Echeanciers::STATUS_PARTIALLY_REPAID])
+            ->groupBy('e.idProject, e.idLender')
+            ->setMaxResults(1);
+
+        return (int) $queryBuilder->getQuery()->getSingleScalarResult();
+    }
 }

@@ -220,6 +220,7 @@
             <argument type="service" id="translator"/>
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="number_formatter"/>
+            <argument type="service" id="currency_formatter"/>
             <argument type="service" id="assets.packages"/>
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
             <argument type="service" id="mailer"/>
