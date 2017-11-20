@@ -947,7 +947,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                                     <tr>
                                         <th>Déclaration de <br>bénéficiaires effectifs</th>
                                         <td>
-                                            <a role="button" class="btn btn-default" href="<?= $this->lurl ?>/beneficiaires_effectifs/<?= $this->companies->id_company ?>">Déclarer les bénéficiaires effectifs</a>
+                                            <a role="button" class="btn btn-default" href="<?= $this->lurl ?>/beneficiaires_effectifs/<?= $this->companies->id_company ?>" target="_blank">Déclarer les bénéficiaires effectifs</a>
                                         </td>
                                     </tr>
                                 <?php endif; ?>
@@ -1082,7 +1082,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                                 <tr>
                                     <th>Déclaration de <br> bénéficiaires effectifs</th>
                                     <td colspan="2">
-                                        <a role="button" class="btn btn-default" href="<?= $this->lurl ?>/beneficiaires_effectifs/<?= $this->companies->id_company ?>">Accéder à la gestion des bénéficiaires effectifs<br>(Modifier/Consulter/Renvoyer la déclaration)</a>
+                                        <a role="button" class="btn btn-default" href="<?= $this->lurl ?>/beneficiaires_effectifs/<?= $this->companies->id_company ?>" target="_blank">Accéder à la gestion des bénéficiaires effectifs<br>(Modifier/Consulter/Renvoyer la déclaration)</a>
                                     </td>
                                 </tr>
                             <?php endif; ?>

@@ -750,14 +750,14 @@ class dossiersController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\PartnerRepository $partnerRepository */
             $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
 
-            $this->eligibleProducts = $productManager->findEligibleProducts($this->projects, true);
-            $this->selectedProduct  = $product;
-            $this->isProductUsable  = empty($product->id_product) ? false : in_array($this->selectedProduct, $this->eligibleProducts);
-            $this->partnerList      = $partnerRepository->getPartnersSortedByName(Partner::STATUS_VALIDATED);
-            $this->partnerProduct   = $this->loadData('partner_product');
-            $this->isUnilendPartner = Partner::PARTNER_UNILEND_ID === $this->projectEntity->getIdPartner()->getId();
-            $this->agencies         = [];
-            $this->submitters       = [];
+            $this->eligibleProducts       = $productManager->findEligibleProducts($this->projects, true);
+            $this->selectedProduct        = $product;
+            $this->isProductUsable        = empty($product->id_product) ? false : in_array($this->selectedProduct, $this->eligibleProducts);
+            $this->partnerList            = $partnerRepository->getPartnersSortedByName(Partner::STATUS_VALIDATED);
+            $this->partnerProduct         = $this->loadData('partner_product');
+            $this->isUnilendPartner       = Partner::PARTNER_UNILEND_ID === $this->projectEntity->getIdPartner()->getId();
+            $this->agencies               = [];
+            $this->submitters             = [];
             $this->hasBeneficialOwner     = null !== $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($this->projects->id_company);
             $this->ownerIsBeneficialOwner = $beneficialOwnerManager->checkBeneficialOwnerDeclarationContainsAtLeastCompanyOwner($this->projects->id_company);
 

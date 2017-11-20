@@ -13,7 +13,6 @@ use Doctrine\ORM\Mapping as ORM;
 class BeneficialOwnerType
 {
     const TYPE_LEGAL_MANAGER = 'legal_manager';
-    const TYPE_OWNER         = 'owner';
     const TYPE_SHAREHOLDER   = 'shareholder';
 
     /**

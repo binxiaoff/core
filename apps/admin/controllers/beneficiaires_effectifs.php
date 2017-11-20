@@ -59,6 +59,14 @@ class beneficiaires_effectifsController extends bootstrap
                     $existingDeclarations[] = $this->get('unilend.service.beneficial_owner_manager')->addProjectBeneficialOwnerDeclaration($currentDeclaration, $project);
                 }
             }
+        } else {
+            $currentDeclaration = new CompanyBeneficialOwnerDeclaration();
+            $currentDeclaration->setIdCompany($company)
+                ->setStatus(CompanyBeneficialOwnerDeclaration::STATUS_PENDING);
+
+            $entityManager->persist($currentDeclaration);
+            $entityManager->flush($currentDeclaration);
+            $entityManager->refresh($currentDeclaration);
         }
 
         if (isset($_SESSION['email_status'])) {
@@ -247,23 +255,6 @@ class beneficiaires_effectifsController extends bootstrap
                 'owner'  => null,
                 'errors' => $errors
             ];
-        }
-
-        if (null === $declaration) {
-            $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($idCompany);
-
-            if (null === $company) {
-                throw new \Exception('Company ' . $idCompany . ' does not exist');
-            }
-
-            $declaration = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($company);
-            if (null === $declaration) {
-                $declaration = new CompanyBeneficialOwnerDeclaration();
-                $declaration
-                    ->setIdCompany($company)
-                    ->setStatus(CompanyBeneficialOwnerDeclaration::STATUS_PENDING);
-                $entityManager->persist($declaration);
-            }
         }
 
         $clientAttachment = null;
@@ -536,8 +527,8 @@ class beneficiaires_effectifsController extends bootstrap
             'first_name'       => $owner->getIdClient()->getPrenom(),
             'type'             => null === $owner->getIdType() ? null : $owner->getIdType()->getId(),
             'percentage'       => $owner->getPercentageDetained(),
-            'birth_date'        => $owner->getIdClient()->getNaissance()->format('d/m/Y'),
-            'birth_place'       => $owner->getIdClient()->getVilleNaissance(),
+            'birth_date'       => $owner->getIdClient()->getNaissance()->format('d/m/Y'),
+            'birth_place'      => $owner->getIdClient()->getVilleNaissance(),
             'birth_country'    => $owner->getIdClient()->getIdPaysNaissance(),
             'country'          => $clientAddress->getIdPaysFiscal(),
             'id_card_passport' => '<a href="' . $this->lurl . '/attachment/download/id/' . $passport->getId() . '/file/' . urlencode($passport->getPath()) . '" target="_blank">' . $passport->getOriginalName() . '</a>'
