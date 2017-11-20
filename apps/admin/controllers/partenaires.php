@@ -18,7 +18,7 @@ class partenairesController extends bootstrap
     {
         parent::initialize();
 
-        $this->users->checkAccess(Zones::ZONE_LABEL_CONFIGURATION);
+        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
         $this->menu_admin = Zones::ZONE_LABEL_BORROWERS;
     }
 
@@ -55,7 +55,7 @@ class partenairesController extends bootstrap
         $agencies   = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['idParentCompany' => $partner->getIdCompany()->getIdCompany()]);
         $agencies[] = $partner->getIdCompany();
         usort($agencies, function($first, $second) {
-            return strcmp($first->getName(), $second->getName());
+            return strcasecmp($first->getName(), $second->getName());
         });
 
         $users = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findBy(['idCompany' => $agencies]);
@@ -68,12 +68,12 @@ class partenairesController extends bootstrap
             $productType->setLabel($translator->trans('product_label_' . $productType->getLabel()));
         }
         usort($productTypes, function($first, $second) {
-            return strcmp($first->getLabel(), $second->getLabel());
+            return strcasecmp($first->getLabel(), $second->getLabel());
         });
 
         $products = $partner->getProductAssociations([Product::STATUS_OFFLINE, Product::STATUS_ONLINE]);
         usort($products, function ($first, $second) {
-            return strcmp($first->getIdProduct()->getLabel(), $second->getIdProduct()->getLabel());
+            return strcasecmp($first->getIdProduct()->getLabel(), $second->getIdProduct()->getLabel());
         });
 
         $descriptionTranslationLabel = 'partner-project-details_description-instructions-' . $partner->getLabel();
@@ -303,7 +303,6 @@ class partenairesController extends bootstrap
         if (empty($companyClientErrors)) {
             /** @var EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            $entityManager->getConnection()->beginTransaction();
 
             try {
                 $entityManager->persist($companyClient->getIdClient());
@@ -314,13 +313,10 @@ class partenairesController extends bootstrap
                 $walletCreationManager = $this->get('unilend.service.wallet_creation_manager');
                 $walletCreationManager->createWallet($companyClient->getIdClient(), WalletType::PARTNER);
 
-                $entityManager->getConnection()->commit();
-
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
                 $mailerManager = $this->get('unilend.service.email_manager');
                 $mailerManager->sendPartnerAccountActivation($companyClient->getIdClient());
             } catch (\Exception $exception) {
-                $entityManager->getConnection()->rollBack();
                 $this->get('logger')->error('An error occurred while creating client: ' . $exception->getMessage(), [['class' => __CLASS__, 'function' => __FUNCTION__]]);
             }
         }
@@ -480,6 +476,9 @@ class partenairesController extends bootstrap
         }
         if (empty($email)) {
             $errors[] = 'Vous devez renseigner une adresse email';
+        }
+        if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Vous devez renseigner une adresse email valide';
         }
         $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         if (
@@ -856,7 +855,7 @@ class partenairesController extends bootstrap
             ];
         }
         usort($agencies, function($first, $second) {
-            return strcmp($first['name'], $second['name']);
+            return strcasecmp($first['name'], $second['name']);
         });
 
         $this->sendAjaxResponse(true, $agencies);
@@ -891,7 +890,7 @@ class partenairesController extends bootstrap
             ];
         }
         usort($users, function($first, $second) {
-            return strcmp($first['name'], $second['name']);
+            return strcasecmp($first['name'], $second['name']);
         });
 
         $this->sendAjaxResponse(true, $users);

@@ -20,6 +20,7 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Tree;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
@@ -274,19 +275,13 @@ class MainController extends Controller
     {
         /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \redirections $redirection */
-        $redirection = $entityManager->getRepository('redirections');
 
         $slug = substr($request->attributes->get('routeDocument')->getPath(), 1);
-
-        if ($redirection->get(['from_slug' => $slug, 'status' => 1])) {
-            return new RedirectResponse($redirection->to_slug, $redirection->type);
-        }
 
         /** @var \tree $tree */
         $tree = $entityManager->getRepository('tree');
 
-        if (false === $tree->get(['slug' => $slug, 'status' => 1])) {
+        if (false === $tree->get(['slug' => $slug, 'status' => Tree::STATUS_ONLINE])) {
             throw new NotFoundHttpException('Page with slug ' . $slug . ' could not be found');
         }
 

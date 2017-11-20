@@ -2004,7 +2004,7 @@ class MailerManager
             'staticUrl'      => $this->sSUrl,
             'frontUrl'       => $this->sFUrl,
             'prenom'         => $client->getPrenom(),
-            'activationLink' => $this->container->get('router')->generate('partner_security', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
+            'activationLink' => $this->sFUrl . $this->container->get('router')->generate('partner_security', ['token' => $token]),
             'facebookLink'   => $this->getFacebookLink(),
             'twitterLink'    => $this->getTwitterLink(),
             'year'           => date('Y')

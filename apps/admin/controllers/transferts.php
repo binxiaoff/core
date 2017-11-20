@@ -355,6 +355,8 @@ class transfertsController extends bootstrap
 
     public function _deblocage()
     {
+        ini_set('memory_limit', '512M');
+
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager $beneficialOwnerManager */
