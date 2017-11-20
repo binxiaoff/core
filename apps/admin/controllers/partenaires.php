@@ -55,7 +55,7 @@ class partenairesController extends bootstrap
         $agencies   = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['idParentCompany' => $partner->getIdCompany()->getIdCompany()]);
         $agencies[] = $partner->getIdCompany();
         usort($agencies, function($first, $second) {
-            return strcmp($first->getName(), $second->getName());
+            return strcasecmp($first->getName(), $second->getName());
         });
 
         $users = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findBy(['idCompany' => $agencies]);
@@ -68,12 +68,12 @@ class partenairesController extends bootstrap
             $productType->setLabel($translator->trans('product_label_' . $productType->getLabel()));
         }
         usort($productTypes, function($first, $second) {
-            return strcmp($first->getLabel(), $second->getLabel());
+            return strcasecmp($first->getLabel(), $second->getLabel());
         });
 
         $products = $partner->getProductAssociations([Product::STATUS_OFFLINE, Product::STATUS_ONLINE]);
         usort($products, function ($first, $second) {
-            return strcmp($first->getIdProduct()->getLabel(), $second->getIdProduct()->getLabel());
+            return strcasecmp($first->getIdProduct()->getLabel(), $second->getIdProduct()->getLabel());
         });
 
         $descriptionTranslationLabel = 'partner-project-details_description-instructions-' . $partner->getLabel();
@@ -855,7 +855,7 @@ class partenairesController extends bootstrap
             ];
         }
         usort($agencies, function($first, $second) {
-            return strcmp($first['name'], $second['name']);
+            return strcasecmp($first['name'], $second['name']);
         });
 
         $this->sendAjaxResponse(true, $agencies);
@@ -890,7 +890,7 @@ class partenairesController extends bootstrap
             ];
         }
         usort($users, function($first, $second) {
-            return strcmp($first['name'], $second['name']);
+            return strcasecmp($first['name'], $second['name']);
         });
 
         $this->sendAjaxResponse(true, $users);

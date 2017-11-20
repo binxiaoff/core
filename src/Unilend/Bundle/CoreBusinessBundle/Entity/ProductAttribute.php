@@ -55,7 +55,7 @@ class ProductAttribute
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Product
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Product")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Product", inversedBy="productAttributes")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_product", referencedColumnName="id_product")
      * })

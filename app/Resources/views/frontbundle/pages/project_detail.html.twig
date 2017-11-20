@@ -167,6 +167,17 @@
                                 </div><!-- /.show-xs.show-sm -->
                             </div>
                         </div>
+
+                        {% if suggestAutolend %}
+                            <div class="col-lg-10 col-md-9 margin-20-t">
+                                <div class="message-info">
+                                    <p>
+                                        {% trans with {'%autolendSettingUrl%' : path('autolend')} %} project-detail_suggest-autolend-message {% endtrans %}
+                                    </p>
+                                </div>
+                            </div>
+                        {% endif %}
+
                     </div><!-- /.project-single-header-inner -->
                 </div><!-- /.project-single-header-position -->
                 {% if project.navigation.previousProject is defined and project.navigation.previousProject is not empty %}
