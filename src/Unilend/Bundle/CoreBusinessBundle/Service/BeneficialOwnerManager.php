@@ -25,7 +25,6 @@ use Unilend\Bundle\FrontBundle\Service\UniversignManager;
 class BeneficialOwnerManager
 {
     const MAX_NUMBER_BENEFICIAL_OWNERS_TYPE_SHAREHOLDER   = 4;
-    const MAX_NUMBER_BENEFICIAL_OWNERS_TYPE_OWNER         = 1;
     const MAX_NUMBER_BENEFICIAL_OWNERS_TYPE_LEGAL_MANAGER = 1;
 
     const BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES = [1100, 1200, 1300, 1500, 1600, 1700, 1900];
@@ -493,8 +492,6 @@ class BeneficialOwnerManager
         switch($type) {
             case BeneficialOwnerType::TYPE_LEGAL_MANAGER:
                 return self::MAX_NUMBER_BENEFICIAL_OWNERS_TYPE_LEGAL_MANAGER;
-            case BeneficialOwnerType::TYPE_OWNER:
-                return self::MAX_NUMBER_BENEFICIAL_OWNERS_TYPE_OWNER;
             case BeneficialOwnerType::TYPE_SHAREHOLDER:
                 return self::MAX_NUMBER_BENEFICIAL_OWNERS_TYPE_SHAREHOLDER;
             default:
