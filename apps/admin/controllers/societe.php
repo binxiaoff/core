@@ -6,6 +6,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatusHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
 
 class societeController extends bootstrap
 {
@@ -226,13 +227,13 @@ class societeController extends bootstrap
     private function changeTrafficLightColorToNumericValue($color)
     {
         switch($color){
-            case 'Green':
+            case EulerCompanyRating::COLOR_GREEN:
                 return 1;
-            case 'Yellow':
+            case EulerCompanyRating::COLOR_YELLOW:
                 return 2;
-            case 'Red':
+            case EulerCompanyRating::COLOR_RED:
                 return 3;
-            case 'Black':
+            case EulerCompanyRating::COLOR_BLACK:
                 return 4;
             default:
                 return 0;
