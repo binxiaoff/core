@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ app.request.locale }}" class="no-js">
+<html lang="{{ app.request.locale|default('fr_FR') }}" class="no-js">
 <head>
     {% block cssFiles %}
         <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Cabin:400,700,400" media="all">
@@ -41,6 +41,27 @@
             }
             .pdf-layout .spacer {
                 height: 0.75rem;
+            }
+            .pdf-layout .spacer-size-2 {
+                height: 1.5rem;
+            }
+            .pdf-layout .spacer-size-3 {
+                height: 2.25rem;
+            }
+            .pdf-layout .spacer-size-4 {
+                height: 3rem;
+            }
+            .pdf-layout .spacer-size-5 {
+                height: 3.75rem;
+            }
+            .pdf-layout .spacer-size-6 {
+                height: 4.5rem;
+            }
+            .pdf-layout .spacer-size-7 {
+                height: 5.25rem;
+            }
+            .pdf-layout .spacer-size-8 {
+                height: 6rem;
             }
             .pdf-layout .table {
                 border: 0;

@@ -74,3 +74,17 @@
 .autocomplete-projects .autocomplete-suggestion dl:nth-child(4) {
     width: 140px;
 }
+.autocomplete-wrapper .loading-icon {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    line-height: 34px;
+    color: #999;
+    z-index: 100;
+    width: 30px;
+    text-align: center;
+}
+.autocomplete-wrapper.autocomplete-loading .loading-icon {
+    display: block;
+}
