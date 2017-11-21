@@ -201,10 +201,13 @@ class BeneficialOwnerManager
      */
     public function generateProjectPdfFile(ProjectBeneficialOwnerUniversign $projectDeclaration)
     {
-        $beneficialOwners   = $projectDeclaration->getIdDeclaration()->getBeneficialOwner();
-        $pdfContent         = $this->twig->render('/pdf/beneficial_owner_declaration.html.twig', ['owners' => $beneficialOwners]);
-        $outputFile         = $this->getBeneficialOwnerDeclarationPdfRoot() . DIRECTORY_SEPARATOR . $this->getBeneficialOwnerDeclarationFileName($projectDeclaration);
-        $options            = [
+        $template   = [
+            'owners'  => $this->getOwnerDataFromDeclaration($projectDeclaration->getIdDeclaration()),
+            'company' => $projectDeclaration->getIdProject()->getIdCompany()
+        ];
+        $pdfContent = $this->twig->render('/pdf/beneficial_owner_declaration.html.twig', $template);
+        $outputFile = $this->getBeneficialOwnerDeclarationPdfRoot() . DIRECTORY_SEPARATOR . $this->getBeneficialOwnerDeclarationFileName($projectDeclaration);
+        $options    = [
             'footer-html'   => '',
             'header-html'   => '',
             'margin-top'    => 20,
@@ -222,12 +225,13 @@ class BeneficialOwnerManager
      */
     public function generateCompanyPdfFile(CompanyBeneficialOwnerDeclaration $declaration)
     {
-        $beneficialOwners = $declaration->getBeneficialOwner();
-        $pdfContent       = $this->twig->render('/pdf/beneficial_owner_declaration.html.twig', [
-            'owners'     => $beneficialOwners,
+        $template   = [
+            'owners'     => $this->getOwnerDataFromDeclaration($declaration),
+            'company'    => $declaration->getIdCompany(),
             'disclaimer' => 'Ce document a pour but le contrôle de contenu et n\'est en aucun cas representatif de la mise en forme du document final.'
-        ]);
-        $options          = [
+        ];
+        $pdfContent = $this->twig->render('/pdf/beneficial_owner_declaration.html.twig', $template);
+        $options    = [
             'footer-html'   => '',
             'header-html'   => '',
             'margin-top'    => 20,
@@ -544,5 +548,24 @@ class BeneficialOwnerManager
             ->findOneBy(['idDeclaration' => $currentDeclaration,'idClient' => $company->getIdClientOwner()]);
 
         return null !== $companyOwnerBeneficialOwner;
+    }
+
+    /**
+     * @param CompanyBeneficialOwnerDeclaration $declaration
+     *
+     * @return array
+     */
+    private function getOwnerDataFromDeclaration(CompanyBeneficialOwnerDeclaration $declaration)
+    {
+        $owners = [];
+        foreach ($declaration->getBeneficialOwner() as $owner) {
+            $clientAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $owner->getIdClient()]);
+            $owners[]        = [
+                'owner'   => $owner,
+                'country' => $clientAddress->getIdPaysFiscal()
+            ];
+        }
+
+        return $owners;
     }
 }
