@@ -38,5 +38,10 @@
         <service id="unilend.frontbundle.event.response_listener" class="Unilend\Bundle\FrontBundle\EventSubscriber\ResponseListener">
             <tag name="kernel.event_listener" event="kernel.response" method="onKernelResponse" />
         </service>
+
+        <service id="unilend.frontbundle.event.redirection_subscriber" class="Unilend\Bundle\FrontBundle\EventSubscriber\RedirectionSubscriber">
+            <argument type="service" id="unilend.frontbundle.service.redirection_handler" />
+            <tag name="kernel.event_subscriber" />
+        </service>
     </services>
 </container>

@@ -57,26 +57,28 @@
                         </thead>
                         <tbody>
                         {% for partner in partners %}
-                            <tr data-url="{{ app.adminUrl }}/partenaires/edit/{{ partner.id }}">
-                                <td style="text-align: center">
-                                    <img src="{{ app.staticUrl }}/images/admin/partner/{{ partner.logo }}" alt="{{ partner.idCompany.name|e('html_attr') }}" class="img-responsive-vertical box-shadow">
-                                </td>
-                                <td>{{ partner.idCompany.name }}</td>
-                                <td>
-                                    {% if partner.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Partner::STATUS_PENDING') %}
-                                        En attente
-                                    {% elseif partner.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Partner::STATUS_VALIDATED') %}
-                                        Validé
-                                    {% elseif partner.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Partner::STATUS_DISABLED') %}
-                                        Désactivé
-                                    {% endif %}
-                                </td>
-                                <td data-order="{{ partner.added|date('U') }}">{{ partner.added|date('d/m/Y') }}</td>
-                                <td>
-                                    <a href="{{ app.adminUrl }}/partenaires/edit/{{ partner.id }}" class="btn btn-xs btn-default">Détails <span class="fa fa-chevron-right push-5-l"></span></a>
-                                    <a href="{{ app.adminUrl }}/partenaires/tiers/{{ partner.id }}" class="btn btn-xs btn-default">Tiers <span class="fa fa-chevron-right push-5-l"></span></a>
-                                </td>
-                            </tr>
+                            {%  if partner.id != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Partner::PARTNER_UNILEND_ID') or constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Zones::ZONE_LABEL_CONFIGURATION') in app.userZones %}
+                                <tr data-url="{{ app.adminUrl }}/partenaires/edit/{{ partner.id }}">
+                                    <td style="text-align: center">
+                                        <img src="{{ app.staticUrl }}/images/admin/partner/{{ partner.logo }}" alt="{{ partner.idCompany.name|e('html_attr') }}" class="img-responsive-vertical box-shadow">
+                                    </td>
+                                    <td>{{ partner.idCompany.name }}</td>
+                                    <td>
+                                        {% if partner.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Partner::STATUS_PENDING') %}
+                                            En attente
+                                        {% elseif partner.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Partner::STATUS_VALIDATED') %}
+                                            Validé
+                                        {% elseif partner.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Partner::STATUS_DISABLED') %}
+                                            Désactivé
+                                        {% endif %}
+                                    </td>
+                                    <td data-order="{{ partner.added|date('U') }}">{{ partner.added|date('d/m/Y') }}</td>
+                                    <td>
+                                        <a href="{{ app.adminUrl }}/partenaires/edit/{{ partner.id }}" class="btn btn-xs btn-default">Détails <span class="fa fa-chevron-right push-5-l"></span></a>
+                                        <a href="{{ app.adminUrl }}/partenaires/tiers/{{ partner.id }}" class="btn btn-xs btn-default">Tiers <span class="fa fa-chevron-right push-5-l"></span></a>
+                                    </td>
+                                </tr>
+                            {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>

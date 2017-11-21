@@ -420,13 +420,6 @@ class ProjectsController extends Controller
         $project = $entityManagerSimulator->getRepository('projects');
 
         if (false === $project->get($projectSlug, 'slug') || $project->slug !== $projectSlug) { // MySQL does not check collation (hôtellerie = hotellerie) so we strictly check in PHP
-            /** @var \redirections $redirection */
-            $redirection = $entityManagerSimulator->getRepository('redirections');
-
-            if ($redirection->get(['from_slug' => $projectSlug, 'status' => 1])) {
-                return new RedirectResponse($redirection->to_slug, $redirection->type);
-            }
-
             throw $this->createNotFoundException();
         }
 

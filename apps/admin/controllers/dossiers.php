@@ -755,7 +755,7 @@ class dossiersController extends bootstrap
                 $this->agencies = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['idParentCompany' => $this->projectEntity->getIdPartner()->getIdCompany()->getIdCompany()]);
             }
             usort($this->agencies, function($first, $second) {
-                return strcmp($first->getName(), $second->getName());
+                return strcasecmp($first->getName(), $second->getName());
             });
 
             if ($this->projectEntity->getIdCompanySubmitter() && $this->projectEntity->getIdCompanySubmitter()->getIdCompany()) {
@@ -774,7 +774,7 @@ class dossiersController extends bootstrap
                 $this->submitters[] = $this->projectEntity->getIdClientSubmitter();
             }
             usort($this->submitters, function($first, $second) {
-                return strcmp($first->getPrenom(), $second->getPrenom());
+                return strcasecmp($first->getPrenom(), $second->getPrenom());
             });
 
             if (false === empty($this->projects->risk) && false === empty($this->projects->period) && $this->projects->status >= ProjectsStatus::PREP_FUNDING) {
