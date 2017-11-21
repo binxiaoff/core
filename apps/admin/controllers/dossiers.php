@@ -932,7 +932,7 @@ class dossiersController extends bootstrap
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
         $errors = [];
 
-        if (1 == $_POST['send_email_borrower']) {
+        if (false === empty($_POST['send_email_borrower'])) {
             try {
                 $projectStatusManager->sendProblemStatusEmailToBorrower($project);
             } catch (\Exception $exception) {
@@ -3048,9 +3048,9 @@ class dossiersController extends bootstrap
         $translator = $this->get('translator');
         $user       = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
-        if (\users_types::TYPE_RISK == $user->getIdUserType()->getIdUserType()
+        if (
+            in_array($user->getIdUserType()->getIdUserType(), [\users_types::TYPE_ADMIN, \users_types::TYPE_IT, \users_types::TYPE_RISK])
             || $user->getIdUser() == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_ALAIN_ELKAIM
-            || isset($this->params[1]) && 'risk' == $this->params[1] && in_array($user->getIdUserType()->getIdUserType(), [\users_types::TYPE_ADMIN, \users_types::TYPE_IT])
         ) {
             if (false === empty($this->params[0])) {
                 $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');

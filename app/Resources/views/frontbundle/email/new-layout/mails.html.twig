@@ -753,6 +753,49 @@
 <p> </p>
 <p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
 },
+{
+    name: 'preteur-projet-statut-recouvrement',
+    header: 'minimal',
+    footer: 'lender',
+    comment: '',
+    content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
+<p>Suite à l\'absence de régularisation de 2 échéances impayées de la société <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span> nous procédons à l\'exigibilité anticipée du prêt conformément aux Conditions Générales.</p>
+<p>La société de recouvrement initialement mandatée sur la 1ère échéance impayée prend désormais en charge le recouvrement de l\'intégralité des sommes dues. À cet effet, celle-ci va engager une action de recouvrement par voie judiciaire à l\'encontre de [EMV DYN]companyName[EMV /DYN].</p>
+<p><b class="text-primary">Quelles sont les conséquences d\'une mise en recouvrement&nbsp;?</b></p>
+<p>La déchéance du terme a été déclenchée&nbsp;: cela signifie que l\'intégralité du capital prêté et les intérêts courus (au titre des 2 échéances impayées) deviennent exigibles par anticipation.</p>
+<p><b class="text-primary">Quelles sont les prochaines étapes&nbsp;?</b></p>
+<p>Vous n\'avez aucune démarche administrative à accomplir, celles-ci sont gérées en votre nom par le recouvreur.</p>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td class="alert">
+            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                    <td class="left" valign="top">
+                        <img src="https://www.local.unilend.fr/images/emails/alert.png" width="36" height="36" alt="Important">
+                    </td>
+                    <td class="right" valign="top">
+                        <p>Les prêteurs doivent s\'interdire de contacter directement l\'emprunteur au risque de rendre caduque la procédure de recouvrement engagée par la société de recouvrement.</p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+<p>Le processus de recouvrement peut s\'avérer long et délicat. Il se peut que plusieurs semaines se passent sans nouvelles précises, notamment en raison des délais requis par la loi.</p>
+<p>Nous vous informerons de chaque nouvelle étape significative de la procédure. À tout moment vous pouvez accéder au suivi de ce dossier depuis la page <a href="[EMV DYN]frontUrl[EMV /DYN]/operations#loans">Mes Prêts</a> de votre espace prêteur.</p>
+<p>Soyez assurés que l\'équipe d\'Unilend fait tout son possible pour qu\'une solution compatible avec les intérêts de tous soit trouvée dans les meilleurs délais. Nous restons à votre disposition pour répondre à vos questions.</p>'
+},
+{
+    name: 'preteur-projet-statut-probleme',
+    header: 'minimal',
+    footer: 'lender',
+    comment: 'Double check [EMV DYN]contenu_mail[EMV /DYN] in ProjectStatusManager.php',
+    content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
+<p>Le paiement de la dernière échéance de votre prêt à <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span> ne nous est pas parvenu à la date prévue (pour rappel vous lui avez prêté <span class="text-primary">[EMV DYN]loansAmount[EMV /DYN]&nbsp;€</span>).</p>
+<p>[EMV DYN]mailContent[EMV /DYN]</p>
+<p>Dès que la régularisation sera effectuée, vous recevrez un email de confirmation.</p>
+<p>Toute l\'équipe d\'Unilend vous assure de sa parfaite considération.</p>'
+},
 
 
 
@@ -1146,41 +1189,6 @@ content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 <p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
 },
 {
-name: 'preteur-projet-statut-probleme',
-header: 'minimal',
-footer: 'lender',
-comment: 'Double check [EMV DYN]contenu_mail[EMV /DYN] in ProjectStatusManager.php',
-content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
-<p>Le paiement de la dernière échéance de votre prêt à <span class="text-primary">[EMV DYN]entreprise[EMV /DYN]</span> ne nous est pas parvenu à la date prévue (pour rappel vous lui avez prêté <span class="text-primary">[EMV DYN]montant_pret[EMV /DYN]&nbsp;€</span>).</p>
-<p>[EMV DYN]contenu_mail[EMV /DYN]</p>
-<p>Dès que la régularisation sera effectuée, vous recevrez un email de confirmation.</p>
-<p>Toute l\'équipe d\'Unilend vous assure de sa parfaite considération.</p>'
-},
-{
-name: 'preteur-projet-statut-probleme-j-x',
-header: 'minimal',
-footer: 'lender',
-comment: 'Double check [EMV DYN]contenu_mail[EMV /DYN] variable.',
-content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
-<p>Vous avez prêté <span class="text-primary">[EMV DYN]montant_pret[EMV /DYN]&nbsp;€</span> à <span class="text-primary">[EMV DYN]entreprise[EMV /DYN]</span>.</p>
-<p>[EMV DYN]montant_rembourse[EMV /DYN]</p>
-<p>Comme nous vous en avions informé, <span class="text-primary">[EMV DYN]entreprise[EMV /DYN]</span> n\'a pas remboursé sa dernière échéance à la date prévue. Depuis, la situation n\'a pas été régularisée dans le délai de 8 jours prévu par les règles d\'Unilend.</p>
-<p> </p>
-<p><b class="text-primary">Quelle est la situation ?</b></p>
-<p>Dès l\'incident connu, Unilend a pris contact avec <span class="text-primary">[EMV DYN]entreprise[EMV /DYN]</span>. Les raisons du retard sont les suivantes :</p>
-<p>[EMV DYN]contenu_mail[EMV /DYN]</p>
-<p> </p>
-<p><b class="text-primary">Quelles sont les prochaines étapes ?</b></p>
-<p><span class="text-primary">[EMV DYN]entreprise[EMV /DYN]</span> a une dernière possibilité de régulariser sa situation en réglant cette échéance en retard en même temps que la prochaine échéance de remboursement prévue le <span class="text-primary">[EMV DYN]date_prochain_remboursement[EMV /DYN]</span>.</p>
-<p>Si ce n \'est pas le cas, une société de recouvrement sera mandatée afin de recouvrer les sommes dues pour votre compte ainsi que pour le compte de tous les prêteurs concernés.</p>
-<p><b class="text-primary">Que devez-vous faire pour faire valoir vos droits ?</b></p>
-<p>Absolument rien. Nous travaillons pour vous et restons en contact permanent avec l\'emprunteur.</p>
-<p>Si l\'emprunteur régularise sa situation, vous recevrez immédiatement votre argent sur votre compte Unilend et les remboursements suivants reprendront leur cours habituel.</p>
-<p>Si la situation n \'est pas régularisée, vous recevrez une information par mail et Unilend transmettra automatiquement toutes les informations nécessaires à la société de recouvrement qui agira pour votre compte, conformément aux conditions générales de vente.</p>
-<p><em>Dans tous les cas, vous serez systématiquement et immédiatement informé par mail à chaque étape.</em></p>
-<p>Toute l\'équipe d\'Unilend vous assure de sa parfaite considération et se tient à votre disposition <a href="[EMV DYN]url[EMV /DYN]/contact" class="text-primary">par mail</a> pour répondre à vos questions.</p>'
-},
-{
 name: 'preteur-bid-ko',
 header: 'minimal',
 footer: 'lender',
@@ -1225,32 +1233,6 @@ content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 </table>
 <p>Nous vous remercions de votre confiance.</p>
 <p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
-},
-{
-name: 'preteur-projet-statut-recouvrement',
-header: 'minimal',
-footer: 'lender',
-comment: '',
-content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
-<p>Suite à l\'absence de régularisation de 2 échéances impayées de la société <span class="text-primary">[EMV DYN]entreprise[EMV /DYN]</span> nous procédons à l\'exigibilité anticipée du prêt conformément aux Conditions Générales.<br> La société de recouvrement initialement mandatée sur la 1ère échéance impayée prend désormais en charge le recouvrement de l\'intégralité des sommes dues. A cet effet, celle-ci va engager une action de recouvrement par voie judiciaire à l\'encontre de [EMV DYN]entreprise[EMV /DYN].</span></p>
-<p><b class="text-primary">Quelles sont les conséquences d\'une mise en recouvrement ?</b></p>
-<p>La déchéance du terme a été déclenchée : cela signifie que l\'intégralité du capital prêté et les intérêts courus (au titre des 2 échéances impayées) deviennent exigibles par anticipation.</p>
-<p><b class="text-primary">Quelles sont les prochaines étapes ?</b></p>
-<p>Vous n\'avez aucune démarche administrative à accomplir, celles-ci sont gérées en votre nom par le recouvreur.</p>
-<p><strong>Important :</strong> les prêteurs doivent s\'interdire de contacter directement l\'emprunteur au risque de rendre caduque la procédure de recouvrement engagée par la société de recouvrement.</p>
-<p>Le processus de recouvrement peut s\'avérer long et délicat. Il se peut que plusieurs semaines se passent sans nouvelles précises, notamment en raison des délais requis par la loi.</p>
-<p>Nous vous informerons de chaque nouvelle étape significative de la procédure. A tout moment vous pouvez accéder au suivi de ce dossier depuis la page <a href="https://www.unilend.fr/operations#loans">Mes Prêts</a> de votre espace prêteur.</p>
-<p>Soyez assurés que l\'équipe d\'Unilend fait tout son possible pour qu"une solution compatible avec les intérêts de tous soit trouvée dans les meilleurs délais. Nous restons à votre disposition pour répondre à vos questions.</p>'
-},
-{
-name: 'preteur-projet-statut-liquidation-judiciaire-post-procedure',
-header: 'minimal',
-footer: 'lender',
-comment: 'Check [EMV DYN]contenu_mail[EMV /DYN]',
-content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
-[EMV DYN]contenu_mail[EMV /DYN]
-
 <p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
 },
 {

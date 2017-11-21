@@ -261,25 +261,13 @@ class emprunteursController extends bootstrap
             $logger = $this->get('logger');
 
             foreach ($companyProjects as $project) {
-                if (false === empty($_POST['send_email'])) {
-                    try {
-                        $projectStatusManager->sendCollectiveProceedingStatusNotificationsToLenders($project);
-                    } catch (\Exception $exception) {
-                        $logger->warning(
-                            'Collective proceeding email was not sent to lenders. Error : ' . $exception->getMessage(),
-                            ['id_project' => $project->getIdProject(), 'method' => __METHOD__]
-                        );
-                    }
-                }
-                if (false === empty($_POST['send_email_borrower']) && 1 == $_POST['send_email_borrower']) {
-                    try {
-                        $projectStatusManager->sendCollectiveProceedingStatusEmailToBorrower($project);
-                    } catch (\Exception $exception) {
-                        $logger->warning(
-                            'Collective proceeding email was not sent to borrower. Error : ' . $exception->getMessage(),
-                            ['id_project' => $project->getIdProject(), 'method' => __METHOD__]
-                        );
-                    }
+                try {
+                    $projectStatusManager->sendCollectiveProceedingStatusNotificationsToLenders($project);
+                } catch (\Exception $exception) {
+                    $logger->warning(
+                        'Collective proceeding email was not sent to lenders. Error : ' . $exception->getMessage(),
+                        ['id_project' => $project->getIdProject(), 'method' => __METHOD__]
+                    );
                 }
             }
         }
@@ -294,9 +282,9 @@ class emprunteursController extends bootstrap
         $user = $this->loadData('users');
         $user->get($_SESSION['user']['id_user']);
 
-        if (\users_types::TYPE_RISK == $user->id_user_type
+        if (
+            in_array($user->id_user_type, [\users_types::TYPE_ADMIN, \users_types::TYPE_RISK, \users_types::TYPE_IT])
             || $user->id_user == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_ALAIN_ELKAIM
-            || isset($this->params[0]) && 'risk' == $this->params[0] && in_array($user->id_user_type, [\users_types::TYPE_ADMIN, \users_types::TYPE_IT])
         ) {
             $projectData = $this->getLatePaymentsInformation();
             $this->render(null, $projectData);
