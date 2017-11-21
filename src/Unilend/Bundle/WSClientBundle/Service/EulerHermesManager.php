@@ -2,11 +2,11 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
+use GuzzleHttp\Client;
 use JMS\Serializer\Serializer;
 use Psr\Cache\CacheItemPoolInterface;
-use Psr\Log\LoggerInterface;
-use GuzzleHttp\Client;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyIdentity;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating;
@@ -260,7 +260,7 @@ class EulerHermesManager
 
         if (
             200 === $response->getStatusCode()
-            || (404 === $response->getStatusCode() && self::RESOURCE_SEARCH_COMPANY === $resource->getLabel())
+            || (404 === $response->getStatusCode() && in_array($resource->getLabel(), [self::RESOURCE_SEARCH_COMPANY, self::RESOURCE_TRAFFIC_LIGHT]))
         ) {
             $contentValidity = $this->isValidContent($content, $resource);
 
@@ -272,21 +272,25 @@ class EulerHermesManager
                 'status'   => $contentValidity ? 'valid' : 'warning',
                 'is_valid' => $contentValidity
             ];
-        } elseif (
-            self::RESOURCE_EULER_GRADE === $resource->getResourceName()
-            && 409 === $response->getStatusCode()
-        ) {
+        }
+
+        if (409 === $response->getStatusCode() && self::RESOURCE_EULER_GRADE === $resource->getLabel()) {
             $responseContent = json_decode($content);
-            if (self::EULER_ERROR_CODE_FREE_MONITORING_ALREADY_REQUESTED === $responseContent->code) {
+            if (self::EULER_ERROR_CODE_FREE_MONITORING_ALREADY_REQUESTED === $responseContent->Code) {
                 throw new \Exception($responseContent->message, self::EULER_ERROR_CODE_FREE_MONITORING_ALREADY_REQUESTED);
             } else {
-                $this->logger->error('Call to ' . $resource->getResourceName() . ' Response code: ' . $response->getStatusCode() . '. Response content: ' . $content, $logContext);
+                $this->logger->warning('Call to ' . $resource->getResourceName() . ' Response code: ' . $response->getStatusCode() . '. Response content: ' . $content, $logContext);
             }
-        } else {
-            $this->logger->error('Call to ' . $resource->getResourceName() . ' Response code: ' . $response->getStatusCode() . '. Response content: ' . $content, $logContext);
 
-            return ['status' => 'error', 'is_valid' => false];
+            return [
+                'status'   => 'warning',
+                'is_valid' => false
+            ];
         }
+
+        $this->logger->error('Call to ' . $resource->getResourceName() . ' Response code: ' . $response->getStatusCode() . '. Response content: ' . $content, $logContext);
+
+        return ['status' => 'error', 'is_valid' => false];
     }
 
     /**
@@ -298,6 +302,7 @@ class EulerHermesManager
     private function isValidContent($content, WsExternalResource $resource)
     {
         if ($response = json_decode($content)) {
+            $this->logger->info($response->code);
             switch ($resource->getLabel()) {
                 case self::RESOURCE_TRAFFIC_LIGHT:
                     return isset($response->Color) && is_string($response->Color) && false === empty($response->Color);
