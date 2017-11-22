@@ -800,7 +800,9 @@ class ajaxController extends bootstrap
             }
 
             if (false === in_array(ProjectsStatus::PREP_FUNDING, $existingStatus)) {
-                $this->get('unilend.service.email_manager')->sendBorrowerAccount($client, 'ouverture-espace-emprunteur-plein');
+               /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
+                $mailerManager = $this->get('unilend.service.email_manager');
+                $mailerManager->sendBorrowerAccount($client, 'ouverture-espace-emprunteur-plein');
             }
 
             $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::PREP_FUNDING, $project);
@@ -1032,19 +1034,23 @@ class ajaxController extends bootstrap
         $this->autoFireView = false;
 
         if (isset($_POST['id_client'], $_POST['type'])) {
-            $oClients = $this->loadData('clients');
-            $oClients->get($_POST['id_client'], 'id_client');
+            /** @var \clients $client */
+            $client = $this->loadData('clients');
+            $client->get($_POST['id_client'], 'id_client');
 
             switch ($_POST['type']) {
                 case 'open':
                     $sTypeEmail = 'ouverture-espace-emprunteur';
                     break;
                 case 'initialize':
+                default:
                     $sTypeEmail = 'mot-de-passe-oublie-emprunteur';
                     break;
             }
 
-            $this->get('unilend.service.email_manager')->sendBorrowerAccount($oClients, $sTypeEmail);
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
+            $mailerManager = $this->get('unilend.service.email_manager');
+            $mailerManager->sendBorrowerAccount($client, $sTypeEmail);
         }
     }
 

@@ -2533,7 +2533,9 @@ class dossiersController extends bootstrap
         $client = $this->loadData('clients');
         $client->get($company->id_client_owner);
 
-        $this->get('unilend.service.email_manager')->sendBorrowerAccount($client, 'ouverture-espace-emprunteur-plein');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
+        $mailerManager = $this->get('unilend.service.email_manager');
+        $mailerManager->sendBorrowerAccount($client, 'ouverture-espace-emprunteur-plein');
 
         header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
         die;

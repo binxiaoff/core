@@ -3,7 +3,6 @@
     name: 'generation-mot-de-passe',
     header: 'minimal',
     footer: 'lender',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Votre mot de passe a bien été modifié.</p>
 <p><span class="text-primary">[EMV DYN]password[EMV /DYN]</span></p>
@@ -27,7 +26,6 @@
     name: 'emprunteur-dossier-rejete',
     header: 'full',
     footer: 'borrower',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Nous avons consacré du temps à étudier votre projet. Malheureusement il ne nous semble pas adapté à ce que recherchent les prêteurs inscrits sur Unilend.</p>
 <p>Nous souhaitons vivement que vous trouviez le  moyen de réaliser votre projet.</p>
@@ -37,7 +35,6 @@
     name: 'changement-de-rib',
     header: 'full',
     footer: 'borrower',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Vous avez demandé à changer vos coordonnées bancaires pour le prélèvement de votre échéance mensuelle de <span class="text-primary">[EMV DYN]monthlyAmount[EMV /DYN]&nbsp;€</span> pour la société <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span>.</p>
 <p>Pour finaliser ce changement, il ne vous reste plus qu\'à signer le mandat de prélèvement pour votre nouveau compte bancaire&nbsp;:</p>
@@ -62,7 +59,6 @@
     name: 'preteur-pret-refuse',
     header: 'minimal',
     footer: 'lender',
-    comment: 'Check if contenu_mail has A tres bientot sur Unilend',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Vous avez proposé de prêter la somme de <span class="text-primary">[EMV DYN]bidAmount[EMV /DYN]&nbsp;€</span> à <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span></p>
 <p>Toutefois, <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span> a finalement décidé de ne pas accepter les offres qui lui ont été faites par vous et <span class="text-primary">[EMV DYN]otherLendersCount[EMV /DYN]</span> autres prêteurs.</p>
@@ -83,10 +79,55 @@
 <p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
 },
 {
-    name: 'mot-de-passe-oublie-partenaire',
+    name: 'mot-de-passe-oublie',
     header: 'minimal',
     footer: 'lender',
-    comment: '',
+    content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
+<p>Nous avons reçu une demande de réinitialisation de mot de passe de votre identifiant Unilend (<span class="text-primary">[EMV DYN]login[EMV /DYN]</span>).</p>
+<p>Pour le réinitialiser, veuillez suivre le lien ci-dessous</p>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td class="cta" align="center">
+            <!--[if mso]>
+            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]passwordLink[EMV /DYN]" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
+                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Mot de passe</center>
+            </v:roundrect>
+            <![endif]-->
+            <a href="[EMV DYN]passwordLink[EMV /DYN]" class="btn-primary">Mot de passe</a>
+        </td>
+    </tr>
+</table>
+<p>L\'équipe Unilend est à votre disposition pour toutes vos questions à cette adresse&nbsp;: <a href="mailto:contact@unilend.fr" target="_blank">contact@unilend.fr</a>.</p>
+<p> </p>
+<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
+},
+{
+    name: 'mot-de-passe-oublie-emprunteur',
+    header: 'full',
+    footer: 'borrower',
+    content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
+<p>Nous avons reçu une demande de réinitialisation de mot de passe de votre espace emprunteur.</p>
+<p>Pour le réinitialiser, veuillez cliquer sur le lien ci-dessous.</p>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td class="cta" align="center">
+            <!--[if mso]>
+            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]frontUrl[EMV /DYN]/espace_emprunteur/securite/[EMV DYN]temporaryToken[EMV /DYN]" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
+                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Modifier mon mot de passe</center>
+            </v:roundrect>
+            <![endif]-->
+            <a href="[EMV DYN]frontUrl[EMV /DYN]/espace_emprunteur/securite/[EMV DYN]temporaryToken[EMV /DYN]" class="btn-primary">Modifier mon mot de passe</a>
+        </td>
+    </tr>
+</table>
+<p>L\'équipe Unilend est à votre disposition pour toutes vos questions à cette adresse&nbsp;: <a href="mailto:[EMV DYN]borrowerServiceEmail[EMV /DYN]">[EMV DYN]borrowerServiceEmail[EMV /DYN]</a>.</p>
+<p> </p>
+<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
+},
+{
+    name: 'mot-de-passe-oublie-partenaire',
+    header: 'minimal',
+    footer: 'partner',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Nous avons reçu une demande de réinitialisation de mot de passe de votre identifiant Unilend (<span class="text-primary">[EMV DYN]login[EMV /DYN]</span>).</p>
 <p>Pour le réinitialiser, veuillez suivre le lien ci-dessous</p>
@@ -110,7 +151,6 @@
     name: 'confirmation-fermeture-compte-preteur',
     header: 'full',
     footer: 'lender-uncompleted',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Nous avons bien reçu votre demande de désinscription et les documents nécessaires pour clôturer votre compte, conformément aux dispositions des Conditions Générales de Vente.</p>
 <p>Nous vous confirmons que votre compte est désormais clôturé.</p>
@@ -123,7 +163,6 @@
     name: 'completude',
     header: 'full',
     footer: 'lender',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>En vérifiant les informations que vous nous avez transmises le <span class="text-primary">[EMV DYN]modificationDate[EMV /DYN]</span>, nous avons remarqué que les pièces suivantes sont manquantes, illisibles ou non valides&nbsp;:</p>
 <p>[EMV DYN]content[EMV /DYN]</p>
@@ -151,7 +190,6 @@
     name: 'bad-autolend-settings',
     header: 'minimal',
     footer: 'lender',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Autolend est activé sur votre compte prêteur. Cependant, certains de vos critères ne vous permettent pas de proposer des offres de prêt automatiquement à tous les projets de votre choix via Autolend.</p>
 <p>Pour revoir les critères de vos offres de prêts avec Autolend, rendez-vous sur votre espace personnel.</p>
@@ -174,7 +212,6 @@
     name: 'preteur-alimentation-manu',
     header: 'minimal',
     footer: 'lender',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Vous avez déposé <span class="text-primary">[EMV DYN]depositAmount[EMV /DYN]&nbsp;€</span> sur votre compte Unilend par virement.</p>
 <p>Vous avez maintenant <span class="text-primary">[EMV DYN]availableBalance[EMV /DYN]&nbsp;€ disponibles</span> sur votre compte Unilend pour prêter aux entreprises de votre choix.</p>
@@ -199,7 +236,6 @@
     name: 'depot-dossier-relance-status-5-1',
     header: 'full',
     footer: 'borrower-uncompleted',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Le [EMV DYN]requestDate[EMV /DYN], vous avez commencé le dépôt d\'une demande d\'emprunt pour l\'entreprise <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span> sur Unilend.<br>Vous pouvez la terminer dès aujourd\'hui.</p>
 <p class="text-primary"><b>Bien entendu, <a href="[EMV DYN]continueRequestLink[EMV /DYN]">terminer votre demande</a> est totalement gratuit et sans aucun engagement.</b></p>
@@ -240,7 +276,6 @@
     name: 'depot-dossier-relance-status-5-2',
     header: 'full',
     footer: 'borrower-uncompleted',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Le [EMV DYN]requestDate[EMV /DYN], vous avez commencé le dépôt d\'une demande d\'emprunt pour l\'entreprise <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span> sur Unilend.<br>Vous pouvez la terminer dès aujourd\'hui.</p>
 <p class="text-primary"><b>Bien entendu, <a href="[EMV DYN]continueRequestLink[EMV /DYN]">terminer votre demande</a> est totalement gratuit et sans aucun engagement.</b></p>
@@ -281,7 +316,6 @@
     name: 'depot-dossier-relance-status-5-3',
     header: 'full',
     footer: 'borrower-uncompleted',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Le [EMV DYN]requestDate[EMV /DYN], vous avez commencé le dépôt d\'une demande d\'emprunt pour l\'entreprise <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span> sur Unilend.<br>Vous pouvez la terminer dès aujourd\'hui.</p>
 <p class="text-primary"><b>Bien entendu, <a href="[EMV DYN]continueRequestLink[EMV /DYN]">terminer votre demande</a> est totalement gratuit et sans aucun engagement.</b></p>
@@ -322,7 +356,6 @@
     name: 'depot-dossier-relance-status-5-4',
     header: 'full',
     footer: 'borrower-uncompleted',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Le [EMV DYN]requestDate[EMV /DYN], vous avez commencé le dépôt d\'une demande d\'emprunt pour l\'entreprise <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span> sur Unilend.<br>Vous pouvez la terminer dès aujourd\'hui.</p>
 <p class="text-primary"><b>Bien entendu, <a href="[EMV DYN]continueRequestLink[EMV /DYN]">terminer votre demande</a> est totalement gratuit et sans aucun engagement.</b></p>
@@ -363,7 +396,6 @@
     name: 'depot-dossier-relance-status-5-5',
     header: 'full',
     footer: 'borrower-uncompleted',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Le [EMV DYN]requestDate[EMV /DYN], vous avez entamé une demande de financement de <span class="text-primary">[EMV DYN]amount[EMV /DYN]&nbsp;€</span> sans finaliser votre dossier. Nous n\'avons donc pas pu étudier votre dossier et devons annuler votre demande.</p>
 <p>Vous pourrez à tout moment déposer un nouveau dossier sur <a href="[EMV DYN]furl[EMV /DYN]">Unilend.fr</a> si votre besoin redevenait d\'actualité.</p>
@@ -382,7 +414,6 @@
     name: 'depot-dossier-relance-status-10-1/4',
     header: 'full',
     footer: 'borrower-uncompleted',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Le [EMV DYN]requestDate[EMV /DYN], vous nous avez présenté une demande d\'emprunt pour un projet de votre entreprise <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span> sur Unilend.</p>
 <p>Pour que nous étudiions votre demande, <a href="[EMV DYN]continueRequestLink[EMV /DYN]">il ne manque que la présentation de votre entreprise.</a></p>
@@ -441,7 +472,6 @@
     name: 'depot-dossier-relance-status-10-5',
     header: 'full',
     footer: 'borrower-uncompleted',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Le [EMV DYN]requestDate[EMV /DYN], vous avez entamé une demande de financement de <span class="text-primary">[EMV DYN]amount[EMV /DYN]&nbsp;€</span> sans finaliser votre dossier. Nous n\'avons donc pas pu étudier votre dossier et devons annuler votre demande.</p>
 <p>Vous pourrez à tout moment déposer un nouveau dossier sur <a href="[EMV DYN]furl[EMV /DYN]">Unilend.fr</a> si votre besoin redevenait d\'actualité.</p>
@@ -460,7 +490,6 @@
     name: 'mail-echeance-emprunteur',
     header: 'minimal',
     footer: 'borrower',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>[EMV DYN]companyName[EMV /DYN] a emprunté [EMV DYN]projectAmount[EMV /DYN]&nbsp;€ auprès de la communauté de prêteurs d\'Unilend.</p>
 <p>La prochaine échéance de [EMV DYN]nextPaymentAmount[EMV /DYN]&nbsp;€ sera prélevée sur votre compte le [EMV DYN]nextPaymentDate[EMV /DYN].</p>
@@ -473,7 +502,6 @@
     name: 'preteur-alimentation-virement',
     header: 'minimal',
     footer: 'lender',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN]</p>
 <p>Vous avez déposé <span class="text-primary">[EMV DYN]depositAmount[EMV /DYN]&nbsp;€</span> sur votre compte Unilend par virement.</p>
 <p>Vous avez maintenant <span class="text-primary">[EMV DYN]availableBalance[EMV /DYN]&nbsp;€ disponibles</span> sur votre compte Unilend pour prêter aux entreprises de votre choix.</p>
@@ -497,7 +525,6 @@
     name: 'emprunteur-remboursement-anticipe',
     header: 'minimal',
     footer: 'borrower',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Le [EMV DYN]fundingDate[EMV /DYN], [EMV DYN]companyName[EMV /DYN] a obtenu un financement de [EMV DYN]projectAmount[EMV /DYN]&nbsp;€ sur [EMV DYN]projectDuration[EMV /DYN] mois en [EMV DYN]fundingDuration[EMV /DYN] jours auprès de [EMV DYN]lendersCount[EMV /DYN] prêteurs.</p>
 <p>Le [EMV DYN]earlyPaymentDate[EMV /DYN], vous avez remboursé par anticipation l\'intégralité du capital restant dû aux prêteurs qui vous avaient fait confiance.</p>
@@ -511,7 +538,6 @@
     name: 'preteur-remboursement-anticipe',
     header: 'minimal',
     footer: 'lender',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Vous avez reçu un remboursement de <span class="text-primary">[EMV DYN]repaymentAmount[EMV /DYN]</span> sur votre compte Unilend.</p>
 <p>Il s\'agit du remboursement total du capital restant dû de votre prêt à <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span>. Comme le prévoient les règles d\'Unilend, <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span> a choisi de rembourser son emprunt par anticipation sans frais.</p>
@@ -538,7 +564,6 @@
     name: 'nouveau-projet',
     header: 'minimal',
     footer: 'lender',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Un nouveau projet vient d\'être mis en ligne&nbsp;:</p>
 <p><span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span> souhaite emprunter <span class="text-primary">[EMV DYN]projectAmount[EMV /DYN]&nbsp;€</span> sur <span class="text-primary">[EMV DYN]projectDuration[EMV /DYN]</span> mois.</p>
@@ -562,7 +587,6 @@
     name: 'confirmation-autobid',
     header: 'minimal',
     footer: 'lender',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p><b>Autolend a débuté vos offres sur le projet <span class="text-primary">[EMV DYN]projectName[EMV /DYN]</span> au taux d\'intérêt de <span class="text-primary">[EMV DYN]bidRate[EMV /DYN]&nbsp;%</span>.</b></p>
 <p>Autolend va suivre les paramètres que vous lui avez indiqués pour vous placer au meilleur taux d\'intérêt sur ce projet.</p>
@@ -574,7 +598,6 @@
     name: 'confirmation-bid',
     header: 'minimal',
     footer: 'lender',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Vous avez proposé de prêter à <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span> la somme de <span class="text-primary">[EMV DYN]bidAmount[EMV /DYN]&nbsp;€</span> au taux d\'intérêt de <span class="text-primary">[EMV DYN]bidRate[EMV /DYN] %</span> le <span class="text-primary">[EMV DYN]bidDate[EMV /DYN]</span> à <span class="text-primary">[EMV DYN]bidTime[EMV /DYN]</span>.</p>
 <p>Votre offre est bien enregistrée et le montant est désormais bloqué sur votre compte Unilend en attendant l\'issue de la souscription.</p>
@@ -597,7 +620,6 @@
     name: 'admin-nouveau-mot-de-passe',
     header: 'minimal',
     footer: 'admin',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Votre mot de passe a bien été modifié.</p>'
 },
@@ -605,7 +627,6 @@
     name: 'annonce-mise-en-ligne-emprunteur',
     header: 'full',
     footer: 'borrower',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN]</p>
 <p>Votre campagne de financement pour [EMV DYN]companyName[EMV /DYN] va débuter dans quelques instants. La communauté de prêteurs d\'Unilend va être en compétition pendant [EMV DYN]fundingDuration[EMV /DYN] pour financer les [EMV DYN]projectAmount[EMV /DYN]&nbsp;€ de votre projet.</p>
 <p>Vous pouvez découvrir dès [EMV DYN]startingTime[EMV /DYN] la page dédiée à votre projet grâce au lien ci-dessous&nbsp;:</p>
@@ -636,7 +657,6 @@
     name: 'confirmation-depot-de-dossier',
     header: 'full',
     footer: 'borrower-uncompleted',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Nous avons bien reçu votre demande de financement pour la société <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span>.</p>
 <p>À présent c\'est à nous de travailler. Sous 48h, nous allons analyser votre dossier et revenir vers vous.</p>
@@ -660,7 +680,6 @@
     name: 'confirmation-inscription-preteur',
     header: 'full',
     footer: 'lender',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Vous avez commencé votre inscription sur Unilend et nous vous en remercions.</p>
 <p>Votre compte Unilend n\'est pas encore ouvert mais vous pouvez dès maintenant vous connecter à votre compte.</p>
@@ -686,7 +705,6 @@
     name: 'confirmation-inscription-preteur-etape-3',
     header: 'full',
     footer: 'lender',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Vous avez sollicité la création d\'un compte sur Unilend et nous vous en remercions.</p>
 <p>Avant de prêter directement aux entreprises de toute la France et recevoir des intérêts, <b>nous devons vérifier les informations transmises lors de votre inscription. Cette vérification peut prendre plusieurs jours.</b></p>
@@ -699,7 +717,6 @@
     name: 'emprunteur-dernier-remboursement',
     header: 'full',
     footer: 'borrower',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Le [EMV DYN]fundingDate[EMV /DYN], <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span> a obtenu un financement de <span class="text-primary">[EMV DYN]projectAmount[EMV /DYN]&nbsp;€</span> sur [EMV DYN]projectDuration[EMV /DYN] mois auprès de <span class="text-primary">[EMV DYN]lendersCount[EMV /DYN] prêteurs</span>.</p>
 <p>Le <span class="text-primary">[EMV DYN]repaymentDate[EMV /DYN]</span>, vous avez remboursé l\'intégralité du capital restant dû aux prêteurs qui vous avaient fait confiance.</p>
@@ -714,7 +731,6 @@
     name: 'emprunteur-dossier-funde',
     header: 'minimal',
     footer: 'borrower',
-    comment: '',
     content: '<p>Félicitations [EMV DYN]firstName[EMV /DYN],</p>
 <p>Vous avez déjà obtenu 100&nbsp;% du financement demandé sur Unilend.</p>
 <p>Actuellement, le taux d\'intérêt moyen est de <span class="text-primary">[EMV DYN]averageRate[EMV /DYN]&nbsp;%</span>, et il va continuer de baisser.</p>
@@ -727,7 +743,6 @@
     name: 'emprunteur-dossier-funde-et-termine',
     header: 'minimal',
     footer: 'borrower',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN]</p>
 <p><span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span> a obtenu le financement demandé sur Unilend&nbsp;!</p>
 <p>L\'ensemble des offres des prêteurs vous permet d\'emprunter <span class="text-primary">[EMV DYN]projectAmount[EMV /DYN]&nbsp;€</span> au taux de <span class="text-primary">[EMV DYN]averageRate[EMV /DYN]&nbsp;%</span> soit une échéance mensuelle de <span class="text-primary">[EMV DYN]monthlyPayment[EMV /DYN]&nbsp;€</span>.</p>
@@ -757,7 +772,6 @@
     name: 'preteur-projet-statut-recouvrement',
     header: 'minimal',
     footer: 'lender',
-    comment: '',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Suite à l\'absence de régularisation de 2 échéances impayées de la société <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span> nous procédons à l\'exigibilité anticipée du prêt conformément aux Conditions Générales.</p>
 <p>La société de recouvrement initialement mandatée sur la 1ère échéance impayée prend désormais en charge le recouvrement de l\'intégralité des sommes dues. À cet effet, celle-ci va engager une action de recouvrement par voie judiciaire à l\'encontre de [EMV DYN]companyName[EMV /DYN].</p>
@@ -789,12 +803,145 @@
     name: 'preteur-projet-statut-probleme',
     header: 'minimal',
     footer: 'lender',
-    comment: 'Double check [EMV DYN]contenu_mail[EMV /DYN] in ProjectStatusManager.php',
     content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Le paiement de la dernière échéance de votre prêt à <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span> ne nous est pas parvenu à la date prévue (pour rappel vous lui avez prêté <span class="text-primary">[EMV DYN]loansAmount[EMV /DYN]&nbsp;€</span>).</p>
 <p>[EMV DYN]mailContent[EMV /DYN]</p>
 <p>Dès que la régularisation sera effectuée, vous recevrez un email de confirmation.</p>
 <p>Toute l\'équipe d\'Unilend vous assure de sa parfaite considération.</p>'
+},
+{
+    name: 'ouverture-espace-emprunteur',
+    header: 'full',
+    footer: 'borrower',
+    content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN]</p>
+<p>Vous avez emprunté de l\'argent sur Unilend : notre service continue d\'évoluer pour vous.</p>
+<p>Vous trouverez ci dessous le lien permettant d\'initialiser votre tout nouvel espace emprunteur.</p>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td class="cta" align="center">
+            <!--[if mso]>
+            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]frontUrl[EMV /DYN]/espace_emprunteur/securite/[EMV DYN]temporaryToken[EMV /DYN]" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
+                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Vous connecter</center>
+            </v:roundrect>
+            <![endif]-->
+            <a href="[EMV DYN]frontUrl[EMV /DYN]/espace_emprunteur/securite/[EMV DYN]temporaryToken[EMV /DYN]" class="btn-primary">Vous connecter</a>
+        </td>
+    </tr>
+</table>
+<p>Celui ci vous permettra de récupérer vos contrats et factures, d\'effectuer une nouvelle demande ou de faire le point sur votre échéancier.</p>
+<p>Vous y trouverez également de nombreuses réponses utiles à la gestion de votre financement Unilend.</p>
+<p> </p>
+<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
+},
+{
+    name: 'ouverture-espace-emprunteur-plein',
+    header: 'full',
+    footer: 'borrower',
+    content: '<p>Bienvenue sur Unilend&nbsp;!</p>
+<p>Votre espace emprunteur est désormais totalement activé et votre dossier sera prochainement en ligne.</p>
+<p>Vous avez précédement reçu un mail pour initialiser votre accès. Si vous n\'avez pas encore effectué cette étape, vous pouvez encore réaliser l\'opération en vous connectant ici&nbsp;:</p>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td class="cta" align="center">
+            <!--[if mso]>
+            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]frontUrl[EMV /DYN]/espace_emprunteur/securite/[EMV DYN]temporaryToken[EMV /DYN]" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
+                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Vous connecter</center>
+            </v:roundrect>
+            <![endif]-->
+            <a href="[EMV DYN]frontUrl[EMV /DYN]/espace_emprunteur/securite/[EMV DYN]temporaryToken[EMV /DYN]" class="btn-primary">Vous connecter</a>
+        </td>
+    </tr>
+</table>
+<p> </p>
+<p>Il vous permet de voir et suivre votre campagne sur Unilend, puis d\'accéder à toutes les informations relatives à votre dossier.</p>
+<p>Vous y trouverez également de nombreuses informations sur notre service.</p>
+<p> </p>
+<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
+},
+{
+    name: 'nouveaux-projets-du-jour',
+    header: 'minimal',
+    footer: 'lender',
+    content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
+<p>[EMV DYN]content[EMV /DYN]</p>
+<table class="table">
+    <tr>
+        <th class="th text-left">Projet</th>
+        <th class="th text-right">Montant</th>
+        <th class="th text-right">Durée</th>
+    </tr>
+    [EMV DYN]liste_projets[EMV /DYN]
+</table>
+<p> </p>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td class="cta" align="center">
+            <!--[if mso]>
+            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]url[EMV /DYN]/projets-a-financer/" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
+                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Voir les projets</center>
+            </v:roundrect>
+            <![endif]-->
+            <a href="[EMV DYN]url[EMV /DYN]/projets-a-financer/" class="btn-primary">Voir les projets</a>
+        </td>
+    </tr>
+</table>
+<p> </p>
+<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
+},
+{
+    name: 'nouveaux-projets-de-la-semaine',
+    header: 'minimal',
+    footer: 'lender',
+    content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
+<p>[EMV DYN]content[EMV /DYN]</p>
+<table class="table">
+    <tr>
+        <th class="th text-left">Projet</th>
+        <th class="th text-right">Montant</th>
+        <th class="th text-right">Durée</th>
+    </tr>
+    [EMV DYN]liste_projets[EMV /DYN]
+</table>
+<p> </p>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td class="cta" align="center">
+            <!--[if mso]>
+            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]url[EMV /DYN]/projets-a-financer/" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
+                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Voir les projets</center>
+            </v:roundrect>
+            <![endif]-->
+            <a href="[EMV DYN]url[EMV /DYN]/projets-a-financer/" class="btn-primary">Voir les projets</a>
+        </td>
+    </tr>
+</table>
+<p> </p>
+<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
+},
+{
+    name: 'preteur-bid-ok',
+    header: 'minimal',
+    footer: 'lender',
+    content: '<p>Félicitations [EMV DYN]firstName[EMV /DYN],</p>
+<p>La présentation du projet de <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span> est maintenant terminée et [EMV DYN]bidWording[EMV /DYN] [EMV DYN]doesWording[EMV /DYN] partie des meilleures offres sélectionnées.</p>
+[EMV DYN]multiBidsDisclaimer[EMV /DYN]
+<p>Voici la synthèse de [EMV DYN]bidWording[EMV /DYN] à <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span>&nbsp;:</p>
+<table class="table">
+    <tr>
+        <th class="th">Montant prêté</th>
+        <th class="th">Taux d\'intérêt</th>
+        <th class="th">Durée</th>
+        <th class="th">Mensualité</th>
+        <th class="th">Document</th>
+    </tr>
+    [EMV DYN]loansDetails[EMV /DYN]
+</table>
+<p> </p>
+<p><span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span> dispose maintenant de 5 jours pour accepter définitivement [EMV DYN]bidWording[EMV /DYN].</p>
+<p>Dès que ce sera le cas, vous recevrez la confirmation de [EMV DYN]loanWording[EMV /DYN].</p>
+[EMV DYN]multiBidsExplanation[EMV /DYN]
+<p> </p>
+<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
 },
 
 
@@ -866,7 +1013,6 @@
 name: 'synthese-quotidienne-remboursements, hebdomadaire, mensuelle',
 header: 'minimal',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 <p>[EMV DYN]contenu[EMV /DYN]</p>
 <table class="table">
@@ -919,7 +1065,6 @@ content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 name: 'preteur-remboursement',
 header: 'minimal',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 <p>Vous avez reçu un remboursement de <span class="text-primary">[EMV DYN]mensualite_p[EMV /DYN]</span> sur votre compte Unilend.</p>
 <p>Il s\'agit d\'un remboursement de votre prêt à <span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN]</span>.</p>
@@ -942,124 +1087,9 @@ content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 <p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
 },
 {
-name: 'nouveaux-projets-du-jour',
-header: 'minimal',
-footer: 'lender',
-comment: '',
-content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
-<p>[EMV DYN]contenu[EMV /DYN]</p>
-<table class="table">
-    <tr>
-        <th class="th text-left">Projet</th>
-        <th class="th text-right">Montant</th>
-        <th class="th text-right">Durée</th>
-    </tr>
-    [EMV DYN]liste_projets[EMV /DYN]
-</table>
-<p> </p>
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-    <tr>
-        <td class="cta" align="center">
-            <!--[if mso]>
-            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]url[EMV /DYN]/projets-a-financer/" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
-                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Voir les projets</center>
-            </v:roundrect>
-            <![endif]-->
-            <a href="[EMV DYN]url[EMV /DYN]/projets-a-financer/" class="btn-primary">Voir les projets</a>
-        </td>
-    </tr>
-</table>
-<p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
-},
-{
-name: 'nouveaux-projets-de-la-semaine',
-header: 'minimal',
-footer: 'lender',
-comment: '',
-content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
-<p>[EMV DYN]contenu[EMV /DYN]</p>
-<table class="table">
-    <tr>
-        <th class="th text-left">Projet</th>
-        <th class="th text-right">Montant</th>
-        <th class="th text-right">Durée</th>
-    </tr>
-    [EMV DYN]liste_projets[EMV /DYN]
-</table>
-<p> </p>
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-    <tr>
-        <td class="cta" align="center">
-            <!--[if mso]>
-            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]url[EMV /DYN]/projets-a-financer/" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
-                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Voir les projets</center>
-            </v:roundrect>
-            <![endif]-->
-            <a href="[EMV DYN]url[EMV /DYN]/projets-a-financer/" class="btn-primary">Voir les projets</a>
-        </td>
-    </tr>
-</table>
-<p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
-},
-{
-name: 'preteur-bid-ok',
-header: 'minimal',
-footer: 'lender',
-comment: '',
-content: '<p>Félicitations [EMV DYN]prenom_p[EMV /DYN],</p>
-<p>La présentation du projet de <span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN]</span> est maintenant terminée et [EMV DYN]offre_s[EMV /DYN] [EMV DYN]fait[EMV /DYN] partie des meilleures offres sélectionnées.</p>
-<p>[EMV DYN]contrat_pret[EMV /DYN]</p>
-<p>Voici la synthèse de [EMV DYN]offre_s[EMV /DYN] à <span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN]</span> : </p>
-<table class="table">
-    <tr>
-        <th class="th">Montant prêté</th>
-        <th class="th">Taux d\'intérêt</th>
-        <th class="th">Durée</th>
-        <th class="th">Mensualité</th>
-        <th class="th">Document</th>
-    </tr>
-    [EMV DYN]detail_loans[EMV /DYN]
-</table>
-<p> </p>
-<p><span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN]</span> dispose maintenant de 5 jours pour accepter définitivement [EMV DYN]offre_s[EMV /DYN].</p>
-<p>Dès que ce sera le cas, vous recevrez la confirmation de [EMV DYN]pret_s[EMV /DYN].</p>
-<p>[EMV DYN]link_explication[EMV /DYN]</p>
-<p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
-},
-{
-name: 'preteur-bid-ok',
-header: 'minimal',
-footer: 'lender',
-comment: '',
-content: '<p>Félicitations [EMV DYN]prenom_p[EMV /DYN],</p>
-<p>La présentation du projet de <span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN]</span> est maintenant terminée et [EMV DYN]offre_s[EMV /DYN] [EMV DYN]fait[EMV /DYN] partie des meilleures offres sélectionnées.</p>
-<p>[EMV DYN]contrat_pret[EMV /DYN]</p>
-<p>Voici la synthèse de [EMV DYN]offre_s[EMV /DYN] à <span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN]</span> : </p>
-<table>
-    <tr>
-        <th class="th">Montant prêté</th>
-        <th class="th">Taux d\'intérêt</th>
-        <th class="th">Durée</th>
-        <th class="th">Mensualité</th>
-        <th class="th">Document</th>
-    </tr>
-    [EMV DYN]detail_loans[EMV /DYN]
-</table>
-<p> </p>
-<p><span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN]</span> dispose maintenant de 5 jours pour accepter définitivement [EMV DYN]offre_s[EMV /DYN].</p>
-<p>Dès que ce sera le cas, vous recevrez la confirmation de [EMV DYN]pret_s[EMV /DYN].</p>
-<p>[EMV DYN]link_explication[EMV /DYN]</p>
-<p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
-},
-{
 name: 'preteur-autobid-ko-minimum-rate',
 header: 'minimal',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Vous avez proposé via Autolend une offre de prêt sur le projet</p>
 <p><span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span>. Votre offre n\'a malheureusement pas été retenue.</p>
@@ -1076,7 +1106,6 @@ content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 name: 'preteur-autobid-ko',
 header: 'minimal',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Vous avez proposé via Autolend une offre de prêt sur le projet <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span>. Entre-temps d\'autres prêteurs ont offert de meilleures propositions et votre offre n\'a pas été retenue.</p>
 <p>Il vous reste <span class="text-primary">[EMV DYN]bidRemainingTime[EMV /DYN]</span> pour proposer une nouvelle offre manuelle à un taux d\'intérêt inférieur.</p>
@@ -1100,7 +1129,6 @@ content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 name: 'preteur-contrat',
 header: 'minimal',
 footer: 'lender',
-comment: '',
 content: '<p>Félicitations [EMV DYN]prenom_p[EMV /DYN],</p>
 <p><span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN]</span> a retenu [EMV DYN]offre_s[EMV /DYN] de  prêt et a recueilli le montant nécessaire à son projet.</p>
 <p>[EMV DYN]contrat_pret[EMV /DYN]</p>
@@ -1155,7 +1183,6 @@ content: '<p>Félicitations [EMV DYN]prenom_p[EMV /DYN],</p>
 name: 'preteur-retrait',
 header: 'minimal',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 <p>Vous avez retiré <span class="text-primary">[EMV DYN]fonds_retrait[EMV /DYN]&nbsp;€</span> de votre compte Unilend vers votre compte bancaire. </p>
 <p>Vous avez maintenant <span class="text-primary">[EMV DYN]solde_p[EMV /DYN]&nbsp;€ disponibles</span> sur votre compte Unilend pour prêter aux entreprises de votre choix. </p>
@@ -1179,7 +1206,6 @@ content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 name: 'preteur-regularisation-remboursement',
 header: 'minimal',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 <p>Suite à la régularisation de l\'échéance de votre prêt à <span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN]</span>, vous avez reçu un remboursement de <span class="text-primary">[EMV DYN]mensualite_p[EMV /DYN]</span> sur votre compte Unilend.</p>
 <p>Nous resterons particulièrement vigilants sur les échéances à venir.</p>
@@ -1192,7 +1218,6 @@ content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 name: 'preteur-bid-ko',
 header: 'minimal',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Vous avez fait une offre de <span class="text-primary">[EMV DYN]bidAmount[EMV /DYN]&nbsp;€</span> à <span class="text-primary">[EMV DYN]bidRate[EMV /DYN]&nbsp;%</span> à <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span>. Entre-temps d\'autres prêteurs ont offert de meilleures propositions et votre offre ne sera pas retenue.</p>
 <p>N\'hésitez pas à proposer une nouvelle offre à un taux d\'intérêt inférieur dès maintenant. Les offres sont sélectionnées exclusivement en fonction de leur taux d\'intérêt, jamais selon leur montant.</p>
@@ -1215,7 +1240,6 @@ content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 name: 'preteur-alimentation-cb',
 header: 'minimal',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 <p>Vous avez déposé <span class="text-primary">[EMV DYN]fonds_depot[EMV /DYN]&nbsp;€</span> sur votre compte Unilend par carte bancaire.</p>
 <p>Vous avez maintenant <span class="text-primary">[EMV DYN]solde_p[EMV /DYN]&nbsp;€ disponibles</span> sur votre compte Unilend pour prêter aux entreprises de votre choix.</p>
@@ -1239,7 +1263,6 @@ content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 name: 'preteur-dernier-remboursement',
 header: 'minimal',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 <p>La dernière échéance de l\'entreprise <span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN] pour le projet [EMV DYN]nom_projet[EMV /DYN]</span> vient d\'être versée.</p>
 <p> </p>
@@ -1249,7 +1272,6 @@ content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 name: 'preteur-modification-compte',
 header: 'minimal',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN],</p>
 <p>Vous avez modifié une ou plusieurs informations sur votre profil.</p>
 <p>Nous allons vérifier les informations transmises au plus vite. Pour des raisons de sécurité, le retrait et la possibilité de prêter sont momentanément suspendus pendant cette vérification.</p>
@@ -1261,7 +1283,6 @@ content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN],</p>
 name: 'preteur-confirmation-activation',
 header: 'full',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN],</p>
 <p>Nous sommes heureux de vous accueillir parmi nos prêteurs.</p>
 <p>Pour vous connecter à votre compte, votre identifiant est votre adresse e-mail.</p>
@@ -1273,7 +1294,6 @@ content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN],</p>
 name: 'facture-emprunteur-remboursement',
 header: 'minimal',
 footer: 'borrower',
-comment: '',
 content: '<p>Madame, Monsieur,</p>
 <p>Le [EMV DYN]datedelafacture[EMV /DYN], <span class="text-primary">[EMV DYN]entreprise[EMV /DYN]</span> a emprunté <span class="text-primary">[EMV DYN]pret[EMV /DYN] &nbsp;€</span> auprès de la communauté de prêteurs d\'Unilend.</p>
 <p>Le remboursement de votre échéance de [EMV DYN]montantRemb[EMV /DYN]&nbsp;€ a bien été effectué auprès des prêteurs. Pour télécharger la facture du mois de <span class="text-primary">[EMV DYN]mois[EMV /DYN]</span> <span class="text-primary">[EMV DYN]annee[EMV /DYN]</span>, veuillez <a href="[EMV DYN]link_facture[EMV /DYN]">cliquer ici.</a></p>
@@ -1286,7 +1306,6 @@ content: '<p>Madame, Monsieur,</p>
 name: 'parrainage-invitation-filleul',
 header: 'full',
 footer: 'lender-uncompleted',
-comment: '',
 content: '<p>Bonjour [EMV DYN]sponsee_names[EMV /DYN],</p>
 <p>Rejoins-moi sur Unilend, je t\'offre ton premier prêt ! Voici ton lien d\'inscription personnalisé :</p>
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -1316,7 +1335,6 @@ content: '<p>Bonjour [EMV DYN]sponsee_names[EMV /DYN],</p>
 name: 'parrainage-versement-prime-parrain',
 header: 'minimal',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour [EMV DYN]sponsor_first_name[EMV /DYN],</p>
 <p>Grâce à votre parrainage, [EMV DYN]sponsee_first_name[EMV /DYN] [EMV DYN]sponsee_last_name[EMV /DYN] a réalisé son premier prêt à une entreprise sur Unilend !</p>
 <p>Pour vous remercier, nous avons le plaisir de vous verser votre prime de parrainage d\'un montant de [EMV DYN]amount[EMV /DYN]&nbsp;€ à prêter aux projets présentés sur Unilend.</p>
@@ -1329,7 +1347,6 @@ content: '<p>Bonjour [EMV DYN]sponsor_first_name[EMV /DYN],</p>
 name: 'parrainage-versement-prime-filleul',
 header: 'full',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour [EMV DYN]sponsee_first_name[EMV /DYN],</p>
 <p>Félicitations : votre prime de bienvenue d\'un montant de [EMV DYN]amount[EMV /DYN]&nbsp;€ a été créditée sur votre compte Unilend.</p>
 <p>Vous pouvez dès maintenant prêter cette somme à des entreprises de toute la France et recevoir des intérêts chaque mois.</p>
@@ -1343,7 +1360,6 @@ content: '<p>Bonjour [EMV DYN]sponsee_first_name[EMV /DYN],</p>
 name: 'parrainage-plafond-filleuls',
 header: 'minimal',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour [EMV DYN]sponsor_first_name[EMV /DYN],</p>
 <p>Bravo, vous avez parrainé beaucoup de monde !</p>
 <p>Vous avez atteint le plafond de nouveaux filleuls sur la campagne de parrainage actuelle. Vous pourrez à nouveau parrainer vos amis lors de la prochaine campagne de parrainage.</p>
@@ -1355,7 +1371,6 @@ content: '<p>Bonjour [EMV DYN]sponsor_first_name[EMV /DYN],</p>
 name: 'parrainage-confirmation-validation-filleul',
 header: 'full',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour [EMV DYN]sponsor_first_name[EMV /DYN],</p>
 <p>Grâce à vous, [EMV DYN]sponsee_first_name[EMV /DYN] [EMV DYN]sponsee_last_name[EMV /DYN] a créé son compte sur Unilend !</p>
 <p>Nous vous remercions de votre soutien. Votre prime de parrain vous sera versée dès que votre filleul aura prêté un montant supérieur à sa prime de parrainage. N\'hésitez pas à le faire profiter de votre expérience de prêteur !</p><p>Cordialement, <br>L\'équipe Unilend</p>
@@ -1366,7 +1381,6 @@ content: '<p>Bonjour [EMV DYN]sponsor_first_name[EMV /DYN],</p>
 name: 'preteur-validation-modification-compte',
 header: 'full',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 <p>Nous avons vérifié les modifications effectuées sur votre profil.</p>
 <p>Nous sommes heureux de vous annoncer que votre compte est à nouveau disponible.</p>
@@ -1377,7 +1391,6 @@ content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 name: 'offre-de-bienvenue',
 header: 'minimal',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 <p>Félicitations : votre offre de bienvenue d\'un montant de <span class="text-primary">[EMV DYN]offre_bienvenue[EMV /DYN]&nbsp;€</span> a été créditée sur votre compte Unilend.</p>
 <p>Vous pouvez dès maintenant <a href="[EMV DYN]projets[EMV /DYN]">prêter cette somme à des entreprises de toute la France</a> et recevoir des intérêts chaque mois.</p>
@@ -1404,7 +1417,6 @@ content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 name: 'preteur-autobid-ko-apres-fin-de-periode-projet',
 header: 'minimal',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Vous avez proposé via Autolend une offre de prêt  sur le projet <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span>. Entre-temps d\'autres prêteurs ont offert de meilleures propositions et votre offre n\'est plus susceptible d\'être retenue.</p>
 <p>Autolend continuera de proposer des offres de prêt selon les critères que vous avez définis.</p>
@@ -1427,7 +1439,6 @@ content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 name: 'preteur-autobid-activation',
 header: 'minimal',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN]</p>
 <p>Vous avez activé <b>Autolend</b> aujourd\'hui à [EMV DYN]autolendActivationTime[EMV /DYN].</p>
 <p>À partir de maintenant, dès qu\'un projet est mis en ligne, Autolend propose <b>automatiquement une offre de prêt</b> en votre nom. Autolend gèrera votre offre selon  vos critères jusqu\'à la fin de la campagne de souscription.</p>
@@ -1457,7 +1468,6 @@ content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN]</p>
 name: 'preteur-bid-ko-apres-fin-de-periode-projet',
 header: 'minimal',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>Vous avez proposé de prêter <span class="text-primary">[EMV DYN]bidAmount[EMV /DYN]&nbsp;€</span> à <span class="text-primary">[EMV DYN]bidRate[EMV /DYN]&nbsp;%</span> à l\'entreprise <span class="text-primary">[EMV DYN]companyName[EMV /DYN]</span> le <span class="text-primary">[EMV DYN]bidDate[EMV /DYN]</span> à <span class="text-primary">[EMV DYN]bidTime[EMV /DYN]</span>.</p>
 <p>Entre-temps d\'autres prêteurs ont offert de meilleures propositions et votre offre n\'est plus susceptible d\'être retenue.</p>
@@ -1469,7 +1479,6 @@ content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 name: 'preteur-bid-ko-minimum-rate',
 header: 'minimal',
 footer: 'lender',
-comment: '',
 title: 'Attention, l\'une de vos offres ne sera pas retenue',
 
 content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
@@ -1479,36 +1488,9 @@ content: '<p>Bonjour [EMV DYN]firstName[EMV /DYN],</p>
 <p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
 },
 {
-name: 'ouverture-espace-emprunteur-plein',
-header: 'full',
-footer: 'borrower',
-comment: '',
-content: '<p>Bienvenue sur Unilend !</p>
-<p>Votre espace emprunteur est désormais totalement activé et votre dossier sera prochainement en ligne.</p>
-<p>Vous avez précédement reçu un mail pour initialiser votre accès. Si vous n\'avez pas encore effectué cette étape, vous pouvez encore réaliser l\'opération en vous connectant ici :</p>
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-    <tr>
-        <td class="cta" align="center">
-            <!--[if mso]>
-            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]link_compte_emprunteur[EMV /DYN]" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
-                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Vous connecter</center>
-            </v:roundrect>
-            <![endif]-->
-            <a href="[EMV DYN]link_compte_emprunteur[EMV /DYN]" class="btn-primary">Vous connecter</a>
-        </td>
-    </tr>
-</table>
-<p> </p>
-<p>Il vous permet de voir et suivre votre campagne sur Unilend, puis d\'accéder à toutes les informations relatives à votre dossier.</p>
-<p>Vous y trouverez également de nombreuses informations sur notre service.</p>
-<p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
-},
-{
 name: 'facture-emprunteur',
 header: 'minimal',
 footer: 'borrower',
-comment: '',
 content: '<p>Bonjour</p>
 <p>Suite à votre campagne de financement sur Unilend, la communauté vous a prêté <span class="text-primary">[EMV DYN]amountLoan[EMV /DYN]&nbsp;euros </span>. Félicitations, les fonds empruntés viennent d\'être débloqués et seront versés sur le compte bancaire que vous nous avez désigné ! Selon les banques, veuillez compter entre 2 à 3 jours ouvrés pour que votre argent arrive sur votre compte. </p>
 <p>Pour télécharger la facture de la commission Unilend, veuillez <a href="[EMV DYN]link_facture[EMV /DYN]">cliquer ici.</a></p>
@@ -1522,7 +1504,6 @@ content: '<p>Bonjour</p>
 name: 'ouverture-espace-partenaire',
 header: 'full',
 footer: 'partner',
-comment: '',
 content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN]</p>
 <p>Vous disposez à présent  d\'un accès privilégié pour déposer et suivre les demandes de financement de vos clients. <br>Pour initialiser votre espace partenaire Unilend, cliquez sur le lien suivant :</p>
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -1550,59 +1531,9 @@ content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN]</p>
 <p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
 },
 {
-name: 'ouverture-espace-emprunteur',
-header: 'full',
-footer: 'borrower',
-comment: '',
-content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN]</p>
-<p>Vous avez emprunté de l\'argent sur Unilend : Notre service continue d\'évoluer pour vous.</p>
-<p>Vous trouverez ci dessous le lien permettant d\'initialiser votre tout nouvel espace emprunteur.</p>
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-    <tr>
-        <td class="cta" align="center">
-            <!--[if mso]>
-            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]link_compte_emprunteur[EMV /DYN]" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
-                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Vous connecter</center>
-            </v:roundrect>
-            <![endif]-->
-            <a href="[EMV DYN]link_compte_emprunteur[EMV /DYN]" class="btn-primary">Vous connecter</a>
-        </td>
-    </tr>
-</table>
-<p>Celui ci vous permettra de récupérer vos contrats et factures, d\'effectuer une nouvelle demande ou de faire le point sur votre échéancier.</p>
-<p>Vous y trouverez également de nombreuses réponses utiles à la gestion de votre financement Unilend.</p>
-<p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
-},
-{
-name: 'mot-de-passe-oublie-emprunteur',
-header: 'full',
-footer: 'borrower',
-comment: '',
-content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN],</p>
-<p>Nous avons reçu une demande de réinitialisation de mot de passe de votre espace emprunteur.</p>
-<p>Pour le réinitialiser, veuillez cliquer sur le lien ci-dessous.</p>
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-    <tr>
-        <td class="cta" align="center">
-            <!--[if mso]>
-            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="[EMV DYN]link_compte_emprunteur[EMV /DYN]" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="5%" strokecolor="#b20066" fillcolor="#b20066">
-                <center style="color:#ffffff;font-family:Helvetica, Arial, sans-serif;font-size:18px;">Vous connecter</center>
-            </v:roundrect>
-            <![endif]-->
-            <a href="[EMV DYN]link_compte_emprunteur[EMV /DYN]" class="btn-primary">Mot de passe</a>
-        </td>
-    </tr>
-</table>
-<p>L\'équipe Unilend est à votre disposition pour toutes vos questions à cette adresse : <a href="mailto:emprunteur@unilend.fr">emprunteur@unilend.fr</a>.</p>
-<p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
-},
-{
 name: 'signature-universign-de-cgv',
 header: 'full',
 footer: 'borrower',
-comment: '',
 content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 <p>Nous avons reçu et étudié votre demande de financement. Afin de nous permettre de finaliser votre dossier, vous trouverez ci dessous un lien pour prendre connaissance et signer nos conditions générales de vente.</p>
 <p>Vous pourrez ainsi signer électroniquement le document, avec un code de confirmation qui vous sera envoyé par SMS. </p>
@@ -1639,7 +1570,6 @@ content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
 name: 'user-nouveau-mot-de-passe',
 header: 'minimal',
 footer: 'borrower',
-comment: '',
 content: '<p>Bonjour,</p>
 <p>Votre nouveau mot de passe a bien été réinitialisé comme suit :</p>
 <p><span class="text-primary">[EMV DYN]mdp[EMV /DYN]</span></p>
@@ -1651,7 +1581,6 @@ content: '<p>Bonjour,</p>
 name: 'preteur-conseil-cip',
 header: 'full',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN],</p>
 <p>Merci de nous avoir permis de mieux vous conseiller sur Unilend.</p>
 <p>Ce questionnaire nous a permis de vérifier que vous avez bien conscience que :</p>
@@ -1672,34 +1601,10 @@ content: '<p>Bonjour [EMV DYN]prenom[EMV /DYN],</p>
 name: 'preteur-dernier-remboursement-controle',
 header: 'full',
 footer: 'lender',
-comment: '',
 content: '<p>Bonjour,</p>
 <p>La dernière échéance de l\'entreprise <span class="text-primary">[EMV DYN]nom_entreprise[EMV /DYN] pour le projet [EMV DYN]nom_projet[EMV /DYN], id_projet : [EMV DYN]id_projet[EMV /DYN] </span> vient d\'être versée.</p>
 <p> </p>
 <p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
-},
-{
-name: 'emprunteur-projet-statut-liquidation-judiciaire',
-header: 'minimal',
-footer: 'borrower',
-comment: 'Check mail contenu',
-content: '<p>Bonjour [EMV DYN]prenom_p[EMV /DYN],</p>
-<p>[EMV DYN]contenu_mail[EMV /DYN]</p>
-<p> </p>
-<p>À très bientôt sur <a href="[EMV DYN]frontUrl[EMV /DYN]">Unilend</a>.</p>'
-},
-{
-name: 'emprunteur-projet-statut-recouvrement',
-header: 'minimal',
-footer: 'borrower',
-comment: 'Static variables on Prod',
-content: '<p>Bonjour [EMV DYN]civilite_e[EMV /DYN] [EMV DYN]nom_e[EMV /DYN],</p>
-<p><span class="text-primary">[EMV DYN]entreprise[EMV /DYN]</span> a emprunté <span class="text-primary">[EMV DYN]montant_emprunt[EMV /DYN]&nbsp;€</span> en <span class="text-primary">[EMV DYN]date_financement[EMV /DYN]</span> auprès de la communauté Unilend.</p>
-<p>Deux mensualités consécutives de votre échéancier de remboursement ont été constatées en impayé, pour un montant total de <span class="text-primary">3 762,90&nbsp;€</span>.</p>
-<p>En conséquence, nous transmettons votre dossier à un recouvreur. L\'ensemble du capital restant dû, soit <span class="text-primary">31 796,15&nbsp;€</span>, devient exigible par anticipation.</p>
-<p>Vous devez désormais prendre contact avec le recouvreur afin de rembourser l\'intégralité des sommes dues. Ce dernier a été mandaté afin de procéder, par tous moyens légaux, au recouvrement desdites sommes et défendre l\'intérêt des <span class="text-primary">[EMV DYN]nb_preteurs[EMV /DYN]</span> prêteurs qui vous avaient fait confiance.</p>
-<p>Pour rappel, l\'information est transmise auprès des partenaires d\'Unilend et ce défaut de paiement est par ailleurs déclaré au Service Central des Risques de la Banque de France.</p>
-<p>L\'équipe Unilend</p>'
 },
 ] %}
 <style>

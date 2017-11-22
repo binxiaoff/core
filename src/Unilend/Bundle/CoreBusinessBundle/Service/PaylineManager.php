@@ -251,6 +251,7 @@ class PaylineManager
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->messageProvider->newMessage('preteur-alimentation-cb', $keywords);
+
             try {
                 $message->setTo($backPayline->getWallet()->getIdClient()->getEmail());
                 $this->mailer->send($message);

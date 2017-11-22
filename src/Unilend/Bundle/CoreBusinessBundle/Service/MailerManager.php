@@ -310,6 +310,7 @@ class MailerManager
         /** @var TemplateMessage $message */
         $message   = $this->messageProvider->newMessage('notification-projet-funde-a-100', $keywords, false);
         $recipient = $this->settingsRepository->findOneBy(['type' => 'Adresse notification projet funde a 100'])->getValue();
+
         try {
             $message->setTo(explode(';', str_replace(' ', '', $recipient)));
             $this->mailer->send($message);
@@ -360,17 +361,17 @@ class MailerManager
                 $numberOfLoansForLender = count($loansOfLender);
                 $numberOfAcceptedBids   = $acceptedBid->getDistinctBidsForLenderAndProject($wallet->getId(), $project->id_project);
                 $loansDetails           = '';
-                $linkExplication        = '';
-                $contractText           = '';
+                $multiBidsDisclaimer    = '';
+                $multiBidsExplanation   = '';
+
                 if ($wallet->getIdClient()->isNaturalPerson()) {
                     $contract->get(\underlying_contract::CONTRACT_IFP, 'label');
                     $loanIFP               = $loanData->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $wallet->getId() . ' AND id_type_contract = ' . $contract->id_contract);
                     $numberOfBidsInLoanIFP = $acceptedBid->counter('id_loan = ' . $loanIFP[0]['id_loan']);
 
                     if ($numberOfBidsInLoanIFP > 1) {
-                        $contractText = '<br>L\`ensemble de vos offres à concurrence de 1 000 euros seront regroupées sous la forme d\`un seul contrat de prêt. Son taux d\`intérêt correspondra donc à la moyenne pondérée de vos <span class="text-primary">' . $numberOfBidsInLoanIFP . ' offres de prêt</span>. ';
-
-                        $linkExplication = 'Pour en savoir plus sur les règles de regroupement des offres de prêt, vous pouvez consulter <a href="' . $this->sSUrl . '/document-de-pret">cette page</a>.';
+                        $multiBidsDisclaimer  = '<p>L\'ensemble de vos offres à concurrence de <span class="text-primary" style="color: #b20066;">2&nbsp;000&nbsp;€</span> seront regroupées sous la forme d\'un seul contrat de prêt. Son taux d\'intérêt correspondra donc à la moyenne pondérée de vos <span class="text-primary" style="color: #b20066;">' . $numberOfBidsInLoanIFP . ' offres de prêt</span>.</p>';
+                        $multiBidsExplanation = '<p>Pour en savoir plus sur les règles de regroupement des offres de prêt, vous pouvez consulter <a href="' . $this->sSUrl . '/document-de-pret" style="color: #b20066; font-weight: normal; text-decoration: none;">cette page</a>.</p>';
                     }
                 }
 
@@ -393,50 +394,37 @@ class MailerManager
                         $contractType = $contractLabel[$loan['id_type_contract']];
                     }
                     $loansDetails .= '<tr>
-                                           <td class="td text-center">' . $this->oFicelle->formatNumber($loan['amount'] / 100) . ' €</td>
-                                           <td class="td text-center">' . $this->oFicelle->formatNumber($loan['rate']) . ' %</td>
+                                           <td class="td text-center">' . $this->oFicelle->formatNumber($loan['amount'] / 100, 0) . '&nbsp;€</td>
+                                           <td class="td text-center">' . $this->oFicelle->formatNumber($loan['rate']) . '&nbsp;%</td>
                                            <td class="td text-center">' . $project->period . ' mois</td>
-                                           <td class="td text-center">' . $this->oFicelle->formatNumber($firstPayment['montant'] / 100) . ' €</td>
+                                           <td class="td text-center">' . $this->oFicelle->formatNumber($firstPayment['montant'] / 100) . '&nbsp;€</td>
                                            <td class="td text-center">' . $contractType . '</td>
                                       </tr>';
                 }
 
-                $varMail = [
-                    'surl'                  => $this->sSUrl,
-                    'url'                   => $this->sFUrl,
-                    'offre_s_selectionne_s' => $selectedOffers,
-                    'prenom_p'              => $wallet->getIdClient()->getPrenom(),
-                    'nom_entreprise'        => $company->name,
-                    'fait'                  => $does,
-                    'contrat_pret'          => $contractText,
-                    'detail_loans'          => $loansDetails,
-                    'offre_s'               => $offers,
-                    'pret_s'                => $loansText,
-                    'projet-p'              => $this->sFUrl . '/projects/detail/' . $project->slug,
-                    'link_explication'      => $linkExplication,
-                    'motif_virement'        => $wallet->getWireTransferPattern(),
-                    'lien_fb'               => $this->getFacebookLink(),
-                    'lien_tw'               => $this->getTwitterLink(),
-                    'annee'                 => date('Y')
+                $keywords = [
+                    'firstName'            => $wallet->getIdClient()->getPrenom(),
+                    'companyName'          => $company->name,
+                    'bidWording'           => $offers,
+                    'doesWording'          => $does,
+                    'loanWording'          => $loansText,
+                    'selectedOfferWording' => $selectedOffers,
+                    'loansDetails'         => $loansDetails,
+                    'multiBidsDisclaimer'  => $multiBidsDisclaimer,
+                    'multiBidsExplanation' => $multiBidsExplanation,
+                    'lenderPattern'        => $wallet->getWireTransferPattern()
                 ];
 
                 /** @var TemplateMessage $message */
-                $message = $this->messageProvider->newMessage('preteur-bid-ok', $varMail);
+                $message = $this->messageProvider->newMessage('preteur-bid-ok', $keywords);
+
                 try {
                     $message->setTo($wallet->getIdClient()->getEmail());
-                    $isSent = $this->mailer->send($message);
+                    $this->mailer->send($message);
                 } catch (\Exception $exception){
                     $this->oLogger->warning(
                         'Could not send email: preteur-bid-ok - Exception: ' . $exception->getMessage(),
                         ['id_mail_template' => $message->getTemplateId(), 'id_client' => $wallet->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-                    );
-                    $isSent = 0;
-                }
-
-                if ($isSent > 0 && $this->oLogger instanceof LoggerInterface) {
-                    $this->oLogger->info(
-                        'Email preteur-bid-ok sent for client ' . $wallet->getIdClient()->getIdClient() . ' (project ' . $project->id_project . ')',
-                        ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]
                     );
                 }
             }
@@ -595,7 +583,7 @@ class MailerManager
             $iBidTotal = $oProject->amount;
         }
 
-        $varMail = [
+        $keywords = [
             '$surl'         => $this->sSUrl,
             '$url'          => $this->sFUrl,
             '$id_projet'    => $oProject->id_project,
@@ -605,8 +593,10 @@ class MailerManager
             '$montant'      => $iBidTotal,
             '$taux_moyen'   => $this->oFicelle->formatNumber($oProject->getAverageInterestRate(), 1)
         ];
+
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('notification-projet-fini', $varMail, false);
+        $message = $this->messageProvider->newMessage('notification-projet-fini', $keywords, false);
+
         try {
             $message->setTo(explode(';', str_replace(' ', '', $sRecipient)));
             $this->mailer->send($message);
@@ -837,7 +827,7 @@ class MailerManager
                     $numberOfBidsInLoanIFP = $acceptedBids->counter('id_loan = ' . $loanIFP[0]['id_loan']);
 
                     if ($numberOfBidsInLoanIFP > 1) {
-                        $sContract        = 'L\`ensemble de vos offres à concurrence de 1 000 euros sont regroupées sous la forme d\`un seul contrat de prêt. Son taux d\`intérêt correspond donc à la moyenne pondérée de vos <span class="text-primary">' . $numberOfBidsInLoanIFP . ' offres de prêt</span>. ';
+                        $sContract        = 'L\'ensemble de vos offres à concurrence de 1 000 euros sont regroupées sous la forme d\'un seul contrat de prêt. Son taux d\'intérêt correspond donc à la moyenne pondérée de vos <span class="text-primary">' . $numberOfBidsInLoanIFP . ' offres de prêt</span>. ';
                         $sLinkExplication = 'Pour en savoir plus sur les règles de regroupement des offres de prêt, vous pouvez consulter <a href="' . $this->sSUrl . '/document-de-pret">cette page</a>.';
                     }
                 }
@@ -978,15 +968,16 @@ class MailerManager
 
         switch ($sFrequency) {
             case 'quotidienne':
-                $sMail = 'nouveaux-projets-du-jour';
+                $mailType = 'nouveaux-projets-du-jour';
                 break;
             case 'hebdomadaire':
-                $sMail = 'nouveaux-projets-de-la-semaine';
+                $mailType = 'nouveaux-projets-de-la-semaine';
                 break;
             default:
                 trigger_error('Unknown frequency for new projects summary email: ' . $sFrequency, E_USER_WARNING);
                 return;
         }
+
         foreach (array_chunk($aCustomerId, 100) as $aPartialCustomerId) {
             $aCustomerMailNotifications = [];
             foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, \clients_gestion_type_notif::TYPE_NEW_PROJECT) as $aMailNotifications) {
@@ -1053,13 +1044,13 @@ class MailerManager
                         ];
 
                         /** @var TemplateMessage $message */
-                        $message = $this->messageProvider->newMessage($sMail, $keywords);
+                        $message = $this->messageProvider->newMessage($mailType, $keywords);
                         try {
                             $message->setTo($oCustomer->email);
                             $this->mailer->send($message);
                         } catch (\Exception $exception){
                             $this->oLogger->warning(
-                                'Could not send email: ' . $sMail . ' - Exception: ' . $exception->getMessage(),
+                                'Could not send email: ' . $mailType . ' - Exception: ' . $exception->getMessage(),
                                 ['id_mail_template' => $message->getTemplateId(), 'id_client' => $iCustomerId, 'class' => __CLASS__, 'function' => __FUNCTION__]
                             );
                         }
@@ -1856,8 +1847,8 @@ class MailerManager
     public function sendProxyAndMandateSigned(ProjectsPouvoir $proxy, ClientsMandats $mandate)
     {
         if ($proxy->getIdProject() && $proxy->getIdProject()->getIdCompany()) {
-            $destinataire = $this->settingsRepository->findOneBy(['type' => 'Adresse notification pouvoir mandat signe'])->getValue();
-            $template     = [
+            $recipient = $this->settingsRepository->findOneBy(['type' => 'Adresse notification pouvoir mandat signe'])->getValue();
+            $keywords  = [
                 '$surl'         => $this->sSUrl,
                 '$id_projet'    => $proxy->getIdProject()->getIdProject(),
                 '$nomProjet'    => $proxy->getIdProject()->getTitle(),
@@ -1867,14 +1858,15 @@ class MailerManager
             ];
 
             /** @var TemplateMessage $message */
-            $message = $this->messageProvider->newMessage('notification-pouvoir-mandat-signe', $template, false);
+            $message = $this->messageProvider->newMessage('notification-pouvoir-mandat-signe', $keywords, false);
+
             try {
-                $message->setTo(explode(';', $destinataire));
+                $message->setTo(explode(';', $recipient));
                 $this->mailer->send($message);
             } catch (\Exception $exception) {
                 $this->oLogger->warning(
                     'Could not send email : notification-pouvoir-mandat-signe - Exception: ' . $exception->getMessage(),
-                    ['id_mail_template' => $message->getTemplateId(), 'email address' => explode(';', $destinataire), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    ['id_mail_template' => $message->getTemplateId(), 'email address' => explode(';', $recipient), 'class' => __CLASS__, 'function' => __FUNCTION__]
                 );
             }
         }
@@ -1949,8 +1941,9 @@ class MailerManager
         /** @var \temporary_links_login $temporaryLink */
         $temporaryLink = $this->entityManagerSimulator->getRepository('temporary_links_login');
         $keywords      = [
-            'firstName'     => $client->prenom,
-            'temporaryLink' => $temporaryLink->generateTemporaryLink($client->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG),
+            'firstName'            => $client->prenom,
+            'temporaryToken'       => $temporaryLink->generateTemporaryLink($client->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG),
+            'borrowerServiceEmail' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
         ];
 
         /** @var TemplateMessage $message */

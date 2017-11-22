@@ -164,20 +164,21 @@ class ProjectRepaymentNotificationSender
 
     /**
      * @param Projects $project
-     * @param          $repaymentSequence
+     * @param int      $repaymentSequence
      */
     public function sendIncompleteRepaymentNotification(Projects $project, $repaymentSequence)
     {
         $alertMailIT = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'DebugMailIt'])->getValue();
 
-        $varMail = [
+        $keywords = [
             'project_id'    => $project->getIdProject(),
             'project_title' => $project->getTitle(),
             'order'         => $repaymentSequence
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('incomplete-repayment-notification', $varMail);
+        $message = $this->messageProvider->newMessage('incomplete-repayment-notification', $keywords);
+
         try {
             $message->setTo($alertMailIT);
             $this->mailer->send($message);
@@ -268,9 +269,8 @@ class ProjectRepaymentNotificationSender
      */
     public function sendInComingEarlyRepaymentNotification(Receptions $reception)
     {
-        $email = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse notification nouveau remboursement anticipe'])->getValue();
-
-        $varMail = [
+        $email    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse notification nouveau remboursement anticipe'])->getValue();
+        $keywords = [
             '$surl'       => $this->assetsPackages->getUrl(''),
             '$url'        => $this->frontUrl,
             '$id_projet'  => $reception->getIdProject()->getIdProject(),
@@ -278,7 +278,9 @@ class ProjectRepaymentNotificationSender
             '$nom_projet' => $reception->getIdProject()->getTitle()
         ];
 
-        $message = $this->messageProvider->newMessage('notification-nouveau-remboursement-anticipe', $varMail, false);
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage('notification-nouveau-remboursement-anticipe', $keywords, false);
+
         try {
             $message->setTo($email);
             $mailer = $this->mailer;

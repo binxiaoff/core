@@ -615,6 +615,7 @@ class UniversignManager
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->messageProvider->newMessage('notification-erreur-universign', $keywords, false);
+
         try {
             $message->setTo($setting->getValue());
             $this->mailer->send($message);
