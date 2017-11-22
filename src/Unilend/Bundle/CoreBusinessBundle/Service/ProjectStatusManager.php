@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
@@ -46,6 +47,9 @@ class ProjectStatusManager
     /** @var string */
     protected $frontUrl;
 
+    /** @var RouterInterface */
+    protected $router;
+
     /**
      * ProjectStatusManager constructor.
      *
@@ -59,6 +63,7 @@ class ProjectStatusManager
      * @param \Swift_Mailer           $mailer
      * @param LoggerInterface         $logger
      * @param string                  $frontUrl
+     * @param RouterInterface         $router
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -70,7 +75,8 @@ class ProjectStatusManager
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,
         LoggerInterface $logger,
-        $frontUrl
+        $frontUrl,
+        RouterInterface $router
     )
     {
         $this->entityManagerSimulator = $entityManagerSimulator;
@@ -82,6 +88,7 @@ class ProjectStatusManager
         $this->frontUrl               = $frontUrl;
         $this->messageProvider        = $messageProvider;
         $this->mailer                 = $mailer;
+        $this->router                 = $router;
     }
 
     /**
@@ -477,10 +484,13 @@ class ProjectStatusManager
             throw new \Exception('Could not send email preteur-projet-statut-recouvrement on project ' . $project->getIdProject() . '. No overdue repayment found');
         }
 
-        $overdueRepaymentCount = (1 === $overdueRepaymentScheduleCount) ? '1 échéance impayée' : $this->numberFormatter->format($overdueRepaymentScheduleCount) . ' échéances impayées';
-        $keyWords              = [
-            'myLoansLink'           => $this->frontUrl . '/operations#loans',
-            'overdueRepaymentCount' => $overdueRepaymentCount
+        $keyWords = [
+            'myLoansLink'           => $this->router->generate('lender_operations') . '#loans',
+            'overdueRepaymentCount' => $this->translator->transChoice(
+                'lender-close-out-netting-email_repayments-count',
+                $overdueRepaymentScheduleCount,
+                ['%overdueScheduleRepaymentCount%' => $this->numberFormatter->format($overdueRepaymentScheduleCount)]
+            )
         ];
         $this->sendLenderNotifications($project, Notifications::TYPE_PROJECT_RECOVERY, 'preteur-projet-statut-recouvrement', 'preteur-projet-statut-recouvrement', $keyWords);
     }
