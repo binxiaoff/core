@@ -20,6 +20,7 @@ class EulerHermesManager
     const RESOURCE_EULER_GRADE_MONITORING_START              = 'start_euler_grade_monitoring';
     const RESOURCE_EULER_GRADE_MONITORING_END                = 'end_euler_grade_monitoring';
     const EULER_ERROR_CODE_FREE_MONITORING_ALREADY_REQUESTED = 3000;
+    const EULER_ERROR_CODE_UNKNOWN_TRAFFIC_LIGHT_VALUE       = 4301;
 
     /** @var Client */
     private $client;
@@ -260,7 +261,7 @@ class EulerHermesManager
 
         if (
             200 === $response->getStatusCode()
-            || (404 === $response->getStatusCode() && in_array($resource->getLabel(), [self::RESOURCE_SEARCH_COMPANY, self::RESOURCE_TRAFFIC_LIGHT]))
+            || (404 === $response->getStatusCode() && self::RESOURCE_SEARCH_COMPANY === $resource->getLabel())
         ) {
             $contentValidity = $this->isValidContent($content, $resource);
 
@@ -271,6 +272,18 @@ class EulerHermesManager
             return [
                 'status'   => $contentValidity ? 'valid' : 'warning',
                 'is_valid' => $contentValidity
+            ];
+        }
+
+        if (404 === $response->getStatusCode() && self::RESOURCE_TRAFFIC_LIGHT === $resource->getLabel()) {
+            $responseContent = json_decode($content);
+            if (self::EULER_ERROR_CODE_UNKNOWN_TRAFFIC_LIGHT_VALUE === $responseContent->Code) {
+                $this->logger->warning('Call to ' . $resource->getResourceName() . ' Response code: ' . $response->getStatusCode() . '. Response content: ' . $content, $logContext);
+            }
+
+            return [
+                'status'   => 'warning',
+                'is_valid' => false
             ];
         }
 
@@ -302,7 +315,6 @@ class EulerHermesManager
     private function isValidContent($content, WsExternalResource $resource)
     {
         if ($response = json_decode($content)) {
-            $this->logger->info($response->code);
             switch ($resource->getLabel()) {
                 case self::RESOURCE_TRAFFIC_LIGHT:
                     return isset($response->Color) && is_string($response->Color) && false === empty($response->Color);
