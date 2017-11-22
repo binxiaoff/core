@@ -12,6 +12,12 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Tree
 {
+    const STATUS_OFFLINE = 0;
+    const STATUS_ONLINE  = 1;
+
+    const VISIBILITY_PRIVATE = 1;
+    const VISIBILITY_PUBLIC  = 0;
+
     /**
      * @var integer
      *
@@ -155,8 +161,6 @@ class Tree
      * @ORM\GeneratedValue(strategy="NONE")
      */
     private $idLangue;
-
-
 
     /**
      * Set idParent

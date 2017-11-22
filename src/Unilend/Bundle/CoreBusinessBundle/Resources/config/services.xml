@@ -424,6 +424,17 @@
             <argument>%path.protected%</argument>
         </service>
 
+        <service id="unilend.service.beneficial_owner_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="knp_snappy.pdf"/>
+            <argument type="service" id="twig"/>
+            <argument type="service" id="router"/>
+            <argument type="service" id="unilend.frontbundle.service.universign_manager"/>
+            <argument type="service" id="unilend.service.attachment_manager"/>
+            <argument type="service" id="logger"/>
+            <argument>%path.protected%</argument>
+        </service>
+
         <service id="unilend.service.debt_collection_fee_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionFeeManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.debt_collection_mission_manager"/>

@@ -18,7 +18,7 @@ framework:
         packages:
             gulp:
                 base_path: /assets
-        version_strategy: unilend.frontbundle.gulp_rev_version_strategy
+        json_manifest_path: '%kernel.root_dir%/../public/default/assets/rev-manifest.json'
     translator:
         enabled: true
         fallbacks: ["fr_FR"]
@@ -208,6 +208,8 @@ monolog:
 
 swiftmailer:
     transport: '%mailer_transport%'
+    host: '%mailer_host%'
+    port: '%mailer_port%'
 
 unilend_translation:
     parameters:

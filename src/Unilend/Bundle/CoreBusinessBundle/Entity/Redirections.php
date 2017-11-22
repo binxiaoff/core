@@ -12,6 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Redirections
 {
+    const STATUS_DISABLED = 0;
+    const STATUS_ENABLED  = 1;
     /**
      * @var string
      *
@@ -64,8 +66,6 @@ class Redirections
      * @ORM\GeneratedValue(strategy="NONE")
      */
     private $fromSlug;
-
-
 
     /**
      * Set toSlug

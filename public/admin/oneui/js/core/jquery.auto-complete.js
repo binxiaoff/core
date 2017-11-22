@@ -31,8 +31,11 @@
             var that = $(this);
             // sc = 'suggestions container'
             that.sc = $('<div class="autocomplete-suggestions '+o.menuClass+'"></div>');
-            that.data('sc', that.sc).data('autocomplete', that.attr('autocomplete'));
-            that.attr('autocomplete', 'off');
+            that.data('sc', that.sc).data('autocomplete', that.attr('autocomplete')), that.attr('autocomplete', 'off');
+            if (that.parent().is('.input-group') || that.parent().is('.form-group')) {
+                that.parent().addClass('autocomplete-wrapper');
+                that.parent().append('<div class="loading-icon"><span class="fa fa-circle-o-notch fa-spin"></span></div>')
+            }
             that.cache = {};
             that.last_val = '';
 
@@ -93,6 +96,8 @@
             if (!o.minChars) that.on('focus.autocomplete', function(){ that.last_val = '\n'; that.trigger('keyup.autocomplete'); });
 
             function suggest(data){
+                if (that.parent().is('.autocomplete-loading'))
+                    that.parent().removeClass('autocomplete-loading')
                 var val = that.val();
                 that.cache[val] = data;
                 if (val.length >= o.minChars) {
@@ -198,6 +203,8 @@
             });
 
             that.on('keyup.autocomplete', function(e){
+                if (that.parent().is('.autocomplete-wrapper'))
+                    that.parent().addClass('autocomplete-loading')
                 if (!~$.inArray(e.which, [13, 27, 35, 36, 37, 38, 39, 40])) {
                     var val = that.val();
                     if (val.length >= o.minChars) {

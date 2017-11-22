@@ -661,7 +661,7 @@ class tree extends tree_crud
                 if (in_array($firstElement['slug'], $this::$keywordsPagesOutsideCMS)) {
                     return 0;
                 } else {
-                    return strcmp($firstElement['title'], $secondElement['title']);
+                    return strcasecmp($firstElement['title'], $secondElement['title']);
                 }
             });
         }
