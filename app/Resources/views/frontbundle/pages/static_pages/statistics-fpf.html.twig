@@ -204,7 +204,10 @@
                         <tr>
                             <td class="table-stats-unilend-item-label">{{ "fpf-statistics_table-late-capital-percentage"|trans|raw }}&nbsp;</td>
                             {% for value in data['late-capital-percentage'] %}
-                                <td><span class="volume">{{ value.volume|localizednumberwithprecision(2) }} %</span><span class="number">NA</span></td>
+                                <td>
+                                    <span class="volume">{{ value.volume|localizednumberwithprecision(2) }} %</span>
+                                    <span class="number">{% if value.number is same as('NA') %}NA{% else %}{{ value.number|localizednumberwithprecision(2) }} %{% endif %}</span>
+                                </td>
                             {% endfor %}
                         </tr>
                         <!-- /repaid-capital-ratio -->
@@ -222,7 +225,10 @@
                         <tr>
                             <td class="table-stats-unilend-item-label">{{ "fpf-statistics_table-late-problematic-capital-percentage"|trans|raw }}&nbsp;</td>
                             {% for value in data['late-problematic-capital-percentage'] %}
-                                <td><span class="volume">{{ value.volume|localizednumberwithprecision(2) }} %</span><span class="number">NA</span></td>
+                                <td>
+                                    <span class="volume">{{ value.volume|localizednumberwithprecision(2) }} %</span>
+                                    <span class="number">{% if value.number is same as('NA') %}NA{% else %}{{ value.number|localizednumberwithprecision(2) }} %{% endif %}</span>
+                                </td>
                             {% endfor %}
                         </tr>
                         <!-- /average-interest-ratio -->

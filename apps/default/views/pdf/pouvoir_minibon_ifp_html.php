@@ -112,6 +112,7 @@
                     </li>
                 </ul>
             </div>
+            <br>
             <h5>Les bons de caisse émis sont nominatifs. Le Bon de caisse est cessible à la condition pour le cessionnaire d’avoir préalablement ouvert un compte Unilend prêteur.</h5>
             <div class="list">
                 <ul>

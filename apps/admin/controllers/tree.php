@@ -136,22 +136,22 @@ class treeController extends bootstrap
                             }
 
                             if ($slug_temp != $this->tree->slug) {
-                                if ($this->redirections->get(['from_slug' => $this->tree->slug, 'id_langue' => $key])) {
+                                if ($this->redirections->get(['from_slug' => '/' . $this->tree->slug, 'id_langue' => $key])) {
                                     $createRedir = false;
                                 } else {
                                     $createRedir = true;
                                 }
 
                                 $this->redirections->id_langue = $key;
-                                $this->redirections->from_slug = $this->tree->slug;
-                                $this->redirections->to_slug   = $slug_temp;
+                                $this->redirections->from_slug = '/' . $this->tree->slug;
+                                $this->redirections->to_slug   = '/' . $slug_temp;
                                 $this->redirections->type      = 301;
                                 $this->redirections->status    = 1;
 
                                 if ($createRedir) {
-                                    $this->redirections->create(['from_slug' => $this->tree->slug, 'id_langue' => $key]);
+                                    $this->redirections->create(['from_slug' => '/' . $this->tree->slug, 'id_langue' => $key]);
                                 } else {
-                                    $this->redirections->update(['from_slug' => $this->tree->slug, 'id_langue' => $key]);
+                                    $this->redirections->update(['from_slug' => '/' . $this->tree->slug, 'id_langue' => $key]);
                                 }
                             }
 

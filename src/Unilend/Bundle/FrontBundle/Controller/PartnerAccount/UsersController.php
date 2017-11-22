@@ -350,7 +350,7 @@ class UsersController extends Controller
         }
 
         usort($tree, function ($first, $second) {
-            return strcmp($first->getName(), $second->getName());
+            return strcasecmp($first->getName(), $second->getName());
         });
 
         return $tree;

@@ -179,9 +179,10 @@ EOF
 
     private function deleteOldFiles()
     {
-        $path     = $this->getContainer()->getParameter('path.sftp') . 'groupama/';
-        $duration = 30; // jours
-        $aFiles   = scandir($path);
+        $fileSystem = $this->getContainer()->get('filesystem');
+        $path       = $this->getContainer()->getParameter('path.sftp') . 'groupama/';
+        $duration   = 30; // jours
+        $aFiles     = scandir($path);
         unset($aFiles[0], $aFiles[1]);
         foreach ($aFiles as $f) {
             $sFilePath    = $path . $f;
@@ -189,7 +190,7 @@ EOF
             $deletionDate = mktime(date("H", $time), date("i", $time), date("s", $time), date("n", $time), date("d", $time) + $duration, date("Y", $time));
 
             if (time() >= $deletionDate) {
-                unlink($sFilePath);
+                $fileSystem->remove($sFilePath);
             }
         }
     }
@@ -269,7 +270,8 @@ EOF
                     $notifications->id_project = $project->id_project;
                     $notifications->create();
 
-                    if (false === $clients_gestion_mails_notif->exist(\clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID . '" AND id_project = ' . $project->id_project . ' AND id_client = ' . $aLender['id_client'] . ' AND immediatement = "1', 'id_notif')) {
+                    if (false === $clients_gestion_mails_notif->exist(\clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID . '" AND id_project = ' . $project->id_project . ' AND id_client = ' . $aLender['id_client'] . ' AND immediatement = "1',
+                            'id_notif')) {
                         $clients_gestion_mails_notif->id_client       = $wallet->getIdClient()->getIdClient();
                         $clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
                         $clients_gestion_mails_notif->id_notification = $notifications->id_notification;

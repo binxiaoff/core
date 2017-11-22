@@ -1299,7 +1299,7 @@ class projects extends projects_crud
             }
 
             usort($result, function ($firstElement, $secondElement) {
-                return strcmp($firstElement['title'], $secondElement['title']);
+                return strcasecmp($firstElement['title'], $secondElement['title']);
             });
         }
 
