@@ -220,11 +220,13 @@
             <argument type="service" id="translator"/>
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="number_formatter"/>
+            <argument type="service" id="currency_formatter"/>
             <argument type="service" id="assets.packages"/>
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
             <argument type="service" id="mailer"/>
             <argument type="service" id="logger"/>
             <argument>%router.request_context.scheme%://%url.host_default%</argument>
+            <argument type="service" id="router"/>
         </service>
 
         <service id="unilend.service.partner_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager">
