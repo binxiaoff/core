@@ -485,7 +485,7 @@ class ProjectStatusManager
         }
 
         $keyWords = [
-            'myLoansLink'           => $this->router->generate('lender_operations') . '#loans',
+            'myLoansLink'           => $this->router->generate('lender_operations', ['_fragment' => 'loans']),
             'overdueRepaymentCount' => $this->translator->transChoice(
                 'lender-close-out-netting-email_repayments-count',
                 $overdueRepaymentScheduleCount,
