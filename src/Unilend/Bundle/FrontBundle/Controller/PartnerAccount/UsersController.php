@@ -217,6 +217,7 @@ class UsersController extends Controller
 
             $entityManager->commit();
 
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
             $mailerManager = $this->get('unilend.service.email_manager');
             $mailerManager->sendPartnerAccountActivation($client);
         } catch (\Exception $exception) {

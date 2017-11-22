@@ -292,11 +292,11 @@ class MailerManager
         $keywords = [
             'firstName'      => $borrower->prenom,
             'companyName'    => $project->getIdCompany()->getName(),
-            'projectAmount'  => $this->oFicelle->formatNumber($project->amount, 0),
-            'averageRate'    => $this->oFicelle->formatNumber($project->getAverageInterestRate(), 1),
+            'projectAmount'  => $this->oFicelle->formatNumber($project->getAmount(), 0),
+            'averageRate'    => $this->oFicelle->formatNumber($projectData->getAverageInterestRate(), 1),
             'monthlyPayment' => $this->oFicelle->formatNumber($monthlyPayment),
-            'signatureLink'  => $this->sFUrl . '/pdf/projet/' . $borrower->hash . '/' . $project->id_project,
-            'document_list'  => $documents
+            'signatureLink'  => $this->sFUrl . '/pdf/projet/' . $borrower->hash . '/' . $project->getIdProject(),
+            'documentsList'  => $documents
         ];
 
         /** @var TemplateMessage $message */
@@ -1915,17 +1915,15 @@ class MailerManager
     {
         $token     = $this->entityManagerSimulator->getRepository('temporary_links_login')->generateTemporaryLink($client->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG);
         $variables = [
-            'staticUrl'      => $this->sSUrl,
-            'frontUrl'       => $this->sFUrl,
-            'prenom'         => $client->getPrenom(),
-            'activationLink' => $this->sFUrl . $this->container->get('router')->generate('partner_security', ['token' => $token]),
-            'facebookLink'   => $this->getFacebookLink(),
-            'twitterLink'    => $this->getTwitterLink(),
-            'year'           => date('Y')
+            'firstName'                  => $client->getPrenom(),
+            'activationLink'             => $this->sFUrl . $this->container->get('router')->generate('partner_security', ['token' => $token]),
+            'borrowerServicePhoneNumber' => $this->settingsRepository->findOneBy(['type' => 'Téléphone emprunteur'])->getValue(),
+            'borrowerServiceEmail'       => $this->settingsRepository->findOneBy(['type' => 'Adresse emprunteur'])->getValue(),
         ];
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('ouverture-espace-partenaire', $variables);
+
         try {
             $message->setTo($client->getEmail());
             $this->mailer->send($message);
