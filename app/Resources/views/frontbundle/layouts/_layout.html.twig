@@ -71,7 +71,7 @@
         {% endif %}
 
         {# As long as lender menu is rendered using LenderAccount:lenderMenu, we need this trick before refactoring menu here and there #}
-        {% if app.user is defined and app.user is not empty and false == is_granted('ROLE_LENDER') %}
+        {% if app.user is defined and app.user is not empty %}
             {% include 'partials/site/user-mobile-menu.html.twig' %}
         {% endif %}
 
