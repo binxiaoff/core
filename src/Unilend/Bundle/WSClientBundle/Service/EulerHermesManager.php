@@ -277,7 +277,7 @@ class EulerHermesManager
 
         if (404 === $response->getStatusCode() && self::RESOURCE_TRAFFIC_LIGHT === $resource->getLabel()) {
             $responseContent = json_decode($content);
-            if (self::EULER_ERROR_CODE_UNKNOWN_TRAFFIC_LIGHT_VALUE === $responseContent->Code) {
+            if (isset($responseContent->Code) && self::EULER_ERROR_CODE_UNKNOWN_TRAFFIC_LIGHT_VALUE === $responseContent->Code) {
                 $this->logger->warning('Call to ' . $resource->getResourceName() . ' Response code: ' . $response->getStatusCode() . '. Response content: ' . $content, $logContext);
             }
 
@@ -289,7 +289,7 @@ class EulerHermesManager
 
         if (409 === $response->getStatusCode() && self::RESOURCE_EULER_GRADE === $resource->getLabel()) {
             $responseContent = json_decode($content);
-            if (self::EULER_ERROR_CODE_FREE_MONITORING_ALREADY_REQUESTED === $responseContent->Code) {
+            if (isset($responseContent->Code) && self::EULER_ERROR_CODE_FREE_MONITORING_ALREADY_REQUESTED === $responseContent->Code) {
                 throw new \Exception($responseContent->message, self::EULER_ERROR_CODE_FREE_MONITORING_ALREADY_REQUESTED);
             } else {
                 $this->logger->warning('Call to ' . $resource->getResourceName() . ' Response code: ' . $response->getStatusCode() . '. Response content: ' . $content, $logContext);
