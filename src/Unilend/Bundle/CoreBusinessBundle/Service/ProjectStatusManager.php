@@ -277,11 +277,7 @@ class ProjectStatusManager
         $nextPaymentSchedule    = $paymentSchedule->getNextPaymentSchedule($project);
         $remainingCapitalDue    = $paymentSchedule->getRemainingCapitalFrom($project, $nextPaymentSchedule->getOrdre());
         $overDueScheduleAmounts = $paymentSchedule->getTotalOverdueAmounts($project);
-
-        $totalOverdueAmount = 0;
-        $totalOverdueAmount = isset($overDueScheduleAmounts['capital']) ? round(bcadd($totalOverdueAmount, $overDueScheduleAmounts['capital'], 4), 2) : $totalOverdueAmount;
-        $totalOverdueAmount = isset($overDueScheduleAmounts['interest']) ? round(bcadd($totalOverdueAmount, $overDueScheduleAmounts['interest'], 4), 2) : $totalOverdueAmount;
-        $totalOverdueAmount = isset($overDueScheduleAmounts['commission']) ? round(bcadd($totalOverdueAmount, $overDueScheduleAmounts['commission'], 4), 2) : $totalOverdueAmount;
+        $totalOverdueAmount     = round(bcadd(bcadd($overDueScheduleAmounts['capital'], $overDueScheduleAmounts['interest'], 4), $overDueScheduleAmounts['commission'], 4), 2);
 
         $overdueScheduleCountAndAmount = $this->translator->transChoice(
             'borrower-close-out-netting-email_payments-count-and-amount',
