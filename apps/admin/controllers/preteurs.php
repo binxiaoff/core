@@ -1481,7 +1481,8 @@ class preteursController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
         $clientStatusManager = $this->get('unilend.service.client_status_manager');
 
-        if (false === filter_var($this->params[0], FILTER_SANITIZE_STRING)) {
+        $action = empty($this->params[0]) ? null : filter_var($this->params[0], FILTER_SANITIZE_STRING);
+        if (empty($action)) {
             header('Location: ' . $this->lurl . '/preteurs/search');
             die;
         }
@@ -1500,7 +1501,7 @@ class preteursController extends bootstrap
             die;
         }
 
-        if ($this->params[0] == 'status' ) {
+        if ($action == 'status' ) {
             $this->changeClientOnlineOfflineStatus($client, $this->params[2], 1);
             switch ($this->params[2]) {
                 case Clients::STATUS_OFFLINE:
@@ -1509,7 +1510,8 @@ class preteursController extends bootstrap
                 case Clients::STATUS_ONLINE:
                     $lastTwoStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findLastTwoClientStatus($client->getIdClient());
                     if (false === empty($lastTwoStatus[1])) {
-                        $status = $lastTwoStatus[1]->getStatus();
+                        $clientStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->find($lastTwoStatus[1]->getIdClientStatus());
+                        $status       = $clientStatus->getStatus();
                     } else {
                         $status = ClientsStatus::TO_BE_CHECKED;
                     }
@@ -1523,7 +1525,7 @@ class preteursController extends bootstrap
             }
         }
 
-        if ($this->params[0] == 'deactivate' ) {
+        if ($action == 'deactivate' ) {
             $this->changeClientOnlineOfflineStatus($client, $this->params[2], 1);
             $this->sendEmailClosedAccount($client);
             $clientStatusManager->addClientStatus($client, $_SESSION['user']['id_user'], ClientsStatus::CLOSED_LENDER_REQUEST);
