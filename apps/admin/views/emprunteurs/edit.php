@@ -176,10 +176,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
     </table>
     <br/><br/>
 
-    <?php if (false === in_array($this->companies->legal_form_code, \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager::BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES)) : ?>
-        <h2>Bénéficiaires effectifs</h2>
-        <a role="button" class="btn btn-default" href="<?= $this->lurl ?>/beneficiaires_effectifs/<?= $this->companies->id_company ?>">Consulter les Bénéficiaires effectifs</a>
-    <?php endif; ?>
+    <h2>Bénéficiaires effectifs</h2>
+    <a role="button" class="btn btn-default" href="<?= $this->lurl ?>/beneficiaires_effectifs/<?= $this->companies->id_company ?>">Consulter les Bénéficiaires effectifs</a>
     <br/><br/>
 
     <?php $this->fireView('../bank_account/blocks/validated_bank_account'); ?>
