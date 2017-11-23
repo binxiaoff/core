@@ -2,11 +2,11 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
+use GuzzleHttp\Client;
 use JMS\Serializer\Serializer;
 use Psr\Cache\CacheItemPoolInterface;
-use Psr\Log\LoggerInterface;
-use GuzzleHttp\Client;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyIdentity;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating;
@@ -363,7 +363,7 @@ class EulerHermesManager
 
                 return true;
             } else {
-                $this->logger->warning('Long term monitoring could not activated for siren ' . $siren . ' Status Code : ' . $response->getStatusCode() . ' / Reason : ' . $response->getReasonPhrase() . ' / Content : ' . $response->getBody()->getContents());
+                $this->logger->warning('Long term monitoring could not activated for siren ' . $siren . ' Status Code: ' . $response->getStatusCode() . ' / Reason: ' . $response->getReasonPhrase() . ' / Content: ' . $response->getBody()->getContents());
             }
         }
 
@@ -393,7 +393,7 @@ class EulerHermesManager
 
                 return true;
             } else {
-                $this->logger->warning('Long term monitoring could not be stopped for siren ' . $siren . ' Status Code : ' . $response->getStatusCode() . ' / Reason : ' . $response->getReasonPhrase() . ' / Content : ' . $response->getBody()->getContents());
+                $this->logger->warning('Long term monitoring could not be stopped for siren ' . $siren . ' Status Code: ' . $response->getStatusCode() . ' / Reason: ' . $response->getReasonPhrase() . ' / Content: ' . $response->getBody()->getContents());
             }
         }
 

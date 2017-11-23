@@ -6,15 +6,15 @@ use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRating;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRatingHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\RiskDataMonitoring;
 use Unilend\Bundle\CoreBusinessBundle\Entity\RiskDataMonitoringCallLog;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRating;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\WSClientBundle\Service\EulerHermesManager;
 
 class RiskDataMonitoringManager
@@ -110,7 +110,7 @@ class RiskDataMonitoringManager
             $this->stopMonitoringPeriod($currentMonitoring);
         }
 
-        /** @var RiskDataMonitoring $monitoring */
+        /** @var Companies $company */
         foreach ($this->getMonitoredCompanies($siren, $ratingType, false) as $company) {
             if (
                 CompanyRating::TYPE_EULER_HERMES_GRADE === $ratingType
@@ -118,6 +118,7 @@ class RiskDataMonitoringManager
             ) {
                 if ($this->eulerHermesManager->startLongTermMonitoring($siren, 'fr')) {
                     $this->startMonitoringPeriod($siren, $ratingType);
+                    break;
                 }
             }
         }
