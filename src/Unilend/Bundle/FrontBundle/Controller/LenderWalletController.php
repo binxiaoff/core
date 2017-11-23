@@ -347,6 +347,7 @@ class LenderWalletController extends Controller
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-retrait', $keywords);
+
         try {
             $message->setTo($client->getEmail());
             $mailer = $this->get('mailer');

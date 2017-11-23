@@ -85,30 +85,20 @@ class ProjectRepaymentNotificationSender
      */
     public function sendDebtCollectionRepaymentMailToLender(Echeanciers $repaymentSchedule)
     {
-        $settingsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
-
         $lenderWallet  = $repaymentSchedule->getIdLoan()->getIdLender();
         $lender        = $lenderWallet->getIdClient();
-        $netRepayment  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getNetAmountByRepaymentScheduleId($repaymentSchedule);
-        $debtCollector = $settingsRepository->findOneBy(['type' => 'Cabinet de recouvrement'])->getValue();
-        $facebook      = $settingsRepository->findOneBy(['type' => 'Facebook'])->getValue();
-        $twitter       = $settingsRepository->findOneBy(['type' => 'Twitter'])->getValue();
+        $debtCollector = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Cabinet de recouvrement'])->getValue();
 
-        $varMail = [
-            'surl'             => $this->assetsPackages->getUrl(''),
-            'url'              => $this->frontUrl,
-            'prenom_p'         => $lender->getPrenom(),
-            'cab_recouvrement' => $debtCollector,
-            'mensualite_p'     => $this->currencyFormatter->formatCurrency($netRepayment, 'EUR'),
-            'nom_entreprise'   => $repaymentSchedule->getIdLoan()->getProject()->getIdCompany()->getName(),
-            'solde_p'          => $this->currencyFormatter->formatCurrency($lenderWallet->getAvailableBalance(), 'EUR'),
-            'link_echeancier'  => $this->frontUrl,
-            'motif_virement'   => $lenderWallet->getWireTransferPattern(),
-            'lien_fb'          => $facebook,
-            'lien_tw'          => $twitter,
+        $keywords = [
+            'firstName'     => $lender->getPrenom(),
+            'debtCollector' => $debtCollector,
+            'companyName'   => $repaymentSchedule->getIdLoan()->getProject()->getIdCompany()->getName(),
+            'lenderPattern' => $lenderWallet->getWireTransferPattern()
         ];
 
-        $message = $this->messageProvider->newMessage('preteur-dossier-recouvre', $varMail);
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage('preteur-dossier-recouvre', $keywords);
+
         try {
             $message->setTo($lender->getEmail());
             $this->mailer->send($message);
@@ -125,32 +115,20 @@ class ProjectRepaymentNotificationSender
      */
     public function sendRegularisationRepaymentMailToLender(Echeanciers $repaymentSchedule)
     {
-        $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $settingsRepository  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
-
         $lenderWallet   = $repaymentSchedule->getIdLoan()->getIdLender();
         $lender         = $lenderWallet->getIdClient();
-        $grossRepayment = $operationRepository->getGrossAmountByRepaymentScheduleId($repaymentSchedule);
-        $netRepayment   = $operationRepository->getNetAmountByRepaymentScheduleId($repaymentSchedule);
-        $facebook       = $settingsRepository->findOneBy(['type' => 'Facebook'])->getValue();
-        $twitter        = $settingsRepository->findOneBy(['type' => 'Twitter'])->getValue();
+        $netRepayment   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getNetAmountByRepaymentScheduleId($repaymentSchedule);
 
-        $varMail = [
-            'surl'                  => $this->assetsPackages->getUrl(''),
-            'url'                   => $this->frontUrl,
-            'prenom_p'              => $lender->getPrenom(),
-            'mensualite_p'          => $this->currencyFormatter->formatCurrency($netRepayment, 'EUR'),
-            'mensualite_avantfisca' => $this->currencyFormatter->formatCurrency($grossRepayment, 'EUR'),
-            'nom_entreprise'        => $repaymentSchedule->getIdLoan()->getProject()->getIdCompany()->getName(),
-            'date_bid_accepte'      => strftime('%d %B %G', $repaymentSchedule->getIdLoan()->getAdded()->getTimestamp()),
-            'solde_p'               => $this->currencyFormatter->formatCurrency($lenderWallet->getAvailableBalance(), 'EUR'),
-            'motif_virement'        => $lenderWallet->getWireTransferPattern(),
-            'lien_fb'               => $facebook,
-            'lien_tw'               => $twitter,
+        $keywords = [
+            'companyName'     => $repaymentSchedule->getIdLoan()->getProject()->getIdCompany()->getName(),
+            'firstName'       => $lender->getPrenom(),
+            'repaymentAmount' => $this->currencyFormatter->formatCurrency($netRepayment, 'EUR'),
+            'lenderPattern'   => $lenderWallet->getWireTransferPattern()
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('preteur-regularisation-remboursement', $varMail);
+        $message = $this->messageProvider->newMessage('preteur-regularisation-remboursement', $keywords);
+
         try {
             $message->setTo($lender->getEmail());
             $this->mailer->send($message);
