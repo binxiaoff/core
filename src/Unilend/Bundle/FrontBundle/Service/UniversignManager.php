@@ -3,25 +3,27 @@
 namespace Unilend\Bundle\FrontBundle\Service;
 
 use Doctrine\ORM\EntityManager;
+use PhpXmlRpc\Client;
+use PhpXmlRpc\Request;
+use PhpXmlRpc\Value;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyBeneficialOwnerDeclaration;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectBeneficialOwnerUniversign;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WireTransferOutUniversign;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager;
 use Unilend\Bundle\FrontBundle\Controller\UniversignController;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
-use PhpXmlRpc\Client;
-use PhpXmlRpc\Request;
-use PhpXmlRpc\Value;
 
 class UniversignManager
 {
@@ -107,6 +109,10 @@ class UniversignManager
                     /** @var WireTransferOutUniversign $document */
                     $this->signWireTransferOut($document);
                     break;
+                case ProjectBeneficialOwnerUniversign::class:
+                    /** @var ProjectBeneficialOwnerUniversign $document */
+                    $this->signBeneficialOwnerDeclaration($document);
+                    break;
             }
         }
     }
@@ -177,13 +183,14 @@ class UniversignManager
     }
 
     /**
-     * @param Projects        $project
-     * @param ProjectsPouvoir $proxy
-     * @param ClientsMandats  $mandate
+     * @param Projects                              $project
+     * @param ProjectsPouvoir                       $proxy
+     * @param ClientsMandats                        $mandate
+     * @param ProjectBeneficialOwnerUniversign|null $beneficialOwnerUniversign
      *
      * @return bool
      */
-    public function createProject(Projects $project, ProjectsPouvoir $proxy, ClientsMandats $mandate)
+    public function createProject(Projects $project, ProjectsPouvoir $proxy, ClientsMandats $mandate, ProjectBeneficialOwnerUniversign $beneficialOwnerUniversign = null)
     {
         $bankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($project->getIdCompany()->getIdClientOwner());
         if (null === $bankAccount) {
@@ -192,7 +199,12 @@ class UniversignManager
             return false;
         }
 
-        $resultValue = $this->createSignature(UniversignController::SIGNATURE_TYPE_PROJECT, $project->getIdProject(), [$proxy, $mandate]);
+        $documents = [$proxy, $mandate];
+        if (null !== $beneficialOwnerUniversign) {
+            $documents[] = $beneficialOwnerUniversign;
+        }
+
+        $resultValue = $this->createSignature(UniversignController::SIGNATURE_TYPE_PROJECT, $project->getIdProject(), $documents);
 
         if ($resultValue instanceof Value) {
             $proxy
@@ -206,6 +218,13 @@ class UniversignManager
                 ->setStatus(UniversignEntityInterface::STATUS_PENDING)
                 ->setBic($bankAccount->getBic())
                 ->setIban($bankAccount->getIban());
+
+            if (null !== $beneficialOwnerUniversign) {
+                $beneficialOwnerUniversign
+                    ->setIdUniversign($resultValue['id']->scalarVal())
+                    ->setUrlUniversign($resultValue['url']->scalarVal())
+                    ->setStatus(ProjectsPouvoir::STATUS_PENDING);
+            }
 
             $this->entityManager->flush();
 
@@ -348,6 +367,37 @@ class UniversignManager
     }
 
     /**
+     * @param ProjectBeneficialOwnerUniversign $beneficialOwnerDeclaration
+     *
+     * @return bool
+     */
+    public function createBeneficialOwnerDeclaration(ProjectBeneficialOwnerUniversign $beneficialOwnerDeclaration)
+    {
+        $resultValue = $this->createSignature(ProjectBeneficialOwnerUniversign::DOCUMENT_TYPE, $beneficialOwnerDeclaration->getId(), [$beneficialOwnerDeclaration]);
+
+        if ($resultValue instanceof Value) {
+            $beneficialOwnerDeclaration
+                ->setIdUniversign($resultValue['id']->scalarVal())
+                ->setUrlUniversign($resultValue['url']->scalarVal());
+            $this->entityManager->flush($beneficialOwnerDeclaration);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param ProjectBeneficialOwnerUniversign $projectDeclaration
+     */
+    private function signBeneficialOwnerDeclaration(ProjectBeneficialOwnerUniversign $projectDeclaration)
+    {
+        $projectDeclaration->getIdDeclaration()->setStatus(CompanyBeneficialOwnerDeclaration::STATUS_VALIDATED);
+
+        $this->entityManager->flush($projectDeclaration->getIdDeclaration());
+    }
+
+    /**
      * @param UniversignEntityInterface $document
      */
     private function updateSignature(UniversignEntityInterface $document)
@@ -426,6 +476,9 @@ class UniversignManager
             case WireTransferOutUniversign::class:
                 $documentFullPath = $this->rootDir . '/../protected/pdf/wire_transfer_out/' . $documentName;
                 break;
+            case ProjectBeneficialOwnerUniversign::class:
+                $documentFullPath = $this->rootDir . '/../protected/pdf/beneficial_owner/' . $documentName;
+                break;
             default:
                 $this->logger->error('Unknown Universign document type : ' . get_class($document) . '  id : ' . $documentId, ['class' => __CLASS__, 'function' => __FUNCTION__]);
                 throw new \Exception('Unknown Universign document type : ' . get_class($document) . '  id : ' . $documentId);
@@ -479,6 +532,11 @@ class UniversignManager
             case WireTransferOutUniversign::class:
                 /** @var WireTransferOutUniversign $document */
                 $clientId = $document->getIdWireTransferOut()->getProject()->getIdCompany()->getIdClientOwner();
+                $client   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
+                break;
+            case ProjectBeneficialOwnerUniversign::class:
+                /** @var ProjectBeneficialOwnerUniversign $document */
+                $clientId = $document->getIdProject()->getIdCompany()->getIdClientOwner();
                 $client   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
                 break;
             default:
@@ -571,6 +629,7 @@ class UniversignManager
             case ClientsMandats::class:
             case ProjectsPouvoir::class:
             case WireTransferOutUniversign::class:
+            case ProjectBeneficialOwnerUniversign::class:
                 break;
             default:
                 $this->logger->error('Unknown Universign document type : ' . get_class($document) . '  id : ' . $documentId, ['class' => __CLASS__, 'function' => __FUNCTION__]);

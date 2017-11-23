@@ -49,7 +49,7 @@ class PartnerThirdParty
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Partner
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Partner")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Partner", inversedBy="partnerThirdParties")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_partner", referencedColumnName="id")
      * })

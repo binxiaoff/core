@@ -46,6 +46,14 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
         width: 340px;
     }
 
+    .project-partner th {
+        vertical-align: top!important;
+    }
+
+    .project-partner .select + .select {
+        margin-top: 10px;
+    }
+
     .lanote {
         color: #5591EC;
         font-size: 17px;
@@ -174,6 +182,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
         width: 400px;
     }
 </style>
+
 <script>
     function deleteWordingli(id) {
         var id_delete = id;
@@ -417,7 +426,84 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                 $(this).parents('form').submit()
             }
         })
-    });
+
+        var $partnerSelect = $('select#partner-select')
+        var $companySubmitterSelect = $('select#company-submitter-select')
+        var $clientSubmitterSelect = $('select#client-submitter-select')
+        var $companySubmitterRow = $('#company-submitter')
+        var $clientSubmitterRow = $('#client-submitter')
+        var $partnerMessages = $('.project-partner .messages')
+
+        $partnerSelect.change(function() {
+            $companySubmitterRow.hide()
+            $clientSubmitterRow.hide()
+            $companySubmitterSelect.val('').html('<option value="0"></option>')
+            $clientSubmitterSelect.val('').html('<option value="0"></option>')
+
+            var $select = $(this)
+            if ($select.val() === '<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Partner::PARTNER_UNILEND_ID ?>') {
+                return false
+            }
+
+            $.ajax({
+                url: '<?= $this->lurl ?>/partenaires/agences',
+                type: 'POST',
+                data: {partner: $select.val()},
+                dataType:'json',
+                success: function(response) {
+                    if (response.success) {
+                        var agencies = response.data
+                        var options = '<option value="0"></option>'
+                        for (var i in agencies) {
+                            options += '<option value="' + agencies[i].id + '">' + agencies[i].name + '</option>'
+                        }
+                        $companySubmitterRow.show()
+                        $companySubmitterSelect.html(options)
+                    } else {
+                        var html = ''
+                        for (var i in response.error) {
+                            html += '<p>' + response.error[i] + '</p>'
+                        }
+                        $partnerMessages.html(html)
+                    }
+                }
+            })
+        })
+
+        $companySubmitterSelect.change(function() {
+            $clientSubmitterRow.hide()
+            $clientSubmitterSelect.val('').html('<option value=""></option>')
+
+            var $select = $(this)
+            if ($select.val() === '0') {
+                return false
+            }
+
+            $.ajax({
+                url: '<?= $this->lurl ?>/partenaires/utilisateurs',
+                type: 'POST',
+                data: {agency: $select.val()},
+                dataType:'json',
+                success: function(response) {
+                    if (response.success) {
+                        var users = response.data
+                        var options = '<option value="0"></option>'
+                        for (var i in users) {
+                            options += '<option value="' + users[i].id + '">' + users[i].name + '</option>'
+                        }
+                        $clientSubmitterRow.show()
+                        $clientSubmitterSelect.html(options)
+                    } else {
+                        var html = ''
+                        for (var i in response.error) {
+                            html += '<p>' + response.error[i] + '</p>'
+                        }
+                        $partnerMessages.html(html)
+                    }
+                }
+            })
+    })
+})
 </script>
 <script type="text/javascript" src="<?= $this->url ?>/ckeditor/ckeditor.js"></script>
 <div id="contenu">
@@ -614,28 +700,43 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                         <tr>
                             <th><label for="partner">Partenaire *</label></th>
                             <td>
-                                <select name="partner" id="partner" class="select"<?php if ($this->projects->status >= ProjectsStatus::PREP_FUNDING) : ?> disabled<?php endif; ?>>
-                                    <?php if (empty($this->projects->id_partner)) : ?>
-                                        <option value="" selected></option>
-                                    <?php endif; ?>
-                                    <?php foreach ($this->partnerList as $partner) : ?>
-                                        <option value="<?= $partner->getId() ?>"<?= $this->projects->id_partner == $partner->getId() ? ' selected' : '' ?>><?= $partner->getIdCompany()->getName() ?></option>
+                                <div class="messages"></div>
+                                <?php if (null === $this->projectEntity->getIdPartner() || $this->isUnilendPartner) : ?>
+                                    <select name="partner" id="partner-select" class="select"<?php if ($this->projects->status >= ProjectsStatus::PREP_FUNDING) : ?> disabled<?php endif; ?>>
+                                        <?php if (null === $this->projectEntity->getIdPartner()->getId()) : ?>
+                                            <option value="0"></option>
+                                        <?php endif; ?>
+                                        <?php foreach ($this->partnerList as $partner) : ?>
+                                            <option value="<?= $partner->getId() ?>"<?= $this->projectEntity->getIdPartner()->getId() == $partner->getId() ? ' selected' : '' ?>><?= $partner->getIdCompany()->getName() ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                <?php else : ?>
+                                    <?= $this->projectEntity->getIdPartner()->getIdCompany()->getName() ?>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                        <tr id="company-submitter"<?php if ($this->isUnilendPartner) : ?> style="display: none;"<?php endif; ?>>
+                            <th><label for="company-submitter-select">Agence</label></th>
+                            <td>
+                                <select id="company-submitter-select" class="select" name="company_submitter">
+                                    <option value="0"></option>
+                                    <?php foreach ($this->agencies as $agency) : ?>
+                                        <option value="<?= $agency->getIdCompany() ?>"<?php if ($agency === $this->projectEntity->getIdCompanySubmitter()) : ?> selected<?php endif; ?>><?= $agency->getName() ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </td>
                         </tr>
-                        <?php if (false === empty($this->projectEntity->getIdCompanySubmitter()) && false === empty($this->projectEntity->getIdCompanySubmitter()->getIdCompany())) : ?>
-                            <tr>
-                                <th><label>Agence</label></th>
-                                <td><?= $this->projectEntity->getIdCompanySubmitter()->getName() ?></td>
-                            </tr>
-                        <?php endif; ?>
-                        <?php if (false === empty($this->projectEntity->getIdClientSubmitter()) && false === empty($this->projectEntity->getIdClientSubmitter()->getIdClient())) : ?>
-                            <tr>
-                                <th><label>Déposant</label></th>
-                                <td><?= $this->projectEntity->getIdClientSubmitter()->getPrenom() ?> <?= $this->projectEntity->getIdClientSubmitter()->getNom() ?></td>
-                            </tr>
-                        <?php endif; ?>
+                        <tr id="client-submitter"<?php if ($this->isUnilendPartner) : ?> style="display: none;"<?php endif; ?>>
+                            <th><label for="client-submitter-select">Déposant</label></th>
+                            <td>
+                                <select id="client-submitter-select" class="select" name="client_submitter">
+                                    <option value="0"></option>
+                                    <?php foreach ($this->submitters as $submitter) : ?>
+                                        <option value="<?= $submitter->getIdClient() ?>"<?php if ($submitter === $this->projectEntity->getIdClientSubmitter()) : ?> selected<?php endif; ?>><?= $submitter->getPrenom() ?> <?= $submitter->getNom() ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </td>
+                        </tr>
                     </table>
                     <br><br>
                     <h2>Produit</h2>
@@ -805,10 +906,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                         <?php endif; ?>
                         <?php if ($this->projects->status == ProjectsStatus::PREP_FUNDING) : ?>
                             <?php
-                            $blockingPublishingError = '';
+                            $blockingPublishingError = [];
 
                             if (in_array($this->projects->period, [0, 1000000])) {
-                                $blockingPublishingError = 'Veuillez sélectionner une durée de prêt';
+                                $blockingPublishingError[] = 'Veuillez sélectionner une durée de prêt';
                             }
 
                             if (in_array(UnderlyingContract::CONTRACT_MINIBON, $this->availableContracts)) {
@@ -822,18 +923,34 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                                     }
                                 }
                                 if (false === $hasDebtsStatement) {
-                                    $blockingPublishingError = 'Veuillez charger l\'état des créances (nécessaire au DIRS)';
+                                    $blockingPublishingError[] = 'Veuillez charger l\'état des créances (nécessaire au DIRS)';
                                 }
                             }
 
                             if (false === $this->isProductUsable) {
-                                $blockingPublishingError = 'Le produit associé au projet n\'est plus disponible ou éligible. Veuillez sélectionner un autre produit.';
+                                $blockingPublishingError[] = 'Le produit associé au projet n\'est plus disponible ou éligible. Veuillez sélectionner un autre produit.';
+                            }
+
+                            if (false === $this->hasBeneficialOwner) {
+                                $blockingPublishingError[] = 'Veuillez déclarer les bénéficiaires effectifs';
+                            }
+
+                            if ($this->hasBeneficialOwner && false === $this->ownerIsBeneficialOwner) {
+                                $blockingPublishingError[] = 'Veuillez déclarer le proprietaire de l\'entreprise comme bénéficiaire effectif';
                             }
                             ?>
                             <?php if (false === empty($blockingPublishingError)) : ?>
                                 <tr>
-                                    <td colspan="2"><?= $blockingPublishingError ?></td>
+                                    <td colspan="2"><?= implode('<br>', $blockingPublishingError) ?></td>
                                 </tr>
+                                <?php if (false === $this->hasBeneficialOwner || false === $this->ownerIsBeneficialOwner) : ?>
+                                    <tr>
+                                        <th>Déclaration de <br>bénéficiaires effectifs</th>
+                                        <td>
+                                            <a role="button" class="btn btn-default" href="<?= $this->lurl ?>/beneficiaires_effectifs/<?= $this->companies->id_company ?>" target="_blank">Déclarer les bénéficiaires effectifs</a>
+                                        </td>
+                                    </tr>
+                                <?php endif; ?>
                             <?php endif; ?>
                         <?php endif; ?>
                         <?php // @@TODO check form action and the IF statement below ?>
@@ -903,13 +1020,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                                 </td>
                             </tr>
                         <?php endif; ?>
-                        <?php if (false === empty($_SESSION['public_dates_error'])) : ?>
+                        <?php if (false === empty($_SESSION['publish_error'])) : ?>
                             <tr>
-                                <td colspan="2" style="color:red; font-weight:bold;"><?= $_SESSION['public_dates_error'] ?></td>
+                                <td colspan="2" style="color:red; font-weight:bold;"><?= $_SESSION['publish_error'] ?></td>
                             </tr>
-                            <?php unset($_SESSION['public_dates_error']); ?>
+                            <?php unset($_SESSION['publish_error']); ?>
                         <?php endif; ?>
-                        <?php if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == 1) : ?>
+                        <?php if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == UniversignEntityInterface::STATUS_SIGNED) : ?>
                             <tr>
                                 <th><label for="pouvoir">Pouvoir</label></th>
                                 <td>
@@ -940,19 +1057,35 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                             <?php if (empty($this->proxy) || $this->proxy['status'] != UniversignEntityInterface::STATUS_SIGNED) : ?>
                                 <tr>
                                     <th>Pouvoir</th>
-                                    <td><a href="<?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
+                                    <td>
+                                        <a href="<?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>">
+                                            <img src="<?= $this->surl ?>/images/admin/pdf.png" alt="PDF">
+                                        </a>
+                                    </td>
                                 </tr>
                             <?php endif ?>
                             <?php if (empty($this->mandate) || $this->mandate['status'] != UniversignEntityInterface::STATUS_SIGNED) : ?>
                                 <tr>
                                     <th>Mandat</th>
                                     <?php if ($this->validBankAccount) : ?>
-                                        <td><a href="<?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
+                                        <td>
+                                            <a href="<?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>">
+                                                <img src="<?= $this->surl ?>/images/admin/pdf.png" alt="PDF">
+                                            </a>
+                                        </td>
                                     <?php else : ?>
                                         <td>L'emprunteur n'a pas de RIB en vigueur.</td>
                                     <?php endif ?>
                                 </tr>
                             <?php endif ?>
+                            <?php if (null === $this->beneficialOwnerDeclaration || $this->beneficialOwnerDeclaration->getStatus() != UniversignEntityInterface::STATUS_SIGNED) : ?>
+                                <tr>
+                                    <th>Déclaration de <br> bénéficiaires effectifs</th>
+                                    <td colspan="2">
+                                        <a role="button" class="btn btn-default" href="<?= $this->lurl ?>/beneficiaires_effectifs/<?= $this->companies->id_company ?>" target="_blank">Accéder à la gestion des bénéficiaires effectifs<br>(Modifier/Consulter/Renvoyer la déclaration)</a>
+                                    </td>
+                                </tr>
+                            <?php endif; ?>
                         <?php endif; ?>
                         <tr>
                             <td colspan="2">

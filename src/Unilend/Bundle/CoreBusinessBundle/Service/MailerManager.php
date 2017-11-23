@@ -19,6 +19,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
@@ -248,35 +249,67 @@ class MailerManager
     }
 
     /**
-     * @param \projects $project
+     * @param \projects|Projects $project
+     *
+     * @return bool
      */
-    public function sendFundedAndFinishedToBorrower(\projects $project)
+    public function sendFundedAndFinishedToBorrower($project)
     {
-        /** @var \companies $company */
-        $company = $this->entityManagerSimulator->getRepository('companies');
+        if ($project instanceof Projects) {
+            $projectData = $this->entityManagerSimulator->getRepository('projects');
+            $projectData->get($project->getIdProject());
+        }
+
+        if ($project instanceof \projects) {
+            $projectData = clone $project;
+            $project     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectData->id_project);
+        }
+
         /** @var \clients $borrower */
         $borrower = $this->entityManagerSimulator->getRepository('clients');
         /** @var \echeanciers_emprunteur $borrowerPaymentSchedule */
         $borrowerPaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
 
-        $company->get($project->id_company, 'id_company');
-        $borrower->get($company->id_client_owner, 'id_client');
+        $borrower->get($project->getIdCompany()->getIdClientOwner(), 'id_client');
 
-        $borrowerPaymentSchedule->get($project->id_project, 'ordre = 1 AND id_project');
+        $borrowerPaymentSchedule->get($project->getIdProject(), 'ordre = 1 AND id_project');
         $monthlyPayment = $borrowerPaymentSchedule->montant + $borrowerPaymentSchedule->commission + $borrowerPaymentSchedule->tva;
         $monthlyPayment = $monthlyPayment / 100;
+
+        $mandate                    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')
+            ->findOneBy(['idProject' => $project, 'status' => UniversignEntityInterface::STATUS_SIGNED], ['added' => 'DESC']);
+        $proxy                      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')
+            ->findOneBy(['idProject' => $project, 'status' => UniversignEntityInterface::STATUS_SIGNED], ['added' => 'DESC']);
+
+        $documents = '';
+        if (null === $mandate) {
+            $documents .= $this->translator->trans('universign_mandate-description-for-email');
+        }
+
+        if (null === $proxy) {
+            $documents .= $this->translator->trans('universign_proxy-description-for-email');
+        }
+
+        if (false === in_array($project->getIdCompany()->getLegalFormCode(), BeneficialOwnerManager::BENEFICIAL_OWNER_DECLARATION_EXEMPTED_LEGAL_FORM_CODES)) {
+            $beneficialOwnerDeclaration = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')
+                ->findOneBy(['idProject' => $project, 'status' => UniversignEntityInterface::STATUS_SIGNED], ['added' => 'DESC']);
+            if (null === $beneficialOwnerDeclaration) {
+                $documents .= $this->translator->trans('universign_beneficial-owner-description-for-email');
+            }
+        }
 
         $varMail = [
             'surl'                   => $this->sSUrl,
             'url'                    => $this->sFUrl,
             'prenom_e'               => $borrower->prenom,
-            'nom_e'                  => $company->name,
+            'nom_e'                  => $project->getIdCompany()->getName(),
             'mensualite'             => $this->oFicelle->formatNumber($monthlyPayment),
-            'montant'                => $this->oFicelle->formatNumber($project->amount, 0),
-            'taux_moyen'             => $this->oFicelle->formatNumber($project->getAverageInterestRate(), 1),
-            'link_compte_emprunteur' => $this->sFUrl . '/projects/detail/' . $project->id_project,
-            'link_signature'         => $this->sFUrl . '/pdf/projet/' . $borrower->hash . '/' . $project->id_project,
-            'projet'                 => $project->title,
+            'montant'                => $this->oFicelle->formatNumber($project->getAmount(), 0),
+            'taux_moyen'             => $this->oFicelle->formatNumber($projectData->getAverageInterestRate(), 1),
+            'link_compte_emprunteur' => $this->sFUrl . '/projects/detail/' . $project->getIdProject(),
+            'link_signature'         => $this->sFUrl . '/pdf/projet/' . $borrower->hash . '/' . $project->getIdProject(),
+            'document_list'          => $documents,
+            'projet'                 => $project->getTitle(),
             'lien_fb'                => $this->getFacebookLink(),
             'lien_tw'                => $this->getTwitterLink(),
             'annee'                  => date('Y')
@@ -297,10 +330,12 @@ class MailerManager
 
         if ($isSent > 0) {
             $this->oLogger->info(
-                'Email emprunteur-dossier-funde-et-termine sent (project ' . $project->id_project . ')',
-                array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project)
+                'Email emprunteur-dossier-funde-et-termine sent (project ' . $project->getIdProject() . ')',
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->getIdProject()]
             );
         }
+
+        return $isSent > 0;
     }
 
     public function sendFundedToStaff(\projects $project)
@@ -1969,7 +2004,7 @@ class MailerManager
             'staticUrl'      => $this->sSUrl,
             'frontUrl'       => $this->sFUrl,
             'prenom'         => $client->getPrenom(),
-            'activationLink' => $this->container->get('router')->generate('partner_security', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
+            'activationLink' => $this->sFUrl . $this->container->get('router')->generate('partner_security', ['token' => $token]),
             'facebookLink'   => $this->getFacebookLink(),
             'twitterLink'    => $this->getTwitterLink(),
             'year'           => date('Y')

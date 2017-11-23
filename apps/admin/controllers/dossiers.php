@@ -157,6 +157,10 @@ class dossiersController extends bootstrap
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager $beneficialOwnerManager */
+        $beneficialOwnerManager = $this->get('unilend.service.beneficial_owner_manager');
+
+        $this->beneficialOwnerDeclaration = null;
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->projectEntity   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
@@ -206,7 +210,7 @@ class dossiersController extends bootstrap
             $projectStatusManager = $this->get('unilend.service.project_status_manager');
 
             $this->rejectionReasonMessage = $projectStatusManager->getRejectionReasonTranslation($this->projects_status_history->content);
-            $this->bHasAdvisor            = false;
+            $this->hasAdvisor             = false;
 
             if ($this->projects->status == ProjectsStatus::FUNDE) {
                 $proxy       = $this->projects_pouvoir->select('id_project = ' . $this->projects->id_project);
@@ -218,12 +222,20 @@ class dossiersController extends bootstrap
                 $this->mandate = empty($mandate) ? [] : $mandate[0];
 
                 $this->validBankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->clients->id_client);
+
+                if (false === $beneficialOwnerManager->companyNeedsBeneficialOwnerDeclaration($this->projects->id_company)) {
+                    $companyBeneficialOwnerDeclaration = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findBy(['idCompany' => $this->projects->id_company]);
+                    if (false === empty($companyBeneficialOwnerDeclaration)) {
+                        $beneficialOwnerDeclaration       = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findOneBy(['idProject' => $this->projects->id_project], ['id' => 'DESC']);
+                        $this->beneficialOwnerDeclaration = $beneficialOwnerDeclaration;
+                    }
+                }
             }
 
             if ($this->projects->id_prescripteur > 0 && $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur')) {
                 $this->clients_prescripteurs->get($this->prescripteurs->id_client, 'id_client');
                 $this->companies_prescripteurs->get($this->prescripteurs->id_entite, 'id_company');
-                $this->bHasAdvisor = true;
+                $this->hasAdvisor = true;
             }
 
             $this->latitude  = (float) $this->companies->latitude;
@@ -509,7 +521,7 @@ class dossiersController extends bootstrap
                         $publicationDate->format('Y-m-d H:i:s') !== $this->projects->date_publication
                         && ($publicationDate <= $publicationLimitationDate || $endOfPublicationDate <= $endOfPublicationLimitationDate)
                     ) {
-                        $_SESSION['public_dates_error'] = 'La date de publication du dossier doit être au minimum dans 5 minutes et la date de retrait dans plus d\'une heure';
+                        $_SESSION['publish_error'] = 'La date de publication du projet doit être au minimum dans 5 minutes et la date de retrait dans plus d\'une heure';
 
                         header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                         die;
@@ -576,10 +588,12 @@ class dossiersController extends bootstrap
                 $this->companies->activite     = $_POST['activite'];
                 $this->companies->update();
 
-                $this->projects->title               = $_POST['title'];
-                $this->projects->id_analyste         = isset($_POST['analyste']) ? $_POST['analyste'] : $this->projects->id_analyste;
-                $this->projects->id_commercial       = isset($_POST['commercial']) ? $_POST['commercial'] : $this->projects->id_commercial;
-                $this->projects->id_borrowing_motive = $_POST['motive'];
+                $this->projects->title                = $_POST['title'];
+                $this->projects->id_analyste          = isset($_POST['analyste']) ? $_POST['analyste'] : $this->projects->id_analyste;
+                $this->projects->id_commercial        = isset($_POST['commercial']) ? $_POST['commercial'] : $this->projects->id_commercial;
+                $this->projects->id_borrowing_motive  = $_POST['motive'];
+                $this->projects->id_company_submitter = empty($_POST['company_submitter']) ? null : $_POST['company_submitter'];
+                $this->projects->id_client_submitter  = empty($_POST['client_submitter']) ? null : $_POST['client_submitter'];
 
                 if ($this->projects->status <= ProjectsStatus::COMITY_REVIEW) {
                     $this->projects->id_project_need = $_POST['need'];
@@ -632,7 +646,7 @@ class dossiersController extends bootstrap
                     }
                 }
 
-                if ($this->projects->status >= ProjectsStatus::PREP_FUNDING) {
+                if ($this->projects->status == ProjectsStatus::PREP_FUNDING) {
                     if (false === empty($this->projects->risk) && false === empty($this->projects->period)) {
                         try {
                             $this->projects->id_rate = $oProjectManager->getProjectRateRangeId($this->projectEntity);
@@ -736,15 +750,46 @@ class dossiersController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\PartnerRepository $partnerRepository */
             $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
 
-            $this->eligibleProducts = $productManager->findEligibleProducts($this->projects, true);
-            $this->selectedProduct  = $product;
-            $this->isProductUsable  = empty($product->id_product) ? false : in_array($this->selectedProduct, $this->eligibleProducts);
-            $this->partnerList      = $partnerRepository->getPartnersSortedByName(Partner::STATUS_VALIDATED);
-            $this->partnerProduct   = $this->loadData('partner_product');
+            $this->eligibleProducts       = $productManager->findEligibleProducts($this->projects, true);
+            $this->selectedProduct        = $product;
+            $this->isProductUsable        = empty($product->id_product) ? false : in_array($this->selectedProduct, $this->eligibleProducts);
+            $this->partnerList            = $partnerRepository->getPartnersSortedByName(Partner::STATUS_VALIDATED);
+            $this->partnerProduct         = $this->loadData('partner_product');
+            $this->isUnilendPartner       = Partner::PARTNER_UNILEND_ID === $this->projectEntity->getIdPartner()->getId();
+            $this->agencies               = [];
+            $this->submitters             = [];
+            $this->hasBeneficialOwner     = null !== $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($this->projects->id_company);
+            $this->ownerIsBeneficialOwner = $beneficialOwnerManager->checkBeneficialOwnerDeclarationContainsAtLeastCompanyOwner($this->projects->id_company);
 
             if (false === empty($this->projects->id_product)) {
                 $this->partnerProduct->get($this->projects->id_product, 'id_partner = ' . $this->projects->id_partner . ' AND id_product');
             }
+
+            if (false === $this->isUnilendPartner) {
+                $this->agencies = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['idParentCompany' => $this->projectEntity->getIdPartner()->getIdCompany()->getIdCompany()]);
+            }
+            usort($this->agencies, function($first, $second) {
+                return strcasecmp($first->getName(), $second->getName());
+            });
+
+            if ($this->projectEntity->getIdCompanySubmitter() && $this->projectEntity->getIdCompanySubmitter()->getIdCompany()) {
+                $companyClients = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findBy(['idCompany' => $this->projectEntity->getIdCompanySubmitter()]);
+
+                foreach ($companyClients as $companyClient) {
+                    $this->submitters[$companyClient->getIdClient()->getIdClient()] = $companyClient->getIdClient();
+                }
+            }
+
+            if (
+                $this->projectEntity->getIdClientSubmitter()
+                && $this->projectEntity->getIdClientSubmitter()->getIdClient()
+                && false === isset($this->submitters[$this->projectEntity->getIdClientSubmitter()->getIdClient()])
+            ) {
+                $this->submitters[] = $this->projectEntity->getIdClientSubmitter();
+            }
+            usort($this->submitters, function($first, $second) {
+                return strcasecmp($first->getPrenom(), $second->getPrenom());
+            });
 
             if (false === empty($this->projects->risk) && false === empty($this->projects->period) && $this->projects->status >= ProjectsStatus::PREP_FUNDING) {
                 $fPredictAmountAutoBid = $this->get('unilend.service.autobid_settings_manager')->predictAmount($this->projects->risk, $this->projects->period);
@@ -772,7 +817,7 @@ class dossiersController extends bootstrap
             ]);
 
             $this->aMandatoryAttachmentTypes = [];
-            $partnerAttachments              = $partnerRepository->find($this->projects->id_partner)->getAttachmentTypes(true);
+            $partnerAttachments              = $this->projectEntity->getIdPartner()->getAttachmentTypes(true);
             foreach ($partnerAttachments as $partnerAttachment) {
                 $this->aMandatoryAttachmentTypes[] = $partnerAttachment->getAttachmentType();
             }
@@ -2341,6 +2386,13 @@ class dossiersController extends bootstrap
             return;
         }
 
+        if (null === $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($this->projects->id_company)) {
+            $_SESSION['publish_error'] = 'Il n\'y a pas de bénéficiaire effectif déclaré';
+
+            header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+            die;
+        }
+
         if (
             isset($_POST['date_publication'], $_POST['date_publication_heure'], $_POST['date_publication_minute'])
             && isset($_POST['date_retrait'], $_POST['date_retrait_heure'], $_POST['date_retrait_minute'])
@@ -2353,7 +2405,7 @@ class dossiersController extends bootstrap
             $endOfPublicationLimitationDate = new \DateTime('NOW + 1 hour');
 
             if ($publicationDate <= $publicationLimitationDate || $endOfPublicationDate <= $endOfPublicationLimitationDate) {
-                $_SESSION['public_dates_error'] = 'La date de publication du dossier doit être au minimum dans 5 minutes et la date de retrait dans plus d\'une heure';
+                $_SESSION['publish_error'] = 'La date de publication du dossier doit être au minimum dans 5 minutes et la date de retrait dans plus d\'une heure';
 
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;

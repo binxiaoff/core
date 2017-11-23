@@ -3,7 +3,8 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use \Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 
@@ -29,11 +30,11 @@ class BidsRepository extends EntityRepository
     }
 
     /**
-     * @param \DateTime $from
-     * @param \DateTime $to
-     * @param int       $clientId
+     * @param \DateTime   $from
+     * @param \DateTime   $to
+     * @param int|Clients $clientId
      *
-     * @return mixed
+     * @return integer
      */
     public function countByClientInPeriod(\DateTime $from, \DateTime $to, $clientId)
     {
@@ -44,26 +45,26 @@ class BidsRepository extends EntityRepository
             ->andWhere('w.idClient = :idClient')
             ->setParameters(['fromDate' => $from, 'toDate' => $to, 'idClient' => $clientId]);
 
-        $bidCount =  $qb->getQuery()->getScalarResult();
-
-        return $bidCount;
+        return $qb->getQuery()->getSingleScalarResult();
     }
 
     /**
      * @param Wallet    $wallet
      * @param \DateTime $date
-     * @return mixed
+     *
+     * @return integer
      */
-    public function getManualBidByDateAndWallet(Wallet $wallet, \DateTime $date)
+    public function getManualBidCountByDateAndWallet(Wallet $wallet, \DateTime $date)
     {
         $queryBuilder = $this->createQueryBuilder('b');
-        $queryBuilder->where('b.idLenderAccount = :walletId')
+        $queryBuilder->select('COUNT(b.idBid)')
+            ->where('b.idLenderAccount = :walletId')
             ->andWhere('b.idAutobid IS NULL')
             ->andWhere('b.added > :date')
-            ->setParameter('walletId', $wallet->getId())
+            ->setParameter('walletId', $wallet)
             ->setParameter('date', $date);
 
-        return $queryBuilder->getQuery()->getOneOrNullResult();
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 
     /**

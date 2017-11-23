@@ -48,7 +48,7 @@ class PartnerProduct
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Partner
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Partner")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Partner", inversedBy="productAssociations")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_partner", referencedColumnName="id")
      * })

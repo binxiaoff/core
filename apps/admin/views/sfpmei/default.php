@@ -7,6 +7,7 @@
             <li><a href="<?= $this->lurl ?>/sfpmei/projets">Projets</a></li>
             <li><a href="<?= $this->lurl ?>/sfpmei/transferts/preteurs">Transferts de fonds prêteurs</a></li>
             <li><a href="<?= $this->lurl ?>/sfpmei/transferts/emprunteurs">Transferts de fonds emprunteurs</a></li>
+            <li><a href="<?= $this->lurl ?>/sfpmei/transferts/non_attribues">Opérations non attribuées</a></li>
             <li><a href="<?= $this->lurl ?>/sfpmei/exports">Exports</a></li>
         </ul>
     </div>
