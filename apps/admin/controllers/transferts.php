@@ -359,6 +359,8 @@ class transfertsController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager $beneficialOwnerManager */
+        $beneficialOwnerManager = $this->get('unilend.service.beneficial_owner_manager');
 
         if (isset($_POST['validateProxy'], $_POST['id_project'])) {
             $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);
@@ -374,18 +376,23 @@ class transfertsController extends bootstrap
                 header('Location: ' . $this->lurl . '/transferts/deblocage/');
                 die;
             }
-            $mandate = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->findOneBy([
+            $mandate                    = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->findOneBy([
                 'idProject' => $_POST['id_project'],
                 'status'    => UniversignEntityInterface::STATUS_SIGNED
             ], ['added' => 'DESC']);
-            $proxy   = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->findOneBy([
+            $proxy                      = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->findOneBy([
+                'idProject' => $_POST['id_project'],
+                'status'    => UniversignEntityInterface::STATUS_SIGNED
+            ], ['added' => 'DESC']);
+            $beneficialOwnerDeclaration = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findOneBy([
                 'idProject' => $_POST['id_project'],
                 'status'    => UniversignEntityInterface::STATUS_SIGNED
             ], ['added' => 'DESC']);
 
-            if (null === $mandate || null === $proxy) {
+
+            if (null === $mandate || null === $proxy || ($beneficialOwnerManager->projectNeedsBeneficialOwnerDeclaration($project) && null === $beneficialOwnerDeclaration)) {
                 $_SESSION['freeow']['title']   = 'Déblocage des fonds impossible';
-                $_SESSION['freeow']['message'] = 'Le mandat ou pouvoir non signé pour le project ' . $_POST['id_project'];
+                $_SESSION['freeow']['message'] = 'Mandat, pouvoir ou déclaration des bénéficiaires effectifs non signé pour le projet ' . $_POST['id_project'];
                 header('Location: ' . $this->lurl . '/transferts/deblocage/');
                 die;
             }
@@ -573,16 +580,17 @@ class transfertsController extends bootstrap
 
         $this->aProjects = [];
         foreach ($aProjects as $index => $aProject) {
-            $this->aProjects[$index] = $aProject;
-            $project                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($aProject['id_project']);
-            $mandate                 = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->findOneBy([
+            $this->aProjects[$index]    = $aProject;
+            $project                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($aProject['id_project']);
+            $mandate                    = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->findOneBy([
                 'idProject' => $aProject['id_project'],
                 'status'    => UniversignEntityInterface::STATUS_SIGNED
             ], ['added' => 'DESC']);
-            $proxy                   = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->findOneBy([
+            $proxy                      = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->findOneBy([
                 'idProject' => $aProject['id_project'],
                 'status'    => UniversignEntityInterface::STATUS_SIGNED
             ], ['added' => 'DESC']);
+
 
             if ($mandate) {
                 $this->aProjects[$index]['mandat']        = $mandate->getName();
@@ -593,6 +601,19 @@ class transfertsController extends bootstrap
                 $this->aProjects[$index]['url_pdf']          = $proxy->getName();
                 $this->aProjects[$index]['status_remb']      = $proxy->getStatusRemb();
                 $this->aProjects[$index]['authority_status'] = $proxy->getStatus();
+            }
+
+            $this->aProjects[$index]['needsBeneficialOwnerDeclaration'] = $beneficialOwnerManager->projectNeedsBeneficialOwnerDeclaration($project);
+            if ($this->aProjects[$index]['needsBeneficialOwnerDeclaration']) {
+                $beneficialOwnerDeclaration = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findOneBy([
+                    'idProject' => $aProject['id_project'],
+                    'status'    => UniversignEntityInterface::STATUS_SIGNED
+                ], ['added' => 'DESC']);
+
+                if (null !== $beneficialOwnerDeclaration) {
+                    $this->aProjects[$index]['beneficial_owner_declaration']        = $beneficialOwnerDeclaration->getName();
+                    $this->aProjects[$index]['beneficial_owner_declaration_status'] = $beneficialOwnerDeclaration->getStatus();
+                }
             }
 
             $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($project->getIdCompany()->getIdClientOwner());

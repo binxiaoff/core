@@ -3,13 +3,13 @@
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Elements;
-use \Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 
 class pdfController extends bootstrap
 {
@@ -151,18 +151,28 @@ class pdfController extends bootstrap
             && $this->projects->get($this->params[1], 'id_company = ' . $this->companies->id_company . ' AND id_project')
             && $this->projects->status != ProjectsStatus::PRET_REFUSE
         ) {
-            $proxy   = $this->commonProxy();
-            $mandate = $this->commonMandate();
+            $proxy                      = $this->commonProxy();
+            $mandate                    = $this->commonMandate();
 
-            if ('read' === $proxy['action'] && 'read' === $mandate['action']) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager $beneficialOwnerManager */
+            $beneficialOwnerManager                 = $this->get('unilend.service.beneficial_owner_manager');
+            $projectNeedsBeneficialOwnerDeclaration = $beneficialOwnerManager->projectNeedsBeneficialOwnerDeclaration($this->projects);
+            if ($projectNeedsBeneficialOwnerDeclaration) {
+                $beneficialOwnerDeclaration = $beneficialOwnerManager->createProjectBeneficialOwnerDeclaration($this->projects, $this->pdfClient);
+            }
+
+            if ('read' === $proxy['action'] && 'read' === $mandate['action'] && ($projectNeedsBeneficialOwnerDeclaration && 'read' === $beneficialOwnerDeclaration['action'])) {
                 /** @var \Symfony\Component\Routing\RouterInterface $router */
                 $router = $this->get('router');
                 header('Location: ' . $router->generate('universign_signature_status', ['signatureType' => \Unilend\Bundle\FrontBundle\Controller\UniversignController::SIGNATURE_TYPE_PROJECT, 'signatureId' => $this->projects->id_project, 'clientHash' => $this->pdfClient->hash]));
                 exit;
-            } elseif ('redirect' === $proxy['action'] && 'redirect' === $mandate['action'] && $proxy['url'] === $mandate['url']) {
+            } elseif (
+                'redirect' === $proxy['action'] && 'redirect' === $mandate['action'] && ($projectNeedsBeneficialOwnerDeclaration && 'redirect' === $beneficialOwnerDeclaration['action'])
+                && $proxy['url'] === $mandate['url'] && ($projectNeedsBeneficialOwnerDeclaration && $proxy['url'] === $beneficialOwnerDeclaration['url'])
+            ) {
                 header('Location: ' . $proxy['url']);
                 exit;
-            } elseif ('sign' === $proxy['action'] || 'sign' === $mandate['action']) {
+            } elseif ('sign' === $proxy['action'] || 'sign' === $mandate['action'] || ($projectNeedsBeneficialOwnerDeclaration && 'sign' === $beneficialOwnerDeclaration['action'])) {
                 /** @var \Symfony\Component\Routing\RouterInterface $router */
                 $router = $this->get('router');
                 header('Location: ' . $router->generate('universign_project_generation', ['projectId' => $this->projects->id_project]));

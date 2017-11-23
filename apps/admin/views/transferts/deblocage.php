@@ -17,6 +17,7 @@
                 <th>Kbis</th>
                 <th>Pouvoir</th>
                 <th>Mandat</th>
+                <th>Bénéficiaires <br>Effectifs</th>
                 <th>Déblocage</th>
             </tr>
         </thead>
@@ -31,34 +32,55 @@
                     <td>
                         <?php if (false === empty($aProject['rib'])) : ?>
                             <a href="<?= $this->url ?>/attachment/download/id/<?= $aProject['id_rib'] ?>/file/<?= urlencode($aProject['rib']) ?>">
-                                <img src="<?= $this->surl ?>/images/admin/modif.png" alt="RIB"/>
+                                <img src="<?= $this->surl ?>/images/admin/modif.png" alt="RIB">
                             </a>
                         <?php endif; ?>
                     </td>
                     <td>
                         <?php if (false === empty($aProject['kbis'])) : ?>
                             <a href="<?= $this->url ?>/attachment/download/id/<?= $aProject['id_kbis'] ?>/file/<?= urlencode($aProject['kbis']) ?>">
-                                <img src="<?= $this->surl ?>/images/admin/modif.png" alt="KBIS"/>
+                                <img src="<?= $this->surl ?>/images/admin/modif.png" alt="K-BIS">
                             </a>
                         <?php endif; ?>
                     </td>
                     <td>
                         <?php if (false === empty($aProject['url_pdf'])) : ?>
-                            <a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $aProject['url_pdf'] ?>"><img src="<?= $this->surl ?>/images/admin/modif.png" alt="POUVOIR"/></a>
+                            <a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $aProject['url_pdf'] ?>">
+                                <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Pouvoir">
+                            </a>
                         <?php endif; ?>
                     </td>
                     <td>
                         <?php if (false === empty($aProject['mandat'])) : ?>
-                            <a href="<?= $this->lurl ?>/protected/mandats/<?= $aProject['mandat'] ?>"><img src="<?= $this->surl ?>/images/admin/modif.png" alt="MANDAT"/></a></td>
+                            <a href="<?= $this->lurl ?>/protected/mandats/<?= $aProject['mandat'] ?>">
+                                <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Mandat">
+                            </a>
                         <?php endif; ?>
                     </td>
                     <td>
-                        <form method="post" name="deblocage" onsubmit="return confirm('Voulez-vous vraiment débloquer les fonds pour le projet <?= $aProject['id_project'] ?> ?');">
+                        <?php if ($aProject['needsBeneficialOwnerDeclaration']) : ?>
+                            <?php if (
+                                    false === empty($aProject['beneficial_owner_declaration_status'])
+                                    && \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED == $aProject['beneficial_owner_declaration_status']
+                                     ) : ?>
+                                <a href="<?= $this->lurl ?>/protected/beneficiaires_effectifs/<?= $aProject['beneficial_owner_declaration'] ?>">
+                                    <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Bénéficiaires effectifs">
+                                </a>
+                            <?php else: ?>
+                                <p>Déclaration pas encore signée</p>
+                            <?endif; ?>
+                        <?php else : ?>
+                            <p>Non demandé pour ce type d'entrepise</p>
+                        <?php endif; ?>
+                    </td>
+                    <td>
+                        <form method="post" name="deblocage" onsubmit="return confirm('Voulez-vous vraiment débloquer les fonds pour le projet <?= addslashes($aProject['title']) ?> (<?= $aProject['id_project'] ?>) ?');">
                             <?php if (
                                 isset($aProject['status_remb'], $aProject['status_mandat'], $aProject['authority_status'])
                                 && $aProject['status_remb'] == \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir::STATUS_REPAYMENT_PENDING
                                 && $aProject['status_mandat'] == \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED
                                 && $aProject['authority_status'] == \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED
+                                && $aProject['beneficial_owner_declaration_status'] == \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED
                             ) : ?>
                                 <input type="submit" name="validateProxy" class="btn-primary" value="Débloquer les fonds" />
                                 <input type="hidden" name="id_project" value="<?= $aProject['id_project'] ?>"/>
