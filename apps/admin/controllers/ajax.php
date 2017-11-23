@@ -796,23 +796,10 @@ class ajaxController extends bootstrap
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
         $projectManager = $this->get('unilend.service.project_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRatingManager $projectRatingManager */
+        $projectRatingManager = $this->get('unilend.service.project_rating_manager');
 
-        if ($projectRating->getNoteComite() >= 8.5 && $projectRating->getNoteComite() <= 10) {
-            $riskRating = 'A';
-        } elseif ($projectRating->getNoteComite() >= 7.1 && $projectRating->getNoteComite() < 8.5) {
-            $riskRating = 'B';
-        } elseif ($projectRating->getNoteComite() >= 6.1 && $projectRating->getNoteComite() < 7.1) {
-            $riskRating = 'C';
-        } elseif ($projectRating->getNoteComite() >= 5.1 && $projectRating->getNoteComite() < 6.1) {
-            $riskRating = 'D';
-        } elseif ($projectRating->getNoteComite() >= 4 && $projectRating->getNoteComite() < 5.1) {
-            $riskRating = 'E';
-        } elseif ($projectRating->getNoteComite() >= 2 && $projectRating->getNoteComite() < 4) {
-            $riskRating = 'G';
-        } else {
-            $riskRating = 'I';
-        }
-
+        $riskRating = $projectRatingManager->calculateRiskRating($project);
         $project->setRisk($riskRating);
         $entityManager->flush($project);
 

@@ -842,6 +842,12 @@ class dossiersController extends bootstrap
             }
 
             $this->transferFunds($this->projectEntity);
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRatingManager $projectRatingManager */
+            $projectRatingManager = $this->get('unilend.service.project_rating_manager');
+            /** @var \NumberFormatter $numberFormatter */
+            $numberFormatter              = $this->get('number_formatter');
+            $this->projectRating          = $numberFormatter->format($projectRatingManager->getRating($this->projectEntity)) . ' étoiles';
+            $this->projectcommiteeAvgNote = $numberFormatter->format($projectRatingManager->calculateCommitteeAverageNote($this->projectEntity));
         } else {
             header('Location: ' . $this->lurl . '/dossiers');
             die;
@@ -2385,8 +2391,10 @@ class dossiersController extends bootstrap
             $this->autoFireView = false;
             return;
         }
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manage');
 
-        if (null === $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($this->projects->id_company)) {
+        if (null === $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($this->projects->id_company)) {
             $_SESSION['publish_error'] = 'Il n\'y a pas de bénéficiaire effectif déclaré';
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
@@ -2420,11 +2428,14 @@ class dossiersController extends bootstrap
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
             $projectManager = $this->get('unilend.service.project_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRatingManager $projectRatingManager */
+            $projectRatingManager = $this->get('unilend.service.project_rating_manager');
             $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::A_FUNDER, $this->projects);
 
             $slackManager    = $this->container->get('unilend.service.slack_manager');
             $publicationDate = new \DateTime($this->projects->date_publication);
-            $star            = str_replace('.', ',', constant('\projects::RISK_' . $this->projects->risk));
+            $project         = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
+            $star            = str_replace('.', ',', $projectRatingManager->getRating($project));
             $message         = $slackManager->getProjectName($this->projects) . ' sera mis en ligne le *' . $publicationDate->format('d/m/Y à H:i') . '* - ' . $this->projects->period . ' mois :calendar: / ' . $this->ficelle->formatNumber($this->projects->amount, 0) . ' € :moneybag: / ' . $star . ' :star:';
 
             $slackManager->sendMessage($message);

@@ -1,31 +1,6 @@
 <div class="row">
     <div class="col-md-12">
         <?php if ($this->projects->status >= \projects_status::COMITY_REVIEW || $this->projects_status_history->projectHasHadStatus($this->projects->id_project, \projects_status::COMITY_REVIEW)) : ?>
-            <?php
-            $moyenne = round($this->projects_notes->performance_fianciere_comite * 0.2 + $this->projects_notes->marche_opere_comite * 0.2 + $this->projects_notes->dirigeance_comite * 0.2 + $this->projects_notes->indicateur_risque_dynamique_comite * 0.4, 1);
-            $start   = '';
-            if ($moyenne >= 0) {
-                $start = '2 étoiles';
-            }
-            if ($moyenne >= 2) {
-                $start = '2,5 étoiles';
-            }
-            if ($moyenne >= 4) {
-                $start = '3 étoiles';
-            }
-            if ($moyenne >= 5.5) {
-                $start = '3,5 étoiles';
-            }
-            if ($moyenne >= 6.5) {
-                $start = '4 étoiles';
-            }
-            if ($moyenne >= 7.5) {
-                $start = '4,5 étoiles';
-            }
-            if ($moyenne >= 8.5) {
-                $start = '5 étoiles';
-            }
-            ?>
             <table class="table table-bordered table-striped">
                 <thead>
                 <tr>
@@ -64,7 +39,7 @@
                 <tr>
                     <th colspan="8" class="text-center">
                         Note :
-                        <span class="moyenneNote_comite"><?= $this->ficelle->formatNumber($moyenne, 1) ?> / 10 (soit <?= $start ?>)</span>
+                        <span class="moyenneNote_comite"><?= $this->ficelle->formatNumber($this->projectcommiteeAvgNote, 1) ?> / 10 (soit <?= $this->projectRating ?>)</span>
                     </th>
                 </tr>
                 </tfoot>

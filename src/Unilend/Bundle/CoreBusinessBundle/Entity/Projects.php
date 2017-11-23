@@ -17,6 +17,17 @@ class Projects
     const AUTO_REPAYMENT_ON  = 0;
     const AUTO_REPAYMENT_OFF = 1;
 
+    const RISK_A = 5;
+    const RISK_B = 4.5;
+    const RISK_C = 4;
+    const RISK_D = 3.5;
+    const RISK_E = 3;
+    const RISK_F = 2.5;
+    const RISK_G = 2;
+    const RISK_H = 1.5;
+    const RISK_I = 1;
+    const RISK_J = 0;
+
     /**
      * @var string
      *

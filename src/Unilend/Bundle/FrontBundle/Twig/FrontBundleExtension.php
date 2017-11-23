@@ -5,6 +5,7 @@ namespace Unilend\Bundle\FrontBundle\Twig;
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Symfony\Component\Asset\Packages;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
@@ -155,7 +156,7 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function convertProjectRiskFilter($sProjectRating)
     {
-        return constant('\projects::RISK_' . $sProjectRating);
+        return constant(Projects::class . '::RISK_' . $sProjectRating);
     }
 
     public function projectImagePathFilter($image, $size = 'source')
