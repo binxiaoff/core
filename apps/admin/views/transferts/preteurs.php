@@ -31,7 +31,7 @@
                 {name: "added", "targets": 5}
             ],
             order: [[0, 'desc']],
-            ajax: '/transferts/preteurs_attributes',
+            ajax: '/transferts/attribues/preteur',
             language: {
                 url: '<?= $this->lurl ?>/oneui/js/plugins/datatables/localisation/fr_FR.json'
             },

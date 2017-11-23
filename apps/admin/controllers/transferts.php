@@ -49,75 +49,6 @@ class transfertsController extends bootstrap
         }
     }
 
-    public function _preteurs_attributes()
-    {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var NumberFormatter $currencyFormatter */
-        $currencyFormatter = $this->get('currency_formatter');
-
-        $receptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
-
-        $query  = $this->handleDataTablesRequest($this->request->query->all());
-        $start  = $query['start'];
-        $limit  = $query['length'];
-        $draw   = $query['draw'];
-        $search = $query['search'];
-        $sort   = $query['sort'];
-
-        $error                   = '';
-        $receptionsCount         = 0;
-        $receptionsCountFiltered = 0;
-        $affectedReceptions      = [];
-
-        try {
-            $receptionsCount         = $receptionRepository->getLenderAttributionsCount();
-            $receptionsCountFiltered = $receptionRepository->getLenderAttributionsCount($search);
-            $receptions              = $receptionRepository->getLenderAttributions($limit, $start, $sort, $search);
-
-            foreach ($receptions as $reception) {
-                if (Receptions::STATUS_ASSIGNED_MANUAL == $reception->getStatusBo() && null !== $reception->getIdUser()) {
-                    $attribution = $reception->getIdUser()->getFirstname() . ' ' . $reception->getIdUser()->getName() . '<br>' . $reception->getAssignmentDate()->format('d/m/Y H:i:s');
-                } else {
-                    $attribution = $this->statusOperations[$reception->getStatusBo()];
-                }
-                $affectedReceptions[] = [
-                    $reception->getIdReception(),
-                    $reception->getMotif(),
-                    $currencyFormatter->formatCurrency(round(bcdiv($reception->getMontant(), 100, 4), 2), 'EUR'),
-                    $attribution,
-                    $reception->getIdClient()->getIdClient(),
-                    $reception->getAdded()->format('d/m/Y'),
-                    '',
-                    $reception->getComment(),
-                    $reception->getLigne()
-                ];
-            }
-        } catch (Exception $exception) {
-            $error = $exception->getMessage();
-        }
-
-        if (empty($error)) {
-            $result = [
-                'draw'            => $draw,
-                'recordsTotal'    => $receptionsCount,
-                'recordsFiltered' => $receptionsCountFiltered,
-                'data'            => $affectedReceptions
-            ];
-        } else {
-            $result = [
-                'draw'            => $draw,
-                'recordsTotal'    => $receptionsCount,
-                'recordsFiltered' => $receptionsCount,
-                'data'            => $receptionsCountFiltered,
-                'error'           => $error,
-            ];
-        }
-
-        echo json_encode($result);
-        die;
-    }
-
     public function _emprunteurs()
     {
         if (isset($this->params[0]) && 'csv' === $this->params[0]) {
@@ -127,68 +58,87 @@ class transfertsController extends bootstrap
         }
     }
 
-    public function _emprunteurs_attribues()
+    public function _attribues()
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var NumberFormatter $currencyFormatter */
-        $currencyFormatter = $this->get('currency_formatter');
+        if (isset($this->params[0])) {
+            /** @var EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            /** @var NumberFormatter $currencyFormatter */
+            $currencyFormatter = $this->get('currency_formatter');
 
-        $receptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+            $receptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
 
-        $query  = $this->handleDataTablesRequest($this->request->query->all());
-        $start  = $query['start'];
-        $limit  = $query['length'];
-        $draw   = $query['draw'];
-        $search = $query['search'];
-        $sort   = $query['sort'];
+            $query  = $this->handleDataTablesRequest($this->request->query->all());
+            $start  = $query['start'];
+            $limit  = $query['length'];
+            $draw   = $query['draw'];
+            $search = $query['search'];
+            $sort   = $query['sort'];
 
-        $error                   = '';
-        $receptionsCount         = 0;
-        $receptionsCountFiltered = 0;
-        $affectedReceptions      = [];
+            $error                   = '';
+            $receptionsCount         = 0;
+            $receptionsCountFiltered = 0;
+            $affectedReceptions      = [];
 
-        try {
-            $receptionsCount         = $receptionRepository->getBorrowerAttributionsCount();
-            $receptionsCountFiltered = $receptionRepository->getBorrowerAttributionsCount($search);
-            $receptions              = $receptionRepository->getBorrowerAttributions($limit, $start, $sort, $search);
-
-            foreach ($receptions as $reception) {
-                if (Receptions::STATUS_ASSIGNED_MANUAL == $reception->getStatusBo() && null !== $reception->getIdUser()) {
-                    $attribution = $reception->getIdUser()->getFirstname() . ' ' . $reception->getIdUser()->getName() . '<br>' . $reception->getAssignmentDate()->format('d/m/Y H:i:s');
+            try {
+                if ($this->params[0] === 'preteur') {
+                    $receptionsCount         = $receptionRepository->getLenderAttributionsCount();
+                    $receptionsCountFiltered = $receptionRepository->getLenderAttributionsCount($search);
+                    $receptions              = $receptionRepository->getLenderAttributions($limit, $start, $sort, $search);
                 } else {
-                    $attribution = $this->statusOperations[$reception->getStatusBo()];
+                    $receptionsCount         = $receptionRepository->getBorrowerAttributionsCount();
+                    $receptionsCountFiltered = $receptionRepository->getBorrowerAttributionsCount($search);
+                    $receptions              = $receptionRepository->getBorrowerAttributions($limit, $start, $sort, $search);
                 }
-                $affectedReceptions[] = [
-                    $reception->getIdReception(),
-                    $reception->getMotif(),
-                    $currencyFormatter->formatCurrency(round(bcdiv($reception->getMontant(), 100, 4), 2), 'EUR'),
-                    $attribution,
-                    $reception->getIdProject()->getIdProject(),
-                    $reception->getAdded()->format('d/m/Y'),
-                    '',
-                    $reception->getComment(),
-                    $reception->getLigne()
+
+                foreach ($receptions as $reception) {
+                    if (Receptions::STATUS_ASSIGNED_MANUAL == $reception->getStatusBo() && null !== $reception->getIdUser()) {
+                        $attribution = $reception->getIdUser()->getFirstname() . ' ' . $reception->getIdUser()->getName() . '<br>' . $reception->getAssignmentDate()->format('d/m/Y H:i:s');
+                    } else {
+                        $attribution = $this->statusOperations[$reception->getStatusBo()];
+                    }
+                    $affectedReceptions[] = [
+                        $reception->getIdReception(),
+                        $reception->getMotif(),
+                        $currencyFormatter->formatCurrency(round(bcdiv($reception->getMontant(), 100, 4), 2), 'EUR'),
+                        $attribution,
+                        $reception->getIdClient()->getIdClient(),
+                        $reception->getAdded()->format('d/m/Y'),
+                        '',
+                        $reception->getComment(),
+                        $reception->getLigne()
+                    ];
+                }
+            } catch (Exception $exception) {
+                $error = 'une erreur est survenue lors de la récupération des réceptions attribuées.';
+                /** @var LoggerInterface $logger */
+                $logger = $this->get('logger');
+                $logger->warning($error, ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
+            }
+
+            if (empty($error)) {
+                $result = [
+                    'draw'            => $draw,
+                    'recordsTotal'    => $receptionsCount,
+                    'recordsFiltered' => $receptionsCountFiltered,
+                    'data'            => $affectedReceptions
+                ];
+            } else {
+                $result = [
+                    'draw'            => $draw,
+                    'recordsTotal'    => $receptionsCount,
+                    'recordsFiltered' => $receptionsCount,
+                    'data'            => $receptionsCountFiltered,
+                    'error'           => $error,
                 ];
             }
-        } catch (Exception $exception) {
-            $error = $exception->getMessage();
-        }
-
-        if (empty($error)) {
-            $result = [
-                'draw'            => $draw,
-                'recordsTotal'    => $receptionsCount,
-                'recordsFiltered' => $receptionsCountFiltered,
-                'data'            => $affectedReceptions
-            ];
         } else {
             $result = [
-                'draw'            => $draw,
-                'recordsTotal'    => $receptionsCount,
-                'recordsFiltered' => $receptionsCountFiltered,
-                'data'            => $affectedReceptions,
-                'error'           => $error,
+                'draw'            => 0,
+                'recordsTotal'    => 0,
+                'recordsFiltered' => 0,
+                'data'            => [],
+                'error'           => 'type d\'attribution non défini',
             ];
         }
 
@@ -273,7 +223,7 @@ class transfertsController extends bootstrap
         }
     }
 
-    public function _get_non_attribues()
+    public function _non_attribues_liste()
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
@@ -312,7 +262,10 @@ class transfertsController extends bootstrap
                 ];
             }
         } catch (Exception $exception) {
-            $error = $exception->getMessage();
+            $error = 'une erreur est survenue lors de la récupération des réceptions attribuées.';
+            /** @var LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->warning($error, ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
         }
 
         if (empty($error)) {
@@ -569,13 +522,15 @@ class transfertsController extends bootstrap
         if ($receptionId = $this->request->request->getInt('reception')) {
             /** @var EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($receptionId)->setComment($this->request->request->get('comment'));
-            $entityManager->flush();
-
-            echo json_encode(['error' => [], 'success' => true, 'data' => ['comment' => $this->request->request->get('comment')]]);
-        } else {
-            echo json_encode(['error' => ['id reception not found'], 'success' => false]);
+            $reception     = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($receptionId);
+            if ($reception) {
+                $reception->setComment($this->request->request->get('comment'));
+                $entityManager->flush();
+                echo json_encode(['error' => [], 'success' => true, 'data' => ['comment' => $this->request->request->get('comment')]]);
+                return;
+            }
         }
+        echo json_encode(['error' => ['id reception n\'existe pas'], 'success' => false]);
     }
 
     public function _deblocage()

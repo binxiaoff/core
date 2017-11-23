@@ -31,9 +31,9 @@
                 {name: "added", "targets": 5}
             ],
             order: [[ 0, "desc" ]],
-            ajax: '/transferts/emprunteurs_attribues',
+            ajax: '/transferts/attribues/emprunteur',
             language: {
-                url: '<?= $this->lurl ?>/oneui/js/plugins/datatables/localisation/fr_FR.json'
+                url: '<?= $this->lurl ?>/'
             },
             createdRow: function ( row, data, index ) {
                 var $row = $(row)

@@ -30,7 +30,7 @@
                 {name: "code", "targets": 4}
             ],
             order: [[0, "desc"]],
-            ajax: '/transferts/get_non_attribues',
+            ajax: '/transferts/non_attribues_liste',
             language: {
                 url: '<?= $this->lurl ?>/oneui/js/plugins/datatables/localisation/fr_FR.json'
             },
