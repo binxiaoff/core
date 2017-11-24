@@ -37,25 +37,29 @@
         <small>SIREN : {{ reception.idProject.idCompany.siren }}</small>
         <small>|</small>
         <small>ID Projet : {{ reception.idProject.idProject }}</small>
-        <span class="label label-info push-10-l">{{ projectStatus }}</span>
+        <span class="label push-10-l ui-project-status-{{ reception.idProject.status }}-bg ui-company-status-{{ reception.idProject.idCompany.idStatus.label }}-bg">{{ projectStatus }}</span>
     </div>
-    <h1 class="h3" style="clear:both;margin-top:30px">
-        Planifier un remboursement pour {{ reception.idProject.title }}
+    <h1 class="h3" style="clear:both;margin:30px 0 30px;">
+        Planifier un remboursement pour <a href="/dossiers/edit/{{ reception.idProject.idProject }}">{{ reception.idProject.title }}</a>
     </h1>
-    <table class="table-condensed push-20" style="margin-left: -3px;">
-        <tr>
-            <th>Date de la réception :</th>
-            <td>{{ reception.added|localizeddate('short', 'none') }}</td>
-            <th>Montant :</th>
-            <td>{{ (reception.montant / 100)|localizedcurrency('EUR') }}</td>
-            <th>ID :</th>
-            <td>{{ reception.idReception }}</td>
-        </tr>
-    </table>
 {% endblock %}
 
 {% block content %}
     <div class="content">
+        <div class="block" id="repayment-summary">
+            <div class="block-content block-content-full">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="font-s12 font-w600 text-uppercase">Montant de la réception</div>
+                        <a class="h2 font-w300 text-primary">{{ (reception.montant / 100)|localizedcurrency('EUR') }}</a>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="font-s12 font-w600 text-uppercase">Date de la réception</div>
+                        <a class="h2 font-w300 text-primary">{{ reception.added|localizeddate('short', 'none') }}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="block block-rounded">
             <div class="block-content block-content-full">
                 {% if session.flashBag.has('repayment_task_error') %}
@@ -140,7 +144,7 @@
                                 <p>Ce projet n'a pas de mission de recouvrement.</p>
                             {% endif %}
                             <div class="push"></div>
-                            <h4 class="font-w400 push-20">Date du remboursement :</h4>
+                            <h4 class="font-w400 push-20">Date du remboursement</h4>
                             <div class="row">
                                 <div class="form-group col-md-12">
                                     <input id="repayment-date" class="form-control required push-10" type="text" name="repay_on" data-date-format="dd/mm/yyyy" placeholder="dd/mm/yyyy">

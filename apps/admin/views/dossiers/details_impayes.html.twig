@@ -257,11 +257,12 @@
             <small>SIREN : {{ projectData.siren }}</small>
             <small>|</small>
             <small>ID Projet : {{ projectData.projectId }}</small>
-            <span class="label label-info push-10-l">{{ projectData.projectStatusLabel }}</span>
+            <span class="label push-10-l ui-project-status-{{ projectData.projectStatus }}-bg ui-company-status-{{ projectData.companyStatusLabel }}-bg">
+                {{ projectData.projectStatusLabel }}
+            </span>
         </div>
         <h1 class="h3" style="clear:both; margin: 40px 0 30px">
-            {{ projectData.projectTitle }} <br>
-            <small class="font-w400">{{ projectData.companyActivity }}</small>
+            Impayés du projet <a href="/dossiers/edit/{{ projectData.projectId }}">{{ projectData.projectTitle }}</a>
         </h1>
     {% endblock %}
 
@@ -270,18 +271,31 @@
             <div class="block block-rounded">
                 <div class="block-content block-content-full">
                     <div class="row">
-                        <div class="col-md-3">
+                        {% if projectData.closeOutNettingDate is not empty %}
+                            <div class="col-md-2">
+                                <div class="font-s12 font-w600 text-uppercase">Terme déchu le</div>
+                                <a class="h2 font-w300 text-primary">{{ projectData.closeOutNettingDate|localizeddate('short', 'none') }}</a>
+                            </div>
+                        {% endif %}
+                        <div class="col-md-2">
                             <div class="font-s12 font-w600 text-uppercase">Retard Emprunteur</div>
                             <a class="h2 font-w300 text-primary">{{ projectData.totalRemainingAmount|localizedcurrency('EUR') }}</a>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="font-s12 font-w600 text-uppercase">Confié au recouvreur</div>
-                            <a class="h2 font-w300 text-primary">{{ projectData.entrustedToDebtCollector|localizedcurrency('EUR') }}</a>
+                            <a class="h2 font-w300 text-primary">{{ projectData.entrustedToDebtCollector > 0 ? projectData.entrustedToDebtCollector|localizedcurrency('EUR') : '0 €'}}</a>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="font-s12 font-w600 text-uppercase">Réceptions à traiter</div>
                             <a class="h2 font-w300 text-primary">{{ pendingWireTransferIn|length|localizednumber }}</a>
                         </div>
+                        {% if projectData.collectiveProceeding.idStatus.label != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %}
+                            {% set companyStatusName = 'company-status_label-' ~ projectData.collectiveProceeding.idStatus.label|replace('_', '-') %}
+                            <div class="col-md-2">
+                                <div class="font-s12 font-w600 text-uppercase">{{ companyStatusName|trans }}</div>
+                                <a class="h2 font-w300 text-primary">{{ projectData.collectiveProceeding.changedOn|localizeddate('short', 'none') }}</a>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>

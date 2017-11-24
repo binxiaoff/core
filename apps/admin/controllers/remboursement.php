@@ -9,7 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectCloseOutNettingPaymentManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectPaymentManager;
 
-class repaymentController extends bootstrap
+class remboursementController extends bootstrap
 {
     public function initialize()
     {
@@ -33,7 +33,7 @@ class repaymentController extends bootstrap
         return;
     }
 
-    public function _create()
+    public function _planifier()
     {
         if (empty($this->params[0])) {
             header('Location: ' . $this->url);
@@ -135,14 +135,14 @@ class repaymentController extends bootstrap
 
                 $session->getFlashBag()->add('repayment_task_info', 'Le remboursement est créé, il est en attente de validation.');
 
-                header('Location: ' . $this->url . '/repayment/confirmation/' . $receptionId);
+                header('Location: ' . $this->url . '/remboursement/confirmation/' . $receptionId);
                 die;
             } else {
                 foreach ($errors as $error) {
                     $session->getFlashBag()->add('repayment_task_error', $error);
                 }
 
-                header('Location: ' . $this->url . '/repayment/create/' . $receptionId);
+                header('Location: ' . $this->url . '/remboursement/planifier/' . $receptionId);
                 die;
             }
         }
@@ -227,7 +227,7 @@ class repaymentController extends bootstrap
 
                 $entityManager->flush($projectRepaymentTask);
 
-                header('Location: ' . $this->url . '/repayment/confirmation/' . $receptionId);
+                header('Location: ' . $this->url . '/remboursement/confirmation/' . $receptionId);
             }
         }
 
@@ -278,7 +278,8 @@ class repaymentController extends bootstrap
             'totalRepayment'                   => $totalRepayment,
             'paidPaymentSchedules'             => $paidPaymentSchedules,
             'repaymentTaskValidated'           => $validated,
-            'closeOutNettingPayment'           => $closeOutNettingPayment
+            'closeOutNettingPayment'           => $closeOutNettingPayment,
+            'projectStatus'                    => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $reception->getIdProject()->getStatus()]),
         ]);
     }
 }

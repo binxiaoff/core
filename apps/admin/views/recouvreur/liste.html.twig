@@ -8,13 +8,13 @@
     <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
 {% endblock %}
 
-{% block content %}
-    <div class="content bg-gray-lighter">
-        <h1 class="page-heading push">
-            Liste des recouvreurs
-        </h1>
-    </div>
+{% block pageHeader %}
+    <h1 class="page-heading push">
+        Liste des recouvreurs
+    </h1>
+{% endblock %}
 
+{% block content %}
     <div class="content">
         <div id="debt-collector-list" class="block block-bordered">
             <div class="block-header">
@@ -41,9 +41,9 @@
                             </td>
                             <td>{{ debtCollector.client.nom }}</td>
                             <td>{{ debtCollector.client.added|localizeddate('short', 'none') }}</td>
-                            <td>{{ debtCollector.entrustedProjects.total|localizednumber }}</td>
-                            <td>{{ debtCollector.entrustedProjects.ongoing|localizednumber }}</td>
-                            <td>{{ debtCollector.entrustedProjects.amount > 0 ? debtCollector.entrustedProjects.amount|localizedcurrency('EUR') : '0 €' }}</td>
+                            <td class="text-right">{{ debtCollector.entrustedProjects.total|localizednumber }}</td>
+                            <td class="text-right">{{ debtCollector.entrustedProjects.ongoing|localizednumber }}</td>
+                            <td class="text-right">{{ debtCollector.entrustedProjects.amount > 0 ? debtCollector.entrustedProjects.amount|localizedcurrency('EUR') : '0 €' }}</td>
                             <td>
                                 <a href="/recouvreur/details_recouvreur/{{ debtCollector.client.idClient }}" class="btn btn-xs btn-default">
                                     Voir détails<span class="fa fa-chevron-right push-5-l"></span>

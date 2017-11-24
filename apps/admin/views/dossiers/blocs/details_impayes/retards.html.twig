@@ -31,35 +31,37 @@
                 <td>
                     {{ payment.label }}
                 </td>
-                <td>
+                <td class="text-right">
                     {{ payment.amount|localizedcurrency('EUR') }}
                 </td>
                 <td>
                     {{ payment.entrustedToDebtCollector }}
                 </td>
-                <td>
+                <td class="text-right">
                     {{ payment.remainingAmount > 0 ? payment.remainingAmount|localizedcurrency('EUR') : 'N/A' }}
                 </td>
             </tr>
             {% set totalPaymentsAmount = totalPaymentsAmount + payment.amount %}
         {% endfor %}
+        </tbody>
         {% if latePaymentsData|length > 1 %}
+            <tfoot>
             <tr>
                 <th colspan="2" style="width: 40%;">
-                    Total:
+                    Total
                 </th>
-                <th style="width: 20%;">
+                <th class="text-right" style="width: 20%;">
                     {{ totalPaymentsAmount|localizedcurrency('EUR') }}
                 </th>
                 <th style="width: 20%;">
                     &nbsp;
                 </th>
-                <th style="width: 20%;">
+                <th class="text-right" style="width: 20%;">
                     {{ projectData.totalRemainingAmount > 0 ? projectData.totalRemainingAmount|localizedcurrency('EUR') : 'N/A' }}
                 </th>
             </tr>
+            </tfoot>
         {% endif %}
-        </tbody>
     </table>
     <div class="text-right">
         {% if projectData.canBeDeclined %}
@@ -74,7 +76,9 @@
             {% if pendingWireTransferIn|length > 0 %}
                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-debt-collection" disabled>Missionner un recouvreur ({{ projectData.totalRemainingAmount|localizedcurrency('EUR') }})</button>
                 <div class="text-muted">
-                    <small><em style="display: inline-block; max-width: 300px; margin-top: 3px;">Merci de traiter les derniers remboursements avant de créer une nouvelle mission.</em></small>
+                    <small>
+                        <em style="display: inline-block; max-width: 300px; margin-top: 3px;">Merci de traiter les derniers remboursements avant de créer une nouvelle mission.</em>
+                    </small>
                 </div>
             {% else %}
                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-debt-collection">Missionner un recouvreur ({{ projectData.totalRemainingAmount|localizedcurrency('EUR') }})</button>

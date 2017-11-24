@@ -237,7 +237,7 @@ class bootstrap extends Controller
         ],
         [
             'title' => 'Remboursements',
-            'uri'   => 'repayment/validation',
+            'uri'   => 'remboursement/validation',
             'zone'  => Zones::ZONE_LABEL_REPAYMENT,
             'children' => [
                 [
@@ -246,21 +246,16 @@ class bootstrap extends Controller
                 ],
                 [
                     'title' => 'Remboursements à valider',
-                    'uri'   => 'repayment/validation'
-                ]
+                    'uri'   => 'remboursement/validation'
+                ],
+                [
+                    'title' => 'Liste des recouvreurs',
+                    'uri'   => 'recouvreur/liste',
+                    'zone'  => Zones::ZONE_LABEL_DEBT_COLLECTOR
+                ],
             ]
         ],
         [
-            'title'    => 'Recouvreurs',
-            'uri'      => 'recouvreur/liste',
-            'zone'     => Zones::ZONE_LABEL_DEBT_COLLECTOR,
-            'children' => [
-                [
-                    'title' => 'Recouvreurs',
-                    'uri'   => 'recouvreur/liste',
-                ],
-            ]
-        ],[
             'title'    => 'Dépôt de fonds',
             'uri'      => 'transferts',
             'zone'     => Zones::ZONE_LABEL_TRANSFERS,

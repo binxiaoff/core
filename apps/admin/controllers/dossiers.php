@@ -3118,16 +3118,20 @@ class dossiersController extends bootstrap
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
                     $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
                     $projectStatus                 = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $project->getStatus()]);
+                    $lastCompanyStatus             = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')
+                        ->findOneBy(['idCompany' => $project->getIdCompany()], ['added' => 'DESC']);
                     $projectData                   = [
                         'projectId'                => $project->getIdProject(),
                         'siren'                    => $project->getIdCompany()->getSiren(),
-                        'companyActivity'          => $project->getIdCompany()->getActivite(),
+                        'companyStatusLabel'       => $project->getIdCompany()->getIdStatus()->getLabel(),
                         'projectStatusLabel'       => $projectStatus->getLabel(),
                         'projectStatus'            => $project->getStatus(),
                         'projectTitle'             => $project->getTitle(),
                         'totalRemainingAmount'     => $projectManager->getRemainingAmount($project),
                         'entrustedToDebtCollector' => $missionPaymentScheduleRepository->getEntrustedAmount($project),
-                        'canBeDeclined'            => $projectCloseOutNettingManager->canBeDeclined($project)
+                        'canBeDeclined'            => $projectCloseOutNettingManager->canBeDeclined($project),
+                        'closeOutNettingDate'      => $project->getCloseOutNettingDate(),
+                        'collectiveProceeding'     => $lastCompanyStatus
                     ];
 
                     if (null === $project->getCloseOutNettingDate()) {
@@ -3294,15 +3298,15 @@ class dossiersController extends bootstrap
                 $pendingWireTransferInAmount           = $receptionsRepository->getTotalPendingWireTransferIn($project);
                 $projectData[$project->getIdProject()] = [
                     'projectId'                   => $project->getIdProject(),
-                    'companyName'                 => $project->getIdCompany()->getName(),
                     'siren'                       => $project->getIdCompany()->getSiren(),
-                    'companyActivity'             => $project->getIdCompany()->getActivite(),
+                    'companyStatusLabel'          => $project->getIdCompany()->getIdStatus()->getLabel(),
                     'projectTitle'                => $project->getTitle(),
                     'projectStatusLabel'          => $lateRepayment['projectStatusLabel'],
                     'projectStatus'               => $project->getStatus(),
                     'remainingAmount'             => $remainingAmount,
                     'entrustedToDebtCollector'    => $debtCollectionAmount,
                     'pendingWireTransferInAmount' => $pendingWireTransferInAmount,
+                    'closeOutNettingDate'         => $project->getCloseOutNettingDate(),
                 ];
                 $totalRemainingAmount                  = round(bcadd($totalRemainingAmount, $remainingAmount, 4), 2);
                 $totalPendingWireTransferInAmount      = round(bcadd($totalPendingWireTransferInAmount, $projectData[$project->getIdProject()]['pendingWireTransferInAmount'], 4), 2);

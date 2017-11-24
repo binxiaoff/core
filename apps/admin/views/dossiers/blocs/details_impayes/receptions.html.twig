@@ -4,16 +4,13 @@
         <table class="table table-bordered table-hover table-header-bg">
             <thead>
             <tr>
-                <th style="width: 25%">
+                <th style="width: 33%">
                     Date
                 </th>
-                <th style="width: 25%">
-                    ID
-                </th>
-                <th style="width: 25%">
+                <th style="width: 33%">
                     Montant
                 </th>
-                <th style="width: 25%">
+                <th style="width: 33%">
                     Planifier un remboursement
                 </th>
             </tr>
@@ -24,15 +21,12 @@
                     <td>
                         {{ wireTransferIn.date|localizeddate('short', 'none') }}
                     </td>
-                    <td>
-                        {{ wireTransferIn.idReception }}
-                    </td>
-                    <td>
+                    <td class="text-right">
                         {{ (wireTransferIn.montant / 100)|localizedcurrency('EUR') }}
                     </td>
                     <td class="text-center">
-                        <a class="btn btn-xs btn-primary" data-toggle="tooltip" data-original-title="Planifier le remboursement" href="/repayment/create/{{ wireTransferIn.idReception }}">
-                            <i class="fa fa-arrow-right"></i>
+                        <a href="/remboursement/planifier/{{ wireTransferIn.idReception }}" class="btn btn-xs btn-default">
+                            Planifier le remboursement<span class="fa fa-chevron-right push-5-l"></span>
                         </a>
                     </td>
                 </tr>

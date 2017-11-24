@@ -213,7 +213,7 @@ class ReceptionsRepository extends EntityRepository
     /**
      * Get all receipts having a pending repayment task
      *
-     * @return array
+     * @return Receptions[]
      */
     public function findReceptionsWithPendingRepaymentTasks()
     {

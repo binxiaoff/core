@@ -1,0 +1,83 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block pluginsJS %}
+    <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
+    <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+{% endblock %}
+
+{% block pageHeader %}
+    <h1 class="page-heading push">
+        Liste des remboursements planifiés à valider
+    </h1>
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <div class="block">
+            <div class="row">
+                <div class="col-md-12">
+                    <div id="validate-repayments" class="block block-rounded">
+                        <div class="block-content block-content-full">
+                            {% if receptionsToValidate|length > 0 %}
+                                <table class="table table-bordered table-hover table-header-bg">
+                                    <thead>
+                                    <tr>
+                                        <th style="width: 30%">
+                                            Projet
+                                        </th>
+                                        <th style="width: 20%">
+                                            Mission de Recouvrement
+                                        </th>
+                                        <th style="width: 20%">
+                                            Date réception
+                                        </th>
+                                        <th style="width: 30%">
+                                            Action
+                                        </th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for reception in receptionsToValidate %}
+                                        <tr>
+                                            <td>
+                                                <a href="/dossiers/edit/{{ reception.idProject.idProject }}">{{ reception.idProject.title }}</a>
+                                            </td>
+                                            <td>
+                                                {% if reception.idProject.getDebtCollectionMissions()|length > 0 %}
+                                                    Oui
+                                                {% else %}
+                                                    Non
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {{ reception.added|localizeddate('short', 'none') }}
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="/remboursement/confirmation/{{ reception.idReception }}" class="btn btn-xs btn-default" data-toggle="tooltip" data-original-title="Voir le détail du remboursement et le valider.">
+                                                    Détail du remboursement<span class="fa fa-chevron-right push-5-l"></span>
+                                                </a>
+                                                <a href="/dossiers/details_impayes/{{ reception.idProject.idProject }}" class="btn btn-xs btn-default" data-toggle="tooltip" data-original-title="Voir le détail des impayés.">
+                                                    Détail des impayés<span class="fa fa-chevron-right push-5-l"></span>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% else %}
+                                <div class="alert">
+                                    <p>Aucun remboursement en attente</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

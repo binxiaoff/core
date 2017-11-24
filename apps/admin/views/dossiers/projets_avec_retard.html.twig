@@ -61,25 +61,25 @@
                     <thead>
                     <tr>
                         <th style="width: 20%">
-                            Raison Sociale
-                        </th>
-                        <th style="width: 20%">
                             Projet
                         </th>
                         <th style="width: 15%">
                             Statut
                         </th>
-                        <th style="width: 10%">
+                        <th style="width: 15%">
+                            Déchéance du terme
+                        </th>
+                        <th style="width: 15%">
                             Retard emprunteur
                         </th>
-                        <th style="width: 10%">
+                        <th style="width: 15%">
                             Confié au recouvreur
                         </th>
-                        <th style="width: 10%">
+                        <th style="width: 15%">
                             Réceptions à traiter
                         </th>
                         <th style="width: 5%">
-                            &nbsp;&nbsp;
+                            Action
                         </th>
                     </tr>
                     </thead>
@@ -87,35 +87,42 @@
                     {% for projectId, project in projectWithPaymentProblems %}
                         <tr>
                             <td>
-                                {{ project.companyName }} <br>
-                                <span class="text-muted">SIREN: {{ project.siren }}</span>
+                                <a href="/dossiers/edit/{{ project.projectId }}">{{ project.projectTitle }}</a><br>
                             </td>
                             <td>
-                                {{ project.projectTitle }} <br>
-                                <span class="text-muted">ID: {{ projectId }} </span>
+                                <span class="label ui-project-status-{{ project.projectStatus }}-bg ui-company-status-{{ project.companyStatusLabel }}-bg">{{ project.projectStatusLabel }}</span>
                             </td>
-                            <!-- @todo set label by project status : must define mapping between class and project status range to make it dynamic-->
-                            <td>
-                                <span class="label label-default">{{ project.projectStatusLabel }}</span>
+                            <td class="text-right">
+                                {% if project.closeOutNettingDate is not empty %}
+                                    {{ project.closeOutNettingDate|localizeddate('short', 'none') }}
+                                {% endif %}
                             </td>
-                            <td>
+                            <td class="text-right">
                                 {{ project.remainingAmount|localizedcurrency('EUR') }}
                             </td>
-                            <td>
+                            <td class="text-right">
                                 {{ project.entrustedToDebtCollector > 0 ? project.entrustedToDebtCollector|localizedcurrency('EUR') : '0 €' }}
                             </td>
-                            <td>
+                            <td class="text-right">
                                 {{ project.pendingWireTransferInAmount > 0 ? project.pendingWireTransferInAmount|localizedcurrency('EUR') : '0 €' }}
                             </td>
-                            <!-- @todo use real ID from the future tables -->
                             <td class="text-center">
-                                <a href="/dossiers/details_impayes/{{ projectId }}" class="btn btn-xs btn-primary" data-toggle="tooltip" data-original-title="Voir détails"><i class="fa fa-arrow-right"></i></a>
+                                <a href="/dossiers/details_impayes/{{ projectId }}" class="btn btn-xs btn-default">
+                                    Voir le détail<span  class="fa fa-chevron-right push-5-l"></span>
+                                </a>
                             </td>
                         </tr>
                     {% endfor %}
                     </tbody>
                 </table>
+                <div class="row font-s12">
+                    <small class="label push-10-l ui-project-status-100-bg">&nbsp;</small> Retard
+                    <small class="label push-10-l ui-company-status-precautionary_process-bg">&nbsp;</small> Procédure de sauvegarde
+                    <small class="label push-10-l ui-company-status-receivership-bg">&nbsp;</small> Redressement judiciaire
+                    <small class="label push-10-l ui-company-status-compulsory_liquidation-bg">&nbsp;</small> Liquidation judiciaire
+                </div>
             </div>
+
         </div>
         {% endif %}
     </div>
