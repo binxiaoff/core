@@ -91,25 +91,27 @@ class BorrowerOperationsManager
             if (OperationType::BORROWER_PROVISION === $operation['label']) {
                 $operationEntity = $operationRepository->find($operation['id']);
 
-                switch ($operationEntity->getWireTransferIn()->getTypeRemb()) {
-                    case Receptions::REPAYMENT_TYPE_EARLY:
-                        $operation['label'] = self::OP_EARLY_PAYMENT;
-                        break;
-                    case Receptions::REPAYMENT_TYPE_NORMAL:
-                        $operation['label'] = self::OP_MONTHLY_PAYMENT;
-                        break;
-                    case Receptions::REPAYMENT_TYPE_RECOVERY:
-                        $operation['label'] = self::OP_RECOVERY_PAYMENT;
-                        break;
-                    case Receptions::REPAYMENT_TYPE_REGULARISATION:
-                        $operation['label'] = self::OP_MONTHLY_PAYMENT_REGULARIZATION;
-                        break;
-                    default:
-                        $this->logger->warning(
-                            'Unknown "receptions.typeRemb" value (' . $operationEntity->getWireTransferIn()->getTypeRemb() . ')',
-                            ['id_reception' => $operationEntity->getWireTransferIn()->getIdReception(), 'method' => __METHOD__]
-                        );
-                        break;
+                if (null !== $operationEntity->getWireTransferIn()) {
+                    switch ($operationEntity->getWireTransferIn()->getTypeRemb()) {
+                        case Receptions::REPAYMENT_TYPE_EARLY:
+                            $operation['label'] = self::OP_EARLY_PAYMENT;
+                            break;
+                        case Receptions::REPAYMENT_TYPE_NORMAL:
+                            $operation['label'] = self::OP_MONTHLY_PAYMENT;
+                            break;
+                        case Receptions::REPAYMENT_TYPE_RECOVERY:
+                            $operation['label'] = self::OP_RECOVERY_PAYMENT;
+                            break;
+                        case Receptions::REPAYMENT_TYPE_REGULARISATION:
+                            $operation['label'] = self::OP_MONTHLY_PAYMENT_REGULARIZATION;
+                            break;
+                        default:
+                            $this->logger->warning(
+                                'Unknown "receptions.typeRemb" value (' . $operationEntity->getWireTransferIn()->getTypeRemb() . ')',
+                                ['id_reception' => $operationEntity->getWireTransferIn()->getIdReception(), 'method' => __METHOD__]
+                            );
+                            break;
+                    }
                 }
             }
 
