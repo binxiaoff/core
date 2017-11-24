@@ -1146,18 +1146,18 @@ class MailerManager
                         $sBidsListHTML .= '
                             <tr>
                                 <td class="td">' . $sSpanAutobid . '</td>
-                                <td class="td"><a href="' . $this->sFUrl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
-                                <td class="td text-right">' . $this->oFicelle->formatNumber($oBid->amount / 100, 0) . ' €</td>
-                                <td class="td text-right">' . $this->oFicelle->formatNumber($oBid->rate, 1) . ' %</td>
+                                <td class="td"><a href="' . $this->sFUrl . '/projects/detail/' . $oProject->slug . '" style="color: #b20066; font-weight: normal; text-decoration: none;">' . $oProject->title . '</a></td>
+                                <td class="td text-right" style="text-align: right;">' . $this->oFicelle->formatNumber($oBid->amount / 100, 0) . '&nbsp;€</td>
+                                <td class="td text-right" style="text-align: right;">' . $this->oFicelle->formatNumber($oBid->rate, 1) . '&nbsp;%</td>
                             </tr>';
                     }
 
                     $sBidsListHTML .= '
                         <tr>
-                            <td class="tf">&nbsp;</td>
-                            <td class="tf">Total</td>
-                            <td class="tf text-right">' . $this->oFicelle->formatNumber($iSumBidsPlaced, 0) . ' €</td>
-                            <td class="tf">&nbsp;</td>
+                            <td class="tf" style="padding: 3px; font-size: 14px; border-top: 1px solid #E3E4E5;"></td>
+                            <td class="tf" style="padding: 3px; font-size: 14px; border-top: 1px solid #E3E4E5;">Total</td>
+                            <td class="tf text-right" style="padding: 3px; font-size: 14px; border-top: 1px solid #E3E4E5; text-align: right;">' . $this->oFicelle->formatNumber($iSumBidsPlaced, 0) . '&nbsp;€</td>
+                            <td class="tf" style="padding: 3px; font-size: 14px; border-top: 1px solid #E3E4E5;"></td>
                         </tr>';
 
                     if (1 === $iPlacedBidsCount && 'quotidienne' === $sFrequency) {
@@ -1173,22 +1173,17 @@ class MailerManager
                         continue;
                     }
 
-                    $aReplacements = [
-                        'surl'            => $this->sSUrl,
-                        'url'             => $this->sFUrl,
-                        'prenom_p'        => $oCustomer->prenom,
-                        'liste_offres'    => $sBidsListHTML,
-                        'motif_virement'  => $oCustomer->getLenderPattern($oCustomer->id_client),
-                        'gestion_alertes' => $this->sFUrl . '/profile',
-                        'contenu'         => $sContent,
-                        'objet'           => $sObject,
-                        'sujet'           => $sSubject,
-                        'lien_fb'         => $this->settingsRepository->findOneBy(['type' => 'Facebook'])->getValue(),
-                        'lien_tw'         => $this->settingsRepository->findOneBy(['type' => 'Twitter'])->getValue()
+                    $keywords = [
+                        'subject'       => $sSubject,
+                        'headerTitle'   => $sObject,
+                        'firstName'     => $oCustomer->prenom,
+                        'content'       => $sContent,
+                        'bidsList'      => $sBidsListHTML,
+                        'lenderPattern' => $oCustomer->getLenderPattern($oCustomer->id_client)
                     ];
 
                     /** @var TemplateMessage $message */
-                    $message = $this->messageProvider->newMessage($sMail, $aReplacements);
+                    $message = $this->messageProvider->newMessage($sMail, $keywords);
                     try {
                         $message->setTo($oCustomer->email);
                         $this->mailer->send($message);
@@ -1294,10 +1289,10 @@ class MailerManager
 
                     $sBidsListHTML .= '
                         <tr>
-                            <td class="td"></td>
-                            <td class="td">Total de vos offres</td>
-                            <td class="td text-right" style="text-align: right;">' . $this->oFicelle->formatNumber($iSumRejectedBids, 0) . '&nbsp;€</td>
-                            <td class="td"></td>
+                            <td class="tf" style="padding: 3px; font-size: 14px; border-top: 1px solid #E3E4E5;"></td>
+                            <td class="tf" style="padding: 3px; font-size: 14px; border-top: 1px solid #E3E4E5;">Total de vos offres</td>
+                            <td class="tf text-right" style="padding: 3px; font-size: 14px; border-top: 1px solid #E3E4E5; text-align: right;">' . $this->oFicelle->formatNumber($iSumRejectedBids, 0) . '&nbsp;€</td>
+                            <td class="tf" style="padding: 3px; font-size: 14px; border-top: 1px solid #E3E4E5;"></td>
                         </tr>';
 
                     if (1 === $iRejectedBidsCount && 'quotidienne' === $sFrequency) {
