@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,7 +15,7 @@ use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder;
-use Unilend\core\Loader;
+
 
 class SecurityController extends Controller
 {
@@ -236,25 +235,22 @@ class SecurityController extends Controller
         if (empty($request->request->get('client_secret_answer')) || md5($request->request->get('client_secret_answer')) !== $client->secrete_reponse) {
             $this->addFlash('passwordErrors', $translator->trans('common-validator_secret-answer-invalid'));
         }
-
+        $password = '';
         if (false === empty($request->request->get('client_new_password')) && false === empty($request->request->get('client_new_password_confirmation')) && false === empty($request->request->get('client_secret_answer'))) {
             if ($request->request->get('client_new_password') !== $request->request->get('client_new_password_confirmation')) {
                 $this->addFlash('passwordErrors', $translator->trans('common-validator_password-not-equal'));
             }
 
-            /** @var \ficelle $ficelle */
-            $ficelle = Loader::loadLib('ficelle');
-            if (false === $ficelle->password_fo($request->request->get('client_new_password'), 6)) {
+            $user = $this->get('unilend.frontbundle.security.user_provider')->loadUserByUsername($client->email);
+            try {
+                $password = $this->get('security.password_encoder')->encodePassword($user, $request->request->get('client_new_password'));
+            } catch (\Exception $exception) {
                 $this->addFlash('passwordErrors', $translator->trans('common-validator_password-invalid'));
             }
         }
 
         if (false === $this->get('session')->getFlashBag()->has('passwordErrors')) {
             $temporaryLink->revokeTemporaryLinks($temporaryLink->id_client);
-
-            $user     = $this->get('unilend.frontbundle.security.user_provider')->loadUserByUsername($client->email);
-            $password = $this->get('security.password_encoder')->encodePassword($user, $request->request->get('client_new_password'));
-
             $client->password = $password;
             $client->update();
 

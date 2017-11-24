@@ -268,13 +268,18 @@ class UsersController extends Controller
             $entityManager->flush();
 
             if ($request->isMethod(Request::METHOD_POST)) {
-                $translator = $this->get('translator');
-                /** @var \ficelle $ficelle */
-                $ficelle  = Loader::loadLib('ficelle');
-                $formData = $request->request->get('partner_security', []);
-                $error    = false;
+                $translator  = $this->get('translator');
+                $formData    = $request->request->get('partner_security', []);
+                $error       = false;
+                $password    = '';
+                $userPartner = $this->get('unilend.frontbundle.security.user_provider')->loadUserByUsername($client->getEmail());
 
-                if (empty($formData['password']) || false === $ficelle->password_fo($formData['password'], 6)) {
+                try {
+                    if (empty($formData['password'])) {
+                        throw new \Exception('password empty');
+                    }
+                    $password = $this->get('security.password_encoder')->encodePassword($userPartner, $formData['password']);
+                } catch (\Exception $exception) {
                     $error = true;
                     $this->addFlash('error', $translator->trans('common-validator_password-invalid'));
                 }
@@ -295,13 +300,8 @@ class UsersController extends Controller
                 }
 
                 if (false === $error) {
-                    $formData['question'] = filter_var($formData['question'], FILTER_SANITIZE_STRING);
-
-                    $userPartner = $this->get('unilend.frontbundle.security.user_provider')->loadUserByUsername($client->getEmail());
-                    $password    = $this->get('security.password_encoder')->encodePassword($userPartner, $formData['password']);
-
                     $client->setPassword($password);
-                    $client->setSecreteQuestion($formData['question']);
+                    $client->setSecreteQuestion(filter_var($formData['question'], FILTER_SANITIZE_STRING));
                     $client->setSecreteReponse(md5($formData['answer']));
                     $client->setStatus(1);
 

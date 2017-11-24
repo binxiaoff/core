@@ -43,7 +43,6 @@ use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\CompanyIdentityTyp
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonFiscalAddressType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\SecurityQuestionType;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
-use Unilend\core\Loader;
 
 class LenderProfileController extends Controller
 {
@@ -1078,21 +1077,23 @@ class LenderProfileController extends Controller
      */
     public function handlePasswordForm(Clients $client, FormInterface $form)
     {
-        $translator = $this->get('translator');
+        $translator              = $this->get('translator');
         $securityPasswordEncoder = $this->get('security.password_encoder');
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
+        $entityManager           = $this->get('doctrine.orm.entity_manager');
 
         if (false === $securityPasswordEncoder->isPasswordValid($this->getUser(), $form->get('formerPassword')->getData())) {
             $form->get('formerPassword')->addError(new FormError($translator->trans('lender-profile_security-password-section-error-wrong-former-password')));
         }
-        if (false === $ficelle->password_fo($form->get('password')->getData(), 6)) {
+
+        $encodedPassword = '';
+        try {
+            $encodedPassword = $securityPasswordEncoder->encodePassword($this->getUser(), $form->get('password')->getData());
+        } catch (\Exception $exception) {
             $form->get('password')->addError(new FormError($translator->trans('common-validator_password-invalid')));
         }
 
         if ($form->isValid()) {
-            $client->setPassword($securityPasswordEncoder->encodePassword($this->getUser(), $form->get('password')->getData()));
+            $client->setPassword($encodedPassword);
             $entityManager->flush($client);
 
             $this->sendPasswordModificationEmail($this->getClient());
@@ -1100,6 +1101,7 @@ class LenderProfileController extends Controller
 
             return true;
         }
+
         return false;
     }
 

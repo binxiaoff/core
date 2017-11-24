@@ -7,29 +7,33 @@ use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 
 class BCryptPasswordEncoder extends BaseEncoder
 {
+    const PASSWORD_LENGTH_MIN = 8;
 
     public function encodePassword($raw, $salt)
     {
-        if (false === $this->hasCapitalLetter($raw) || false == $this->hasLowerCaseLetter($raw) || false === $this->hasMinLength($raw)){
+        if (false === $this->isPasswordSafe($raw)) {
             throw new BadCredentialsException('Invalid password.');
         }
 
         return parent::encodePassword($raw, $salt);
     }
 
-    public function hasCapitalLetter($password)
+    /**
+     * Check if the password has at least PASSWORD_LENGTH_MIN chars of which contains at least one uppercase and at least one lowercase.
+     * Todo: change it back to private non static function after "TECH-108 Replace the BaseUser by clients"
+     *
+     * @param $raw
+     *
+     * @return bool
+     */
+    public static function isPasswordSafe($raw)
     {
-        return (bool) preg_match('/[A-Z]/', $password);
-    }
+        $regex = '/^(?=.*[a-z])(?=.*[A-Z]).{' . self::PASSWORD_LENGTH_MIN . ',}$/';
+        if (1 === preg_match($regex, $raw)) {
+            return true;
+        }
 
-    public function hasLowerCaseLetter($password)
-    {
-        return (bool) preg_match('/[a-z]/', $password);
-    }
-
-    public function hasMinLength($password)
-    {
-        return strlen($password) >= 6;
+        return false;
     }
 
 }

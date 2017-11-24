@@ -331,8 +331,8 @@ class Clients
      */
     public function __construct()
     {
-        $this->attachments     = new ArrayCollection();
-        $this->wallets         = new ArrayCollection();
+        $this->attachments      = new ArrayCollection();
+        $this->wallets          = new ArrayCollection();
         $this->clientsAddresses = new ArrayCollection();
     }
 
@@ -1423,11 +1423,11 @@ class Clients
      *
      * @return Clients
      */
-    public function setClientsAddresses(ClientsAdresses $clientsAddresses)
+    public function setClientsAddresses($clientsAddresses)
     {
         $this->clientsAddresses = $clientsAddresses;
+
         return $this;
     }
-
 
 }
