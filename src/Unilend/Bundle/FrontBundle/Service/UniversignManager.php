@@ -183,14 +183,14 @@ class UniversignManager
     }
 
     /**
-     * @param Projects                         $project
-     * @param ProjectsPouvoir                  $proxy
-     * @param ClientsMandats                   $mandate
-     * @param ProjectBeneficialOwnerUniversign $beneficialOwnerUniversign
+     * @param Projects                              $project
+     * @param ProjectsPouvoir                       $proxy
+     * @param ClientsMandats                        $mandate
+     * @param ProjectBeneficialOwnerUniversign|null $beneficialOwnerUniversign
      *
      * @return bool
      */
-    public function createProject(Projects $project, ProjectsPouvoir $proxy, ClientsMandats $mandate, ProjectBeneficialOwnerUniversign $beneficialOwnerUniversign)
+    public function createProject(Projects $project, ProjectsPouvoir $proxy, ClientsMandats $mandate, ProjectBeneficialOwnerUniversign $beneficialOwnerUniversign = null)
     {
         $bankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($project->getIdCompany()->getIdClientOwner());
         if (null === $bankAccount) {
@@ -199,7 +199,12 @@ class UniversignManager
             return false;
         }
 
-        $resultValue = $this->createSignature(UniversignController::SIGNATURE_TYPE_PROJECT, $project->getIdProject(), [$proxy, $mandate, $beneficialOwnerUniversign]);
+        $documents = [$proxy, $mandate];
+        if (null !== $beneficialOwnerUniversign) {
+            $documents[] = $beneficialOwnerUniversign;
+        }
+
+        $resultValue = $this->createSignature(UniversignController::SIGNATURE_TYPE_PROJECT, $project->getIdProject(), $documents);
 
         if ($resultValue instanceof Value) {
             $proxy
@@ -214,10 +219,12 @@ class UniversignManager
                 ->setBic($bankAccount->getBic())
                 ->setIban($bankAccount->getIban());
 
-            $beneficialOwnerUniversign
-                ->setIdUniversign($resultValue['id']->scalarVal())
-                ->setUrlUniversign($resultValue['url']->scalarVal())
-                ->setStatus(ProjectsPouvoir::STATUS_PENDING);
+            if (null !== $beneficialOwnerUniversign) {
+                $beneficialOwnerUniversign
+                    ->setIdUniversign($resultValue['id']->scalarVal())
+                    ->setUrlUniversign($resultValue['url']->scalarVal())
+                    ->setStatus(ProjectsPouvoir::STATUS_PENDING);
+            }
 
             $this->entityManager->flush();
 

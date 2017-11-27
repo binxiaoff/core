@@ -2,6 +2,8 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -187,6 +189,21 @@ class Receptions
      * })
      */
     private $idReceptionRejected;
+
+    /**
+     * @var ProjectRepaymentTask[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask", mappedBy="idWireTransferIn")
+     */
+    private $projectRepaymentTasks;
+
+    /**
+     * Receptions constructor.
+     */
+    public function __construct()
+    {
+        $this->projectRepaymentTasks = new ArrayCollection();
+    }
 
     /**
      * Set motif
@@ -638,5 +655,26 @@ class Receptions
         $this->idReceptionRejected = $idReceptionRejected;
 
         return $this;
+    }
+
+    /**
+     * @param integer $status
+     * @param array   $sort
+     *
+     * @return ArrayCollection|ProjectRepaymentTask[]
+     */
+    public function getPlannedRepaymentTasks($status = null, array $sort = ['sequence' => 'DESC'])
+    {
+        $criteria = Criteria::create();
+
+        if (null !== $status) {
+            $criteria->where(Criteria::expr()->eq('status', $status));
+        }
+
+        if ($sort) {
+            $criteria->orderBy($sort);
+        }
+
+        return $this->projectRepaymentTasks;
     }
 }

@@ -135,7 +135,7 @@
         <service id="unilend.service.welcome_offer_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager">
             <argument type="service" id="unilend.service.operation_manager"/>
             <argument type="service" id="doctrine.orm.entity_manager"/>
-            <argument type="service" id="number_formatter" />
+            <argument type="service" id="number_formatter"/>
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
             <argument type="service" id="swiftmailer.mailer.default"/>
             <argument type="service" id="logger"/>
@@ -223,6 +223,7 @@
             <argument type="service" id="mailer"/>
             <argument type="service" id="logger"/>
             <argument>%router.request_context.scheme%://%url.host_default%</argument>
+            <argument type="service" id="router"/>
         </service>
 
         <service id="unilend.service.partner_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager">
@@ -426,6 +427,23 @@
             <argument type="service" id="unilend.service.attachment_manager"/>
             <argument type="service" id="logger"/>
             <argument>%path.protected%</argument>
+        </service>
+
+        <service id="unilend.service.debt_collection_fee_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionFeeManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.debt_collection_mission_manager"/>
+            <argument type="service" id="unilend.service.operation_manager"/>
+        </service>
+
+        <service id="unilend.service.project_charge_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectChargeManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.debt_collection_mission_manager"/>
+            <argument type="service" id="unilend.service.operation_manager"/>
+        </service>
+
+        <service id="unilend.service.project_close_out_netting_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.project_status_manager"/>
         </service>
     </services>
 </container>

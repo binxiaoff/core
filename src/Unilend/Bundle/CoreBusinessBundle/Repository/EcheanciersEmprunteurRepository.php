@@ -65,12 +65,10 @@ class EcheanciersEmprunteurRepository extends EntityRepository
     public function getRemainingCapitalFrom($project, $sequence)
     {
         $queryBuilder = $this->createQueryBuilder('ee');
-        $queryBuilder->select('ROUND(SUM(ee.capital) / 100, 2)')
+        $queryBuilder->select('ROUND(SUM(ee.capital - ee.paidCapital) / 100, 2)')
             ->where('ee.idProject = :project')
             ->andWhere('ee.ordre >= :sequence')
-            ->andWhere('ee.statusEmprunteur = :pending')
             ->setParameter('project', $project)
-            ->setParameter('pending', EcheanciersEmprunteur::STATUS_PENDING)
             ->setParameter('sequence', $sequence);
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
@@ -121,22 +119,47 @@ class EcheanciersEmprunteurRepository extends EntityRepository
     }
 
     /**
-     * @param $project
+     * @param Projects|int   $project
+     * @param \DateTime|null $date
      *
      * @return mixed
      */
-    public function getTotalOverdueAmounts($project)
+    public function getTotalOverdueAmounts($project, $date = null)
+    {
+        if (null === $date) {
+            $date = new \DateTime();
+        }
+        $queryBuilder = $this->createQueryBuilder('ee');
+        $queryBuilder->select(
+            'ROUND(SUM(ee.capital - ee.paidCapital)/100, 2) as capital,
+            ROUND(SUM(ee.interets - ee.paidInterest)/100, 2) as interest,
+            ROUND(SUM(ee.commission + ee.tva - ee.paidCommissionVatIncl)/100, 2) as commission
+            '
+        )
+            ->where('ee.idProject = :project')
+            ->andWhere('ee.dateEcheanceEmprunteur < :today')
+            ->setParameter('project', $project)
+            ->setParameter('today', $date->format('Y-m-d 00:00:00'));
+
+        return $queryBuilder->getQuery()->getSingleResult();
+    }
+
+    /**
+     * @param Projects|int $project
+     *
+     * @return array
+     */
+    public function getRemainingAmountsByProject($project)
     {
         $queryBuilder = $this->createQueryBuilder('ee');
         $queryBuilder->select(
             'ROUND(SUM(ee.capital - ee.paidCapital)/100, 2) as capital,
             ROUND(SUM(ee.interets - ee.paidInterest)/100, 2) as interest,
-            ROUND(SUM(ee.commission + ee.tva - ee.paidCommissionVatIncl)/100, 2) as commission'
+            ROUND(SUM(ee.commission + ee.tva - ee.paidCommissionVatIncl)/100, 2) as commission
+            '
         )
-            ->where('ee.idProject = :project')
-            ->andWhere('ee.dateEcheanceEmprunteur < :today')
-            ->setParameter('project', $project)
-            ->setParameter('today', (new \DateTime())->format('Y-m-d 00:00:00'));
+            ->where('ee.idProject = :projectId')
+            ->setParameter('projectId', $project);
 
         return $queryBuilder->getQuery()->getSingleResult();
     }
@@ -216,56 +239,14 @@ class EcheanciersEmprunteurRepository extends EntityRepository
     }
 
     /**
-     * @param int|Projects $project
-     * @param \DateTime    $endDate
+     * @param Projects|int $project
      *
-     * @return array
+     * @return float
      */
-    public function getPendingAmountAndPaymentsCountOnProjectAtDate($project, \DateTime $endDate)
+    public function getRemainingCapitalByProject($project)
     {
-        $queryBuilder = $this->createQueryBuilder('ee')
-            ->select('ROUND(SUM(ee.capital - ee.paidCapital + ee.interets - ee.paidInterest + ee.commission + ee.tva - ee.paidCommissionVatIncl) / 100, 2) AS amount,
-            SUM(ROUND((ee.capital - ee.paidCapital + ee.interets - ee.paidInterest + ee.commission - ee.paidCommissionVatIncl) / (ee.capital + ee.interets + ee.commission), 1)) AS paymentsCount')
-            ->where('ee.idProject = :projectId')
-            ->setParameter('projectId', $project)
-            ->andWhere('ee.dateEcheanceEmprunteur <= :endDate')
-            ->setParameter('endDate', $endDate->format('Y-m-d 23:59:59'))
-            ->groupBy('ee.idProject');
+        $remaining = $this->getRemainingAmountsByProject($project);
 
-        return $queryBuilder->getQuery()->getSingleResult();
-    }
-
-    /**
-     * @param int|Projects $project
-     * @param \DateTime    $startDate
-     *
-     * @return array
-     */
-    public function getPendingCapitalAndPaymentsCountOnProjectFromDate($project, \DateTime $startDate)
-    {
-        $queryBuilder = $this->createQueryBuilder('ee')
-            ->select('ROUND(SUM(ee.capital - ee.paidCapital) / 100, 2) AS amount, SUM(ROUND((ee.capital - ee.paidCapital) / ee.capital, 1)) AS paymentsCount')
-            ->where('ee.idProject = :projectId')
-            ->setParameter('projectId', $project)
-            ->andWhere('ee.dateEcheanceEmprunteur > :startDate')
-            ->setParameter('startDate', $startDate->format('Y-m-d 00:00:00'))
-            ->groupBy('ee.idProject');
-
-        return $queryBuilder->getQuery()->getSingleResult();
-    }
-
-    /**
-     * @param int|Projects $project
-     *
-     * @return mixed
-     */
-    public function getTotalAmountToRepayOnProject($project)
-    {
-        $queryBuilder = $this->createQueryBuilder('ee')
-            ->select('ROUND(SUM(ee.capital + ee.interets + ee.commission + ee.tva) / 100, 2) AS totalAmountToRepay')
-            ->where('ee.idProject = :project')
-            ->setParameter('project', $project);
-
-        return $queryBuilder->getQuery()->getSingleScalarResult();
+        return $remaining['capital'];
     }
 }

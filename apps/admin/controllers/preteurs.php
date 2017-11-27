@@ -1149,7 +1149,7 @@ class preteursController extends bootstrap
         ) {
             $this->wallet          = $wallet;
             $this->lSumLoans       = $this->loans->getSumLoansByProject($wallet->getId());
-            $this->aProjectsInDebt = $this->projects->getProjectsInDebt();
+            $this->aProjectsInDebt = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getProjectsInDebt();
 
             /** @var LenderStatistic $lastIRR */
             $this->IRR = $lenderStatisticsRepository->findOneBy(['idWallet' => $wallet, 'typeStat' => LenderStatistic::TYPE_STAT_IRR], ['added' => 'DESC']);

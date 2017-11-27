@@ -74,47 +74,24 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
         $this->bdd->query($sql);
     }
 
-    // retourne le montant restant à payer pour le projet
-    public function get_restant_du($id_project, $date_debut)
-    {
-        $sql = '
-            SELECT SUM(montant) AS montant
-            FROM echeanciers_emprunteur
-            WHERE id_project = ' . $id_project . '
-                AND status_emprunteur = 0
-                AND DATE(date_echeance_emprunteur) > "' . $date_debut . '"';
-        $result  = $this->bdd->query($sql);
-        return $this->bdd->result($result, 0, 0);
-    }
-
-    // retourne le montant restant à payer pour le projet
-    public function get_capital_restant_du($id_project, $date_debut)
-    {
-        $sql = '
-            SELECT SUM(capital) AS montant
-            FROM echeanciers_emprunteur
-            WHERE id_project = ' . $id_project . '
-                AND status_emprunteur = 0
-                AND DATE(date_echeance_emprunteur) > "' . $date_debut . '"';
-        $result  = $this->bdd->query($sql);
-        return $this->bdd->result($result, 0, 0);
-    }
-
     /**
      * @param \projects $project
      * @return mixed
      */
     public function getDetailedProjectRepaymentSchedule(\projects $project) {
-        $sql = 'SELECT ee.*, e.date_echeance AS date_echeance_preteur,
-				CASE e.status
-					WHEN 0 THEN "En cours"
-					WHEN 1 THEN "Remboursé"
-				END AS "statut_preteur"
+        $sql = 'SELECT
+                  ee.*,
+                  e.date_echeance AS date_echeance_preteur,
+                  CASE
+                    WHEN SUM(e.capital) = SUM(e.capital_rembourse) AND SUM(e.interets) = SUM(e.interets_rembourses) THEN "Remboursé"
+                    WHEN SUM(e.capital_rembourse) > 0 THEN "Remboursé partiellement"
+                    ELSE "En cours"
+                  END             AS "statut_preteur"
                 FROM echeanciers_emprunteur ee
-                INNER JOIN echeanciers e ON e.id_project = ee.id_project
+                  INNER JOIN echeanciers e ON e.id_project = ee.id_project
                 WHERE ee.id_project = :idProject
-                AND ee.ordre = e.ordre
-                AND ee.status_ra = :earlyRefundStatus
+                      AND ee.ordre = e.ordre
+                      AND ee.status_ra = :earlyRefundStatus
                 GROUP BY ee.id_project, ee.ordre
                 ORDER BY ee.ordre ASC';
 
@@ -127,63 +104,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
         return $result;
     }
 
-    /**
-     * @param bool $groupFirstYears
-     *
-     * @return mixed
-     */
-    public function getRepaidCapitalByCohort($groupFirstYears = true)
-    {
-        $query = '
-                    SELECT
-                      SUM(echeanciers_emprunteur.capital)/100 AS amount,
-                      (
-                        SELECT ' . $this->getCohortSelect($groupFirstYears) . ' AS date_range
-                        FROM projects_status_history
-                        INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                        WHERE  projects_status.status = '. ProjectsStatus::REMBOURSEMENT .'
-                          AND echeanciers_emprunteur.id_project = projects_status_history.id_project
-                        ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
-                      ) AS cohort
-                    FROM echeanciers_emprunteur
-                    WHERE (
-                            SELECT e2.status
-                            FROM echeanciers e2
-                            WHERE e2.ordre = echeanciers_emprunteur.ordre
-                              AND echeanciers_emprunteur.id_project = e2.id_project
-                            LIMIT 1) = 1
-                    GROUP BY cohort';
-
-        $statement = $this->bdd->executeQuery($query);
-
-        return $statement->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function getRepaidCapital()
-    {
-        $query = 'SELECT
-                  ROUND(SUM(echeanciers_emprunteur.capital)/100)
-                FROM echeanciers_emprunteur
-                WHERE (
-                        SELECT e2.status
-                        FROM
-                          echeanciers e2
-                        WHERE
-                          e2.ordre = echeanciers_emprunteur.ordre
-                          AND echeanciers_emprunteur.id_project = e2.id_project
-                        LIMIT 1
-                      ) = 1';
-
-        $statement = $this->bdd->executeQuery($query);
-        return $statement->fetchColumn(0);
-    }
-
-    /**
-     * @param bool $groupFirstYears
-     *
-     * @return mixed
-     */
-    public function getInterestPaymentsOfHealthyProjectsByCohort($groupFirstYears = true)
+    public function getInterestPaymentsOfHealthyProjectsByCohort()
     {
         $query = '
                     SELECT

@@ -81,22 +81,25 @@ class ProjectRepaymentDetailRepository extends EntityRepository
 
     /**
      * @param Loans|int $loan
-     * @param int       $sequence
+     * @param int|null  $sequence
      *
      * @return array
      */
-    public function getPendingAmountToRepay($loan, $sequence)
+    public function getPendingAmountToRepay($loan, $sequence = null)
     {
         $queryBuilder = $this->createQueryBuilder('prd');
         $queryBuilder->select('SUM(prd.capital) as capital, SUM(prd.interest) as interest')
             ->innerJoin('UnilendCoreBusinessBundle:ProjectRepaymentTask', 'prt', Join::WITH, 'prt.id = prd.idTask')
             ->where('prd.idLoan = :loan')
             ->andWhere('prd.status = :pending')
-            ->andWhere('prt.sequence = :sequence')
             ->groupBy('prd.idLoan')
             ->setParameter('loan', $loan)
-            ->setParameter(':pending', ProjectRepaymentDetail::STATUS_PENDING)
-            ->setParameter(':sequence', $sequence);
+            ->setParameter(':pending', ProjectRepaymentDetail::STATUS_PENDING);
+
+        if (is_numeric($sequence)) {
+            $queryBuilder->andWhere('prt.sequence = :sequence')
+                ->setParameter(':sequence', $sequence);
+        }
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
     }

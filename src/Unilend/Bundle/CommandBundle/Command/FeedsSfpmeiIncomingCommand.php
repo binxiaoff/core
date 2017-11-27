@@ -274,14 +274,14 @@ EOF
         if (1 === preg_match('#[0-9]+#', $motif, $extract)) {
             $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
             $projectId     = (int) $extract[0];
-            /** @var EcheanciersEmprunteur $nextPayment */
-            $nextPayment = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')
-                ->findOneBy(['idProject' => $projectId, 'statusEmprunteur' => EcheanciersEmprunteur::STATUS_PENDING], ['ordre' => 'ASC']);
+            /** @var EcheanciersEmprunteur $unpaidSchedule */
+            $unpaidSchedule = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')
+                ->findOneBy(['idProject' => $projectId, 'statusEmprunteur' => [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]], ['ordre' => 'ASC']);
 
             /** @var Prelevements $bankDirectDebit */
             $bankDirectDebit = $entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements')
-                ->findOneBy(['idProject' => $projectId, 'numPrelevement' => $nextPayment->getOrdre()]);
-            if ($nextPayment && $bankDirectDebit && false !== strpos($motif, $bankDirectDebit->getMotif())) {
+                ->findOneBy(['idProject' => $projectId, 'numPrelevement' => $unpaidSchedule->getOrdre()]);
+            if ($unpaidSchedule && $bankDirectDebit && false !== strpos($motif, $bankDirectDebit->getMotif())) {
                 $operationManager      = $this->getContainer()->get('unilend.service.operation_manager');
                 $projectPaymentManager = $this->getContainer()->get('unilend.service_repayment.project_payment_manager');
 
@@ -490,7 +490,7 @@ EOF
                         $operationManager->cancelProvisionBorrowerWallet($wallet, $amount, $reception);
 
                         $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
-                        $projectPaymentManager->rejectPayment($reception, $user);
+                        $projectPaymentManager->rejectPayment($originalRejectedDirectDebit, $user);
 
                         $this->sendBorrowerRepaymentRejectionNotification($reception);
                     }
