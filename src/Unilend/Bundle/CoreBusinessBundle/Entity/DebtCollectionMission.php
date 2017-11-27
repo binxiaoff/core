@@ -323,7 +323,7 @@ class DebtCollectionMission
     /**
      * Get debtCollectionMissionPaymentSchedules
      *
-     * @return DebtCollectionMissionPaymentSchedule[]
+     * @return ArrayCollection|DebtCollectionMissionPaymentSchedule[]
      */
     public function getDebtCollectionMissionPaymentSchedules()
     {
@@ -333,7 +333,7 @@ class DebtCollectionMission
     /**
      * Set debtCollectionMissionPaymentSchedules
      *
-     * @param DebtCollectionMissionPaymentSchedule[] $debtCollectionMissionPaymentSchedules
+     * @param ArrayCollection|DebtCollectionMissionPaymentSchedule[] $debtCollectionMissionPaymentSchedules
      *
      * @return DebtCollectionMission
      */

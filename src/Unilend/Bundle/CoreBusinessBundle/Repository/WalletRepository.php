@@ -254,7 +254,7 @@ class WalletRepository extends EntityRepository
     public function findLendersWithProvisionButWithoutAcceptedBidBetweenDates(\DateTime $start, \DateTime $end)
     {
         $start->setTime(0, 0, 0);
-        $end->setTime(23, 59,59);
+        $end->setTime(23, 59, 59);
 
         $queryBuilder = $this->createQueryBuilder('w');
         $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.idWalletCreditor = w.id')

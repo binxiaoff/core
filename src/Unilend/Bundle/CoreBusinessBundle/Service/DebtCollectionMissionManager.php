@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -10,7 +11,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionFeeDetail;
 use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
 use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMissionPaymentSchedule;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
@@ -23,6 +23,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskMana
 class DebtCollectionMissionManager
 {
     const DEBT_COLLECTION_CONDITION_CHANGE_DATE = '2016-04-19';
+    const FEES_DETAILS_AVAILABILITY_DATE        = '2017-11-01';
 
     const CLIENT_HASH_MCS      = '2f9f590e-d689-11e6-b3d7-005056a378e2';
     const CLIENT_HASH_PROGERIS = 'f12f0f5b-1867-11e7-a89f-0050569e51ae';
@@ -30,14 +31,10 @@ class DebtCollectionMissionManager
     const DEBT_COLLECTION_MISSION_FOLDER = 'debt_collection_missions';
     const FILE_EXTENSION                 = '.xlsx';
 
-    /**
-     * @var EntityManager
-     */
+    /** @var EntityManager */
     private $entityManager;
 
-    /**
-     * @var ProjectRepaymentTaskManager
-     */
+    /** @var ProjectRepaymentTaskManager */
     private $projectRepaymentTaskManager;
 
     /**
@@ -60,7 +57,7 @@ class DebtCollectionMissionManager
      * @param ProjectRepaymentTaskManager $projectRepaymentTaskManager
      * @param LoggerInterface             $logger
      * @param Filesystem                  $filesystem
-     * @param                             $protectedPath
+     * @param   string                    $protectedPath
      */
     public function __construct(EntityManager $entityManager, ProjectRepaymentTaskManager $projectRepaymentTaskManager, LoggerInterface $logger, Filesystem $filesystem, $protectedPath)
     {
@@ -76,43 +73,48 @@ class DebtCollectionMissionManager
      */
     public function generateExcelFile(DebtCollectionMission $debtCollectionMission)
     {
-        if ($debtCollectionMission) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMissionPaymentSchedule[] $missionPaymentSchedules */
-            $missionPaymentSchedules = $debtCollectionMission->getDebtCollectionMissionPaymentSchedules();
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMissionPaymentSchedule[] $missionPaymentSchedules */
+        $missionPaymentSchedules          = $debtCollectionMission->getDebtCollectionMissionPaymentSchedules();
+        $isDebtCollectionFeeDueToBorrower = $this->isDebtCollectionFeeDueToBorrower($debtCollectionMission->getIdProject());
+        $isCloseOutNetting                = null !== $debtCollectionMission->getIdProject()->getCloseOutNettingDate();
 
-            $excel       = new \PHPExcel();
-            $activeSheet = $excel->setActiveSheetIndex(0);
+        $excel       = new \PHPExcel();
+        $activeSheet = $excel->setActiveSheetIndex(0);
 
-            $titles            = [
-                'Identifiant du prêt',
-                'Nom',
-                'Prénom',
-                'Email',
-                'Type',
-                'Raison social',
-                'Date de naissance',
-                'Téléphone',
-                'Mobile',
-                'Adresse',
-                'Code postal',
-                'Ville',
-                'Montant du prêt'
-            ];
-            $titleColumn       = 'A';
-            $titleRow          = 2;
-            $commissionColumns = [];
-            $feeColumn         = [];
-            $chargeColumn      = null;
-            $totalColumn       = null;
-            foreach ($titles as $title) {
-                $activeSheet->setCellValue($titleColumn . $titleRow, $title);
-                $titleColumn++;
-            }
+        $titles            = [
+            'Identifiant du prêt',
+            'Nom',
+            'Prénom',
+            'Email',
+            'Type',
+            'Raison social',
+            'Date de naissance',
+            'Téléphone',
+            'Mobile',
+            'Adresse',
+            'Code postal',
+            'Ville',
+            'Montant du prêt'
+        ];
+        $titleColumn       = 'A';
+        $titleRow          = 2;
+        $commissionColumns = [];
+        $commissionColumn  = null; // in case of close out netting
+        $feeColumn         = [];
+        $chargeColumn      = null;
+        $totalColumn       = null;
+        foreach ($titles as $title) {
+            $activeSheet->setCellValue($titleColumn . $titleRow, $title);
+            $titleColumn++;
+        }
 
-            $paymentScheduleTitleCellLeft = $titleColumn;
+        $paymentScheduleTitleCellLeft = $titleColumn;
+
+        if (false === $isCloseOutNetting) {
             $titleColumn++;
             $titleColumn++;
             $paymentScheduleTitleCellRight = $titleColumn;
+
             foreach ($missionPaymentSchedules as $missionPaymentSchedule) {
                 $activeSheet->setCellValue($paymentScheduleTitleCellLeft . '1', 'Échéance ' . $missionPaymentSchedule->getIdPaymentSchedule()->getOrdre());
                 $activeSheet->getStyle($paymentScheduleTitleCellLeft . '1')->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
@@ -129,63 +131,75 @@ class DebtCollectionMissionManager
                 $paymentScheduleTitleCellLeft++;
                 $paymentScheduleTitleCellRight++;
             }
+        } else {
+            $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Capital');
+            $paymentScheduleTitleCellLeft++;
 
-            $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Frais');
+            $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Intérêts');
+            $paymentScheduleTitleCellLeft++;
 
+            $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Commission');
+            $paymentScheduleTitleCellLeft++;
+        }
+
+        $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Frais');
+        if ($isDebtCollectionFeeDueToBorrower) {
             $paymentScheduleTitleCellLeft++;
             $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Honoraires');
 
             $paymentScheduleTitleCellLeft++;
             $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Tva');
+        }
 
-            $paymentScheduleTitleCellLeft++;
-            $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Total');
+        $paymentScheduleTitleCellLeft++;
+        $activeSheet->setCellValue($paymentScheduleTitleCellLeft . $titleRow, 'Total');
 
-            $creditorDetails = $this->getCreditorsDetails($debtCollectionMission);
+        $creditorDetails = $this->getCreditorsDetails($debtCollectionMission);
 
-            $dataRow = $titleRow;
-            foreach ($creditorDetails['loans'] as $loanId => $loanDetails) {
-                $dataRow++;
-                $dataColumn = 0;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanId);
+        $dataRow = $titleRow;
+        foreach ($creditorDetails['loans'] as $loanId => $loanDetails) {
+            $dataRow++;
+            $dataColumn = 0;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanId);
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['name']);
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['name']);
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['first_name']);
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['first_name']);
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['email']);
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['email']);
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow,
-                    in_array($loanDetails['type'], [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 'Physique' : 'Morale');
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow,
+                in_array($loanDetails['type'], [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? 'Physique' : 'Morale');
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['company_name']);
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['company_name']);
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['birthday']->format('d/m/Y'));
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['birthday']->format('d/m/Y'));
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['telephone']);
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['telephone']);
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['mobile']);
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['mobile']);
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['address']);
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['address']);
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['postal_code']);
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['postal_code']);
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['city']);
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['city']);
 
-                $dataColumn++;
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['amount'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $dataColumn++;
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['amount'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
+            if (false === $isCloseOutNetting) {
                 foreach ($missionPaymentSchedules as $missionPaymentSchedule) {
                     $sequence = $missionPaymentSchedule->getIdPaymentSchedule()->getOrdre();
 
@@ -200,12 +214,25 @@ class DebtCollectionMissionManager
                         $commissionColumns['schedule'][$sequence] = $dataColumn;
                     }
                 }
+            } else {
+                $dataColumn++;
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['remaining_capital'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
                 $dataColumn++;
-                if (empty($chargeColumn)) {
-                    $chargeColumn = $dataColumn;
-                }
+                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['remaining_interest'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
+                $dataColumn++; // commission
+                if (empty($commissionColumn)) {
+                    $commissionColumn = $dataColumn;
+                }
+            }
+
+            $dataColumn++;
+            if (empty($chargeColumn)) {
+                $chargeColumn = $dataColumn;
+            }
+
+            if ($isDebtCollectionFeeDueToBorrower) {
                 $dataColumn++;
                 if (empty($feeColumn['fee_tax_excl'])) {
                     $feeColumn['fee_tax_excl'] = $dataColumn;
@@ -217,51 +244,65 @@ class DebtCollectionMissionManager
                     $feeColumn['fee_vat'] = $dataColumn;
                 }
                 $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['fee_vat'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-
-                $dataColumn++;
-                if (empty($totalColumn)) {
-                    $totalColumn = $dataColumn;
-                }
-                $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['total'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             }
 
-            $commissionDetails = $creditorDetails['commission'];
-            $dataRow++;
-            $activeSheet->setCellValueByColumnAndRow(0, $dataRow, 'Commission unilend');
+            $dataColumn++;
+            if (empty($totalColumn)) {
+                $totalColumn = $dataColumn;
+            }
+            $activeSheet->setCellValueExplicitByColumnAndRow($dataColumn, $dataRow, $loanDetails['total'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        }
+
+        $commissionDetails = $creditorDetails['commission'];
+        $dataRow++;
+        $activeSheet->setCellValueByColumnAndRow(0, $dataRow, 'Commission unilend');
+        if (false === $isCloseOutNetting) {
             foreach ($commissionColumns['schedule'] as $sequence => $column) {
                 $activeSheet->setCellValueExplicitByColumnAndRow($column, $dataRow, $commissionDetails['schedule'][$sequence], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             }
+        } else {
+            $activeSheet->setCellValueExplicitByColumnAndRow($commissionColumn, $dataRow, $commissionDetails['remaining_commission'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        }
+
+        if ($isDebtCollectionFeeDueToBorrower) {
             $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_tax_excl'], $dataRow, $commissionDetails['fee_tax_excl'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_vat'], $dataRow, $commissionDetails['fee_vat'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            $activeSheet->setCellValueExplicitByColumnAndRow($totalColumn, $dataRow, $commissionDetails['total'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        }
+        $activeSheet->setCellValueExplicitByColumnAndRow($totalColumn, $dataRow, $commissionDetails['total'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
-            $chargeDetails = $creditorDetails['charge'];
-            $dataRow++;
-            $activeSheet->setCellValueByColumnAndRow(0, $dataRow, 'Frais');
-            $activeSheet->setCellValueExplicitByColumnAndRow($chargeColumn, $dataRow, $chargeDetails['charge'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $chargeDetails = $creditorDetails['charge'];
+        $dataRow++;
+        $activeSheet->setCellValueByColumnAndRow(0, $dataRow, 'Frais');
+        $activeSheet->setCellValueExplicitByColumnAndRow($chargeColumn, $dataRow, $chargeDetails['charge'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        if ($isDebtCollectionFeeDueToBorrower) {
             $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_tax_excl'], $dataRow, $chargeDetails['fee_tax_excl'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicitByColumnAndRow($feeColumn['fee_vat'], $dataRow, $chargeDetails['fee_vat'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            $activeSheet->setCellValueExplicitByColumnAndRow($totalColumn, $dataRow, $chargeDetails['total'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-
-            $fileName     = 'recouvrement_' . $debtCollectionMission->getId() . '_' . $debtCollectionMission->getAdded()->format('Y-m-d');
-            $absolutePath = implode(DIRECTORY_SEPARATOR, [$this->protectedPath, self::DEBT_COLLECTION_MISSION_FOLDER, trim($debtCollectionMission->getIdClientDebtCollector()->getIdClient()), $debtCollectionMission->getIdProject()->getIdProject()]);
-
-            if (false === is_dir($absolutePath)) {
-                $this->fileSystem->mkdir($absolutePath);
-            }
-
-            if ($this->fileSystem->exists($absolutePath . DIRECTORY_SEPARATOR . $fileName . self::FILE_EXTENSION)) {
-                $fileName = 'recouvrement_' . $debtCollectionMission->getId() . '_' . $debtCollectionMission->getAdded()->format('Y-m-d') . '_' . uniqid();
-            }
-            $absoluteFileName = $absolutePath . DIRECTORY_SEPARATOR . $fileName . self::FILE_EXTENSION;
-
-            /** @var \PHPExcel_Writer_Excel2007 $writer */
-            $writer = \PHPExcel_IOFactory::createWriter($excel, 'Excel2007');
-            $writer->save($absoluteFileName);
-
-            $debtCollectionMission->setAttachment(str_replace($this->protectedPath, '', $absoluteFileName));
-            $this->entityManager->flush($debtCollectionMission);
         }
+        $activeSheet->setCellValueExplicitByColumnAndRow($totalColumn, $dataRow, $chargeDetails['total'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+
+        $fileName     = 'recouvrement_' . $debtCollectionMission->getId() . '_' . $debtCollectionMission->getAdded()->format('Y-m-d');
+        $absolutePath = implode(DIRECTORY_SEPARATOR, [
+            $this->protectedPath,
+            self::DEBT_COLLECTION_MISSION_FOLDER,
+            trim($debtCollectionMission->getIdClientDebtCollector()->getIdClient()),
+            $debtCollectionMission->getIdProject()->getIdProject()
+        ]);
+
+        if (false === is_dir($absolutePath)) {
+            $this->fileSystem->mkdir($absolutePath);
+        }
+
+        if ($this->fileSystem->exists($absolutePath . DIRECTORY_SEPARATOR . $fileName . self::FILE_EXTENSION)) {
+            $fileName = 'recouvrement_' . $debtCollectionMission->getId() . '_' . $debtCollectionMission->getAdded()->format('Y-m-d') . '_' . uniqid();
+        }
+        $absoluteFileName = $absolutePath . DIRECTORY_SEPARATOR . $fileName . self::FILE_EXTENSION;
+
+        /** @var \PHPExcel_Writer_Excel2007 $writer */
+        $writer = \PHPExcel_IOFactory::createWriter($excel, 'Excel2007');
+        $writer->save($absoluteFileName);
+
+        $debtCollectionMission->setAttachment(str_replace($this->protectedPath, '', $absoluteFileName));
+        $this->entityManager->flush($debtCollectionMission);
     }
 
     private function getCreditorsDetails(DebtCollectionMission $debtCollectionMission)
@@ -285,16 +326,18 @@ class DebtCollectionMissionManager
         foreach ($charges as $charge) {
             $totalCharges = round(bcadd($totalCharges, $charge->getAmountInclVat(), 4), 2);
         }
+        $totalFeeTaxIncl = 0;
+        $totalFeeVat     = 0;
+        if ($this->isDebtCollectionFeeDueToBorrower($debtCollectionMission->getIdProject())) {
+            $vatTax = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+            if (null === $vatTax) {
+                throw new \Exception('The VAT rate is not defined.');
+            }
+            $vatTaxRate = round(bcdiv($vatTax->getRate(), 100, 5), 4);
 
-        $vatTax = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
-        if (null === $vatTax) {
-            throw new \Exception('The VAT rate is not defined.');
+            $totalFeeTaxIncl = round(bcmul($totalCharges, $debtCollectionMission->getFeesRate(), 4), 2);
+            $totalFeeVat     = round(bcmul($totalFeeTaxIncl, $vatTaxRate, 4), 2);
         }
-
-        $vatTaxRate = round(bcdiv($vatTax->getRate(), 100, 5), 4);
-
-        $totalFeeTaxIncl = round(bcmul($totalCharges, $debtCollectionMission->getFeesRate(), 4), 2);
-        $totalFeeVat     = round(bcmul($totalFeeTaxIncl, $vatTaxRate, 4), 2);
 
         $total = round(bcadd($totalCharges, bcadd($totalFeeTaxIncl, $totalFeeVat, 4), 4), 2);
 
@@ -316,31 +359,45 @@ class DebtCollectionMissionManager
     {
         $commissionDetails        = [];
         $totalRemainingCommission = 0;
+        $isCloseOutNetting        = null !== $debtCollectionMission->getIdProject()->getCloseOutNettingDate();
 
-        $missionPaymentSchedules = $debtCollectionMission->getDebtCollectionMissionPaymentSchedules();
+        if (false === $isCloseOutNetting) {
+            $missionPaymentSchedules = $debtCollectionMission->getDebtCollectionMissionPaymentSchedules();
 
-        foreach ($missionPaymentSchedules as $missionPaymentSchedule) {
-            $paymentSchedule               = $missionPaymentSchedule->getIdPaymentSchedule();
-            $remainingCommissionBySchedule = round(bcdiv($paymentSchedule->getCommission() + $paymentSchedule->getTva() - $paymentSchedule->getPaidCommissionVatIncl(), 100, 4), 2);
+            foreach ($missionPaymentSchedules as $missionPaymentSchedule) {
+                $paymentSchedule               = $missionPaymentSchedule->getIdPaymentSchedule();
+                $remainingCommissionBySchedule = round(bcdiv($paymentSchedule->getCommission() + $paymentSchedule->getTva() - $paymentSchedule->getPaidCommissionVatIncl(), 100, 4), 2);
 
-            $commissionDetails['schedule'][$missionPaymentSchedule->getIdPaymentSchedule()->getOrdre()] = $remainingCommissionBySchedule;
+                $commissionDetails['schedule'][$missionPaymentSchedule->getIdPaymentSchedule()->getOrdre()] = $remainingCommissionBySchedule;
 
-            $totalRemainingCommission = round(bcadd($totalRemainingCommission, $remainingCommissionBySchedule, 4), 2);
+                $totalRemainingCommission = round(bcadd($totalRemainingCommission, $remainingCommissionBySchedule, 4), 2);
+            }
+        } else {
+            $closeOutNettingPayment   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $debtCollectionMission->getIdProject()]);
+            $totalRemainingCommission = round(bcsub($closeOutNettingPayment->getCommissionTaxIncl(), $closeOutNettingPayment->getPaidCommissionTaxIncl(), 4), 2);
+
+            $commissionDetails['remaining_commission'] = $totalRemainingCommission;
         }
 
-        $vatTax = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
-        if (null === $vatTax) {
-            throw new \Exception('The VAT rate is not defined.');
+        if ($this->isDebtCollectionFeeDueToBorrower($debtCollectionMission->getIdProject())) {
+            $vatTax = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+            if (null === $vatTax) {
+                throw new \Exception('The VAT rate is not defined.');
+            }
+
+            $vatTaxRate = round(bcdiv($vatTax->getRate(), 100, 5), 4);
+
+            $totalFeeTaxIncl = round(bcmul($totalRemainingCommission, $debtCollectionMission->getFeesRate(), 4), 2);
+            $totalFeeVat     = round(bcmul($totalFeeTaxIncl, $vatTaxRate, 4), 2);
+
+            $commissionDetails['fee_tax_excl'] = $totalFeeTaxIncl;
+            $commissionDetails['fee_vat']      = $totalFeeVat;
+            $commissionDetails['total']        = round(bcadd($totalRemainingCommission, bcadd($totalFeeTaxIncl, $totalFeeVat, 4), 4), 2);
+        } else {
+            $commissionDetails['fee_tax_excl'] = 0;
+            $commissionDetails['fee_vat']      = 0;
+            $commissionDetails['total']        = $totalRemainingCommission;
         }
-
-        $vatTaxRate = round(bcdiv($vatTax->getRate(), 100, 5), 4);
-
-        $totalFeeTaxIncl = round(bcmul($totalRemainingCommission, $debtCollectionMission->getFeesRate(), 4), 2);
-        $totalFeeVat     = round(bcmul($totalFeeTaxIncl, $vatTaxRate, 4), 2);
-
-        $commissionDetails['fee_tax_excl'] = $totalFeeTaxIncl;
-        $commissionDetails['fee_vat']      = $totalFeeVat;
-        $commissionDetails['total']        = round(bcadd($totalRemainingCommission, bcadd($totalFeeTaxIncl, $totalFeeVat, 4), 4), 2);
 
         return $commissionDetails;
     }
@@ -356,31 +413,31 @@ class DebtCollectionMissionManager
         $projectRepaymentTaskRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask');
         $missionPaymentSchedules        = $debtCollectionMission->getDebtCollectionMissionPaymentSchedules();
 
-        foreach ($missionPaymentSchedules as $missionPaymentSchedule) {
-            /** @var ProjectRepaymentTask[] $repaymentTasks */
-            $repaymentTasks = $projectRepaymentTaskRepository->findBy([
-                'idProject' => $debtCollectionMission->getIdProject(),
-                'sequence'  => $missionPaymentSchedule->getIdPaymentSchedule()->getOrdre(),
-                'status'    => [
-                    ProjectRepaymentTask::STATUS_ERROR,
-                    ProjectRepaymentTask::STATUS_PENDING,
-                    ProjectRepaymentTask::STATUS_READY,
-                    ProjectRepaymentTask::STATUS_IN_PROGRESS,
-                ]
-            ]);
+        $isCloseOutNetting = null !== $debtCollectionMission->getIdProject()->getCloseOutNettingDate();
 
-            foreach ($repaymentTasks as $projectRepaymentTask) {
-                $this->projectRepaymentTaskManager->prepare($projectRepaymentTask);
-            }
+        $repaymentTasks = $projectRepaymentTaskRepository->findBy([
+            'idProject' => $debtCollectionMission->getIdProject(),
+            'status'    => [
+                ProjectRepaymentTask::STATUS_ERROR,
+                ProjectRepaymentTask::STATUS_PENDING,
+                ProjectRepaymentTask::STATUS_READY,
+                ProjectRepaymentTask::STATUS_IN_PROGRESS,
+            ]
+        ]);
+
+        foreach ($repaymentTasks as $projectRepaymentTask) {
+            $this->projectRepaymentTaskManager->prepare($projectRepaymentTask);
         }
 
-        $repaymentScheduleRepository      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-        $projectRepaymentDetailRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail');
+        $repaymentScheduleRepository        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $projectRepaymentDetailRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentDetail');
+        $closeOutNettingRepaymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment');
+        $loanRepository                     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
 
-        $loanDetails = [];
-        $project     = $debtCollectionMission->getIdProject();
-        $loans       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project, 'status' => Loans::STATUS_ACCEPTED]);
-        $vatTax      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+        $project                 = $debtCollectionMission->getIdProject();
+        $vatTax                  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+        $remainingAmountsByLoans = $repaymentScheduleRepository->getRemainingAmountsByLoanAndSequence($project); // for resolve the memory issue. 200 MB reduced.
+        $loanDetails             = $loanRepository->getBasicInformation($project); // for resolve the memory issue. 30 MB reduced.
 
         if (null === $vatTax) {
             throw new \Exception('The VAT rate is not defined.');
@@ -388,22 +445,43 @@ class DebtCollectionMissionManager
 
         $vatTaxRate = round(bcdiv($vatTax->getRate(), 100, 6), 4);
 
-        foreach ($loans as $loan) {
-            $loanDetails[$loan->getIdLoan()] = $this->getLoanBasicInformation($loan);
-
+        foreach ($loanDetails as $loanId => $loanDetail) {
             $totalRemainingAmount = 0;
 
-            foreach ($missionPaymentSchedules as $missionPaymentSchedule) {
-                $sequence = $missionPaymentSchedule->getIdPaymentSchedule()->getOrdre();
+            if (false === $isCloseOutNetting) {
+                foreach ($missionPaymentSchedules as $missionPaymentSchedule) {
+                    $sequence = $missionPaymentSchedule->getIdPaymentSchedule()->getOrdre();
 
-                $repaymentSchedule = $repaymentScheduleRepository->findOneBy(['idLoan' => $loan, 'ordre' => $sequence]);
-                $remainingCapital  = round(bcdiv($repaymentSchedule->getCapital() - $repaymentSchedule->getCapitalRembourse(), 100, 4), 2);
-                $remainingInterest = round(bcdiv($repaymentSchedule->getInterets() - $repaymentSchedule->getInteretsRembourses(), 100, 4), 2);
+                    $remainingCapital  = $remainingAmountsByLoans[$loanId][$sequence]['capital'];
+                    $remainingInterest = $remainingAmountsByLoans[$loanId][$sequence]['interest'];
+
+                    $pendingCapital  = 0;
+                    $pendingInterest = 0;
+
+                    $pendingAmount = $projectRepaymentDetailRepository->getPendingAmountToRepay($loanId, $sequence);
+                    if ($pendingAmount) {
+                        $pendingCapital  = $pendingAmount['capital'];
+                        $pendingInterest = $pendingAmount['interest'];
+                    }
+
+                    $remainingCapital  = round(bcsub($remainingCapital, $pendingCapital, 4), 2);
+                    $remainingInterest = round(bcsub($remainingInterest, $pendingInterest, 4), 2);
+
+                    $loanDetails[$loanId]['schedule'][$sequence]['remaining_capital']  = $remainingCapital;
+                    $loanDetails[$loanId]['schedule'][$sequence]['remaining_interest'] = $remainingInterest;
+
+                    $totalRemainingAmount = round(bcadd($totalRemainingAmount, bcadd($remainingCapital, $remainingInterest, 4), 4), 2);
+                }
+            } else {
+                $closeOutNettingRepayment = $closeOutNettingRepaymentRepository->findOneBy(['idLoan' => $loanId]);
+
+                $remainingCapital  = round(bcsub($closeOutNettingRepayment->getCapital(), $closeOutNettingRepayment->getRepaidCapital(), 4), 2);
+                $remainingInterest = round(bcsub($closeOutNettingRepayment->getInterest(), $closeOutNettingRepayment->getRepaidInterest(), 4), 2);
 
                 $pendingCapital  = 0;
                 $pendingInterest = 0;
 
-                $pendingAmount = $projectRepaymentDetailRepository->getPendingAmountToRepay($loan, $sequence);
+                $pendingAmount = $projectRepaymentDetailRepository->getPendingAmountToRepay($loanId);
                 if ($pendingAmount) {
                     $pendingCapital  = $pendingAmount['capital'];
                     $pendingInterest = $pendingAmount['interest'];
@@ -412,17 +490,24 @@ class DebtCollectionMissionManager
                 $remainingCapital  = round(bcsub($remainingCapital, $pendingCapital, 4), 2);
                 $remainingInterest = round(bcsub($remainingInterest, $pendingInterest, 4), 2);
 
-                $loanDetails[$loan->getIdLoan()]['schedule'][$sequence]['remaining_capital']  = $remainingCapital;
-                $loanDetails[$loan->getIdLoan()]['schedule'][$sequence]['remaining_interest'] = $remainingInterest;
+                $loanDetails[$loanId]['remaining_capital']  = $remainingCapital;
+                $loanDetails[$loanId]['remaining_interest'] = $remainingInterest;
 
                 $totalRemainingAmount = round(bcadd($totalRemainingAmount, bcadd($remainingCapital, $remainingInterest, 4), 4), 2);
             }
-            $feeVatExcl                                      = round(bcmul($totalRemainingAmount, $debtCollectionMission->getFeesRate(), 4), 2);
-            $feeVat                                          = round(bcmul($feeVatExcl, $vatTaxRate, 4), 2);
-            $feeOnRemainingAmountTaxIncl                     = round(bcadd($feeVatExcl, $feeVat, 4), 2);
-            $loanDetails[$loan->getIdLoan()]['fee_tax_excl'] = $feeVatExcl;
-            $loanDetails[$loan->getIdLoan()]['fee_vat']      = $feeVat;
-            $loanDetails[$loan->getIdLoan()]['total']        = round(bcadd($totalRemainingAmount, $feeOnRemainingAmountTaxIncl, 4), 2);
+
+            if ($this->isDebtCollectionFeeDueToBorrower($debtCollectionMission->getIdProject())) {
+                $feeVatExcl                           = round(bcmul($totalRemainingAmount, $debtCollectionMission->getFeesRate(), 4), 2);
+                $feeVat                               = round(bcmul($feeVatExcl, $vatTaxRate, 4), 2);
+                $feeOnRemainingAmountTaxIncl          = round(bcadd($feeVatExcl, $feeVat, 4), 2);
+                $loanDetails[$loanId]['fee_tax_excl'] = $feeVatExcl;
+                $loanDetails[$loanId]['fee_vat']      = $feeVat;
+                $loanDetails[$loanId]['total']        = round(bcadd($totalRemainingAmount, $feeOnRemainingAmountTaxIncl, 4), 2);
+            } else {
+                $loanDetails[$loanId]['fee_tax_excl'] = 0;
+                $loanDetails[$loanId]['fee_vat']      = 0;
+                $loanDetails[$loanId]['total']        = $totalRemainingAmount;
+            }
         }
 
         return $loanDetails;
@@ -471,21 +556,17 @@ class DebtCollectionMissionManager
      */
     private function getLoanFeeDetails(Receptions $wireTransferIn)
     {
-        $loanDetails = [];
-
         $operationRepository               = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $debtCollectionFeeDetailRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionFeeDetail');
-        $project                           = $wireTransferIn->getIdProject();
-        $loans                             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project, 'status' => Loans::STATUS_ACCEPTED]);
+        $loanDetails                       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getBasicInformation($wireTransferIn->getIdProject());
 
-        foreach ($loans as $loan) {
-            $loanDetails[$loan->getIdLoan()]                    = $this->getLoanBasicInformation($loan);
-            $repaidAmounts                                      = $operationRepository->getTotalRepaidAmountsByLoanAndWireTransferIn($loan, $wireTransferIn);
-            $loanDetails[$loan->getIdLoan()]['repaid_capital']  = $repaidAmounts['capital'];
-            $loanDetails[$loan->getIdLoan()]['repaid_interest'] = $repaidAmounts['interest'];
-            $feeAmounts                                         = $debtCollectionFeeDetailRepository->getAmountsByLoanAndWireTransferIn($loan, $wireTransferIn);
-            $loanDetails[$loan->getIdLoan()]['fee_tax_excl']    = round(bcsub($feeAmounts['amountTaxIncl'], $feeAmounts['vat'], 4), 2);
-            $loanDetails[$loan->getIdLoan()]['fee_vat']         = $feeAmounts['vat'];
+        foreach ($loanDetails as $loanId => $loanDetail) {
+            $repaidAmounts                           = $operationRepository->getTotalRepaidAmountsByLoanAndWireTransferIn($loanId, $wireTransferIn);
+            $loanDetails[$loanId]['repaid_capital']  = $repaidAmounts['capital'];
+            $loanDetails[$loanId]['repaid_interest'] = $repaidAmounts['interest'];
+            $feeAmounts                              = $debtCollectionFeeDetailRepository->getAmountsByLoanAndWireTransferIn($loanId, $wireTransferIn);
+            $loanDetails[$loanId]['fee_tax_excl']    = round(bcsub($feeAmounts['amountTaxIncl'], $feeAmounts['vat'], 4), 2);
+            $loanDetails[$loanId]['fee_vat']         = $feeAmounts['vat'];
         }
 
         return $loanDetails;
@@ -525,41 +606,6 @@ class DebtCollectionMissionManager
         $chargeDetails['fee_vat']      = $feeAmounts['vat'];
 
         return $chargeDetails;
-    }
-
-    /**
-     * @param Loans $loan
-     *
-     * @return array
-     */
-    private function getLoanBasicInformation(Loans $loan)
-    {
-        $companyRepository       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
-        $clientAddressRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses');
-
-        $client        = $loan->getIdLender()->getIdClient();
-        $company       = $companyRepository->findOneBy(['idClientOwner' => $client]);
-        $postalAddress = $clientAddressRepository->findOneBy(['idClient' => $client]);
-
-        $companyName = '';
-        if ($company) {
-            $companyName = $company->getName();
-        }
-
-        return [
-            'name'         => $client->getNom(),
-            'first_name'   => $client->getPrenom(),
-            'email'        => $client->getEmail(),
-            'type'         => $client->getType(),
-            'company_name' => $companyName,
-            'birthday'     => $client->getNaissance(),
-            'telephone'    => $client->getTelephone(),
-            'mobile'       => $client->getMobile(),
-            'address'      => $postalAddress->getAdresse1() . ' ' . $postalAddress->getAdresse2() . ' ' . $postalAddress->getAdresse3(),
-            'postal_code'  => $postalAddress->getCp(),
-            'city'         => $postalAddress->getVille(),
-            'amount'       => round(bcdiv($loan->getAmount(), 100, 4), 2),
-        ];
     }
 
     /**
@@ -718,50 +764,45 @@ class DebtCollectionMissionManager
             $this->entityManager->persist($newMission);
             $this->entityManager->flush($newMission);
 
-            $paymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
-
-            /** @var EcheanciersEmprunteur[] $pendingPayments */
-            $pendingPayments     = $paymentRepository->findBy(
-                [
-                    'idProject'        => $project,
-                    'statusEmprunteur' => [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]
-                ],
-                ['dateEcheanceEmprunteur' => 'ASC']
-            );
-            $yesterday           = (new \DateTime('yesterday 23:59:59'));
             $closeOutNettingDate = $project->getCloseOutNettingDate();
 
             if (null === $closeOutNettingDate) {
+                /** @var EcheanciersEmprunteur[] $pendingPayments */
+                $pendingPayments                  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findBy(
+                    [
+                        'idProject'        => $project,
+                        'statusEmprunteur' => [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]
+                    ],
+                    ['dateEcheanceEmprunteur' => 'ASC']
+                );
+                $paymentScheduleMissionCollection = new ArrayCollection();
+                $today                            = (new \DateTime())->setTime(0, 0, 0);
+
                 foreach ($pendingPayments as $key => $payment) {
-                    if ($payment->getDateEcheanceEmprunteur() <= $yesterday) {
+                    if ($payment->getDateEcheanceEmprunteur() < $today) {
                         $paymentScheduleMission = new DebtCollectionMissionPaymentSchedule();
                         $paymentScheduleMission->setIdMission($newMission)
                             ->setIdPaymentSchedule($payment)
                             ->setCapital(round(bcdiv($payment->getCapital() - $payment->getPaidCapital(), 100, 4), 2))
                             ->setInterest(round(bcdiv($payment->getInterets() - $payment->getPaidInterest(), 100, 4), 2))
                             ->setCommissionVatIncl(round(bcdiv($payment->getCommission() + $payment->getTva() - $payment->getPaidCommissionVatIncl(), 100, 4), 2));
+
                         $this->entityManager->persist($paymentScheduleMission);
                         $this->entityManager->flush($paymentScheduleMission);
 
                         $totalCapital    = round(bcadd($totalCapital, $paymentScheduleMission->getCapital(), 4), 2);
                         $totalInterest   = round(bcadd($totalInterest, $paymentScheduleMission->getInterest(), 4), 2);
                         $totalCommission = round(bcadd($totalCommission, $paymentScheduleMission->getCommissionVatIncl(), 4), 2);
-                    }
-                }
-            } else {
-                /** @todo Use information from new table that holds close out netting information */
-                $dayBefore = $closeOutNettingDate->sub((new \DateInterval('P1D')));
-                $dayBefore->setTime(23, 59, 59);
 
-                foreach ($pendingPayments as $key => $payment) {
-                    if ($payment->getDateEcheanceEmprunteur() <= $dayBefore) {
-                        $totalCapital    = bcadd($totalCapital, bcsub($payment->getCapital(), $payment->getPaidCapital(), 4), 4);
-                        $totalInterest   = bcadd($totalCapital, bcsub($payment->getInterets(), $payment->getPaidInterest(), 4), 4);
-                        $totalCommission = bcadd($totalCapital, bcsub(bcadd($payment->getCommission(), $payment->getTva(), 4), $payment->getPaidCommissionVatIncl(), 4), 4);
-                    } else {
-                        $totalCapital = bcadd($totalCapital, bcsub($payment->getCapital(), $payment->getPaidCapital(), 4), 4);
+                        $paymentScheduleMissionCollection->add($paymentScheduleMission);
                     }
                 }
+                $newMission->setDebtCollectionMissionPaymentSchedules($paymentScheduleMissionCollection);
+            } else {
+                $closeOutNettingPayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $project]);
+                $totalCapital           = round(bcsub($closeOutNettingPayment->getCapital(), $closeOutNettingPayment->getPaidCapital(), 4), 2);
+                $totalInterest          = round(bcsub($closeOutNettingPayment->getInterest(), $closeOutNettingPayment->getPaidInterest(), 4), 2);
+                $totalCommission        = round(bcsub($closeOutNettingPayment->getCommissionTaxIncl(), $closeOutNettingPayment->getPaidCommissionTaxIncl(), 4), 2);
 
             }
             $newMission->setCapital($totalCapital)

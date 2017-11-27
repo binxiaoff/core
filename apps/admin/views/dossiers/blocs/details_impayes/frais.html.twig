@@ -4,11 +4,8 @@
         <table class="table table-bordered table-hover table-header-bg">
             <thead>
             <tr>
-                <th style="width: 10%">
+                <th style="width: 20%">
                     Date
-                </th>
-                <th style="width: 10%">
-                    ID
                 </th>
                 <th style="width: 20%">
                     Type
@@ -31,15 +28,12 @@
                         {{ projectCharge.invoiceDate|localizeddate('short', 'none') }}
                     </td>
                     <td>
-                        {{ projectCharge.id }}
-                    </td>
-                    <td>
                         {{ ('project-charge-type_' ~ projectCharge.idType.label|replace('_', '-')) | trans }}
                     </td>
-                    <td>
+                    <td class="text-right">
                         {{ projectCharge.amountInclVat|localizedcurrency('EUR') }}
                     </td>
-                    <td>
+                    <td class="text-right">
                         {{ projectCharge.amountVat|localizedcurrency('EUR') }}
                     </td>
                     <td>

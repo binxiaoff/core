@@ -34,17 +34,17 @@ class CompanyStatusHistoryRepository extends EntityRepository
     }
 
     /**
-     * @param int   $companyId
+     * @param int|Companies   $company
      * @param array $companyStatusLabel
      *
      * @return null|CompanyStatusHistory
      */
-    public function findFirstHistoryByCompanyAndStatus($companyId, array $companyStatusLabel)
+    public function findFirstHistoryByCompanyAndStatus($company, array $companyStatusLabel)
     {
         $queryBuilder = $this->createQueryBuilder('csh')
             ->innerJoin('UnilendCoreBusinessBundle:CompanyStatus', 'cs', Join::WITH, 'cs.id = csh.idStatus')
             ->where('csh.idCompany = :companyId')
-            ->setParameter('companyId', $companyId)
+            ->setParameter('companyId', $company)
             ->andWhere('cs.label IN (:companyStatusLabel)')
             ->setParameter('companyStatusLabel', $companyStatusLabel, Connection::PARAM_STR_ARRAY)
             ->orderBy('csh.added', 'ASC')

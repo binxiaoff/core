@@ -5,6 +5,7 @@ use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Elements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
@@ -854,18 +855,18 @@ class pdfController extends bootstrap
 
         /** @var \clients $clients */
         $clients = $this->loadData('clients');
-        /** @var \loans $loans */
-        $loans = $this->loadData('loans');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        if (false === $loans->get($this->params[1], 'id_loan')) {
+        $loan = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($this->params[1]);
+
+        if (null === $loan) {
             header('Location: ' . $this->lurl);
             exit;
         }
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
-        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($loans->id_lender);
+        $wallet = $loan->getIdLender();
 
         if (false === $wallet->getIdClient()->isLender()) {
             header('Location: ' . $this->lurl);
@@ -874,29 +875,29 @@ class pdfController extends bootstrap
 
         $clients->get($wallet->getIdClient()->getIdClient(), 'id_client');
 
-        $filePath      = $this->path . 'protected/pdf/declaration_de_creances/' . $loans->id_project . '/';
-        $filePath      = ($loans->id_project == '1456') ? $filePath : $filePath . $clients->id_client . '/';
-        $filePath      = $filePath . 'declaration-de-creances' . '-' . $clients->hash . '-' . $loans->id_loan . '.pdf';
-        $namePdfClient = 'DECLARATION-DE-CREANCES-UNILEND-' . $clients->hash . '-' . $loans->id_loan;
+        $filePath      = $this->path . 'protected/pdf/declaration_de_creances/' . $loan->getProject()->getIdProject() . '/';
+        $filePath      = ($loan->getProject()->getIdProject() == '1456') ? $filePath : $filePath . $clients->id_client . '/';
+        $filePath      = $filePath . 'declaration-de-creances' . '-' . $clients->hash . '-' . $loan->getIdLoan() . '.pdf';
+        $namePdfClient = 'DECLARATION-DE-CREANCES-UNILEND-' . $clients->hash . '-' . $loan->getIdLoan();
 
         if (false === file_exists($filePath)) {
-            $this->GenerateClaimsHtml($clients, $loans);
+            $this->GenerateClaimsHtml($clients, $loan);
             $this->WritePdf($filePath, 'claims');
         }
 
         $this->ReadPdf($filePath, $namePdfClient);
     }
 
-    private function GenerateClaimsHtml(\clients $client, \loans $loan)
+    private function GenerateClaimsHtml(\clients $client, Loans $loan)
     {
         /** @var \loans oLoans */
-        $this->oLoans = $loan;
+        $this->loan = $loan;
         /** @var \clients clients */
         $this->clients = $client;
         /** @var \projects projects */
         $this->projects = $this->loadData('projects');
 
-        $this->projects->get($loan->id_project);
+        $this->projects->get($loan->getProject()->getIdProject());
         /** @var \pays_v2 pays */
         $this->pays = $this->loadData('pays_v2');
         /** @var \echeanciers echeanciers */
@@ -912,10 +913,9 @@ class pdfController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
-        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($this->oLoans->id_lender);
+        $wallet = $loan->getIdLender();
         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies borrowerCompany */
-        $this->borrowerCompany = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')
-            ->find($this->projects->id_company);
+        $this->borrowerCompany = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->projects->id_company);
 
         $status = [
             CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
@@ -946,60 +946,22 @@ class pdfController extends bootstrap
             $this->date            = $companyStatusHistory->getChangedOn();
             $this->mandataires_var = $companyStatusHistory->getReceiver();
 
-            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
-            if ($project->getCloseOutNettingDate() instanceof \DateTime && (new \DateTime()) > $project->getCloseOutNettingDate()) {
-                $expiration = $project->getCloseOutNettingDate();
-            } else {
-                $expiration = $this->date;
-            }
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+            $projectManager = $this->get('unilend.service.project_manager');
+
+            $creditorClaimAmounts = $projectManager->getCreditorClaimAmounts($loan);
+            $this->echu           = $creditorClaimAmounts['expired'];
+            $this->echoir         = $creditorClaimAmounts['to_expired'];
+            $this->total          = round(bcadd($creditorClaimAmounts['expired'], $creditorClaimAmounts['to_expired'], 4), 2);
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
             $companyManager   = $this->get('unilend.service.company_manager');
             $this->nature_var = $companyManager->getCompanyStatusNameByLabel($companyStatusHistory->getIdStatus()->getLabel());
 
-            /** @var \echeanciers $repaymentSchedule */
-            $repaymentSchedule = $this->loadData('echeanciers');
-            $this->echu        = $repaymentSchedule->getNonRepaidAmountInDateRange($wallet->getId(), new \DateTime($this->oLoans->added), $expiration, $this->oLoans->id_loan);
-            $this->echoir      = $repaymentSchedule->getTotalComingCapital($wallet->getId(), $this->oLoans->id_loan, $expiration);
-
-            $clients = [$wallet->getIdClient()];
-
-            if (false === empty($this->oLoans->id_transfer)) {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager $loanManager */
-                $loanManager = $this->get('unilend.service.loan_manager');
-                $clients[]   = $loanManager->getFirstOwner($this->oLoans);
-            }
-            $totalGrossDebtCollectionRepayment = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getTotalGrossDebtCollectionRepayment($this->projects->id_project, $clients);
-
-            if (0 < $totalGrossDebtCollectionRepayment) {
-
-                $loanRepository                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
-                $allLoans                          = $loanRepository->findLoansByClients($this->projects->id_project, $clients);
-                $totalLoans                        = $loanRepository->getLoansSumByClients($this->projects->id_project, $clients);
-
-                $debtCollectionGrossAmounts = [];
-                foreach ($allLoans as $loan) {
-                    $proportionDebtCollection                       = round(bcdiv(bcmul(bcdiv($loan->getAmount(), 100, 3), $totalGrossDebtCollectionRepayment, 3), $totalLoans, 3), 2);
-                    $debtCollectionGrossAmounts[$loan->getIdLoan()] = $proportionDebtCollection;
-                }
-
-                $roundDifference = round(bcsub(array_sum($debtCollectionGrossAmounts), $totalGrossDebtCollectionRepayment, 3), 2);
-
-                if (abs($roundDifference) > 0) {
-                    $maxAmountLoanId                              = array_keys($debtCollectionGrossAmounts, max($debtCollectionGrossAmounts))[0];
-                    $debtCollectionGrossAmounts[$maxAmountLoanId] = bcsub($debtCollectionGrossAmounts[$maxAmountLoanId], $roundDifference, 2);
-                }
-
-                $debtCollectionTaxIncl = $debtCollectionGrossAmounts[$this->oLoans->id_loan];
-                $this->echu            = bcsub(bcadd($this->echu, $this->echoir, 2), $debtCollectionTaxIncl, 2);
-                $this->echoir          = 0;
-            }
-
-            $this->total        = bcadd($this->echu, $this->echoir, 2);
-            $lastEcheance       = $this->echeanciers->select('id_lender = ' . $wallet->getId() . ' AND id_loan = ' . $this->oLoans->id_loan, 'ordre DESC', 0, 1);
+            $lastEcheance       = $this->echeanciers->select('id_lender = ' . $wallet->getId() . ' AND id_loan = ' . $loan->getIdLoan(), 'ordre DESC', 0, 1);
             $this->lastEcheance = date('d/m/Y', strtotime($lastEcheance[0]['date_echeance']));
 
-            $this->contract->get($this->oLoans->id_type_contract);
+            $this->contract = $loan->getIdTypeContract();
 
             $this->setDisplay('declaration_de_creances_html');
         } else {
@@ -1065,7 +1027,7 @@ class pdfController extends bootstrap
         $wallet            = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clientId, WalletType::LENDER);
         $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
-        $this->aProjectsInDebt = $this->projects->getProjectsInDebt();
+        $this->aProjectsInDebt = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getProjectsInDebt();
         $this->lSumLoans       = $this->loans->getSumLoansByProject($wallet->getId(), 'debut DESC, p.title ASC');
 
         $this->aLoansStatuses = [

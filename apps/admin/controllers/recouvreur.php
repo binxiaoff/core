@@ -1,8 +1,10 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager;
 
 class recouvreurController extends bootstrap
 {
@@ -53,10 +55,53 @@ class recouvreurController extends bootstrap
                     'address'           => $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $wallet->getIdClient()]),
                     'entrustedProjects' => $this->getEntrustedProjectData($wallet->getIdClient()),
                     'operationHistory'  => null !== $firstOperation ? $walletBalanceHistory->getDebtCollectorWalletOperations($wallet, $firstOperation->getAdded(), new \DateTime()) : [],
-                    'availableBalance'  => $wallet->getAvailableBalance()
+                    'availableBalance'  => $wallet->getAvailableBalance(),
+                    'repaymentFees'     => $this->getRepaymentsList($wallet)
                 ];
             }
             $this->render(null, $data);
+        }
+    }
+
+    public function _downloadFeesFile()
+    {
+        /** @var DebtCollectionMissionManager $debtCollectionMissionManager */
+        $debtCollectionMissionManager = $this->get('unilend.service.debt_collection_mission_manager');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
+        if (false === empty($this->params[0]) && false === empty($this->params[1])) {
+            $wireTransferId        = filter_var($this->params[0], FILTER_VALIDATE_INT);
+            $debtCollectorClientId = filter_var($this->params[1], FILTER_VALIDATE_INT);
+            if (
+                null !== ($wireTransfer = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($wireTransferId))
+                && null !== ($debtCollectorWallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $debtCollectorClientId]))
+                && WalletType::DEBT_COLLECTOR === $debtCollectorWallet->getIdType()->getLabel()
+            ) {
+                try {
+                    $fileName = 'honoraires_' . $debtCollectorWallet->getIdClient()->getNom() . '_rec-' . $wireTransfer->getIdReception() . '_' . date('d-m-Y') . '.xlsx';
+
+                    header('Content-Type: application/force-download; charset=utf-8');
+                    header('Content-Disposition: attachment;filename=' . $fileName);
+                    header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+                    header('Expires: 0');
+
+                    $excel = $debtCollectionMissionManager->generateFeeDetailsFile($wireTransfer);
+                    if ($excel instanceof \PHPExcel) {
+                        /** @var \PHPExcel_Writer_Excel2007 $writer */
+                        $writer = \PHPExcel_IOFactory::createWriter($excel, 'Excel2007');
+                        $writer->save('php://output');
+                    }
+                    die;
+                } catch (\Exception $exception) {
+                    $this->get('logger')->warning(
+                        'Could not download the fees details Excel file for wire transfer: ' . $wireTransfer->getIdReception() . ' Error: ' . $exception->getMessage(),
+                        ['file' => $exception->getFile(), 'line' => $exception->getLine()]
+                    );
+                    header('Location: ' . $this->url . '/recouvreur/details_recouvreur/' . $debtCollectorClientId);
+                    die;
+                }
+            }
         }
     }
 
@@ -76,5 +121,18 @@ class recouvreurController extends bootstrap
             'total'   => $debtCollectionMission->getCountMissionsByDebtCollector($debtCollector, true),
             'amount'  => $debtCollectionMission->getAmountMissionsByDebtCollector($debtCollector)
         ];
+    }
+
+    /**
+     * @param Wallet|integer $wallet
+     *
+     * @return array
+     */
+    private function getRepaymentsList($wallet)
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager         = $this->get('doctrine.orm.entity_manager');
+        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        return $operationRepository->getFeesPaymentOperations($wallet);
     }
 }
