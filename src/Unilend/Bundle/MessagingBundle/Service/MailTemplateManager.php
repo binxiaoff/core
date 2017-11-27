@@ -79,17 +79,18 @@ class MailTemplateManager
         }
 
         $mailTemplate = new MailTemplates();
-        $mailTemplate->setType($type);
-        $mailTemplate->setPart($part);
-        $mailTemplate->setIdHeader($header);
-        $mailTemplate->setIdFooter($footer);
-        $mailTemplate->setRecipientType($recipientType);
-        $mailTemplate->setSenderName($sender);
-        $mailTemplate->setSenderEmail($senderEmail);
-        $mailTemplate->setSubject($subject);
-        $mailTemplate->setContent($content);
-        $mailTemplate->setLocale($this->defaultLanguage);
-        $mailTemplate->setStatus(MailTemplates::STATUS_ACTIVE);
+        $mailTemplate
+            ->setType($type)
+            ->setPart($part)
+            ->setIdHeader($header)
+            ->setIdFooter($footer)
+            ->setRecipientType($recipientType)
+            ->setSenderName($sender)
+            ->setSenderEmail($senderEmail)
+            ->setSubject($subject)
+            ->setContent($content)
+            ->setLocale($this->defaultLanguage)
+            ->setStatus(MailTemplates::STATUS_ACTIVE);
 
         $this->compileTemplate($mailTemplate);
 
@@ -141,13 +142,14 @@ class MailTemplateManager
                 $mailTemplate->getPart()
             );
         } else {
-            $mailTemplate->setIdHeader($header);
-            $mailTemplate->setIdFooter($footer);
-            $mailTemplate->setRecipientType($recipientType);
-            $mailTemplate->setSenderName($sender);
-            $mailTemplate->setSenderEmail($senderEmail);
-            $mailTemplate->setSubject($subject);
-            $mailTemplate->setContent($content);
+            $mailTemplate
+                ->setIdHeader($header)
+                ->setIdFooter($footer)
+                ->setRecipientType($recipientType)
+                ->setSenderName($sender)
+                ->setSenderEmail($senderEmail)
+                ->setSubject($subject)
+                ->setContent($content);
 
             $this->compileTemplate($mailTemplate);
 

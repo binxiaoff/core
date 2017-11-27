@@ -110,10 +110,7 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                                     'fundingPercentage'          => $iDaysInterval > $iAverageFundingDuration ? 100 : round(100 - ($iAverageFundingDuration - $iDaysInterval) / $iAverageFundingDuration * 100),
                                     'borrowerServicePhoneNumber' => $sBorrowerPhoneNumber,
                                     'borrowerServicePhoneEmail'  => $sBorrowerEmail,
-                                    'amount'       => $ficelle->formatNumber($project->amount, 0),
-
-                                    'liste_pieces'  => $projectStatusHistory->content,
-                                    'delai_demande' => $iDaysInterval,
+                                    'amount'                     => $ficelle->formatNumber($project->amount, 0)
                                 ];
 
                                 if (in_array($iStatus, [\projects_status::INCOMPLETE_REQUEST, \projects_status::COMPLETE_REQUEST])) {

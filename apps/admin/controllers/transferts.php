@@ -244,7 +244,7 @@ class transfertsController extends bootstrap
                         $this->clients_gestion_mails_notif->update();
 
                         $keywords = [
-                            'firstName'        => html_entity_decode($preteurs->prenom, null, 'UTF-8'),
+                            'firstName'        => $preteurs->prenom,
                             'depositAmount'    => $this->ficelle->formatNumber($reception->getMontant() / 100),
                             'availableBalance' => $this->ficelle->formatNumber($wallet->getAvailableBalance()),
                             'lenderPattern'    => $wallet->getWireTransferPattern(),

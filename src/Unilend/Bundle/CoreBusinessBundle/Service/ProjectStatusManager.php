@@ -278,7 +278,7 @@ class ProjectStatusManager
 
         $keywords = [
             'overduePaymentsCountAndAmount' => $overdueScheduleCountAndAmount,
-            'remainingCapitalDue'           => $this->currencyFormatter->formatCurrency($remainingCapitalDue, 'EUR')
+            'owedCapitalAmount'             => $this->currencyFormatter->formatCurrency($remainingCapitalDue, 'EUR')
         ];
 
         $this->sendBorrowerEmail($project, 'emprunteur-projet-statut-recouvrement', $keywords);
@@ -412,17 +412,17 @@ class ProjectStatusManager
         $overdueRepaymentScheduleCount = $repaymentSchedule->getOverdueRepaymentCountByProject($project);
 
         if (0 === $overdueRepaymentScheduleCount) {
-            throw new \Exception('Could not send email preteur-projet-statut-recouvrement on project ' . $project->getIdProject() . '. No overdue repayment found');
+            throw new \Exception('Could not send email "preteur-projet-statut-recouvrement" on project ' . $project->getIdProject() . '. No overdue repayment found');
         }
 
         $keywords = [
-            'myLoansLink'           => $this->router->generate('lender_operations', ['_fragment' => 'loans']),
             'overdueRepaymentCount' => $this->translator->transChoice(
                 'lender-close-out-netting-email_repayments-count',
                 $overdueRepaymentScheduleCount,
                 ['%overdueScheduleRepaymentCount%' => $this->numberFormatter->format($overdueRepaymentScheduleCount)]
             )
         ];
+
         $this->sendLenderNotifications($project, Notifications::TYPE_PROJECT_RECOVERY, 'preteur-projet-statut-recouvrement', 'preteur-projet-statut-recouvrement', $keywords);
     }
 

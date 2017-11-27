@@ -380,7 +380,7 @@ class SponsorshipManager
             $message->setTo($email);
             $this->mailer->send($message);
         } catch (\Exception $exception) {
-            $this->logger->warning('Could not send email:  - Exception: ' . $exception->getMessage(), [
+            $this->logger->warning('Could not send email "parrainage-invitation-filleul"  - Exception: ' . $exception->getMessage(), [
                 'id_mail_template' => $message->getTemplateId(),
                 'id_client'        => $sponsor->getIdClient(),
                 'class'            => __CLASS__,
@@ -408,7 +408,7 @@ class SponsorshipManager
             $message->setTo($sponsorship->getIdClientSponsor()->getEmail());
             $this->mailer->send($message);
         } catch (\Exception $exception) {
-            $this->logger->warning('Could not send email: parrainage-confirmation-validation-filleul - Exception: ' . $exception->getMessage(), [
+            $this->logger->warning('Could not send email "parrainage-confirmation-validation-filleul" - Exception: ' . $exception->getMessage(), [
                 'id_mail_template' => $message->getTemplateId(),
                 'id_client'        => $sponsorship->getIdClientSponsor()->getIdClient(),
                 'class'            => __CLASS__,

@@ -416,7 +416,7 @@ class dossiersController extends bootstrap
                             $wallet   = $loan->getIdLender();
                             $keywords = [
                                 'firstName'         => $wallet->getIdClient()->getPrenom(),
-                                'bidAmount'         => $this->ficelle->formatNumber($loan->getAmount() / 100, 0),
+                                'loanAmount'        => $this->ficelle->formatNumber($loan->getAmount() / 100, 0),
                                 'companyName'       => $this->companies->name,
                                 'otherLendersCount' => $lendersCount - 1,
                                 'lenderPattern'     => $wallet->getWireTransferPattern()
