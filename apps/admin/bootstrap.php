@@ -249,7 +249,7 @@ class bootstrap extends Controller
                     'uri'   => 'remboursement/validation'
                 ],
                 [
-                    'title' => 'Liste des recouvreurs',
+                    'title' => 'Recouvreurs',
                     'uri'   => 'recouvreur/liste',
                     'zone'  => Zones::ZONE_LABEL_DEBT_COLLECTOR
                 ],
