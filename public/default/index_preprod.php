@@ -12,8 +12,6 @@ include __DIR__ . '/../../core/controller.class.php';
 include __DIR__ . '/../../core/command.class.php';
 require_once __DIR__ . '/../../app/AppKernel.php';
 
-error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE & ~E_WARNING);
-ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
 setlocale(LC_TIME, 'fr_FR.utf8');
