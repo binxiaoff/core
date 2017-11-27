@@ -154,20 +154,26 @@ class pdfController extends bootstrap
         ) {
             $proxy                      = $this->commonProxy();
             $mandate                    = $this->commonMandate();
-            $beneficialOwnerDeclaration = $this->get('unilend.service.beneficial_owner_manager')->createProjectBeneficialOwnerDeclaration($this->projects, $this->pdfClient);
 
-            if ('read' === $proxy['action'] && 'read' === $mandate['action'] && 'read' === $beneficialOwnerDeclaration['action']) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager $beneficialOwnerManager */
+            $beneficialOwnerManager                 = $this->get('unilend.service.beneficial_owner_manager');
+            $projectNeedsBeneficialOwnerDeclaration = $beneficialOwnerManager->projectNeedsBeneficialOwnerDeclaration($this->projects);
+            if ($projectNeedsBeneficialOwnerDeclaration) {
+                $beneficialOwnerDeclaration = $beneficialOwnerManager->createProjectBeneficialOwnerDeclaration($this->projects, $this->pdfClient);
+            }
+
+            if ('read' === $proxy['action'] && 'read' === $mandate['action'] && ($projectNeedsBeneficialOwnerDeclaration && 'read' === $beneficialOwnerDeclaration['action'])) {
                 /** @var \Symfony\Component\Routing\RouterInterface $router */
                 $router = $this->get('router');
                 header('Location: ' . $router->generate('universign_signature_status', ['signatureType' => \Unilend\Bundle\FrontBundle\Controller\UniversignController::SIGNATURE_TYPE_PROJECT, 'signatureId' => $this->projects->id_project, 'clientHash' => $this->pdfClient->hash]));
                 exit;
             } elseif (
-                'redirect' === $proxy['action'] && 'redirect' === $mandate['action'] && 'redirect' === $beneficialOwnerDeclaration['action']
-                && $proxy['url'] === $mandate['url'] && $proxy['url'] === $beneficialOwnerDeclaration['url']
+                'redirect' === $proxy['action'] && 'redirect' === $mandate['action'] && ($projectNeedsBeneficialOwnerDeclaration && 'redirect' === $beneficialOwnerDeclaration['action'])
+                && $proxy['url'] === $mandate['url'] && ($projectNeedsBeneficialOwnerDeclaration && $proxy['url'] === $beneficialOwnerDeclaration['url'])
             ) {
                 header('Location: ' . $proxy['url']);
                 exit;
-            } elseif ('sign' === $proxy['action'] || 'sign' === $mandate['action'] || 'sign' === $beneficialOwnerDeclaration['action']) {
+            } elseif ('sign' === $proxy['action'] || 'sign' === $mandate['action'] || ($projectNeedsBeneficialOwnerDeclaration && 'sign' === $beneficialOwnerDeclaration['action'])) {
                 /** @var \Symfony\Component\Routing\RouterInterface $router */
                 $router = $this->get('router');
                 header('Location: ' . $router->generate('universign_project_generation', ['projectId' => $this->projects->id_project]));
