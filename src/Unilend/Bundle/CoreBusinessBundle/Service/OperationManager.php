@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CloseOutNettingRepayment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
@@ -131,6 +132,8 @@ class OperationManager
                 }
                 if ($item instanceof ProjectRepaymentTaskLog) {
                     $operation->setIdRepaymentTaskLog($item);
+                    $operation->setProject($item->getIdTask()->getIdProject());
+                    $operation->setWireTransferIn($item->getIdTask()->getIdWireTransferIn());
                 }
                 if ($item instanceof Operation) {
                     $operation->setProject($item->getProject())
@@ -436,7 +439,7 @@ class OperationManager
         $borrowerClientId = $loan->getProject()->getIdCompany()->getIdClientOwner();
         $borrowerWallet   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($borrowerClientId, WalletType::BORROWER);
 
-        $this->repaymentGeneric($borrowerWallet, $lenderWallet, $amountCapital, $amountInterestGross, null, [$repaymentSchedule, $projectRepaymentTaskLog]);
+        $this->repaymentGeneric($borrowerWallet, $lenderWallet, $amountCapital, $amountInterestGross, null, null, [$repaymentSchedule, $projectRepaymentTaskLog]);
     }
 
     /**
@@ -498,13 +501,21 @@ class OperationManager
     }
 
     /**
-     * @param EcheanciersEmprunteur   $paymentSchedule
      * @param ProjectRepaymentTaskLog $projectRepaymentTaskLog
      */
-    public function repaymentCommission(EcheanciersEmprunteur $paymentSchedule, ProjectRepaymentTaskLog $projectRepaymentTaskLog)
+    public function repaymentCommission(ProjectRepaymentTaskLog $projectRepaymentTaskLog)
     {
-        $borrowerWallet    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($paymentSchedule->getIdProject()->getIdCompany()->getIdClientOwner(),
-            WalletType::BORROWER);
+        $payment = null;
+        if ($projectRepaymentTaskLog->getIdTask()->getSequence()) {
+            $payment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy([
+                'idProject' => $projectRepaymentTaskLog->getIdTask()->getIdProject(),
+                'ordre'     => $projectRepaymentTaskLog->getIdTask()->getSequence()
+            ]);
+        }
+
+        $project        = $projectRepaymentTaskLog->getIdTask()->getIdProject();
+        $borrowerWallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+
         $unilendWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND]);
         $unilendWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendWalletType]);
 
@@ -512,7 +523,7 @@ class OperationManager
         $operationSubType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::BORROWER_COMMISSION_REPAYMENT]);
 
         $this->newOperation($projectRepaymentTaskLog->getIdTask()->getCommissionUnilend(), $operationType, $operationSubType, $borrowerWallet, $unilendWallet,
-            [$paymentSchedule, $projectRepaymentTaskLog]);
+            [$payment, $projectRepaymentTaskLog]);
     }
 
     /**
@@ -531,7 +542,7 @@ class OperationManager
         $lenderWallet       = $loan->getIdLender();
         $operationSubType   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_EARLY]);
 
-        $this->repaymentGeneric($borrowerWallet, $lenderWallet, $outstandingCapital, 0, $operationSubType, [$loan, $projectRepaymentTaskLog]);
+        $this->repaymentGeneric($borrowerWallet, $lenderWallet, $outstandingCapital, 0, $operationSubType, null, [$loan, $projectRepaymentTaskLog]);
 
         return $outstandingCapital;
     }
@@ -681,7 +692,26 @@ class OperationManager
         }
         $operationSubType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION]);
 
-        return $this->repaymentGeneric($borrower, $lender, $amount, 0, $operationSubType, [$project, $projectRepaymentTaskLog]);
+        return $this->repaymentGeneric($borrower, $lender, $amount, 0, $operationSubType, null, [$project, $projectRepaymentTaskLog]);
+    }
+
+    /**
+     * @param float                    $capital
+     * @param float                    $interest
+     * @param CloseOutNettingRepayment $closeOutNettingRepayment
+     * @param ProjectRepaymentTaskLog  $projectRepaymentTaskLog
+     *
+     * @return bool
+     */
+    public function closeOutNettingRepayment($capital, $interest, CloseOutNettingRepayment $closeOutNettingRepayment, ProjectRepaymentTaskLog $projectRepaymentTaskLog)
+    {
+        $project         = $projectRepaymentTaskLog->getIdTask()->getIdProject();
+        $borrower        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+        $lender          = $closeOutNettingRepayment->getIdLoan()->getIdLender();
+        $capitalSubType  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION]);
+        $interestSubType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::GROSS_INTEREST_REPAYMENT_DEBT_COLLECTION]);
+
+        return $this->repaymentGeneric($borrower, $lender, $capital, $interest, $capitalSubType, $interestSubType, [$project, $closeOutNettingRepayment->getIdLoan(), $projectRepaymentTaskLog]);
     }
 
     /**
@@ -689,12 +719,21 @@ class OperationManager
      * @param Wallet           $lender
      * @param                  $capital
      * @param                  $interest
-     * @param OperationSubType $operationSubType
+     * @param OperationSubType $capitalOperationSubType
+     * @param OperationSubType $interestOperationSubType
      * @param array|object     $origins
      *
      * @return bool
      */
-    private function repaymentGeneric(Wallet $borrower, Wallet $lender, $capital, $interest, OperationSubType $operationSubType = null, $origins = [])
+    private function repaymentGeneric(
+        Wallet $borrower,
+        Wallet $lender,
+        $capital,
+        $interest,
+        OperationSubType $capitalOperationSubType = null,
+        OperationSubType $interestOperationSubType = null,
+        $origins = []
+    )
     {
         if ($borrower->getIdType()->getLabel() !== WalletType::BORROWER) {
             return false;
@@ -709,12 +748,12 @@ class OperationManager
 
         if ($capital > 0) {
             $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::CAPITAL_REPAYMENT]);
-            $this->newOperation($capital, $operationType, $operationSubType, $borrower, $lender, $origins);
+            $this->newOperation($capital, $operationType, $capitalOperationSubType, $borrower, $lender, $origins);
         }
 
         if ($interest > 0) {
             $operationType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::GROSS_INTEREST_REPAYMENT]);
-            $this->newOperation($interest, $operationType, $operationSubType, $borrower, $lender, $origins);
+            $this->newOperation($interest, $operationType, $interestOperationSubType, $borrower, $lender, $origins);
             $loan = null;
             foreach ($origins as $item) {
                 if ($item instanceof Echeanciers) {

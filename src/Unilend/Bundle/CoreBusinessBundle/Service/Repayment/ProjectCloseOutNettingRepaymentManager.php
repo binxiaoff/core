@@ -4,19 +4,15 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentDetail;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionFeeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\OperationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectChargeManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
-class ProjectRepaymentManager
+class ProjectCloseOutNettingRepaymentManager
 {
     /** @var EntityManager */
     private $entityManager;
@@ -27,17 +23,11 @@ class ProjectRepaymentManager
     /** @var LoggerInterface */
     private $logger;
 
-    /** @var ProjectManager */
-    private $projectManager;
-
     /** @var ProjectRepaymentTaskManager */
     private $projectRepaymentTaskManager;
 
     /** @var ProjectRepaymentNotificationSender */
     private $projectRepaymentNotificationSender;
-
-    /** @var EntityManagerSimulator */
-    private $entityManagerSimulator;
 
     /** @var ProjectChargeManager */
     private $projectChargeManager;
@@ -49,9 +39,7 @@ class ProjectRepaymentManager
      * ProjectRepaymentManager constructor.
      *
      * @param EntityManager                      $entityManager
-     * @param EntityManagerSimulator             $entityManagerSimulator
      * @param OperationManager                   $operationManager
-     * @param ProjectManager                     $projectManager
      * @param ProjectRepaymentTaskManager        $projectRepaymentTaskManager
      * @param ProjectRepaymentNotificationSender $projectRepaymentNotificationSender
      * @param ProjectChargeManager               $projectChargeManager
@@ -60,9 +48,7 @@ class ProjectRepaymentManager
      */
     public function __construct(
         EntityManager $entityManager,
-        EntityManagerSimulator $entityManagerSimulator,
         OperationManager $operationManager,
-        ProjectManager $projectManager,
         ProjectRepaymentTaskManager $projectRepaymentTaskManager,
         ProjectRepaymentNotificationSender $projectRepaymentNotificationSender,
         ProjectChargeManager $projectChargeManager,
@@ -71,10 +57,8 @@ class ProjectRepaymentManager
     )
     {
         $this->entityManager                      = $entityManager;
-        $this->entityManagerSimulator             = $entityManagerSimulator;
         $this->operationManager                   = $operationManager;
         $this->logger                             = $logger;
-        $this->projectManager                     = $projectManager;
         $this->projectRepaymentTaskManager        = $projectRepaymentTaskManager;
         $this->projectRepaymentNotificationSender = $projectRepaymentNotificationSender;
         $this->projectChargeManager               = $projectChargeManager;
@@ -85,14 +69,13 @@ class ProjectRepaymentManager
      * Repay completely or partially a repayment schedule with or without debt collection fee.
      *
      * @param ProjectRepaymentTask $projectRepaymentTask
-     * @param int                  $userId
      *
      * @return ProjectRepaymentTaskLog|null
      * @throws \Exception
      */
-    public function repay(ProjectRepaymentTask $projectRepaymentTask, $userId = Users::USER_ID_CRON)
+    public function repay(ProjectRepaymentTask $projectRepaymentTask)
     {
-        if (false === in_array($projectRepaymentTask->getType(), [ProjectRepaymentTask::TYPE_REGULAR, ProjectRepaymentTask::TYPE_LATE])) {
+        if (ProjectRepaymentTask::TYPE_CLOSE_OUT_NETTING !== $projectRepaymentTask->getType()) {
             $this->logger->warning(
                 'The project repayment task (id: ' . $projectRepaymentTask->getId() . ') is not a regular or late repayment.',
                 ['method' => __METHOD__]
@@ -133,24 +116,6 @@ class ProjectRepaymentManager
             throw $exception;
         }
 
-        if ($this->projectRepaymentTaskManager->isCompleteRepayment($projectRepaymentTask)) {
-            $paymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy([
-                'idProject' => $projectRepaymentTask->getIdProject(),
-                'ordre'     => $projectRepaymentTask->getSequence()
-            ]);
-
-            $this->projectRepaymentNotificationSender->sendPaymentScheduleInvoiceToBorrower($paymentSchedule);
-        }
-
-        // Send "end of repayment" notifications
-        $pendingRepaymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')
-            ->findByProject($projectRepaymentTask->getIdProject(), null, null, [Echeanciers::STATUS_PENDING, Echeanciers::STATUS_PARTIALLY_REPAID], null, null, 0, 1);
-        if (0 === count($pendingRepaymentSchedule)) {
-            $this->projectManager->addProjectStatus($userId, ProjectsStatus::REMBOURSE, $projectRepaymentTask->getIdProject());
-            $this->projectRepaymentNotificationSender->sendInternalNotificationEndOfRepayment($projectRepaymentTask->getIdProject());
-            $this->projectRepaymentNotificationSender->sendClientNotificationEndOfRepayment($projectRepaymentTask->getIdProject());
-        }
-
         return $projectRepaymentTaskLog;
     }
 
@@ -178,6 +143,8 @@ class ProjectRepaymentManager
             'status' => ProjectRepaymentDetail::STATUS_PENDING
         ]);
 
+        $closeOutNettingRepaymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment');
+
         foreach ($projectRepaymentDetails as $projectRepaymentDetail) {
             if ($projectRepaymentDetail->getCapital() == 0 && $projectRepaymentDetail->getInterest() == 0) {
                 $projectRepaymentDetail->setStatus(ProjectRepaymentDetail::STATUS_TREATED)
@@ -190,27 +157,18 @@ class ProjectRepaymentManager
 
             $this->entityManager->getConnection()->beginTransaction();
             try {
-                /** @var Echeanciers $repaymentSchedule */
-                $repaymentSchedule = $projectRepaymentDetail->getIdRepaymentSchedule();
-                if (null === $repaymentSchedule) {
-                    throw new \Exception('Cannot found repayment schedule for project (id: ' . $project->getIdProject() . '), sequence ' . $repaymentSequence
-                        . ' and client (id: ' . $projectRepaymentDetail->getIdLoan()->getIdLender()->getIdClient() . ')');
+                $closeOutNettingRepayment = $closeOutNettingRepaymentRepository->findOneBy(['idLoan' => $projectRepaymentDetail->getIdLoan()]);
+                if (null === $closeOutNettingRepayment) {
+                    throw new \Exception('Cannot found close out netting repayment for loan (id: ' . $projectRepaymentDetail->getIdLoan()->getIdLoan() .
+                        ') of repayment detail (id: ' . $projectRepaymentDetail->getId() . ')');
                 }
 
-                $this->operationManager->repayment($projectRepaymentDetail->getCapital(), $projectRepaymentDetail->getInterest(), $repaymentSchedule, $projectRepaymentTaskLog);
+                $this->operationManager->closeOutNettingRepayment($projectRepaymentDetail->getCapital(), $projectRepaymentDetail->getInterest(), $closeOutNettingRepayment, $projectRepaymentTaskLog);
 
-                $repaidCapitalInCents  = $repaymentSchedule->getCapitalRembourse() + bcmul($projectRepaymentDetail->getCapital(), 100);
-                $repaidInterestInCents = $repaymentSchedule->getInteretsRembourses() + bcmul($projectRepaymentDetail->getInterest(), 100);
+                $repaidCapital  = round(bcadd($closeOutNettingRepayment->getRepaidCapital(), $projectRepaymentDetail->getCapital(), 4), 2);
+                $repaidInterest = round(bcadd($closeOutNettingRepayment->getRepaidInterest(), $projectRepaymentDetail->getInterest(), 4), 2);
 
-                $repaymentSchedule->setCapitalRembourse($repaidCapitalInCents)
-                    ->setInteretsRembourses($repaidInterestInCents);
-
-                if ($repaymentSchedule->getCapital() === $repaymentSchedule->getCapitalRembourse() && $repaymentSchedule->getInterets() === $repaymentSchedule->getInteretsRembourses()) {
-                    $repaymentSchedule->setStatus(Echeanciers::STATUS_REPAID)
-                        ->setDateEcheanceReel(new \DateTime());
-                } else {
-                    $repaymentSchedule->setStatus(Echeanciers::STATUS_PARTIALLY_REPAID);
-                }
+                $closeOutNettingRepayment->setRepaidCapital($repaidCapital)->setRepaidInterest($repaidInterest);
 
                 $projectRepaymentDetail->setStatus(ProjectRepaymentDetail::STATUS_TREATED)
                     ->setIdTaskLog($projectRepaymentTaskLog);
@@ -218,7 +176,7 @@ class ProjectRepaymentManager
                 $repaidLoanNb++;
                 $repaidAmount = round(bcadd($repaidAmount, bcadd($projectRepaymentDetail->getCapital(), $projectRepaymentDetail->getInterest(), 4), 4), 2);
 
-                $this->entityManager->flush([$repaymentSchedule, $projectRepaymentDetail]);
+                $this->entityManager->flush([$closeOutNettingRepayment, $projectRepaymentDetail]);
 
                 $this->entityManager->commit();
             } catch (\Exception $exception) {

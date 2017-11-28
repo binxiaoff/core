@@ -108,6 +108,13 @@ class ProjectCharge
     private $idMission;
 
     /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="repayment_date", type="datetime", nullable=true)
+     */
+    private $repaymentDate;
+
+    /**
      * @return int
      */
     public function getStatus()
@@ -338,6 +345,29 @@ class ProjectCharge
     {
         $this->idMission = $idMission;
 
+        return $this;
+    }
+
+    /**
+     * Get repaymentDate
+     *
+     * @return \DateTime
+     */
+    public function getRepaymentDate()
+    {
+        return $this->repaymentDate;
+    }
+
+    /**
+     * Set repaymentDate
+     *
+     * @param \DateTime $repaymentDate
+     *
+     * @return ProjectCharge
+     */
+    public function setRepaymentDate(\DateTime $repaymentDate = null)
+    {
+        $this->repaymentDate = $repaymentDate;
         return $this;
     }
 }

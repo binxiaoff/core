@@ -56,7 +56,7 @@ class ProjectsRepository extends EntityRepository
         $rsm = new ResultSetMappingBuilder($this->getEntityManager());
         $rsm->addRootEntityFromClassMetadata('UnilendCoreBusinessBundle:Projects', 'p');
 
-        $sql = 'SELECT p.*, MIN(psh.added) as release_date, p.amount - ROUND(i.montant_ttc / 100, 2) - IF(f.release_funds IS NULL, 0, f.release_funds ) as rest_funds
+        $sql = 'SELECT p.*, MIN(psh.added) AS release_date, p.amount - ROUND(i.montant_ttc / 100, 2) - IF(f.release_funds IS NULL, 0, f.release_funds ) AS rest_funds
                 FROM projects p
                   INNER JOIN projects_status_history psh ON psh.id_project = p.id_project
                   INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
@@ -199,7 +199,7 @@ class ProjectsRepository extends EntityRepository
             ];
         }
 
-        $binds = [
+        $binds     = [
             'startPeriod'   => $datePeriod->getStartDate()->format('Y-m'),
             'projectStatus' => $projectStatus
         ];
@@ -207,7 +207,7 @@ class ProjectsRepository extends EntityRepository
             'startPeriod'   => PDO::PARAM_STR,
             'projectStatus' => PDO::PARAM_INT
         ];
-        $query = '
+        $query     = '
             SELECT COUNT(*) AS count,
                 IFNULL(SUM(p.amount), 0) AS sum,
                 LEFT(history.transition, 7) AS month
@@ -221,8 +221,8 @@ class ProjectsRepository extends EntityRepository
             WHERE history.transition > :startPeriod';
 
         if (null !== $companies) {
-            $query .= ' AND id_company_submitter IN (:companies)';
-            $binds['companies'] = array_map(function(Companies $company) {
+            $query                  .= ' AND id_company_submitter IN (:companies)';
+            $binds['companies']     = array_map(function (Companies $company) {
                 return $company->getIdCompany();
             }, $companies);
             $bindTypes['companies'] = Connection::PARAM_INT_ARRAY;
@@ -366,14 +366,14 @@ class ProjectsRepository extends EntityRepository
 
         $result = $this->getEntityManager()->getConnection()
             ->executeQuery($query, [
-            'status' => $status,
-            'start'  => $start->format('Y-m-d H:i:s'),
-            'end'    => $end->format('Y-m-d H:i:s')
-        ], [
-            'status' => Connection::PARAM_INT_ARRAY,
-            'start'  => PDO::PARAM_STR,
-            'end'    => PDO::PARAM_STR
-        ])->fetchAll();
+                'status' => $status,
+                'start'  => $start->format('Y-m-d H:i:s'),
+                'end'    => $end->format('Y-m-d H:i:s')
+            ], [
+                'status' => Connection::PARAM_INT_ARRAY,
+                'start'  => PDO::PARAM_STR,
+                'end'    => PDO::PARAM_STR
+            ])->fetchAll();
 
         return $result;
     }
@@ -1057,5 +1057,20 @@ class ProjectsRepository extends EntityRepository
         $statement->closeCursor();
 
         return $result;
+    }
+
+    /**
+     * @return array
+     */
+    public function getProjectsInDebt()
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+        $queryBuilder->select('p.idProject')
+            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'c.idCompany = p.idCompany')
+            ->innerJoin('UnilendCoreBusinessBundle:CompanyStatus', 'cs', Join::WITH, 'c.idStatus = cs.id')
+            ->where('cs.label in (:problemStatus)')
+            ->setParameter('problemStatus', [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION]);
+
+        return array_column($queryBuilder->getQuery()->getArrayResult(), 'idProject');
     }
 }
