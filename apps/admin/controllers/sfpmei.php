@@ -232,7 +232,7 @@ class sfpmeiController extends bootstrap
                 $this->runningBids              = $this->bids->select('id_lender_account = ' . $this->wallet->getId() . ' AND status = ' . Bids::STATUS_BID_PENDING, 'added DESC');
                 $this->hasTransferredLoans      = $this->get('unilend.service.lender_manager')->hasTransferredLoans($this->wallet->getIdClient());
                 $this->lenderLoans              = $this->loans->getSumLoansByProject($this->wallet->getId());
-                $this->projectsInDebt           = $this->projects->getProjectsInDebt();
+                $this->projectsInDebt           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getProjectsInDebt();
                 break;
             case 'bids_csv':
                 $this->hideDecoration();

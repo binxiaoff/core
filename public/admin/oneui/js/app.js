@@ -1035,7 +1035,6 @@ var App = function() {
             if (~(self.actions.indexOf('add')) || ~(self.actions.indexOf('create'))) {
                 self.$wrapper.find('.col-sm-6:eq(0)').append('<a role="button" class="btn btn-default add-btn"><span class="fa fa-plus"></span> Ajouter</a>')
             }
-            self.$wrapper.prepend('<div class="messages" />')
             // Append Modal
             $('body').append(self.modal())
             self.$modal = $('#modal-editor-' + self.randomModalId)
@@ -1113,7 +1112,7 @@ var App = function() {
                 var type          = field.type
                 var required      = (field.required === true) ? ' required' : ''
                 var requiredLabel = (field.required === true) ? '' : ' <span class="optional">(facultatif)</span>'
-                var value         = (typeof field.value === 'undefined') ? '' : field.value
+                var value         = (typeof field.value === 'undefined') ? '' : field.value.trim()
                 var options       = field.options
 
                 if (!field.disabled) {
@@ -1139,21 +1138,22 @@ var App = function() {
                             html += '<br>'
                         for (var $l = 0; $l < options.length; $l++) {
                             var option = options[$l]
-                            var choice
+                            var optionText = option.text.trim()
+                        var choice
                             if (type === 'radio') {
-                                choice = (value === option.text) ? 'checked' : ''
+                                choice = (value === optionText) ? 'checked' : ''
                                 html += '<label class="css-input css-radio css-radio-sm css-radio-default push-10-r">' +
                                     '<input type="radio"  name="' + name + '" value="' + option.id + '" ' + choice + ' class="' + required + '">' +
-                                    '<span></span> ' + option.text +
+                                    '<span></span> ' + optionText +
                                     '</label>'
                             } else if (type === 'select') {
-                                choice = (value === option.text) ? 'selected' : ''
-                                html += '<option value="' + option.id + '" ' + choice + '>' + option.text + '</option>'
+                                choice = (value === optionText) ? 'selected' : ''
+                                html += '<option value="' + option.id + '" ' + choice + '>' + optionText + '</option>'
                             } else if (type === 'checkbox') {
-                                choice = (~(value.indexOf(option.text))) ? 'checked' : ''
+                                choice = (~(value.indexOf(optionText))) ? 'checked' : ''
                                 html += '<label class="css-input css-checkbox css-checkbox-sm css-checkbox-default push-10-r">' +
                                     '<input type="checkbox"  name="' + name + '[]" value="' + option.id + '" ' + choice + ' class="' + required + '">' +
-                                    '<span></span> ' + option.text +
+                                    '<span></span> ' + optionText +
                                     '</label>'
                             }
                         }
@@ -1229,8 +1229,10 @@ var App = function() {
                 '<form class="modal-dialog validate" action="' + self.submitUrl + '" method="post" enctype="multipart/form-data">' +
                     '<div class="modal-content">' +
                         '<div class="block block-bordered remove-margin-b">' +
-                            '<div class="block-header"><h3 class="block-title"></h3></div>' +
-                            '<div class="block-content">' + self.form() + '</div>' +
+                            '<div class="block-header">' +
+                                '<h3 class="block-title"></h3>' +
+                            '</div>' +
+                            '<div class="block-content"></div>' +
                         '</div>' +
                         '<div class="modal-footer">' +
                             '<button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>' +
@@ -1294,10 +1296,9 @@ var App = function() {
                 content += '<input type="hidden" name="action">'
                 hiddenAction = 'delete'
             }
-            self.$modal.find('.block').removeClass('block-opt-refresh')
             self.$modal.find('.has-error').removeClass('has-error')
             self.$modal.find('.block-title').html(title)
-            self.$modal.find('.block-content').html(content)
+            self.$modal.find('.block-content').html('<div class="messages"></div>' + content)
             self.$modal.find('input[name=id]').val(hiddenId)
             self.$modal.find('input[name=action]').val(hiddenAction)
             self.$modal.modal('show')
@@ -1307,6 +1308,7 @@ var App = function() {
             var $form = self.$modal.find('form')
             if (!$form.find('.has-error').length) {
                 self.$modal.find('.block').addClass('block-opt-refresh')
+                self.$modal.find('[type=submit]').prop('disabled', true)
                 $.ajax({
                     url: $form.attr('action'),
                     type: 'POST',
@@ -1318,15 +1320,17 @@ var App = function() {
                     success: function(response) {
                         if (response.success) {
                             self.update(response.id, response.data)
+                            self.$modal.modal('hide')
                         } else {
-                            var errors = '<div class="alert alert-error">'
-                            $.each(response.error, function(i, val){
-                                errors += '<p>' + val + '</p>'
-                            })
-                            errors += '</div>'
-                            self.$wrapper.find('.messages').html(errors)
+                           self.errors(self.$modal.find('.messages'), response.error)
                         }
-                        self.$modal.modal('hide')
+                    },
+                    error: function() {
+                        self.errors(self.$modal.find('.messages'), 'Une erreur s\'est produite')
+                    },
+                    complete: function() {
+                        self.$modal.find('.block').removeClass('block-opt-refresh')
+                        self.$modal.find('[type=submit]').prop('disabled', false)
                     }
                 })
             }
@@ -1438,6 +1442,18 @@ var App = function() {
             $tr.addClass('animated flash-bg')
             setTimeout(function() {$tr.removeClass('animated flash-bg')}, self.delay)
         }
+        DT.prototype.errors = function($target, errors) {
+            if ($.isArray(errors)) {
+                var html = '<div class="alert">'
+                $.each(errors, function(i, val){
+                    html += '<p>' + val + '</p>'
+                })
+                html += '</div>'
+                $target.html(html)
+            } else {
+                $target.html('<div class="alert">' + errors + '</div>')
+            }
+        }
         DT.prototype.events = function() {
             var self = this
             self.$wrapper.on('click', '.add-btn', function(){
@@ -1470,7 +1486,7 @@ var App = function() {
                 // MODAL OPEN CALLBACK
                 if (typeof self.options !== 'undefined') {
                     if (self.options.modal)
-                        self.options.modal()
+                        self.options.modal(self.$modal)
                 }
             })
             uiHelperFormValidate() // Call validation
@@ -1501,7 +1517,6 @@ var App = function() {
                 var file = this.files[0];
                 if (file.size > 5*1024) {
                     $input.closest('form-group').addClass('has-error').append('<p class="text-danger">Taille max 5 Mo.</p>')
-
                 } else {
                     $input.closest('form-group').removeClass('has-error').find('.text-danger').remove()
                 }
@@ -2123,7 +2138,7 @@ var App = function() {
                 var $input = $(this)
                 removeErrorUi($input)
                 if ($input.is('.required')) {
-                    if ($input.is('input[type=text]') || $input.is('input[type=number]') || $input.is('input[type=email]') || $input.is('textarea') || $input.is('input[type=password]')) {
+                    if ($input.is('input[type=text]') || $input.is('input[type=number]') || $input.is('input[type=email]') || $input.is('textarea') || $input.is('input[type=password]') || $input.is('input[type=file]')) {
                         var attrName = $(this).attr('name');
                         if (!$input.val() || $input.val() === '') {
                             if (!$input.val() || $input.val() === '') {

@@ -155,21 +155,48 @@ class ReceptionsRepository extends EntityRepository
     }
 
     /**
-     * Get al receipts that didn't have a repayment task yet
+     * Get all wire transfer in flux that didn't have a repayment task yet
      *
-     * @param Projects $project
+     * @param Projects|int $project
      *
-     * @return array
+     * @return Receptions[]
      */
-    public function getPendingReceipt(Projects $project)
+    public function findPendingWireTransferIn($project)
+    {
+        return $this->buildPendingWireTransferInQuery($project)->getQuery()->getResult();
+    }
+
+    /**
+     * @param Projects|int $project
+     *
+     * @return float
+     */
+    public function getTotalPendingWireTransferIn($project)
+    {
+        $queryBuilder = $this->buildPendingWireTransferInQuery($project);
+
+        $queryBuilder->select('ROUND(SUM(IFNULL(r.montant, 0))/100, 2)');
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Projects|int $project
+     *
+     * @return \Doctrine\ORM\QueryBuilder
+     */
+    private function buildPendingWireTransferInQuery($project)
     {
         $qbRejected = $this->createQueryBuilder('r_rejected')
             ->select('r_rejected.idReception')
             ->where('r_rejected.idReceptionRejected = r.idReception');
 
+        $qbTreatedReception = $this->createQueryBuilder('r_treated')
+            ->select('IDENTITY(prt.idWireTransferIn)')
+            ->from('UnilendCoreBusinessBundle:ProjectRepaymentTask', 'prt')
+            ->where('prt.idProject = :projectId')
+            ->andWhere('prt.status != :cancelled');
+
         $queryBuilder = $this->createQueryBuilder('r')
-            ->select('r.idReception, r.montant AS amount, IDENTITY(r.idProject) AS idProejct, r.added as date')
-            ->leftJoin('UnilendCoreBusinessBundle:ProjectRepaymentTask', 'prt', Join::WITH, 'prt.idWireTransferIn = r.idReception')
             ->where('r.idProject = :projectId')
             ->setParameter('projectId', $project)
             ->andWhere('r.statusPrelevement != :directDebitRejected')
@@ -177,15 +204,16 @@ class ReceptionsRepository extends EntityRepository
             ->andWhere('r.statusVirement != :wireTransferRejected')
             ->setParameter('wireTransferRejected', Receptions::WIRE_TRANSFER_STATUS_REJECTED)
             ->andWhere('NOT EXISTS (' . $qbRejected->getDQL() . ')')
-            ->andWhere('prt.id IS NULL');
+            ->andWhere('r.idReception NOT IN (' . $qbTreatedReception->getDQL() . ')')
+            ->setParameter('cancelled', ProjectRepaymentTask::STATUS_CANCELLED);
 
-        return $queryBuilder->getQuery()->getResult();
+        return $queryBuilder;
     }
 
     /**
      * Get all receipts having a pending repayment task
      *
-     * @return array
+     * @return Receptions[]
      */
     public function findReceptionsWithPendingRepaymentTasks()
     {

@@ -906,10 +906,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                         <?php endif; ?>
                         <?php if ($this->projects->status == ProjectsStatus::PREP_FUNDING) : ?>
                             <?php
-                            $blockingPublishingError = '';
+                            $blockingPublishingError = [];
 
                             if (in_array($this->projects->period, [0, 1000000])) {
-                                $blockingPublishingError = 'Veuillez sélectionner une durée de prêt';
+                                $blockingPublishingError[] = 'Veuillez sélectionner une durée de prêt';
                             }
 
                             if (in_array(UnderlyingContract::CONTRACT_MINIBON, $this->availableContracts)) {
@@ -923,28 +923,43 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                                     }
                                 }
                                 if (false === $hasDebtsStatement) {
-                                    $blockingPublishingError = 'Veuillez charger l\'état des créances (nécessaire au DIRS)';
+                                    $blockingPublishingError[] = 'Veuillez charger l\'état des créances (nécessaire au DIRS)';
                                 }
                             }
 
                             if (false === $this->isProductUsable) {
-                                $blockingPublishingError = 'Le produit associé au projet n\'est plus disponible ou éligible. Veuillez sélectionner un autre produit.';
+                                $blockingPublishingError[] = 'Le produit associé au projet n\'est plus disponible ou éligible. Veuillez sélectionner un autre produit.';
+                            }
+
+                            if (false === $this->hasBeneficialOwner) {
+                                $blockingPublishingError[] = 'Veuillez déclarer les bénéficiaires effectifs';
+                            }
+
+                            if ($this->hasBeneficialOwner && false === $this->ownerIsBeneficialOwner) {
+                                $blockingPublishingError[] = 'Veuillez déclarer le proprietaire de l\'entreprise comme bénéficiaire effectif';
                             }
                             ?>
                             <?php if (false === empty($blockingPublishingError)) : ?>
                                 <tr>
-                                    <td colspan="2"><?= $blockingPublishingError ?></td>
+                                    <td colspan="2"><?= implode('<br>', $blockingPublishingError) ?></td>
                                 </tr>
+                                <?php if (false === $this->hasBeneficialOwner || false === $this->ownerIsBeneficialOwner) : ?>
+                                    <tr>
+                                        <th>Déclaration de <br>bénéficiaires effectifs</th>
+                                        <td>
+                                            <a role="button" class="btn btn-default" href="<?= $this->lurl ?>/beneficiaires_effectifs/<?= $this->companies->id_company ?>" target="_blank">Déclarer les bénéficiaires effectifs</a>
+                                        </td>
+                                    </tr>
+                                <?php endif; ?>
                             <?php endif; ?>
                         <?php endif; ?>
-                        <?php // @@TODO check form action and the IF statement below ?>
-                        <?php if ($this->projects->status == ProjectsStatus::PROBLEME) : ?>
+                        <?php if ($this->canBeDeclined) : ?>
                             <script>
                                 $(function(){
-                                    var popupHtml = '<form id="close_out_netting_popup" method="post" action="<?= $this->lurl ?>/dossiers/details_impayes/<?= $this->projects->id_project ?>">' +
+                                    var popupHtml = '<form id="close_out_netting_popup" method="post" action="<?= $this->lurl ?>/dossiers/dechoir_terme">' +
                                         '<p style="margin-top: 20px">Merci de confirmer la déchéance du terme en cliquant sur "Valider".</p>' +
                                         '<div>' +
-                                        '<input type="hidden" name="close-out-netting" value="1">' +
+                                        '<input type="hidden" name="id_project" value="<?= $this->projects->id_project ?>">' +
                                         '<button type="button" class="btn-default" onclick="parent.$.fn.colorbox.close();">Annuler</button>' +
                                         '<button type="submit" class="btn-primary" style="margin-left: 10px">Valider</button>' +
                                         '</div>' +
@@ -1004,13 +1019,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                                 </td>
                             </tr>
                         <?php endif; ?>
-                        <?php if (false === empty($_SESSION['public_dates_error'])) : ?>
+                        <?php if (false === empty($_SESSION['publish_error'])) : ?>
                             <tr>
-                                <td colspan="2" style="color:red; font-weight:bold;"><?= $_SESSION['public_dates_error'] ?></td>
+                                <td colspan="2" style="color:red; font-weight:bold;"><?= $_SESSION['publish_error'] ?></td>
                             </tr>
-                            <?php unset($_SESSION['public_dates_error']); ?>
+                            <?php unset($_SESSION['publish_error']); ?>
                         <?php endif; ?>
-                        <?php if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == 1) : ?>
+                        <?php if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == UniversignEntityInterface::STATUS_SIGNED) : ?>
                             <tr>
                                 <th><label for="pouvoir">Pouvoir</label></th>
                                 <td>
@@ -1041,19 +1056,35 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                             <?php if (empty($this->proxy) || $this->proxy['status'] != UniversignEntityInterface::STATUS_SIGNED) : ?>
                                 <tr>
                                     <th>Pouvoir</th>
-                                    <td><a href="<?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
+                                    <td>
+                                        <a href="<?= $this->furl ?>/pdf/pouvoir/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>">
+                                            <img src="<?= $this->surl ?>/images/admin/pdf.png" alt="PDF">
+                                        </a>
+                                    </td>
                                 </tr>
                             <?php endif ?>
                             <?php if (empty($this->mandate) || $this->mandate['status'] != UniversignEntityInterface::STATUS_SIGNED) : ?>
                                 <tr>
                                     <th>Mandat</th>
                                     <?php if ($this->validBankAccount) : ?>
-                                        <td><a href="<?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>"><?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?></a></td>
+                                        <td>
+                                            <a href="<?= $this->furl ?>/pdf/mandat/<?= $this->clients->hash ?>/<?= $this->projects->id_project ?>">
+                                                <img src="<?= $this->surl ?>/images/admin/pdf.png" alt="PDF">
+                                            </a>
+                                        </td>
                                     <?php else : ?>
                                         <td>L'emprunteur n'a pas de RIB en vigueur.</td>
                                     <?php endif ?>
                                 </tr>
                             <?php endif ?>
+                            <?php if (null === $this->beneficialOwnerDeclaration || $this->beneficialOwnerDeclaration->getStatus() != UniversignEntityInterface::STATUS_SIGNED) : ?>
+                                <tr>
+                                    <th>Déclaration de <br> bénéficiaires effectifs</th>
+                                    <td colspan="2">
+                                        <a role="button" class="btn btn-default" href="<?= $this->lurl ?>/beneficiaires_effectifs/<?= $this->companies->id_company ?>" target="_blank">Accéder à la gestion des bénéficiaires effectifs<br>(Modifier/Consulter/Renvoyer la déclaration)</a>
+                                    </td>
+                                </tr>
+                            <?php endif; ?>
                         <?php endif; ?>
                         <tr>
                             <td colspan="2">

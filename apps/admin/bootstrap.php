@@ -205,10 +205,6 @@ class bootstrap extends Controller
                     'uri'   => 'dossiers/remboursements'
                 ],
                 [
-                    'title' => 'Projets avec retard',
-                    'uri'   => 'emprunteurs/projets_avec_retard'
-                ],
-                [
                     'title' => 'Erreurs remboursements',
                     'uri'   => 'dossiers/no_remb'
                 ],
@@ -241,26 +237,25 @@ class bootstrap extends Controller
         ],
         [
             'title' => 'Remboursements',
-            'uri'   => 'repayment/validation',
+            'uri'   => 'remboursement/validation',
             'zone'  => Zones::ZONE_LABEL_REPAYMENT,
             'children' => [
                 [
+                    'title' => 'Projets avec retard',
+                    'uri'   => 'dossiers/projets_avec_retard'
+                ],
+                [
                     'title' => 'Remboursements à valider',
-                    'uri'   => 'repayment/validation'
-                ]
-            ]
-        ],
-        [
-            'title'    => 'Recouvreurs',
-            'uri'      => 'recouvreur/liste',
-            'zone'     => Zones::ZONE_LABEL_DEBT_COLLECTOR,
-            'children' => [
+                    'uri'   => 'remboursement/validation'
+                ],
                 [
                     'title' => 'Recouvreurs',
                     'uri'   => 'recouvreur/liste',
+                    'zone'  => Zones::ZONE_LABEL_DEBT_COLLECTOR
                 ],
             ]
-        ],[
+        ],
+        [
             'title'    => 'Dépôt de fonds',
             'uri'      => 'transferts',
             'zone'     => Zones::ZONE_LABEL_TRANSFERS,

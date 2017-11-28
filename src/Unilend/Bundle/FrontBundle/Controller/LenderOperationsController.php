@@ -344,7 +344,7 @@ class LenderOperationsController extends Controller
 
         /** @var UserLender $user */
         $user               = $this->getUser();
-        $projectsInDept     = $project->getProjectsInDebt();
+        $projectsInDept     = $projectRepository->getProjectsInDebt();
         $filters            = $request->request->get('filter', []);
         $year               = isset($filters['date']) && false !== filter_var($filters['date'], FILTER_VALIDATE_INT) ? $filters['date'] : null;
         $statusFilter       = isset($filters['status']) ? $filters['status'] : null;

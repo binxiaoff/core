@@ -179,6 +179,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
     <?php endif; ?>
     <br/><br/>
 
+    <h2>Bénéficiaires effectifs</h2>
+    <a role="button" class="btn btn-default" href="<?= $this->lurl ?>/beneficiaires_effectifs/<?= $this->companies->id_company ?>">Consulter les Bénéficiaires effectifs</a>
+    <br/><br/>
+
     <?php $this->fireView('../bank_account/blocks/validated_bank_account'); ?>
     <?php $this->fireView('../bank_account/blocks/other_bank_account'); ?>
 
