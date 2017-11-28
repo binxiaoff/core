@@ -74,4 +74,20 @@ class ClientsStatusHistoryRepository extends EntityRepository
 
         return $result;
     }
+
+    /**
+     * @param int $client
+     *
+     * @return array|ClientsStatusHistory[]
+     */
+    public function findLastTwoClientStatus($client)
+    {
+        $queryBuilder = $this->createQueryBuilder('csh');
+        $queryBuilder->where('csh.idClient = :clientId')
+            ->setParameter('clientId', $client)
+            ->orderBy('csh.idClientStatusHistory', 'DESC')
+            ->setMaxResults(2);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
 }
