@@ -42,8 +42,8 @@ class transfertsController extends bootstrap
 
     public function _preteurs()
     {
-        $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->getLenderAttributions();
         if (isset($this->params[0]) && 'csv' === $this->params[0]) {
+            $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->getLenderAttributions();
             $this->hideDecoration();
             $this->view = 'csv';
         }
@@ -51,20 +51,131 @@ class transfertsController extends bootstrap
 
     public function _emprunteurs()
     {
-        $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->getBorrowerAttributions();
         if (isset($this->params[0]) && 'csv' === $this->params[0]) {
+            $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->getBorrowerAttributions();
             $this->hideDecoration();
             $this->view = 'csv';
         }
+    }
+
+    public function _attribues()
+    {
+        if (isset($this->params[0])) {
+            /** @var EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            /** @var NumberFormatter $currencyFormatter */
+            $currencyFormatter = $this->get('currency_formatter');
+
+            $receptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+
+            $query  = $this->handleDataTablesRequest($this->request->query->all());
+            $start  = $query['start'];
+            $limit  = $query['length'];
+            $draw   = $query['draw'];
+            $search = $query['search'];
+            $sort   = $query['sort'];
+
+            $error                   = '';
+            $receptionsCount         = 0;
+            $receptionsCountFiltered = 0;
+            $affectedReceptions      = [];
+
+            try {
+                if ($this->params[0] === 'preteur') {
+                    $receptionsCount         = $receptionRepository->getLenderAttributionsCount();
+                    $receptionsCountFiltered = $receptionRepository->getLenderAttributionsCount($search);
+                    $receptions              = $receptionRepository->getLenderAttributions($limit, $start, $sort, $search);
+                } else {
+                    $receptionsCount         = $receptionRepository->getBorrowerAttributionsCount();
+                    $receptionsCountFiltered = $receptionRepository->getBorrowerAttributionsCount($search);
+                    $receptions              = $receptionRepository->getBorrowerAttributions($limit, $start, $sort, $search);
+                }
+
+                foreach ($receptions as $reception) {
+                    if (Receptions::STATUS_ASSIGNED_MANUAL == $reception->getStatusBo() && null !== $reception->getIdUser()) {
+                        $attribution = $reception->getIdUser()->getFirstname() . ' ' . $reception->getIdUser()->getName() . '<br>' . $reception->getAssignmentDate()->format('d/m/Y H:i:s');
+                    } else {
+                        $attribution = $this->statusOperations[$reception->getStatusBo()];
+                    }
+                    $affectedReceptions[] = [
+                        $reception->getIdReception(),
+                        $reception->getMotif(),
+                        $currencyFormatter->formatCurrency(round(bcdiv($reception->getMontant(), 100, 4), 2), 'EUR'),
+                        $attribution,
+                        $reception->getIdClient()->getIdClient(),
+                        $reception->getAdded()->format('d/m/Y'),
+                        '',
+                        $reception->getComment(),
+                        $reception->getLigne()
+                    ];
+                }
+            } catch (Exception $exception) {
+                $error = 'une erreur est survenue lors de la récupération des réceptions attribuées.';
+                /** @var LoggerInterface $logger */
+                $logger = $this->get('logger');
+                $logger->warning($error, ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
+            }
+
+            if (empty($error)) {
+                $result = [
+                    'draw'            => $draw,
+                    'recordsTotal'    => $receptionsCount,
+                    'recordsFiltered' => $receptionsCountFiltered,
+                    'data'            => $affectedReceptions
+                ];
+            } else {
+                $result = [
+                    'draw'            => $draw,
+                    'recordsTotal'    => $receptionsCount,
+                    'recordsFiltered' => $receptionsCount,
+                    'data'            => $receptionsCountFiltered,
+                    'error'           => $error,
+                ];
+            }
+        } else {
+            $result = [
+                'draw'            => 0,
+                'recordsTotal'    => 0,
+                'recordsFiltered' => 0,
+                'data'            => [],
+                'error'           => 'type d\'attribution non défini',
+            ];
+        }
+
+        echo json_encode($result);
+        die;
+    }
+
+    private function handleDataTablesRequest($query)
+    {
+        $search = [];
+        if ('' !== $query['search']['value']) {
+            foreach ($query['columns'] as $column) {
+                if ('' !== $column['name'] && 'true' === $column['searchable']) {
+                    $search[$column['name']] = $query['search']['value'];
+                }
+            }
+        }
+
+        $sort = [];
+        foreach ($query['order'] as $order) {
+            $columnName        = $query['columns'][$order['column']]['name'];
+            $sort[$columnName] = $order['dir'];
+        }
+
+        return [
+            'start'  => $query['start'],
+            'length' => $query['length'],
+            'draw'   => $query['draw'],
+            'search' => $search,
+            'sort'   => $sort
+        ];
     }
 
     public function _non_attribues()
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-
-        $this->nonAttributedReceptions = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')
-            ->findBy(['statusBo' => Receptions::STATUS_PENDING], ['added' => 'DESC', 'idReception' => 'DESC']);
 
         if (isset($_POST['id_project'], $_POST['id_reception'])) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
@@ -110,6 +221,72 @@ class transfertsController extends bootstrap
             header('Location: ' . $this->lurl . '/transferts/emprunteurs');
             die;
         }
+    }
+
+    public function _non_attribues_liste()
+    {
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var NumberFormatter $currencyFormatter */
+        $currencyFormatter = $this->get('currency_formatter');
+
+        $receptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+
+        $query  = $this->handleDataTablesRequest($this->request->query->all());
+        $start  = $query['start'];
+        $limit  = $query['length'];
+        $draw   = $query['draw'];
+        $search = $query['search'];
+        $sort   = $query['sort'];
+
+        $error                   = '';
+        $receptionsCount         = 0;
+        $receptionsCountFiltered = 0;
+        $affectedReceptions      = [];
+
+        try {
+            $receptionsCount         = $receptionRepository->getNonAttributionsCount();
+            $receptionsCountFiltered = $receptionRepository->getNonAttributionsCount($search);
+            $receptions              = $receptionRepository->getNonAttributions($limit, $start, $sort, $search);
+
+            foreach ($receptions as $reception) {
+                $affectedReceptions[] = [
+                    $reception->getIdReception(),
+                    $reception->getMotif(),
+                    $currencyFormatter->formatCurrency(round(bcdiv($reception->getMontant(), 100, 4), 2), 'EUR'),
+                    $reception->getAdded()->format('d/m/Y'),
+                    substr($reception->getLigne(), 32, 2),
+                    '',
+                    $reception->getLigne(),
+                    $reception->getComment()
+                ];
+            }
+        } catch (Exception $exception) {
+            $error = 'une erreur est survenue lors de la récupération des réceptions attribuées.';
+            /** @var LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->warning($error, ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
+        }
+
+        if (empty($error)) {
+            $result = [
+                'draw'            => $draw,
+                'recordsTotal'    => $receptionsCount,
+                'recordsFiltered' => $receptionsCountFiltered,
+                'data'            => $affectedReceptions
+            ];
+        } else {
+            $result = [
+                'draw'            => $draw,
+                'recordsTotal'    => $receptionsCount,
+                'recordsFiltered' => $receptionsCountFiltered,
+                'data'            => $affectedReceptions,
+                'error'           => $error,
+            ];
+        }
+
+        echo json_encode($result);
+        die;
     }
 
     public function _attribution()
@@ -201,7 +378,7 @@ class transfertsController extends bootstrap
             $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($_POST['id_client'], WalletType::LENDER);
 
             if (null !== $reception && null !== $wallet) {
-                $user  = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+                $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
                 $reception
                     ->setIdClient($wallet->getIdClient())
@@ -300,8 +477,8 @@ class transfertsController extends bootstrap
                     $operationManager = $this->get('unilend.service.operation_manager');
                     $operationManager->cancelProvisionLenderWallet($wallet, $amount, $reception);
                     $reception->setIdClient(null)
-                              ->setStatusBo(Receptions::STATUS_PENDING)
-                              ->setRemb(0); // todo: delete the field
+                        ->setStatusBo(Receptions::STATUS_PENDING)
+                        ->setRemb(0); // todo: delete the field
                     $entityManager->flush();
                 }
             }
@@ -339,18 +516,21 @@ class transfertsController extends bootstrap
 
     public function _comment()
     {
-        if (isset($_POST['reception']) && false !== filter_var($_POST['reception'], FILTER_VALIDATE_INT)) {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        if ($receptionId = $this->request->request->getInt('reception')) {
             /** @var EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['reception'])->setComment($_POST['comment']);
-            $entityManager->flush();
-
-            header('Location: ' . $_POST['referer']);
-            exit;
+            $reception     = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($receptionId);
+            if ($reception) {
+                $reception->setComment($this->request->request->get('comment'));
+                $entityManager->flush();
+                echo json_encode(['error' => [], 'success' => true, 'data' => ['comment' => $this->request->request->get('comment')]]);
+                return;
+            }
         }
-
-        header('Location: /');
-        exit;
+        echo json_encode(['error' => ['id reception n\'existe pas'], 'success' => false]);
     }
 
     public function _deblocage()
@@ -490,13 +670,15 @@ class transfertsController extends bootstrap
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Bids $bidEntity */
                     $bidEntity    = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($bid['id_bid']);
                     $bidAmount    = round(bcdiv($bid['amount'], 100, 4), 2);
-                    $notification = $notificationManager->createNotification(Notifications::TYPE_LOAN_ACCEPTED, $bidEntity->getIdLenderAccount()->getIdClient()->getIdClient(), $project->getIdProject(), $bidAmount, $bid['id_bid']);
+                    $notification = $notificationManager->createNotification(Notifications::TYPE_LOAN_ACCEPTED, $bidEntity->getIdLenderAccount()->getIdClient()->getIdClient(),
+                        $project->getIdProject(), $bidAmount, $bid['id_bid']);
 
                     $loansForBid = $acceptedBids->select('id_bid = ' . $bid['id_bid']);
 
                     foreach ($loansForBid as $loan) {
                         if (in_array($loan['id_loan'], $lastLoans) === false) {
-                            $notificationManager->createEmailNotification($notification->id_notification, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED, $bidEntity->getIdLenderAccount()->getIdClient()->getIdClient(), null, null,
+                            $notificationManager->createEmailNotification($notification->id_notification, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED,
+                                $bidEntity->getIdLenderAccount()->getIdClient()->getIdClient(), null, null,
                                 $loan['id_loan']);
                             $lastLoans[] = $loan['id_loan'];
                         }
@@ -832,7 +1014,7 @@ class transfertsController extends bootstrap
     }
 
     /**
-     * @param \loans            $loans
+     * @param \loans $loans
      * @param Wallet $newLender
      */
     private function transferRepaymentSchedule(\loans $loans, Wallet $newLender)
@@ -895,7 +1077,7 @@ class transfertsController extends bootstrap
             $this->companyRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
         }
 
-        $this->displayWarning  = false;
+        $this->displayWarning = false;
         if ($this->wireTransferOut->getBankAccount()->getIdClient() !== $this->wireTransferOut->getClient()) {
             $this->displayWarning = false === $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->isBankAccountValidatedOnceTime($this->wireTransferOut);
         }
@@ -929,7 +1111,6 @@ class transfertsController extends bootstrap
         $wireTransferOutRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements');
         $this->bankAccountRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
         $this->companyRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
-
 
         $this->wireTransferOuts[Virements::STATUS_CLIENT_VALIDATED] = $wireTransferOutRepository->findBy(['type' => Virements::TYPE_BORROWER, 'status' => Virements::STATUS_CLIENT_VALIDATED]);
         $this->wireTransferOuts[Virements::STATUS_PENDING]          = $wireTransferOutRepository->findBy(['type' => Virements::TYPE_BORROWER, 'status' => Virements::STATUS_PENDING]);

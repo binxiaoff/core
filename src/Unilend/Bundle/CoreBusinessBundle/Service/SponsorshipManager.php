@@ -515,7 +515,10 @@ class SponsorshipManager
             }
 
             $sponsorship = new Sponsorship();
-            $sponsorship->setIdClientSponsor($sponsor)->setIdClientSponsee($sponsee)->setIdCampaign($campaign)->setStatus(Sponsorship::STATUS_ONGOING);
+            $sponsorship->setIdClientSponsor($sponsor)
+                ->setIdClientSponsee($sponsee)
+                ->setIdCampaign($campaign)
+                ->setStatus(Sponsorship::STATUS_ONGOING);
 
             $this->entityManager->persist($sponsorship);
             $this->entityManager->flush($sponsorship);
