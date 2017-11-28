@@ -194,7 +194,8 @@ class ReceptionsRepository extends EntityRepository
             ->select('IDENTITY(prt.idWireTransferIn)')
             ->from('UnilendCoreBusinessBundle:ProjectRepaymentTask', 'prt')
             ->where('prt.idProject = :projectId')
-            ->andWhere('prt.status != :cancelled');
+            ->andWhere('prt.status != :cancelled')
+            ->andWhere('prt.idWireTransferIn = r.idReception');
 
         $queryBuilder = $this->createQueryBuilder('r')
             ->where('r.idProject = :projectId')
@@ -204,7 +205,7 @@ class ReceptionsRepository extends EntityRepository
             ->andWhere('r.statusVirement != :wireTransferRejected')
             ->setParameter('wireTransferRejected', Receptions::WIRE_TRANSFER_STATUS_REJECTED)
             ->andWhere('NOT EXISTS (' . $qbRejected->getDQL() . ')')
-            ->andWhere('r.idReception NOT IN (' . $qbTreatedReception->getDQL() . ')')
+            ->andWhere('NOT EXISTS (' . $qbTreatedReception->getDQL() . ')')
             ->setParameter('cancelled', ProjectRepaymentTask::STATUS_CANCELLED);
 
         return $queryBuilder;
