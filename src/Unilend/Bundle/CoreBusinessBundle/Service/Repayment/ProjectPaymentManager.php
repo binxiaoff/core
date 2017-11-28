@@ -236,31 +236,11 @@ class ProjectPaymentManager
         /** @var \echeanciers $repaymentScheduleData */
         $repaymentScheduleData = $this->entityManagerSimulator->getRepository('echeanciers');
 
-        $project = $wireTransferIn->getIdProject();
-
-        $projectRepaymentTasks = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
-            ->findBy([
-                'idProject'        => $project,
-                'idWireTransferIn' => $wireTransferIn,
-                'status'           => [
-                    ProjectRepaymentTask::STATUS_IN_PROGRESS,
-                    ProjectRepaymentTask::STATUS_ERROR,
-                    ProjectRepaymentTask::STATUS_REPAID
-                ]
-            ]);
-
-        if (count($projectRepaymentTasks) > 0) {
-            throw new \Exception('You can not cancel the payment, because one of the repayment task has been done.');
-        }
-
+        $project                       = $wireTransferIn->getIdProject();
         $projectRepaymentTasksToCancel = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
             ->findBy([
                 'idProject'        => $project,
-                'idWireTransferIn' => $wireTransferIn,
-                'status'           => [
-                    ProjectRepaymentTask::STATUS_PENDING,
-                    ProjectRepaymentTask::STATUS_READY
-                ]
+                'idWireTransferIn' => $wireTransferIn
             ]);
 
         $this->entityManager->getConnection()->beginTransaction();
@@ -293,7 +273,9 @@ class ProjectPaymentManager
                 // todo: this call can be deleted once all migrations have been done on the usage of these 2 columns.
                 $repaymentScheduleData->updateStatusEmprunteur($project->getIdProject(), $paymentSchedule->getOrdre(), 'cancel');
 
-                $this->projectRepaymentTaskManager->cancelRepaymentTask($task, $user);
+                if (in_array($task->getStatus(), [ProjectRepaymentTask::STATUS_PENDING, ProjectRepaymentTask::STATUS_READY])) {
+                    $this->projectRepaymentTaskManager->cancelRepaymentTask($task, $user);
+                }
             }
 
             $this->projectChargeManager->cancelProjectCharge($wireTransferIn);
