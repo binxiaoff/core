@@ -1036,6 +1036,15 @@ FormValidation.prototype.rules = {
             })
           }
           break
+
+        case 'password':
+            if (!/^(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(inputValidation.value)) {
+              inputValidation.errors.push({
+                  type: 'inputType',
+                  description: __.__('Password needs to be at least 8 characters and needs to contain at least one lowercase and one uppercase letter', 'error-field-input-type-password')
+              })
+          }
+          break
       }
     }
   },
