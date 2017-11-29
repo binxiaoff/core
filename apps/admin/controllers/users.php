@@ -174,7 +174,7 @@ class usersController extends bootstrap
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
                 $mailerManager = $this->get('unilend.service.email_manager');
-                $mailerManager->sendPasswordModificationEmail($this->users);
+                $mailerManager->sendAdminPasswordModificationEmail($this->users);
 
                 $previousPasswords->id_user  = $this->users->id_user;
                 $previousPasswords->password = $oldPassword;

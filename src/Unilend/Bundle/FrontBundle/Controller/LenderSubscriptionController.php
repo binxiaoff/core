@@ -21,7 +21,6 @@ use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
@@ -40,6 +39,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager;
+use Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
 use Unilend\core\Loader;
@@ -96,7 +96,7 @@ class LenderSubscriptionController extends Controller
         $identityForm->handleRequest($request);
         $companyIdentityForm->handleRequest($request);
 
-        if ($request->isMethod('POST')) {
+        if ($request->isMethod(Request::METHOD_POST)) {
             if ($identityForm->isSubmitted() && $identityForm->isValid()) {
                 $isValid = $this->handleIdentityPersonForm($client, $clientAddress, $identityForm);
                 if ($isValid) {
@@ -384,27 +384,13 @@ class LenderSubscriptionController extends Controller
      */
     private function sendSubscriptionStartConfirmationEmail(Clients $client)
     {
-        $settingRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Settings');
-        /** @var Settings $facebookSetting */
-        $faceBookSetting = $settingRepository->findOneBy(['type' => 'Facebook']);
-        /** @var Settings $twitterSetting */
-        $twitterSetting = $settingRepository->findOneBy(['type' => 'Twitter']);
-        /** @var LenderManager $lenderManager */
-        $lenderManager = $this->get('unilend.service.lender_manager');
-
-        $varMail = [
-            'surl'           => $this->get('assets.packages')->getUrl(''),
-            'url'            => $this->get('assets.packages')->getUrl(''),
-            'prenom'         => $client->getPrenom(),
-            'email_p'        => $client->getEmail(),
-            'motif_virement' => $lenderManager->getLenderPattern($client),
-            'lien_fb'        => $faceBookSetting->getValue(),
-            'lien_tw'        => $twitterSetting->getValue(),
-            'annee'          => date('Y')
+        $keywords = [
+            'firstName' => $client->getPrenom()
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur', $varMail);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur', $keywords);
+
         try {
             $message->setTo($client->getEmail());
             $mailer = $this->get('mailer');
@@ -427,14 +413,12 @@ class LenderSubscriptionController extends Controller
         $translator = $this->get('translator');
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
 
         if ($entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($clientEntity->getEmail())) {
             $form->get('client')->get('email')->addError(new FormError($translator->trans('lender-profile_security-identification-error-existing-email')));
         }
 
-        if (false === $ficelle->password_fo($clientEntity->getPassword(), 6)) {
+        if (false === BCryptPasswordEncoder::isPasswordSafe($clientEntity->getPassword())) { // todo: "try" BCryptPasswordEncoder::encodePassword() to check if the password is safe (need TECH-108)
             $form->get('client')->get('password')->addError(new FormError($translator->trans('common-validator_password-invalid')));
         }
     }
@@ -1118,30 +1102,18 @@ class LenderSubscriptionController extends Controller
         return new Response('not an ajax request');
     }
 
+    /**
+     * @param Clients $client
+     */
     private function sendFinalizedSubscriptionConfirmationEmail(Clients $client)
     {
-        /** @var \settings $settings */
-        $settings =  $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('Facebook', 'type');
-        $lien_fb = $settings->value;
-        $settings->get('Twitter', 'type');
-        $lien_tw = $settings->value;
-
-        /** @var Wallet $wallet */
-        $wallet = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
-
-        $varMail = [
-            'surl'           => $this->get('assets.packages')->getUrl(''),
-            'url'            => $this->get('assets.packages')->getUrl(''),
-            'prenom'         => $client->getPrenom(),
-            'email_p'        => $client->getEmail(),
-            'motif_virement' => $wallet->getWireTransferPattern(),
-            'lien_fb'        => $lien_fb,
-            'lien_tw'        => $lien_tw
+        $keywords = [
+            'firstName' => $client->getPrenom(),
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur-etape-3', $varMail);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur-etape-3', $keywords);
+
         try {
             $message->setTo($client->getEmail());
             $mailer = $this->get('mailer');

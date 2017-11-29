@@ -10,31 +10,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
     <?php $isRiskUser = UsersTypes::TYPE_RISK == $this->userEntity->getIdUserType()->getIdUserType() || Users::USER_ID_ALAIN_ELKAIM == $this->userEntity->getIdUser(); ?>!
     <?php $isEditable = $this->projects->status == ProjectsStatus::COMITY_REVIEW && $this->userEntity->getIdUserType()->getIdUserType() == UsersTypes::TYPE_DIRECTION; ?>
     <div id="content_etape7">
-        <?php
-        $moyenne  = round($this->projects_notes->performance_fianciere_comite * 0.2 + $this->projects_notes->marche_opere_comite * 0.2 + $this->projects_notes->dirigeance_comite * 0.2 + $this->projects_notes->indicateur_risque_dynamique_comite * 0.4, 1);
-        $start = '';
-        if ($moyenne >= 0) {
-            $start = '2 étoiles';
-        }
-        if ($moyenne >= 2) {
-            $start = '2,5 étoiles';
-        }
-        if ($moyenne >= 4) {
-            $start = '3 étoiles';
-        }
-        if ($moyenne >= 5.5) {
-            $start = '3,5 étoiles';
-        }
-        if ($moyenne >= 6.5) {
-            $start = '4 étoiles';
-        }
-        if ($moyenne >= 7.5) {
-            $start = '4,5 étoiles';
-        }
-        if ($moyenne >= 8.5) {
-            $start = '5 étoiles';
-        }
-        ?>
         <a class="tab_title" id="section-risk-comity" href="#section-risk-comity">7. Comité risque</a>
         <div class="tab_content<?php if ($isRiskUser) : ?> expand<?php endif; ?>" id="etape7">
             <table class="form tableNotes" style="width: 100%;">
@@ -107,7 +82,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
                     </td>
                 </tr>
                 <tr class="lanote">
-                    <th colspan="8" style="text-align:center;">Note : <span class="moyenneNote_comite"><?= $moyenne ?> / 10 (soit <?= $start ?>)</span></th>
+                    <th colspan="8" style="text-align:center;">Note : <span class="moyenneNote_comite"><?= $this->projectCommiteeAvgGrade ?> / 10 (soit <?= $this->projectRating ?>)</span></th>
                 </tr>
                 <tr>
                     <td colspan="8">
@@ -182,13 +157,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
                 if (moyenne >= 4) {
                     start = '3 étoiles';
                 }
-                if (moyenne >= 5.1) {
+                if (moyenne >= 5.5) {
                     start = '3,5 étoiles';
                 }
-                if (moyenne >= 6.1) {
+                if (moyenne >= 6.5) {
                     start = '4 étoiles';
                 }
-                if (moyenne >= 7.1) {
+                if (moyenne >= 7.5) {
                     start = '4,5 étoiles';
                 }
                 if (moyenne >= 8.5) {

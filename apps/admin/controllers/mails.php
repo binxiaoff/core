@@ -80,21 +80,30 @@ class mailsController extends bootstrap
         $this->menu_admin = 'edition';
 
         if ($this->request->isMethod(Request::METHOD_POST)) {
-            $form = $this->handlePost();
             /** @var MailTemplateManager $mailTemplateManager */
             $mailTemplateManager = $this->get('unilend.service.mail_template');
+
+            $type          = $this->bdd->generateSlug($this->request->request->get('type', null));
+            $senderName    = $this->request->request->get('sender_name', null);
+            $senderEmail   = $this->request->request->get('sender_email', null);
+            $subject       = $this->request->request->get('subject', null);
+            $title         = $this->request->request->get('title', null);
+            $content       = $this->request->request->get('content', null);
+            $header        = $this->request->request->get('header', null);
+            $footer        = $this->request->request->get('footer', null);
+            $recipientType = $this->request->request->get('recipient_type', null);
 
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager          = $this->get('doctrine.orm.entity_manager');
             $mailTemplateRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
             $mailTemplate           = $mailTemplateRepository->findOneBy([
-                'type'   => $form['type'],
+                'type'   => $type,
                 'locale' => $this->getParameter('locale'),
                 'status' => MailTemplates::STATUS_ACTIVE,
                 'part'   => MailTemplates::PART_TYPE_CONTENT
             ]);
 
-            if (empty($form['type']) || empty($form['sender_name']) || empty($form['sender_email']) || empty($form['subject'])) {
+            if (empty($type) || empty($senderName) || empty($senderEmail) || empty($subject)) {
                 $_SESSION['freeow']['title']   = 'Ajout d\'un mail';
                 $_SESSION['freeow']['message'] = 'Ajout impossible : tous les champs n\'ont été remplis';
             } elseif (null !== $mailTemplate) {
@@ -102,15 +111,15 @@ class mailsController extends bootstrap
                 $_SESSION['freeow']['message'] = 'Ajout impossible : ce mail existe déjà';
             } else {
                 $mailTemplateManager->addTemplate(
-                    empty($form['type']) ? null : $form['type'],
-                    empty($form['sender_name']) ? null : $form['sender_name'],
-                    empty($form['sender_email']) ? null : $form['sender_email'],
-                    empty($form['subject']) ? null : $form['subject'],
-                    empty($form['title']) ? null : $form['title'],
-                    empty($form['content']) ? null : $form['content'],
-                    empty($form['header']) ? null : $mailTemplateRepository->find($form['header']),
-                    empty($form['footer']) ? null : $mailTemplateRepository->find($form['footer']),
-                    empty($form['recipient_type']) ? null : $form['recipient_type']
+                    empty($type) ? null : $type,
+                    empty($senderName) ? null : $senderName,
+                    empty($senderEmail) ? null : $senderEmail,
+                    empty($subject) ? null : $subject,
+                    empty($title) ? null : $title,
+                    empty($content) ? null : $content,
+                    empty($header) ? null : $mailTemplateRepository->find($header),
+                    empty($footer) ? null : $mailTemplateRepository->find($footer),
+                    empty($recipientType) ? null : $recipientType
                 );
 
                 $_SESSION['freeow']['title']   = 'Ajout d\'un mail';
@@ -148,23 +157,30 @@ class mailsController extends bootstrap
                 'part'   => $part
             ]);
 
-            if (null !== $this->mailTemplate && $this->request->isMethod(Request::METHOD_POST)) {
-                $form = $this->handlePost();
+            $senderName    = $this->request->request->get('sender_name', null);
+            $senderEmail   = $this->request->request->get('sender_email', null);
+            $subject       = $this->request->request->get('subject', null);
+            $title         = $this->request->request->get('title', null);
+            $content       = $this->request->request->get('content', null);
+            $header        = $this->request->request->get('header', null);
+            $footer        = $this->request->request->get('footer', null);
+            $recipientType = $this->request->request->get('recipient_type', null);
 
-                if (MailTemplates::PART_TYPE_CONTENT === $part && (empty($form['sender_name']) || empty($form['sender_email']) || empty($form['subject']))) {
+            if (null !== $this->mailTemplate && $this->request->isMethod(Request::METHOD_POST)) {
+                if (MailTemplates::PART_TYPE_CONTENT === $part && (empty($senderName) || empty($senderEmail) || empty($subject))) {
                     $_SESSION['freeow']['title']   = 'Modification d\'un mail';
                     $_SESSION['freeow']['message'] = 'Modification impossible : tous les champs n\'ont été remplis';
                 } else {
                     $mailTemplateManager->modifyTemplate(
                         $this->mailTemplate,
-                        empty($form['sender_name']) ? null : $form['sender_name'],
-                        empty($form['sender_email']) ? null : $form['sender_email'],
-                        empty($form['subject']) ? null : $form['subject'],
-                        empty($form['title']) ? null : $form['title'],
-                        empty($form['content']) ? null : $form['content'],
-                        empty($form['header']) ? null : $mailTemplateRepository->find($form['header']),
-                        empty($form['footer']) ? null : $mailTemplateRepository->find($form['footer']),
-                        empty($form['recipient_type']) ? null : $form['recipient_type']
+                        empty($senderName) ? null : $senderName,
+                        empty($senderEmail) ? null : $senderEmail,
+                        empty($subject) ? null : $subject,
+                        empty($title) ? null : $title,
+                        empty($content) ? null : $content,
+                        empty($header) ? null : $mailTemplateRepository->find($header),
+                        empty($footer) ? null : $mailTemplateRepository->find($footer),
+                        empty($recipientType) ? null : $recipientType
                     );
 
                     $_SESSION['freeow']['title']   = 'Modification d\'un mail';
@@ -280,20 +296,5 @@ class mailsController extends bootstrap
                 ];
             }
         }
-    }
-
-    private function handlePost()
-    {
-        $fields = [];
-
-        foreach ($_POST as $field => $value) {
-            $fields[$field] = $value;
-        }
-
-        $fields['type']    = isset($fields['type']) ? $this->bdd->generateSlug(trim($_POST['type'])) : '';
-        $fields['subject'] = isset($fields['subject']) ? str_replace('"', '\'', $fields['subject']) : null;
-        $fields['content'] = isset($fields['content']) ? str_replace('"', '\'', $fields['content']) : null;
-
-        return $fields;
     }
 }

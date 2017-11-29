@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
-
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -61,6 +60,7 @@ class CheckBorrowerDebitCommand extends ContainerAwareCommand
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-prelevement-emprunteur', $varMail, false);
+
         try {
             $message->setTo(explode(';', trim($recipient)));
             $mailer = $this->getContainer()->get('mailer');

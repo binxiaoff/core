@@ -9,7 +9,6 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Sponsorship;
@@ -68,10 +67,7 @@ class SponsorshipManager
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,
         LoggerInterface $logger,
-        RouterInterface $router,
-        Packages $assetsPackages,
-        $schema,
-        $frontHost
+        RouterInterface $router
     )
     {
         $this->operationManager    = $operationManager;
@@ -82,8 +78,6 @@ class SponsorshipManager
         $this->mailer              = $mailer;
         $this->logger              = $logger;
         $this->router              = $router;
-        $this->staticUrl           = $assetsPackages->getUrl('');
-        $this->frontUrl            = $schema . '://' . $frontHost;
     }
 
     /**
@@ -235,20 +229,17 @@ class SponsorshipManager
      */
     private function sendSponsorRewardEmail(Sponsorship $sponsorship)
     {
-        $varMail = [
-            'staticUrl'          => $this->staticUrl,
-            'url'                => $this->frontUrl,
-            'sponsor_first_name' => $sponsorship->getIdClientSponsor()->getPrenom(),
-            'sponsee_first_name' => $sponsorship->getIdClientSponsee()->getPrenom(),
-            'sponsee_last_name'  => $sponsorship->getIdClientSponsee()->getNom(),
-            'amount'             => $this->numberFormatter->format((float)$sponsorship->getIdCampaign()->getAmountSponsor()),
-            'facebookLink'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
-            'twitterLink'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
-            'year'               => date('Y')
+        $wallet   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsorship->getIdClientSponsor(), WalletType::LENDER);
+        $keywords = [
+            'sponsorFirstName' => $sponsorship->getIdClientSponsor()->getPrenom(),
+            'sponseeFirstName' => $sponsorship->getIdClientSponsee()->getPrenom(),
+            'sponseeLastName'  => $sponsorship->getIdClientSponsee()->getNom(),
+            'lenderPattern'    => $wallet->getWireTransferPattern(),
+            'amount'           => $this->numberFormatter->format((float) $sponsorship->getIdCampaign()->getAmountSponsor()),
         ];
 
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('parrainage-versement-prime-parrain', $varMail);
+        $message = $this->messageProvider->newMessage('parrainage-versement-prime-parrain', $keywords);
         try {
             $message->setTo($sponsorship->getIdClientSponsor()->getEmail());
             $this->mailer->send($message);
@@ -267,14 +258,12 @@ class SponsorshipManager
      */
     private function sendSponseeRewardEmail(Sponsorship $sponsorship)
     {
+        $wallet   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsorship->getIdClientSponsor(), WalletType::LENDER);
         $keyWords = [
-            'staticUrl'          => $this->staticUrl,
-            'url'                => $this->frontUrl,
-            'sponsee_first_name' => $sponsorship->getIdClientSponsee()->getPrenom(),
-            'amount'             => $this->numberFormatter->format((float)$sponsorship->getIdCampaign()->getAmountSponsee()),
-            'facebookLink'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
-            'twitterLink'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
-            'year'               => date('Y')
+            'sponseeFirstName' => $sponsorship->getIdClientSponsee()->getPrenom(),
+            'amount'           => $this->numberFormatter->format((float) $sponsorship->getIdCampaign()->getAmountSponsee()),
+            'validityDays'     => $sponsorship->getIdCampaign()->getValidityDays(),
+            'lenderPattern'    => $wallet->getWireTransferPattern()
         ];
 
         /** @var TemplateMessage $message */
@@ -375,31 +364,23 @@ class SponsorshipManager
     public function sendSponsorshipInvitation(Clients $sponsor, $email, $sponseeNames, $message)
     {
         $currentCampaign = $this->getCurrentSponsorshipCampaign();
-        $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')
-            ->findOneBy(['status' => MailTemplates::STATUS_ACTIVE, 'type' => 'parrainage-invitation-filleul']);
 
         $keyWords = [
-            'staticUrl'          => $this->staticUrl,
-            'frontUrl'           => $this->frontUrl,
-            'sponsor_first_name' => $sponsor->getPrenom(),
-            'sponsor_last_name'  => $sponsor->getNom(),
-            'sponsee_names'      => $sponseeNames,
-            'sponsor_message'    => $message,
-            'link'               => $this->router->generate('lender_sponsorship_redirect', ['sponsorCode' => $sponsor->getSponsorCode()], UrlGeneratorInterface::ABSOLUTE_URL),
-            'amount'             => $this->numberFormatter->format((float) $currentCampaign->getAmountSponsee()),
-            'facebookLink'       => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
-            'twitterLink'        => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
-            'year'               => date('Y')
+            'sponsorFirstName' => $sponsor->getPrenom(),
+            'sponsorLastName'  => $sponsor->getNom(),
+            'sponseeNames'     => $sponseeNames,
+            'sponsorMessage'   => $message,
+            'link'             => $this->router->generate('lender_sponsorship_redirect', ['sponsorCode' => $sponsor->getSponsorCode()], UrlGeneratorInterface::ABSOLUTE_URL),
+            'amount'           => $this->numberFormatter->format((float) $currentCampaign->getAmountSponsee())
         ];
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('parrainage-invitation-filleul', $keyWords);
         try {
             $message->setTo($email);
-            $message->setSubject(str_replace('[EMV DYN]sponsor_names[EMV DYN]',  $sponsor->getPrenom() . ' ' . $sponsor->getNom(), $mailTemplate->getSubject()));
             $this->mailer->send($message);
         } catch (\Exception $exception) {
-            $this->logger->warning('Could not send email: parrainage-invitation-filleul - Exception: ' . $exception->getMessage(), [
+            $this->logger->warning('Could not send email "parrainage-invitation-filleul"  - Exception: ' . $exception->getMessage(), [
                 'id_mail_template' => $message->getTemplateId(),
                 'id_client'        => $sponsor->getIdClient(),
                 'class'            => __CLASS__,
@@ -413,15 +394,12 @@ class SponsorshipManager
      */
     private function informSponsorAboutSponsee(Sponsorship $sponsorship)
     {
+        $wallet          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsorship->getIdClientSponsor(), WalletType::LENDER);
         $keyWords = [
-            'staticUrl'          => $this->staticUrl,
-            'frontUrl'           => $this->frontUrl,
-            'sponsor_first_name' => $sponsorship->getIdClientSponsor()->getPrenom(),
-            'sponsee_first_name' => $sponsorship->getIdClientSponsee()->getPrenom(),
-            'sponsee_last_name'  => $sponsorship->getIdClientSponsee()->getNom(),
-            'facebookLink'       => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
-            'twitterLink'        => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
-            'year'               => date('Y')
+            'sponsorFirstName' => $sponsorship->getIdClientSponsor()->getPrenom(),
+            'sponseeFirstName' => $sponsorship->getIdClientSponsee()->getPrenom(),
+            'sponseeLastName'  => $sponsorship->getIdClientSponsee()->getNom(),
+            'lenderPattern'    => $wallet->getWireTransferPattern()
         ];
 
         /** @var TemplateMessage $message */
@@ -430,7 +408,7 @@ class SponsorshipManager
             $message->setTo($sponsorship->getIdClientSponsor()->getEmail());
             $this->mailer->send($message);
         } catch (\Exception $exception) {
-            $this->logger->warning('Could not send email: parrainage-confirmation-validation-filleul - Exception: ' . $exception->getMessage(), [
+            $this->logger->warning('Could not send email "parrainage-confirmation-validation-filleul" - Exception: ' . $exception->getMessage(), [
                 'id_mail_template' => $message->getTemplateId(),
                 'id_client'        => $sponsorship->getIdClientSponsor()->getIdClient(),
                 'class'            => __CLASS__,
@@ -444,16 +422,10 @@ class SponsorshipManager
      */
     private function sendMaxSponseeNotification(Clients $sponsor)
     {
-        $currentCampaign = $this->getCurrentSponsorshipCampaign();
-
-        $keyWords = [
-            'staticUrl'          => $this->staticUrl,
-            'frontUrl'           => $this->frontUrl,
-            'sponsor_first_name' => $sponsor->getPrenom(),
-            'end_campaign'       => $currentCampaign->getEnd()->format('d/m/Y'),
-            'facebookLink'       => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
-            'twitterLink'        => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
-            'year'               => date('Y')
+        $wallet          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsor, WalletType::LENDER);
+        $keyWords        = [
+            'sponsorFirstName' => $sponsor->getPrenom(),
+            'lenderPattern'    => $wallet->getWireTransferPattern()
         ];
 
         /** @var TemplateMessage $message */
@@ -477,14 +449,11 @@ class SponsorshipManager
     private function sendInternalMaxSponseeNotification(Clients $sponsor)
     {
         $keyWords = [
-            'staticUrl'          => $this->staticUrl,
-            'frontUrl'           => $this->frontUrl,
-            'sponsor_first_name' => $sponsor->getPrenom(),
-            'sponsor_last_name'  => $sponsor->getNom(),
-            'sponsor_id_client'  => $sponsor->getIdClient(),
-            'year'               => date('Y')
+            'sponsorFirstName' => $sponsor->getPrenom(),
+            'sponsorLastName'  => $sponsor->getNom(),
+            'sponsorClientId'  => $sponsor->getIdClient(),
+            'year'             => date('Y')
         ];
-
         $setting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse notification solde unilend promotion']);
 
         /** @var TemplateMessage $message */
