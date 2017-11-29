@@ -1707,20 +1707,25 @@ class Projects
     }
 
     /**
-     * @param bool $includeArchived
+     * @param bool  $includeArchived
+     * @param array $sort
      *
      * @return ArrayCollection|DebtCollectionMission[]
      */
-    public function getDebtCollectionMissions($includeArchived = false)
+    public function getDebtCollectionMissions($includeArchived = false, $sort = [])
     {
+        $criteria = Criteria::create();
+
         if (false === $includeArchived) {
             $criteria = Criteria::create()
                 ->where(Criteria::expr()->isNull('archived'));
-
-            return $this->debtCollectionMissions->matching($criteria);
         }
 
-        return $this->debtCollectionMissions;
+        if ($sort) {
+            $criteria->orderBy($sort);
+        }
+
+        return $this->debtCollectionMissions->matching($criteria);
     }
 
     /**

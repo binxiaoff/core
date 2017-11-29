@@ -22,7 +22,7 @@ class ProjectRepaymentTaskRepository extends EntityRepository
             ->andWhere('prt.type in (:supportedType)')
             ->setParameter('ready', ProjectRepaymentTask::STATUS_READY)
             ->setParameter('repaymentDate', $repaymentDate)
-            ->setParameter('supportedType', [ProjectRepaymentTask::TYPE_REGULAR, ProjectRepaymentTask::TYPE_LATE, ProjectRepaymentTask::TYPE_EARLY])
+            ->setParameter('supportedType', [ProjectRepaymentTask::TYPE_REGULAR, ProjectRepaymentTask::TYPE_LATE, ProjectRepaymentTask::TYPE_EARLY, ProjectRepaymentTask::TYPE_CLOSE_OUT_NETTING])
             ->setMaxResults($limit)
             ->orderBy('prt.repayAt', 'ASC');
 
@@ -39,7 +39,26 @@ class ProjectRepaymentTaskRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('prt');
         $queryBuilder->select('SUM(prt.commissionUnilend)')
             ->where('prt.idWireTransferIn = :wireTransferIn')
-            ->setParameter('wireTransferIn', $wireTransferIn);
+            ->andWhere('prt.status != :cancelled')
+            ->setParameter('wireTransferIn', $wireTransferIn)
+            ->setParameter('cancelled', ProjectRepaymentTask::STATUS_CANCELLED);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Receptions|int $wireTransferIn
+     *
+     * @return float
+     */
+    public function getTotalRepaymentByWireTransferIn($wireTransferIn)
+    {
+        $queryBuilder = $this->createQueryBuilder('prt');
+        $queryBuilder->select('SUM(prt.capital + prt.interest)')
+            ->where('prt.idWireTransferIn = :wireTransferIn')
+            ->andWhere('prt.status != :cancelled')
+            ->setParameter('wireTransferIn', $wireTransferIn)
+            ->setParameter('cancelled', ProjectRepaymentTask::STATUS_CANCELLED);
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }

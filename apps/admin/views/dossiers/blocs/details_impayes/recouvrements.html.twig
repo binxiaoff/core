@@ -8,9 +8,6 @@
                     Date
                 </th>
                 <th style="width: 5%">
-                    ID
-                </th>
-                <th style="width: 5%">
                     Statut
                 </th>
                 <th style="width: 7.5%">
@@ -33,25 +30,45 @@
             <tbody>
             {% for mission in debtCollectionMissionsData %}
                 <tr>
-                    <td>{{ mission.date|localizeddate('short', 'none') }}</td>
-                    <td>{{ mission.id }}</td>
-                    <td>{{ mission.status }}</td>
-                    <td>{{ mission.debtCollectorName }}</td>
+                    <td>{{ mission.added|localizeddate('short', 'none') }}</td>
                     <td>
-                        {% if mission.entrustedPayments|length > 0 %}
-                            {% for payment in mission.entrustedPayments %}
-                                {{ payment.label }} (Capital: {{ payment.componentDetail.capital|localizedcurrency('EUR') }} - Intérêts: {{ payment.componentDetail.interest|localizedcurrency('EUR') }} - Comission TTC: {{ payment.componentDetail.commission|localizedcurrency('EUR') }})
+                        {% if mission.archived is null %}
+                            En cours
+                        {% else %}
+                            Archivée
+                        {% endif %}
+                    </td>
+                    <td>{{ mission.getIdClientDebtCollector().nom }}</td>
+                    <td>
+                        {% if mission.getDebtCollectionMissionPaymentSchedules() is not empty %}
+                            {% for missionPaymentSchedule in mission.getDebtCollectionMissionPaymentSchedules() %}
+                                {% set paymentSchedule = missionPaymentSchedule.getIdPaymentSchedule() %}
+                                {% set missionPaymentScheduleAmount = missionPaymentSchedule.getCapital()+missionPaymentSchedule.getInterest()+missionPaymentSchedule.getCommissionVatIncl() %}
+                                {% set paymentScheduleAmount        = (paymentSchedule.getCapital() + paymentSchedule.getInterets() + paymentSchedule.getCommission() + paymentSchedule.getTva())/100 %}
+                                {% set isPartial = '' %}
+                                {% if missionPaymentScheduleAmount < paymentScheduleAmount %}
+                                    {% set isPartial = '(Partielle)' %}
+                                {% endif %}
+                                Échéance {{ paymentSchedule.getDateEcheanceEmprunteur()|localizeddate("medium", "none", null, null, "MMMM yyyy") }} {{ isPartial }}
+                                (Capital: {{ missionPaymentSchedule.getCapital()|localizedcurrency('EUR') }} - Intérêts: {{ missionPaymentSchedule.getInterest()|localizedcurrency('EUR') }} - Comission TTC: {{ missionPaymentSchedule.getCommissionVatIncl()|localizedcurrency('EUR') }})
                                 <br>
                             {% endfor %}
                         {% else %}
-                            Capital: {{ mission.component.capital|localizedcurrency('EUR') }} - Intérêts: {{ mission.component.interest|localizedcurrency('EUR') }} - Comission TTC: {{ mission.component.commission|localizedcurrency('EUR') }}
+                            Capital: {{ mission.getCapital()|localizedcurrency('EUR') }} - Intérêts: {{ mission.getInterest()|localizedcurrency('EUR') }} - Comission TTC: {{ mission.getCommissionVatIncl()|localizedcurrency('EUR') }}
                             <br>
                         {% endif %}
                     </td>
-                    <td>{{ mission.type }}</td>
-                    <td>{{ mission.rate|localizednumber }}&nbsp;%</td>
+                    <td>
+                        {% if mission.type == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\DebtCollectionMission::TYPE_AMICABLE') %}
+                            Amiable
+                        {% else %}
+                            Contentieux
+                        {% endif %}
+                    </td>
+                    <td>{{ (mission.getFeesRate() * 100)|localizednumber }}&nbsp;%</td>
                     <td class="text-center">
-                        <a href="/debt_collection_mission/downloadCreditorDetailsFile/{{ mission.id }}" class="btn btn-xs btn-default push-10-r" data-toggle="tooltip" data-original-title="Télécharger XLS"><i class="fa fa-download"></i></a>
+                        <a href="/debt_collection_mission/downloadCreditorDetailsFile/{{ mission.id }}" class="btn btn-xs btn-default push-10-r" data-toggle="tooltip"
+                           data-original-title="Télécharger XLS"><i class="fa fa-download"></i></a>
                     </td>
                 </tr>
             {% endfor %}

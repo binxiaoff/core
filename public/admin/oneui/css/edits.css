@@ -259,20 +259,31 @@ table.dataTable thead .sorting:after, table.dataTable thead .sorting_asc:after, 
 .ui-funding-text { color: #5293de }
 .ui-funding-bg { background-color: #5293de }
 
-.ui-inprogress-text { color: #1b88db }
-.ui-inprogress-bg { background-color: #1b88db }
+.ui-project-status-80-text { color: #1b88db }
+.ui-project-status-80-bg { background-color: #1b88db }
 
-.ui-completed-text { color: #4fa8b0 }
-.ui-completed-bg { background-color: #4fa8b0 }
+.ui-project-status-90-text, .ui-project-status-95-text { color: #4fa8b0 }
+.ui-project-status-90-bg, .ui-project-status-95-bg { background-color: #4fa8b0 }
 
-.ui-problem-text { color: #ffca2c }
-.ui-problem-bg { background-color: #ffca2c }
+.ui-project-status-100-text { color: #ffca2c }
+.ui-project-status-100-bg { background-color: #ffca2c }
 
 .ui-debt-collection-text { color: #f2980c }
 .ui-debt-collection-bg { background-color: #f2980c }
 
-.ui-procedure-text { color: #f2610c }
-.ui-procedure-bg { background-color: #f2610c }
-
 .ui-loss-text { color: #787679 }
 .ui-loss-bg { background-color: #787679 }
+
+/* These classes must stay after those defined above for project status */
+
+.ui-company-status-in_bonis-text {}
+.ui-company-status-in_bonis-bg {}
+
+.ui-company-status-precautionary_process-text { color: #f2980c }
+.ui-company-status-precautionary_process-bg { background-color: #f2980c }
+
+.ui-company-status-receivership-text { color: #f2610c }
+.ui-company-status-receivership-bg { background-color: #f2610c }
+
+.ui-company-status-compulsory_liquidation-text { color: #d208f8 }
+.ui-company-status-compulsory_liquidation-bg { background-color: #d208f8 }

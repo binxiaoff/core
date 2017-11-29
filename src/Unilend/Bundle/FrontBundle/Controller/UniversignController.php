@@ -239,27 +239,39 @@ class UniversignController extends Controller
     {
         $entityManager              = $this->get('doctrine.orm.entity_manager');
         $universignManager          = $this->get('unilend.frontbundle.service.universign_manager');
+        $beneficialOwnerManager     = $this->get('unilend.service.beneficial_owner_manager');
         $project                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
         $mandate                    = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')
             ->findOneBy(['idProject' => $projectId, 'status' => UniversignEntityInterface::STATUS_PENDING], ['added' => 'DESC']);
         $proxy                      = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')
             ->findOneBy(['idProject' => $projectId, 'status' => UniversignEntityInterface::STATUS_PENDING], ['added' => 'DESC']);
-        $beneficialOwnerDeclaration = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')
-            ->findOneBy(['idProject' => $projectId, 'status' => UniversignEntityInterface::STATUS_PENDING], ['added' => 'DESC']);
 
-        if (
-            $project
-            && $proxy
-            && $mandate
-            && $beneficialOwnerDeclaration
-            && (
-                false === empty($proxy->getUrlUniversign())
+        if (null === $project || null === $mandate || null === $proxy) {
+            return $this->redirectToRoute('home');
+        }
+
+        if ($beneficialOwnerManager->projectNeedsBeneficialOwnerDeclaration($project)) {
+            $beneficialOwnerDeclaration = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')
+                ->findOneBy(['idProject' => $projectId, 'status' => UniversignEntityInterface::STATUS_PENDING], ['added' => 'DESC']);
+
+            if (
+                null !== $beneficialOwnerDeclaration
+                && false === empty($proxy->getUrlUniversign())
                 && false === empty($mandate->getUrlUniversign())
                 && false === empty($beneficialOwnerDeclaration->getUrlUniversign())
                 && $proxy->getUrlUniversign() === $mandate->getUrlUniversign()
                 && $proxy->getUrlUniversign() === $beneficialOwnerDeclaration->getUrlUniversign()
                 || $universignManager->createProject($project, $proxy, $mandate, $beneficialOwnerDeclaration)
-            )
+            ) {
+                return $this->redirect($proxy->getUrlUniversign());
+            }
+        }
+
+        if (
+            false === empty($proxy->getUrlUniversign())
+            && false === empty($mandate->getUrlUniversign())
+            && $proxy->getUrlUniversign() === $mandate->getUrlUniversign()
+            || $universignManager->createProject($project, $proxy, $mandate)
         ) {
             return $this->redirect($proxy->getUrlUniversign());
         }

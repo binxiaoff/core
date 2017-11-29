@@ -5,9 +5,10 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\Translator;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class BorrowerOperationsManager
@@ -50,6 +51,7 @@ class BorrowerOperationsManager
      * @param string    $borrowerOperationType
      *
      * @return array
+     * @throws \Exception
      */
     public function getBorrowerOperations(\clients $client, \DateTime $start, \DateTime $end, array $projectsIds = [], $borrowerOperationType = 'all')
     {
@@ -58,34 +60,25 @@ class BorrowerOperationsManager
         $operationRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $walletHistory                  = $walletBalanceHistoryRepository->getBorrowerWalletOperations($wallet, $start, $end, $projectsIds);
         $borrowerOperations             = [];
-        $lenderRepayment                = [];
-        $recoveryCommissionKeys         = array_keys(array_column($walletHistory, 'label'), OperationType::COLLECTION_COMMISSION_PROVISION);
+
+        $vatTax = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
+        if (null === $vatTax) {
+            throw new \Exception('The VAT rate is not defined.');
+        }
+        $vatTaxRate = round(bcdiv($vatTax->getRate(), 100, 5), 4);
 
         foreach ($walletHistory as $index => $operation) {
-            if (
-                in_array($operation['label'], [OperationType::CAPITAL_REPAYMENT, OperationType::GROSS_INTEREST_REPAYMENT])
-                && null !== $operation['ordre']
-            ) {
-                if (false === empty($lenderRepayment[$operation['idProject']][$operation['ordre']]['amount'])) {
-                    $operation['label']  = self::OP_LENDER_MONTHLY_REPAYMENT;
-                    $operation['amount'] = bcadd($lenderRepayment[$operation['idProject']][$operation['ordre']]['amount'], $operation['amount'], 2);
-                    $operationEntity     = $operationRepository->find($operation['id']);
-                    if (Echeanciers::IS_EARLY_REPAID === $operationEntity->getRepaymentSchedule()->getStatusRa()) {
-                        $operation['label'] = self::OP_LENDER_EARLY_REPAYMENT;
-                    }
-                } else {
-                    $lenderRepayment[$operation['idProject']][$operation['ordre']]['amount'] = $operation['amount'];
-                    continue;
-                }
+            if (in_array($operation['label'], [OperationType::CAPITAL_REPAYMENT, OperationType::GROSS_INTEREST_REPAYMENT])) {
+                $operation['label'] = self::OP_LENDER_MONTHLY_REPAYMENT;
             }
 
-            if (OperationType::BORROWER_PROVISION === $operation['label']) {
-                foreach ($recoveryCommissionKeys as $key) {
-                    if ($walletHistory[$key]['date'] === $operation['date'] && false === empty($walletHistory[$key]['amount'])) {
-                        $operation['amount'] = bcadd($walletHistory[$key]['amount'], $operation['amount'], 2);
-                        $operation['label']  = self::OP_RECOVERY_PAYMENT;
-                    }
-                }
+            if (OperationSubType::CAPITAL_REPAYMENT_EARLY === $operation['label']) {
+                $operation['label'] = self::OP_LENDER_EARLY_REPAYMENT;
+            }
+
+            if (in_array($operation['label'], [OperationSubType::BORROWER_COMMISSION_FUNDS, OperationSubType::BORROWER_COMMISSION_REPAYMENT])) {
+                $operation['netCommission'] = round(bcdiv($operation['amount'], bcadd(1, $vatTaxRate, 5), 4), 2);
+                $operation['vat']           = round(bcsub($operation['amount'], $operation['netCommission'], 4), 2);
             }
 
             if (OperationType::BORROWER_PROVISION === $operation['label']) {
@@ -127,11 +120,6 @@ class BorrowerOperationsManager
             if ($borrowerOperationType === 'all' || $borrowerOperationType === $operation['label']) {
                 $borrowerOperations[] = $operation;
             }
-        }
-
-        $debtCollectionCommissionKeys = array_keys(array_column($borrowerOperations, 'label'), OperationType::COLLECTION_COMMISSION_PROVISION);
-        foreach ($debtCollectionCommissionKeys as $index) {
-            unset($borrowerOperations[$index]);
         }
 
         return $borrowerOperations;
