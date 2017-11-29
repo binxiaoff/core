@@ -1396,11 +1396,18 @@ class projects extends projects_crud
      */
     public function getUpcomingSaleProjects()
     {
-        $statement = $this->getSaleProjectsQuery(ProjectsStatus::SALES_TEAM_UPCOMING_STATUS)
-            ->andWhere('DATE_SUB(NOW(), INTERVAL 1 WEEK) < p.added')
-            ->execute();
+        $queryBuilder = $this->getSaleProjectsQuery(ProjectsStatus::SALES_TEAM_UPCOMING_STATUS);
+        $queryBuilder
+            ->andWhere(
+                $queryBuilder->expr()->orX(
+                    'p.status = :incompleteProjectStatus AND DATE_SUB(NOW(), INTERVAL 1 WEEK) < p.added',
+                    'p.status != :incompleteProjectStatus'
+                )
+            )
+            ->setParameter('incompleteProjectStatus', ProjectsStatus::INCOMPLETE_REQUEST);
 
-        $projects = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement = $queryBuilder->execute();
+        $projects  = $statement->fetchAll(\PDO::FETCH_ASSOC);
         $statement->closeCursor();
 
         return $projects;
